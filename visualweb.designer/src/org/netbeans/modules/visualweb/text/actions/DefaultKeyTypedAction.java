@@ -96,7 +96,8 @@ public class DefaultKeyTypedAction extends TextAction {
                 char c = content.charAt(0);
 
                 if (((c >= 0x20) && (c != 0x7F)) || (c == '\r') || (c == '\n')) {
-                    if (target.getCaret() == null) {
+//                    if (target.getCaret() == null) {
+                    if (!target.hasCaret()) {
                         if ((c != '\r') && (c != '\n')) {
                             // If you're typing without a caret, start editing
                             // the default property of the selection
@@ -124,7 +125,8 @@ public class DefaultKeyTypedAction extends TextAction {
                     HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class, "InsertChar")); // NOI18N
                     try {
 //                        doc.writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class, "InsertChar")); // NOI18N
-                        target.getCaret().replaceSelection(content);
+//                        target.getCaret().replaceSelection(content);
+                        target.replaceSelection(content);
                     } finally {
 //                        doc.writeUnlock();
 //                        webform.getModel().writeUnlock(undoEvent);

@@ -32,7 +32,6 @@ import javax.swing.UIManager;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.visualweb.designer.WebForm;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 
 
@@ -75,9 +74,9 @@ public class DeletePrevCharAction extends TextAction {
                 return;
             }
 
-            DesignerCaret caret = target.getCaret();
-
-            if (caret == null) {
+//            DesignerCaret caret = target.getCaret();
+//            if (caret == null) {
+            if (!target.hasCaret()) {
                 return;
             }
 
@@ -85,7 +84,8 @@ public class DeletePrevCharAction extends TextAction {
             HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
             try {
 //                doc.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-                beep = !caret.removePreviousChar();
+//                beep = !caret.removePreviousChar();
+                beep = !target.removePreviousChar();
             } finally {
 //                doc.writeUnlock();
 //                webform.getModel().writeUnlock(undoEvent);

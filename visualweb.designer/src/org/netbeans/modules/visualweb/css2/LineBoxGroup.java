@@ -32,7 +32,6 @@ import org.netbeans.modules.visualweb.designer.CssUtilities;
 import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 
 import org.openide.ErrorManager;
 
@@ -1148,12 +1147,13 @@ public class LineBoxGroup extends ContainerBox {
             return; // TESTSUITE
         }
 
-        DesignerCaret caret = pane.getCaret();
-
-        if ((caret != null) && caret.hasSelection()) {
+//        DesignerCaret caret = pane.getCaret();
+//        if ((caret != null) && caret.hasSelection()) {
+        if (pane.hasCaretSelection()) {
             // Determine if the range intersects our line box group
 //            Position sourceCaretBegin = caret.getFirstPosition();
-            DomPosition sourceCaretBegin = caret.getFirstPosition();
+//            DomPosition sourceCaretBegin = caret.getFirstPosition();
+            DomPosition sourceCaretBegin = pane.getFirstPosition();
 
             // XXX I ought to have a cached method on the caret for obtaining the rendered
             // location!
@@ -1161,7 +1161,10 @@ public class LineBoxGroup extends ContainerBox {
 //            Position sourceCaretEnd = caret.getLastPosition();
 //            Position caretEnd = sourceCaretEnd.getRenderedPosition();
             DomPosition caretBegin = sourceCaretBegin.getRenderedPosition();
-            DomPosition sourceCaretEnd = caret.getLastPosition();
+            
+//            DomPosition sourceCaretEnd = caret.getLastPosition();
+            DomPosition sourceCaretEnd = pane.getLastPosition();
+            
             DomPosition caretEnd = sourceCaretEnd.getRenderedPosition();
 
             Node firstNode = findFirstNode();

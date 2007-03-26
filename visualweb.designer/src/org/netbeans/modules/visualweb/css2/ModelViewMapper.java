@@ -44,7 +44,6 @@ import org.w3c.dom.NodeList;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 
 
 /**
@@ -202,10 +201,16 @@ public final class ModelViewMapper {
             return DomPosition.NONE;            
         }
 
-        DesignerCaret caret = webform.getPane().getCaret();
-        assert caret != null;
+//        DesignerCaret caret = webform.getPane().getCaret();
+//        assert caret != null;
+        if (!webform.getPane().hasCaret()) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("Pane doesn't have caret!"));
+            return DomPosition.NONE;
+        }
 
-        Point magicPosition = caret.getMagicCaretPosition();
+//        Point magicPosition = caret.getMagicCaretPosition();
+        Point magicPosition = webform.getPane().getCaretMagicPosition();
 
         LineBox prev = lb;
 
@@ -271,10 +276,16 @@ public final class ModelViewMapper {
             return DomPosition.NONE;
         }
 
-        DesignerCaret caret = webform.getPane().getCaret();
-        assert caret != null;
+//        DesignerCaret caret = webform.getPane().getCaret();
+//        assert caret != null;
+        if (!webform.getPane().hasCaret()) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("Pane doesn't have caret!"));
+            return DomPosition.NONE;
+        }
 
-        Point magicPosition = caret.getMagicCaretPosition();
+//        Point magicPosition = caret.getMagicCaretPosition();
+        Point magicPosition = webform.getPane().getCaretMagicPosition();
 
         LineBox next = lb;
 

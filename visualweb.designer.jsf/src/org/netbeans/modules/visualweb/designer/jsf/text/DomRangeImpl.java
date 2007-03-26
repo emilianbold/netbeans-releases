@@ -20,30 +20,16 @@
 package org.netbeans.modules.visualweb.designer.jsf.text;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.UIManager;
-
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
-import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
-import org.netbeans.modules.visualweb.designer.jsf.JsfSupportUtilities;
 
 import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 
-import org.w3c.dom.DOMException;
 import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import org.w3c.dom.ranges.DocumentRange;
-import org.w3c.dom.traversal.DocumentTraversal;
-import org.w3c.dom.traversal.NodeFilter;
-import org.w3c.dom.traversal.NodeIterator;
 
 
 /**
@@ -320,7 +306,7 @@ import org.w3c.dom.traversal.NodeIterator;
      *  @return true iff the deletion succeeded (an empty selection can always
      *   be successfully deleted)
      */
-    public boolean deleteContents() {
+    public boolean deleteRangeContents() {
         if (isEmpty()) {
             return true;
         }
@@ -334,390 +320,399 @@ import org.w3c.dom.traversal.NodeIterator;
             Node ec = domRange.getEndContainer();
             int eo = domRange.getEndOffset();
 
-//            if (webform.getManager().isInlineEditing() ||
-            if (jsfForm.isInlineEditing() ||
-//                    (Position.isSourceNode(sc, webform.getDom()) &&
-//                    Position.isSourceNode(ec, webform.getDom()))) {
-            (!MarkupService.isRenderedNode(sc)
-            && !MarkupService.isRenderedNode(ec))) {
-                deleteComponents();
-                domRange.deleteContents();
-            } else {
-                Node sourceStart = null;
-                int sourceOffset = so;
+////            if (webform.getManager().isInlineEditing() ||
+//            if (jsfForm.isInlineEditing() ||
+////                    (Position.isSourceNode(sc, webform.getDom()) &&
+////                    Position.isSourceNode(ec, webform.getDom()))) {
+//            (!MarkupService.isRenderedNode(sc)
+//            && !MarkupService.isRenderedNode(ec))) {
+//                deleteComponents();
+//                domRange.deleteContents();
+//            } else {
+//                Node sourceStart = null;
+//                int sourceOffset = so;
+//
+////                if (Position.isRenderedNode(sc)) {
+//                if (MarkupService.isRenderedNode(sc)) {
+////                    Position source = new Position(sc, so, Bias.FORWARD);
+//                    DomPositionImpl source = DomPositionImpl.create(sc, so, Bias.FORWARD);
+//
+//                    if (source != DomPositionImpl.NONE) {
+//                        sourceStart = source.getNode();
+//                        sourceOffset = source.getOffset();
+//                    }
+//                }
+//
+//                Node sourceEnd = null;
+//                int sourceEndOffset = eo;
+//
+////                if (Position.isRenderedNode(ec)) {
+//                if (MarkupService.isRenderedNode(ec)) {
+////                    Position source = new Position(ec, eo, Bias.FORWARD);
+//                    DomPositionImpl source = DomPositionImpl.create(ec, eo, Bias.FORWARD);
+//
+//                    if (source != DomPositionImpl.NONE) {
+//                        sourceEnd = source.getNode();
+//                        sourceEndOffset = source.getOffset();
+//                    }
+//                }
+//
+//                if ((sourceStart != null) && (sourceEnd != null)) {
+//                    setRange(sourceStart, sourceOffset, sourceEnd, sourceEndOffset);
+//                    deleteComponents();
+//                    domRange.deleteContents();
+//                }
+//            }
 
-//                if (Position.isRenderedNode(sc)) {
-                if (MarkupService.isRenderedNode(sc)) {
-//                    Position source = new Position(sc, so, Bias.FORWARD);
-                    DomPositionImpl source = DomPositionImpl.create(sc, so, Bias.FORWARD);
-
-                    if (source != DomPositionImpl.NONE) {
-                        sourceStart = source.getNode();
-                        sourceOffset = source.getOffset();
-                    }
-                }
-
-                Node sourceEnd = null;
-                int sourceEndOffset = eo;
-
-//                if (Position.isRenderedNode(ec)) {
-                if (MarkupService.isRenderedNode(ec)) {
-//                    Position source = new Position(ec, eo, Bias.FORWARD);
-                    DomPositionImpl source = DomPositionImpl.create(ec, eo, Bias.FORWARD);
-
-                    if (source != DomPositionImpl.NONE) {
-                        sourceEnd = source.getNode();
-                        sourceEndOffset = source.getOffset();
-                    }
-                }
-
-                if ((sourceStart != null) && (sourceEnd != null)) {
-                    setRange(sourceStart, sourceOffset, sourceEnd, sourceEndOffset);
-                    deleteComponents();
-                    domRange.deleteContents();
-                }
-            }
+            // XXX Moved to DomDocumentImpl.
+//            // XXX For now it works only over the source nodes. That has to be changes.
+//            if (!jsfForm.isInlineEditing() && (MarkupService.isRenderedNode(sc) || MarkupService.isRenderedNode(ec))) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                        new IllegalStateException("It is not inline editing, nor both nodes are source ones," // NOI18N
+//                            + "\nstartNode=" + sc // NOI18N
+//                            + "\nendNode=" + ec)); // NOI18N
+//                return false;
+//            }
+//            deleteComponents();
+            domRange.deleteContents();
 
             domRange.setStart(sc, so);
             domRange.setEnd(sc, so);
 
             return true;
         } else {
-            // Read-only - can't edit!!
-//            UIManager.getLookAndFeel().provideErrorFeedback(webform.getPane());
-            UIManager.getLookAndFeel().provideErrorFeedback(null);
-
             return false;
         }
     }
 
-    /** Delete all the JSF components found in the given range */
-    private void deleteComponents() {
-        // This will require a traversal, but probably not using the
-        // DomTraversal class since we'll be deleting elements as
-        // we're traversing
-//        Position second = getLastPosition();
-        DomPosition second = getLastPosition();
-
-//        if (second == Position.NONE) {
-        if (second == DomPosition.NONE) {
-            return;
-        }
-
-//        Position first = getFirstPosition();
-        DomPosition first = getFirstPosition();
-        assert first.isEarlierThan(first);
-
-        Node firstNode = first.getNode();
-
-        if (firstNode instanceof Element) {
-            if (first.getOffset() < firstNode.getChildNodes().getLength()) {
-                firstNode = firstNode.getChildNodes().item(first.getOffset());
-            }
-        }
-
-        Node secondNode = second.getNode();
-
-        if (first.equals(second)) {
-            secondNode = firstNode;
-        } else if (secondNode instanceof Element) {
-            if ((second.getOffset() > 0) &&
-                    (second.getOffset() <= secondNode.getChildNodes().getLength())) {
-                secondNode = secondNode.getChildNodes().item(second.getOffset() - 1);
-            } else if (second.getOffset() == 0) {
-                // Gotta locate immediate inorder traversal neighbor to the left
-                while ((secondNode != null) && (secondNode.getPreviousSibling() == null)) {
-                    secondNode = secondNode.getParentNode();
-                }
-
-                if (secondNode == null) {
-                    ErrorManager.getDefault().log("Unexpected second position " + second); // NOI18N
-
-                    return;
-                }
-
-                secondNode = secondNode.getPreviousSibling();
-
-                while (true) {
-                    NodeList nl = secondNode.getChildNodes();
-
-                    if (nl.getLength() > 0) {
-                        secondNode = nl.item(nl.getLength() - 1);
-                    } else {
-                        break;
-                    }
-                }
-            }
-        }
-
-        // Insert content for the first node
-        if ((firstNode == secondNode) && firstNode instanceof Text) {
-            // Common case - and we're done; no components to be deleted here
-            return;
-        }
-
-        // Iterate over the range building up all the DesignBeans to be
-        // destroyed
-//        ArrayList beans = new ArrayList();
-        List<Element> components = new ArrayList<Element>();
-
-//        org.w3c.dom.Document dom = webform.getJspDom();
-        org.w3c.dom.Document dom = jsfForm.getJspDom();
-
-        if (!(dom instanceof DocumentTraversal)) {
-            return;
-        }
-
-        DocumentTraversal trav = (DocumentTraversal)dom;
-
-        // Iterating over all since we can't just limit ourselves to text nodes
-        // in case the target node is not necessarily a text node!
-        NodeIterator iterator = trav.createNodeIterator(dom, NodeFilter.SHOW_ALL, null, false);
-
-        // The node iterator doesn't seem to have a way to jump to a
-        // particular node, so we search for it ourselves
-        Node curr = firstNode;
-
-        while (curr != null) {
-            try {
-                curr = iterator.nextNode();
-
-                if (curr == firstNode) {
-                    break;
-                }
-            } catch (DOMException ex) {
-                ErrorManager.getDefault().notify(ex);
-
-                break;
-            }
-        }
-
-        Node last = secondNode;
-
-        while (curr != null) {
-//            if (curr instanceof RaveElement) {
-//                RaveElement element = (RaveElement)curr;
-            if (curr instanceof Element) {
-                Element element = (Element)curr;
-//                DesignBean bean = element.getDesignBean();
-//                DesignBean bean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-//                DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
-                Element componentRootElement = MarkupService.getRenderedElementForElement(element);
-                
-//                if ((bean != null) &&
-                if ((componentRootElement != null) &&
-                        ((element.getParentNode() == null) ||
-//                        (element.getParentNode() instanceof RaveElement &&
-//                        (((RaveElement)element.getParentNode()).getDesignBean() != bean)))) {
-                        (element.getParentNode() instanceof Element
-//                        && InSyncService.getProvider().getMarkupDesignBeanForElement((Element)element.getParentNode()) != bean))) {
-//                        && WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)element.getParentNode()) != bean))) {
-                        && MarkupService.getRenderedElementForElement((Element)element.getParentNode()) != componentRootElement))) {
-//                    if (!beans.contains(bean)) {
-//                        beans.add(bean);
+//    /** Delete all the JSF components found in the given range */
+//    private void deleteComponents() {
+//        // This will require a traversal, but probably not using the
+//        // DomTraversal class since we'll be deleting elements as
+//        // we're traversing
+////        Position second = getLastPosition();
+//        DomPosition second = getLastPosition();
+//
+////        if (second == Position.NONE) {
+//        if (second == DomPosition.NONE) {
+//            return;
+//        }
+//
+////        Position first = getFirstPosition();
+//        DomPosition first = getFirstPosition();
+//        assert first.isEarlierThan(first);
+//
+//        Node firstNode = first.getNode();
+//
+//        if (firstNode instanceof Element) {
+//            if (first.getOffset() < firstNode.getChildNodes().getLength()) {
+//                firstNode = firstNode.getChildNodes().item(first.getOffset());
+//            }
+//        }
+//
+//        Node secondNode = second.getNode();
+//
+//        if (first.equals(second)) {
+//            secondNode = firstNode;
+//        } else if (secondNode instanceof Element) {
+//            if ((second.getOffset() > 0) &&
+//                    (second.getOffset() <= secondNode.getChildNodes().getLength())) {
+//                secondNode = secondNode.getChildNodes().item(second.getOffset() - 1);
+//            } else if (second.getOffset() == 0) {
+//                // Gotta locate immediate inorder traversal neighbor to the left
+//                while ((secondNode != null) && (secondNode.getPreviousSibling() == null)) {
+//                    secondNode = secondNode.getParentNode();
+//                }
+//
+//                if (secondNode == null) {
+//                    ErrorManager.getDefault().log("Unexpected second position " + second); // NOI18N
+//
+//                    return;
+//                }
+//
+//                secondNode = secondNode.getPreviousSibling();
+//
+//                while (true) {
+//                    NodeList nl = secondNode.getChildNodes();
+//
+//                    if (nl.getLength() > 0) {
+//                        secondNode = nl.item(nl.getLength() - 1);
+//                    } else {
+//                        break;
 //                    }
-                    if (!components.contains(componentRootElement)) {
-                        components.add(componentRootElement);
-                    }
-                }
-            }
-
-            if ((curr == null) || (curr == last)) {
-                break;
-            }
-
-            try {
-                curr = iterator.nextNode();
-            } catch (DOMException ex) {
-                ErrorManager.getDefault().notify(ex);
-
-                break;
-            }
-        }
-
-        iterator.detach();
-
-//        FacesModel model = webform.getModel();
-//        Document doc = webform.getDocument();
-
-//        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomRangeImpl.class, "LBL_DeleteText")); // NOI18N
-        try {
-//            doc.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-
-//            for (int i = 0; i < beans.size(); i++) {
-//                DesignBean bean = (DesignBean)beans.get(i);
-            for (Element componentRootElement : components) {
-
-//                if (!FacesSupport.isSpecialBean(/*webform, */bean)) {
-//                if (!Util.isSpecialBean(bean)) {
-//                if (bean instanceof MarkupDesignBean && !WebForm.getHtmlDomProviderService().isSpecialComponent(
-//                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean))) {
-//                if (!WebForm.getHtmlDomProviderService().isSpecialComponent(componentRootElement)) {
-                if (!JsfSupportUtilities.isSpecialComponent(componentRootElement)) {
-//                    model.getLiveUnit().deleteBean(bean);
-//                    webform.deleteBean(bean);
-//                    webform.deleteComponent(componentRootElement);
-                    jsfForm.deleteComponent(componentRootElement);
-                }
-            }
-        } finally {
-//            doc.writeUnlock();
-//            webform.getModel().writeUnlock(undoEvent);
-//            webform.writeUnlock(writeLock);
-            jsfForm.writeUnlock(writeLock);
-        }
-    }
+//                }
+//            }
+//        }
+//
+//        // Insert content for the first node
+//        if ((firstNode == secondNode) && firstNode instanceof Text) {
+//            // Common case - and we're done; no components to be deleted here
+//            return;
+//        }
+//
+//        // Iterate over the range building up all the DesignBeans to be
+//        // destroyed
+////        ArrayList beans = new ArrayList();
+//        List<Element> components = new ArrayList<Element>();
+//
+////        org.w3c.dom.Document dom = webform.getJspDom();
+//        org.w3c.dom.Document dom = jsfForm.getJspDom();
+//
+//        if (!(dom instanceof DocumentTraversal)) {
+//            return;
+//        }
+//
+//        DocumentTraversal trav = (DocumentTraversal)dom;
+//
+//        // Iterating over all since we can't just limit ourselves to text nodes
+//        // in case the target node is not necessarily a text node!
+//        NodeIterator iterator = trav.createNodeIterator(dom, NodeFilter.SHOW_ALL, null, false);
+//
+//        // The node iterator doesn't seem to have a way to jump to a
+//        // particular node, so we search for it ourselves
+//        Node curr = firstNode;
+//
+//        while (curr != null) {
+//            try {
+//                curr = iterator.nextNode();
+//
+//                if (curr == firstNode) {
+//                    break;
+//                }
+//            } catch (DOMException ex) {
+//                ErrorManager.getDefault().notify(ex);
+//
+//                break;
+//            }
+//        }
+//
+//        Node last = secondNode;
+//
+//        while (curr != null) {
+////            if (curr instanceof RaveElement) {
+////                RaveElement element = (RaveElement)curr;
+//            if (curr instanceof Element) {
+//                Element element = (Element)curr;
+////                DesignBean bean = element.getDesignBean();
+////                DesignBean bean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
+////                DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//                Element componentRootElement = MarkupService.getRenderedElementForElement(element);
+//                
+////                if ((bean != null) &&
+//                if ((componentRootElement != null) &&
+//                        ((element.getParentNode() == null) ||
+////                        (element.getParentNode() instanceof RaveElement &&
+////                        (((RaveElement)element.getParentNode()).getDesignBean() != bean)))) {
+//                        (element.getParentNode() instanceof Element
+////                        && InSyncService.getProvider().getMarkupDesignBeanForElement((Element)element.getParentNode()) != bean))) {
+////                        && WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)element.getParentNode()) != bean))) {
+//                        && MarkupService.getRenderedElementForElement((Element)element.getParentNode()) != componentRootElement))) {
+////                    if (!beans.contains(bean)) {
+////                        beans.add(bean);
+////                    }
+//                    if (!components.contains(componentRootElement)) {
+//                        components.add(componentRootElement);
+//                    }
+//                }
+//            }
+//
+//            if ((curr == null) || (curr == last)) {
+//                break;
+//            }
+//
+//            try {
+//                curr = iterator.nextNode();
+//            } catch (DOMException ex) {
+//                ErrorManager.getDefault().notify(ex);
+//
+//                break;
+//            }
+//        }
+//
+//        iterator.detach();
+//
+////        FacesModel model = webform.getModel();
+////        Document doc = webform.getDocument();
+//
+////        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+////        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomRangeImpl.class, "LBL_DeleteText")); // NOI18N
+//        try {
+////            doc.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+//
+////            for (int i = 0; i < beans.size(); i++) {
+////                DesignBean bean = (DesignBean)beans.get(i);
+//            for (Element componentRootElement : components) {
+//
+////                if (!FacesSupport.isSpecialBean(/*webform, */bean)) {
+////                if (!Util.isSpecialBean(bean)) {
+////                if (bean instanceof MarkupDesignBean && !WebForm.getHtmlDomProviderService().isSpecialComponent(
+////                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean))) {
+////                if (!WebForm.getHtmlDomProviderService().isSpecialComponent(componentRootElement)) {
+//                if (!JsfSupportUtilities.isSpecialComponent(componentRootElement)) {
+////                    model.getLiveUnit().deleteBean(bean);
+////                    webform.deleteBean(bean);
+////                    webform.deleteComponent(componentRootElement);
+//                    jsfForm.deleteComponent(componentRootElement);
+//                }
+//            }
+//        } finally {
+////            doc.writeUnlock();
+////            webform.getModel().writeUnlock(undoEvent);
+////            webform.writeUnlock(writeLock);
+//            jsfForm.writeUnlock(writeLock);
+//        }
+//    }
 
     /** Return true iff the range is in a read-only region */
     public boolean isReadOnlyRegion() {
         return domRange == null;
     }
 
-    /** Return the text in the range (linearized to a String); this is only the
-     * text nodes, not comment nodes, not markup, etc.
-     */
-    public String getText() {
-        // Since we'll be iterating forwards, gotta make sure we know
-        // which point is first
-//        Position second = getLastPosition();
-        DomPosition second = getLastPosition();
-
-//        if (second == Position.NONE) {
-        if (second == DomPosition.NONE) {
-            return "";
-        }
-
-//        Position first = getFirstPosition();
-        DomPosition first = getFirstPosition();
-        assert first.isEarlierThan(first);
-
-        StringBuffer sb = new StringBuffer();
-
-        Node firstNode = first.getNode();
-
-        if (firstNode instanceof Element) {
-            if (first.getOffset() < firstNode.getChildNodes().getLength()) {
-                firstNode = firstNode.getChildNodes().item(first.getOffset());
-            }
-        }
-
-        Node secondNode = second.getNode();
-
-        if (first.equals(second)) {
-            secondNode = firstNode;
-        } else if (secondNode instanceof Element) {
-            if ((second.getOffset() > 0) &&
-                    (second.getOffset() <= secondNode.getChildNodes().getLength())) {
-                secondNode = secondNode.getChildNodes().item(second.getOffset() - 1);
-            } else if (second.getOffset() == 0) {
-                // Gotta locate immediate inorder traversal neighbor to the left
-                while ((secondNode != null) && (secondNode.getPreviousSibling() == null)) {
-                    secondNode = secondNode.getParentNode();
-                }
-
-                if (secondNode == null) {
-                    ErrorManager.getDefault().log("Unexpected second position " + second); // NOI18N
-
-                    return "";
-                }
-
-                secondNode = secondNode.getPreviousSibling();
-
-                while (true) {
-                    NodeList nl = secondNode.getChildNodes();
-
-                    if (nl.getLength() > 0) {
-                        secondNode = nl.item(nl.getLength() - 1);
-                    } else {
-                        break;
-                    }
-                }
-            }
-        }
-
-        // Insert content for the first node
-        if (firstNode instanceof Text) {
-            if (secondNode == firstNode) {
-                String s = firstNode.getNodeValue();
-
-                for (int i = first.getOffset(); i < second.getOffset(); i++) {
-                    sb.append(s.charAt(i));
-                }
-
-                return sb.toString();
-            } else {
-                String s = firstNode.getNodeValue();
-
-                for (int i = first.getOffset(), n = s.length(); i < n; i++) {
-                    sb.append(s.charAt(i));
-                }
-            }
-        }
-
-        // Append content for all the nodes between first and second
-//        org.w3c.dom.Document dom = webform.getJspDom();
-        org.w3c.dom.Document dom = jsfForm.getJspDom();
-
-        if (!(dom instanceof DocumentTraversal)) {
-            return "";
-        }
-
-        DocumentTraversal trav = (DocumentTraversal)dom;
-
-        // Iterating over all since we can't just limit ourselves to text nodes
-        // in case the target node is not necessarily a text node!
-        NodeIterator iterator = trav.createNodeIterator(dom, NodeFilter.SHOW_ALL, null, false);
-        Node curr = firstNode;
-
-        // The node iterator doesn't seem to have a way to jump to a particular node,
-        // so we search for it ourselves
-        while (curr != null) {
-            try {
-                curr = iterator.nextNode();
-
-                if (curr == firstNode) {
-                    break;
-                }
-            } catch (DOMException ex) {
-                ErrorManager.getDefault().notify(ex);
-
-                break;
-            }
-        }
-
-        Node last = secondNode;
-
-        while (curr != null) {
-            try {
-                curr = iterator.nextNode();
-            } catch (DOMException ex) {
-                ErrorManager.getDefault().notify(ex);
-
-                break;
-            }
-
-            if ((curr == null) || (curr == last)) {
-                break;
-            }
-
-            if (curr instanceof Text) {
-                sb.append(curr.getNodeValue());
-            }
-        }
-
-        iterator.detach();
-
-        // Append content for the last node
-        if (secondNode instanceof Text) {
-            String s = secondNode.getNodeValue();
-
-            for (int i = 0; i < second.getOffset(); i++) {
-                sb.append(s.charAt(i));
-            }
-        }
-
-        return sb.toString();
-    }
+    // XXX Moved to DomDocumentImpl.
+//    /** Return the text in the range (linearized to a String); this is only the
+//     * text nodes, not comment nodes, not markup, etc.
+//     */
+//    public String getText() {
+//        // Since we'll be iterating forwards, gotta make sure we know
+//        // which point is first
+////        Position second = getLastPosition();
+//        DomPosition second = getLastPosition();
+//
+////        if (second == Position.NONE) {
+//        if (second == DomPosition.NONE) {
+//            return "";
+//        }
+//
+////        Position first = getFirstPosition();
+//        DomPosition first = getFirstPosition();
+//        assert first.isEarlierThan(first);
+//
+//        StringBuffer sb = new StringBuffer();
+//
+//        Node firstNode = first.getNode();
+//
+//        if (firstNode instanceof Element) {
+//            if (first.getOffset() < firstNode.getChildNodes().getLength()) {
+//                firstNode = firstNode.getChildNodes().item(first.getOffset());
+//            }
+//        }
+//
+//        Node secondNode = second.getNode();
+//
+//        if (first.equals(second)) {
+//            secondNode = firstNode;
+//        } else if (secondNode instanceof Element) {
+//            if ((second.getOffset() > 0) &&
+//                    (second.getOffset() <= secondNode.getChildNodes().getLength())) {
+//                secondNode = secondNode.getChildNodes().item(second.getOffset() - 1);
+//            } else if (second.getOffset() == 0) {
+//                // Gotta locate immediate inorder traversal neighbor to the left
+//                while ((secondNode != null) && (secondNode.getPreviousSibling() == null)) {
+//                    secondNode = secondNode.getParentNode();
+//                }
+//
+//                if (secondNode == null) {
+//                    ErrorManager.getDefault().log("Unexpected second position " + second); // NOI18N
+//
+//                    return "";
+//                }
+//
+//                secondNode = secondNode.getPreviousSibling();
+//
+//                while (true) {
+//                    NodeList nl = secondNode.getChildNodes();
+//
+//                    if (nl.getLength() > 0) {
+//                        secondNode = nl.item(nl.getLength() - 1);
+//                    } else {
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//
+//        // Insert content for the first node
+//        if (firstNode instanceof Text) {
+//            if (secondNode == firstNode) {
+//                String s = firstNode.getNodeValue();
+//
+//                for (int i = first.getOffset(); i < second.getOffset(); i++) {
+//                    sb.append(s.charAt(i));
+//                }
+//
+//                return sb.toString();
+//            } else {
+//                String s = firstNode.getNodeValue();
+//
+//                for (int i = first.getOffset(), n = s.length(); i < n; i++) {
+//                    sb.append(s.charAt(i));
+//                }
+//            }
+//        }
+//
+//        // Append content for all the nodes between first and second
+////        org.w3c.dom.Document dom = webform.getJspDom();
+//        org.w3c.dom.Document dom = jsfForm.getJspDom();
+//
+//        if (!(dom instanceof DocumentTraversal)) {
+//            return "";
+//        }
+//
+//        DocumentTraversal trav = (DocumentTraversal)dom;
+//
+//        // Iterating over all since we can't just limit ourselves to text nodes
+//        // in case the target node is not necessarily a text node!
+//        NodeIterator iterator = trav.createNodeIterator(dom, NodeFilter.SHOW_ALL, null, false);
+//        Node curr = firstNode;
+//
+//        // The node iterator doesn't seem to have a way to jump to a particular node,
+//        // so we search for it ourselves
+//        while (curr != null) {
+//            try {
+//                curr = iterator.nextNode();
+//
+//                if (curr == firstNode) {
+//                    break;
+//                }
+//            } catch (DOMException ex) {
+//                ErrorManager.getDefault().notify(ex);
+//
+//                break;
+//            }
+//        }
+//
+//        Node last = secondNode;
+//
+//        while (curr != null) {
+//            try {
+//                curr = iterator.nextNode();
+//            } catch (DOMException ex) {
+//                ErrorManager.getDefault().notify(ex);
+//
+//                break;
+//            }
+//
+//            if ((curr == null) || (curr == last)) {
+//                break;
+//            }
+//
+//            if (curr instanceof Text) {
+//                sb.append(curr.getNodeValue());
+//            }
+//        }
+//
+//        iterator.detach();
+//
+//        // Append content for the last node
+//        if (secondNode instanceof Text) {
+//            String s = secondNode.getNodeValue();
+//
+//            for (int i = 0; i < second.getOffset(); i++) {
+//                sb.append(s.charAt(i));
+//            }
+//        }
+//
+//        return sb.toString();
+//    }
 }

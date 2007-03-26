@@ -27,9 +27,13 @@ import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
@@ -49,6 +53,8 @@ import javax.swing.UIManager;
 import javax.swing.text.Keymap;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocument;
+import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
+import org.netbeans.modules.visualweb.designer.InlineEditor;
 import org.netbeans.modules.visualweb.text.actions.BeginLineAction;
 import org.netbeans.modules.visualweb.text.actions.BeginWordAction;
 import org.netbeans.modules.visualweb.text.actions.DefaultKeyTypedAction;
@@ -58,6 +64,7 @@ import org.netbeans.modules.visualweb.text.actions.EndLineAction;
 import org.netbeans.modules.visualweb.text.actions.EndWordAction;
 import org.netbeans.modules.visualweb.text.actions.NextVisualPositionAction;
 import org.netbeans.modules.visualweb.text.actions.SelectAllAction;
+import org.openide.ErrorManager;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -449,7 +456,7 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
      *
      * @return the caret
      */
-    public DesignerCaret getCaret() {
+    private /*public*/ DesignerCaret getCaret() {
         return caret;
     }
 
@@ -830,47 +837,47 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
 //        return getUI().viewToModel(this, pt);
 //    }
 
-    /**
-     * Moves the caret to a new position, leaving behind a mark defined by the last time
-     * <code>setCaretPosition</code> was called. This forms a selection. If the document is
-     * <code>null</code>, does nothing. The position must be between 0 and the length of the
-     * component's text or else an exception is thrown.
-     *
-     * @param pos
-     *            the position
-     * @exception IllegalArgumentException
-     *                if the value supplied for <code>position</code> is less than zero or greater
-     *                than the component's text length
-     * @see #setCaretPosition
-     */
-//    public void moveCaretPosition(Position pos) {
-    public void moveCaretPosition(DomPosition pos) {
-        if (caret != null) {
-            caret.moveDot(pos);
-        }
-    }
-
-    /**
-     * Sets the position of the text insertion caret for the
-     * <code>TextComponent</code>.  Note that the caret tracks change,
-     * so this may move if the underlying text of the component is changed.
-     * If the document is <code>null</code>, does nothing. The position
-     * must be between 0 and the length of the component's text or else
-     * an exception is thrown.
-     *
-     * @param position the position
-     * @exception    IllegalArgumentException if the value supplied
-     *               for <code>position</code> is less than zero or greater
-     *               than the component's text length
-     * @beaninfo
-     * description: the caret position
-     */
-//    public void setCaretPosition(Position position) {
-    public void setCaretPosition(DomPosition position) {
-        if (caret != null) {
-            caret.setDot(position);
-        }
-    }
+//    /**
+//     * Moves the caret to a new position, leaving behind a mark defined by the last time
+//     * <code>setCaretPosition</code> was called. This forms a selection. If the document is
+//     * <code>null</code>, does nothing. The position must be between 0 and the length of the
+//     * component's text or else an exception is thrown.
+//     *
+//     * @param pos
+//     *            the position
+//     * @exception IllegalArgumentException
+//     *                if the value supplied for <code>position</code> is less than zero or greater
+//     *                than the component's text length
+//     * @see #setCaretPosition
+//     */
+////    public void moveCaretPosition(Position pos) {
+//    public void moveCaretPosition(DomPosition pos) {
+//        if (caret != null) {
+//            caret.moveDot(pos);
+//        }
+//    }
+//
+//    /**
+//     * Sets the position of the text insertion caret for the
+//     * <code>TextComponent</code>.  Note that the caret tracks change,
+//     * so this may move if the underlying text of the component is changed.
+//     * If the document is <code>null</code>, does nothing. The position
+//     * must be between 0 and the length of the component's text or else
+//     * an exception is thrown.
+//     *
+//     * @param position the position
+//     * @exception    IllegalArgumentException if the value supplied
+//     *               for <code>position</code> is less than zero or greater
+//     *               than the component's text length
+//     * @beaninfo
+//     * description: the caret position
+//     */
+////    public void setCaretPosition(Position position) {
+//    public void setCaretPosition(DomPosition position) {
+//        if (caret != null) {
+//            caret.setDot(position);
+//        }
+//    }
 
     /**
      * Returns the position of the text insertion caret for the text component.
@@ -915,8 +922,10 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
 //    public void select(Position selectionStart, Position selectionEnd) {
     public void select(DomPosition selectionStart, DomPosition selectionEnd) {
         // argument adjustment done by java.awt.TextComponent
-        setCaretPosition(selectionStart);
-        moveCaretPosition(selectionEnd);
+//        setCaretPosition(selectionStart);
+//        moveCaretPosition(selectionEnd);
+        setCaretDot(selectionStart);
+        moveCaretDot(selectionEnd);
     }
 
     // --- Scrollable methods ---------------------------------------------
@@ -1530,4 +1539,201 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
 //    public static DomPosition last(DomPosition dot, DomPosition mark) {
 //        return Position.last(dot, mark);
 //    }
+
+    // XXX Moved from DesignerCaret.
+    public void replaceSelection(String content) {
+//        WebForm webform = component.getDocument().getWebForm();
+        WebForm webform = getWebForm();
+        
+        InlineEditor editor = webform.getManager().getInlineEditor();
+        if ((content.equals("\n") || content.equals("\r\n")) // NOI18N
+        && (editor != null) && !editor.isMultiLine()) {
+            // Commit
+            // Should I look to see if the Shift key is pressed, and if so let
+            // you insert a newline?
+            webform.getManager().finishInlineEditing(false);
+            return;
+        }
+
+        if (caret == null) {
+            return;
+        }
+        /*
+        if (range.isReadOnlyRegion()) {
+            UIManager.getLookAndFeel().provideErrorFeedback(component);
+            return;
+        }
+         */
+        if (caret.hasSelection()) {
+            caret.removeSelection();
+        }
+
+//        Position pos = getDot();
+        DomPosition pos = caret.getDot();
+
+        if (editor == null) {
+//            assert (pos == Position.NONE) || !pos.isRendered();
+//            if (pos != Position.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+            if (pos != DomPosition.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                        new IllegalStateException("Node is expected to be not rendered, node=" + pos.getNode())); // NOI18N
+            }
+        } // else: Stay in the DocumentFragment; don't jump to the source DOM (there is none)
+
+//        if (pos == Position.NONE) {
+        if (pos == DomPosition.NONE) {
+            UIManager.getLookAndFeel().provideErrorFeedback(this);
+            return;
+        }
+
+//        component.getDocument().insertString(this, pos, content);
+//        component.getDocument().insertString(pos, content);
+        webform.getDomDocument().insertString(pos, content);
+    }
+    
+    // XXX Moved from DesignerCaret.
+    /** XXX Incorrect impl of cut/copy operation. Revise.
+     * Return the text in the selection, if any (if not returns null).
+     * If the cut parameter is true, then the selection is deleted too.
+     */
+    public Transferable copySelection(boolean cut) {
+        if (caret == null) {
+            return null;
+        }
+        
+        if (caret.hasSelection()) {
+//            String text = range.getText();
+            String text = caret.getSelectedText();
+//            assert text.length() > 0;
+
+            Transferable transferable = new StringSelection(text);
+
+            if (cut) {
+                caret.removeSelection();
+            }
+
+            return transferable;
+        } else {
+            return new StringSelection(""); // NOI18N
+        }
+    }
+    
+
+    public boolean hasCaret() {
+        return getCaret() != null;
+    }
+    
+    public boolean hasCaretSelection() {
+        return caret == null ? false : caret.hasSelection();
+    }
+    
+    public DomPosition getFirstPosition() {
+        return caret == null ? DomPosition.NONE : caret.getFirstPosition();
+    }
+            
+    public DomPosition getLastPosition() {
+        return caret == null ? DomPosition.NONE : caret.getLastPosition();
+    }
+
+    public boolean isCaretReadOnlyRegion() {
+        return caret == null ? false : caret.isReadOnlyRegion();
+    }
+    
+    public boolean isCaretWithinEditableRegion(DomPosition domPosition) {
+        return caret == null ? false : caret.isWithinEditableRegion(domPosition);
+    }
+    
+    public boolean isCaretVisible() {
+        return caret == null ? false : caret.isVisible();
+    }
+    
+    public DomPosition getCaretDot() {
+        return caret == null ? DomPosition.NONE : caret.getDot();
+    }
+    
+    public DomPosition getCaretMark() {
+        return caret == null ? DomPosition.NONE : caret.getMark();
+    }
+    
+    public void createCaret() {
+        DesignerCaret dc = getUI().createCaret();
+        setCaret(dc);
+    }
+
+    public boolean removeNextChar() {
+        return caret == null ? false : caret.removeNextChar();
+    }
+    
+    public boolean removePreviousChar() {
+        return caret == null ? false : caret.removePreviousChar();
+    }
+
+    public void setCaretDot(DomPosition dot) {
+        if (caret != null) {
+            caret.setDot(dot);
+        }
+    }
+    
+    public void moveCaretDot(DomPosition dot) {
+        if (caret != null) {
+            caret.moveDot(dot);
+        }
+    }
+    
+    public void setCaretVisible(boolean visible) {
+        if (caret != null) {
+            caret.setVisible(visible);
+        }
+    }
+
+    public void paintCaret(Graphics g) {
+        if (caret != null) {
+            caret.paint(g);
+        }
+    }
+    
+    public void setCaretMagicPosition(Point magicPosition) {
+        if (caret != null) {
+            caret.setMagicCaretPosition(magicPosition);
+        }
+    }
+    
+    public Point getCaretMagicPosition() {
+        return caret == null ? null : caret.getMagicCaretPosition();
+    }
+    
+    // XXX Strange hack, consequence of messy InteractionManager.
+    public void mousePressed(MouseEvent evt) {
+        if (caret != null) {
+            caret.mousePressed(evt);
+        }
+    }
+    
+    // XXX Strange hack, consequence of messy InteractionManager.
+    public void mouseClicked(MouseEvent evt) {
+        if (caret != null) {
+            caret.mouseClicked(evt);
+        }
+    }
+    
+    // XXX Strange hack, consequence of messy InteractionManager.
+    public void mouseDragged(MouseEvent evt) {
+        if (caret != null) {
+            caret.mouseDragged(evt);
+        }
+    }
+    
+    // XXX Strange hack, consequence of messy InteractionManager.
+    public void mouseReleased(MouseEvent evt) {
+        if (caret != null) {
+            caret.mouseReleased(evt);
+        }
+    }
+
+    // XXX ?? Bad architecture.
+    public void caretDetachDom() {
+        if (caret != null) {
+            caret.detachDom();
+        }
+    }
 }

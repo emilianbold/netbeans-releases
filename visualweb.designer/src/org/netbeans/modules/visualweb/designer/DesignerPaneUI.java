@@ -63,7 +63,6 @@ import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 import org.netbeans.modules.visualweb.text.DesignerPaneBaseUI;
 
@@ -184,28 +183,29 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
             map.put(a.getValue(Action.NAME), a);
         }
     }
-    
-    /**
-     * Creates the object to use for a caret.  By default an
-     * instance of BasicCaret is created.  This method
-     * can be redefined to provide something else that implements
-     * the InputPosition interface or a subclass of JCaret.
-     *
-     * @return the caret object
-     */
-    protected DesignerCaret createCaret() {
-        DesignerCaret caret = new DesignerCaret();
-        
-        String prefix = getPropertyPrefix();
-        Object o = UIManager.get(prefix + ".caretBlinkRate");
-        
-        if ((o != null) && (o instanceof Integer)) {
-            Integer rate = (Integer)o;
-            caret.setBlinkRate(rate.intValue());
-        }
-        
-        return caret;
-    }
+
+    // XXX Moved to DesignerPaneBaseUI
+//    /**
+//     * Creates the object to use for a caret.  By default an
+//     * instance of BasicCaret is created.  This method
+//     * can be redefined to provide something else that implements
+//     * the InputPosition interface or a subclass of JCaret.
+//     *
+//     * @return the caret object
+//     */
+//    protected DesignerCaret createCaret() {
+//        DesignerCaret caret = new DesignerCaret();
+//        
+//        String prefix = getPropertyPrefix();
+//        Object o = UIManager.get(prefix + ".caretBlinkRate");
+//        
+//        if ((o != null) && (o instanceof Integer)) {
+//            Integer rate = (Integer)o;
+//            caret.setBlinkRate(rate.intValue());
+//        }
+//        
+//        return caret;
+//    }
     
     /**
      * Fetches the name of the keymap that will be installed/used
@@ -399,10 +399,11 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
         if (editor.getBorder() instanceof UIResource) {
             editor.setBorder(null);
         }
-        
-        if (editor.getCaret() instanceof UIResource) {
-            editor.setCaret(null);
-        }
+
+        // DesignerCaret is not UIResource instance.
+//        if (editor.getCaret() instanceof UIResource) {
+//            editor.setCaret(null);
+//        }
         
         if (editor.getTransferHandler() instanceof UIResource) {
             editor.setTransferHandler(null);
@@ -682,10 +683,13 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
         webform.getManager().paint(g2d);
         
         // paint the caret
-        DesignerCaret caret = editor.getCaret();
-        
-        if (caret != null) {
-            caret.paint(g);
+//        DesignerCaret caret = editor.getCaret();
+//        
+//        if (caret != null) {
+//            caret.paint(g);
+//        }
+        if (editor.hasCaret()) {
+            editor.paintCaret(g);
         }
         
         if (DesignerPane.DEBUG_REPAINT) {
@@ -1251,16 +1255,20 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
             if (super.isDragPossible(e)) {
                 DesignerPaneBase c = (DesignerPaneBase)this.getComponent(e);
                 
-                DesignerCaret caret = c.getCaret();
-                
-                if (caret == null) {
+//                DesignerCaret caret = c.getCaret();
+//                if (caret == null) {
+//                    return false;
+//                }
+                if (!c.hasCaret()) {
                     return false;
                 }
                 
 //                Position dot = caret.getDot();
 //                Position mark = caret.getMark();
-                DomPosition dot = caret.getDot();
-                DomPosition mark = caret.getMark();
+//                DomPosition dot = caret.getDot();
+//                DomPosition mark = caret.getMark();
+                DomPosition dot = c.getCaretDot();
+                DomPosition mark = c.getCaretMark();
                 
                 if (!dot.equals(mark)) {
                     Point p = new Point(e.getX(), e.getY());
@@ -1365,20 +1373,27 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
          */
         protected void saveComponentState(JComponent comp) {
             DesignerPaneBase c = (DesignerPaneBase)comp;
-            DesignerCaret caret = c.getCaret();
-            
-            if (caret != null) {
-                dot = caret.getDot();
-                mark = caret.getMark();
-                visible = caret.isVisible();
+//            DesignerCaret caret = c.getCaret();
+//            if (caret != null) {
+//                dot = caret.getDot();
+//                mark = caret.getMark();
+//                visible = caret.isVisible();
+//            }
+            if (c.hasCaret()) {
+                dot = c.getCaretPosition();
+                mark = c.getCaretMark();
+                visible = c.isCaretVisible();
             }
             
             // In grid mode, no visible caret
             // J1 HACK: TODO - look up mode from DesignerPane instance instead
             DesignerPane pane = (DesignerPane)comp;
             
-            if ((caret != null) && !pane.getWebForm().isGridMode()) {
-                caret.setVisible(true);
+//            if ((caret != null) && !pane.getWebForm().isGridMode()) {
+//                caret.setVisible(true);
+//            }
+            if (c.hasCaret() && !pane.getWebForm().isGridMode()) {
+                c.setCaretVisible(true);
             }
         }
         
@@ -1388,12 +1403,16 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
          */
         protected void restoreComponentState(JComponent comp) {
             DesignerPaneBase c = (DesignerPaneBase)comp;
-            DesignerCaret caret = c.getCaret();
-            
-            if (caret != null) {
-                caret.setDot(mark);
-                caret.moveDot(dot);
-                caret.setVisible(visible);
+//            DesignerCaret caret = c.getCaret();
+//            if (caret != null) {
+//                caret.setDot(mark);
+//                caret.moveDot(dot);
+//                caret.setVisible(visible);
+//            }
+            if (c.hasCaret()) {
+                c.setCaretDot(mark);
+                c.moveCaretDot(dot);
+                c.setCaretVisible(visible);
             }
         }
         
@@ -1403,10 +1422,12 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
          */
         protected void restoreComponentStateForDrop(JComponent comp) {
             DesignerPaneBase c = (DesignerPaneBase)comp;
-            DesignerCaret caret = c.getCaret();
-            
-            if (caret != null) {
-                caret.setVisible(visible);
+//            DesignerCaret caret = c.getCaret();
+//            if (caret != null) {
+//                caret.setVisible(visible);
+//            }
+            if (c.hasCaret()) {
+                c.setCaretVisible(visible);
             }
         }
     }

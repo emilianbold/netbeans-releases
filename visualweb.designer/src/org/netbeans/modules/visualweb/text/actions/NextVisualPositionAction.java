@@ -39,7 +39,6 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 import org.w3c.dom.Element;
 
@@ -71,9 +70,9 @@ public class NextVisualPositionAction extends TextAction {
         DesignerPaneBase target = getTextComponent(e);
 
         if (target != null) {
-            DesignerCaret caret = target.getCaret();
-
-            if (caret == null) {
+//            DesignerCaret caret = target.getCaret();
+//            if (caret == null) {
+            if (!target.hasCaret()) {
                 // No caret - no focus, no next visual position...
                 // Instead, we should move the selected components.
                 // When select is true, the shift key is pressed -
@@ -89,8 +88,10 @@ public class NextVisualPositionAction extends TextAction {
             }
 
 //            Position dot = caret.getDot();
-            DomPosition dot = caret.getDot();
-            Point magicPosition = caret.getMagicCaretPosition();
+//            DomPosition dot = caret.getDot();
+//            Point magicPosition = caret.getMagicCaretPosition();
+            DomPosition dot = target.getCaretDot();
+            Point magicPosition = target.getCaretMagicPosition();
 
             if ((magicPosition == null) &&
                     ((direction == SwingConstants.NORTH) || (direction == SwingConstants.SOUTH))) {
@@ -107,10 +108,12 @@ public class NextVisualPositionAction extends TextAction {
             dot = target.getUI().getNextVisualPositionFrom(target, dot, direction);
 
 //            if ((dot == Position.NONE) || !caret.isWithinEditableRegion(dot)) {
-            if ((dot == DomPosition.NONE) || !caret.isWithinEditableRegion(dot)) {
+//            if ((dot == DomPosition.NONE) || !caret.isWithinEditableRegion(dot)) {
+            if ((dot == DomPosition.NONE) || !target.isCaretWithinEditableRegion(dot)) {
                 // Can't move caret that way, but I should still clear the selection
                 // if any
-                caret.setDot(originalDot);
+//                caret.setDot(originalDot);
+                target.setCaretDot(originalDot);
 
                 UIManager.getLookAndFeel().provideErrorFeedback(target);
 
@@ -119,14 +122,17 @@ public class NextVisualPositionAction extends TextAction {
             }
 
             if (select) {
-                caret.moveDot(dot);
+//                caret.moveDot(dot);
+                target.moveCaretDot(dot);
             } else {
-                caret.setDot(dot);
+//                caret.setDot(dot);
+                target.setCaretDot(dot);
             }
 
             if ((magicPosition != null) &&
                     ((direction == SwingConstants.NORTH) || (direction == SwingConstants.SOUTH))) {
-                target.getCaret().setMagicCaretPosition(magicPosition);
+//                target.getCaret().setMagicCaretPosition(magicPosition);
+                target.setCaretMagicPosition(magicPosition);
             }
         }
     }

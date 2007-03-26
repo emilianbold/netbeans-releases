@@ -58,7 +58,6 @@ import org.netbeans.modules.visualweb.css2.ExternalDocumentBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.actions.DefaultKeyTypedAction;
 
 import org.openide.ErrorManager;
@@ -972,14 +971,16 @@ public class SelectionManager {
                             org.w3c.dom.Node text = findFirstTextChild(element);
 
                             if (text != null) {
-                                DesignerCaret dc = pane.getPaneUI().createCaret();
-                                pane.setCaret(dc);
+//                                DesignerCaret dc = pane.getPaneUI().createCaret();
+//                                pane.setCaret(dc);
+                                pane.createCaret();
 
 //                                Position newPos = new Position(text, 0, Bias.FORWARD);
 //                                Position newPos = Position.create(text, 0, Bias.FORWARD);
                                 DomPosition newPos = webform.createDomPosition(text, 0, Bias.FORWARD);
                                 
-                                pane.setCaretPosition(newPos);
+//                                pane.setCaretPosition(newPos);
+                                pane.setCaretDot(newPos);
 
 //                                Document doc = webform.getDocument();
 
@@ -992,7 +993,8 @@ public class SelectionManager {
 //                                            "InsertChar"));
 
                                     final String content = event.getActionCommand();
-                                    pane.getCaret().replaceSelection(content);
+//                                    pane.getCaret().replaceSelection(content);
+                                    pane.replaceSelection(content);
                                 } finally {
 //                                    doc.writeUnlock();
 //                                    webform.getModel().writeUnlock(undoEvent);
@@ -2203,9 +2205,12 @@ public class SelectionManager {
             start = DomPosition.NONE;
             end   = DomPosition.NONE;
         }
-        if(webform.getPane().getCaret() != null) {
-            webform.getPane().getCaret().setDot(start);
-            webform.getPane().getCaret().moveDot(end);
+//        if(webform.getPane().getCaret() != null) {
+        if(webform.getPane().hasCaret()) {
+//            webform.getPane().getCaret().setDot(start);
+//            webform.getPane().getCaret().moveDot(end);
+            webform.getPane().setCaretDot(start);
+            webform.getPane().moveCaretDot(end);
         }
     }
 

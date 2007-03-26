@@ -32,7 +32,6 @@ import javax.swing.UIManager;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.visualweb.designer.WebForm;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 
 
@@ -72,9 +71,9 @@ public class DeleteNextCharAction extends TextAction {
                 return;
             }
 
-            DesignerCaret caret = target.getCaret();
-
-            if (caret == null) {
+//            DesignerCaret caret = target.getCaret();
+//            if (caret == null) {
+            if (!target.hasCaret()) {
                 if (!webform.getSelection().isSelectionEmpty()) {
                     webform.getTopComponent().deleteSelection();
                 }
@@ -86,7 +85,8 @@ public class DeleteNextCharAction extends TextAction {
             HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
             try {
 //                doc.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-                beep = !caret.removeNextChar();
+//                beep = !caret.removeNextChar();
+                beep = !target.removeNextChar();
             } finally {
 //                doc.writeUnlock();
 //                webform.getModel().writeUnlock(undoEvent);

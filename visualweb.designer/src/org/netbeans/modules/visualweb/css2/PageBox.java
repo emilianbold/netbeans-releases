@@ -521,7 +521,8 @@ public class PageBox extends DocumentBox implements ChangeListener {
 
 //            if ((pane != null) &&
 //                    ((pane.getCaret() == null) || (pane.getCaretPosition() == Position.NONE))) {
-            if ((pane != null) && ((pane.getCaret() == null) || (pane.getCaretPosition() == DomPosition.NONE))) {
+//            if ((pane != null) && ((pane.getCaret() == null) || (pane.getCaretPosition() == DomPosition.NONE))) {
+            if ((pane != null) && (!pane.hasCaret() || (pane.getCaretDot() == DomPosition.NONE))) {
                 pane.showCaretAtBeginning();
             }
         }

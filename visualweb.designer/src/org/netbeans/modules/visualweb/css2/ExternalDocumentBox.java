@@ -107,10 +107,10 @@ public abstract class ExternalDocumentBox extends DocumentBox {
             cache.put(url, frameForm);
         }
 
-        // Set the cell renderer pane if necessary
-        if ((frameForm != null) && (frameForm.getRenderPane() == null)) {
-            frameForm.setRenderPane(webform.getRenderPane());
-        }
+//        // Set the cell renderer pane if necessary
+//        if ((frameForm != null) && (frameForm.getRenderPane() == null)) {
+//            frameForm.setRenderPane(webform.getRenderPane());
+//        }
 
         return frameForm;
     }

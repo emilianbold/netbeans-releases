@@ -30,7 +30,6 @@ import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.designer.InlineEditor;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 
 
@@ -76,9 +75,9 @@ public class EndWordAction extends TextAction {
                 return;
             }
 
-            DesignerCaret caret = target.getCaret();
-
-            if (!caret.isWithinEditableRegion(endPos)) {
+//            DesignerCaret caret = target.getCaret();
+//            if (!caret.isWithinEditableRegion(endPos)) {
+            if (!target.isCaretWithinEditableRegion(endPos)) {
                 InlineEditor editor = webform.getManager().getInlineEditor();
 
                 if (editor != null) {
@@ -87,9 +86,11 @@ public class EndWordAction extends TextAction {
             }
 
             if (select) {
-                target.moveCaretPosition(endPos);
+//                target.moveCaretPosition(endPos);
+                target.moveCaretDot(endPos);
             } else {
-                target.setCaretPosition(endPos);
+//                target.setCaretPosition(endPos);
+                target.setCaretDot(endPos);
             }
         }
     }

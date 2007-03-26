@@ -20,6 +20,7 @@ package org.netbeans.modules.visualweb.text;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import javax.swing.UIManager;
 
 import javax.swing.plaf.ComponentUI;
 
@@ -74,4 +75,36 @@ public abstract class DesignerPaneBaseUI extends ComponentUI {
 //    public abstract Position getNextVisualPositionFrom(DesignerPaneBase t, Position pos,
 //        int direction);
     public abstract DomPosition getNextVisualPositionFrom(DesignerPaneBase t, DomPosition pos, int direction);
+    
+    /**
+     * Fetches the name used as a key to lookup properties through the
+     * UIManager.  This is used as a prefix to all the standard
+     * text properties.
+     *
+     * @return the name ("EditorPane")
+     */
+    protected abstract String getPropertyPrefix();
+    
+    /**
+     * Creates the object to use for a caret.  By default an
+     * instance of BasicCaret is created.  This method
+     * can be redefined to provide something else that implements
+     * the InputPosition interface or a subclass of JCaret.
+     *
+     * @return the caret object
+     */
+    protected DesignerCaret createCaret() {
+        DesignerCaret caret = new DesignerCaret();
+        
+        String prefix = getPropertyPrefix();
+        Object o = UIManager.get(prefix + ".caretBlinkRate"); // NOI18N
+        
+        if ((o != null) && (o instanceof Integer)) {
+            Integer rate = (Integer)o;
+            caret.setBlinkRate(rate.intValue());
+        }
+        
+        return caret;
+    }
+    
 }

@@ -76,7 +76,7 @@ import org.w3c.dom.Node;
  * @author  Timothy Prinzing
  * @author  Tor Norbye
  */
-public class DesignerCaret extends Rectangle implements FocusListener, MouseListener,
+/*public*/ class DesignerCaret extends Rectangle implements FocusListener, MouseListener,
     MouseMotionListener {
     private static transient Action selectWord = null;
     private static transient Action selectLine = null;
@@ -1054,7 +1054,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
             Clipboard clip = getSystemSelection();
 
             if (clip != null) {
-                clip.setContents(new StringSelection(range.getText()), getClipboardOwner());
+                String rangeText = component.getWebForm().getDomDocument().getRangeText(range);
+                
+                clip.setContents(new StringSelection(rangeText), getClipboardOwner());
                 ownsSelection = true;
             }
         }
@@ -1189,9 +1191,35 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         return true;
     }
 
-    public void removeSelection() {
-        assert range != null;
-        range.deleteContents();
+    /*private*/ void removeSelection() {
+//        assert range != null;
+        if (range == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("Range is null.")); // NOI18N
+            return;
+        }
+//        range.deleteContents();
+        boolean success = component.getWebForm().getDomDocument().deleteRangeContents(range);
+        if (!success) {
+            // Read-only - can't edit!!
+//            UIManager.getLookAndFeel().provideErrorFeedback(webform.getPane());
+            UIManager.getLookAndFeel().provideErrorFeedback(component);
+        }
+    }
+    
+    String getSelectedText() {
+        if (range == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("Range is null.")); // NOI18N
+            return ""; // NOI18N
+        }
+//        return range.getText();
+        if (component == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("Component is null.")); // NOI18N
+            return ""; // NOI18N
+        }
+        return component.getWebForm().getDomDocument().getRangeText(range);
     }
 
     /**
@@ -1202,78 +1230,80 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         return (range != null) && !range.isEmpty();
     }
 
-    /** Return the text in the selection, if any (if not returns null).
-     * If the cut parameter is true, then the selection is deleted too.
-     */
-    public Transferable copySelection(boolean cut) {
-        if (hasSelection()) {
-            String text = range.getText();
-            assert text.length() > 0;
+    // XXX Moved to DesignerPaneBase.
+//    /** Return the text in the selection, if any (if not returns null).
+//     * If the cut parameter is true, then the selection is deleted too.
+//     */
+//    public Transferable copySelection(boolean cut) {
+//        if (hasSelection()) {
+//            String text = range.getText();
+//            assert text.length() > 0;
+//
+//            Transferable transferable = new StringSelection(text);
+//
+//            if (cut) {
+//                removeSelection();
+//            }
+//
+//            return transferable;
+//        } else {
+//            return new StringSelection("");
+//        }
+//    }
 
-            Transferable transferable = new StringSelection(text);
-
-            if (cut) {
-                removeSelection();
-            }
-
-            return transferable;
-        } else {
-            return new StringSelection("");
-        }
-    }
-
-    /**
-     * Replace the selection. Beep if within a read-only region.
-     */
-    public void replaceSelection(String content) {
-//        WebForm webform = component.getDocument().getWebForm();
-        WebForm webform = component.getWebForm();
-        
-        InlineEditor editor = webform.getManager().getInlineEditor();
-
-        if ((content.equals("\n") || content.equals("\r\n")) && // NOI18N
-                (editor != null) && !editor.isMultiLine()) {
-            // Commit
-            // Should I look to see if the Shift key is pressed, and if so let
-            // you insert a newline?
-            webform.getManager().finishInlineEditing(false);
-
-            return;
-        }
-
-        /*
-        if (range.isReadOnlyRegion()) {
-            UIManager.getLookAndFeel().provideErrorFeedback(component);
-            return;
-        }
-         */
-        if (hasSelection()) {
-            removeSelection();
-        }
-
-//        Position pos = getDot();
-        DomPosition pos = getDot();
-
-        if (editor == null) {
-//            assert (pos == Position.NONE) || !pos.isRendered();
-//            if (pos != Position.NONE && MarkupService.isRenderedNode(pos.getNode())) {
-            if (pos != DomPosition.NONE && MarkupService.isRenderedNode(pos.getNode())) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                        new IllegalStateException("Node is expected to be not rendered, node=" + pos.getNode())); // NOI18N
-            }
-        } // else: Stay in the DocumentFragment; don't jump to the source DOM (there is none)
-
-//        if (pos == Position.NONE) {
-        if (pos == DomPosition.NONE) {
-            UIManager.getLookAndFeel().provideErrorFeedback(component);
-
-            return;
-        }
-
-//        component.getDocument().insertString(this, pos, content);
-//        component.getDocument().insertString(pos, content);
-        component.getWebForm().getDomDocument().insertString(pos, content);
-    }
+    // XXX Moved to DesignerPaneBase.
+//    /**
+//     * Replace the selection. Beep if within a read-only region.
+//     */
+//    public void replaceSelection(String content) {
+////        WebForm webform = component.getDocument().getWebForm();
+//        WebForm webform = component.getWebForm();
+//        
+//        InlineEditor editor = webform.getManager().getInlineEditor();
+//
+//        if ((content.equals("\n") || content.equals("\r\n")) && // NOI18N
+//                (editor != null) && !editor.isMultiLine()) {
+//            // Commit
+//            // Should I look to see if the Shift key is pressed, and if so let
+//            // you insert a newline?
+//            webform.getManager().finishInlineEditing(false);
+//
+//            return;
+//        }
+//
+//        /*
+//        if (range.isReadOnlyRegion()) {
+//            UIManager.getLookAndFeel().provideErrorFeedback(component);
+//            return;
+//        }
+//         */
+//        if (hasSelection()) {
+//            removeSelection();
+//        }
+//
+////        Position pos = getDot();
+//        DomPosition pos = getDot();
+//
+//        if (editor == null) {
+////            assert (pos == Position.NONE) || !pos.isRendered();
+////            if (pos != Position.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+//            if (pos != DomPosition.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                        new IllegalStateException("Node is expected to be not rendered, node=" + pos.getNode())); // NOI18N
+//            }
+//        } // else: Stay in the DocumentFragment; don't jump to the source DOM (there is none)
+//
+////        if (pos == Position.NONE) {
+//        if (pos == DomPosition.NONE) {
+//            UIManager.getLookAndFeel().provideErrorFeedback(component);
+//
+//            return;
+//        }
+//
+////        component.getDocument().insertString(this, pos, content);
+////        component.getDocument().insertString(pos, content);
+//        component.getWebForm().getDomDocument().insertString(pos, content);
+//    }
 
     /**
      * @todo Check deletion back to first char in <body> !
@@ -1305,7 +1335,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         }
 
         range.setRange(dot.getNode(), dot.getOffset(), mark.getNode(), mark.getOffset());
-        range.deleteContents();
+//        range.deleteContents();
+        removeSelection();
 
         return true;
     }
@@ -1348,7 +1379,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
             System.out.println("BEFORE DELETION: " + org.netbeans.modules.visualweb.css2.FacesSupport.getHtmlStream(element));
         }
         */
-        range.deleteContents();
+//        range.deleteContents();
+        removeSelection();
 
         // XXX DEBUGGING ONLY
 

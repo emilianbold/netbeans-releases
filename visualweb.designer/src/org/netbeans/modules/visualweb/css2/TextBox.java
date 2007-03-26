@@ -29,7 +29,6 @@ import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 
 import org.openide.ErrorManager;
 
@@ -171,9 +170,9 @@ public final class TextBox extends CssBox {
         g.setFont(metrics.getFont());
 
         DesignerPane pane = webform.getPane();
-        DesignerCaret caret = (pane != null) ? pane.getCaret() : null;
-
-        if ((caret != null) && caret.hasSelection()) {
+//        DesignerCaret caret = (pane != null) ? pane.getCaret() : null;
+//        if ((caret != null) && caret.hasSelection()) {
+        if (pane != null && pane.hasCaretSelection()) {
             if (!paintSelectedText(g, px, py)) {
                 // No selection overlap or other failure - do normal painting
                 g.setColor(fg);
@@ -228,14 +227,25 @@ public final class TextBox extends CssBox {
             return false;
         }
         DesignerPane pane = webform.getPane();
-        assert pane != null;
+//        assert pane != null;
+        if (pane == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new NullPointerException("WebForm has null pane, webForm=" + webform)); // NOI18N
+            return false;
+        }
 
-        DesignerCaret caret = pane.getCaret();
-        assert (caret != null) && caret.hasSelection();
+//        DesignerCaret caret = pane.getCaret();
+//        assert (caret != null) && caret.hasSelection();
+        if (!pane.hasCaretSelection()) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("Pane doesn't have caret selection, pane=" + pane)); // NOI18N
+            return false;
+        }
 
         // Determine if the range intersects our line box group
 //        Position sourceCaretBegin = caret.getFirstPosition();
-        DomPosition sourceCaretBegin = caret.getFirstPosition();
+//        DomPosition sourceCaretBegin = caret.getFirstPosition();
+        DomPosition sourceCaretBegin = pane.getFirstPosition();
 
         // XXX I ought to have a cached method on the caret for obtaining the rendered
         // location!
@@ -243,7 +253,9 @@ public final class TextBox extends CssBox {
 //        Position sourceCaretEnd = caret.getLastPosition();
 //        Position caretEnd = sourceCaretEnd.getRenderedPosition();
         DomPosition caretBegin = sourceCaretBegin.getRenderedPosition();
-        DomPosition sourceCaretEnd = caret.getLastPosition();
+//        DomPosition sourceCaretEnd = caret.getLastPosition();
+        DomPosition sourceCaretEnd = pane.getLastPosition();
+        
         DomPosition caretEnd = sourceCaretEnd.getRenderedPosition();
         Node caretBeginNode = caretBegin.getNode();
 

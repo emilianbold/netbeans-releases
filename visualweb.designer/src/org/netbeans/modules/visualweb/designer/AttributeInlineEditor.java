@@ -46,7 +46,6 @@ import org.w3c.dom.events.EventTarget;
 
 import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 
 
 /**
@@ -265,9 +264,12 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         // caret to the end
         DesignerPane pane = webform.getPane();
 
-        if (pane.getCaret() == null) {
-            DesignerCaret dc = pane.getPaneUI().createCaret();
-            webform.getPane().setCaret(dc);
+//        if (pane.getCaret() == null) {
+//            DesignerCaret dc = pane.getPaneUI().createCaret();
+//            webform.getPane().setCaret(dc);
+//        }
+        if (!pane.hasCaret()) {
+            pane.createCaret();
         }
 
         Node n = null;
@@ -308,9 +310,10 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //                    fragment = FacesSupport.renderHtml(markupFile, bean, false);
 //                    fragment = InSyncService.getProvider().renderHtml(markupFile, bean);
 //                    fragment = webform.renderHtmlForMarkupDesignBean(bean);
-                    fragment = inlineEditorSupport.renderHtmlDomFragment();
-                    // XXX To get it into source document so it can work (Positions work only against source doc!).
-                    fragment = (DocumentFragment)webform.getJspDom().importNode(fragment, true);
+                    fragment = inlineEditorSupport.renderDomFragment();
+                    // XXX Moved into the impl (of the above method).
+//                    // XXX To get it into source document so it can work (Positions work only against source doc!).
+//                    fragment = (DocumentFragment)webform.getJspDom().importNode(fragment, true);
                     
                     // XXX FIXME Is this correct here?
                     webform.updateErrorsInComponent();
@@ -464,7 +467,9 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         if (specialValue != null) {
             // Show vb text in rendered view
             pane.select(begin, end);
-            pane.getCaret().replaceSelection(specialValue);
+//            pane.getCaret().replaceSelection(specialValue);
+            pane.replaceSelection(specialValue);
+            
             handled = true;
         }
 
@@ -477,11 +482,14 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
             if (value == null) {
                 // Shadow text -- replace it completely
                 pane.select(begin, end);
-                pane.getCaret().replaceSelection(initialEdit);
+//                pane.getCaret().replaceSelection(initialEdit);
+                pane.replaceSelection(initialEdit);
             } else {
                 // User has already entered a value - simply append
-                pane.setCaretPosition(end);
-                pane.getCaret().replaceSelection(initialEdit);
+//                pane.setCaretPosition(end);
+                pane.setCaretDot(end);
+//                pane.getCaret().replaceSelection(initialEdit);
+                pane.replaceSelection(initialEdit);
             }
         } else if (selectText) {
             pane.select(begin, end);
@@ -840,10 +848,13 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
     }
 
     public Transferable copyText(boolean cut) {
-        DesignerCaret caret = webform.getPane().getCaret();
-
-        if (caret != null) {
-            return caret.copySelection(cut);
+//        DesignerCaret caret = webform.getPane().getCaret();
+//        if (caret != null) {
+//            return caret.copySelection(cut);
+//        }
+        DesignerPane pane = webform.getPane();
+        if (pane.hasCaret()) {
+            return pane.copySelection(cut);
         }
 
         return null;

@@ -70,7 +70,6 @@ import org.netbeans.modules.visualweb.css2.LineBoxGroup;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.css2.TextBox;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 
 
 // For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
@@ -188,17 +187,20 @@ public class InteractionManager {
                 }
             }
 
-            DesignerCaret dc = pane.getCaret();
+//            DesignerCaret dc = pane.getCaret();
+            
 //            boolean showCaret = (box != null) || !webform.getDocument().isGridMode();
             boolean showCaret = (box != null) || !webform.isGridModeDocument();
 
-            if (showCaret == (dc != null)) {
+//            if (showCaret == (dc != null)) {
+            if (showCaret == pane.hasCaret()) {
                 return;
             }
 
             if (showCaret) {
-                dc = pane.getPaneUI().createCaret();
-                pane.setCaret(dc);
+//                dc = pane.getPaneUI().createCaret();
+//                pane.setCaret(dc);
+                pane.createCaret();
 
 //                Position pos = Position.NONE;
                 DomPosition pos = DomPosition.NONE;
@@ -231,16 +233,20 @@ public class InteractionManager {
                     }
                 }
 
-                pane.setCaretPosition(pos);
+//                pane.setCaretPosition(pos);
+                pane.setCaretDot(pos);
 
                 pane.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 
                 if (event != null) {
-                    dc.mousePressed(event);
-                    dc.mouseClicked(event);
+//                    dc.mousePressed(event);
+//                    dc.mouseClicked(event);
+                    pane.mousePressed(event);
+                    pane.mouseClicked(event);
                 }
 
-                dc.setVisible(true);
+//                dc.setVisible(true);
+                pane.setCaretVisible(true);
             } else {
                 pane.setCaret(null);
 
@@ -799,15 +805,20 @@ public class InteractionManager {
             // Update caret
 //            if (pos != Position.NONE) {
             if (pos != DomPosition.NONE) {
-                if (pane.getCaret() == null) {
-                    DesignerCaret dc = pane.getPaneUI().createCaret();
-                    pane.setCaret(dc);
+//                if (pane.getCaret() == null) {
+                if (!pane.hasCaret()) {
+//                    DesignerCaret dc = pane.getPaneUI().createCaret();
+//                    pane.setCaret(dc);
+                    pane.createCaret();
                 }
 
-                pane.getCaret().setVisible(true);
-                pane.setCaretPosition(pos);
+//                pane.getCaret().setVisible(true);
+                pane.setCaretVisible(true);
+//                pane.setCaretPosition(pos);
+                pane.setCaretDot(pos);
             } else {
-                if (pane.getCaret() != null) {
+//                if (pane.getCaret() != null) {
+                if (pane.hasCaret()) {
                     pane.setCaret(null);
                 }
             }
@@ -1338,7 +1349,7 @@ public class InteractionManager {
                 }
             }
 
-            DesignerCaret caret = pane.getCaret();
+//            DesignerCaret caret = pane.getCaret();
 //            ModelViewMapper mapper = webform.getMapper();
 
             if (inlineEditor != null) {
@@ -1346,12 +1357,14 @@ public class InteractionManager {
             }
 
 //            if (!paletteItemSelected && (inlineEditor != null) && (caret != null)
-            if (!isCnCInProgress() && (inlineEditor != null) && (caret != null)
+//            if (!isCnCInProgress() && (inlineEditor != null) && (caret != null)
+            if (!isCnCInProgress() && (inlineEditor != null) && (pane.hasCaret())
 //            && inlineEditor.isEdited(mapper.findBox(e.getX(), e.getY()))
             && inlineEditor.isEdited(ModelViewMapper.findBox(pane.getPageBox(), e.getX(), e.getY()))
             /* && !MouseUtils_RAVE.isDoubleClick(e)*/) {
                 // Reroute the mouse press to the insert box
-                caret.mouseClicked(e);
+//                caret.mouseClicked(e);
+                pane.mouseClicked(e);
 
                 return;
             }
@@ -1377,11 +1390,13 @@ public class InteractionManager {
             }
 
 //            if (!paletteItemSelected && (insertModeBox != null) && (caret != null)
-            if (!isCnCInProgress() && (insertModeBox != null) && (caret != null) 
+//            if (!isCnCInProgress() && (insertModeBox != null) && (caret != null) 
+            if (!isCnCInProgress() && (insertModeBox != null) && pane.hasCaret() 
 //            && isInside(insertModeBox, e) && !MouseUtils_RAVE.isDoubleClick(e)) {
             && isInside(insertModeBox, e) && !MouseUtils.isDoubleClick(e)) {
                 // Reroute the mouse press to the insert box
-                caret.mouseClicked(e);
+//                caret.mouseClicked(e);
+                pane.mouseClicked(e);
 
                 if ((inlineEditor == null) && isBoxSelected && !dontCycleInClickHandler) {
                     if (box.getBoxType() == BoxType.TEXT) {
@@ -1397,8 +1412,10 @@ public class InteractionManager {
 
                 return;
 //            } else if (!webform.getDocument().isGridMode() && (caret != null)) {
-            } else if (!webform.isGridModeDocument() && (caret != null)) {
-                caret.mouseClicked(e);
+//            } else if (!webform.isGridModeDocument() && (caret != null)) {
+            } else if (!webform.isGridModeDocument() && pane.hasCaret()) {
+//                caret.mouseClicked(e);
+                pane.mouseClicked(e);
 
                 // fall through
             }
@@ -1600,16 +1617,20 @@ public class InteractionManager {
             }
 
             DesignerPane pane = webform.getPane();
-            DesignerCaret caret = pane.getCaret();
+//            DesignerCaret caret = pane.getCaret();
+            
 //            ModelViewMapper mapper = webform.getMapper();
 
 //            if (!paletteItemSelected && (inlineEditor != null) && (caret != null)) {
-            if (!isCnCInProgress() && (inlineEditor != null) && (caret != null)) {
-                caret.mouseDragged(e);
+//            if (!isCnCInProgress() && (inlineEditor != null) && (caret != null)) {
+            if (!isCnCInProgress() && (inlineEditor != null) && pane.hasCaret()) {
+//                caret.mouseDragged(e);
+                pane.mouseDragged(e);
 
                 return;
 //            } else if (!paletteItemSelected && (insertModeBox != null) && (caret != null)
-            } else if (!isCnCInProgress() && (insertModeBox != null) && (caret != null)
+//            } else if (!isCnCInProgress() && (insertModeBox != null) && (caret != null)
+            } else if (!isCnCInProgress() && (insertModeBox != null) && pane.hasCaret()
             && isInside(insertModeBox, e)) {
 //                CssBox selBox = mapper.findBox(e.getX(), e.getY());
                 CssBox selBox = ModelViewMapper.findBox(pane.getPageBox(), e.getX(), e.getY());
@@ -1618,15 +1639,18 @@ public class InteractionManager {
 //                if (CssBox.getMarkupDesignBeanForCssBox(selBox) == null) {
                 if (CssBox.getElementForComponentRootCssBox(selBox) == null) {
                     // Reroute the mouse press to the insert box
-                    caret.mouseDragged(e);
+//                    caret.mouseDragged(e);
+                    pane.mouseDragged(e);
 
                     return;
                 } // else fall through: over something like a button in the insert box: let it
 
                 // be selected in the normal way
 //            } else if (!webform.getDocument().isGridMode() && (caret != null)) {
-            } else if (!webform.isGridModeDocument() && (caret != null)) {
-                caret.mouseDragged(e);
+//            } else if (!webform.isGridModeDocument() && (caret != null)) {
+            } else if (!webform.isGridModeDocument() && pane.hasCaret()) {
+//                caret.mouseDragged(e);
+                pane.mouseDragged(e);
 
                 // fall through
             }
@@ -1715,26 +1739,30 @@ public class InteractionManager {
                 }
             }
 
-            DesignerCaret caret = pane.getCaret();
+//            DesignerCaret caret = pane.getCaret();
 
 //            if (!paletteItemSelected && (inlineEditor != null) && (caret != null)) {
-            if (!isCnCInProgress() && (inlineEditor != null) && (caret != null)) {
+//            if (!isCnCInProgress() && (inlineEditor != null) && (caret != null)) {
+            if (!isCnCInProgress() && (inlineEditor != null) && pane.hasCaret()) {
 //                if (((selBox.getDesignBean() == null) || (selBox == pageBox)) &&
 //                if (((CssBox.getMarkupDesignBeanForCssBox(selBox) == null) || (selBox == pageBox)) &&
                 if (((CssBox.getElementForComponentRootCssBox(selBox) == null) || (selBox == pageBox)) &&
                         inlineEditor.isEdited(selBox)) {
                     // Reroute the mouse press to the insert box
-                    caret.mousePressed(e);
+//                    caret.mousePressed(e);
+                    pane.mousePressed(e);
 
                     //return;
                 } // else fall through: over something like a button in the insert box: let it
 
                 // be selected in the normal way
 //            } else if (!paletteItemSelected && (insertModeBox != null) && (caret != null)
-            } else if (!isCnCInProgress() && (insertModeBox != null) && (caret != null)
+//            } else if (!isCnCInProgress() && (insertModeBox != null) && (caret != null)
+            } else if (!isCnCInProgress() && (insertModeBox != null) && pane.hasCaret()
             && isInside(insertModeBox, e)) {
                 // Reroute the mouse press to the insert box
-                caret.mousePressed(e);
+//                caret.mousePressed(e);
+                pane.mousePressed(e);
 
                 //return;
                 // else fall through: over something like a button in the insert box: let it
@@ -1742,12 +1770,16 @@ public class InteractionManager {
 //            } else if (!paletteItemSelected && !webform.getDocument().isGridMode()) {
 //            } else if (!paletteItemSelected && !webform.isGridModeDocument()) {
             } else if (!isCnCInProgress() && !webform.isGridModeDocument()) {
-                if (caret == null) {
-                    caret = pane.getPaneUI().createCaret();
-                    pane.setCaret(caret);
+//                if (caret == null) {
+//                    caret = pane.getPaneUI().createCaret();
+//                    pane.setCaret(caret);
+//                }
+                if (!pane.hasCaret()) {
+                    pane.createCaret();
                 }
 
-                caret.mousePressed(e);
+//                caret.mousePressed(e);
+                pane.mousePressed(e);
 
                 // fall through
             }
@@ -2270,11 +2302,12 @@ public class InteractionManager {
         */
         public void mouseReleased(MouseEvent e) {
             DesignerPane pane = webform.getPane();
-            DesignerCaret caret = pane.getCaret();
+//            DesignerCaret caret = pane.getCaret();
 //            ModelViewMapper mapper = webform.getMapper();
 
 //            if (!paletteItemSelected && (inlineEditor != null) && (caret != null)) {
-            if (!isCnCInProgress() && (inlineEditor != null) && (caret != null)) {
+//            if (!isCnCInProgress() && (inlineEditor != null) && (caret != null)) {
+            if (!isCnCInProgress() && (inlineEditor != null) && pane.hasCaret()) {
 //                CssBox selBox = mapper.findBox(e.getX(), e.getY());
                 CssBox selBox = ModelViewMapper.findBox(pane.getPageBox(), e.getX(), e.getY());
 
@@ -2282,14 +2315,16 @@ public class InteractionManager {
 //                if ((CssBox.getMarkupDesignBeanForCssBox(selBox) == null) && inlineEditor.isEdited(selBox)) {
                 if ((CssBox.getElementForComponentRootCssBox(selBox) == null) && inlineEditor.isEdited(selBox)) {
                     // Reroute the mouse press to the insert box
-                    caret.mouseReleased(e);
+//                    caret.mouseReleased(e);
+                    pane.mouseReleased(e);
 
                     //return;
                 } // else fall through: over something like a button in the insert box: let it
 
                 // be selected in the normal way
 //            } else if (!paletteItemSelected && (insertModeBox != null) && (caret != null)
-            } else if (!isCnCInProgress() && (insertModeBox != null) && (caret != null)
+//            } else if (!isCnCInProgress() && (insertModeBox != null) && (caret != null)
+            } else if (!isCnCInProgress() && (insertModeBox != null) && pane.hasCaret()
             && isInside(insertModeBox, e)) {
 //                CssBox selBox = mapper.findBox(e.getX(), e.getY());
                 CssBox selBox = ModelViewMapper.findBox(pane.getPageBox(), e.getX(), e.getY());
@@ -2298,15 +2333,18 @@ public class InteractionManager {
 //                if (CssBox.getMarkupDesignBeanForCssBox(selBox) == null) {
                 if (CssBox.getElementForComponentRootCssBox(selBox) == null) {
                     // Reroute the mouse press to the insert box
-                    caret.mouseReleased(e);
+//                    caret.mouseReleased(e);
+                    pane.mouseReleased(e);
 
                     //return;
                 } // else fall through: over something like a button in the insert box: let it
 
                 // be selected in the normal way
 //            } else if (!webform.getDocument().isGridMode() && (caret != null)) {
-            } else if (!webform.isGridModeDocument() && (caret != null)) {
-                caret.mouseReleased(e);
+//            } else if (!webform.isGridModeDocument() && (caret != null)) {
+            } else if (!webform.isGridModeDocument() && pane.hasCaret()) {
+//                caret.mouseReleased(e);
+                pane.mouseReleased(e);
 
                 // fall through
             }

@@ -125,7 +125,9 @@ public class WebForm implements Designer {
     private boolean gridMode = false;
 //    private ModelViewMapper mapper;
 //    private CssLookup css;
-    private CellRendererPane rendererPane;
+    
+    private final CellRendererPane rendererPane = new CellRendererPane();
+    
 //    private DocumentFragment html;
 //    private DomSynchronizer domSyncer;
 //    private RaveElement body;
@@ -1050,9 +1052,9 @@ public class WebForm implements Designer {
         return rendererPane;
     }
 
-    public void setRenderPane(CellRendererPane rendererPane) {
-        this.rendererPane = rendererPane;
-    }
+//    public void setRenderPane(CellRendererPane rendererPane) {
+//        this.rendererPane = rendererPane;
+//    }
 
 //    /** Return the virtual forms support associated with this webform */
 //    public VirtualFormSupport getVirtualFormSupport() {
@@ -1365,8 +1367,11 @@ public class WebForm implements Designer {
         DesignerPane pane = getPane();
 
         if (pane != null) {
-            if (pane.getCaret() != null) {
-                pane.getCaret().detachDom();
+//            if (pane.getCaret() != null) {
+//                pane.getCaret().detachDom();
+            if (pane.hasCaret()) {
+                pane.caretDetachDom();
+
                 //pane.setCaret(null);
             }
             //                pane.showCaretAtBeginning();

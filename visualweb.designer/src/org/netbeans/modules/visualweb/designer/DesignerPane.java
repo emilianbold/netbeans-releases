@@ -66,7 +66,6 @@ import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 
 
 //import javax.swing.plaf.basic.BasicGraphicsUtils;
@@ -155,9 +154,10 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
         */
         setBorder(new EmptyBorder(0, 0, 0, 0));
 
-        CellRendererPane rendererPane = new CellRendererPane();
+//        CellRendererPane rendererPane = new CellRendererPane();
+        CellRendererPane rendererPane = webform.getRenderPane();
         add(rendererPane);
-        webform.setRenderPane(rendererPane);
+//        webform.setRenderPane(rendererPane);
 
         // Set listener.
         DesignerSettings settings = DesignerSettings.getInstance();
@@ -373,9 +373,10 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
         select(pos, pos);
 
         if (on) {
-            if (getCaret() != null) {
-                setCaret(null);
-            }
+//            if (getCaret() != null) {
+//                setCaret(null);
+//            }
+            hideCaret();
         } else {
             showCaretAtBeginning();
         }
@@ -435,9 +436,10 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
     }
 
     public void hideCaret() {
-        DesignerCaret dc = getCaret();
+//        DesignerCaret dc = getCaret();
 
-        if (dc != null) {
+//        if (dc != null) {
+        if (hasCaret()) {
             setCaret(null);
         }
     }
@@ -451,12 +453,16 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
             return;
         }
 
-        if (getCaret() == null) {
-            DesignerCaret dc = getPaneUI().createCaret();
-            setCaret(dc);
+//        if (getCaret() == null) {
+//            DesignerCaret dc = getPaneUI().createCaret();
+//            setCaret(dc);
+//        }
+        if (!hasCaret()) {
+            createCaret();
         }
 
-        setCaretPosition(dot);
+//        setCaretPosition(dot);
+        setCaretDot(dot);
     }
 
     /*

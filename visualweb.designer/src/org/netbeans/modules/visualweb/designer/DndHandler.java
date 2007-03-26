@@ -37,7 +37,6 @@ import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.CssBox;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -272,8 +271,10 @@ public class DndHandler /*extends TransferHandler*/ {
                 }
 
                 // XXX Flowlayout mode?
-                if (webform.getPane().getCaret() != null) {
-                    webform.getPane().getCaret().replaceSelection((String)transferData);
+//                if (webform.getPane().getCaret() != null) {
+                if (webform.getPane().hasCaret()) {
+//                    webform.getPane().getCaret().replaceSelection((String)transferData);
+                    webform.getPane().replaceSelection((String)transferData);
                     return true;
                 }
                 
@@ -1257,14 +1258,18 @@ public class DndHandler /*extends TransferHandler*/ {
 
 //    private Position computeDocumentPosition(Point canvasPos, Position documentPos) {
     private DomPosition computeDocumentPosition(Point canvasPos, DomPosition documentPos) {
-        if (canvasPos == null && documentPos == null && webform.getPane().getCaret() != null) {
+//        if (canvasPos == null && documentPos == null && webform.getPane().getCaret() != null) {
+        if (canvasPos == null && documentPos == null && webform.getPane().hasCaret()) {
             // The user is trying to insert a component without
             // dropping in a particular location; use the caret
             // position
-            DesignerCaret caret = webform.getPane().getCaret();
-
-            if (!caret.isReadOnlyRegion()) {
-                documentPos = caret.getDot();
+//            DesignerCaret caret = webform.getPane().getCaret();
+//            if (!caret.isReadOnlyRegion()) {
+//                documentPos = caret.getDot();
+//            }
+            DesignerPane pane = webform.getPane();
+            if (!pane.isCaretReadOnlyRegion()) {
+                documentPos = pane.getCaretPosition();
             }
         }
         

@@ -32,7 +32,6 @@ import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.designer.InlineEditor;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 
 
@@ -77,9 +76,9 @@ public class BeginLineAction extends TextAction {
 
 //            if (begPos != Position.NONE) {
             if (begPos != DomPosition.NONE) {
-                DesignerCaret caret = target.getCaret();
-
-                if (!caret.isWithinEditableRegion(begPos)) {
+//                DesignerCaret caret = target.getCaret();
+//                if (!caret.isWithinEditableRegion(begPos)) {
+                if (!target.isCaretWithinEditableRegion(begPos)) {
                     InlineEditor editor = webform.getManager().getInlineEditor();
 
                     if (editor != null) {
@@ -88,9 +87,11 @@ public class BeginLineAction extends TextAction {
                 }
 
                 if (select) {
-                    target.moveCaretPosition(begPos);
+//                    target.moveCaretPosition(begPos);
+                    target.moveCaretDot(begPos);
                 } else {
-                    target.setCaretPosition(begPos);
+//                    target.setCaretPosition(begPos);
+                    target.setCaretDot(begPos);
                 }
 
                 return;
