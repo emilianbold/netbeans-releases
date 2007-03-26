@@ -48,8 +48,8 @@ Microsystems, Inc. All Rights Reserved.
                 <binary-origin>../external/swdp/jdom-1.0.jar</binary-origin>
             </class-path-extension>
             <friend-packages>
-                <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
+                <friend>org.netbeans.modules.websvc.restapi</friend>
                 <package>com.sun.localization</package>
                 <package>com.sun.research.ws.wadl</package>
                 <package>com.sun.research.ws.wadl.util</package>
@@ -58,13 +58,8 @@ Microsystems, Inc. All Rights Reserved.
                 <package>com.sun.ws.rest.annotation</package>
                 <package>com.sun.ws.rest.annotation.apt</package>
                 <package>com.sun.ws.rest.api</package>
-                <package>com.sun.ws.rest.api.container.httpserver</package>
-                <package>com.sun.ws.rest.api.container.jaxws</package>
                 <package>com.sun.ws.rest.api.core</package>
                 <package>com.sun.ws.rest.api.representation</package>
-                <package>com.sun.ws.rest.spi.httpserver</package>
-                <package>com.sun.ws.rest.spi.invoker</package>
-                <package>com.sun.ws.rest.spi.representation.provider</package>
                 <package>com.sun.ws.rest.spi.resolver</package>
                 <package>com.sun.ws.rest.spi.service</package>
                 <package>com.sun.ws.rest.tools</package>
