@@ -66,7 +66,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     }
     
     public Set extend(WebModule webModule) {
-        FileObject fileObject = webModule.getDocumentBase();Project project = FileOwnerQuery.getOwner(fileObject);
+        FileObject fileObject = webModule.getDocumentBase();
+        Project project = FileOwnerQuery.getOwner(fileObject);
         
         try {
             FileObject dd = webModule.getDeploymentDescriptor();
