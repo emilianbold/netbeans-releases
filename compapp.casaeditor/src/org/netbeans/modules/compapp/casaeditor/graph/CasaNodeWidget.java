@@ -55,7 +55,7 @@ public abstract class CasaNodeWidget extends Widget {
     
     
     public Rectangle getEntireBounds() {
-        return getBounds();
+        return new Rectangle(getLocation(), getBounds().getSize());
     }
     
     public void persistLocation() {
