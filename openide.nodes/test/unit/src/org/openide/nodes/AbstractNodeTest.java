@@ -45,8 +45,8 @@ public class AbstractNodeTest extends TestCase {
         an.addNodeListener(lst);
         
         // default icons
-        Image def = getImage("org/openide/nodes/defaultNode.gif");
-        Image def32 = getImage("org/openide/nodes/defaultNode32.gif");
+        Image def = getImage("org/openide/nodes/defaultNode.png");
+        Image def32 = getImage("org/openide/nodes/defaultNode32.png");
         
         // PNGs, Open32 is missing
         Image aPng = getImage("org/openide/nodes/data/a.png");
