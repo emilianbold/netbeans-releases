@@ -316,6 +316,7 @@ public class TargetLister {
                 }
                 Element el = (Element)n;
                 String elName = el.getLocalName();
+                assert elName != null : "#76349: null localName from " + el;
                 String fullname = elName;
                 // Check for a macro definition.
                 // XXX Does not handle <customize>.
