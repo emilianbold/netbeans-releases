@@ -19,7 +19,6 @@
 package org.netbeans.modules.localhistory.ui.revert;
 import java.io.File;
 import java.util.Set;
-import org.netbeans.modules.localhistory.ui.revert.RevertChanges;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.LifecycleManager;
 import org.openide.nodes.Node;
@@ -57,7 +56,7 @@ public class RevertToAction extends NodeAction {
         final Set<File> rootSet = ctx.getRootFiles();        
         File[] roots = rootSet.toArray(new File[rootSet.size()]);
 
-        RevertChanges revertChanges = new RevertFileChanges();
+        RevertFileChanges revertChanges = new RevertFileChanges();
         /* if(roots[0].isFile())  {
             revertChanges = new RevertFileChanges();
         } else {

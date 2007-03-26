@@ -18,29 +18,56 @@
  */
 package org.netbeans.modules.localhistory.ui.revert;
 
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 import org.netbeans.modules.localhistory.LocalHistorySettings;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.localhistory.ui.view.LocalHistoryFileView;
 import org.netbeans.modules.localhistory.utils.Utils;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class RevertFileChanges extends RevertChanges implements PropertyChangeListener {
+public class RevertFileChanges implements PropertyChangeListener {
            
-    void show(File root) {
-                                
-        long ts = LocalHistorySettings.getInstance().getLastSelectedEntry(root);
-        LocalHistoryFileView view = new LocalHistoryFileView (new File[] {root}, ts);                                
-        view.getPanel().setPreferredSize(new Dimension(550, 250));
-        if(show(view.getPanel())) {            
+    private LocalHistoryFileView view;
+    private DialogDescriptor dialogDescriptor;
+    private JButton okButton;
+    
+    RevertFileChanges () {
+        view = new LocalHistoryFileView();                                
+        view.getPanel().setPreferredSize(new Dimension(550, 250));        
+        
+        okButton = new JButton(NbBundle.getMessage(this.getClass(), "CTL_Revert"));// XXX
+        okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(this.getClass(), "CTL_Revert"));// XXX
+        JButton cancelButton = new JButton(NbBundle.getMessage(this.getClass(), "CTL_Cancel"));// XXX
+        cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(this.getClass(), "CTL_Cancel"));    // XXX
+        
+        dialogDescriptor = new DialogDescriptor (view.getPanel(), NbBundle.getMessage(this.getClass(), "LBL_RevertToAction")); // XXX
+        dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});                         
+        dialogDescriptor.setModal(true);
+        dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));        
+        
+        view.getExplorerManager().addPropertyChangeListener(this);
+    }        
+    
+    void show(File root) {                                
+        long ts = LocalHistorySettings.getInstance().getLastSelectedEntry(root);        
+        view.refresh(new File[] {root}, ts);                
+        if(show()) {            
             StoreEntry[] entries = view.getSelectedEntries();
             if(entries != null && entries.length > 0) {
                 revert(entries[0]); 
@@ -48,6 +75,14 @@ public class RevertFileChanges extends RevertChanges implements PropertyChangeLi
             }            
         }        
     }
+
+    protected boolean show() {                
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
+        dialog.getAccessibleContext().setAccessibleDescription("LBL_RevertToAction"); // XXX
+        dialog.setVisible(true);                
+                        
+        return dialogDescriptor.getValue() == okButton;
+    }        
     
     private void revert(final StoreEntry entry) {
         RequestProcessor.getDefault().post(new Runnable() {
@@ -57,8 +92,11 @@ public class RevertFileChanges extends RevertChanges implements PropertyChangeLi
         });
     }        
 
-    public void propertyChange(PropertyChangeEvent evt) {        
-        setValid(isEnabled((Node[])evt.getNewValue()));        
+    public void propertyChange(PropertyChangeEvent evt) {  
+        if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {  
+            Node[] nodes = (Node[]) evt.getNewValue();
+            okButton.setEnabled(isEnabled(nodes));        
+        }
     }   
     
     private boolean isEnabled(Node[] nodes) {
@@ -72,5 +110,6 @@ public class RevertFileChanges extends RevertChanges implements PropertyChangeLi
             }            
         }
         return true; 
-    }    
-}
+    }      
+ 
+}    

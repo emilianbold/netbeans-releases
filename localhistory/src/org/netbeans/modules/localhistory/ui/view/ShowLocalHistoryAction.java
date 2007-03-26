@@ -56,10 +56,10 @@ public class ShowLocalHistoryAction extends NodeAction {
                 tc.open();
                 tc.requestActive();                                
 
-                File[] files = rootSet.toArray(new File[rootSet.size()]);
+                File[] files = rootSet.toArray(new File[rootSet.size()]);                
                 if(files[0].isFile()) {
                     // XXX hm 
-                    LocalHistoryFileView fileView = new LocalHistoryFileView(files);                
+                    LocalHistoryFileView fileView = new LocalHistoryFileView();                
                     LocalHistoryDiffView diffView = new LocalHistoryDiffView(); 
                     fileView.getExplorerManager().addPropertyChangeListener(diffView); 
                     fileView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
@@ -70,6 +70,7 @@ public class ShowLocalHistoryAction extends NodeAction {
                         } 
                     });
                     tc.init(diffView.getPanel(), fileView);
+                    fileView.refresh(files);
                 } 
             }
         });

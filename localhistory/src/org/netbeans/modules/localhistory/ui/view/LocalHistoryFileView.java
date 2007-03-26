@@ -58,18 +58,21 @@ public class LocalHistoryFileView implements PropertyChangeListener {
         
     private RequestProcessor.Task refreshTask;        
     private RefreshTable refreshTable;
-
-    public LocalHistoryFileView(File[] files) {                       
-        this(files, -1);
-    }    
     
-    public LocalHistoryFileView(File[] files, long toSelect) {                       
+    public LocalHistoryFileView() {                       
         tablePanel = new FileTablePanel();        
-        LocalHistory.getInstance().getLocalHistoryStore().addPropertyChangeListener(this); // XXX remove listener
-        this.files = files;                        
-        refreshTablePanel(toSelect);                                                               
+        LocalHistory.getInstance().getLocalHistoryStore().addPropertyChangeListener(this); // XXX remove listener                                                
     }            
-        
+
+    public void refresh(File[] files) {
+        refresh(files, -1);
+    }
+    
+    public void refresh(File[] files, long toSelect) {
+        this.files = files;                        
+        refreshTablePanel(toSelect);                       
+    }
+    
     public void propertyChange(PropertyChangeEvent evt) {
         if(LocalHistoryStore.PROPERTY_CHANGED.equals(evt.getPropertyName())) {
             storeChanged(evt);
