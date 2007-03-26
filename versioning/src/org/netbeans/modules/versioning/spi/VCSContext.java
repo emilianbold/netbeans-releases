@@ -51,7 +51,7 @@ public final class VCSContext {
     /**
      * Caching of current context for performance reasons, also see #72006.
      */
-    private static VCSContext  contextCached;    
+    private static Reference<VCSContext>  contextCached = new WeakReference<VCSContext>(null);    
     private static Reference<Node[]> contextNodesCached = new WeakReference<Node []>(null); 
 
     private final Node []   nodes;
@@ -92,7 +92,10 @@ public final class VCSContext {
      * @return VCSContext containing nodes and corresponding files they represent
      */
     public synchronized static VCSContext forNodes(Node[] nodes) {
-        if (Arrays.equals(contextNodesCached.get(), nodes)) return contextCached;
+        if (Arrays.equals(contextNodesCached.get(), nodes)) {
+            VCSContext ctx = contextCached.get();
+            if (ctx != null) return ctx;
+        }
         Set<File> files = new HashSet<File>(nodes.length);
         Set<File> rootFiles = new HashSet<File>(nodes.length);
         Set<File> rootFileExclusions = new HashSet<File>(5);
@@ -112,9 +115,10 @@ public final class VCSContext {
             addFileObjects(node, files, rootFiles);
         }
         
-        contextCached = new VCSContext(nodes, rootFiles, rootFileExclusions);
+        VCSContext ctx = new VCSContext(nodes, rootFiles, rootFileExclusions);
+        contextCached = new WeakReference<VCSContext>(ctx);
         contextNodesCached = new WeakReference<Node []>(nodes);
-        return contextCached;
+        return ctx;
     }
     
     /**
