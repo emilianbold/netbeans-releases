@@ -57,7 +57,7 @@ import org.openide.util.actions.Presenter.Popup;
  */
 public class NewFile extends ProjectAction implements PropertyChangeListener, Popup, PopupMenuListener {
 
-    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newFile.gif" ) ); //NOI18N        
+    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newFile.png" ) ); //NOI18N        
     private static final String NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Name" ); // NI18N
     private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Tooltip" ); // NI18N
     private static final String POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_PopupName" ); // NOI18N
@@ -72,7 +72,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     
     public NewFile( Lookup context ) {
         super( (String)null, NAME, ICON, context ); //NOI18N    
-        putValue("iconBase","org/netbeans/modules/project/ui/resources/newFile.gif"); //NOI18N
+        putValue("iconBase","org/netbeans/modules/project/ui/resources/newFile.png"); //NOI18N
         putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
         OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         refresh( getLookup() );

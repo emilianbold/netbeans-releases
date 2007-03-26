@@ -45,7 +45,7 @@ import org.openide.util.Utilities;
 
 public class NewProject extends BasicAction {
         
-    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newProject.gif" ) ); //NOI18N    
+    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newProject.png" ) ); //NOI18N    
     private static final String NAME = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Name" ); // NOI18N
     private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Tooltip" ); // NOI18N
     
@@ -55,7 +55,7 @@ public class NewProject extends BasicAction {
 
     public NewProject() {
         super( NAME, ICON );
-        putValue("iconBase","org/netbeans/modules/project/ui/resources/newProject.gif"); //NOI18N
+        putValue("iconBase","org/netbeans/modules/project/ui/resources/newProject.png"); //NOI18N
         putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
         bodyTask = new RequestProcessor( "NewProjectBody" ).create( new Runnable () { // NOI18N
             public void run () {

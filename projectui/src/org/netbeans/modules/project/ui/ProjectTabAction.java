@@ -26,8 +26,8 @@ import org.openide.windows.TopComponent;
 
 public class ProjectTabAction extends AbstractAction {
 
-    private static final String ICON1 = "org/netbeans/modules/project/ui/resources/projectTab.gif"; //NOI18N
-    private static final String ICON2 = "org/netbeans/modules/project/ui/resources/filesTab.gif"; //NOI18N
+    private static final String ICON1 = "org/netbeans/modules/project/ui/resources/projectTab.png"; //NOI18N
+    private static final String ICON2 = "org/netbeans/modules/project/ui/resources/filesTab.png"; //NOI18N
     
     private static final String PHYSICAL_NAME = NbBundle.getMessage( ProjectTabAction.class, "LBL_ProjectsPhysicalTabAction_Name" ); // NOI18N
     private static final String LOGICAL_NAME = NbBundle.getMessage( ProjectTabAction.class, "LBL_ProjectsLogicalTabAction_Name" ); // NOI18N

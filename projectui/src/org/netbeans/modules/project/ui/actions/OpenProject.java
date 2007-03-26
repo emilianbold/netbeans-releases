@@ -50,8 +50,8 @@ public class OpenProject extends BasicAction {
         
     /** Creates a new instance of BrowserAction */
     public OpenProject() {
-        super( NAME, new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/openProject.gif" ) ) );
-        putValue("iconBase","org/netbeans/modules/project/ui/resources/openProject.gif"); //NOI18N
+        super( NAME, new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/openProject.png" ) ) );
+        putValue("iconBase","org/netbeans/modules/project/ui/resources/openProject.png"); //NOI18N
         putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
     }
 

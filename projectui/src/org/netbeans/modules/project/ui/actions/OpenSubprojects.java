@@ -30,7 +30,7 @@ import org.openide.util.actions.NodeAction;
  */
 public class OpenSubprojects extends NodeAction {
 
-    private static final String ICON = "org/netbeans/modules/project/ui/resources/openProject.gif"; //NOI18N
+    private static final String ICON = "org/netbeans/modules/project/ui/resources/openProject.png"; //NOI18N
 
     /** Creates a new instance of BrowserAction */
     public OpenSubprojects() {

@@ -315,8 +315,8 @@ public class Actions implements ActionsFactory {
         Action a = new MainProjectAction (
             ActionProvider.COMMAND_BUILD, 
             NbBundle.getMessage(Actions.class, "LBL_BuildMainProjectAction_Name" ),
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/buildProject.gif" ) ) );  //NOI18N
-        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/buildProject.gif"); //NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/buildProject.png" ) ) );  //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/buildProject.png"); //NOI18N
         return a;
     }
     
@@ -333,8 +333,8 @@ public class Actions implements ActionsFactory {
         Action a = new MainProjectAction(
             ActionProvider.COMMAND_REBUILD,
             NbBundle.getMessage(Actions.class, "LBL_RebuildMainProjectAction_Name"),  // NOI18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/rebuildProject.gif" ) ) ); //NOI18N
-        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/rebuildProject.gif"); //NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/rebuildProject.png" ) ) ); //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/rebuildProject.png"); //NOI18N
         return a;
     }
         
@@ -342,8 +342,8 @@ public class Actions implements ActionsFactory {
         Action a = new MainProjectAction(
             ActionProvider.COMMAND_RUN,
             NbBundle.getMessage(Actions.class, "LBL_RunMainProjectAction_Name"), // NO18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/runProject.gif" ) ) ); //NOI18N
-        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runProject.gif"); //NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/runProject.png" ) ) ); //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runProject.png"); //NOI18N
         return a;
     }
     
@@ -351,8 +351,8 @@ public class Actions implements ActionsFactory {
         Action a = new MainProjectAction(
             ActionProvider.COMMAND_DEBUG, 
             NbBundle.getMessage(Actions.class, "LBL_DebugMainProjectAction_Name" ), // NOI18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/debugProject.gif" ) ) ); //NOI18N
-        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/debugProject.gif"); //NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/debugProject.png" ) ) ); //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/debugProject.png"); //NOI18N
         return a;
     }
 

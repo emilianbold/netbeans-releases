@@ -67,7 +67,7 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
     public void addCatalogListener(CatalogListener l) {}
 
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.gif", true);
+        return Utilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.png", true);
     }
 
     public void refresh() {}
