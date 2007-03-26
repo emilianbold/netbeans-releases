@@ -65,6 +65,9 @@ import org.openide.util.actions.SystemAction;
 import org.openide.windows.CloneableOpenSupport;
 
 public class AnnotationProviderTest extends NbTestCase {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     
     public AnnotationProviderTest(String s) {
         super(s);

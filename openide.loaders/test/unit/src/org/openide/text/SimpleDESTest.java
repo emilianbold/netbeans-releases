@@ -36,6 +36,9 @@ import org.openide.util.actions.SystemAction;
  * @author  Jaroslav Tulach
  */
 public final class SimpleDESTest extends NbTestCase {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     
     private FileSystem lfs;
     private DataObject obj;

@@ -22,6 +22,7 @@ package org.openide.loaders;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import junit.framework.AssertionFailedError;
@@ -35,7 +36,7 @@ import org.openide.util.*;
 import org.netbeans.junit.*;
 import java.util.Enumeration;
 
-public class FolderInstanceTest extends LoggingTestCaseHid {
+public class FolderInstanceTest extends NbTestCase {
     private Logger err;
 
     public FolderInstanceTest() {
@@ -45,6 +46,12 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
     public FolderInstanceTest(java.lang.String testName) {
         super(testName);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
     
     private static void setSystemProp(String key, String value) {
         java.util.Properties prop = System.getProperties();
@@ -53,7 +60,7 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
     }
     
     protected void setUp () throws Exception {
-        registerIntoLookup(new Pool());
+        MockServices.setServices(Pool.class);
         
         DataLoaderPool pool = DataLoaderPool.getDefault ();
         assertNotNull (pool);
@@ -718,7 +725,7 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
         }
     }
     
-    static final class Pool extends org.openide.loaders.DataLoaderPool {
+    public static final class Pool extends org.openide.loaders.DataLoaderPool {
         private static DataLoader extra;
         
         

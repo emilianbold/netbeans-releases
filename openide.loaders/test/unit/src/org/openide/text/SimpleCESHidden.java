@@ -41,6 +41,9 @@ import org.openide.windows.CloneableOpenSupport;
  * @author  Peter Zavadsky
  */
 public class SimpleCESHidden extends CloneableEditorSupport {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     
     private FileObject fo;
 

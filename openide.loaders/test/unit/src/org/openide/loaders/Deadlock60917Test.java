@@ -36,23 +36,26 @@ import org.openide.cookies.OpenCookie;
  * @author Jaroslav Tulach
  */
 public class Deadlock60917Test extends NbTestCase {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     
     public Deadlock60917Test(String name) {
         super(name);
     }
     
 	
-	protected void setUp() throws Exception {
-		System.setProperty("org.openide.util.Lookup", Deadlock60917Test.class.getName() + "$Lkp");
-		
+    protected void setUp() throws Exception {
+        System.setProperty("org.openide.util.Lookup", Deadlock60917Test.class.getName() + "$Lkp");
+        
         super.setUp();
-		
-		Lookup l = Lookup.getDefault();
-		if (!(l instanceof Lkp)) {
-			fail("Wrong lookup: " + l);
-		}
-		
-		clearWorkDir();
+        
+        Lookup l = Lookup.getDefault();
+        if (!(l instanceof Lkp)) {
+            fail("Wrong lookup: " + l);
+        }
+        
+        clearWorkDir();
     }
     
 

@@ -75,6 +75,9 @@ import org.openide.windows.CloneableOpenSupport;
  * @author  Peter Zavadsky
  */
 public class SaveDocumentTest extends NbTestCase {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
 
     /** Creates new TextTest */
     public SaveDocumentTest(String s) {

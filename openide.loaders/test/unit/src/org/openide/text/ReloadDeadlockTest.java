@@ -56,6 +56,9 @@ import org.openide.text.CloneableEditorSupport;
  * @author  Peter Zavadsky
  */
 public class ReloadDeadlockTest extends NbTestCase {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
 
     /** Creates new TextTest */
     public ReloadDeadlockTest(String s) {

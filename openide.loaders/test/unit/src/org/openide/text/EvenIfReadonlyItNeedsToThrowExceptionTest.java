@@ -78,6 +78,10 @@ import org.openide.windows.WindowManager;
 /**
  */
 public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
+
     // for file object support
     String content = "";
     long expectedSize = -1;
