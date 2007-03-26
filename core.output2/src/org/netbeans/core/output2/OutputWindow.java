@@ -55,7 +55,7 @@ public class OutputWindow extends AbstractOutputWindow {
     private Controller controller;
     static OutputWindow DEFAULT = null;
     public static final String ICON_RESOURCE =
-        "org/netbeans/core/resources/frames/output.gif"; // NOI18N
+        "org/netbeans/core/resources/frames/output.png"; // NOI18N
         
     private MouseListener activateListener = new MouseAdapter() {
         public void mouseClicked(MouseEvent e) {

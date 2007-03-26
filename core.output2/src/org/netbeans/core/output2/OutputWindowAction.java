@@ -51,6 +51,6 @@ public final class OutputWindowAction extends CallableSystemAction {
     }
 
     protected String iconResource () {
-        return "org/netbeans/core/resources/frames/output.gif"; // NOI18N
+        return "org/netbeans/core/resources/frames/output.png"; // NOI18N
     }
 }
