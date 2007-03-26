@@ -127,10 +127,7 @@ import com.tomsawyer.editor.TSEGraph;
 import com.tomsawyer.editor.TSENode;
 import com.tomsawyer.graph.TSEdge;
 import com.tomsawyer.graph.TSNode;
-//import com.tomsawyer.jnilayout.TSHandleLocation;
-//import com.tomsawyer.util.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
-//import com.tomsawyer.util.TSConstRect;
 import com.tomsawyer.drawing.geometry.TSConstRect;
 import com.tomsawyer.util.TSObject;
 
@@ -1359,7 +1356,7 @@ public class ADDiagramSequenceEngine extends ADCoreEngine implements IADSequence
         if (engine instanceof LifelineDrawEngine)
         {
             LifelineDrawEngine lifelineEngine = (LifelineDrawEngine)engine;
-            IADLifelineCompartment compartment = lifelineEngine.getLifelineCompartment();
+            IADLifelineCompartment compartment = lifelineEngine.getLifelineCompartment(); 
             if (compartment != null)
             {
                 retVal = compartment.canStartMessage(point);
@@ -1368,6 +1365,7 @@ public class ADDiagramSequenceEngine extends ADCoreEngine implements IADSequence
         
         return retVal;
     }
+    
     
     /**
      * @param finishNode
@@ -1988,10 +1986,10 @@ public class ADDiagramSequenceEngine extends ADCoreEngine implements IADSequence
        */
         public void onDrawingAreaEdgeShouldCreateBend(IDiagram pParentDiagram, IEdgeCreateBendContext context, IResultCell cell)
         {
-            if (isParent(pParentDiagram) && isSequenceDiagram(pParentDiagram))
-            {
-                context.setCancel(true);
-            }
+           if (isParent(pParentDiagram) && isSequenceDiagram(pParentDiagram))
+           {
+              context.setCancel(true);
+           }
         }
         
       /* (non-Javadoc)
@@ -1999,13 +1997,13 @@ public class ADDiagramSequenceEngine extends ADCoreEngine implements IADSequence
        */
         public void onDrawingAreaFinishEdge(IDiagram pParentDiagram, IEdgeFinishContext context, IResultCell cell)
         {
-            if (isParent(pParentDiagram) && isSequenceDiagram(pParentDiagram))
-            {
-                if (decorateStartFinshNodes(pParentDiagram, context) == false)
-                {
-                    context.setCancel(true);
-                }
-            }
+           if (isParent(pParentDiagram) && isSequenceDiagram(pParentDiagram))
+           {
+              if (decorateStartFinshNodes(pParentDiagram, context) == false)
+              {
+                 context.setCancel(true);
+              }
+           }
         }
         
       /* (non-Javadoc)
@@ -2013,42 +2011,52 @@ public class ADDiagramSequenceEngine extends ADCoreEngine implements IADSequence
        */
         public void onDrawingAreaStartingEdge(IDiagram pParentDiagram, IEdgeCreateContext context, IResultCell cell)
         {
-            if (isParent(pParentDiagram) && isSequenceDiagram(pParentDiagram))
-            {
-                IETNode node = context.getNode();
-                if (node != null)
-                {
-                    IETPoint point = context.getLogicalPoint();
-                    
-                    if(point == null)
+           if (isParent(pParentDiagram) && isSequenceDiagram(pParentDiagram))
+           {
+              IETNode node = context.getNode();
+              if (node != null)
+              {
+                 IETPoint point = context.getLogicalPoint();
+                 
+                 if(point == null)
+                 {
+                    IDrawEngine engine = node.getEngine();
+                    if(engine instanceof ILifelineDrawEngine)
                     {
-                        IDrawEngine engine = node.getEngine();
-                        if(engine instanceof ILifelineDrawEngine)
-                        {
-                            ILifelineDrawEngine lifelineEngine = (ILifelineDrawEngine)engine;
-                            IADLifelineCompartment compartment = lifelineEngine.getLifelineCompartment();
-                            int nextY = compartment.getLocationOfNextMessage();
-                            
-                            point = new ETPoint(0, nextY);
-                        }
+                       ILifelineDrawEngine lifelineEngine = (ILifelineDrawEngine)engine;
+                       IADLifelineCompartment compartment = lifelineEngine.getLifelineCompartment();
+                       int nextY = compartment.getLocationOfNextMessage();
+                       
+                       point = new ETPoint(0, nextY);
                     }
-                    
-                    //if(canStartMessage(node, getDrawingArea().deviceToLogicalPoint(point)) == true)
-                    if (canStartMessage(node, point) == true)
+                 }
+                 
+                 //if(canStartMessage(node, getDrawingArea().deviceToLogicalPoint(point)) == true)
+                 if (canStartMessage(node, point) == true)
+                 {
+                    TSEConnector connector = addConnector(node, point, true);
+                    if (connector != null)
                     {
-                        TSEConnector connector = addConnector(node, point, true);
-                        if (connector != null)
-                        {
-                            context.setConnector(connector);
-                            context.setLogicalPoint(new ETPointEx(connector.getCenter()));
-                        }
+                       context.setConnector(connector);
+                       context.setLogicalPoint(new ETPointEx(connector.getCenter()));
                     }
-                    else // if can not start message, then set context.cancel to true
+                 }
+                 else 
+                 {
+                    //Fixed IZ=98716 - can't link comment to lifeline head
+                    //Determine whether the edge is a comment edge.
+                    //If the edge is a comment edge, do not cancel the action.
+                    String viewDescription = context.getViewDescription();
+                    boolean bCommentEdge = (viewDescription != null &&
+                          viewDescription.indexOf("RelationEdge CommentEdge") != -1 );  //NOI18N
+                    
+                    if (!bCommentEdge)
                     {
                        context.setCancel(true);
                     }
-                }
-            }
+                 }
+              }
+           }
         }
     }
     
