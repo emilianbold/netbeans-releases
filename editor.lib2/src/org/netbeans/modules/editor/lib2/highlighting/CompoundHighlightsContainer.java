@@ -53,6 +53,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
     private Document doc;
     private HighlightsContainer[] layers;
     private long version = 0;
+    private Throwable lastUpdater = null;
 
     private final String LOCK = new String("CompoundHighlightsContainer.LOCK"); //NOI18N
     private final LayerListener listener = new LayerListener(this);
@@ -210,7 +211,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             this.doc = doc;
             this.layers = layers;
             cache = null;
-            version++;
+            increaseVersion();
 
             // Add the listener to the new layers
             if (this.layers != null) {
@@ -243,7 +244,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         synchronized (LOCK) {
             // XXX: Perhaps we could do something more efficient.
             cache = null;
-            version++;
+            increaseVersion();
             
             docForEvents = doc;
         }
@@ -280,6 +281,15 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             LOG.log(Level.WARNING, "Can't create document position: offset = " + offset + //NOI18N
                 ", document.lenght = " + doc.getLength(), e); //NOI18N
             return null;
+        }
+    }
+
+    private void increaseVersion() {
+        version++;
+        if (LOG.isLoggable(Level.FINE)) {
+            lastUpdater = new Throwable(
+                "This stacktrace shows, who created version " + version + //NOI18N
+                " of this highlighting container"); //NOI18N
         }
     }
     
@@ -346,7 +356,15 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
 
         private void checkVersion() {
             if (this.version != CompoundHighlightsContainer.this.version) {
-                throw new ConcurrentModificationException();
+                ConcurrentModificationException cme = new ConcurrentModificationException(
+                    "The HighlighsSequence version (" + this.version + //NOI18N
+                    ") does not match the current version (" + CompoundHighlightsContainer.this.version + //NOI18N
+                    ") of its highlights container." //NOI18N
+                );
+                if (lastUpdater != null) {
+                    cme.initCause(lastUpdater);
+                }
+                throw cme;
             }
         }
     } // End of Seq class
