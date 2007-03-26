@@ -44,6 +44,7 @@ import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
 
 
@@ -131,8 +132,9 @@ public class TableItemCD extends ComponentDescriptor {
             // delete
             DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_MODEL),
             // screen
-            new DisplayableResourceCategoriesPresenter()
-            
+            new DisplayableResourceCategoriesPresenter(),
+            //accept
+            new MidpResourcesAcceptTypePresenter().addType(SimpleTableModelCD.TYPEID, PROP_MODEL)
         );
     }
     

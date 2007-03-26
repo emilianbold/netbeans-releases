@@ -37,6 +37,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import java.util.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.screen.display.ImageItemDisplayPresenter;
 
 /**
@@ -106,7 +107,9 @@ public class ImageItemCD extends ComponentDescriptor {
                 // delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_IMAGE),
                 // screen
-                new ImageItemDisplayPresenter()
+                new ImageItemDisplayPresenter(),
+                //accept
+                new MidpResourcesAcceptTypePresenter().addType(ImageCD.TYPEID, PROP_IMAGE)
         );
     }
     

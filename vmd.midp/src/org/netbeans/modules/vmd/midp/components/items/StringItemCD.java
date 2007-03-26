@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.screen.display.StringItemDisplayPresenter;
 
 /**
@@ -104,7 +105,9 @@ public class StringItemCD extends ComponentDescriptor {
             // delete
             DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_FONT),
             // screen
-            new StringItemDisplayPresenter()
+            new StringItemDisplayPresenter(),
+            //accept
+            new MidpResourcesAcceptTypePresenter().addType(FontCD.TYPEID, PROP_FONT)
        );   
     }
     

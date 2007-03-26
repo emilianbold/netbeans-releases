@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
 
 /**
  *
@@ -111,7 +112,9 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
             createSetterPresenter (),
             MidpCodePresenterSupport.createAddImportPresenter (),
             // screen
-            new AbstractInfoDisplayPresenter()
+            new AbstractInfoDisplayPresenter(),
+            //accept
+            new MidpResourcesAcceptTypePresenter().addType(FontCD.TYPEID, PROP_TEXT_FONT).addType(ImageCD.TYPEID, PROP_IMAGE)
         );
     }
 

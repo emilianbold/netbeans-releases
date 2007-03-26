@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
+import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
 
 /**
  * @author Karol Harezlak
@@ -94,7 +95,9 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
             // code
             createSetterPresenter (),
             // delete
-            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_TASK)
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_TASK),
+            //accept
+            new MidpResourcesAcceptTypePresenter().addType(SimpleCancellableTaskCD.TYPEID, PROP_TASK)
         );
     }
     

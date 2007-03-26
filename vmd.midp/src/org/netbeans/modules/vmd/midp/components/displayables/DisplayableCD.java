@@ -52,6 +52,7 @@ import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresent
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 
 import java.util.*;
+import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
 
 /**
  * @author David Kaspar
@@ -137,6 +138,7 @@ public final class DisplayableCD extends ComponentDescriptor {
             EditDependencyPresenter.createEditablePresenter(),    
             // accept
             new DisplayableAccept.DisplayableCommandsAcceptPresenter (),
+            new MidpResourcesAcceptTypePresenter().addType(TickerCD.TYPEID, PROP_TICKER),
 //            new DisplayableAccept.DisplayableCommandsEventHandlerAcceptPresenter (),
             // flow
             new FlowInfoNodePresenter (),
