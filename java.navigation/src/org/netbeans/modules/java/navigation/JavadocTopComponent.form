@@ -38,6 +38,9 @@
             <Property name="contentType" type="java.lang.String" value="text/html"/>
             <Property name="editable" type="boolean" value="false"/>
           </Properties>
+          <Events>
+            <EventHandler event="hyperlinkUpdate" listener="javax.swing.event.HyperlinkListener" parameters="javax.swing.event.HyperlinkEvent" handler="javadocEditorPaneHyperlinkUpdate"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

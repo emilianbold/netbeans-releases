@@ -21,9 +21,11 @@ package org.netbeans.modules.java.navigation;
 
 import java.awt.Rectangle;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -109,6 +111,11 @@ public final class JavadocTopComponent extends TopComponent {
         javadocEditorPane.setBackground(new java.awt.Color(255, 255, 222));
         javadocEditorPane.setContentType("text/html");
         javadocEditorPane.setEditable(false);
+        javadocEditorPane.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
+            public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
+                javadocEditorPaneHyperlinkUpdate(evt);
+            }
+        });
         javadocScrollPane.setViewportView(javadocEditorPane);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -122,6 +129,17 @@ public final class JavadocTopComponent extends TopComponent {
             .add(javadocScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void javadocEditorPaneHyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_javadocEditorPaneHyperlinkUpdate
+    if (javax.swing.event.HyperlinkEvent.EventType.ENTERED.equals(evt.getEventType())) {
+    } else if (javax.swing.event.HyperlinkEvent.EventType.ACTIVATED.equals(evt.getEventType())) {
+        URL url = evt.getURL();
+        if (url !=null /*&& url.getProtocol().equals("http") */) {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        }
+    } else if (javax.swing.event.HyperlinkEvent.EventType.EXITED.equals(evt.getEventType())) {
+    }
+}//GEN-LAST:event_javadocEditorPaneHyperlinkUpdate
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
