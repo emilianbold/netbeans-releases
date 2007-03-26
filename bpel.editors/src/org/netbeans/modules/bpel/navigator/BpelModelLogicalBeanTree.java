@@ -41,6 +41,7 @@ import org.netbeans.modules.bpel.model.api.events.PropertyRemoveEvent;
 import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.nodes.BpelProcessNode;
+import org.netbeans.modules.bpel.nodes.DefaultBpelEntityNode;
 import org.netbeans.modules.bpel.nodes.navigator.Util;
 import org.netbeans.modules.bpel.nodes.refactoring.UsageFilterNode;
 import org.netbeans.modules.bpel.properties.NodeUtils;
@@ -133,14 +134,22 @@ public class BpelModelLogicalBeanTree
         for (Node elem : nodes) {
             if (elem instanceof UsageFilterNode) {
                 elem = ((UsageFilterNode)elem).getOriginal();
+            } else if (elem instanceof BpelNode 
+                    && ((BpelNode)elem).getReference() instanceof BpelEntity
+                    && !(org.netbeans.modules.bpel.editors.api.utils.Util.isNavigatorShowableNodeType(((BpelNode)elem).getNodeType()))) 
+            {
+                elem = org.netbeans.modules.bpel.editors.api.utils.Util.getClosestNavigatorNode(
+                        (BpelEntity)((BpelNode)elem).getReference(),
+                        elem.getLookup());
             }
-            
+
             if (!(elem instanceof BpelNode)
             || ((BpelNode)elem).getNodeType().equals(NodeType.SCHEMA_ELEMENT)
             || !(((BpelNode)elem).getReference() instanceof BpelEntity)) 
             {
                 continue;
             }
+            
             BpelEntity refBpelEntityObj = BpelEntity.class.cast(
                     ((BpelNode)elem).getReference());
             if (refBpelEntityObj != null) {

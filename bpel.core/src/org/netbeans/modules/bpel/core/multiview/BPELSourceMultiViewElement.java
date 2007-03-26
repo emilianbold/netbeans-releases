@@ -455,9 +455,13 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         assert nodeFactory != null;
         
         NodeType nodeType = Util.getBasicNodeType(foundedEntity);
-        if (nodeType == null || NodeType.UNKNOWN_TYPE.equals(nodeType)) {
+        if (nodeType == null) {
             return;
         }
+        
+        nodeType = NodeType.UNKNOWN_TYPE.equals(nodeType) 
+                ? NodeType.DEFAULT_BPEL_ENTITY_NODE 
+                : nodeType;
         final Node node = nodeFactory.createNode(
                 nodeType,
                 foundedEntity,
