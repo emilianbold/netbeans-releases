@@ -27,6 +27,24 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
 
+    <change id="ChangeSupport">
+        <api name="util"/>
+        <summary>Added <code>ChangeSupport</code></summary>
+        <version major="7" minor="8"/>
+        <date day="26" month="3" year="2007"/>
+        <author login="abadea"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added a <code>ChangeSupport</code> class to simplify
+                the management of <code>ChangeListener</code>s and the 
+                firing of <code>ChangeEvent</code>s.
+            </p>
+        </description>
+        <class package="org.openide.util" name="ChangeSupport"/>
+        <issue number="95885"/>
+    </change>
+
     <change id="Utilities.isMac">
         <api name="util"/>
         <summary>Added <code>Utilities.isMac()</code> method</summary>
