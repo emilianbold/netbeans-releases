@@ -47,8 +47,8 @@ public class MeasureJava  {
         suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
         
         suite.addTest(new PasteInEditor("measureTime", "Paste in the editor"));
-        suite.addTest(new PageUpPageDownInEditor("measureTime", "Press Page Up in the editor", true));
-        suite.addTest(new PageUpPageDownInEditor("measureTime", "Press Page Down in the editor", false));
+        suite.addTest(new PageUpPageDownInEditor("testPageUp", "Press Page Up in the editor"));
+        suite.addTest(new PageUpPageDownInEditor("testPageDown", "Press Page Down in the editor"));
         
         suite.addTest(new JavaCompletionInEditor("measureTime", "Invoke Code Completion dialog in Editor"));
         suite.addTest(new TypingInEditor("measureTime", "Type a character in Editor"));
