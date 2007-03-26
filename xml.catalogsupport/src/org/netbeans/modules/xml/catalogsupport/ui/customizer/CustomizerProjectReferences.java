@@ -67,6 +67,8 @@ public class CustomizerProjectReferences extends javax.swing.JPanel implements H
     private ReferenceHelper refHelper;
     private Project owner;
     private SubprojectProvider subprojectProvider;
+    private Project newlyAddedProject;
+    
     /** Creates new form CustomizerProjectReferences */
     public CustomizerProjectReferences(Project owner, ReferenceHelper refHelper) {
         this.owner = owner;
@@ -102,7 +104,12 @@ public class CustomizerProjectReferences extends javax.swing.JPanel implements H
         ReferenceHelper.RawReference[] rawRefs = getRefHelper().getRawReferences();
         for(ReferenceHelper.RawReference rawRef:rawRefs) {
             if(rawRef.toAntArtifact(getRefHelper())==null) {
-                listModel.addElement(new MissingProjectInformation(rawRef));
+                if(newlyAddedProject == null) {
+                    listModel.addElement(new MissingProjectInformation(rawRef));
+                    continue;
+                }
+                ProjectInformation pInfo = ProjectUtils.getInformation(newlyAddedProject);
+                listModel.addElement(pInfo);
             }
         }
     }
@@ -291,6 +298,7 @@ public class CustomizerProjectReferences extends javax.swing.JPanel implements H
                         return;
                     }
                     ProjectReferenceUtility.addProjectReference(getRefHelper(),refProject);
+                    newlyAddedProject = refProject;
                 }
             } catch (IllegalArgumentException ex) {
             } catch (IOException ex) {
