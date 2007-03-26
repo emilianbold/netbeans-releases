@@ -78,6 +78,9 @@ public class FileRenameRefactoringUI implements org.netbeans.modules.refactoring
         oldFileName =( target.getModelSource().getLookup().lookup(FileObject.class)).getName();
         XMLRefactoringTransaction transaction = new XMLRefactoringTransaction((Referenceable)target, refactoring);
         refactoring.getContext().add(transaction);
+        //TEMP solution :: ask jbecika if renameRefactoring can have a getOldName()
+        //have filed issue#98842 on Refactoring API..till then use context obj
+        refactoring.getContext().add(oldFileName);
         
     }
     

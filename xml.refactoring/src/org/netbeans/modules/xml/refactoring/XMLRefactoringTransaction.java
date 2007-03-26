@@ -41,6 +41,7 @@ import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Single transaction object, ensuring the order of refactoring change across
@@ -343,7 +344,11 @@ public class XMLRefactoringTransaction implements Transaction {
        private void undoRenameFile() throws IOException {
         CatalogModel cat = (CatalogModel) ((Model)target).getModelSource().getLookup().lookup(CatalogModel.class);
         FileObject fo = (FileObject) ((Model)target).getModelSource().getLookup().lookup(FileObject.class);
-        fo = SharedUtils.renameFile(fo, ((RenameRefactoring)request).getNewName());
+        String oldName = request.getContext().lookup(String.class);
+        if(oldName == null || oldName.equals("")) {
+            throw new IOException("Unable to undo refactoring. Cannot retrieve old file name"); //not i118N
+        }
+        fo = SharedUtils.renameFile(fo, oldName);
         refreshCatalogModel(fo);
     }
       
