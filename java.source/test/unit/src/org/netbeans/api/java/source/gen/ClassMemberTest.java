@@ -66,6 +66,8 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         suite.addTest(new ClassMemberTest("testAddMethodAndModifyConstr"));
 //        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit1"));
 //        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit2"));
+        suite.addTest(new ClassMemberTest("testMemberIndent93735_1"));
+//        suite.addTest(new ClassMemberTest("testMemberIndent93735_2"));
         return suite;
     }
 
@@ -841,6 +843,112 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(constr.getBody(), newBody);
                 ClassTree copy = make.insertClassMember(classTree, 1, m(make));
                 workingCopy.rewrite(classTree, copy);
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testMemberIndent93735_1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    // what a strange thing is this?\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" + 
+            "    }\n" +
+            "    // what a strange thing is this?\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree classTree = (ClassTree) typeDecl;
+                        ClassTree copy = make.insertClassMember(classTree, 0, m(make));
+                        workingCopy.rewrite(classTree, copy);
+                    }
+                }
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testMemberIndent93735_2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    int i = 0;\n" +
+            "    // what a strange thing is this?\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    int i = 0;\n" +
+            "\n" +
+            "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" + 
+            "    }\n" +
+            "    // what a strange thing is this?\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree classTree = (ClassTree) typeDecl;
+                        ClassTree copy = make.insertClassMember(classTree, 2, m(make));
+                        workingCopy.rewrite(classTree, copy);
+                    }
+                }
             }
             
             public void cancel() {
