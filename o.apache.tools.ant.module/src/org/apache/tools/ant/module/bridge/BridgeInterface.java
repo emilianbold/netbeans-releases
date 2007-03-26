@@ -71,7 +71,7 @@ public interface BridgeInterface {
     /**
      * Get a proxy for IntrospectionHelper, to introspect task + type structure.
      */
-    IntrospectionHelperProxy getIntrospectionHelper(Class clazz);
+    IntrospectionHelperProxy getIntrospectionHelper(Class<?> clazz);
     
     /**
      * See Project.toBoolean.
@@ -82,6 +82,6 @@ public interface BridgeInterface {
      * Get values of an enumeration class.
      * If it is not actually an enumeration class, return null.
      */
-    String[] getEnumeratedValues(Class c);
+    String[] getEnumeratedValues(Class<?> c);
     
 }

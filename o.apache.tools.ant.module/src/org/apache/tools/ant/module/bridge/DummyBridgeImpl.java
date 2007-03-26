@@ -52,7 +52,7 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
         return false;
     }
     
-    public IntrospectionHelperProxy getIntrospectionHelper(Class clazz) {
+    public IntrospectionHelperProxy getIntrospectionHelper(Class<?> clazz) {
         return this;
     }
     
@@ -80,7 +80,7 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
         return Boolean.valueOf(val).booleanValue();
     }
     
-    public String[] getEnumeratedValues(Class c) {
+    public String[] getEnumeratedValues(Class<?> c) {
         return null;
     }
     

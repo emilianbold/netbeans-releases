@@ -108,7 +108,7 @@ public class BridgeImpl implements BridgeInterface {
         }
     }
     
-    public IntrospectionHelperProxy getIntrospectionHelper(Class clazz) {
+    public IntrospectionHelperProxy getIntrospectionHelper(Class<?> clazz) {
         return new IntrospectionHelperImpl(clazz);
     }
     
@@ -116,7 +116,7 @@ public class BridgeImpl implements BridgeInterface {
         return Project.toBoolean(val);
     }
     
-    public String[] getEnumeratedValues(Class c) {
+    public String[] getEnumeratedValues(Class<?> c) {
         if (EnumeratedAttribute.class.isAssignableFrom(c)) {
             try {
                 return ((EnumeratedAttribute)c.newInstance()).getValues();
