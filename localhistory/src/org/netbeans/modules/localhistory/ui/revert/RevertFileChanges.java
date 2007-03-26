@@ -24,7 +24,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import org.netbeans.modules.localhistory.LocalHistorySettings;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.localhistory.ui.view.LocalHistoryFileView;
@@ -51,12 +50,12 @@ public class RevertFileChanges implements PropertyChangeListener {
         view = new LocalHistoryFileView();                                
         view.getPanel().setPreferredSize(new Dimension(550, 250));        
         
-        okButton = new JButton(NbBundle.getMessage(this.getClass(), "CTL_Revert"));// XXX
-        okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(this.getClass(), "CTL_Revert"));// XXX
-        JButton cancelButton = new JButton(NbBundle.getMessage(this.getClass(), "CTL_Cancel"));// XXX
-        cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(this.getClass(), "CTL_Cancel"));    // XXX
+        okButton = new JButton(NbBundle.getMessage(this.getClass(), "CTL_Revert"));
+        okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(this.getClass(), "CTL_Revert"));
+        JButton cancelButton = new JButton(NbBundle.getMessage(this.getClass(), "CTL_Cancel"));
+        cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(this.getClass(), "CTL_Cancel"));   
         
-        dialogDescriptor = new DialogDescriptor (view.getPanel(), NbBundle.getMessage(this.getClass(), "LBL_RevertToAction")); // XXX
+        dialogDescriptor = new DialogDescriptor (view.getPanel(), NbBundle.getMessage(this.getClass(), "LBL_RevertToAction")); 
         dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});                         
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));        
@@ -78,7 +77,7 @@ public class RevertFileChanges implements PropertyChangeListener {
 
     protected boolean show() {                
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
-        dialog.getAccessibleContext().setAccessibleDescription("LBL_RevertToAction"); // XXX
+        dialog.getAccessibleContext().setAccessibleDescription("LBL_RevertToAction"); 
         dialog.setVisible(true);                
                         
         return dialogDescriptor.getValue() == okButton;
