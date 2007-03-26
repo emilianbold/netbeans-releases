@@ -23,7 +23,6 @@ package org.netbeans.modules.uml.ui.products.ad.drawengines;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-
 import org.netbeans.modules.uml.common.ETException;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IJoinNode;
@@ -42,8 +41,8 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.IEllipseCompartmen
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ILabelManager;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ISupportEnums;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TSLabelKind;
-//import com.tomsawyer.util.TSConstRect;
 import com.tomsawyer.drawing.geometry.TSConstRect;
+import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETNodeUI;
 
 /**
  * @author KevinM
@@ -51,7 +50,6 @@ import com.tomsawyer.drawing.geometry.TSConstRect;
  */
 public class ETControlNodeDrawEngine extends ADNodeDrawEngine
 {
-
    public static final long FORK_NODE_HEIGHT = 80;
    public static final long FORK_NODE_WIDTH = 7;
    public static final long DECISION_NODE_HEIGHT = 30;
@@ -60,6 +58,7 @@ public class ETControlNodeDrawEngine extends ADNodeDrawEngine
    public static final long OTHER_NODES_WIDTH = 16;
    public static final long FLOW_FINAL_NODE_HEIGHT = 27;
    public static final long FLOW_FINAL_NODE_WIDTH = 27;
+   private static final String HORIZONTAL = "Horizontal";  // NOI18N
 
    /**
     * 
@@ -446,7 +445,7 @@ public class ETControlNodeDrawEngine extends ADNodeDrawEngine
             String sInitString = getInitializationString();
             if (sInitString != null && sInitString.length() > 0)
             {
-               if (sInitString.indexOf("Horizontal") >= 0)
+               if (sInitString.indexOf(HORIZONTAL) >= 0)
                {
                   nWidth = FORK_NODE_HEIGHT;
                   nHeight = FORK_NODE_WIDTH;
@@ -515,7 +514,9 @@ public class ETControlNodeDrawEngine extends ADNodeDrawEngine
 
    public boolean setSensitivityAndCheck(String id, ContextMenuActionClass pClass)
    {
+      boolean isReadOnly = isParentDiagramReadOnly();
       boolean bFlag = handleStandardLabelSensitivityAndCheck(id, pClass);
+      
       if (!bFlag)
       {
          if (id.equals("MBK_SHOW_NAME_LABEL"))
@@ -525,18 +526,23 @@ public class ETControlNodeDrawEngine extends ADNodeDrawEngine
             {
                boolean isDisplayed = labelMgr.isDisplayed(TSLabelKind.TSLK_NAME);
                pClass.setChecked(isDisplayed);
-               bFlag = isParentDiagramReadOnly() ? false : true;
+               bFlag = !isReadOnly;
             }
+         }
+         
+         else if (id.equals("MBK_SHOW_VERTICAL_FORK") ||
+               id.equals("MBK_SHOW_HORIZONTAL_FORK"))
+         {
+            bFlag = !isReadOnly;
          }
          else
          {
             bFlag = super.setSensitivityAndCheck(id, pClass);
          }
       }
-
       return bFlag;
    }
-
+   
    public boolean onHandleButton(ActionEvent e, String id)
    {
       boolean handled = handleStandardLabelSelection(e, id);
@@ -553,14 +559,45 @@ public class ETControlNodeDrawEngine extends ADNodeDrawEngine
             }
             handled = true;
          }
+         
+         // Fixed IZ=78636
+         // Added an menu item to the context menu to change a fork from vertical to horizontal and vice versa.
+         else if (id.equals("MBK_SHOW_VERTICAL_FORK") ||
+                  id.equals("MBK_SHOW_HORIZONTAL_FORK"))
+         {
+            IETNodeUI nodeUI = getNodeUI();
+            if (nodeUI != null)
+            {
+               TSConstRect rect = nodeUI.getBounds();
+               double width = rect.getWidth();
+               double height = rect.getHeight();
+               // rotate the dimension of the fork around its center point
+               resize(Math.round((long)height), Math.round((long)width), false);
+               
+               //Change the initString accordingly
+               String oldInitStr = getInitializationString();
+               String newInitStr = "";
+               if (oldInitStr != null && oldInitStr.length() > 0)
+               {
+                  int strHorizontalIndex = oldInitStr.lastIndexOf(HORIZONTAL);
+                  
+                  newInitStr = (strHorizontalIndex > -1 ?
+                     (oldInitStr.substring(0, strHorizontalIndex)).trim() :
+                     oldInitStr.concat(" "+ HORIZONTAL));
+                  
+                  nodeUI.setInitStringValue(newInitStr);
+               }
+            }
+            handled = true;
+         }
       }
       if (!handled)
-      {
-         handled = super.onHandleButton(e, id);
-      }
-      return handled;
+         {
+            handled = super.onHandleButton(e, id);
+         }
+         return handled;
    }
-
+   
    public void onContextMenu(IMenuManager manager)
    {
 
@@ -572,10 +609,17 @@ public class ETControlNodeDrawEngine extends ADNodeDrawEngine
    protected void addControlNodeMenuItems(IMenuManager manager)
    {
       IMenuManager subMenu = manager.createOrGetSubMenu(loadString("IDS_LABELS_TITLE"), "");
-
+      
       if (subMenu != null)
       {
          subMenu.add(createMenuAction(loadString("IDS_NAME_LABEL"), "MBK_SHOW_NAME_LABEL"));
       }
+      
+      // Fixed IZ=78636
+      // Added an menu item to the context menu to change a fork from vertical to horizontal and vice versa.
+      ContextMenuActionClass menuItem = (isHorizontalJoinOrMergeNode() ?
+         createMenuAction(loadString("IDS_POPUP_ACD_TO_VERTICAL_FORK"), "MBK_SHOW_VERTICAL_FORK") :
+         createMenuAction(loadString("IDS_POPUP_ACD_TO_HORIZONTAL_FORK"), "MBK_SHOW_HORIZONTAL_FORK") );
+      manager.add(menuItem);
    }
 }
