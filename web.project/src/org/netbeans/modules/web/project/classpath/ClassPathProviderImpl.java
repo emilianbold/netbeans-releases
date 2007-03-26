@@ -331,9 +331,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 if (ClassPath.COMPILE.equals(type)) {
                     return WebProjectProperties.JAVAC_CLASSPATH;
                 }
-//                else if (ClassPath.EXECUTE.equals(type)) {
-//                    return RUN_CLASSPATH;
-//                }
+                else if (ClassPath.EXECUTE.equals(type)) {
+                    return WebProjectProperties.DEBUG_CLASSPATH;
+                }
                 else {
                     return null;
                 }
@@ -345,9 +345,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 if (ClassPath.COMPILE.equals(type)) {
                     return WebProjectProperties.JAVAC_TEST_CLASSPATH;
                 }
-//                else if (ClassPath.EXECUTE.equals(type)) {
-//                    return RUN_TEST_CLASSPATH;
-//                }
+                else if (ClassPath.EXECUTE.equals(type)) {
+                    return WebProjectProperties.RUN_TEST_CLASSPATH;
+                }
                 else {
                     return null;
                 }
