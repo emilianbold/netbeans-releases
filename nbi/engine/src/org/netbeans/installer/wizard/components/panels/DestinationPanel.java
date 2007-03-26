@@ -80,6 +80,8 @@ public class DestinationPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_NOT_WRITABLE);
         setProperty(ERROR_NOT_EMPTY_PROPERTY,
                 DEFAULT_ERROR_NOT_EMPTY);
+        setProperty(ERROR_NOT_ENDS_WITH_APP_PROPERTY,
+                DEFAULT_ERROR_NOT_ENDS_WITH_APP);
     }
     
     @Override
@@ -276,7 +278,7 @@ public class DestinationPanel extends ErrorMessagePanel {
                         product.getLogic().requireDotAppForMacOs()) &&
                         !file.getAbsolutePath().endsWith(APP_SUFFIX)) {
                     return StringUtils.format(
-                            component.getProperty(ERROR_NOT_ENDS_WITH_APP),
+                            component.getProperty(ERROR_NOT_ENDS_WITH_APP_PROPERTY),
                             file.getAbsolutePath());
                 }
             } catch (InitializationException e) {
@@ -415,7 +417,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             "error.not.writable"; // NOI18N
     public static final String ERROR_NOT_EMPTY_PROPERTY =
             "error.not.empty"; // NOI18N
-    public static final String ERROR_NOT_ENDS_WITH_APP =
+    public static final String ERROR_NOT_ENDS_WITH_APP_PROPERTY =
             "error.not.ends.with.app"; // NOI18N
     
     public static final String DEFAULT_ERROR_NULL =
