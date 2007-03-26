@@ -16,17 +16,31 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.localhistory;
 
-import org.openide.modules.ModuleInstall;
+package org.netbeans.modules.localhistory.options;
+
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class ModuleLifecycleManager extends ModuleInstall {        
-    public void restored() {
-        // XXX is this the best place to start it?        
-        LocalHistory.getInstance().getLocalHistoryStore().cleanUp(LocalHistorySettings.getInstance().getTTLMillis());
+public final class LocalHistoryOptions extends AdvancedOption {
+
+    public LocalHistoryOptions() {
+    }
+    
+    public String getDisplayName () {
+        return NbBundle.getMessage (LocalHistoryOptions.class, "LocalHistoryOptions.displayName");    // NOI18N
+    }
+
+    public String getTooltip () {
+        return NbBundle.getMessage (LocalHistoryOptions.class, "LocalHistoryOptions.toolTip");        // NOI18N
+    }
+
+    public OptionsPanelController create () {
+        return new LocalHistoryOptionsController();
     }
 }

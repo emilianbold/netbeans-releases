@@ -20,22 +20,22 @@ package org.netbeans.modules.localhistory;
 
 import java.io.File;
 import java.util.prefs.Preferences;
-import org.openide.ErrorManager;
 import org.openide.util.NbPreferences;
 
 /**
  *
  * Manages the Local Hisotry Settings
  * 
- * XXX this is dummy
- * XXX options 
  * @author Tomas Stupka
  */
 public class LocalHistorySettings {
     
     private static final LocalHistorySettings INSTANCE = new LocalHistorySettings();
     
-    private static final String LAST_SELECTED_ENTRY =   "RevertFileChanges.lastSelected";        // NOI18N  
+    private static final String LAST_SELECTED_ENTRY = "RevertFileChanges.lastSelected";         // NOI18N  
+    private static final String PROP_TTL = "timeToLive";                                        // NOI18N  
+    private static final String PROP_KEEP_STORED = "filesToKeepStored";                         // NOI18N  
+    
             
     /** Creates a new instance of LocalHistorySettings */
     private LocalHistorySettings() {
@@ -48,41 +48,27 @@ public class LocalHistorySettings {
     private Preferences getPreferences() {
         return NbPreferences.forModule(LocalHistorySettings.class);
     }
+
+    public void setKeepStored(int keep) {       
+        getPreferences().putInt(PROP_KEEP_STORED, keep);
+    }    
     
-    public static long getTTL() {       
-        // XXX need options                                
-        String ttl = System.getProperty("netbeans.localhistory.ttl");
-        if( ttl != null && !ttl.trim().equals("") ) {
-            try {
-                return Long.parseLong(ttl) * 24 * 60 * 60 * 1000; // supposed to be specified in days
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);                                       
-            }
-        }
-        return 7 * 24 * 60 * 60 * 1000; 
+    public int getKeepStored() {       
+        return getPreferences().getInt(PROP_KEEP_STORED, 5);
+    }    
+    
+    public void setTTL(int ttl) {       
+        getPreferences().putInt(PROP_TTL, ttl);
+    }
+    
+    public int getTTL() {               
+        return getPreferences().getInt(PROP_TTL, 7);
     }    
 
-    public static Long getMaxFileSize() {
-        String max = System.getProperty("netbeans.localhistory.maxFileSize");        
-        if( max != null && !max.trim().equals("") ) {
-            try {
-                return Long.parseLong(max);
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);                                       
-            }
-        }
-        return 1024L * 1024L;
-    }
+    public int getTTLMillis() {               
+        return getTTL() * 24 * 60 * 60 * 1000;
+    }   
     
-    public static String getExludedFileNames() {
-        String excluded = System.getProperty("netbeans.localhistory.excludedFiles");        
-        if( excluded != null && !excluded.trim().equals("") ) {
-            return excluded;
-        } else {
-            return ".*(\\.class|\\.jar|\\.zip|\\.rar|\\.gz|\\.bz|\\.tgz|\\.tar|\\.gif|\\.jpg|\\.jpeg|\\.png|\\.nbm)"; // this is going to be a very very long list ...   
-        }        
-    }
-
     public void setLastSelectedEntry(File file, long ts) {
         getPreferences().putLong(LAST_SELECTED_ENTRY + "#" + file.getAbsoluteFile(), ts);
     }

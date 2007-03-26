@@ -95,13 +95,10 @@ public class LocalHistory {
     }
     
     boolean isManaged(File file) {
-        if(file.isDirectory()) {
-            return true; // XXX is there something more we could do for folders? 
-        }
         if(Diagnostics.ON) {
             Diagnostics.println(".isManaged() " + file);
         }
-        return file.length() <= LocalHistorySettings.getMaxFileSize();
+        return true;
     }
     
 }
