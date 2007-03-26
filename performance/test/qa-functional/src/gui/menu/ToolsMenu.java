@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,8 +21,8 @@ package gui.menu;
 
 import org.netbeans.performance.test.guitracker.ActionTracker;
 
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -31,12 +31,11 @@ import org.netbeans.junit.NbTestSuite;
  * <p>Each test method reads the label of tested menu.
  * During @link prepare given node is selected and menu is pushed using mouse.
  * The menu is then closed using escape key.
- * @author Radim Kubacki
+ * @author Radim Kubacki, mmirilovic@netbeans.org
  */
 public class ToolsMenu extends MainMenu {
     
     protected static Node dataObjectNode;
-    private static ProjectsTabOperator projectsTab = null;
     
     /** Creates a new instance of ToolsMenu */
     public ToolsMenu(String testName) {
@@ -78,15 +77,8 @@ public class ToolsMenu extends MainMenu {
     }
     
     private void testToolsMenu(String file) {
-        dataObjectNode = new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|" + file);
+        dataObjectNode = new Node(new SourcePackagesNode("PerformanceTestData"),"org.netbeans.test.performance|" + file);
         super.testMenu("org.netbeans.core.Bundle","Menu/Tools");
     }
 
-    private Node getProjectNode() {
-        if(projectsTab==null)
-            projectsTab = new ProjectsTabOperator();
-        
-        return projectsTab.getProjectRootNode("PerformanceTestData");
-    }
-    
 }

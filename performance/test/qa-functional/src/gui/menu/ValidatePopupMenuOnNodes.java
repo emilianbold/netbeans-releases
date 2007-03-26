@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -75,45 +75,6 @@ public abstract class ValidatePopupMenuOnNodes extends org.netbeans.performance.
         dataObjectNode.tree().clickMouse(point.x, point.y, 1, button);
         return new JPopupMenuOperator();
     }
-    
-        /* it stopped to work after a while, see issue 58790
-         *  
-    private JPopupMenu callPopup(final org.netbeans.jemmy.operators.ComponentOperator oper, int x, int y, int mouseButton) {
-        org.netbeans.jemmy.operators.JPopupMenuOperator popup_op = dataObjectNode.callPopup();
-        return (JPopupMenu) popup_op.getSource();
-        
-        // oper.clickForPopup(x, y, mouseButton);
-        
-        // oper.clickForPopup -> avoid makeVisible
-        // oper.clickMouse(x, y, 1, mouseButton, 0, true);
-        try {
-//            java.awt.Robot r = new java.awt.Robot();
-//            r.mouseMove(oper.getSource().getLocationOnScreen().x+x, oper.getSource().getLocationOnScreen().y+y);
-//            r.mousePress(java.awt.event.InputEvent.BUTTON3_MASK);
-//            r.mouseRelease(java.awt.event.InputEvent.BUTTON3_MASK);
-        }
-        catch (Exception ex) {
-            throw new Error(ex);
-        }
-        
-        oper.getTimeouts().sleep("JMenuOperator.WaitBeforePopupTimeout");
-        return(JPopupMenuOperator.waitJPopupMenu(JPopupMenuOperator.waitJPopupWindow(new org.netbeans.jemmy.ComponentChooser() {
-            public boolean checkComponent(Component cmp) {
-                Component invoker = ((JPopupMenu)cmp).getInvoker();
-                return(invoker == oper.getSource() ||
-                (invoker instanceof Container &&
-                ((Container)invoker).isAncestorOf(oper.getSource())) ||
-                (oper.getSource() instanceof Container &&
-                ((Container)oper.getSource()).isAncestorOf(invoker)));
-            }
-            public String getDescription() {
-                return("Popup menu");
-                
-            }
-        }),
-        org.netbeans.jemmy.ComponentSearcher.getTrueChooser("Popup menu")));
-    }
-         */
     
     /**
      * Closes the popup by sending ESC key event.

@@ -52,6 +52,7 @@ public class VersioningWindow extends org.netbeans.performance.test.utilities.Pe
     }
     
     protected void initialize() {
+        gui.Utilities.workarroundMainMenuRolledUp();
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window") + '|' + 
                Bundle.getStringTrimmed("org.netbeans.modules.versioning.Bundle","Menu/Window/Versioning") + '|' +
                Bundle.getStringTrimmed("org.netbeans.modules.versioning.system.cvss.ui.actions.status.Bundle", "BK0001"); // Window | Versioning | CVS
@@ -59,7 +60,7 @@ public class VersioningWindow extends org.netbeans.performance.test.utilities.Pe
     
     public ComponentOperator open() {
         // invoke Versioning from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|");
         return new VersioningOperator();
     }
     

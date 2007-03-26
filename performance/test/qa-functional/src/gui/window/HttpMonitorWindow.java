@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -47,12 +47,11 @@ public class HttpMonitorWindow extends org.netbeans.performance.test.utilities.P
         expectedTime = WINDOW_OPEN;
     }
     
-    
     public void initialize() {
+        gui.Utilities.workarroundMainMenuRolledUp();
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.web.monitor.client.Bundle", "MON_HTTP_Transaction_13");
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.web.monitor.client.Bundle", "MON_Title");        
     }
-    
     
     public void prepare() {
         // do nothing
@@ -60,7 +59,7 @@ public class HttpMonitorWindow extends org.netbeans.performance.test.utilities.P
     
     public ComponentOperator open() {
         // invoke Window / HTTP Monitor from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|");
         return new TopComponentOperator(TITLE);
     }
     
@@ -73,6 +72,7 @@ public class HttpMonitorWindow extends org.netbeans.performance.test.utilities.P
      * @param args arguments from command line
      */
     public static void main(String[] args) {
+        repeat = 3;
         junit.textui.TestRunner.run(new HttpMonitorWindow("measureTime"));
     }
 }

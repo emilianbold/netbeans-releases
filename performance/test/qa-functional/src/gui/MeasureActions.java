@@ -60,8 +60,8 @@ public class MeasureActions  {
         suite.addTest(new OpenFormFileWithOpenedEditor("testOpening20kBFormFile", "Open Form file (20kB) if Editor opened"));
         
 //TODO 6.0 still causes a lot of failures in the following tests        suite.addTest(new PasteInEditor("measureTime", "Paste in the editor"));
-        suite.addTest(new PageUpPageDownInEditor("measureTime", "Press Page Up in the editor", true));
-        suite.addTest(new PageUpPageDownInEditor("measureTime", "Press Page Down in the editor", false));
+        suite.addTest(new PageUpPageDownInEditor("testPageUp", "Press Page Up in the editor"));
+        suite.addTest(new PageUpPageDownInEditor("testPageDown", "Press Page Down in the editor"));
         
         suite.addTest(new JavaCompletionInEditor("measureTime", "Invoke Code Completion dialog in Editor"));
         
@@ -75,11 +75,11 @@ public class MeasureActions  {
         
 //TODO 5.0 still causes a lot of failures in the following tests        suite.addTest(new CloseAllEditors("testClosingAllJavaFiles", "Close All Documents if 10 Java files opened"));
         
-        suite.addTest(new CloseEditorTab("testClosingTab", "Close on tab from Editor window"));
+        suite.addTest(new CloseEditorTab("measureTime", "Close on tab from Editor window"));
         
-        suite.addTest(new CloseEditorModified("testClosingModifiedJavaFile", "Close modified Java file"));
+        suite.addTest(new CloseEditorModified("measureTime", "Close modified Java file"));
         
-        suite.addTest(new SaveModifiedFile("testSaveModifiedJavaFile", "Save modified Java file"));
+        suite.addTest(new SaveModifiedFile("measureTime", "Save modified Java file"));
         
         suite.addTest(new SelectCategoriesInNewFile("testSelectGUIForms","Select GUI Forms in New File"));
         suite.addTest(new SelectCategoriesInNewFile("testSelectXML","Select XML in New File"));

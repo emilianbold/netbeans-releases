@@ -20,7 +20,6 @@
 package gui.window;
 
 import org.netbeans.jellytools.FavoritesOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.FavoritesAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -42,6 +41,11 @@ public class FavoritesWindow extends org.netbeans.performance.test.utilities.Per
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
+
+    @Override
+    protected void initialize() {
+        gui.Utilities.workarroundMainMenuRolledUp();
+    }
     
     public void prepare() {
         // do nothing
@@ -49,13 +53,21 @@ public class FavoritesWindow extends org.netbeans.performance.test.utilities.Per
     
     public ComponentOperator open() {
         // invoke Favorites from the main menu
-        new ActionNoBlock(new FavoritesAction().getMenuPath(), null).performMenu();
+        new FavoritesAction().performMenu();
         return new FavoritesOperator();
     }
 
     public void close() {
         if(testedComponentOperator!=null && testedComponentOperator.isShowing())
             ((FavoritesOperator)testedComponentOperator).close();
+    }
+    
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(java.lang.String[] args) {
+        repeat = 3;
+        junit.textui.TestRunner.run(new FavoritesWindow("measureTime"));
     }
     
 }

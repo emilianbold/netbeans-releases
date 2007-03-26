@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,10 +21,11 @@ package gui.window;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
 
 /**
  * Open Create Tests dialog.
@@ -61,16 +62,15 @@ public class CreateTestsDialog extends org.netbeans.performance.test.utilities.P
     }
     
     public void prepare() {
-        this.createTestsNode = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main20kB.java");
-        
-        if (this.createTestsNode == null) {
-            throw new Error ("Cannot find node [" + gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main20kB.java] in project [PerformanceTestData]");
-        }
+        createTestsNode = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main20kB.java");
     }
     
     public ComponentOperator open(){
         // invoke Tools|Create JUnit Tests from the popup menu
         createTestsNode.performPopupActionNoBlock(CREATE_JUNIT_TESTS);
+        NbDialogOperator dialog = new NbDialogOperator("Select JUnit Version"); // NOI18N
+        new JButtonOperator(dialog, "Select").pushNoBlock(); // NOI18N
+        
         return new NbDialogOperator(DIALOG_TITLE);
     }
 

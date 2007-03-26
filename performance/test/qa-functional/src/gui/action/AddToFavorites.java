@@ -62,7 +62,6 @@ public class AddToFavorites extends org.netbeans.performance.test.utilities.Perf
         expectedTime = WINDOW_OPEN;
     }
     
-    
     public void testAddJavaFile(){
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";

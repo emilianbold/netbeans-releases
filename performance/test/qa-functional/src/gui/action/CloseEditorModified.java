@@ -63,11 +63,6 @@ public class CloseEditorModified extends org.netbeans.performance.test.utilities
         WAIT_AFTER_OPEN=1500;
     }
     
-    
-    public void testClosingModifiedJavaFile(){
-        doMeasurement();
-    }
-    
     public void initialize(){
         EditorOperator.closeDiscardAll();
         new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));

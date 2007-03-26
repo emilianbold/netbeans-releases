@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,8 +22,7 @@ package gui.window;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -56,7 +55,7 @@ public class FindInProjects extends org.netbeans.performance.test.utilities.Perf
     
     public void prepare(){
         gui.Utilities.workarroundMainMenuRolledUp();
-        new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),gui.Utilities.SOURCE_PACKAGES).select();
+        new SourcePackagesNode("jEdit").select();
     }
     
     public ComponentOperator open(){

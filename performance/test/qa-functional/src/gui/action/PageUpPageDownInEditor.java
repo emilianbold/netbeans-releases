@@ -40,6 +40,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 public class PageUpPageDownInEditor extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private boolean pgup;
+    private EditorOperator editorOperator;
     
     /** Creates a new instance of PageUpPageDownInEditor */
     public PageUpPageDownInEditor(String testName) {
@@ -50,14 +51,21 @@ public class PageUpPageDownInEditor extends org.netbeans.performance.test.utilit
     }
     
     /** Creates a new instance of PageUpPageDownInEditor */
-    public PageUpPageDownInEditor(String testName, String performanceDataName, boolean up) {
+    public PageUpPageDownInEditor(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;
-        pgup = up;
     }
     
-    private EditorOperator editorOperator;
+    public void testPageUp(){
+        pgup = true;
+        doMeasurement();
+    }
+    
+    public void testPageDown(){
+        pgup = false;
+        doMeasurement();
+    }
     
     public void initialize() {
         EditorOperator.closeDiscardAll();

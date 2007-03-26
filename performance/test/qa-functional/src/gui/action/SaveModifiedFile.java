@@ -58,11 +58,6 @@ public class SaveModifiedFile extends org.netbeans.performance.test.utilities.Pe
         WAIT_AFTER_PREPARE=2000;
     }
     
-    
-    public void testSaveModifiedJavaFile(){
-        doMeasurement();
-    }
-    
     public void initialize(){
         EditorOperator.closeDiscardAll();
         new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));

@@ -34,9 +34,10 @@ public class SelectProfilingTaskDialog extends org.netbeans.performance.test.uti
 
     protected static String PROFILE_MAIN_PROJECT = Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle","LBL_ProfileProjectActionPopup"); //Profile Project
     
-    protected static String DIALOG_TITLE = Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle","ProfilingSupport_ProfileClassDialogCaption"); //Select Profiling Task
+    protected static String DIALOG_TITLE = "Profile"; // changed Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle","ProfilingSupport_ProfileClassDialogCaption"); //Select Profiling Task
     
     private Node projectNode;
+    private String projectName;
     
     /**
      * Creates a new instance of CreateTestsDialog
@@ -60,17 +61,18 @@ public class SelectProfilingTaskDialog extends org.netbeans.performance.test.uti
     }
     
     public void prepare() {
-        this.projectNode = new ProjectsTabOperator().getProjectRootNode("PerformanceTestData");
+        projectName = "PerformanceTestData";
+        this.projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         
         if (this.projectNode == null) {
-            throw new Error ("Cannot find project [PerformanceTestData]");
+            throw new Error ("Cannot find project [" + projectName + "]");
         }
     }
     
     public ComponentOperator open(){
         // invoke Tools|Create JUnit Tests from the popup menu
         projectNode.performPopupActionNoBlock(PROFILE_MAIN_PROJECT);
-        return new NbDialogOperator(DIALOG_TITLE);
+        return new NbDialogOperator(DIALOG_TITLE + " " + projectName);
     }
 
     /** Test could be executed internaly in IDE without XTest

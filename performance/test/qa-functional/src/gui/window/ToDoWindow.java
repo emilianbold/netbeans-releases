@@ -51,6 +51,7 @@ public class ToDoWindow extends org.netbeans.performance.test.utilities.Performa
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.tasklist.docscan.Bundle","BK0001");
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.tasklist.docscan.Bundle","win-title");
+        gui.Utilities.workarroundMainMenuRolledUp();
     }    
     
     public void prepare() {
@@ -59,7 +60,7 @@ public class ToDoWindow extends org.netbeans.performance.test.utilities.Performa
     
     public ComponentOperator open() {
         // invoke Window / To Do from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|");
         return new TopComponentOperator(TITLE);
     }
     
