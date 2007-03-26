@@ -209,10 +209,7 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.websvc.design.multiview</package>
-                <package>org.netbeans.modules.websvc.design.view</package>
-            </public-packages>
+            <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>ext/graph/org-netbeans-api-visual.jar</runtime-relative-path>
                 <binary-origin>external/org-netbeans-api-visual.jar</binary-origin>
