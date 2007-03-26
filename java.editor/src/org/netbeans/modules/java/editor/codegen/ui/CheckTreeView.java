@@ -29,9 +29,11 @@ import java.awt.event.MouseListener;
 import javax.swing.Action;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.NodeTreeModel;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
 
@@ -41,6 +43,7 @@ import org.openide.nodes.Node;
  */
 public class CheckTreeView extends BeanTreeView  {
     
+    private NodeTreeModel nodeTreeModel;
     private static final JScrollPane FOR_BORDER = new JScrollPane();
     
     /** Creates a new instance of CheckTreeView */
@@ -60,6 +63,21 @@ public class CheckTreeView extends BeanTreeView  {
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         
         tree.setShowsRootHandles(false);
+    }
+    
+    @Override
+    protected NodeTreeModel createModel() {
+        nodeTreeModel = super.createModel();
+        return nodeTreeModel;
+    }
+
+    public void expandRow( int row ) {        
+        tree.expandRow(row);
+    }
+      
+    public void scrollToBegin() {
+        tree.scrollRowToVisible(0);
+        tree.expandRow(0);
     }
     
     class CheckListener implements MouseListener, KeyListener {

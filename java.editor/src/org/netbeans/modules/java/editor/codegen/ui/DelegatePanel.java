@@ -22,6 +22,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.editor.codegen.DelegateMethodGenerator;
@@ -114,9 +115,13 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
 
     public void propertyChange(PropertyChangeEvent evt) {
         if ( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
-            ElementHandle<? extends Element> handle = getDelegateField();
-            methodSelector.setRootElement(handle == null ? null : DelegateMethodGenerator.getAvailableMethods(component, handle), false);
-            methodSelector.doInitialExpansion(-1);
+            SwingUtilities.invokeLater(new Runnable() {                 
+                public void run() {
+                    ElementHandle<? extends Element> handle = getDelegateField();
+                    methodSelector.setRootElement(handle == null ? null : DelegateMethodGenerator.getAvailableMethods(component, handle), false);
+                    methodSelector.doInitialExpansion(-1);            
+                }
+            });
         }
     }
 
