@@ -39,6 +39,8 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -336,6 +338,15 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
         flushAll();
         // save the files to prevent them being open unsaved
         saveAll();
+        
+        final ProjectBuiltQuery.Status status = ProjectBuiltQuery.getStatus(project);
+        status.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                if (status.isBuilt()) {
+                    classPathChanged();
+                }
+            }           
+        });
     }
 
     /**
