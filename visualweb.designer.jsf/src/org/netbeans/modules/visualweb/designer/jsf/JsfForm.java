@@ -239,13 +239,13 @@ public class JsfForm {
         return designers;
     }
 
-    static Designer[] findDesignersForFileObject(FileObject jsfJspFileObject) {
-        JsfForm jsfForm = findJsfForm(jsfJspFileObject);
-        if (jsfForm == null) {
-            return new Designer[0];
-        }
-        return findDesigners(jsfForm);
-    }
+//    static Designer[] findDesignersForFileObject(FileObject jsfJspFileObject) {
+//        JsfForm jsfForm = findJsfForm(jsfJspFileObject);
+//        if (jsfForm == null) {
+//            return new Designer[0];
+//        }
+//        return findDesigners(jsfForm);
+//    }
 
     static Designer[] findDesignersForDesignContext(DesignContext designContext) {
         JsfForm jsfForm = findJsfForm(designContext);

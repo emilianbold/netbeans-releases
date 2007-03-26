@@ -181,7 +181,7 @@ public class WebForm implements Designer {
     } // End of JspDataObjectListener.
 
     
-//    private boolean isClosing = false;
+//    private boolean cisClosing = false;
 
 //    private WebForm() {
 //        // XXX Get rid of this constructor.
@@ -454,35 +454,35 @@ public class WebForm implements Designer {
         }
     }
     
-    public static WebForm findWebFormForFileObject(FileObject jsfJspFileObject) {
-//        synchronized (LOCK_WEB_FORMS) {
-//            WebForm webform = (WebForm)webFormsByFileObject.get(fo);
-//
-//            return webform;
-//        }
-        
-//        return getWebFormForDesigner(getDesignerFinder().findDesignerForFileObject(fo));
-        
-//        DataObject dobj;
-//        try {
-//            dobj = DataObject.find(fo);
-//        } catch (DataObjectNotFoundException ex) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//    public static WebForm findWebFormForFileObject(FileObject jsfJspFileObject) {
+////        synchronized (LOCK_WEB_FORMS) {
+////            WebForm webform = (WebForm)webFormsByFileObject.get(fo);
+////
+////            return webform;
+////        }
+//        
+////        return getWebFormForDesigner(getDesignerFinder().findDesignerForFileObject(fo));
+//        
+////        DataObject dobj;
+////        try {
+////            dobj = DataObject.find(fo);
+////        } catch (DataObjectNotFoundException ex) {
+////            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+////            return null;
+////        }
+////        
+////        HtmlDomProvider htmlDomProvider = getHtmlDomProviderFinder().findHtmlDomProvider(dobj);
+////        synchronized (htmlDomProvider2webForm) {
+////            return htmlDomProvider2webForm.get(htmlDomProvider);
+////        }
+//        
+//        Designer[] designers = getHtmlDomProviderService().findDesignersForFileObject(jsfJspFileObject);
+//        if (designers.length > 0 && designers[0] instanceof WebForm) {
+//            return (WebForm)designers[0];
+//        } else {
 //            return null;
 //        }
-//        
-//        HtmlDomProvider htmlDomProvider = getHtmlDomProviderFinder().findHtmlDomProvider(dobj);
-//        synchronized (htmlDomProvider2webForm) {
-//            return htmlDomProvider2webForm.get(htmlDomProvider);
-//        }
-        
-        Designer[] designers = getHtmlDomProviderService().findDesignersForFileObject(jsfJspFileObject);
-        if (designers.length > 0 && designers[0] instanceof WebForm) {
-            return (WebForm)designers[0];
-        } else {
-            return null;
-        }
-    }
+//    }
 
 //    // XXX This is very suspicious, but is just copies previous perf fixes.
 //    // The FacesModel should fire events about being to be destroyed, and then
@@ -2431,9 +2431,9 @@ public class WebForm implements Designer {
             return new Designer[0];
         }
 
-        public Designer[] findDesignersForFileObject(FileObject jsfJspFileObject) {
-            return new Designer[0];
-        }
+//        public Designer[] findDesignersForFileObject(FileObject jsfJspFileObject) {
+//            return new Designer[0];
+//        }
 
 //        public Designer[] findDesignersForDesignContext(DesignContext designContext) {
 //            return new Designer[0];
