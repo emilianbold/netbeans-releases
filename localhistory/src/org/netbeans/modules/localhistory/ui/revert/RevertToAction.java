@@ -57,11 +57,6 @@ public class RevertToAction extends NodeAction {
         File[] roots = rootSet.toArray(new File[rootSet.size()]);
 
         RevertFileChanges revertChanges = new RevertFileChanges();
-        /* if(roots[0].isFile())  {
-            revertChanges = new RevertFileChanges();
-        } else {
-            revertChanges = new RevertFolderChanges();
-        } */     
         revertChanges.show(roots[0]);        
     }
        
