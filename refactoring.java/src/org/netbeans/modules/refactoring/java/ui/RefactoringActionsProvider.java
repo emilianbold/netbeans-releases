@@ -362,7 +362,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     return false;
                 }
                 if (dob instanceof DataFolder) {
-                    return false;
+                    Object b = dict.get("DnD"); //NOI18N
+                    return b==null?false: (Boolean) b;
                 }
                 if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
                     return false;

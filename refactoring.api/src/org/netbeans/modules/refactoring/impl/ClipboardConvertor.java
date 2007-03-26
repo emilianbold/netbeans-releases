@@ -52,6 +52,7 @@ public class ClipboardConvertor implements Convertor {
             }
             Hashtable d = new Hashtable();
             ic.add(d);
+            d.put("DnD", true);//NOI18N
             Lookup l = new AbstractLookup(ic);
             Action move = RefactoringActionsFactory.moveAction().createContextAwareInstance(l);
             if (move.isEnabled()) {
