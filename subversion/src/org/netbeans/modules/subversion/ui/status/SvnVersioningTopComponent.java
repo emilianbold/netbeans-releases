@@ -50,6 +50,9 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
     private static SvnVersioningTopComponent instance;
 
     public SvnVersioningTopComponent() {
+        
+        putClientProperty("SlidingName", NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); //NOI18N
+        
         setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); // NOI18N
         setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/versioning-view.png"));  // NOI18N
         setLayout(new BorderLayout());
