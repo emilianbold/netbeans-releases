@@ -63,6 +63,14 @@ public final class SettingsProvider implements MimeDataProvider {
      * @return Lookup or null, if there are no lookup-able objects for mime or global level.
      */
     public Lookup getLookup(MimePath mimePath) {
+        if (mimePath.size() > 0 && mimePath.getMimeType(0).contains(EditorSettingsImpl.TEXT_BASE_MIME_TYPE)) {
+            if (LOG.isLoggable(Level.INFO)) {
+                LOG.log(Level.INFO, "Won't provide any settings for " + EditorSettingsImpl.TEXT_BASE_MIME_TYPE + //NOI18N
+                    " It's been deprecated, use MimePath.EMPTY instead."); //, new Throwable("Stacktrace") //NOI18N
+            }
+            return null;
+        }
+        
         synchronized (cache) {
             WeakReference<Lookup> ref = cache.get(mimePath);
             Lookup lookup = ref == null ? null : ref.get();

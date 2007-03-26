@@ -61,9 +61,11 @@ public class EditorSettingsStorageTest extends NbTestCase {
         EditorTestLookup.setLookup(
             new URL[] {
                 getClass().getClassLoader().getResource(
-                        "org/netbeans/modules/editor/settings/storage/test-layer.xml"),
+                    "org/netbeans/modules/editor/settings/storage/test-layer.xml"),
                 getClass().getClassLoader().getResource(
-                        "org/netbeans/modules/editor/settings/storage/layer.xml"),
+                    "org/netbeans/modules/editor/settings/storage/layer.xml"),
+                getClass().getClassLoader().getResource(
+                    "org/netbeans/core/resources/mf-layer.xml"), // for MIMEResolverImpl to work
             },
             getWorkDir(),
             new Object[] {},
@@ -159,7 +161,7 @@ public class EditorSettingsStorageTest extends NbTestCase {
         
         AttributeSet attribs = fcs.getTokenFontColors(coloringName);
         assertNotNull("Can't find " + coloringName + " coloring", attribs);
-        assertEquals("Wrong bgColor", new Color(rgb), attribs.getAttribute(attributeKey));
+        assertEquals("Wrong " + attributeKey, new Color(rgb), attribs.getAttribute(attributeKey));
     }
     
     public void testSetColors() {

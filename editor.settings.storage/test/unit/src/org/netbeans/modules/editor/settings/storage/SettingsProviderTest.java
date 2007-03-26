@@ -51,9 +51,11 @@ public class SettingsProviderTest extends NbTestCase {
         EditorTestLookup.setLookup(
             new URL[] {
                 getClass().getClassLoader().getResource(
-                        "org/netbeans/modules/editor/settings/storage/test-layer.xml"),
+                    "org/netbeans/modules/editor/settings/storage/test-layer.xml"),
                 getClass().getClassLoader().getResource(
-                        "org/netbeans/modules/editor/settings/storage/layer.xml"),
+                    "org/netbeans/modules/editor/settings/storage/layer.xml"),
+                getClass().getClassLoader().getResource(
+                    "org/netbeans/core/resources/mf-layer.xml"), // for MIMEResolverImpl to work
             },
             getWorkDir(),
             new Object[] {},

@@ -24,6 +24,8 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import junit.framework.Assert;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -35,6 +37,7 @@ import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -146,9 +149,9 @@ public class EditorTestLookup extends ProxyLookup {
             createFileOnPath(mountPoint, resources[i]);
         }
         
-        LocalFileSystem lfs = new StatusFileSystem();
+        LocalFileSystem lfs = new LocalFileSystem();
         try {
-        lfs.setRootDirectory(mountPoint);
+            lfs.setRootDirectory(mountPoint);
         } catch (Exception ex) {}
         
         return lfs;
@@ -171,24 +174,7 @@ public class EditorTestLookup extends ProxyLookup {
         }
     }
     
-    private static class StatusFileSystem extends LocalFileSystem {
-        Status status = new Status () {
-            public String annotateName (String name, java.util.Set files) {
-                return name;
-            }
-
-            public java.awt.Image annotateIcon (java.awt.Image icon, int iconType, java.util.Set files) {
-                return icon;
-            }
-        };        
-        
-        public org.openide.filesystems.FileSystem.Status getStatus() {
-            return status;
-        }
-        
-    }
-    
-    private static class SystemFileSystem extends MultiFileSystem {
+    private static class SystemFileSystem extends MultiFileSystem implements FileSystem.Status {
         public SystemFileSystem(FileSystem [] orig) {
             super(orig);
         }
@@ -196,5 +182,32 @@ public class EditorTestLookup extends ProxyLookup {
         public void setOrig(FileSystem [] orig) {
             setDelegates(orig);
         }
-    }
+
+        public FileSystem.Status getStatus() {
+            return this;
+        }
+        
+        public String annotateName (String name, java.util.Set files) {
+            for(Object o : files) {
+                FileObject fo = (FileObject) o;
+                String bundleName = (String)fo.getAttribute ("SystemFileSystem.localizingBundle"); // NOI18N
+                if (bundleName != null) {
+                    bundleName = org.openide.util.Utilities.translate(bundleName);
+                    ResourceBundle b = NbBundle.getBundle(bundleName);
+                    try {
+                        return b.getString (fo.getPath());
+                    } catch (MissingResourceException ex) {
+                        // ignore--normal
+                        ex.printStackTrace();
+                    }
+                }
+            }
+
+            return name;
+        }
+
+        public java.awt.Image annotateIcon (java.awt.Image icon, int iconType, java.util.Set files) {
+            return icon;
+        }
+    } // End of SystemFileSystem class
 }

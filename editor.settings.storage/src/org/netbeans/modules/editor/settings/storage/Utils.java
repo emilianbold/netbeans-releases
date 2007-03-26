@@ -21,16 +21,17 @@ package org.netbeans.modules.editor.settings.storage;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -40,12 +41,15 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -154,80 +158,32 @@ public class Utils {
         return result.toArray(new KeyStroke[result.size ()]);
     }
     
-    static FileObject getFileObject(MimePath mimePath, String profile, String fileNameExt) {
-        String name = getFileName(mimePath, profile, fileNameExt);
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        return fs.findResource(name);
-    }
-    
-    /**
-     * Crates FileObject for given mimeTypes and profile.
-     */ 
-    static FileObject createFileObject(MimePath mimePath, String profile, String fileName) {
-        String name = getFileName(mimePath, profile, fileName);
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+    static String getLocalizedName(FileObject fo, String defaultValue) {
         try {
-            if (fileName == null) {
-                return FileUtil.createFolder(fs.getRoot(), name);
-            } else {
-                return FileUtil.createData(fs.getRoot(), name);
+            return fo.getFileSystem().getStatus().annotateName(defaultValue, Collections.singleton(fo));
+        } catch (FileStateInvalidException ex) {
+            if (LOG.isLoggable(Level.INFO)) {
+                logOnce(Level.INFO, "Can't find localized name of " + fo, ex); //NOI18N
             }
-        } catch (IOException ex) {
-            LOG.log(Level.WARNING, "Can't create editor settings file or folder: " + name, ex); //NOI18N
-            return null;
+            return defaultValue;
         }
-    }
-    
-    /**
-     * Crates FileObject for given mimeTypes and profile.
-     */ 
-    static void deleteFileObject(MimePath mimePath, String profile, String fileName) {
-        String name = getFileName(mimePath, profile, fileName);
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject fo = fs.findResource(name);
-        if (fo != null) {
-            try {
-                fo.delete();
-            } catch (IOException ex) {
-                LOG.log(Level.WARNING, "Can't delete editor settings file " + fo.getPath(), ex); //NOI18N
-            }
-        }
-    }
-    
-    static String getFileName(MimePath mimePath, String profile, String fileName) {
-        StringBuilder sb = new StringBuilder("Editors");
-        
-        if (mimePath.size() > 0) {
-            sb.append('/').append(mimePath.getPath());
-        }
-        
-        if (profile != null) {
-            sb.append('/').append(profile);
-        }
-        
-        if (fileName != null) {
-            sb.append('/').append(fileName);
-        }
-        
-        return sb.toString();
-    }
-
-    private static FileObject createFile (FileObject fo, String next) throws IOException {
-        FileObject fo1 = fo.getFileObject (next);
-        if (fo1 == null) 
-            return fo.createFolder (next);
-        return fo1;
     }
     
     static String getLocalizedName(FileObject fo, String key, String defaultValue) {
+        return getLocalizedName(fo, key, defaultValue, false);
+    }
+    
+    static String getLocalizedName(FileObject fo, String key, String defaultValue, boolean silent) {
         assert key != null : "The key can't be null"; //NOI18N
 
-        Object [] bundleInfo = findResourceBundle(fo);
+        Object [] bundleInfo = findResourceBundle(fo, silent);
         if (bundleInfo[1] != null) {
             try {
                 return ((ResourceBundle) bundleInfo[1]).getString(key);
             } catch (MissingResourceException ex) {
-                LOG.log(Level.WARNING, "The bundle '" + bundleInfo[0] + "' is missing key '" + key + "'.", ex); //NOI18N
+                if (!silent && LOG.isLoggable(Level.INFO)) {
+                    logOnce(Level.INFO, "The bundle '" + bundleInfo[0] + "' is missing key '" + key + "'.", ex); //NOI18N
+                }
             }
         }
         
@@ -235,7 +191,25 @@ public class Utils {
     }
 
     private static final WeakHashMap<FileObject, Object []> bundleInfos = new WeakHashMap<FileObject, Object []>();
-    private static Object [] findResourceBundle(FileObject fo) {
+    private static final FileChangeListener listener = new FileChangeAdapter() {
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            synchronized (bundleInfos) {
+                bundleInfos.remove(fe.getFile());
+            }
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            if (fe.getName() != null && fe.getName().equals("SystemFileSystem.localizingBundle")) { //NOI18N
+                synchronized (bundleInfos) {
+                    bundleInfos.remove(fe.getFile());
+                }
+            }
+        }
+    };
+    private static final FileChangeListener weakListener = WeakListeners.create(FileChangeListener.class, listener, null);
+    private static Object [] findResourceBundle(FileObject fo, boolean silent) {
         assert fo != null : "FileObject can't be null"; //NOI18N
         
         synchronized (bundleInfos) {
@@ -251,10 +225,14 @@ public class Utils {
                     try {
                         bundleInfo = new Object [] { bundleName, NbBundle.getBundle(bundleName) };
                     } catch (MissingResourceException ex) {
-                        LOG.log(Level.WARNING, "Can't find resource bundle for " + fo.getPath(), ex); //NOI18N
+                        if (!silent && LOG.isLoggable(Level.INFO)) {
+                            logOnce(Level.INFO, "Can't find resource bundle for " + fo.getPath(), ex); //NOI18N
+                        }
                     }
                 } else {
-                    //[PENDING][HACK] LOG.log(Level.WARNING, "The file " + fo.getPath() + " does not specify its resource bundle.", new Throwable("@@@")); //NOI18N
+                    if (!silent && LOG.isLoggable(Level.FINE)) {
+                        logOnce(Level.FINE, "The file " + fo.getPath() + " does not specify its resource bundle.", null); //NOI18N
+                    }
                 }
 
                 if (bundleInfo == null) {
@@ -262,9 +240,27 @@ public class Utils {
                 }
 
                 bundleInfos.put(fo, bundleInfo);
+                fo.removeFileChangeListener(weakListener);
+                fo.addFileChangeListener(weakListener);
             }
 
             return bundleInfo;
+        }
+    }
+    
+    private static final Set<String> ALREADY_LOGGED = Collections.synchronizedSet(new HashSet<String>());
+    private static void logOnce(Level level, String msg, Throwable t) {
+        if (!ALREADY_LOGGED.contains(msg)) {
+            ALREADY_LOGGED.add(msg);
+            if (t != null) {
+                LOG.log(level, msg, t);
+            } else {
+                LOG.log(level, msg);
+            }
+            
+            if (ALREADY_LOGGED.size() > 100) {
+                ALREADY_LOGGED.clear();
+            }
         }
     }
     
@@ -285,7 +281,7 @@ public class Utils {
      * Creates unmodifiable copy of the original map converting <code>AttributeSet</code>s
      * to their immutable versions.
      */
-    public static Map<String, AttributeSet> immutize(Map<String, AttributeSet> map) {
+    public static Map<String, AttributeSet> immutize(Map<String, ? extends AttributeSet> map) {
         Map<String, AttributeSet> immutizedMap = new HashMap<String, AttributeSet>();
         
         for(String name : map.keySet()) {
@@ -310,5 +306,4 @@ public class Utils {
             
         return Collections.unmodifiableMap(immutizedMap);
     }
-    
 }

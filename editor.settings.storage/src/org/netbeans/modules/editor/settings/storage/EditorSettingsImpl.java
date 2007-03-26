@@ -24,15 +24,15 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
 import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettingsFactory;
@@ -71,6 +71,9 @@ public class EditorSettingsImpl extends EditorSettings {
     /** Storage folder for the current keybindings profile attribute. */
     private static final String KEYMAPS_FOLDER = "Keymaps"; // NOI18N
 
+    public static final String TEXT_BASE_MIME_TYPE = "text/base"; //NOI18N
+    private static final String [] EMPTY = new String[0];
+    
     private static EditorSettingsImpl instance = null;
     
     public static synchronized EditorSettingsImpl getInstance() {
@@ -80,29 +83,29 @@ public class EditorSettingsImpl extends EditorSettings {
         return instance;
     }
 
+    // ------------------------------------------------------
+    // Mime types
+    // ------------------------------------------------------
+
+    private final MimeTypesTracker topLevelMimeTypes = new MimeTypesTracker(EDITORS_FOLDER, null);
+    private final HashMap<SettingsType, MimeTypesTracker> settingMimeTypes = new HashMap<SettingsType, MimeTypesTracker>();
+    
     public Set<String> getAllMimeTypes () {
-        FileObject editorsFo = Repository.getDefault().getDefaultFileSystem().findResource(EDITORS_FOLDER);
-        HashSet<String> mimeTypes = new HashSet<String>();
-        
-        if (editorsFo != null) {
-            for(FileObject f : editorsFo.getChildren()) {
-                if (!f.isFolder()) {
-                    continue;
-                }
+        return topLevelMimeTypes.getMimeTypes();
+    }
 
-                String firstPart = f.getNameExt();
-                for(FileObject ff : f.getChildren()) {
-                    if (!ff.isFolder()) {
-                        continue;
-                    }
+    private MimeTypesTracker getMimeTypesTracker(Class settingApiClass) {
+        SettingsType type = SettingsType.get(settingApiClass);
+        assert type != null : "Invalid editor settings API class: " + settingApiClass; //NOI18N
 
-                    String mimeType = firstPart + "/" + ff.getNameExt(); //NOI18N
-                    mimeTypes.add(mimeType);
-                }
+        synchronized (settingMimeTypes) {
+            MimeTypesTracker tracker = settingMimeTypes.get(type);
+            if (tracker == null) {
+                tracker = new MimeTypesTracker(EDITORS_FOLDER, type);
+                settingMimeTypes.put(type, tracker);
             }
+            return tracker;
         }
-        
-        return mimeTypes;
     }
     
     /**
@@ -110,11 +113,9 @@ public class EditorSettingsImpl extends EditorSettings {
      *
      * @return set of mimetypes
      */
-    public Set<String> getMimeTypes () {
-	if (mimeTypesWithColoring == null) {
-            init ();
-        }
-	return mimeTypesWithColoring;
+    // XXX: the API should actually use Collection<String>
+    public Set<String> getMimeTypes() {
+        return getMimeTypesTracker(FontColorSettings.class).getMimeTypes();
     }
     
     /**
@@ -123,12 +124,48 @@ public class EditorSettingsImpl extends EditorSettings {
      * @return name of language for given mime type
      */
     public String getLanguageName (String mimeType) {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors/" + mimeType); //NOI18N
-        return fo == null ? mimeType : Utils.getLocalizedName(fo, mimeType, mimeType);
+        return topLevelMimeTypes.getMimeTypeDisplayName(mimeType);
     }
 
+    // ------------------------------------------------------
+    // Profiles
+    // ------------------------------------------------------
+
+    private final HashMap<SettingsType, ProfilesTracker> settingProfiles = new HashMap<SettingsType, ProfilesTracker>();
+    private ProfilesTracker getProfilesTracker(Class settingApiClass) {
+        SettingsType type = SettingsType.get(settingApiClass);
+        assert type != null : "Invalid editor settings API class: " + settingApiClass; //NOI18N
+        
+        synchronized (settingProfiles) {
+            ProfilesTracker tracker = settingProfiles.get(type);
+            if (tracker == null) {
+                tracker = new ProfilesTracker(type, topLevelMimeTypes);
+                settingProfiles.put(type, tracker);
+            }
+            return tracker;
+        }
+    }
     
-    // FontColors ..............................................................
+    /**
+     * Translates profile's display name to its Id. If the profile's display name
+     * can't be translated this method will simply return the profile's display name
+     * without translation.
+     */
+    String getInternalFontColorProfile(String profile) {
+        ProfilesTracker tracker = getProfilesTracker(FontColorSettings.class);
+        ProfilesTracker.ProfileDescription pd = tracker.getProfileByDisplayName(profile);
+        return pd == null ? profile : pd.getId();
+    }
+    
+    String getInternalKeymapProfile (String profile) {
+        ProfilesTracker tracker = getProfilesTracker(KeyBindingSettings.class);
+        ProfilesTracker.ProfileDescription pd = tracker.getProfileByDisplayName(profile);
+        return pd == null ? profile : pd.getId();
+    }
+    
+    // ------------------------------------------------------
+    // Font Colors
+    // ------------------------------------------------------
 
     /* package */ void notifyTokenFontColorChange(MimePath mimePath, String profile) {
         // XXX: this is hack, we should not abuse the event values like that
@@ -141,21 +178,8 @@ public class EditorSettingsImpl extends EditorSettings {
      * @return set of font & colors profiles
      */
     public Set<String> getFontColorProfiles () {
-	if (fontColorProfiles == null) {
-	    init ();
-        }
-        
-        Set<String> result = new HashSet<String>();
-        for(String profile : fontColorProfiles.keySet()) {
-            if (!profile.startsWith ("test")) {
-                result.add(profile);
-            }
-        }
-        
-	return result;
+	return getProfilesTracker(FontColorSettings.class).getProfilesDisplayNames();
     }
-    
-    private Set<String> systemFontColorProfiles;
     
     /**
      * Returns true for user defined profile.
@@ -164,13 +188,12 @@ public class EditorSettingsImpl extends EditorSettings {
      * @return true for user defined profile
      */
     public boolean isCustomFontColorProfile(String profile) {
-        if (systemFontColorProfiles == null) {
-            init ();
-        }
-        
-        return !systemFontColorProfiles.contains(profile);
+        ProfilesTracker tracker = getProfilesTracker(FontColorSettings.class);
+        ProfilesTracker.ProfileDescription pd = tracker.getProfileByDisplayName(profile);
+        return pd != null && !pd.isRollbackAllowed();
     }
-    
+
+    // XXX: Rewrite this using NbPreferences
     private String currentFontColorProfile;
     
     /**
@@ -347,7 +370,6 @@ public class EditorSettingsImpl extends EditorSettings {
             ColoringStorage.deleteColorings
                 (MimePath.EMPTY, internalProfile, false, false);
             highlightings.remove (internalProfile);
-            init ();
         } else {
 
             if (fontColors.equals (highlightings.get (internalProfile))) return;
@@ -365,8 +387,6 @@ public class EditorSettingsImpl extends EditorSettings {
                     false,
                     fontColors.values ()
                 );
-                if (fontColorProfiles.get (profile) == null)
-                    fontColorProfiles.put (profile, profile);
             }
         }
         
@@ -374,19 +394,19 @@ public class EditorSettingsImpl extends EditorSettings {
     }  
     
     
-    // KeyMaps .................................................................
+    // ------------------------------------------------------
+    // Keybindings
+    // ------------------------------------------------------
 
     /**
      * Returns set of keymap profiles.
      *
      * @return set of font & colors profiles
      */
+    // XXX: the API should actually use Collection<String>
     public Set<String> getKeyMapProfiles () {
-	if (keyMapProfiles == null) init ();
-	return Collections.unmodifiableSet (keyMapProfiles.keySet ());
+	return getProfilesTracker(KeyBindingSettings.class).getProfilesDisplayNames();
     }
-    
-    private Set<String> systemKeymapProfiles;
     
     /**
      * Returns true for user defined profile.
@@ -395,11 +415,9 @@ public class EditorSettingsImpl extends EditorSettings {
      * @return true for user defined profile
      */
     public boolean isCustomKeymapProfile (String profile) {
-        if (systemKeymapProfiles == null) {
-            init();
-        }
-        
-        return !systemKeymapProfiles.contains (profile);
+        ProfilesTracker tracker = getProfilesTracker(KeyBindingSettings.class);
+        ProfilesTracker.ProfileDescription pd = tracker.getProfileByDisplayName(profile);
+        return pd == null || !pd.isRollbackAllowed();
     }
     
     private String currentKeyMapProfile;
@@ -497,133 +515,9 @@ public class EditorSettingsImpl extends EditorSettings {
     
 
     // support methods .........................................................
-    
-    private Map<String, String> fontColorProfiles;
-    private Map<String, String> keyMapProfiles;
-    private Set<String> mimeTypesWithColoring;
 
     private EditorSettingsImpl() {
         
-    }
-    
-    private void init () {
-	fontColorProfiles = new HashMap<String, String>();
-	keyMapProfiles = new HashMap<String, String>();
-	keyMapProfiles.put (DEFAULT_PROFILE, DEFAULT_PROFILE);
-	mimeTypesWithColoring = new HashSet<String>();
-        systemFontColorProfiles = new HashSet<String>();
-        systemKeymapProfiles = new HashSet<String>();
-	FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-	FileObject fo = fs.findResource (EDITORS_FOLDER);
-        if (fo != null) {
-            Enumeration e = fo.getFolders (false);
-            while (e.hasMoreElements()) {
-                init1 ((FileObject) e.nextElement ());
-            }
-        }
-        
-        mimeTypesWithColoring = Collections.unmodifiableSet(mimeTypesWithColoring);
-    }
-    
-    private void init1 (FileObject fo) {
-        Enumeration e = fo.getChildren (false);
-        while (e.hasMoreElements ())
-            init2 ((FileObject) e.nextElement ());
-    }
-	
-    private void init2 (FileObject fo) {
-        if (fo.getNameExt ().equals (ColoringStorage.DEFAULTS_FOLDER) && fo.isFolder () &&
-            fo.getFileObject (ColoringStorage.HIGHLIGHTING_FILE_NAME) != null
-        )
-            addFontColorsProfile (fo, true); // Editors/ProfileName/Defaults/editorColoring.xml
-        else
-        if (fo.getNameExt ().equals (ColoringStorage.HIGHLIGHTING_FILE_NAME))
-            addFontColorsProfile (fo, false); // Editors/ProfileName/editorColoring.xml
-        else
-        if (fo.getFileObject (DEFAULT_PROFILE + "/" + ColoringStorage.DEFAULTS_FOLDER + "/" + ColoringStorage.COLORING_FILE_NAME) != null) //NOI18N
-            addMimeType (fo); // Editors/XXX/YYY/NetBeans/Defaults/coloring.xml
-        else
-        if (fo.getPath ().endsWith ("text/base") && fo.isFolder ()) { //NOI18N
-            if (fo.getFileObject (KeyMapsStorage.DEFAULTS_FOLDER + "/" + KeyMapsStorage.KEYBINDING_FILE_NAME) != null) //NOI18N
-                addKeyMapProfile (fo, true); // Editors/text/base/Defaults/keybindings.xml
-            else
-            if (fo.getFileObject (KeyMapsStorage.KEYBINDING_FILE_NAME) != null)
-                addKeyMapProfile (fo, false); // Editors/text/base/keybindings.xml
-            Enumeration e = fo.getChildren (false);
-            while (e.hasMoreElements ()) {
-                FileObject ff = (FileObject) e.nextElement ();
-                if (!ff.getNameExt().equals(KeyMapsStorage.DEFAULTS_FOLDER)) {
-                    init3 (ff);
-                }
-            }
-        }
-    }
-        
-    private void init3 (FileObject fo) {
-        if (fo.getFileObject (KeyMapsStorage.DEFAULTS_FOLDER + "/" + KeyMapsStorage.KEYBINDING_FILE_NAME) != null) //NOI18N
-            addKeyMapProfile (fo, true); // Editors/text/base/ProfileName/Defaults/keybindings.xml
-        else
-        if (fo.getFileObject (KeyMapsStorage.KEYBINDING_FILE_NAME) != null)
-            addKeyMapProfile (fo, false); // Editors/text/base/ProfileName/keybindings.xml
-    }
-
-    private void addMimeType(FileObject fo) {
-        String mimeType = fo.getPath().substring(8);
-        mimeTypesWithColoring.add(mimeType);
-    }
-    
-    private void addFontColorsProfile(FileObject fo, boolean systemProfile) {
-        String profile = fo.getParent().getNameExt();
-        String displayName = Utils.getLocalizedName(fo.getParent(), profile, profile);
-        
-        if (systemProfile) {
-            systemFontColorProfiles.add(displayName);
-        }
-        
-        fontColorProfiles.put(displayName, profile);
-    }
-    
-    private void addKeyMapProfile(FileObject fo, boolean systemProfile) {
-        String profile = fo.getNameExt();
-        if (profile.equals("base")) { //NOI18N
-            profile = DEFAULT_PROFILE;
-        }
-        
-        String displayName = Utils.getLocalizedName(fo, profile, profile);
-        
-        if (systemProfile) {
-            systemKeymapProfiles.add(displayName);
-        }
-        
-        keyMapProfiles.put(displayName, profile);
-    }
-    
-    /**
-     * Translates profile's display name to its Id. If the profile's display name
-     * can't be translated this method will simply return the profile's display name
-     * without translation.
-     */
-    String getInternalFontColorProfile(String profile) {
-	if (fontColorProfiles == null) {
-	    init ();
-        }
-        
-	String result = fontColorProfiles.get(profile);
-        return result != null ? result : profile;
-    }
-    
-    String getInternalKeymapProfile (String profile) {
-	if (keyMapProfiles == null) {
-	    init();
-        }
-        
-	String result = keyMapProfiles.get (profile);
-        if (result != null) {
-            return result;
-        } else {
-            keyMapProfiles.put(profile, profile);
-            return profile;
-        }
     }
     
     public KeyBindingSettingsFactory getKeyBindingSettings (String[] mimeTypes) {
@@ -637,12 +531,28 @@ public class EditorSettingsImpl extends EditorSettings {
     }
     
     private String [] filter(String [] mimeTypes) {
-        if (mimeTypes.length > 0 && mimeTypes[0].startsWith("test")) { //NOI18N
-            String [] filtered = new String [mimeTypes.length];
-            System.arraycopy(mimeTypes, 0, filtered, 0, mimeTypes.length);
-            filtered[0] = mimeTypes[0].substring(mimeTypes[0].indexOf('_') + 1); //NOI18N
+        if (mimeTypes.length > 0) {
+            String [] filtered = mimeTypes;
             
-            LOG.log(Level.INFO, "Don't use 'test' mime type to access settings through the editor/settings/storage API!", new Throwable("Stacktrace"));
+            if (mimeTypes[0].contains(TEXT_BASE_MIME_TYPE)) {
+                if (mimeTypes.length == 1) {
+                    filtered = EMPTY;
+                } else {
+                    filtered = new String [mimeTypes.length - 1];
+                    System.arraycopy(mimeTypes, 1, filtered, 0, mimeTypes.length - 1);
+                }
+                
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, TEXT_BASE_MIME_TYPE + " has been deprecated, use MimePath.EMPTY instead."); //, new Throwable("Stacktrace") //NOI18N
+                }
+                
+            } else if (mimeTypes[0].startsWith("test")) {
+                filtered = new String [mimeTypes.length];
+                System.arraycopy(mimeTypes, 0, filtered, 0, mimeTypes.length);
+                filtered[0] = mimeTypes[0].substring(mimeTypes[0].indexOf('_') + 1); //NOI18N
+
+                LOG.log(Level.INFO, "Don't use 'test' mime type to access settings through the editor/settings/storage API!", new Throwable("Stacktrace"));
+            }
             
             return filtered;
         } else {
