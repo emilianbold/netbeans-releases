@@ -13,6 +13,7 @@ package ${package};
  */
 public class ${name} {
 
+    /** Creates a new instance of ${name} */
     public ${name}() {
     }
 
