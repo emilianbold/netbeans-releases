@@ -467,14 +467,14 @@ public class CasaModelGraphUtilities {
      */
     public static void ensureVisibity(Widget w) {
         Rectangle visibleRect = w.getBounds();
-        Point p = w.getScene().convertLocalToScene(w.getLocation());
+        Point p = w.getScene().convertLocalToScene(w.getPreferredLocation());
         if(p.x <= 0) {  //Translate into this widget's region.
             Point rp = new Point();
             while(!(w instanceof CasaRegionWidget)) {
                 w = w.getParentWidget();
             }
             if(w instanceof CasaRegionWidget) {
-                rp = w.getScene().convertLocalToScene(w.getLocation());
+                rp = w.getScene().convertLocalToScene(w.getPreferredLocation());
             }
             p.x += rp.x;                    //Translate to the region
         }

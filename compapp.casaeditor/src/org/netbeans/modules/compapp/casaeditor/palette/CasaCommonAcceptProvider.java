@@ -21,6 +21,7 @@ package org.netbeans.modules.compapp.casaeditor.palette;
 
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.beans.BeanInfo;
@@ -41,6 +42,7 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
     private CasaModelGraphScene mScene;
     private Image mIconImage = null;
     private String mIconLable;
+    private Rectangle mSceneBounds;
     
     public CasaCommonAcceptProvider(CasaModelGraphScene scene) {
         mScene = scene;
@@ -58,6 +60,7 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
     }   
     
     public void acceptStarted(Transferable t) {
+        mSceneBounds = mScene.getClientArea().getBounds();
         populateIconInfo(t);
     }
     
@@ -68,6 +71,14 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
             iconNodeWidget.setImage(bValue ? mIconImage : null);
             iconNodeWidget.setLabel(bValue ? mIconLable : null);
             iconNodeWidget.setPreferredLocation(widget.convertLocalToScene(point));
+            
+            if(bValue) {
+                Point scenePoint = widget.convertLocalToScene(point);
+                Rectangle visibleRect = new Rectangle(scenePoint.x, scenePoint.y, 10,iconNodeWidget.getBounds().height);    //A margin
+                if(visibleRect.y <= mSceneBounds.getBounds().height - iconNodeWidget.getBounds().height) { //Dont go beyond screen height!
+                    mScene.getView().scrollRectToVisible(visibleRect);
+                }
+            }
         }
     }
     
