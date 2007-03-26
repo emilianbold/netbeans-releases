@@ -22,7 +22,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.core.ClientCreator;
 import org.netbeans.modules.websvc.core.ClientCreatorProvider;
 import org.netbeans.modules.websvc.core.ClientWizardProperties;
+import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -38,6 +41,14 @@ public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
         if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
             return new JaxWsClientCreator(project, wiz);
         }
+        ProjectInfo projectInfo = new ProjectInfo(project);
+        int projectType = projectInfo.getProjectType();
+        if (projectType == ProjectInfo.EJB_PROJECT_TYPE) {
+                FileObject ddFolder = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory()).getDeploymentDescriptorFolder();
+                if (ddFolder==null || ddFolder.getFileObject("ejb-jar.xml")==null) { //NOI18N
+                    return new JaxWsClientCreator(project, wiz);
+                }
+            }
         return null;
     }
 
