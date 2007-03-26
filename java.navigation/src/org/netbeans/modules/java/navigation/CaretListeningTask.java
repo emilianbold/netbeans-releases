@@ -96,28 +96,28 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             return;
         }
         else {
-			switch (element.getKind()) {
-				case PACKAGE:
-				case CLASS:
-				case INTERFACE:
-				case ENUM:
-				case METHOD:
-				case CONSTRUCTOR:
-				case INSTANCE_INIT:
-				case STATIC_INIT:
-				case FIELD:
-				case ENUM_CONSTANT:
-					lastEh = ElementHandle.create(element);
-					// Diferent element clear data
-					setDeclaration(""); // NOI18N
-					setJavadoc("", ""); // NOI18N
-					break;
-                default:
-                    // clear
-                    setDeclaration(""); // NOI18N
-					setJavadoc("", ""); // NOI18N
-                    break;
-			}            
+            switch (element.getKind()) {
+            case PACKAGE:
+            case CLASS:
+            case INTERFACE:
+            case ENUM:
+            case METHOD:
+            case CONSTRUCTOR:
+            case INSTANCE_INIT:
+            case STATIC_INIT:
+            case FIELD:
+            case ENUM_CONSTANT:
+                lastEh = ElementHandle.create(element);
+                // Diferent element clear data
+                setDeclaration(""); // NOI18N
+                setJavadoc("", ""); // NOI18N
+                break;
+            default:
+                // clear
+                setDeclaration(""); // NOI18N
+                setJavadoc("", ""); // NOI18N
+                break;
+            }
         }
             
         // Compute and set javadoc
