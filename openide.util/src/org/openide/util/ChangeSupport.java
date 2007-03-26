@@ -97,7 +97,11 @@ public final class ChangeSupport {
     private void fireChange(ChangeEvent event) {
         assert event != null;
         for (ChangeListener listener : listeners) {
-            listener.stateChanged(event);
+            try {
+                listener.stateChanged(event);
+            } catch (RuntimeException x) {
+                Exceptions.printStackTrace(x);
+            }
         }
     }
 
