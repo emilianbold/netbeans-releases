@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.nodes;
@@ -49,10 +49,6 @@ public class ClassNodeTest extends JellyTestCase {
     public static Test suite() {
         TestSuite suite = new NbTestSuite();
         suite.addTest(new ClassNodeTest("testVerifyPopup"));
-        suite.addTest(new ClassNodeTest("testCut"));
-        suite.addTest(new ClassNodeTest("testCopy"));
-        suite.addTest(new ClassNodeTest("testDelete"));
-        suite.addTest(new ClassNodeTest("testSaveAsTemplate"));
         suite.addTest(new ClassNodeTest("testProperties"));
         return suite;
     }
@@ -64,6 +60,7 @@ public class ClassNodeTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
+    /** ClassNode instance used in all test cases. */
     protected static ClassNode classNode = null;
 
     /** Finds data node before each test case. */
@@ -93,35 +90,9 @@ public class ClassNodeTest extends JellyTestCase {
         classNode.verifyPopup();
     }
     
-    /** Test cut */
-    public void testCut() {
-        Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
-        classNode.cut();
-        Utils.testClipboard(clipboard1);
-    }
-    
-    /** Test copy */
-    public void testCopy() {
-        Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
-        classNode.copy();
-        Utils.testClipboard(clipboard1);
-    }
-    
-    /** Test delete */
-    public void testDelete() {
-        classNode.delete();
-        Utils.closeConfirmDialog();
-    }
-    
     /** Test properties */
     public void testProperties() {
         classNode.properties();
         Utils.closeProperties("SampleClass1.class");
-    }
-    
-    /** Test saveAsTemplate */
-    public void testSaveAsTemplate() {
-        classNode.saveAsTemplate();
-        new SaveAsTemplateOperator().close();
     }
 }

@@ -67,11 +67,6 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="**/nodes/*Test.class"/>
                 <exclude name="**/J2eeServerNodeTest.class"/>
-                <include name="**/nodes/ClassNodeTest.class/testVerifyPopup" expectedFail="Fails because of missing menu items (#88508)"/>
-                <include name="**/nodes/ClassNodeTest.class/testCut" expectedFail="Fails because of missing menu items (#88508)"/>
-                <include name="**/nodes/ClassNodeTest.class/testCopy" expectedFail="Fails because of missing menu items (#88508)"/>
-                <include name="**/nodes/ClassNodeTest.class/testDelete" expectedFail="Fails because of missing menu items (#88508)"/>
-                <include name="**/nodes/ClassNodeTest.class/testSaveAsTemplate" expectedFail="Fails because of missing menu items (#88508)"/>
                 <!--  Test seems to not fail anymore. Commented it can serve as example of expected fail declaration.
                 <include name="**/nodes/URLNodeTest.class/testSetSwingHTMLBrowser" expectedFail="Fails because of problem in Options (#35972)"/>
                 -->
