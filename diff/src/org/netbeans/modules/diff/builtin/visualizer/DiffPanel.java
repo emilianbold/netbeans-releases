@@ -66,7 +66,6 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
     private LinesComponent linesComp2;
 
     static final long serialVersionUID =3683458237532937983L;
-    private static final String PLAIN_TEXT_MIME = "text/plain";
 
     /** Creates new DiffComponent from AbstractDiff object*/
     public DiffPanel() {
