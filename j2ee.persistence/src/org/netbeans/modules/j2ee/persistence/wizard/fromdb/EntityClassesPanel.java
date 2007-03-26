@@ -47,6 +47,7 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -566,7 +567,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
 
         public void stateChanged(ChangeEvent event) {
-            changeSupport.fireChange(event);
+            changeSupport.fireChange();
         }
 
         private void setErrorMessage(String errorMessage) {

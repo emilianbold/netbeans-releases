@@ -92,6 +92,7 @@ import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
+import org.openide.util.ChangeSupport;
 
 /**
  * Support for creating logical views.
@@ -105,7 +106,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
     private final ReferenceHelper resolver;
-    private List<ChangeListener> changeListeners;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public WebLogicalViewProvider(WebProject project, UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper resolver) {
         this.project = project;
@@ -200,18 +201,12 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         return NodeOp.findChild(configFiles, nodeName);
     }
     
-    public synchronized void addChangeListener (ChangeListener l) {
-        if (this.changeListeners == null) {
-            this.changeListeners = new ArrayList<ChangeListener>();
-        }
-        this.changeListeners.add (l);
+    public void addChangeListener (ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
     
-    public synchronized void removeChangeListener (ChangeListener l) {
-        if (this.changeListeners == null) {
-            return;
-        }
-        this.changeListeners.remove (l);
+    public void removeChangeListener (ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
     
     /**
@@ -220,18 +215,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
      *
      */
     public void testBroken () {
-        ChangeListener[] _listeners;
-        synchronized (this) {
-            if (this.changeListeners == null) {
-                return;
-            }
-            _listeners = changeListeners.toArray(new ChangeListener[changeListeners.size()]);
-
-        }
-        ChangeEvent event = new ChangeEvent(this);
-        for (ChangeListener l : _listeners) {
-            l.stateChanged(event);
-        }
+        changeSupport.fireChange();
     }
     
     // Private innerclasses ----------------------------------------------------

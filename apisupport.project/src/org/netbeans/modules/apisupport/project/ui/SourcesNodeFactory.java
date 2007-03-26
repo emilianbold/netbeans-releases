@@ -36,6 +36,7 @@ import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,7 +56,7 @@ public class SourcesNodeFactory implements NodeFactory {
 
     
     private static class SourceNL implements NodeList<SourceGroup>, ChangeListener {
-        private List<ChangeListener> list = new ArrayList<ChangeListener>();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         private static final String[] SOURCE_GROUP_TYPES = {
             JavaProjectConstants.SOURCES_TYPE_JAVA,
             NbModuleProject.SOURCES_TYPE_JAVAHELP,
@@ -67,11 +68,11 @@ public class SourcesNodeFactory implements NodeFactory {
             project = prj;
         }
         public void addChangeListener(ChangeListener l) {
-            list.add(l);
+            changeSupport.addChangeListener(l);
         }
 
         public void removeChangeListener(ChangeListener l) {
-            list.remove(l);
+            changeSupport.removeChangeListener(l);
         }
 
         public void addNotify() {
@@ -118,9 +119,7 @@ public class SourcesNodeFactory implements NodeFactory {
         }
 
         public void stateChanged(ChangeEvent arg0) {
-            for (ChangeListener lst : list) {
-                lst.stateChanged(new ChangeEvent(this));
-            }
+            changeSupport.fireChange();
         }
 }
 }

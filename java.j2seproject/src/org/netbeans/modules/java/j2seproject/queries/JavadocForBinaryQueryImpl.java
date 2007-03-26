@@ -22,7 +22,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
@@ -30,10 +29,10 @@ import org.openide.filesystems.FileUtil;
 import java.net.URL;
 import java.net.MalformedURLException;
 import javax.swing.event.ChangeListener;
-import javax.xml.transform.Result;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
 
 /**
@@ -56,7 +55,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
         
         class R implements JavadocForBinaryQuery.Result, PropertyChangeListener  {
             
-            private List listeners;
+            private final ChangeSupport changeSupport = new ChangeSupport(this);
             private URL[] result;
             
             public R () {
@@ -86,19 +85,13 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                 }
                 return this.result;
             }
-            public synchronized void addChangeListener(final ChangeListener l) {
+            public void addChangeListener(final ChangeListener l) {
                 assert l != null;
-                if (this.listeners == null) {
-                    this.listeners = new ArrayList ();
-                }
-                this.listeners.add (l);
+                changeSupport.addChangeListener(l);
             }
-            public synchronized void removeChangeListener(final ChangeListener l) {
+            public void removeChangeListener(final ChangeListener l) {
                 assert l != null;
-                if (this.listeners == null) {
-                    return;
-                }
-                this.listeners.remove (l);
+                changeSupport.removeChangeListener(l);
             }
             
             public void propertyChange (final PropertyChangeEvent event) {
@@ -106,21 +99,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                     synchronized (this) {
                         result = null;
                     }
-                    this.fireChange ();
-                }
-            }
-            
-            private void fireChange () {
-                ChangeListener[] _listeners;
-                synchronized (this) {
-                    if (this.listeners == null) {
-                        return;
-                    }
-                    _listeners = (ChangeListener[]) this.listeners.toArray (new ChangeListener[this.listeners.size()]);
-                }
-                ChangeEvent event = new ChangeEvent (this);
-                for (int i=0; i<_listeners.length; i++) {
-                    _listeners[i].stateChanged(event);
+                    this.changeSupport.fireChange ();
                 }
             }
         }

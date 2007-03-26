@@ -20,17 +20,14 @@
 package org.netbeans.modules.j2ee.earproject.ui.wizards;
 
 import java.awt.Component;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import java.util.ResourceBundle;
+import org.openide.util.ChangeSupport;
 
 /**
  * Panel just asking for basic info.
@@ -44,7 +41,7 @@ final public class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
     private ResourceBundle customBundle;
     boolean importStyle = false;
     private HelpCtx helpId;
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     /** Create the wizard panel descriptor. */
     public PanelConfigureProject(String namePropIndex, ResourceBundle customBundle, 
@@ -81,24 +78,13 @@ final public class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
     }
     
     public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        changeSupport.addChangeListener(l);
     }
     public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        changeSupport.removeChangeListener(l);
     }
     protected final void fireChangeEvent() {
-        Iterator<ChangeListener> it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            it.next().stateChanged(ev);
-        }
+        changeSupport.fireChange();
     }
     
     public void readSettings(Object settings) {

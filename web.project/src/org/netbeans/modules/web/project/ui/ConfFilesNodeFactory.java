@@ -65,6 +65,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -95,7 +96,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         private static final String CONF_FILES = "confFiles"; //NOI18N
 
         private final WebProject project;
-        private final ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         ConfFilesNodeList(WebProject proj) {
             project = proj;
@@ -109,24 +110,12 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             return result;
         }
 
-        public synchronized void addChangeListener(ChangeListener l) {
-            listeners.add(l);
+        public void addChangeListener(ChangeListener l) {
+            changeSupport.addChangeListener(l);
         }
 
-        public synchronized void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
-        }
-        
-        private void fireChange() {
-            ArrayList<ChangeListener> list = new ArrayList<ChangeListener>();
-            synchronized (this) {
-                list.addAll(listeners);
-            }
-            Iterator<ChangeListener> it = list.iterator();
-            while (it.hasNext()) {
-                ChangeListener elem = it.next();
-                elem.stateChanged(new ChangeEvent( this ));
-            }
+        public void removeChangeListener(ChangeListener l) {
+            changeSupport.removeChangeListener(l);
         }
 
         public Node node(String key) {
@@ -147,7 +136,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             // The caller holds ProjectManager.mutex() read lock
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    fireChange();
+                    changeSupport.fireChange();
                 }
             });
         }

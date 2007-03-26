@@ -144,7 +144,7 @@ public final class NewFileWizard extends TemplateWizard {
 //    /** The template chooser panel (initially null). */
 //    private WizardDescriptor.Panel templateChooser = null;
 //    /** Change listeners. */
-//    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+//    private final ChangeSupport changeSupport = new ChangeSupport(this);
 //    /** Currently used wizard. */
 //    private TemplateWizard wiz = null;
 //    
@@ -223,19 +223,11 @@ public final class NewFileWizard extends TemplateWizard {
 //    }
 //
 //    public void addChangeListener(ChangeListener l) {
-//        listeners.add(l);
+//        changeSupport.addChangeListener(l);
 //    }
 //
 //    public void removeChangeListener(ChangeListener l) {
-//        listeners.remove(l);
-//    }
-//
-//    private void fireChange() {
-//        ChangeEvent e = new ChangeEvent(this);
-//        Iterator it = listeners.iterator();
-//        while (it.hasNext()) {
-//            ((ChangeListener)it.next()).stateChanged(e);
-//        }
+//        changeSupport.removeChangeListener(l);
 //    }
 //
 //    public void setDelegate(InstantiatingIterator nue) {
@@ -252,11 +244,11 @@ public final class NewFileWizard extends TemplateWizard {
 //            nue.addChangeListener(this);
 //        }
 //        delegate = nue;
-//        fireChange();
+//        changeSupport.fireChange();
 //    }
 //
 //    public void stateChanged(ChangeEvent e) {
-//        fireChange();
+//        changeSupport.fireChange();
 //    }
 //    
 //    private static InstantiatingIterator findTemplateWizardIterator(FileObject template, Project p) {

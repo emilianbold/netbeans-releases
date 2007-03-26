@@ -1,14 +1,11 @@
 package org.netbeans.modules.j2ee.persistence.wizard.dao;
 
 import java.awt.Component;
-
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -21,7 +18,7 @@ public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeList
     private EjbFacadeVisualPanel2 component;
     private WizardDescriptor wizardDescriptor;
     private Project project;
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     public EjbFacadeWizardPanel2(Project project, WizardDescriptor wizardDescriptor) {
         this.project = project;
@@ -58,34 +55,19 @@ public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeList
     }
     
     public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        changeSupport.addChangeListener(l);
     }
     
     public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        changeSupport.removeChangeListener(l);
     }
 
     public String getPackage() {
         return component.getPackage();
     }
 
-    protected final void fireChangeEvent() {
-        Iterator<ChangeListener> it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            it.next().stateChanged(ev);
-        }
-    }
-    
     public void stateChanged(ChangeEvent e) {
-        fireChangeEvent();
+        changeSupport.fireChange();
     }
 
     public void readSettings(Object settings) {

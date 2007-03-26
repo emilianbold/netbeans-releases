@@ -39,6 +39,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -441,22 +442,16 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     
     static class Panel implements WizardDescriptor.ValidatingPanel {
         
-        private ArrayList listeners;        
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         private PanelSourceFolders component;
         private WizardDescriptor settings;
         
-        public synchronized void removeChangeListener(ChangeListener l) {
-            if (this.listeners == null) {
-                return;
-            }
-            this.listeners.remove(l);
+        public void removeChangeListener(ChangeListener l) {
+            changeSupport.removeChangeListener(l);
         }
 
         public void addChangeListener(ChangeListener l) {
-            if (this.listeners == null) {
-                this.listeners = new ArrayList ();
-            }
-            this.listeners.add (l);
+            changeSupport.addChangeListener(l);
         }
 
         public void readSettings(Object settings) {
@@ -494,17 +489,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         }        
         
         private void fireChangeEvent () {
-           Iterator it = null;
-           synchronized (this) {
-               if (this.listeners == null) {
-                   return;
-               }
-               it = ((ArrayList)this.listeners.clone()).iterator();
-           }
-           ChangeEvent event = new ChangeEvent (this);
-           while (it.hasNext()) {
-               ((ChangeListener)it.next()).stateChanged(event);
-           }
+            changeSupport.fireChange();
         }
                 
     }

@@ -30,16 +30,14 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.web.project.SourceRoots;
+import org.openide.util.ChangeSupport;
 
 /**
  * Finds sources corresponding to binaries in a J2SE project.
@@ -116,7 +114,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
     
     private static class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
         
-        private ArrayList listeners;
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         private SourceRoots sourceRoots;
 
         public Result (SourceRoots sourceRoots) {
@@ -128,37 +126,17 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             return this.sourceRoots.getRoots(); //No need to cache it, SourceRoots does
         }
         
-        public synchronized void addChangeListener (ChangeListener l) {
-            if (this.listeners == null) {
-                this.listeners = new ArrayList();
-            }
-            this.listeners.add (l);
+        public void addChangeListener (ChangeListener l) {
+            changeSupport.addChangeListener(l);
         }
         
-        public synchronized void removeChangeListener (ChangeListener l) {
-            if (this.listeners == null) {
-                return;
-            }
-            this.listeners.remove (l);
+        public void removeChangeListener (ChangeListener l) {
+            changeSupport.removeChangeListener(l);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (SourceRoots.PROP_ROOTS.equals(evt.getPropertyName())) {
-                this.fireChange ();
-            }
-        }
-
-        private void fireChange() {
-            Iterator it;
-            synchronized (this) {
-                if (this.listeners == null) {
-                    return;
-                }
-                it = ((ArrayList)this.listeners.clone()).iterator();
-            }
-            ChangeEvent event = new ChangeEvent(this);
-            while (it.hasNext()) {
-                ((ChangeListener)it.next()).stateChanged(event);
+                this.changeSupport.fireChange ();
             }
         }
         

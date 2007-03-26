@@ -25,11 +25,9 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.project.SourceRoots;
@@ -42,6 +40,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,7 +65,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
 
         private final SourceRoots testSources;
         private final WebProject project;
-        private final ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         private final PropertyEvaluator evaluator;
         private final UpdateHelper helper;
@@ -100,24 +99,12 @@ public final class LibrariesNodeFactory implements NodeFactory {
             return result;
         }
 
-        public synchronized void addChangeListener(ChangeListener l) {
-            listeners.add(l);
+        public void addChangeListener(ChangeListener l) {
+            changeSupport.addChangeListener(l);
         }
 
-        public synchronized void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
-        }
-        
-        private void fireChange() {
-            ArrayList<ChangeListener> list = new ArrayList<ChangeListener>();
-            synchronized (this) {
-                list.addAll(listeners);
-            }
-            Iterator<ChangeListener> it = list.iterator();
-            while (it.hasNext()) {
-                ChangeListener elem = it.next();
-                elem.stateChanged(new ChangeEvent( this ));
-            }
+        public void removeChangeListener(ChangeListener l) {
+            changeSupport.removeChangeListener(l);
         }
 
         public Node node(String key) {
@@ -186,7 +173,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
             // The caller holds ProjectManager.mutex() read lock
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    fireChange();
+                    changeSupport.fireChange();
                 }
             });
         }

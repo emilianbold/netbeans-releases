@@ -32,6 +32,7 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -41,7 +42,7 @@ import org.openide.util.NbBundle;
  */
 final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeListener {
 
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private SimpleTargetChooserPanelGUI gui;
 
     private Project project;
@@ -99,23 +100,12 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         return errorMessage == null;
     }
 
-    public synchronized void addChangeListener(ChangeListener l) {
-        listeners.add(l);
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
 
-    public synchronized void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
-    }
-
-    private void fireChange() {
-        ChangeEvent e = new ChangeEvent(this);
-        List<ChangeListener> templist;
-        synchronized (this) {
-            templist = new ArrayList<ChangeListener> (listeners);
-        }
-	for (ChangeListener l: templist) {
-            l.stateChanged(e);
-        }
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
 
     public void readSettings( Object settings ) {
@@ -180,7 +170,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     }
 
     public void stateChanged(ChangeEvent e) {        
-        fireChange();
+        changeSupport.fireChange();
     }
     
     private FileObject getTargetFolderFromGUI () {

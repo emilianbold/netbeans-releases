@@ -22,10 +22,7 @@ package org.netbeans.modules.j2ee.earproject;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -38,6 +35,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.util.ChangeSupport;
 
 /**
  * TODO comments the whole class.
@@ -48,13 +46,12 @@ import org.openide.filesystems.FileRenameEvent;
 public final class BrokenProjectSupport {
     
     private final EarProject project;
-    private final Set<ChangeListener> listeners;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final FileChangeListener artifactListener;
     private final Collection<FileObject> watchedArtifacts = new HashSet<FileObject>();
     
     BrokenProjectSupport(final EarProject project) {
         this.project = project;
-        this.listeners = new HashSet<ChangeListener>(1);
         this.artifactListener = new ArtifactListener();
     }
     
@@ -90,26 +87,15 @@ public final class BrokenProjectSupport {
     }
     
     public void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        changeSupport.addChangeListener(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        changeSupport.removeChangeListener(l);
     }
     
     private void fireChangeEvent() {
-        Iterator<ChangeListener> it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            it.next().stateChanged(ev);
-        }
+        changeSupport.fireChange();
     }
     
     /**

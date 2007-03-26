@@ -35,7 +35,7 @@
 //import org.netbeans.jmi.javamodel.Type;
 //import org.netbeans.modules.j2ee.common.JMIUtils;
 //import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
-//import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ChangeSupport;
+//import org.openide.util.ChangeSupport;
 //
 ///**
 // *

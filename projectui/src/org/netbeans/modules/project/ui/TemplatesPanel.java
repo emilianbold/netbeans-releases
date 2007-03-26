@@ -44,7 +44,7 @@ import org.openide.util.*;
  */
 public class TemplatesPanel implements WizardDescriptor.Panel {
     
-    private ArrayList<ChangeListener> listeners;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private TemplatesPanelGUI panel;
     private WarmupJob warmUp;
     private boolean warmUpActive;
@@ -128,18 +128,12 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         }
     }
     
-    public synchronized void addChangeListener(ChangeListener l) {
-        if (this.listeners == null) {
-            this.listeners = new ArrayList<ChangeListener> ();
-        }
-        this.listeners.add (l);
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
     
-    public synchronized void removeChangeListener(ChangeListener l) {
-        if (this.listeners == null) {
-            return;
-        }
-        this.listeners.remove (l);
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
     
     public boolean isValid() {
@@ -303,17 +297,7 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         }
 
         public void fireChange() {
-            Iterator  it = null;
-            synchronized (this) {
-                if (listeners == null) {
-                    return;
-                }
-                it = ((ArrayList)listeners.clone()).iterator();
-            }
-            ChangeEvent event = new ChangeEvent (this);
-            while (it.hasNext ()) {
-                ((ChangeListener)it.next()).stateChanged(event);
-            }
+            changeSupport.fireChange();
         }
 
     }

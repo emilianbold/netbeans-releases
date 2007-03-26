@@ -21,7 +21,6 @@ package org.netbeans.modules.project.uiapi;
 import java.awt.CardLayout;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -33,6 +32,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.uiapi.DefaultProjectOperationsImplementation.InvalidablePanel;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 
 /**
  * @author Jan Lahoda
@@ -40,7 +40,7 @@ import org.openide.filesystems.FileUtil;
 public class DefaultProjectRenamePanel extends javax.swing.JPanel implements DocumentListener, InvalidablePanel {
     
     private Project project;
-    private List<ChangeListener> listeners;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ProgressHandle handle;
     
     /**
@@ -54,8 +54,6 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
             name = ProjectUtils.getInformation(project).getDisplayName();
         }
         
-        this.listeners = new ArrayList<ChangeListener>();
-        
         initComponents();
         
         projectName.setText(name);
@@ -68,12 +66,12 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         }
     }
     
-    public synchronized void addChangeListener(ChangeListener l) {
-        listeners.add(l);
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
     
-    public synchronized void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
     
     /** This method is called from within the constructor to
@@ -279,16 +277,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         errorMessage.setText(newError);
         
         if (changed) {
-            ChangeListener[] listenersCopy;
-                    
-            synchronized (this) {
-                listenersCopy = listeners.toArray(new ChangeListener[0]);
-            }
-            ChangeEvent evt = new ChangeEvent(this);
-            
-            for (ChangeListener l : listenersCopy) {
-                l.stateChanged(evt);
-            }
+            changeSupport.fireChange();
         }
     }
     

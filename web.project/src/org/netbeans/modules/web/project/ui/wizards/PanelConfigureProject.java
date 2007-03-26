@@ -30,6 +30,7 @@ import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
 /**
@@ -66,26 +67,15 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
         return component.valid(wizardDescriptor);
     }
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     public void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        changeSupport.addChangeListener(l);
     }
     public void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        changeSupport.removeChangeListener(l);
     }
     protected void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
-        }
+        changeSupport.fireChange();
     }
     
     public void readSettings(Object settings) {

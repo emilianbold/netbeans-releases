@@ -106,7 +106,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
     private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
-    private List changeListeners;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     public EjbJarLogicalViewProvider(EjbJarProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
@@ -168,18 +168,12 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         return NodeOp.findChild(configFiles, nodeName);
     }
     
-    public synchronized void addChangeListener (ChangeListener l) {
-        if (this.changeListeners == null) {
-            this.changeListeners = new ArrayList ();
-        }
-        this.changeListeners.add (l);
+    public void addChangeListener (ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
     
-    public synchronized void removeChangeListener (ChangeListener l) {
-        if (this.changeListeners == null) {
-            return;
-        }
-        this.changeListeners.remove (l);
+    public void removeChangeListener (ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
     
     /**
@@ -188,18 +182,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
      *
      */
     public void testBroken () {
-        ChangeListener[] _listeners;
-        synchronized (this) {
-            if (this.changeListeners == null) {
-                return;
-            }
-            _listeners = (ChangeListener[]) this.changeListeners.toArray(
-                    new ChangeListener[this.changeListeners.size()]);
-        }
-        ChangeEvent event = new ChangeEvent (this);
-        for (int i=0; i<_listeners.length; i++) {
-            _listeners[i].stateChanged(event);
-        }
+        changeSupport.fireChange();
     }
             
     private static Lookup createLookup( Project project ) {

@@ -54,6 +54,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.openide.util.ChangeSupport;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
@@ -210,7 +211,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         private final PropertyEvaluator evaluator;
         private final String platformPropName;
         private JavaPlatform platformCache;
-        private List/*<ChangeListener>*/ listeners;
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         
         public PlatformProvider (PropertyEvaluator evaluator, String platformPropName) {
             this.evaluator = evaluator;
@@ -243,38 +244,18 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             return platformCache;
         }
         
-        public synchronized void addChangeListener (ChangeListener l) {
-            if (this.listeners == null) {
-                this.listeners = new ArrayList ();
-            }
-            this.listeners.add (l);
+        public void addChangeListener (ChangeListener l) {
+            changeSupport.addChangeListener(l);
         }
         
-        public synchronized void removeChangeListener (ChangeListener l) {
-            if (this.listeners == null) {
-                return;
-            }
-            this.listeners.remove(l);
+        public void removeChangeListener (ChangeListener l) {
+            changeSupport.removeChangeListener(l);
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
             if (platformPropName.equals (evt.getPropertyName())) {
                 platformCache = null;                
-                this.fireChange ();
-            }
-        }
-        
-        private void fireChange () {
-            ChangeListener[] _listeners;
-            synchronized (this) {
-                if (this.listeners == null) {
-                    return;
-                }
-                _listeners = (ChangeListener[]) this.listeners.toArray(new ChangeListener[listeners.size()]);
-            }
-            ChangeEvent event = new ChangeEvent (this);
-            for (int i=0; i< _listeners.length; i++) {
-                _listeners[i].stateChanged(event);
+                this.changeSupport.fireChange ();
             }
         }
         

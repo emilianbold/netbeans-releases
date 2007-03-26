@@ -40,7 +40,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -59,6 +58,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -414,7 +414,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     private final class NbJdkProvider implements PropertyProvider, PropertyChangeListener { // #63541: JDK selection
         
         private final PropertyEvaluator eval;
-        private final List<ChangeListener> listeners = new ArrayList();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         private final PropertyChangeListener weakListener = WeakListeners.propertyChange(this, null);
         
         public NbJdkProvider(PropertyEvaluator eval) {
@@ -505,15 +505,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
         
         public final void addChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.add(l);
-            }
+            changeSupport.addChangeListener(l);
         }
         
         public final void removeChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.remove(l);
-            }
+            changeSupport.removeChangeListener(l);
         }
         
         public final void propertyChange(PropertyChangeEvent evt) {
@@ -522,19 +518,12 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                     !p.equals(ClassPath.PROP_ENTRIES) && !p.equals(JavaPlatformManager.PROP_INSTALLED_PLATFORMS)) {
                 return;
             }
-            final ChangeEvent ev = new ChangeEvent(this);
-            final Iterator it;
-            synchronized (listeners) {
-                if (listeners.isEmpty()) {
-                    return;
-                }
-                it = new HashSet<ChangeListener>(listeners).iterator();
+            if (!changeSupport.hasListeners()) {
+                return;
             }
             final Mutex.Action<Void> action = new Mutex.Action<Void>() {
                 public Void run() {
-                    while (it.hasNext()) {
-                        ((ChangeListener) it.next()).stateChanged(ev);
-                    }
+                    changeSupport.fireChange();
                     return null;
                 }
             };

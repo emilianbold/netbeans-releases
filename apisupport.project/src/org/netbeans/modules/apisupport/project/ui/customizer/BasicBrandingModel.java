@@ -26,12 +26,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
@@ -39,6 +37,7 @@ import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BrandedFile
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 
@@ -91,7 +90,7 @@ public class BasicBrandingModel {
     private BrandingSupport.BundleKey splashProgressBarEdgeColor = null;
     private BrandingSupport.BundleKey splashProgressBarCornerColor = null;
     
-    private final Set<ChangeListener> listeners = new HashSet();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     /**all above splash BundleKeys in set*/
     private final Set splashKeys = new HashSet();
@@ -109,7 +108,7 @@ public class BasicBrandingModel {
     public void setBrandingEnabled(boolean brandingEnabled) {
         if (this.brandingEnabled != brandingEnabled) {
             this.brandingEnabled = brandingEnabled;
-            fireChange();
+            changeSupport.fireChange();
         }
     }
     
@@ -134,19 +133,11 @@ public class BasicBrandingModel {
     }
     
     public void addChangeListener(ChangeListener l) {
-        listeners.add(l);
+        changeSupport.addChangeListener(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
-    }
-    
-    private void fireChange() {
-        ChangeEvent e = new ChangeEvent(this);
-        Iterator it = listeners.iterator();
-        while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(e);
-        }        
+        changeSupport.removeChangeListener(l);
     }
     
     public void setTitle(String title) {

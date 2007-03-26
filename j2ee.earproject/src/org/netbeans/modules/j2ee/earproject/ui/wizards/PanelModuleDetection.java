@@ -20,13 +20,11 @@
 package org.netbeans.modules.j2ee.earproject.ui.wizards;
 
 import java.awt.Component;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
 /**
@@ -38,7 +36,7 @@ final public class PanelModuleDetection implements WizardDescriptor.Panel, Wizar
     
     private WizardDescriptor wizardDescriptor;
     private PanelModuleDetectionVisual component;
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     public boolean isFinishPanel() {
         return true;
@@ -62,26 +60,11 @@ final public class PanelModuleDetection implements WizardDescriptor.Panel, Wizar
     }
     
     public void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        changeSupport.addChangeListener(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    
-    protected void fireChangeEvent() {
-        Iterator<ChangeListener> it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            it.next().stateChanged(ev);
-        }
+        changeSupport.removeChangeListener(l);
     }
     
     public void readSettings(Object settings) {
@@ -107,6 +90,6 @@ final public class PanelModuleDetection implements WizardDescriptor.Panel, Wizar
     }
     
     public void stateChanged(ChangeEvent arg0) {
-        fireChangeEvent();
+        changeSupport.fireChange();
     }
 }

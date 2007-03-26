@@ -36,6 +36,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderLookup;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -199,7 +200,7 @@ public final class LookupProviderSupport {
     }
     
     private static class SourcesImpl implements Sources, ChangeListener, LookupListener {
-        private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         private Lookup.Result<Sources> delegates;
         private Collection<Sources> currentDelegates = new ArrayList<Sources>();
         
@@ -223,7 +224,7 @@ public final class LookupProviderSupport {
             }
             srcs.addLookupListener(this);
             delegates = srcs;
-            fireChange();
+            changeSupport.fireChange();
         }
 
         public SourceGroup[] getSourceGroups(String type) {
@@ -238,26 +239,16 @@ public final class LookupProviderSupport {
             return result.toArray(new SourceGroup[result.size()]);
         }
 
-        public synchronized void addChangeListener(ChangeListener listener) {
-            listeners.add(listener);
+        public void addChangeListener(ChangeListener listener) {
+            changeSupport.addChangeListener(listener);
         }
 
-        public synchronized void removeChangeListener(ChangeListener listener) {
-            listeners.remove(listener);
+        public void removeChangeListener(ChangeListener listener) {
+            changeSupport.removeChangeListener(listener);
         }
 
         public void stateChanged(ChangeEvent e) {
-            fireChange();
-        }
-
-        private void fireChange() {
-            ArrayList<ChangeListener> list = new ArrayList<ChangeListener>();
-            synchronized (this) {
-                list.addAll(listeners);
-            }
-            for (ChangeListener listener : list) {
-                listener.stateChanged(new ChangeEvent(this));
-            }
+            changeSupport.fireChange();
         }
 
         public void resultChanged(LookupEvent ev) {
@@ -271,7 +262,7 @@ public final class LookupProviderSupport {
                 ns.addChangeListener(this);
                 currentDelegates.add(ns);
             }
-            fireChange();
+            changeSupport.fireChange();
         }
     }
     

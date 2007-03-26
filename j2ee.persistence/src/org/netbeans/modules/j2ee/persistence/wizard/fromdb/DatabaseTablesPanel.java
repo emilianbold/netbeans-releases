@@ -55,6 +55,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -911,7 +912,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         }
 
         public void stateChanged(ChangeEvent event) {
-            changeSupport.fireChange(event);
+            changeSupport.fireChange();
         }
 
         private void setErrorMessage(String errorMessage) {

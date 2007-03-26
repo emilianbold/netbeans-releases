@@ -22,10 +22,8 @@ package org.netbeans.modules.web.project.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
@@ -33,6 +31,7 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -54,7 +53,7 @@ public final class SetupDirNodeFactory implements NodeFactory {
         private static final String SETUP_DIR = "setupDir"; //NOI18N
 
         private final WebProject project;
-        private final ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         SetupDirNodeList(WebProject proj) {
             project = proj;
@@ -68,24 +67,12 @@ public final class SetupDirNodeFactory implements NodeFactory {
             return result;
         }
 
-        public synchronized void addChangeListener(ChangeListener l) {
-            listeners.add(l);
+        public void addChangeListener(ChangeListener l) {
+            changeSupport.addChangeListener(l);
         }
 
-        public synchronized void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
-        }
-        
-        private void fireChange() {
-            ArrayList<ChangeListener> list = new ArrayList<ChangeListener>();
-            synchronized (this) {
-                list.addAll(listeners);
-            }
-            Iterator<ChangeListener> it = list.iterator();
-            while (it.hasNext()) {
-                ChangeListener elem = it.next();
-                elem.stateChanged(new ChangeEvent( this ));
-            }
+        public void removeChangeListener(ChangeListener l) {
+            changeSupport.removeChangeListener(l);
         }
 
         public Node node(String key) {
@@ -106,7 +93,7 @@ public final class SetupDirNodeFactory implements NodeFactory {
             // The caller holds ProjectManager.mutex() read lock
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    fireChange();
+                    changeSupport.fireChange();
                 }
             });
         }

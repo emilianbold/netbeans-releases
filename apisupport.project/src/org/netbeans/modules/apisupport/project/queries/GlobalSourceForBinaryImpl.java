@@ -51,6 +51,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.ChangeSupport;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -133,7 +134,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
     private static final class NbPlatformResult implements
             SourceForBinaryQuery.Result, PropertyChangeListener {
         
-        private final List<ChangeListener> listeners = new ArrayList();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         private final NbPlatform platform;
         private final URL binaryRoot;
         private final String cnb;
@@ -204,9 +205,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         
         public void addChangeListener(ChangeListener l) {
             // start listening on NbPlatform
-            synchronized (listeners) {
-                listeners.add(l);
-            }
+            changeSupport.addChangeListener(l);
             if (!alreadyListening) {
                 platform.addPropertyChangeListener(this);
                 alreadyListening = true;
@@ -214,10 +213,8 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         }
 
         public void removeChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.remove(l);
-            }
-            if (listeners.isEmpty()) {
+            changeSupport.removeChangeListener(l);
+            if (!changeSupport.hasListeners()) {
                 platform.removePropertyChangeListener(this);
                 alreadyListening = false;
             }
@@ -225,17 +222,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName() == NbPlatform.PROP_SOURCE_ROOTS) {
-                Iterator it;
-                synchronized (listeners) {
-                    if (listeners.isEmpty()) {
-                        return;
-                    }
-                    it = new HashSet(listeners).iterator();
-                }
-                ChangeEvent ev = new ChangeEvent(this);
-                while (it.hasNext()) {
-                    ((ChangeListener) it.next()).stateChanged(ev);
-                }
+                changeSupport.fireChange();
             }
         }
         

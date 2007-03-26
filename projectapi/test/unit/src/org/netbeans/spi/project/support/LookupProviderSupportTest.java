@@ -232,25 +232,15 @@ public class LookupProviderSupportTest extends NbTestCase {
     
     private static class SourcesImpl implements Sources {
         public HashMap<String, SourceGroup[]> grpMap = new HashMap<String, SourceGroup[]>();
-        private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-        
         
         public SourceGroup[] getSourceGroups(String type) {
             return grpMap.get(type);
         }
 
         public void addChangeListener(ChangeListener listener) {
-            listeners.add(listener);
         }
 
         public void removeChangeListener(ChangeListener listener) {
-            listeners.remove(listener);
-        }
-        
-        public void fireChange() {
-            for (ChangeListener listener : listeners) {
-                listener.stateChanged(new ChangeEvent(this));
-            }
         }
     }
     

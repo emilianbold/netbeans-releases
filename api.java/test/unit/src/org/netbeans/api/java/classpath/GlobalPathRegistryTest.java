@@ -42,6 +42,7 @@ import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.PathResourceBase;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -277,7 +278,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         private static class Result implements SourceForBinaryQuery.Result {
             
             private FileObject[] sources;                        
-            private ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener> ();
+            private final ChangeSupport changeSupport = new ChangeSupport(this);
             
             public Result (FileObject[] sources) {
                 this.sources = sources;
@@ -286,30 +287,19 @@ public class GlobalPathRegistryTest extends NbTestCase {
             
             void setSources (FileObject[] sources) {
                 this.sources = sources;
-                this.fireChange ();
+                this.changeSupport.fireChange ();
             }
                         
-            public synchronized void addChangeListener(javax.swing.event.ChangeListener l) {
-                this.listeners.add (l);
+            public void addChangeListener(javax.swing.event.ChangeListener l) {
+                changeSupport.addChangeListener (l);
             }            
             
             public FileObject[] getRoots() {
                 return this.sources;
             }
             
-            public synchronized void removeChangeListener(javax.swing.event.ChangeListener l) {
-                this.listeners.remove (l);
-            }
-            
-            private void fireChange () {
-                Iterator it;
-                synchronized (this) {
-                    it = ((ArrayList)this.listeners.clone()).iterator();
-                }
-                ChangeEvent e = new ChangeEvent (this);
-                while (it.hasNext()) {
-                    ((ChangeListener)it.next()).stateChanged(e);
-                }
+            public void removeChangeListener(javax.swing.event.ChangeListener l) {
+                changeSupport.removeChangeListener (l);
             }
             
         }

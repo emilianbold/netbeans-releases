@@ -21,8 +21,6 @@ package org.netbeans.modules.j2ee.earproject;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
@@ -34,13 +32,14 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.util.ChangeSupport;
 
 class EarSources implements Sources, PropertyChangeListener, ChangeListener  {
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private Sources delegate;
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private SourcesHelper sourcesHelper;
 
     EarSources(AntProjectHelper helper, PropertyEvaluator evaluator) {
@@ -76,35 +75,21 @@ class EarSources implements Sources, PropertyChangeListener, ChangeListener  {
     }
 
     public void addChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.add(changeListener);
-        }
+        changeSupport.addChangeListener(changeListener);
     }
 
     public void removeChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.remove(changeListener);
-        }
+        changeSupport.removeChangeListener(changeListener);
     }
 
     private void fireChange() {
-        ChangeListener[] _listeners;
         synchronized (this) {
             if (delegate != null) {
                 delegate.removeChangeListener(this);
                 delegate = null;
             }
         }
-        synchronized (listeners) {
-            if (listeners.isEmpty()) {
-                return;
-            }
-            _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for (int i = 0; i < _listeners.length; i++) {
-            _listeners[i].stateChanged(ev);
-        }
+        changeSupport.fireChange();
     }
     
     public void propertyChange(PropertyChangeEvent evt) {

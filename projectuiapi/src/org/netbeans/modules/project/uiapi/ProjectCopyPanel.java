@@ -20,11 +20,8 @@ package org.netbeans.modules.project.uiapi;
 
 import java.awt.CardLayout;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
@@ -35,6 +32,7 @@ import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.api.project.ProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -46,7 +44,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     private boolean isMove;
     private boolean invalid;
     
-    private List<ChangeListener> listeners;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ProgressHandle handle;
     
     /**
@@ -55,7 +53,6 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     public ProjectCopyPanel(ProgressHandle handle, Project project, boolean isMove) {
         this.project = project;
         this.isMove = isMove;
-        this.listeners = new ArrayList<ChangeListener>();
         this.handle = handle;
         
         
@@ -74,12 +71,12 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         }
     }
     
-    public synchronized void addChangeListener(ChangeListener l) {
-        listeners.add(l);
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
     
-    public synchronized void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
     
     /** This method is called from within the constructor to
@@ -399,16 +396,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         errorMessage.setText(newError);
         
         if (changed) {
-            ChangeListener[] listenersCopy;
-                    
-            synchronized (this) {
-                listenersCopy = listeners.toArray(new ChangeListener[0]);
-            }
-            ChangeEvent evt = new ChangeEvent(this);
-            
-            for (ChangeListener l : listenersCopy) {
-                l.stateChanged(evt);
-            }
+            changeSupport.fireChange();
         }
     }
     

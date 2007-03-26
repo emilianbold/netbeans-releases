@@ -35,6 +35,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.persistence.dd.JavaPersistenceQLKeywords;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityMember;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 

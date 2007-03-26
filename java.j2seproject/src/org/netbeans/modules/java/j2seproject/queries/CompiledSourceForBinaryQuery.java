@@ -39,6 +39,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.ChangeSupport;
 
 /**
  * Finds sources corresponding to binaries in a J2SE project.
@@ -114,7 +115,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
     
     private class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
 
-        private List<ChangeListener> listeners;
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         private SourceRoots sourceRoots;
 
         public Result (SourceRoots sourceRoots) {
@@ -159,37 +160,17 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             return result.toArray(new FileObject[result.size()]);
         }
         
-        public synchronized void addChangeListener (ChangeListener l) {
-            if (this.listeners == null) {
-                this.listeners = new ArrayList<ChangeListener>();
-            }
-            this.listeners.add (l);
+        public void addChangeListener (ChangeListener l) {
+            changeSupport.addChangeListener(l);
         }
         
-        public synchronized void removeChangeListener (ChangeListener l) {
-            if (this.listeners == null) {
-                return;
-            }
-            this.listeners.remove (l);
+        public void removeChangeListener (ChangeListener l) {
+            changeSupport.removeChangeListener(l);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (SourceRoots.PROP_ROOTS.equals(evt.getPropertyName())) {
-                this.fireChange ();
-            }
-        }
-
-        private void fireChange() {
-            ChangeListener[] ls;
-            synchronized (this) {
-                if (this.listeners == null) {
-                    return;
-                }
-                ls = listeners.toArray(new ChangeListener[listeners.size()]);
-            }
-            ChangeEvent event = new ChangeEvent(this);
-            for (ChangeListener l : ls) {
-                l.stateChanged(event);
+                this.changeSupport.fireChange ();
             }
         }
 

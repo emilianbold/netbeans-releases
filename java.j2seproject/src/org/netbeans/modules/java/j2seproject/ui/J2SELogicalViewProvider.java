@@ -78,6 +78,7 @@ import org.openide.loaders.FolderLookup;
 import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -101,7 +102,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
     private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
-    private List<ChangeListener> changeListeners;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     public J2SELogicalViewProvider(J2SEProject project, UpdateHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
@@ -157,18 +158,12 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
     
     
     
-    public synchronized void addChangeListener(ChangeListener l) {
-        if (this.changeListeners == null) {
-            this.changeListeners = new ArrayList<ChangeListener>();
-        }
-        this.changeListeners.add(l);
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
     
-    public synchronized void removeChangeListener(ChangeListener l) {
-        if (this.changeListeners == null) {
-            return;
-        }
-        this.changeListeners.remove(l);
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
     
     /**
@@ -177,17 +172,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
      *
      */
     public void testBroken() {
-        ChangeListener[] _listeners;
-        synchronized (this) {
-            if (this.changeListeners == null) {
-                return;
-            }
-            _listeners = changeListeners.toArray(new ChangeListener[changeListeners.size()]);
-        }
-        ChangeEvent event = new ChangeEvent(this);
-        for (ChangeListener l : _listeners) {
-            l.stateChanged(event);
-        }
+        changeSupport.fireChange();
     }
     
     private static Lookup createLookup( Project project ) {

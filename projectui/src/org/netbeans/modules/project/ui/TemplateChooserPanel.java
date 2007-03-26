@@ -20,8 +20,6 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -32,6 +30,7 @@ import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -45,7 +44,7 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
     private static String lastCategory = null;
     private static String lastTemplate = null;
 
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private TemplateChooserPanelGUI gui;
 
     private Project project;
@@ -73,23 +72,12 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
         return gui != null && gui.getTemplate() != null;
     }
 
-    public synchronized void addChangeListener(ChangeListener l) {
-        listeners.add(l);
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
 
-    public synchronized void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
-    }
-
-    private void fireChange() {
-        ChangeEvent e = new ChangeEvent(this);
-        List<ChangeListener> templist;
-        synchronized (this) {
-            templist = new ArrayList<ChangeListener> (listeners);
-        }
-	for (ChangeListener l: templist) {
-            l.stateChanged(e);
-        }
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
 
     public void readSettings(Object settings) {
@@ -148,7 +136,7 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
             setDelegate(null);
         }
          */
-        fireChange();
+        changeSupport.fireChange();
         
     }
 

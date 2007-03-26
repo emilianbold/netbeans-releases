@@ -21,10 +21,9 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -38,7 +37,7 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
     private boolean valid = true;
     private WizardDescriptor settings;
     
-    private EventListenerList listeners = new EventListenerList();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     protected BasicWizardPanel(WizardDescriptor settings) {
         this.settings = settings;
@@ -53,20 +52,15 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
     }
     
     public void addChangeListener(ChangeListener l) {
-        listeners.add(ChangeListener.class, l);
+        changeSupport.addChangeListener(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        listeners.remove(ChangeListener.class, l);
+        changeSupport.removeChangeListener(l);
     }
     
     protected void fireChange() {
-        ChangeListener[] chListeners = (ChangeListener[]) listeners.
-                getListeners(ChangeListener.class);
-        ChangeEvent e = new ChangeEvent(this);
-        for (int i = 0; i < chListeners.length; i++) {
-            chListeners[i].stateChanged(e);
-        }
+        changeSupport.fireChange();
     }
     
     /**

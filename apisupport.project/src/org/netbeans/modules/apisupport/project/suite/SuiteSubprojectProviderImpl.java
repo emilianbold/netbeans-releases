@@ -24,9 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -38,6 +36,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 
 /**
  * Lists modules in a suite.
@@ -49,7 +48,7 @@ final class SuiteSubprojectProviderImpl implements SubprojectProvider {
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     
-    private final Set<ChangeListener> listeners = new HashSet();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private boolean reloadNeeded;
     
     public SuiteSubprojectProviderImpl(AntProjectHelper helper, PropertyEvaluator eval) {
@@ -59,7 +58,7 @@ final class SuiteSubprojectProviderImpl implements SubprojectProvider {
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("modules".equals(evt.getPropertyName())) { // NOI18N
                     SuiteSubprojectProviderImpl.this.reloadNeeded = true;
-                    SuiteSubprojectProviderImpl.this.fireChange();
+                    SuiteSubprojectProviderImpl.this.changeSupport.fireChange();
                 }
             }
         });
@@ -74,30 +73,11 @@ final class SuiteSubprojectProviderImpl implements SubprojectProvider {
     }
     
     public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        changeSupport.addChangeListener(l);
     }
     
     public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    
-    private void fireChange() {
-        Iterator it;
-        ChangeEvent e = new ChangeEvent(this);
-        synchronized (listeners) {
-            if (listeners.isEmpty()) {
-                return;
-            }
-            it = new HashSet(listeners).iterator();
-        }
-        while (it.hasNext()) {
-            ChangeListener l = (ChangeListener) it.next();
-            l.stateChanged(e);
-        }
+        changeSupport.removeChangeListener(l);
     }
     
     private Set<NbModuleProject> loadProjects() {

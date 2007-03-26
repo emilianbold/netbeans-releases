@@ -32,7 +32,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
@@ -47,6 +46,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.AsyncGUIJob;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -64,7 +64,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
     
     // private final String[] recommendedTypes = null;
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     //Templates folder root
     private FileObject templatesFolder;
@@ -125,23 +125,16 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     }
 
 
-    public synchronized void addChangeListener(ChangeListener l) {
-        listeners.add(l);
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
     
-    public synchronized void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
     
     private void fireChange() {
-        ChangeEvent e = new ChangeEvent(this);
-        List<ChangeListener> templist;
-        synchronized (this) {
-            templist = new ArrayList<ChangeListener> (listeners);
-        }
-	for (ChangeListener l: templist) {
-            l.stateChanged(e);
-        }
+        changeSupport.fireChange();
     }
     
     

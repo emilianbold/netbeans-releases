@@ -57,7 +57,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
@@ -73,6 +72,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -793,7 +793,7 @@ public final class Util {
     public static final class UserPropertiesFileProvider implements PropertyProvider, PropertyChangeListener, ChangeListener {
         private final PropertyEvaluator eval;
         private final File basedir;
-        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         private PropertyProvider delegate;
         public UserPropertiesFileProvider(PropertyEvaluator eval, File basedir) {
             this.eval = eval;
@@ -825,37 +825,20 @@ public final class Util {
             }
         }
         public void addChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.add(l);
-            }
+            changeSupport.addChangeListener(l);
         }
         public void removeChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.remove(l);
-            }
+            changeSupport.removeChangeListener(l);
         }
         public void propertyChange(PropertyChangeEvent evt) {
             String p = evt.getPropertyName();
             if (p == null || p.equals("user.properties.file")) { // NOI18N
                 computeDelegate();
-                fireChange();
+                changeSupport.fireChange();
             }
         }
         public void stateChanged(ChangeEvent e) {
-            fireChange();
-        }
-        private void fireChange() {
-            ChangeEvent ev = new ChangeEvent(this);
-            Iterator<ChangeListener> it;
-            synchronized (listeners) {
-                if (listeners.isEmpty()) {
-                    return;
-                }
-                it = new HashSet<ChangeListener>(listeners).iterator();
-            }
-            while (it.hasNext()) {
-                it.next().stateChanged(ev);
-            }
+            changeSupport.fireChange();
         }
     }
     

@@ -25,9 +25,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
@@ -37,6 +35,7 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -89,7 +88,7 @@ public class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementat
     class R implements BinaryForSourceQuery.Result, PropertyChangeListener {
         
         private final String propName;
-        private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         
         R (final String propName) {
             assert propName != null;
@@ -114,19 +113,16 @@ public class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementat
 
         public void addChangeListener(ChangeListener l) {
             assert l != null;
-            this.listeners.add (l);
+            changeSupport.addChangeListener(l);
         }
 
         public void removeChangeListener(ChangeListener l) {
             assert l != null;
-            this.listeners.remove (l);
+            changeSupport.removeChangeListener(l);
         }
 
         public void propertyChange(PropertyChangeEvent event) {
-            ChangeEvent ce = new ChangeEvent (this);
-            for (ChangeListener l : listeners) {
-                l.stateChanged(ce);
-            }
+            changeSupport.fireChange();
         }
 }
 

@@ -21,10 +21,6 @@ package org.netbeans.modules.j2ee.persistence.wizard.unit;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -37,6 +33,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescriptor;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -49,7 +46,7 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     private PersistenceUnitWizardPanelDS p;
     private PersistenceUnitWizardPanelJdbc jdbcPanel;
     private PersistenceUnitWizardPanel panel;
-    private List changeListeners = new ArrayList();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private WizardDescriptor wizardDescriptor;
     private Project project;
     private boolean isContainerManaged;
@@ -61,7 +58,7 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     }
     
     public void addChangeListener(javax.swing.event.ChangeListener l) {
-        changeListeners.add(l);
+        changeSupport.addChangeListener(l);
     }
     
     public java.awt.Component getComponent() {
@@ -124,7 +121,7 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     }
     
     public void removeChangeListener(javax.swing.event.ChangeListener l) {
-        changeListeners.remove(l);
+        changeSupport.removeChangeListener(l);
     }
     
     public void storeSettings(Object settings) {
@@ -134,19 +131,8 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
         return isValid();
     }
     
-    protected final void fireChangeEvent() {
-        Iterator it;
-        synchronized (changeListeners) {
-            it = new HashSet(changeListeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
-        }
-    }
-    
     public void stateChanged(ChangeEvent e) {
-        fireChangeEvent();
+        changeSupport.fireChange();
     }
     
     String getPersistenceUnitName() {

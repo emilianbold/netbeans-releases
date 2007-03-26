@@ -24,7 +24,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
@@ -37,12 +36,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.spi.project.support.GenericSources;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,7 +60,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         
     private Project project;
     private String expectedExtension;
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private SourceGroup[] folders;
     private boolean isFolder;
     
@@ -185,25 +184,14 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         return PREF_DIM;
     }
     
-    public synchronized void addChangeListener(ChangeListener l) {
-        listeners.add(l);
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
     
-    public synchronized void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
     
-    private void fireChange() {
-        ChangeEvent e = new ChangeEvent(this);
-        List<ChangeListener> templist;
-        synchronized (this) {
-            templist = new ArrayList<ChangeListener> (listeners);
-        }
-	for (ChangeListener l: templist) {
-            l.stateChanged(e);
-        }
-    }
-        
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -399,7 +387,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             
         fileTextField.setText( createdFileName.replace( '/', File.separatorChar ) ); // NOI18N    
             
-        fireChange();
+        changeSupport.fireChange();
     }
     
    

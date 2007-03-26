@@ -26,7 +26,6 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
@@ -47,9 +46,9 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
 class ArchiveViews {
@@ -152,7 +151,7 @@ class ArchiveViews {
     
     private static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
         
-        EventListenerList ell = new EventListenerList();        
+        final ChangeSupport changeSupport = new ChangeSupport (this );
         
         public VisibilityQueryDataFilter() {
             VisibilityQuery.getDefault().addChangeListener( this );
@@ -164,24 +163,15 @@ class ArchiveViews {
         }
         
         public void stateChanged( ChangeEvent e) {            
-            Object[] listeners = ell.getListenerList();     
-            ChangeEvent event = null;
-            for (int i = listeners.length-2; i>=0; i-=2) {
-                if (listeners[i] == ChangeListener.class) {             
-                    if ( event == null) {
-                        event = new ChangeEvent( this );
-                    }
-                    ((ChangeListener)listeners[i+1]).stateChanged( event );
-                }
-            }
+            changeSupport.fireChange();
         }        
     
         public void addChangeListener( ChangeListener listener ) {
-            ell.add( ChangeListener.class, listener );
+            changeSupport.addChangeListener( listener );
         }        
                         
         public void removeChangeListener( ChangeListener listener ) {
-            ell.remove( ChangeListener.class, listener );
+            changeSupport.removeChangeListener( listener );
         }
         
     }

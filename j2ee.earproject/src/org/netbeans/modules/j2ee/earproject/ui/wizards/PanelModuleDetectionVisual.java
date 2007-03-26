@@ -25,10 +25,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.EventObject;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -48,6 +45,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,7 +56,7 @@ public class PanelModuleDetectionVisual extends JPanel {
     private final Vector<Vector<String>> modules = new Vector<Vector<String>>();
     private static final int REL_PATH_INDEX = 0;
     private static final int TYPE_INDEX = 1;
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     // Location of Enterprise Application to be imported, chosen on the previous panel.
     private File eaLocation;
@@ -73,26 +71,11 @@ public class PanelModuleDetectionVisual extends JPanel {
     }
     
     public void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        changeSupport.addChangeListener(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    
-    protected void fireChangeEvent() {
-        Iterator<ChangeListener> it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            it.next().stateChanged(ev);
-        }
+        changeSupport.removeChangeListener(l);
     }
     
     private void initModuleTable() {
@@ -186,7 +169,7 @@ public class PanelModuleDetectionVisual extends JPanel {
         row.add(relPath);
         row.add(getModuleType(relPath).getDescription());
         modules.add(row);
-        fireChangeEvent();
+        changeSupport.fireChange();
     }
     
     private static final String getMessage(String bundleKey) {
@@ -269,7 +252,7 @@ public class PanelModuleDetectionVisual extends JPanel {
         if (row != -1) {
             modules.remove(row);
             getModuleTableModel().fireTableRowsDeleted(row, row);
-            fireChangeEvent();
+            changeSupport.fireChange();
         }
     }//GEN-LAST:event_removeModuleButtonActionPerformed
     
