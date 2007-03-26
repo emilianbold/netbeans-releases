@@ -1926,7 +1926,16 @@ public abstract class ETNodeDrawEngine extends ETDrawEngine implements INodeDraw
     */
    public Color getLightGradientFillColor()
    {
-      return new Color(m_ResourceUser.getCOLORREFForStringID(m_nLightFillStringID));
+       IPreferenceManager2 prefMan = ProductHelper.getPreferenceManager();
+       if (prefMan != null)
+       {
+           String prefVal = prefMan.getPreferenceValue("Diagrams", "ShowColorGradient");
+           if (("PSK_NO").equals(prefVal))
+           {
+               return getFillColor();
+           }
+       }
+       return new Color(m_ResourceUser.getCOLORREFForStringID(m_nLightFillStringID));
    }
    
    /*
@@ -2299,6 +2308,7 @@ public abstract class ETNodeDrawEngine extends ETDrawEngine implements INodeDraw
     */
    public int setLightGradientFillColor(String resourceName, Color color)
    {
+       
       if (color != null)
       {
          m_nLightFillStringID = m_ResourceUser.setResourceStringID(m_nLightFillStringID, 
