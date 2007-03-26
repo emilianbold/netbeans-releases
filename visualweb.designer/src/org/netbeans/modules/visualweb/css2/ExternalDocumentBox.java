@@ -23,18 +23,13 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
 import org.netbeans.modules.visualweb.designer.ImageCache;
-import java.awt.Font;
-import java.awt.Toolkit;
 import java.net.URL;
 import javax.swing.ImageIcon;
 
 import javax.swing.JViewport;
 
 import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -44,7 +39,6 @@ import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
-import org.netbeans.modules.visualweb.designer.DocumentCache;
 
 
 /**
@@ -74,150 +68,151 @@ public abstract class ExternalDocumentBox extends DocumentBox {
         this.frameForm = frameForm;
     }
 
-    protected static WebForm findForm(WebForm webform, URL url) {
-//        DocumentCache cache = webform.getDocument().getFrameBoxCache();
-        DocumentCache cache = webform.getFrameBoxCache();
-        WebForm frameForm = cache.get(url);
-
-        if (frameForm != null) {
-            return frameForm;
-        }
-
-        // According to HTML4.01 section 16.5: "The contents of the
-        // IFRAME element, on the other hand, should only be displayed
-        // by user agents that do not support frames or are configured
-        // not to display frames."
-        // Thus, we don't walk the children array; instead, we
-        // fetch the url document and display that instead
-        if (url == null) {
-            return null;
-        }
-
-        FileObject fo = URLMapper.findFileObject(url);
-
-        if (fo != null) {
-            frameForm = loadPage(fo);
-        }
-
-        if (frameForm == null) {
-            frameForm = loadPage(url);
-        }
-
-        if ((frameForm != null) && (frameForm != WebForm.EXTERNAL)) {
-            cache.put(url, frameForm);
-        }
-
-//        // Set the cell renderer pane if necessary
-//        if ((frameForm != null) && (frameForm.getRenderPane() == null)) {
-//            frameForm.setRenderPane(webform.getRenderPane());
+    // XXX Moved to designer/jsf/../JsfForm.
+//    protected final static WebForm findForm(WebForm webform, URL url) {
+////        DocumentCache cache = webform.getDocument().getFrameBoxCache();
+//        DocumentCache cache = webform.getFrameBoxCache();
+//        WebForm frameForm = cache.get(url);
+//
+//        if (frameForm != null) {
+//            return frameForm;
 //        }
-
-        return frameForm;
-    }
+//
+//        // According to HTML4.01 section 16.5: "The contents of the
+//        // IFRAME element, on the other hand, should only be displayed
+//        // by user agents that do not support frames or are configured
+//        // not to display frames."
+//        // Thus, we don't walk the children array; instead, we
+//        // fetch the url document and display that instead
+//        if (url == null) {
+//            return null;
+//        }
+//
+//        FileObject fo = URLMapper.findFileObject(url);
+//
+//        if (fo != null) {
+//            frameForm = loadPage(fo);
+//        }
+//
+//        if (frameForm == null) {
+//            frameForm = loadPage(url);
+//        }
+//
+//        if ((frameForm != null) && (frameForm != WebForm.EXTERNAL)) {
+//            cache.put(url, frameForm);
+//        }
+//
+////        // Set the cell renderer pane if necessary
+////        if ((frameForm != null) && (frameForm.getRenderPane() == null)) {
+////            frameForm.setRenderPane(webform.getRenderPane());
+////        }
+//
+//        return frameForm;
+//    }
 
     protected abstract String getUrlString();
 
-    private static WebForm loadPage(URL url) {
-        //Log.err.log("URL box loading not yet implemented");
-        return WebForm.EXTERNAL;
-
-//        /*
-//        // Compute document base for the other document
-//        //        try {
-//        //            url = new URL(getBase(), href);
-//        //        } catch (MalformedURLException mfe) {
-//        //            try {
-//        //                ErrorManager.getDefault().notify(mfe);
-//        //                url = new URL(href);
-//        //            } catch (MalformedURLException mfe2) {
-//        //                ErrorManager.getDefault().notify(mfe);
-//        //                url = null;
-//        //            }
-//        //        }
-//        //        if (url != null) {
-//        StringBuffer sb = new StringBuffer();
-//        try {
-//            InputStream uis = url.openStream();
-//            Reader r = new BufferedReader(new InputStreamReader(uis));
-//            int c;
-//            while ((c = r.read()) != -1) {
-//                sb.append((char)c);
-//            }
-//        } catch (IOException ioe) {
-//            ErrorManager.getDefault().notify(ioe);
-//            return false;
-//        }
-//        String str = sb.toString();
+//    private static WebForm loadPage(URL url) {
+//        //Log.err.log("URL box loading not yet implemented");
+//        return WebForm.EXTERNAL;
 //
-//        // Construct a document containing the string buffer
-//        StringContent content = new StringContent(str.length()+5);
-//        try {
-//            content.insertString(0, str);
-//        } catch (Exception e) {
-//            ErrorManager.getDefault().notify(e);
-//            return false;
-//        }
-//        AbstractDocument adoc = new PlainDocument(content);
+////        /*
+////        // Compute document base for the other document
+////        //        try {
+////        //            url = new URL(getBase(), href);
+////        //        } catch (MalformedURLException mfe) {
+////        //            try {
+////        //                ErrorManager.getDefault().notify(mfe);
+////        //                url = new URL(href);
+////        //            } catch (MalformedURLException mfe2) {
+////        //                ErrorManager.getDefault().notify(mfe);
+////        //                url = null;
+////        //            }
+////        //        }
+////        //        if (url != null) {
+////        StringBuffer sb = new StringBuffer();
+////        try {
+////            InputStream uis = url.openStream();
+////            Reader r = new BufferedReader(new InputStreamReader(uis));
+////            int c;
+////            while ((c = r.read()) != -1) {
+////                sb.append((char)c);
+////            }
+////        } catch (IOException ioe) {
+////            ErrorManager.getDefault().notify(ioe);
+////            return false;
+////        }
+////        String str = sb.toString();
+////
+////        // Construct a document containing the string buffer
+////        StringContent content = new StringContent(str.length()+5);
+////        try {
+////            content.insertString(0, str);
+////        } catch (Exception e) {
+////            ErrorManager.getDefault().notify(e);
+////            return false;
+////        }
+////        AbstractDocument adoc = new PlainDocument(content);
+////        DataObject dobj = null;
+////        String filename = url.toString(); // only used for diagnostic messages, right?
+////
+////        MarkupUnit markup = new MarkupUnit(dobj, adoc, filename, MarkupUnit.ALLOW_XML);
+////        markup.sync();
+////        //if (!markup.getState().equals(markup.getState().CLEAN)) {
+////        if (!markup.getState().equals(Unit.State.CLEAN)) {
+////            return false;
+////        }
+////
+////        CellRendererPane renderPane = webform.getPane().getRenderPane();
+////        Log.err.log("FrameBox initialization for external urls not yet done");
+////        */
+////        /* XXX Not yet implemented
+////        frameForm = new WebForm(markup, renderPane);
+////        DesignerPane pane = null;
+////        Document document = new Document(frameForm);
+////        frameForm.setDocument(document);
+////        return success;
+////        */
+//    }
+//
+//    private static WebForm loadPage(FileObject fobj) {
 //        DataObject dobj = null;
-//        String filename = url.toString(); // only used for diagnostic messages, right?
 //
-//        MarkupUnit markup = new MarkupUnit(dobj, adoc, filename, MarkupUnit.ALLOW_XML);
-//        markup.sync();
-//        //if (!markup.getState().equals(markup.getState().CLEAN)) {
-//        if (!markup.getState().equals(Unit.State.CLEAN)) {
-//            return false;
+//        try {
+//            dobj = DataObject.find(fobj);
+//        } catch (DataObjectNotFoundException ex) {
+//            return null;
 //        }
 //
-//        CellRendererPane renderPane = webform.getPane().getRenderPane();
-//        Log.err.log("FrameBox initialization for external urls not yet done");
-//        */
-//        /* XXX Not yet implemented
-//        frameForm = new WebForm(markup, renderPane);
-//        DesignerPane pane = null;
-//        Document document = new Document(frameForm);
-//        frameForm.setDocument(document);
-//        return success;
-//        */
-    }
-
-    private static WebForm loadPage(FileObject fobj) {
-        DataObject dobj = null;
-
-        try {
-            dobj = DataObject.find(fobj);
-        } catch (DataObjectNotFoundException ex) {
-            return null;
-        }
-
-        /*
-        // Wrapper which handles errors
-        LiveFacesCookie c = LiveFacesCookie.getInstanceFor(dobj);
-        if (c == null) {
-            ErrorManager.getDefault().log("Data object " + dobj + " ain't got no insync cookie!");
-            return false;
-        }
-        FacesModel model = getDocument().getWebForm().getModel();
-        model.syncFromDoc();
-        if (model.getMarkup().getState().isInvalid()) {
-            return false;
-        }
-        markup = model.getMarkup();
-         */
-
-        // XXX Does this work for a form which is not yet open?
-//        WebForm frameForm = WebForm.findWebForm(dobj);
-        WebForm frameForm = WebForm.getWebFormForDataObject(dobj);
-
-//        if ((frameForm != null) && (frameForm.getModel() != null)) {
-//            frameForm.getModel().sync();
-        if (frameForm != null) {
-            frameForm.syncModel();
-
-            return frameForm;
-        } else {
-            return null;
-        }
-    }
+//        /*
+//        // Wrapper which handles errors
+//        LiveFacesCookie c = LiveFacesCookie.getInstanceFor(dobj);
+//        if (c == null) {
+//            ErrorManager.getDefault().log("Data object " + dobj + " ain't got no insync cookie!");
+//            return false;
+//        }
+//        FacesModel model = getDocument().getWebForm().getModel();
+//        model.syncFromDoc();
+//        if (model.getMarkup().getState().isInvalid()) {
+//            return false;
+//        }
+//        markup = model.getMarkup();
+//         */
+//
+//        // XXX Does this work for a form which is not yet open?
+////        WebForm frameForm = WebForm.findWebForm(dobj);
+//        WebForm frameForm = WebForm.getWebFormForDataObject(dobj);
+//
+////        if ((frameForm != null) && (frameForm.getModel() != null)) {
+////            frameForm.getModel().sync();
+//        if (frameForm != null) {
+//            frameForm.syncModel();
+//
+//            return frameForm;
+//        } else {
+//            return null;
+//        }
+//    }
 
     protected void initializeBackgroundColor() {
 //        if ((frameForm != null) && !frameForm.getModel().isBusted()) {

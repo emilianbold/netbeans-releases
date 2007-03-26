@@ -69,7 +69,8 @@ public class JspIncludeBox extends ExternalDocumentBox {
         WebForm frameForm = null;
 
         if (src != null) {
-            frameForm = findForm(webform, src);
+//            frameForm = findForm(webform, src);
+            frameForm = webform.findExternalForm(src);
         }
 
         if (frameForm == WebForm.EXTERNAL) {

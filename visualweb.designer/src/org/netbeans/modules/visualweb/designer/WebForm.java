@@ -36,7 +36,6 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
-import org.netbeans.modules.visualweb.designer.DocumentCache;
 import org.netbeans.modules.visualweb.designer.ImageCache;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -46,11 +45,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +58,6 @@ import javax.swing.JComponent;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
@@ -154,7 +149,7 @@ public class WebForm implements Designer {
 
     // XXX Moved from Document.
     private ImageCache imageCache;
-    private DocumentCache frameCache;
+//    private DocumentCache frameCache;
 
     
     
@@ -1306,30 +1301,32 @@ public class WebForm implements Designer {
         return imageCache;
     }
     
-    // XXX Moved from Document.
-    /** Return a cache of webform boxes associated with this document
-     * @todo Rename; it's no longer a box cache but rather a document
-     *   cache! */
-    public DocumentCache getFrameBoxCache() {
-        if (frameCache == null) {
-            frameCache = new DocumentCache();
-        }
-
-        return frameCache;
-    }
+//    // XXX Moved from Document.
+//    /** Return a cache of webform boxes associated with this document
+//     * @todo Rename; it's no longer a box cache but rather a document
+//     *   cache! */
+//    public DocumentCache getFrameBoxCache() {
+//        if (frameCache == null) {
+//            frameCache = new DocumentCache();
+//        }
+//
+//        return frameCache;
+//    }
     
     // XXX Moved from Document.
     /** Return true iff the document has cached frame boxes */
     public boolean hasCachedFrameBoxes() {
-        return (frameCache != null) && (frameCache.size() > 0);
+//        return (frameCache != null) && (frameCache.size() > 0);
+        return htmlDomProvider.hasCachedExternalFrames();
     }
 
     // XXX Moved from Document.
     /** Clear out caches for a "refresh" operation */
     private void flushCaches() {
-        if (frameCache != null) {
-            frameCache.flush();
-        }
+        // XXX Moved to designer/jsf/../JsfForm.
+//        if (frameCache != null) {
+//            frameCache.flush();
+//        }
 
         if (imageCache != null) {
             imageCache.flush();
@@ -2245,6 +2242,16 @@ public class WebForm implements Designer {
 
     // XXX Model <-> View mapping <<<
 
+    public WebForm findExternalForm(URL url) {
+        // XXX There could be more designers per one htmlDomProvider.
+        Designer[] externalDesigners = htmlDomProvider.getExternalDesigners(url);
+        if (externalDesigners.length > 0 && externalDesigners[0] instanceof WebForm) {
+            return (WebForm)externalDesigners[0];
+        } else {
+            return WebForm.EXTERNAL;
+        }
+    }
+    
     
     private static class HtmlDomProviderListener implements HtmlDomProvider.HtmlDomProviderListener {
         private final WebForm webForm;

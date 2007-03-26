@@ -30,7 +30,6 @@ import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.event.DesignContextListener;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
-import com.sun.rave.designtime.markup.MarkupMouseRegion;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.WriteLock;
 import org.netbeans.modules.visualweb.designer.jsf.text.DomDocumentImpl;
 //NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
@@ -39,6 +38,7 @@ import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -51,7 +51,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.w3c.dom.Document;
@@ -106,7 +108,10 @@ public class JsfForm {
     private MarkupDesignBean renderFailureComponent;
     
     private final DomDocumentImpl domDocumentImpl = new DomDocumentImpl(this);
-
+    
+    // XXX Caching external jsf forms.
+    private final ExternalDomProviderCache externalDomProviderCache = new ExternalDomProviderCache();
+    
 
     /** Creates a new instance of JsfForm */
     private JsfForm(FacesModel facesModel, DataObject dataObject) {
@@ -570,6 +575,9 @@ public class JsfForm {
     
     void refreshModel(boolean deep) {
         getFacesModel().refreshAndSyncNonPageBeans(deep);
+        // XXX Moved from designer/../WebForm.
+        externalDomProviderCache.flush();
+        
         fireModelRefreshed();
     }
     
@@ -1098,6 +1106,10 @@ public class JsfForm {
     public Document getJspDom() {
         return htmlDomProvider.getJspDom();
     }
+    
+    Document getHtmlDom() {
+        return htmlDomProvider.getHtmlDom();
+    }
 
     public Element createComponent(String className, Node parent, Node before) {
         return htmlDomProvider.createComponent(className, parent, before);
@@ -1128,6 +1140,14 @@ public class JsfForm {
 
     DomDocumentImpl getDomDocumentImpl() {
         return domDocumentImpl;
+    }
+    
+    private void syncModel() {
+        htmlDomProvider.syncModel();
+    }
+    
+    boolean isModelValid() {
+        return htmlDomProvider.isModelValid();
     }
     
 //    public boolean canDropDesignBeansAtNode(DesignBean[] designBeans, Node node) {
@@ -1392,5 +1412,173 @@ public class JsfForm {
 //            return location.size;
 //        }
 //    } // End of LocationImpl.
+    
+
+    boolean hasCachedExternalFrames() {
+        return externalDomProviderCache.size() > 0;
+    }
+    
+    Designer[] getExternalDesigners(URL url) {
+        JsfForm external = findExternalForm(url);
+        
+        if (external == null) {
+            return new Designer[0];
+        }
+        
+        Designer[] designers = findDesigners(external);
+        if (designers.length == 0) {
+            Designer designer = createDesigner(external);
+            return new Designer[] {designer};
+        }
+        return designers;
+    }
+    
+    // XXX Copied/modified from designer/../ExternalDocumentBox.
+    private JsfForm findExternalForm(URL url) {
+//        DocumentCache cache = webform.getDocument().getFrameBoxCache();
+//        DocumentCache cache = webform.getFrameBoxCache();
+        ExternalDomProviderCache cache = externalDomProviderCache;
+
+        JsfForm frameForm = cache.get(url);
+        if (frameForm != null) {
+            return frameForm;
+        }
+
+        // According to HTML4.01 section 16.5: "The contents of the
+        // IFRAME element, on the other hand, should only be displayed
+        // by user agents that do not support frames or are configured
+        // not to display frames."
+        // Thus, we don't walk the children array; instead, we
+        // fetch the url document and display that instead
+        if (url == null) {
+            return null;
+        }
+
+        FileObject fo = URLMapper.findFileObject(url);
+
+        if (fo != null) {
+            frameForm = loadPage(fo);
+        }
+
+        if (frameForm == null) {
+            frameForm = loadPage(url);
+        }
+
+//        if ((frameForm != null) && (frameForm != WebForm.EXTERNAL)) {
+        if (frameForm != null) {
+            cache.put(url, frameForm);
+        }
+
+//        // Set the cell renderer pane if necessary
+//        if ((frameForm != null) && (frameForm.getRenderPane() == null)) {
+//            frameForm.setRenderPane(webform.getRenderPane());
+//        }
+
+        return frameForm;
+    }
+
+    private static JsfForm loadPage(URL url) {
+        //Log.err.log("URL box loading not yet implemented");
+//        return WebForm.EXTERNAL;
+        return null;
+
+//        /*
+//        // Compute document base for the other document
+//        //        try {
+//        //            url = new URL(getBase(), href);
+//        //        } catch (MalformedURLException mfe) {
+//        //            try {
+//        //                ErrorManager.getDefault().notify(mfe);
+//        //                url = new URL(href);
+//        //            } catch (MalformedURLException mfe2) {
+//        //                ErrorManager.getDefault().notify(mfe);
+//        //                url = null;
+//        //            }
+//        //        }
+//        //        if (url != null) {
+//        StringBuffer sb = new StringBuffer();
+//        try {
+//            InputStream uis = url.openStream();
+//            Reader r = new BufferedReader(new InputStreamReader(uis));
+//            int c;
+//            while ((c = r.read()) != -1) {
+//                sb.append((char)c);
+//            }
+//        } catch (IOException ioe) {
+//            ErrorManager.getDefault().notify(ioe);
+//            return false;
+//        }
+//        String str = sb.toString();
+//
+//        // Construct a document containing the string buffer
+//        StringContent content = new StringContent(str.length()+5);
+//        try {
+//            content.insertString(0, str);
+//        } catch (Exception e) {
+//            ErrorManager.getDefault().notify(e);
+//            return false;
+//        }
+//        AbstractDocument adoc = new PlainDocument(content);
+//        DataObject dobj = null;
+//        String filename = url.toString(); // only used for diagnostic messages, right?
+//
+//        MarkupUnit markup = new MarkupUnit(dobj, adoc, filename, MarkupUnit.ALLOW_XML);
+//        markup.sync();
+//        //if (!markup.getState().equals(markup.getState().CLEAN)) {
+//        if (!markup.getState().equals(Unit.State.CLEAN)) {
+//            return false;
+//        }
+//
+//        CellRendererPane renderPane = webform.getPane().getRenderPane();
+//        Log.err.log("FrameBox initialization for external urls not yet done");
+//        */
+//        /* XXX Not yet implemented
+//        frameForm = new WebForm(markup, renderPane);
+//        DesignerPane pane = null;
+//        Document document = new Document(frameForm);
+//        frameForm.setDocument(document);
+//        return success;
+//        */
+    }
+
+    private static JsfForm loadPage(FileObject fobj) {
+        DataObject dobj = null;
+
+        try {
+            dobj = DataObject.find(fobj);
+        } catch (DataObjectNotFoundException ex) {
+            return null;
+        }
+
+        /*
+        // Wrapper which handles errors
+        LiveFacesCookie c = LiveFacesCookie.getInstanceFor(dobj);
+        if (c == null) {
+            ErrorManager.getDefault().log("Data object " + dobj + " ain't got no insync cookie!");
+            return false;
+        }
+        FacesModel model = getDocument().getWebForm().getModel();
+        model.syncFromDoc();
+        if (model.getMarkup().getState().isInvalid()) {
+            return false;
+        }
+        markup = model.getMarkup();
+         */
+
+        // XXX Does this work for a form which is not yet open?
+//        WebForm frameForm = WebForm.findWebForm(dobj);
+//        WebForm frameForm = WebForm.getDesignersWebFormForDataObject(dobj);
+        JsfForm frameForm = getJsfForm(dobj);
+
+//        if ((frameForm != null) && (frameForm.getModel() != null)) {
+//            frameForm.getModel().sync();
+        if (frameForm != null) {
+            frameForm.syncModel();
+        }
+
+        return frameForm;
+    }
+
+    
 }
 
