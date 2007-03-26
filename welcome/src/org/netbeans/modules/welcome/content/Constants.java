@@ -48,15 +48,14 @@ public interface Constants {
     static final String DEFAULT_TEXT_COLOR = "DefaultTextColor"; //NOI18N
     static final String RSS_DATETIME_COLOR = "RssDateTimeColor"; //NOI18N
 
-    static final String FONT_NAME = Utils.getFontName();
     static final int FONT_SIZE = Utils.getDefaultFontSize();
-    static final Font BUTTON_FONT = new Font( FONT_NAME, Font.BOLD, FONT_SIZE );
+    static final Font BUTTON_FONT = new Font( null, Font.BOLD, FONT_SIZE );
     static final Font HEADER_FONT = BUTTON_FONT;
     static final Font REGULAR_FONT = BUTTON_FONT;
-    static final Font RSS_DESCRIPTION_FONT = new Font( FONT_NAME, Font.PLAIN, FONT_SIZE-1 );
+    static final Font RSS_DESCRIPTION_FONT = new Font( null, Font.PLAIN, FONT_SIZE-1 );
 
-    static final Font WELCOME_HEADER_FONT = new Font( FONT_NAME, Font.BOLD, FONT_SIZE+3 );
-    static final Font WELCOME_DESCRIPTION_FONT = new Font( FONT_NAME, Font.PLAIN, FONT_SIZE );
+    static final Font WELCOME_HEADER_FONT = new Font( null, Font.BOLD, FONT_SIZE+3 );
+    static final Font WELCOME_DESCRIPTION_FONT = new Font( null, Font.PLAIN, FONT_SIZE );
 
     static final int BOTTOM_MARGIN = 5;
     static final int UNDER_HEADER_MARGIN = 5;

@@ -82,11 +82,6 @@ public class Utils {
         }
     }
 
-    static String getFontName() {
-        //#75759 Verdana not supported on Japanese locale
-        return null;//Utilities.isWindows() ? "Verdana" : null; // NOI18N
-    }
-
     public static Action findAction( String key ) {
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(key);
         
