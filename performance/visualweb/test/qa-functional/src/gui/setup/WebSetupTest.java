@@ -25,15 +25,11 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 
-import org.netbeans.junit.ide.ProjectSupport;
-
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
@@ -58,21 +54,12 @@ public class WebSetupTest extends IDESetupTest {
         VWPUtilities.waitForPendingBackgroundTasks();
     }
 
-    public void openWebPackProjects() {
-        createTestProject("VisualWebProject");
-        //createTestProject("VW_Project");
+    public void openWebPackProject() {
+        // we'll open this project, creating is expensive and not so stable
+        //createTestProject("VisualWebProject");
         
-        ProjectSupport.waitScanFinished();
-        log("Scan completed");
-        
-        new CloseAllDocumentsAction().performAPI();
-        log("Close All Documents Action completed");
-        
-//        ProjectSupport.closeProject("VW_Project");
-//        log("Project closed");
-        
-        ProjectSupport.waitScanFinished();
-        log("Scan completed");
+        VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"VisualWebProject");
+        VWPUtilities.waitForPendingBackgroundTasks();
     }
     
     public void setupAppServer() {
@@ -105,17 +92,17 @@ public class WebSetupTest extends IDESetupTest {
     }
     
     private void processInstall() {
-        JDialogOperator  dia = new JDialogOperator("Add Server Instance"); // NOI18N
-        JButtonOperator next =  new JButtonOperator(dia,"Next >"); // NOI18N
+        WizardOperator wizard = new WizardOperator("Add Server Instance"); // NOI18N
         org.netbeans.jemmy.operators.JComboBoxOperator SrvTypeList;
-        SrvTypeList = new JComboBoxOperator(dia,0);
+        SrvTypeList = new JComboBoxOperator(wizard,0);
         SrvTypeList.selectItem("Sun Java System Application Server"); // NOI18N
         String ASPath = System.getProperty("com.sun.aas.installRoot");
-        next.push();
-        JDialogOperator  dia2 = new JDialogOperator("Add Server Instance"); // NOI18N
+        wizard.next();
+        
+        wizard = new WizardOperator("Add Server Instance"); // NOI18N
         JTextComponentOperator domainpath = null;
         try {
-            domainpath = new JTextComponentOperator(dia2,0);
+            domainpath = new JTextComponentOperator(wizard,0);
         } catch (TimeoutExpiredException tex) {
             fail("Cannot take a TextBox");
         }
@@ -125,16 +112,16 @@ public class WebSetupTest extends IDESetupTest {
         domainpath.setText(ASPath);
         log("Actual path id: "+domainpath.getText());
         
-        new JButtonOperator(new JDialogOperator("Add Server Instance"),"Next >").pushNoBlock(); // NOI18N
-        new JTextComponentOperator(new JDialogOperator("Add Server Instance"),1).setText("adminadmin"); // NOI18N
-        new JButtonOperator(new JDialogOperator("Add Server Instance"),"Finish").pushNoBlock(); // NOI18N
+        new WizardOperator("Add Server Instance").next(); // NOI18N
+        new JTextComponentOperator(new WizardOperator("Add Server Instance"),1).setText("adminadmin"); // NOI18N
+        new WizardOperator("Add Server Instance").finish(); // NOI18N
         new EventTool().waitNoEvent(15000);
         
     }
     
     private void createTestProject(String ProjectName) {
         String category = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "Templates/Project/Web"); // Web
-        String project = "Web Application";
+        String project = "Web Application"; // NOI18N
         
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
