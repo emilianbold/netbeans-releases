@@ -81,7 +81,7 @@ public final class Actions extends Object {
         public View() {
             putValue(NAME, NbBundle.getMessage(Actions.class,
                     "ACT_View"));
-            Image image = Utilities.loadImage("org/netbeans/modules/favorites/resources/actionView.gif"); // NOI18N
+            Image image = Utilities.loadImage("org/netbeans/modules/favorites/resources/actionView.png"); // NOI18N
             putValue(SMALL_ICON, image != null ? new ImageIcon(image) : null);
         }
         
@@ -149,7 +149,7 @@ public final class Actions extends Object {
         }
 
         protected String iconResource() {
-            return "org/netbeans/modules/favorites/resources/actionSelect.gif"; // NOI18N
+            return "org/netbeans/modules/favorites/resources/actionSelect.png"; // NOI18N
         }
 
         public HelpCtx getHelpCtx() {

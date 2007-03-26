@@ -98,7 +98,7 @@ Microsystems, Inc. All Rights Reserved.
                 <![CDATA[]]>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/favorites/resources/newFile.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/favorites/resources/newFile.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/favorites/resources/templatesFile.html"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
             </file>

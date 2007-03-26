@@ -63,11 +63,11 @@ final class Favorites extends FilterNode {
     }
     
     public Image getIcon (int type) {
-        return Utilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.gif"); // NOI18N
+        return Utilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.png"); // NOI18N
     }
     
     public Image getOpenedIcon (int type) {
-        return Utilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.gif"); // NOI18N
+        return Utilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.png"); // NOI18N
     }
     
     public boolean canCopy () {
