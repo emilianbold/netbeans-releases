@@ -26,6 +26,8 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -46,7 +48,11 @@ public class PaletteComponentOperator extends TopComponentOperator {
     /** invokes default palette
      * @return PaletteComponentOperator for invoked palette */    
     public static PaletteComponentOperator invoke() {
-         new Action("Window|Palette",null).perform(); // NOI18N
+        try {
+            new Action("Window|Palette",null).perform(); // NOI18N
+        } catch (TimeoutExpiredException te) {
+            throw new JemmyException("Cannot perform Window|Palette menu command");
+        }
         return new PaletteComponentOperator();
     }
     /**
