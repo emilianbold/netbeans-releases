@@ -201,10 +201,10 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                 boolean addDot = !"".equals(postfix);
                 Collection col = new ArrayList();
                 for (FileObject fo2: fo.getChildren()) {
-                    col.add(fo2);
+                    if (!fo2.isFolder() || (fo2.isFolder() && recursively)) 
+                        col.add(fo2);
                 }
-                if (recursively)
-                    setup(col, postfix +(addDot?".":"") +fo.getName(), true); // NOI18N
+                setup(col, postfix +(addDot?".":"") +fo.getName(), recursively); // NOI18N
             }
         }
     }
