@@ -38,7 +38,7 @@ public abstract class VCSAnnotator {
     public enum ActionDestination { MainMenu, PopupMenu }; 
 
     /**
-     * Allows a versioning system to decorate given name with HTML markup. This can be used to hilight file status. 
+     * Allows a versioning system to decorate given name with HTML markup. This can be used to highlight file status. 
      * 
      * @param name text to decorate
      * @param context a context this name represents
@@ -49,7 +49,7 @@ public abstract class VCSAnnotator {
     }
 
     /**
-     * Allows a versioning system to decorate given icon (badging). This can be used to hilight file status. 
+     * Allows a versioning system to decorate given icon (badging). This can be used to highlight file status. 
      * 
      * @param icon an icon to decorate
      * @param context a context this icon represents
