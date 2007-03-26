@@ -74,7 +74,7 @@ public class OpenProjectsTrampolineImplTest extends NbTestCase {
     
         OpenProjectsTrampolineImpl trampoline = new OpenProjectsTrampolineImpl();
         TestPropertyChangeListener tpchl = new TestPropertyChangeListener();
-        trampoline.addPropertyChangeListenerAPI( tpchl );
+        trampoline.addPropertyChangeListenerAPI( tpchl, this );
         
         Project[] projects = trampoline.getOpenProjectsAPI();
         

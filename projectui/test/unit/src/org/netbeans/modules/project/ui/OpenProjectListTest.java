@@ -19,11 +19,14 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -104,6 +107,24 @@ public class OpenProjectListTest extends NbTestCase {
         assertTrue ("Document f1_1_open is loaded.", handler.openFiles.contains (f1_1_open.getURL ().toExternalForm ()));
         assertTrue ("Document f1_2_open is loaded.", handler.openFiles.contains (f1_2_open.getURL ().toExternalForm ()));
         assertFalse ("Document f2_1_open isn't loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
+    }
+    
+    public void testListenerOpenClose () throws Exception {
+        assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0); 
+        ChangeListener list = new ChangeListener();
+        OpenProjectList.getDefault().addPropertyChangeListener(list);
+        OpenProjectList.getDefault ().open (project1, true);
+        assertEquals(0, list.oldCount);
+        assertEquals(1, list.newCount);
+        OpenProjectList.getDefault ().open (project2, true);
+        assertEquals(1, list.oldCount);
+        assertEquals(2, list.newCount);
+        OpenProjectList.getDefault().close(new Project[] {project1}, false);
+        assertEquals(2, list.oldCount);
+        assertEquals(1, list.newCount);
+        OpenProjectList.getDefault().close(new Project[] {project2}, false);
+        assertEquals(1, list.oldCount);
+        assertEquals(0, list.newCount);
     }
     
     public void testClose () throws Exception {
@@ -355,5 +376,23 @@ public class OpenProjectListTest extends NbTestCase {
             opened++;
         }
         
+    }
+    
+    private class ChangeListener implements PropertyChangeListener {
+        int oldCount = -1;
+        int newCount = -1;
+
+        public void propertyChange(PropertyChangeEvent arg0) {
+            if (OpenProjectList.PROPERTY_OPEN_PROJECTS.equals(arg0.getPropertyName())) {
+                Object old = arg0.getOldValue();
+                Object nw = arg0.getNewValue();
+                assertNotNull(old);
+                assertNotNull(nw);
+                Project[] oList = (Project[])old;
+                Project[] nList = (Project[])nw;
+                oldCount = oList.length;
+                newCount = nList.length;
+            }
+        }
     }
 }

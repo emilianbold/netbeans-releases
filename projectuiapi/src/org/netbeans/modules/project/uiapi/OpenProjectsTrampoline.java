@@ -34,7 +34,7 @@ public interface OpenProjectsTrampoline {
 
     public void closeAPI (Project[] projects);
 
-    public void addPropertyChangeListenerAPI( PropertyChangeListener listener );
+    public void addPropertyChangeListenerAPI( PropertyChangeListener listener, Object source );
 
     public void removePropertyChangeListenerAPI( PropertyChangeListener listener );
     

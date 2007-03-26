@@ -38,7 +38,6 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
     private boolean listenersRegistered;
     
     public OpenProjectsTrampolineImpl() {
-        pchSupport = new PropertyChangeSupport( this );
     }
     
     public Project[] getOpenProjectsAPI() {
@@ -53,12 +52,13 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
         OpenProjectList.getDefault().close(projects, false);
     }
 
-    public void addPropertyChangeListenerAPI( PropertyChangeListener listener ) {
+    public void addPropertyChangeListenerAPI( PropertyChangeListener listener, Object source ) {
         boolean shouldRegisterListener;
         
         synchronized (this) {
             if (shouldRegisterListener = !listenersRegistered) {
                 listenersRegistered = true;
+                pchSupport = new PropertyChangeSupport( source );
             }
         }
         
@@ -67,12 +67,15 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
             //see issue #65928:
             OpenProjectList.getDefault().addPropertyChangeListener( this );
         }
+        assert pchSupport != null;
         
         pchSupport.addPropertyChangeListener( listener );        
     }
     
     public void removePropertyChangeListenerAPI( PropertyChangeListener listener ) {
-        pchSupport.removePropertyChangeListener( listener );        
+        if (pchSupport != null) {
+            pchSupport.removePropertyChangeListener( listener );        
+        }
     }
     
     public void propertyChange( PropertyChangeEvent e ) {

@@ -312,6 +312,12 @@ public final class OpenProjectList {
         
         double workPerProject = (maxWork - workForSubprojects) / projectsToOpen.size();
         
+        final List<Project> oldprjs = new ArrayList<Project>();
+        final List<Project> newprjs = new ArrayList<Project>();
+        synchronized (this) {
+            oldprjs.addAll(openProjects);
+        }
+        
         for (Project p: projectsToOpen) {
             
             if (panel != null) {
@@ -330,6 +336,7 @@ public final class OpenProjectList {
         }
         
         synchronized ( this ) {
+            newprjs.addAll(openProjects);
             saveProjectList( openProjects );
             if ( recentProjectsChanged ) {
                 recentProjects.save();
@@ -344,7 +351,8 @@ public final class OpenProjectList {
         
         Mutex.EVENT.readAccess(new Action<Void>() {
             public Void run() {
-                pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, null, null );
+                pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, oldprjs.toArray(new Project[oldprjs.size()]), 
+                                                                       newprjs.toArray(new Project[newprjs.size()]) );
                 if ( recentProjectsChangedCopy ) {
                     pchSupport.firePropertyChange( PROPERTY_RECENT_PROJECTS, null, null );
                 }
@@ -361,7 +369,10 @@ public final class OpenProjectList {
         
         boolean mainClosed = false;
         boolean someClosed = false;
+        List<Project> oldprjs = new ArrayList<Project>();
+        List<Project> newprjs = new ArrayList<Project>();
         synchronized ( this ) {
+            oldprjs.addAll(openProjects);
             for( int i = 0; i < projects.length; i++ ) {
                 if ( !openProjects.contains( projects[i] ) ) {
                     continue; // Nothing to remove
@@ -379,7 +390,8 @@ public final class OpenProjectList {
                 someClosed = true;
             }
             if ( someClosed ) {
-                saveProjectList( openProjects );
+                newprjs.addAll(openProjects);
+                saveProjectList(openProjects);
             }
             if ( mainClosed ) {
                 this.mainProject = null;
@@ -390,7 +402,8 @@ public final class OpenProjectList {
             }
         }
         if ( someClosed ) {
-            pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, null, null );
+            pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, 
+                            oldprjs.toArray(new Project[oldprjs.size()]), newprjs.toArray(new Project[newprjs.size()]) );
         }
         if ( mainClosed ) {
             pchSupport.firePropertyChange( PROPERTY_MAIN_PROJECT, null, null );

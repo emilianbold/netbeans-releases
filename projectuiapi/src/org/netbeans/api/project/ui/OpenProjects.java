@@ -162,7 +162,7 @@ public final class OpenProjects {
      * @see #PROPERTY_OPEN_PROJECTS
      */    
     public void addPropertyChangeListener( PropertyChangeListener listener ) {
-        trampoline.addPropertyChangeListenerAPI( listener );
+        trampoline.addPropertyChangeListenerAPI( listener , this);
     }
     
     /**
