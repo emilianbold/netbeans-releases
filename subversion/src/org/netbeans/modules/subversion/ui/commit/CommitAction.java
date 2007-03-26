@@ -80,15 +80,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
         File[] roots = ctx.getFiles();
         if (roots.length == 0) {
             return;
-        }
-        
-        List<File> tagsFiles = new ArrayList<File>();                
-        for (int i = 0; i < roots.length; i++) {
-            String tag = SvnUtils.getCopy(roots[i]);
-            if(tag!=null && !tag.equals("")) {
-                tagsFiles.add(roots[i]);
-            }
-        }
+        }        
         
         File[][] split = Utils.splitFlatOthers(roots);
         List<File> fileList = new ArrayList<File>();
