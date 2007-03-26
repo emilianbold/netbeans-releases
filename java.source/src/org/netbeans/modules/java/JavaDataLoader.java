@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.openide.ErrorManager;
@@ -91,6 +92,11 @@ public final class JavaDataLoader extends MultiFileLoader {
     protected FileObject findPrimaryFile (FileObject fo) {
 	// never recognize folders.
         if (fo.isFolder()) return null;
+        
+        // ignore templates using scripting
+        if (fo.getAttribute("template") != null && fo.getAttribute("javax.script.ScriptEngine") != null) // NOI18N
+            return null;
+        
         if (fo.getExt().equals(JAVA_EXTENSION))
             return fo;
         return null;
@@ -242,6 +248,10 @@ public final class JavaDataLoader extends MultiFileLoader {
         
         @Override
         public FileObject createFromTemplate(FileObject f, String name) throws IOException {
+            Logger.getLogger(JavaDataLoader.class.getName()).warning(
+                    "Please replace template " + this.getFile().toString() + //NOI18N
+                    " with the new scripting support. See " + //NOI18N
+                    "http://www.netbeans.org/download/dev/javadoc/org-openide-loaders/apichanges.html#scripting"); //NOI18N
             if (name == null) {
                 // special case: name is null (unspecified or from one-parameter createFromTemplate)
                 name = FileUtil.findFreeFileName(f, f.getName(), "java"); // NOI18N

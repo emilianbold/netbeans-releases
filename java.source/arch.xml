@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -962,9 +962,18 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="lookup-register">
-  <p>
-   XXX no answer for lookup-register
-  </p>
+   <p>
+     <api group="lookup" name="org.openide.loaders.CreateFromTemplateAttributesProvider" type="export" category="official">
+       Attributes provider is registered in <code>META-INF/services</code>. It provides
+       <a href="#property-package">package</a> attribute for java templates using scripting support.
+     </api>
+   </p>
+   <p>
+     <api group="property" name="package" type="export" category="official">
+       <code>package</code> attribute contains java package as <code>String</code> for newly created
+       <a href="#lookup-org.openide.loaders.CreateFromTemplateAttributesProvider">templates</a>.
+     </api>
+   </p>
  </answer>
 
 

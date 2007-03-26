@@ -15,7 +15,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <?xml-stylesheet type="text/xml" href="../../nbbuild/javadoctools/apichanges.xsl"?>
@@ -82,6 +82,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        
+        <change id="package-property">
+            <api name="general"/>
+            <summary>Adding template attribute <code>package</code></summary>
+            <version major="0" minor="7"/>
+            <date day="26" month="3" year="2007"/>
+            <author login="jpokorsky"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added the template attribute <code>package</code> for templates using scripting language.
+            </description>
+            <issue number="95399"/>
+        </change>
 
         <change id="type-utilities">
             <api name="general"/>

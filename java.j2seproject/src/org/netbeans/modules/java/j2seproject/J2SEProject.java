@@ -258,6 +258,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             LookupProviderSupport.createSourcesMerger(),
             new J2SEProjectEncodingQueryImpl (evaluator()),
             new J2SEPropertyEvaluatorImpl(evaluator()),
+            new J2SETemplateAttributesProvider(this.helper),
             new BinaryForSourceQueryImpl(this.sourceRoots, this.testRoots, this.helper, this.eval) //Does not use APH to get/put properties/cfgdata
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N

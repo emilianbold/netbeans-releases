@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <?xml-stylesheet type="text/xml" href="../../nbbuild/javadoctools/apichanges.xsl"?>
@@ -81,6 +81,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="project-license-property">
+            <api name="general"/>
+            <summary>Adding template attribute <code>project.license</code></summary>
+            <version major="1" minor="23"/>
+            <date day="26" month="3" year="2007"/>
+            <author login="jpokorsky"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added the template attribute <code>project.license</code> for templates using scripting language.
+            </description>
+            <issue number="95399"/>
+        </change>
+        
         <change id="non-leaf-category-node-customizer">
             <api name="general"/>
             <summary>Added a way how to define UI component for non-leaf category node in project customizer</summary>

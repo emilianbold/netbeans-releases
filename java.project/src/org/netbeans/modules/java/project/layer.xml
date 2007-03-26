@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
@@ -61,6 +61,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
          <attr name="templateCategory" stringvalue="java-classes"/>
          <attr name="template" boolvalue="true"/>
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Applet.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
 	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
@@ -69,6 +70,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
          <attr name="templateCategory" stringvalue="java-classes"/>
          <attr name="template" boolvalue="true"/>
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/JApplet.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
 	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
@@ -77,6 +79,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
          <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
          <attr name="template" boolvalue="true"/>
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Class.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
 	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
@@ -85,6 +88,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
          <attr name="templateCategory" stringvalue="java-main-class"/>
          <attr name="template" boolvalue="true"/>
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Main.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
 	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/main-class.gif"/>
@@ -93,6 +97,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
          <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
          <attr name="template" boolvalue="true"/>
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Empty.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
 	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
@@ -101,6 +106,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
          <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
          <attr name="template" boolvalue="true"/>
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Interface.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
 	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
@@ -109,6 +115,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
          <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
          <attr name="template" boolvalue="true"/>
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Exception.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
 	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
@@ -123,6 +130,7 @@ Microsystems, Inc. All Rights Reserved.
       </file>        
       <file name="Enum.java" url="resources/Enum.template">
          <attr name="template" boolvalue="true"/>
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Enum.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
@@ -131,6 +139,7 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <file name="AnnotationType.java" url="resources/AnnotationType.template">
          <attr name="template" boolvalue="true"/>
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/AnnotationType.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
@@ -140,6 +149,7 @@ Microsystems, Inc. All Rights Reserved.
 
       <file name="package-info.java" url="resources/package-info.template">
          <attr name="template" boolvalue="true"/>
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.packageInfoWizard"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/package-info.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
