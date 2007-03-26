@@ -25,6 +25,7 @@ import javax.naming.spi.InitialContextFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
+import org.netbeans.modules.visualweb.dataconnectivity.naming.ProjectContextManager;
 
 /**
  * The factory that creates Creator's InitialContext
@@ -33,12 +34,7 @@ import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject
  */
 //public class DesignTimeInitialContextFactory implements InitialContextFactory, ProjectChangeListener{
 public class DesignTimeInitialContextFactory implements InitialContextFactory {
-//    private Project previousProject = null;
-//    private static boolean contextCreated = false;
     private static DesignTimeContext prjContext = null;
-//    private Project lastProject = null;
-//    private boolean datasourcesUpdated = false;
-//    private ProjectContextManager prjCtxManager = null;
     
     public static void setInitialContextFactoryBuilder() {
         try {
@@ -79,9 +75,7 @@ public class DesignTimeInitialContextFactory implements InitialContextFactory {
         // If no projects open in the IDE then return null,
         // else if there is at least one open project then make sure that a context for
         // the project hasn't been created before creating a context
-        Project currentProj = CurrentProject.getInstance().getProject();
-        
-        
+        Project currentProj = CurrentProject.getInstance().getOpenedProject();                
         Project ps[] ;
         if (currentProj == null)
             currentProj = OpenProjects.getDefault().getMainProject();
@@ -92,9 +86,12 @@ public class DesignTimeInitialContextFactory implements InitialContextFactory {
                 currentProj = ps[0];
         }        
         
-        
+        //Setup cache of projects per context
+        ProjectContextManager prjCtxManager = ProjectContextManager.getInstance();
+               
         // Construct a new context object for the current project
-        prjContext = (DesignTimeContext)DesignTimeContext.createDesignTimeContext(currentProj, environment);                
+        prjContext = (DesignTimeContext)DesignTimeContext.createDesignTimeContext(currentProj, environment);                         
+        prjCtxManager.addEntry(currentProj, prjContext);
         
         return prjContext;
     }

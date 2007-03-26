@@ -429,7 +429,7 @@ class DesignTimeContext implements Context {
                                 new Object[] { name.getPrefix(name.size() - 1).toString() }));
                 e.setRemainingName(new CompositeName(name.get(name.size() - 1)));
                 e.setResolvedObj(subCtx);
-                throw e;
+//                throw e;
             }
             return ((Context)subCtx).createSubcontext(name.get(name.size() - 1));
         }
@@ -492,27 +492,6 @@ class DesignTimeContext implements Context {
         Log.getLogger().entering(getClass().getName(), "addToEnvironment", new Object[] {propName, propVal}); //NOI18N
         return null;
     }
-
-//    private void saveContext() throws NamingException {
-//        
-//        // write to datasources.xml and add to weakhashmap ?
-//        if (parent != null) {
-//            parent.saveContext();
-//        } else {
-//            if (!initMode) {
-//                try {
-//                    if (!userCtxFile.exists()) {
-//                        userCtxFile.createNewFile();
-//                    }
-//                    FileOutputStream os = new FileOutputStream(userCtxFile);
-//                    writeTag(os, 0);
-//                    os.close();
-//                } catch (IOException e) {
-//                    throw new NamingException(getClass().getName() + ": saveContext: " + e); // NOI18N
-//                }
-//            }
-//        }
-//    }
 
     private void writeTag(OutputStream os, int level) throws IOException {
         writeSpaces(os, level, TAB_WIDTH);
@@ -682,41 +661,6 @@ class DesignTimeContext implements Context {
         }
     }
 
-//    private void writeNewUserContextFile() throws IOException {
-//        // Solve the location of the file (should be used the layers, or in the worst case InstalledFileLocator)
-//        // But we can't do that here, because we don't know about anything netbeans.
-//        FileInputStream master = new FileInputStream(System.getProperty("netbeans.home") // NOI18N
-//                   + File.separator + ".." + File.separator + "visualweb1" //NOI18N
-//                   + File.separator + "startup" + File.separator + "samples" + File.separator // NOI18N
-//                   + PRJ_CTX_FILE);
-//        if (!userCtxFile.getParentFile().exists()) {
-//            userCtxFile.getParentFile().mkdirs();
-//        }
-//        FileOutputStream os = new FileOutputStream(userCtxFile);
-//        byte[] buf= new byte[1024];
-//        int n = master.read(buf);
-//        while (n > -1) {
-//            os.write(buf, 0, n);
-//            n = master.read(buf);
-//        }
-//        master.close();
-//        os.close();
-//    }
-//
-//    private void saveUserContextFile() throws IOException {
-//        FileInputStream master = new FileInputStream(userCtxFile);
-//        File saveUserCtxFile = new File(ctxPathName + ".save"); // NOI18N
-//        FileOutputStream os = new FileOutputStream(saveUserCtxFile);
-//
-//        byte[] buf= new byte[1024];
-//        int n = master.read(buf);
-//        while (n > -1) {
-//            os.write(buf, 0, n);
-//            n = master.read(buf);
-//        }
-//        master.close();
-//        os.close();
-//    }
 
     private Object executeConstructor(Class clazz, Class[] clazzes, Object[] args)
         throws NoSuchMethodException, SecurityException, InstantiationException,
@@ -759,7 +703,6 @@ class DesignTimeContext implements Context {
             dsHelper = new DesignTimeDataSourceHelper();
             if (dsHelper.datasourcesInProject(currentProj) ){
                 bindings = dsHelper.updateDataSource(currentProj);   
-//                dsHelper.updateCtxBindings(bindings);
                 Iterator it = bindings.keySet().iterator();
                 
                 while (it.hasNext()) {
@@ -770,43 +713,11 @@ class DesignTimeContext implements Context {
                     if (map.get(datasourceName) == null)
                         map.put(datasourceName, obj );
                     else if (!map.containsKey(datasourceName))
-                        map.put(datasourceName, obj );
-                                       
+                        map.put(datasourceName, obj );                                       
                 }
-//                    if (name.size() == 0) {
-//                        throw new NamingException(rb.getString("NAME_IS_EMPTY"));
-//                    }
-//                    boolean nameExists = false;
-//                    try {
-//                        lookup(name);
-//                        nameExists = true;
-//                    } catch (NamingException e) {
-//                    }
-//                    if (nameExists) {
-//                        throw new NameAlreadyBoundException(name.toString());
-//                    }
-//                    if (name.size() == 1) {
-//                        map.put(name.get(0), obj);
-//                        if (obj instanceof ContextPersistance) {
-//                            ((ContextPersistance)obj).addObjectChangeListener(objectChangeListener);
-//                        }
-////            saveContext();
-//                    } else {
-//                        Object subCtx = lookup(name.getPrefix(name.size() - 1));
-//                        if (!(subCtx instanceof Context)) {
-//                            NamingException e = new NamingException(
-//                                    MessageFormat.format(rb.getString("NAME_NOT_INSTANCE_OF_CONTEXT"),
-//                                    new Object[] { name.getPrefix(name.size() - 1).toString() }));
-//                            e.setRemainingName(new CompositeName(name.get(name.size() - 1)));
-//                            e.setResolvedObj(subCtx);
-//                            throw e;
-//                        }
-//                        ((Context)subCtx).bind(name.get(name.size() - 1), obj);
-//                    }
-//                }
             }
         } catch (NamingException ne) {
-            ;
+            ;  // may need to fix this
         }           
         return obj;
     }       

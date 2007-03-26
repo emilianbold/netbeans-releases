@@ -103,7 +103,6 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             // Get the Database Connection information and add it to design time
             // Naming Context
             // Make sure duplicate datasources are not added
-//            String dsName = "dataSource";
             
             String databaseProductName = null;
             try {

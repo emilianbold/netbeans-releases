@@ -98,7 +98,7 @@ public class CurrentProject   {
             while(iter.hasNext()) {
                 ((ProjectChangeListener)iter.next()).projectChanged(evt);
             }
-        }
+        }       
     }
     
     
@@ -109,7 +109,13 @@ public class CurrentProject   {
 
     }            
     
-    public static Project getProject() {
+    public static Project getProject() {        
+        return project;
+    }
+    
+    public static Project getOpenedProject() {
+        Project[] prjs = OpenProjects.getDefault().getOpenProjects();       
+        project = prjs[prjs.length-1];
         return project;
     }
     
@@ -119,7 +125,7 @@ public class CurrentProject   {
         public void propertyChange(PropertyChangeEvent evt) {
             if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName()))
                 if (MultiViews.findMultiViewHandler(registry.getActivated()) != null)
-                   multiViewChange();
+                   multiViewChange();                
         }
     } 
      
