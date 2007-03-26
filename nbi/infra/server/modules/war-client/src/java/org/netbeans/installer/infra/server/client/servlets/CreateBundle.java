@@ -140,7 +140,11 @@ public class CreateBundle extends HttpServlet {
             for (String name: components) {
                 filename += name.substring(0, name.indexOf(",")) + "_";
             }
-            filename += platform.toString() + (platform == Platform.WINDOWS ? ".exe" : ".sh");
+            filename += platform.toString() + 
+                    (platform == Platform.WINDOWS ? ".exe" : 
+                        ((platform == Platform.MACOS_X_PPC || platform == Platform.MACOS_X_X86) ? 
+                            ".command" : 
+                            ".sh"));
             
             final InputStream  input  = new FileInputStream(bundle);
             final OutputStream output = response.getOutputStream();

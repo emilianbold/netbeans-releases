@@ -705,9 +705,12 @@ public class ManagerBean implements Manager {
                 if (platform == Platform.WINDOWS) {
                     bundle = new File(
                             bundle.getAbsolutePath().replaceFirst("\\.jar$", ".exe"));
+                } else if (platform == Platform.MACOS_X_PPC || platform == Platform.MACOS_X_X86){
+                    bundle = new File(
+                            bundle.getAbsolutePath().replaceFirst("\\.jar$", ".command"));
                 } else {
                     bundle = new File(
-                            bundle.getAbsolutePath().replaceFirst("\\.jar$", ".sh"));
+                            bundle.getAbsolutePath().replaceFirst("\\.jar$", ".sh"));                
                 }
                 
                 bundles.put(key, bundle);
