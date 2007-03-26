@@ -39,7 +39,7 @@ public class SourcesView extends TopComponent implements org.openide.util.HelpCt
     
     
     public SourcesView () {
-        setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.gif")); // NOI18N
+        setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.png")); // NOI18N
     }
 
     protected String preferredID() {

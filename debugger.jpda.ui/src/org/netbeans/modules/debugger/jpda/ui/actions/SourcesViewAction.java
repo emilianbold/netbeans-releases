@@ -53,7 +53,7 @@ public class SourcesViewAction extends AbstractAction {
         );
         putValue (
             Action.SMALL_ICON, 
-            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.gif")) // NOI18N
+            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.png")) // NOI18N
         );
     }
 
