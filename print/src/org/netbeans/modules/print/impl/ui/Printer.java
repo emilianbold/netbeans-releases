@@ -26,7 +26,6 @@ import java.awt.print.PrinterJob;
 import org.openide.ErrorManager;
 
 import static org.netbeans.modules.print.api.PrintUI.*;
-import org.netbeans.modules.print.impl.util.Util;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -42,7 +41,7 @@ final class Printer implements Printable {
     if (job == null) {
       return;
     }
-    job.setPrintable(this, Util.getPageFormat());
+    job.setPrintable(this, Option.getPageFormat());
     
     try {
       if (job.printDialog()) {

@@ -266,7 +266,7 @@ final class Attribute extends PrintUI
       i18n("TLT_Page_Setup"), // NOI18N
       new AbstractAction(i18n("LBL_PageSetup")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
-          if (Util.showPageSetup()) {
+          if (Option.showPageSetup()) {
             updatePreview();
           }
         }

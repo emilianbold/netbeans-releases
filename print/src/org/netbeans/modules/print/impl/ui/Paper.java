@@ -28,9 +28,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.JComponent;
 
-import static org.netbeans.modules.print.api.PrintUI.*;
 import org.netbeans.modules.print.spi.PrintPage;
 import org.netbeans.modules.print.impl.util.Util;
+import static org.netbeans.modules.print.api.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
