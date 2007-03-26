@@ -98,7 +98,7 @@ public class AbstractNode extends Node {
     /** default icon base for all nodes */
     private static final String DEFAULT_ICON_BASE = "org/openide/nodes/defaultNode"; // NOI18N
     private static final String DEFAULT_ICON_EXTENSION = ".gif"; // NOI18N
-    private static final String DEFAULT_ICON = DEFAULT_ICON_BASE + DEFAULT_ICON_EXTENSION; // NOI18N
+    private static final String DEFAULT_ICON = DEFAULT_ICON_BASE + ".png"; // NOI18N
     
     // maps class either to Boolean or to this
     private static final WeakHashMap<Class, Object> overridesGetDefaultAction = new WeakHashMap<Class, Object>(32);
@@ -122,7 +122,7 @@ public class AbstractNode extends Node {
     private String iconBase = DEFAULT_ICON_BASE;
 
     /** Resource extension for icons  */
-    private String iconExtension = DEFAULT_ICON_EXTENSION;
+    private String iconExtension = ".png"; // NOI18N
     
     /** array of cookies for this node */
     private Object lookup;
