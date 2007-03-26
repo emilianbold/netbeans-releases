@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.vmd.midpnb.components.svg;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
@@ -172,9 +171,10 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                         DesignComponent svgAnimWrapper = getComponent();
                         DesignDocument document = svgAnimWrapper.getDocument();
                         String sourcePath = getSourcePath(document);
-                        String path = (String) transferable.getTransferData(dataFlavor);
-                        int position = path.indexOf(sourcePath) + sourcePath.length();
-                        path = path.substring(position).trim();
+                        String srcDir = sourcePath.substring(sourcePath.lastIndexOf('/'));
+                        
+                        String fullPath = (String) transferable.getTransferData(dataFlavor);
+                        String path = fullPath.substring(fullPath.lastIndexOf(srcDir) + srcDir.length()).trim();
                         
                         ComponentProducer producer = MidpDocumentSupport.getComponentProducer(SVGImageCD.TYPEID);
                         if (producer != null) {
