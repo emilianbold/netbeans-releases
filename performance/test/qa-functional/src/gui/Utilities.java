@@ -263,6 +263,7 @@ public class Utilities {
         }
         
         Node asNode = new Node(rto.tree(),path);
+        String serverIDEName = asNode.getText();
         asNode.select();
         
        
@@ -276,13 +277,13 @@ public class Utilities {
             popup.pushMenuNoBlock("Start");
         }
         
-        waitForAppServerStarted();
+        waitForAppServerStarted(serverIDEName);
     }
     
-    private static void waitForAppServerStarted() {
+    private static void waitForAppServerStarted(String serverIDEName) {
         OutputOperator oot = new OutputOperator();
                 oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
-                OutputTabOperator asot = oot.getOutputTab("Sun Java System Application Server/Glassfish");
+                OutputTabOperator asot = oot.getOutputTab(serverIDEName);
                 asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
         asot.waitText("Application server startup complete");        
     }    
