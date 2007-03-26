@@ -71,7 +71,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
 
     protected JComponent createComponent() {
         if (repository == null) {         
-            repositoryModeMask = repositoryModeMask | Repository.FLAG_URL_EDITABLE | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS;
+            repositoryModeMask = repositoryModeMask | Repository.FLAG_URL_EDITABLE | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
             String title = org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Location");       // NOI18N
             repository = new Repository(repositoryModeMask, title); 
             repository.addPropertyChangeListener(this);

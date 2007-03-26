@@ -66,6 +66,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     public final static int FLAG_ACCEPT_REVISION        = 8;
     public final static int FLAG_SHOW_REMOVE            = 16;
     public final static int FLAG_SHOW_HINTS             = 32;    
+    public final static int FLAG_SHOW_PROXY             = 64;    
     
     private final static String LOCAL_URL_HELP          = "file:///repository_path[@REV]";              // NOI18N
     private final static String HTTP_URL_HELP           = "http://hostname/repository_path[@REV]";      // NOI18N
@@ -380,7 +381,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         repositoryPanel.userTextField.setVisible(authFields);          
         repositoryPanel.leaveBlankLabel.setVisible(authFields);        
         repositoryPanel.userLabel.setVisible(authFields);             
-        repositoryPanel.proxySettingsButton.setVisible(proxyFields);        
+        repositoryPanel.proxySettingsButton.setVisible(proxyFields && ((modeMask & FLAG_SHOW_PROXY) != 0));        
         repositoryPanel.tunnelCommandTextField.setVisible(sshFields);        
         repositoryPanel.tunnelCommandLabel.setVisible(sshFields);        
         repositoryPanel.tunnelLabel.setVisible(sshFields);        
