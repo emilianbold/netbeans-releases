@@ -18,22 +18,33 @@
  */
 package org.netbeans.modules.compapp.casaeditor.graph.layout;
 
-import org.netbeans.api.visual.router.CollisionsCollector;
+import java.awt.Point;
+import java.awt.Rectangle;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 
 /**
  * Modified to only register CasaNodeWidget widgets as being collisions.
+ * This is no longer an actual org.netbeans.api.visual.router.CollisionsCollector.
+ * We need to prevent connections that share the same endpoints from colliding,
+ * and in order to do so, the collisions collector must have some context - which
+ * is not by default provided by the graph library. Thus, the orthogonal
+ * search routing code has been copied, *temporarily*, until the graph library
+ * can be modified to pass in context into the collisions collector.
  *
- * @author David Kaspar
+ * @author Josh Sandusky
  */
-public class CasaCollisionCollector implements CollisionsCollector {
+public class CasaCollisionCollector {
 
     private static final int SPACING_EDGE = 8;
     private static final int SPACING_NODE = 16;
@@ -45,15 +56,36 @@ public class CasaCollisionCollector implements CollisionsCollector {
     }
 
     
-    public void collectCollisions (java.util.List<Rectangle> verticalCollisions, java.util.List<Rectangle> horizontalCollisions) {
+    public void collectCollisions (
+            ConnectionWidget connectionWidget, 
+            List<Rectangle> verticalCollisions, 
+            List<Rectangle> horizontalCollisions)
+    {
+        CasaEndpointRef[] connectionEndpoints = getEndpoints(connectionWidget);
+        
         for (Widget widget : getWidgets ()) {
-            if (! widget.isValidated ())
+            
+            if (!widget.isValidated ()) {
                 continue;
+            }
+            
+            if (widget == connectionWidget) {
+                continue;
+            }
+            
             if (widget instanceof ConnectionWidget) {
-                ConnectionWidget conn = (ConnectionWidget) widget;
-                if (! conn.isRouted ())
+                ConnectionWidget iterConnection = (ConnectionWidget) widget;
+                if (!iterConnection.isRouted ()) {
                     continue;
-                java.util.List<Point> controlPoints = conn.getControlPoints ();
+                }
+                
+                if (
+                        connectionEndpoints.length > 0 && 
+                        sharesEndpoints(connectionEndpoints, iterConnection)) {
+                    continue;
+                }
+                
+                List<Point> controlPoints = iterConnection.getControlPoints ();
                 int last = controlPoints.size () - 1;
                 for (int i = 0; i < last; i ++) {
                     Point point1 = controlPoints.get (i);
@@ -88,4 +120,37 @@ public class CasaCollisionCollector implements CollisionsCollector {
         return list;
     }
 
+    private CasaEndpointRef[] getEndpoints(ConnectionWidget connectionWidget) {
+        CasaModelGraphScene scene = (CasaModelGraphScene) connectionWidget.getScene();
+        CasaConnection connection = (CasaConnection) scene.findObject(connectionWidget);
+        if (connection == null) {
+            return new CasaEndpointRef[0];
+        }
+        
+        CasaWrapperModel model = scene.getModel();
+        CasaEndpointRef consumes = model.getCasaEndpointRef(connection, true);
+        CasaEndpointRef provides = model.getCasaEndpointRef(connection, false);
+        if (consumes != null && provides != null) {
+            return new CasaEndpointRef[] { consumes, provides };
+        } else if (consumes != null) {
+            return new CasaEndpointRef[] { consumes };
+        } else if (provides != null) {
+            return new CasaEndpointRef[] { provides };
+        }
+        return new CasaEndpointRef[0];
+    }
+    
+    private boolean sharesEndpoints(CasaEndpointRef[] endpoints, ConnectionWidget connectionWidget) {
+        CasaEndpointRef[] otherEndpoints = getEndpoints(connectionWidget);
+        if (otherEndpoints.length > 0) {
+            for (CasaEndpointRef endpoint : endpoints) {
+                for (CasaEndpointRef iterEndpoint : otherEndpoints) {
+                    if (endpoint == iterEndpoint) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }

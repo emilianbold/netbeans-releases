@@ -25,17 +25,14 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.visual.router.RouterFactory;
-import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.widget.Widget.Dependency;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaPinWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities;
 import org.netbeans.modules.compapp.casaeditor.graph.layout.CasaCollisionCollector;
+import org.netbeans.modules.compapp.casaeditor.graph.layout.CasaOrthogonalSearchRouter;
 import org.netbeans.modules.compapp.casaeditor.graph.layout.ModelLoadLayoutInfo;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
@@ -159,7 +156,11 @@ public class CasaModelGraphUtilities {
         externalRegionWidget.setPreferredBounds(new Rectangle(externalWidth, RegionUtilities.DEFAULT_HEIGHT));
 
         // Set up a new connection router to account for the widgets in our regions.
-        scene.setRouter(RouterFactory.createOrthogonalSearchRouter(new CasaCollisionCollector(
+        // We, temporarily, do not use the standard OrthogonalSearchRouter. We used a slightly
+        // modified version that can support passing in the context ConnectionWidget so that
+        // connections that share endpoints do not collide with each other.
+//        scene.setRouter(RouterFactory.createOrthogonalSearchRouter(new CasaCollisionCollector(
+        scene.setRouter(new CasaOrthogonalSearchRouter(new CasaCollisionCollector(
                 bindingRegionWidget,
                 engineRegionWidget,
                 externalRegionWidget,
