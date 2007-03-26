@@ -507,7 +507,7 @@ public final class JsfForm implements ActiveEditorDrop {
         this.formType = formType;
     }
     
-    private static boolean isAnnotatedWith(Element element, String annotationFqn) {
+    public static boolean isAnnotatedWith(Element element, String annotationFqn) {
         return findAnnotation(element, annotationFqn) != null;
     }
     

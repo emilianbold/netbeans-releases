@@ -19,36 +19,67 @@
 
 package org.netbeans.modules.web.jsf.wizards;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+//import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
+//import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
+//import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+//import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
+//import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+//import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
-import org.netbeans.modules.web.jsf.JSFConfigDataObject;
-import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.web.jsf.palette.items.JsfForm;
 import org.netbeans.modules.web.jsf.palette.items.JsfTable;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Utilities;
 
 /**
@@ -58,12 +89,12 @@ import org.openide.util.Utilities;
 public class JSFClientGenerator {
     
     private static String INDEX_PAGE = "index.jsp";
-  //TODO: RETOUCHE  
-    public static void generateJSFPages(Project project, String entityClass, String jsfFolder, String controllerClass, FileObject pkg) throws IOException {
-//        boolean isInjection = Util.isSupportedJavaEEVersion(project);
+    
+    public static void generateJSFPages(Project project, final String entityClass, String jsfFolder, String controllerClass, FileObject pkg) throws IOException {
+        final boolean isInjection = false;//Util.isSupportedJavaEEVersion(project);
         
         String simpleControllerName = simpleClassName(controllerClass);
-        String simpleEntityName = simpleClassName(entityClass);
+        final String simpleEntityName = simpleClassName(entityClass);
         if (jsfFolder.startsWith("/")) {
             jsfFolder = jsfFolder.substring(1);
         }
@@ -83,593 +114,640 @@ public class JSFClientGenerator {
 //                }
 //            }
 //        }
-//        SourceGroup sgWeb[] = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
-//        final FileObject jsfRoot = FileUtil.createFolder(sgWeb[0].getRootFolder(), jsfFolder);
-//        
-//        String simpleConverterName = simpleEntityName + "Converter"; //NOI18N
-//        String converterName = pkgName + "." + simpleConverterName;
-//        String fieldName = fieldFromClassName(simpleEntityName);
-//
-//        //detect access type
-//        JavaClass jc = JsfForm.resolveJavaClass(pkg, entityClass);
-//        boolean fieldAccess = JsfForm.isFieldAccess(jc);
-//        
-//        Method methods [] = JsfForm.getEntityMethods(jc);
-//        String idProperty = "Cannot Detect @Id Property";
-//        String idGetter = "Cannot Detect @Id Property";
-//        String idPropertyType = "int";
-//        List toOneRelMethods = new ArrayList();
-//        List toManyRelMethods = new ArrayList();
-//        for (int i = 0; i < methods.length; i++) {
-//            if (methods[i].getName().startsWith("get")) {
-//                Feature f = fieldAccess ? JsfForm.guessField(methods[i]) : methods[i];
-//                if (f != null) {
-//                    for (Iterator it = f.getAnnotations().iterator(); it.hasNext();) {
-//                        Annotation ann = (Annotation) it.next();
-//                        if (ann.getType() == null) {
-//                            //cannot resolve type, invalid code
-//                            continue;
-//                        }
-//                        String annName = ann.getType().getName();
-//                        if ("javax.persistence.Id".equals(annName) ||
-//                                "javax.persistence.EmbeddedId".equals(annName)) {
-//                            String name = methods[i].getName().substring(3);
-//                            idGetter = methods[i].getName();
-//                            idProperty = getPropNameFromMethod(methods[i].getName());
-//                            idPropertyType = methods[i].getType().getName();
-//                        } else if ("javax.persistence.OneToOne".equals(annName) ||
-//                                "javax.persistence.ManyToOne".equals(annName)) {
-//                            toOneRelMethods.add(methods[i]);
-//                        } else if ("javax.persistence.OneToMany".equals(annName) ||
-//                                "javax.persistence.ManyToMany".equals(annName)) {
-//                            toManyRelMethods.add(methods[i]);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        
-//        JEditorPane ep = new JEditorPane("text/x-jsp", "");
-//        BaseDocument doc = new BaseDocument(ep.getEditorKit().getClass(), false);
-//        WebModule wm = WebModule.getWebModule(jsfRoot);
-//        boolean addLinksToIndex = false;
-//        
-//        //automatically add JSF framework if it is not added
-//        JSFFrameworkProvider fp = new JSFFrameworkProvider();
-//        if (!fp.isInWebModule(wm)) {
-//            fp.extend(wm);
-//        }
-//        
-//        boolean rollback = true;
-//        
-//        JavaModel.getJavaRepository().beginTrans(true);
-//        try {
-//            JMIGenerationUtil.addInterface(jc, "java.io.Serializable"); //NOI18N
-//            rollback = false;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        } finally {
-//            JavaModel.getJavaRepository().endTrans(rollback);
-//        }
-//            
-//        JavaClass javaClass = generateControllerClass(fieldName, pkg, idProperty, idGetter, persistenceUnit, simpleControllerName, entityClass, idPropertyType, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess);
-//        
-//        String managedBean =  getManagedBeanName(simpleEntityName);
-//        JavaClass converter = generateConverter(pkg, simpleConverterName, controllerClass, simpleControllerName, entityClass, simpleEntityName, idPropertyType, idGetter, managedBean, isInjection);
-//            
-//        // <editor-fold desc=" Add link to List.jsp into index.jsp ">
-//            
-//        FileObject documentBase = wm.getDocumentBase();
-//        FileObject indexjsp = documentBase.getFileObject(INDEX_PAGE); //NOI18N
-//        if (indexjsp != null){
-//            
-//            String content = JSFFrameworkProvider.readResource(indexjsp.getInputStream(), "UTF-8"); //NO18N
-//            
-//            // what find
-//            String find = "<h1>JSP Page</h1>"; // NOI18N
-//            String endLine = System.getProperty("line.separator"); //NOI18N
-//            if ( content.indexOf(find) > 0){
-//                addLinksToIndex = true;
-//                StringBuffer replace = new StringBuffer();
-//                replace.append(find);
-//                replace.append(endLine);
-//                replace.append("    <br/>");                        //NOI18N
-//                replace.append(endLine);
-//                replace.append("    <a href=\".");                  //NOI18N
-//                replace.append(JSFConfigUtilities.translateURI(JSFConfigUtilities.getActionServletMapping(wm.getDeploymentDescriptor()),"/" + jsfFolder + "/List.jsp")); //NOI18N
-//                replace.append("\">");                              //NOI18N
-//                replace.append("List of " + simpleEntityName);
-//                replace.append("</a>");                             //NOI18N
-//                content = content.replaceFirst(find, new String (replace.toString().getBytes("UTF8"), "UTF-8")); //NOI18N
-//                JSFFrameworkProvider.createFile(indexjsp, content, "UTF-8"); //NOI18N
-//            }
-//        }
-//
-//        // </editor-fold>
-//        
-//        String linkToIndex = addLinksToIndex ? "<br>\n<a href=\"" + wm.getContextPath() + "/" + INDEX_PAGE + "\">Back to index</a>\n" : "";
-//        // <editor-fold desc=" Generate List.jsp ">
-//        FileSystem fs = jsfRoot.getFileSystem();
-//        StringBuffer listSb = new StringBuffer();
-//        listSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
-//                + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
-//                + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
-//                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
-//                + "<title>List " + simpleEntityName + "</title>\n"
-//                + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
-//        listSb.append("<h1>Listing " + simpleEntityName + "s</h1>\n");
-//        listSb.append("<h:form>\n");
-//        listSb.append("<h:commandLink action=\"#{" + managedBean + ".createSetup}\" value=\"New " + simpleEntityName + "\"/>\n"
-//                + linkToIndex + "<br>\n");
-//        listSb.append(MessageFormat.format("<h:outputText value=\"Item #'{'{0}.firstItem + 1'}'..#'{'{0}.lastItem'}' of #'{'{0}.itemCount}\"/>"
-//                + "&nbsp;\n"
-//                + "<h:commandLink action=\"#'{'{0}.prev'}'\" value=\"Previous #'{'{0}.batchSize'}'\" rendered=\"#'{'{0}.firstItem >= {0}.batchSize'}'\"/>"
-//                + "&nbsp;\n"
-//                + "<h:commandLink action=\"#'{'{0}.next'}'\" value=\"Next #'{'{0}.batchSize'}'\" rendered=\"#'{'{0}.lastItem + {0}.batchSize <= {0}.itemCount}\"/>"
-//                + "&nbsp;\n"
-//                + "<h:commandLink action=\"#'{'{0}.next'}'\" value=\"Remaining #'{'{0}.itemCount - {0}.lastItem'}'\"\n"
-//                + "rendered=\"#'{'{0}.lastItem < {0}.itemCount && {0}.lastItem + {0}.batchSize > {0}.itemCount'}'\"/>\n", managedBean));
-//        listSb.append("<h:dataTable value='#{" + managedBean + "." + fieldName + "s}' var='item' border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n");
-//        String commands = "<h:column>\n <h:commandLink value=\"Destroy\" action=\"#'{'" + managedBean + ".destroy'}'\">\n" 
-//                + "<f:param name=\"" + idProperty +"\" value=\"#'{'{0}." + idProperty + "'}'\"/>\n"
-//                + "</h:commandLink>\n  <h:outputText value=\" \"/>\n"
-//                + " <h:commandLink value=\"Edit\" action=\"#'{'" + managedBean + ".editSetup'}'\">\n"
-//                + "<f:param name=\"" + idProperty +"\" value=\"#'{'{0}." + idProperty + "'}'\"/>\n"
-//                + "</h:commandLink>\n </h:column>\n";
-//        JsfTable.createTable(JMIUtils.findClass(entityClass), managedBean + "." + fieldName, listSb, commands, "detailSetup");
-//        listSb.append("</h:dataTable>\n </h:form>\n</f:view>\n</body>\n</html>\n");
-//        
-//        try {
-//            doc.remove(0, doc.getLength());
-//            doc.insertString(0, listSb.toString(), null);
-//            doc.getFormatter().reformat(doc, 0, doc.getLength());
-//            listSb.replace(0, listSb.length(), doc.getText(0, doc.getLength()));
-//        } catch (BadLocationException e) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-//        }
-//        
-//        final String listText = listSb.toString();
-//
-//        fs.runAtomicAction(new FileSystem.AtomicAction() {
-//            public void run() throws IOException {
-//                FileObject list = FileUtil.createData(jsfRoot, "List.jsp");//NOI18N
-//                FileLock lock = list.lock();
-//                try {
-//                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(list.getOutputStream(lock)));
-//                    bw.write(listText);
-//                    bw.close();
-//                }
-//                finally {
-//                    lock.releaseLock();
-//                }
-//            }
-//        });
-//        
-//        // </editor-fold>
-//        
-//        // <editor-fold desc=" Generate New.jsp ">
-//        
-//        StringBuffer newSb = new StringBuffer();
-//        newSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
-//                + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
-//                + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
-//                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
-//                + "<title>New " + simpleEntityName + "</title>\n"
-//                + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
-//        newSb.append("<h1>New " + managedBean + "</h1>\n");
-//        newSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
-//        
-//        JsfForm.createForm(JMIUtils.findClass(entityClass), JsfForm.FORM_TYPE_NEW, managedBean + "." + fieldName, newSb, true);
-//        newSb.append("</h:panelGrid>\n");
-//        
-//        List<String> classNames = new ArrayList<String>();
-//        List<String> idProperties = new ArrayList<String>();
-//        for(Iterator it = toOneRelMethods.iterator(); it.hasNext();) {
-//            Method m = (Method) it.next();
-//            Method otherSide = JsfForm.getOtherSideOfRelation(m, fieldAccess);
-//            if (otherSide != null) {
-//                JavaClass relClass = (JavaClass) otherSide.getDeclaringClass();
-//                classNames.add(simpleClassName(relClass.getName()));
-//                idProperties.add(getPropNameFromMethod(m.getName()));
-//            }
-//        }
-//        
-////      <h:commandLink action="#{comment.createFromPost}" value="Create" rendered="#{comment.comment.postId != null}"/>
-//        StringBuffer newRenderDefaultOption = new StringBuffer();
-//        for(int i = 0; i < classNames.size(); i++) {
-//            StringBuffer negativeCondition = new StringBuffer();
-//            if (classNames.size() > 0) {
-//                for(int j = 0; j < classNames.size(); j++) {
-//                    if (i != j) {
-//                        negativeCondition.append(" and " + managedBean + "." + fieldName + "." + idProperties.get(j) + " == null");
-//                    }
-//                }
-//            }
-//            newSb.append("<h:commandLink action=\"#{" + managedBean + ".createFrom" + 
-//                    classNames.get(i) + "}\" value=\"Create\" rendered=\"#{" + managedBean + "." + fieldName + "." + idProperties.get(i) + " != null" + negativeCondition.toString() + "}\"/>\n");
-//            if (i > 0) {
-//                newRenderDefaultOption.append(" and ");
-//            }
-//            newRenderDefaultOption.append(managedBean + "." + fieldName + "." + idProperties.get(i) + " == null");
-//                
-//        }
-//        
-////      <h:commandLink action="#{comment.create}" value="Create" rendered="#{comment.comment.postId == null}"/>
-//        if (classNames.size() == 0) {
-//            newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\"/>\n<br>\n");
-//        } else {
-//            newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\" rendered=\"#{" + newRenderDefaultOption.toString() + "}\"/>\n<br>\n");
-//        }
-//        
-//        newSb.append("<h:commandLink action=\"" + fieldName + "_list\" value=\"Show All " + simpleEntityName + "\"/>\n " + linkToIndex
-//                + "</h:form>\n </f:view>\n</body>\n</html>\n");
-//        
-//        try {
-//            doc.remove(0, doc.getLength());
-//            doc.insertString(0, newSb.toString(), null);
-//            doc.getFormatter().reformat(doc, 0, doc.getLength());
-//            newSb.replace(0, newSb.length(), doc.getText(0, doc.getLength()));
-//        } catch (BadLocationException e) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-//        }
-//        final String newText = newSb.toString();
-//
-//        fs.runAtomicAction(new FileSystem.AtomicAction() {
-//            public void run() throws IOException {
-//                FileObject newForm = FileUtil.createData(jsfRoot, "New.jsp");//NOI18N
-//                FileLock lock = newForm.lock();
-//                try {
-//                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(newForm.getOutputStream(lock)));
-//                    bw.write(newText);
-//                    bw.close();
-//                }
-//                finally {
-//                    lock.releaseLock();
-//                }
-//            }
-//        });
-//        
-//        // </editor-fold>
-//
-//        // <editor-fold desc=" Generate Edit.jsp ">
-//        
-//        StringBuffer editSb = new StringBuffer();
-//        editSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
-//                + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
-//                + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
-//                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
-//                + "<title>Edit " + simpleEntityName + "</title>\n"
-//                + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
-//        editSb.append("<h1>Edit " + managedBean + "</h1>\n");
-//        editSb.append("<h:form>\n  <h:inputHidden value=\"#{" + managedBean + "." + fieldName + "}\" immediate=\"true\"/>\n"
-//                + "<h:panelGrid columns=\"2\">\n");
-//        
-//        JsfForm.createForm(JMIUtils.findClass(entityClass), JsfForm.FORM_TYPE_EDIT, managedBean + "." + fieldName, editSb, true);
-//        editSb.append("</h:panelGrid>\n<h:commandLink action=\"#{" + managedBean + ".edit}\" value=\"Save\"/>\n<br>\n"
-//                + "<h:commandLink action=\"" + fieldName + "_list\" value=\"Show All " + simpleEntityName + "\"/>\n" + linkToIndex
-//                + "</h:form>\n </f:view>\n</body>\n</html>\n");
-//
-//        try {
-//            doc.remove(0, doc.getLength());
-//            doc.insertString(0, editSb.toString(), null);
-//            doc.getFormatter().reformat(doc, 0, doc.getLength());
-//            editSb.replace(0, editSb.length(), doc.getText(0, doc.getLength()));
-//        } catch (BadLocationException e) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-//        }
-//
-//        final String editText = editSb.toString();
-//
-//        fs.runAtomicAction(new FileSystem.AtomicAction() {
-//            public void run() throws IOException {
-//                FileObject editForm = FileUtil.createData(jsfRoot, "Edit.jsp");//NOI18N
-//                FileLock lock = editForm.lock();
-//                try {
-//                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(editForm.getOutputStream(lock)));
-//                    bw.write(editText);
-//                    bw.close();
-//                }
-//                finally {
-//                    lock.releaseLock();
-//                }
-//            }
-//        });
-//        
-//        // </editor-fold>
-//        
-//        // <editor-fold desc=" Generate Detail.jsp ">
-//        
-//        StringBuffer detailSb = new StringBuffer();
-//        detailSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
-//                + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
-//                + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
-//                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
-//                + "<title>Detail of " + simpleEntityName + "</title>\n"
-//                + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
-//        detailSb.append("<h1>Detail of " + managedBean + "</h1>\n");
-//        detailSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
-//        
-//        JsfForm.createForm(JMIUtils.findClass(entityClass), JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, detailSb, true);
-//        detailSb.append("</h:panelGrid>\n");
-//        JsfForm.createTablesForRelated(JMIUtils.findClass(entityClass), JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, idProperty, isInjection, detailSb);
-//        detailSb.append("<h:commandLink action=\"" + fieldName + "_edit\" value=\"Edit\" />\n<br>\n"
-//                + "<h:commandLink action=\"" + fieldName + "_list\" value=\"Show All " + simpleEntityName + "\"/>\n" + linkToIndex
-//                + "</h:form>\n </f:view>\n</body>\n</html>\n");
-//
-//        try {
-//            doc.remove(0, doc.getLength());
-//            doc.insertString(0, detailSb.toString(), null);
-//            doc.getFormatter().reformat(doc, 0, doc.getLength());
-//            detailSb.replace(0, detailSb.length(), doc.getText(0, doc.getLength()));
-//        } catch (BadLocationException e) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-//        }
-//
-//        final String detailText = detailSb.toString();
-//
-//        fs.runAtomicAction(new FileSystem.AtomicAction() {
-//            public void run() throws IOException {
-//                FileObject detailForm = FileUtil.createData(jsfRoot, "Detail.jsp");//NOI18N
-//                FileLock lock = detailForm.lock();
-//                try {
-//                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(detailForm.getOutputStream(lock)));
-//                    bw.write(detailText);
-//                    bw.close();
-//                }
-//                finally {
-//                    lock.releaseLock();
-//                }
-//            }
-//        });
-//        
-//        // </editor-fold>
-//        
-//        // <editor-fold desc=" Add managed bean, converters and navigation rules into faces-config.xml ">
-//        
-//        String[] configFiles = JSFConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
-//        if (configFiles.length > 0) {
-//            FileObject fo = wm.getDocumentBase().getFileObject(configFiles[0]);
-//            try {
-//                JSFConfigDataObject configDO = (JSFConfigDataObject)DataObject.find(fo);
-//                FacesConfig config= configDO.getFacesConfig();
-//                ManagedBean mb = config.newManagedBean();
-//                mb.setManagedBeanName(managedBean);
-//                mb.setManagedBeanClass(controllerClass);
-//                mb.setManagedBeanScope("session");
-//                config.addManagedBean(mb);
-//
-//                Converter cv = config.newConverter();
-//                cv.setConverterForClass(entityClass);
-//                cv.setConverterClass(converterName);
-//                config.addConverter(cv);
-//                
-//                Type idType = JMIUtils.resolveType(idPropertyType);
-//                if (idType instanceof JavaClass) {
-//                    JavaClass idClass = (JavaClass) idType;
-//                    if (JsfForm.isEmbeddableClass(idClass)) {
-//                        cv = config.newConverter();
-//                        cv.setConverterForClass(idPropertyType);
-//                        cv.setConverterClass((pkgName.length() > 0 ? pkgName + "." : "") + simpleClassName(idPropertyType) + "Converter");
-//                        config.addConverter(cv);
-//                    }
-//                }
-//                
-//                NavigationRule nr = config.newNavigationRule();
-//                NavigationCase nc = nr.newNavigationCase();
-//                nc.setFromOutcome(fieldName + "_create");
-//                nc.setToViewId("/" + jsfFolder + "/New.jsp");
-//                nr.addNavigationCase(nc);
-//                config.addNavigationRule(nr);
-//
-//                nr = config.newNavigationRule();
-//                nc = nr.newNavigationCase();
-//                nc.setFromOutcome(fieldName + "_list");
-//                nc.setToViewId("/" + jsfFolder + "/List.jsp");
-//                nr.addNavigationCase(nc);
-//                config.addNavigationRule(nr);
-//
-//                nr = config.newNavigationRule();
-//                nc = nr.newNavigationCase();
-//                nc.setFromOutcome(fieldName + "_edit");
-//                nc.setToViewId("/" + jsfFolder + "/Edit.jsp");
-//                nr.addNavigationCase(nc);
-//                config.addNavigationRule(nr);
-//
-//                nr = config.newNavigationRule();
-//                nc = nr.newNavigationCase();
-//                nc.setFromOutcome(fieldName + "_detail");
-//                nc.setToViewId("/" + jsfFolder + "/Detail.jsp");
-//                nr.addNavigationCase(nc);
-//                config.addNavigationRule(nr);
-//
-//                configDO.write(config);
-//            } catch (IOException ioex) {
-//                ErrorManager.getDefault().notify(ioex);
-//            }
-//        }
-//        // </editor-fold>
+        SourceGroup sgWeb[] = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+        final FileObject jsfRoot = FileUtil.createFolder(sgWeb[0].getRootFolder(), jsfFolder);
         
+        String simpleConverterName = simpleEntityName + "Converter"; //NOI18N
+        String converterName = pkgName + "." + simpleConverterName;
+        final String fieldName = fieldFromClassName(simpleEntityName);
+
+        final List<ElementHandle<ExecutableElement>> idGetter = new ArrayList<ElementHandle<ExecutableElement>>();
+        final FileObject[] arrEntityClassFO = new FileObject[1];
+        final List<ElementHandle<ExecutableElement>> toOneRelMethods = new ArrayList<ElementHandle<ExecutableElement>>();
+        final List<ElementHandle<ExecutableElement>> toManyRelMethods = new ArrayList<ElementHandle<ExecutableElement>>();
+        final boolean[] fieldAccess = new boolean[] { false };
+        final String[] idProperty = new String[1];
+
+        //detect access type
+        final ClasspathInfo classpathInfo = ClasspathInfo.create(pkg);
+        JavaSource javaSource = JavaSource.create(classpathInfo);
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement jc = controller.getElements().getTypeElement(entityClass);
+                arrEntityClassFO[0] = org.netbeans.api.java.source.SourceUtils.getFile(jc, controller.getClasspathInfo());
+                fieldAccess[0] = JsfForm.isFieldAccess(jc);
+                for (ExecutableElement method : JsfForm.getEntityMethods(jc)) {
+                    String methodName = method.getSimpleName().toString();
+                    if (methodName.startsWith("get")) {
+                        Element f = fieldAccess[0] ? JsfForm.guessField(controller, method) : method;
+                        if (f != null) {
+                            if (JsfForm.isAnnotatedWith(f, "javax.persistence.Id") ||
+                                    JsfForm.isAnnotatedWith(f, "javax.persistence.EmbeddedId")) {
+                                idGetter.add(ElementHandle.create(method));
+                                idProperty[0] = method.getSimpleName().toString();
+                            } else if (JsfForm.isAnnotatedWith(f, "javax.persistence.OneToOne") ||
+                                    JsfForm.isAnnotatedWith(f, "javax.persistence.ManyToOne")) {
+                                toOneRelMethods.add(ElementHandle.create(method));
+                            } else if (JsfForm.isAnnotatedWith(f, "javax.persistence.OneToMany") ||
+                                    JsfForm.isAnnotatedWith(f, "javax.persistence.ManyToMany")) {
+                                toManyRelMethods.add(ElementHandle.create(method));
+                            }
+                        }
+                    }
+                }
+            }
+        }, true);
+        
+        if (arrEntityClassFO[0] != null) {
+            addImplementsClause(arrEntityClassFO[0], entityClass, "java.io.Serializable"); //NOI18N
+        }
+            
+        JEditorPane ep = new JEditorPane("text/x-jsp", "");
+        final BaseDocument doc = new BaseDocument(ep.getEditorKit().getClass(), false);
+        WebModule wm = WebModule.getWebModule(jsfRoot);
+        boolean addLinksToIndex = false;
+        
+        //automatically add JSF framework if it is not added
+        JSFFrameworkProvider fp = new JSFFrameworkProvider();
+        if (!fp.isInWebModule(wm)) {
+            fp.extend(wm);
+        }
+        
+        TypeElement javaClass = generateControllerClass(fieldName, pkg, idGetter.get(0), persistenceUnit, simpleControllerName, 
+                entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0]);
+        
+        final String managedBean =  getManagedBeanName(simpleEntityName);
+//        TypeElement converter = generateConverter(pkg, simpleConverterName, controllerClass, simpleControllerName, entityClass, 
+//                simpleEntityName, idGetter.get(0), managedBean, isInjection);
+            
+        boolean addLinkToListJspIntoIndexJsp = addLinkToListJspIntoIndexJsp(wm, jsfFolder, simpleEntityName);
+        final String linkToIndex = addLinksToIndex ? "<br>\n<a href=\"" + wm.getContextPath() + "/" + INDEX_PAGE + "\">Back to index</a>\n" : "";
+
+        generateListJsp(jsfRoot, classpathInfo, entityClass, simpleEntityName, managedBean, linkToIndex, fieldName, idProperty[0], doc);
+        
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                generateNewJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, toOneRelMethods, fieldAccess[0], linkToIndex, doc, jsfRoot);
+            }
+        }, true);
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                generateEditJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, linkToIndex, doc, jsfRoot);
+            }
+        }, true);
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                generateDetailJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, idProperty[0], isInjection, linkToIndex, doc, jsfRoot);
+            }
+        }, true);
+        
+        addStuffToFacesConfigXml(classpathInfo, wm, managedBean, controllerClass, entityClass, converterName, fieldName, jsfFolder, idGetter.get(0), pkgName);
+    }
+
+    private static boolean addLinkToListJspIntoIndexJsp(WebModule wm, String jsfFolder, String simpleEntityName) throws FileNotFoundException, IOException {
+        boolean result = false;
+        FileObject documentBase = wm.getDocumentBase();
+        FileObject indexjsp = documentBase.getFileObject(INDEX_PAGE); //NOI18N
+        if (indexjsp != null){
+            
+            String content = JSFFrameworkProvider.readResource(indexjsp.getInputStream(), "UTF-8"); //NO18N
+            
+            // what find
+            String find = "<h1>JSP Page</h1>"; // NOI18N
+            String endLine = System.getProperty("line.separator"); //NOI18N
+            if ( content.indexOf(find) > 0){
+                result = true;
+                StringBuffer replace = new StringBuffer();
+                replace.append(find);
+                replace.append(endLine);
+                replace.append("    <br/>");                        //NOI18N
+                replace.append(endLine);
+                replace.append("    <a href=\".");                  //NOI18N
+                replace.append(ConfigurationUtils.translateURI(ConfigurationUtils.getFacesServletMapping(wm),"/" + jsfFolder + "/List.jsp")); //NOI18N
+                replace.append("\">");                              //NOI18N
+                replace.append("List of " + simpleEntityName);
+                replace.append("</a>");                             //NOI18N
+                content = content.replaceFirst(find, new String (replace.toString().getBytes("UTF8"), "UTF-8")); //NOI18N
+                JSFFrameworkProvider.createFile(indexjsp, content, "UTF-8"); //NOI18N
+            }
+        }
+        return result;
+    }
+
+    private static void generateListJsp(final FileObject jsfRoot, ClasspathInfo classpathInfo, final String entityClass, String simpleEntityName, 
+            final String managedBean, String linkToIndex, final String fieldName, String idProperty, BaseDocument doc) throws FileStateInvalidException, IOException {
+        FileSystem fs = jsfRoot.getFileSystem();
+        final StringBuffer listSb = new StringBuffer();
+        listSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
+                + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
+                + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
+                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+                + "<title>List " + simpleEntityName + "</title>\n"
+                + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
+        listSb.append("<h1>Listing " + simpleEntityName + "s</h1>\n");
+        listSb.append("<h:form>\n");
+        listSb.append("<h:commandLink action=\"#{" + managedBean + ".createSetup}\" value=\"New " + simpleEntityName + "\"/>\n"
+                + linkToIndex + "<br>\n");
+        listSb.append(MessageFormat.format("<h:outputText value=\"Item #'{'{0}.firstItem + 1'}'..#'{'{0}.lastItem'}' of #'{'{0}.itemCount}\"/>"
+                + "&nbsp;\n"
+                + "<h:commandLink action=\"#'{'{0}.prev'}'\" value=\"Previous #'{'{0}.batchSize'}'\" rendered=\"#'{'{0}.firstItem >= {0}.batchSize'}'\"/>"
+                + "&nbsp;\n"
+                + "<h:commandLink action=\"#'{'{0}.next'}'\" value=\"Next #'{'{0}.batchSize'}'\" rendered=\"#'{'{0}.lastItem + {0}.batchSize <= {0}.itemCount}\"/>"
+                + "&nbsp;\n"
+                + "<h:commandLink action=\"#'{'{0}.next'}'\" value=\"Remaining #'{'{0}.itemCount - {0}.lastItem'}'\"\n"
+                + "rendered=\"#'{'{0}.lastItem < {0}.itemCount && {0}.lastItem + {0}.batchSize > {0}.itemCount'}'\"/>\n", managedBean));
+        listSb.append("<h:dataTable value='#{" + managedBean + "." + fieldName + "s}' var='item' border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n");
+        final  String commands = "<h:column>\n <h:commandLink value=\"Destroy\" action=\"#'{'" + managedBean + ".destroy'}'\">\n" 
+                + "<f:param name=\"" + idProperty +"\" value=\"#'{'{0}." + idProperty + "'}'\"/>\n"
+                + "</h:commandLink>\n  <h:outputText value=\" \"/>\n"
+                + " <h:commandLink value=\"Edit\" action=\"#'{'" + managedBean + ".editSetup'}'\">\n"
+                + "<f:param name=\"" + idProperty +"\" value=\"#'{'{0}." + idProperty + "'}'\"/>\n"
+                + "</h:commandLink>\n </h:column>\n";
+        JavaSource javaSource = JavaSource.create(classpathInfo);
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
+                JsfTable.createTable(controller, typeElement, managedBean + "." + fieldName, listSb, commands, "detailSetup");
+            }
+        }, true);
+        listSb.append("</h:dataTable>\n </h:form>\n</f:view>\n</body>\n</html>\n");
+        
+        try {
+            doc.remove(0, doc.getLength());
+            doc.insertString(0, listSb.toString(), null);
+            doc.getFormatter().reformat(doc, 0, doc.getLength());
+            listSb.replace(0, listSb.length(), doc.getText(0, doc.getLength()));
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        
+        final String listText = listSb.toString();
+
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                FileObject list = FileUtil.createData(jsfRoot, "List.jsp");//NOI18N
+                FileLock lock = list.lock();
+                try {
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(list.getOutputStream(lock)));
+                    bw.write(listText);
+                    bw.close();
+                }
+                finally {
+                    lock.releaseLock();
+                }
+            }
+        });
     }
     
-//    private static JavaClass generateConverter(
-//            final FileObject pkg,
-//            final String simpleConverterName,
-//            final String controllerClass,
-//            final String simpleControllerName,
-//            final String entityClass,
-//            final String simpleEntityName,
-//            final String idPropertyType,
-//            final String idGetter,
-//            final String managedBeanName,
-//            final boolean isInjection) {
-//        JavaClass javaClass = null;
-//        boolean rollback = true;
+    private static void generateNewJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
+            List<ElementHandle<ExecutableElement>> toOneRelMethods, boolean fieldAccess, String linkToIndex, BaseDocument doc, final FileObject jsfRoot) throws FileStateInvalidException, IOException {
+        StringBuffer newSb = new StringBuffer();
+        newSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
+                + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
+                + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
+                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+                + "<title>New " + simpleEntityName + "</title>\n"
+                + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
+        newSb.append("<h1>New " + managedBean + "</h1>\n");
+        newSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
+        
+        TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_NEW, managedBean + "." + fieldName, newSb, true);
+        newSb.append("</h:panelGrid>\n");
+        
+        List<String> classNames = new ArrayList<String>();
+        List<String> idProperties = new ArrayList<String>();
+        for (ElementHandle<ExecutableElement> handle : toOneRelMethods) {
+            ExecutableElement method = handle.resolve(controller);
+            ExecutableElement otherSide = JsfForm.getOtherSideOfRelation(controller.getTypes(), method, fieldAccess);
+            if (otherSide != null) {
+                TypeElement relClass = (TypeElement) otherSide.getEnclosingElement();
+                classNames.add(relClass.getQualifiedName().toString());
+                idProperties.add(getPropNameFromMethod(method.getSimpleName().toString()));
+            }
+        }
+        
+//      <h:commandLink action="#{comment.createFromPost}" value="Create" rendered="#{comment.comment.postId != null}"/>
+        StringBuffer newRenderDefaultOption = new StringBuffer();
+        for(int i = 0; i < classNames.size(); i++) {
+            StringBuffer negativeCondition = new StringBuffer();
+            if (classNames.size() > 0) {
+                for(int j = 0; j < classNames.size(); j++) {
+                    if (i != j) {
+                        negativeCondition.append(" and " + managedBean + "." + fieldName + "." + idProperties.get(j) + " == null");
+                    }
+                }
+            }
+            newSb.append("<h:commandLink action=\"#{" + managedBean + ".createFrom" + 
+                    classNames.get(i) + "}\" value=\"Create\" rendered=\"#{" + managedBean + "." + fieldName + "." + idProperties.get(i) + " != null" + negativeCondition.toString() + "}\"/>\n");
+            if (i > 0) {
+                newRenderDefaultOption.append(" and ");
+            }
+            newRenderDefaultOption.append(managedBean + "." + fieldName + "." + idProperties.get(i) + " == null");
+                
+        }
+        
+//      <h:commandLink action="#{comment.create}" value="Create" rendered="#{comment.comment.postId == null}"/>
+        if (classNames.size() == 0) {
+            newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\"/>\n<br>\n");
+        } else {
+            newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\" rendered=\"#{" + newRenderDefaultOption.toString() + "}\"/>\n<br>\n");
+        }
+        
+        newSb.append("<h:commandLink action=\"" + fieldName + "_list\" value=\"Show All " + simpleEntityName + "\"/>\n " + linkToIndex
+                + "</h:form>\n </f:view>\n</body>\n</html>\n");
+        
+        try {
+            doc.remove(0, doc.getLength());
+            doc.insertString(0, newSb.toString(), null);
+            doc.getFormatter().reformat(doc, 0, doc.getLength());
+            newSb.replace(0, newSb.length(), doc.getText(0, doc.getLength()));
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        final String newText = newSb.toString();
+
+        FileSystem fs = jsfRoot.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                FileObject newForm = FileUtil.createData(jsfRoot, "New.jsp");//NOI18N
+                FileLock lock = newForm.lock();
+                try {
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(newForm.getOutputStream(lock)));
+                    bw.write(newText);
+                    bw.close();
+                }
+                finally {
+                    lock.releaseLock();
+                }
+            }
+        });
+    }
+    
+    private static void generateEditJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
+            String linkToIndex, BaseDocument doc, final FileObject jsfRoot) throws FileStateInvalidException, IOException {
+        StringBuffer editSb = new StringBuffer();
+        editSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
+                + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
+                + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
+                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+                + "<title>Edit " + simpleEntityName + "</title>\n"
+                + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
+        editSb.append("<h1>Edit " + managedBean + "</h1>\n");
+        editSb.append("<h:form>\n  <h:inputHidden value=\"#{" + managedBean + "." + fieldName + "}\" immediate=\"true\"/>\n"
+                + "<h:panelGrid columns=\"2\">\n");
+        
+        TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_EDIT, managedBean + "." + fieldName, editSb, true);
+        editSb.append("</h:panelGrid>\n<h:commandLink action=\"#{" + managedBean + ".edit}\" value=\"Save\"/>\n<br>\n"
+                + "<h:commandLink action=\"" + fieldName + "_list\" value=\"Show All " + simpleEntityName + "\"/>\n" + linkToIndex
+                + "</h:form>\n </f:view>\n</body>\n</html>\n");
+
+        try {
+            doc.remove(0, doc.getLength());
+            doc.insertString(0, editSb.toString(), null);
+            doc.getFormatter().reformat(doc, 0, doc.getLength());
+            editSb.replace(0, editSb.length(), doc.getText(0, doc.getLength()));
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+
+        final String editText = editSb.toString();
+
+        FileSystem fs = jsfRoot.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                FileObject editForm = FileUtil.createData(jsfRoot, "Edit.jsp");//NOI18N
+                FileLock lock = editForm.lock();
+                try {
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(editForm.getOutputStream(lock)));
+                    bw.write(editText);
+                    bw.close();
+                }
+                finally {
+                    lock.releaseLock();
+                }
+            }
+        });
+    }
+
+    private static void generateDetailJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, 
+            String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot) throws FileStateInvalidException, IOException {
+        StringBuffer detailSb = new StringBuffer();
+        detailSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
+                + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
+                + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
+                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+                + "<title>Detail of " + simpleEntityName + "</title>\n"
+                + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
+        detailSb.append("<h1>Detail of " + managedBean + "</h1>\n");
+        detailSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
+        
+        TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, detailSb, true);
+        detailSb.append("</h:panelGrid>\n");
+        JsfForm.createTablesForRelated(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, idProperty, isInjection, detailSb);
+        detailSb.append("<h:commandLink action=\"" + fieldName + "_edit\" value=\"Edit\" />\n<br>\n"
+                + "<h:commandLink action=\"" + fieldName + "_list\" value=\"Show All " + simpleEntityName + "\"/>\n" + linkToIndex
+                + "</h:form>\n </f:view>\n</body>\n</html>\n");
+
+        try {
+            doc.remove(0, doc.getLength());
+            doc.insertString(0, detailSb.toString(), null);
+            doc.getFormatter().reformat(doc, 0, doc.getLength());
+            detailSb.replace(0, detailSb.length(), doc.getText(0, doc.getLength()));
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+
+        final String detailText = detailSb.toString();
+
+        FileSystem fs = jsfRoot.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                FileObject detailForm = FileUtil.createData(jsfRoot, "Detail.jsp");//NOI18N
+                FileLock lock = detailForm.lock();
+                try {
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(detailForm.getOutputStream(lock)));
+                    bw.write(detailText);
+                    bw.close();
+                }
+                finally {
+                    lock.releaseLock();
+                }
+            }
+        });
+    }
+
+    private static void addStuffToFacesConfigXml(ClasspathInfo classpathInfo, WebModule wm, String managedBean, String controllerClass, String entityClass, 
+            String converterName, String fieldName, String jsfFolder, final ElementHandle<ExecutableElement> idGetterHandle, String pkgName) {
+        FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(wm);
+        if (configFiles.length > 0) {
+            // using first found faces-config.xml, is it OK?
+            FileObject fo = configFiles[0];
+            try {
+                JSFConfigModel model = ConfigurationUtils.getConfigModel(fo, true);
+                FacesConfig config = model.getRootComponent();
+                ManagedBean mb = model.getFactory().createManagedBean();
+                mb.setManagedBeanName(managedBean);
+                mb.setManagedBeanClass(controllerClass);
+                mb.setManagedBeanScope("session");
+                config.addManagedBean(mb);
+
+                Converter cv = model.getFactory().createConverter();
+                cv.setConverterForClass(entityClass);
+                cv.setConverterClass(converterName);
+                config.addConverter(cv);
+                
+                final String[] idPropertyType = new String[1];
+                JavaSource javaSource = JavaSource.create(classpathInfo);
+                javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+                    public void run(WorkingCopy workingCopy) throws IOException {
+                        workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        ExecutableElement idGetter = idGetterHandle.resolve(workingCopy);
+                        if (TypeKind.DECLARED == idGetter.getReturnType().getKind()) {
+                            DeclaredType declaredType = (DeclaredType) idGetter.getReturnType();
+                            TypeElement typeElement = (TypeElement) declaredType.asElement();
+                            if (JsfForm.isEmbeddableClass(typeElement)) {
+                                idPropertyType[0] = typeElement.getQualifiedName().toString();
+                            }
+                        }
+                    }
+                });
+                if (idPropertyType[0] != null) {
+                    cv = model.getFactory().createConverter();
+                    cv.setConverterForClass(idPropertyType[0]);
+                    cv.setConverterClass((pkgName.length() > 0 ? pkgName + "." : "") + simpleClassName(idPropertyType[0]) + "Converter");
+                    config.addConverter(cv);
+                }
+                
+                NavigationRule nr = model.getFactory().createNavigationRule();
+                NavigationCase nc = model.getFactory().createNavigationCase();
+                nc.setFromOutcome(fieldName + "_create");
+                nc.setToViewId("/" + jsfFolder + "/New.jsp");
+                nr.addNavigationCase(nc);
+                config.addNavigationRule(nr);
+
+                nr = model.getFactory().createNavigationRule();
+                nc = model.getFactory().createNavigationCase();
+                nc.setFromOutcome(fieldName + "_list");
+                nc.setToViewId("/" + jsfFolder + "/List.jsp");
+                nr.addNavigationCase(nc);
+                config.addNavigationRule(nr);
+
+                nr = model.getFactory().createNavigationRule();
+                nc = model.getFactory().createNavigationCase();
+                nc.setFromOutcome(fieldName + "_edit");
+                nc.setToViewId("/" + jsfFolder + "/Edit.jsp");
+                nr.addNavigationCase(nc);
+                config.addNavigationRule(nr);
+
+                nr = model.getFactory().createNavigationRule();
+                nc = model.getFactory().createNavigationCase();
+                nc.setFromOutcome(fieldName + "_detail");
+                nc.setToViewId("/" + jsfFolder + "/Detail.jsp");
+                nr.addNavigationCase(nc);
+                config.addNavigationRule(nr);
+
+                //TODO: RETOUCHE correct write to JSF model?
+                model.endTransaction();
+            } catch (IOException ioex) {
+                ErrorManager.getDefault().notify(ioex);
+            }
+        }
+    }
+    
+    private static TypeElement generateConverter(
+            WorkingCopy workingCopy,
+            final FileObject pkg,
+            final String simpleConverterName,
+            final String controllerClass,
+            final String simpleControllerName,
+            final String entityClass,
+            final String simpleEntityName,
+            final ElementHandle<ExecutableElement> idGetter,
+            final String managedBeanName,
+            final boolean isInjection) {
+        
+        return null;
+        
+//        TypeElement javaClass = null;
 //        
-//        JavaModel.getJavaRepository().beginTrans(true);
-//        try {
-//            JavaClass idClass = null;
-//            Type idType = JMIUtils.resolveType(idPropertyType);
-//            if (idType instanceof JavaClass) {
-//                idClass = (JavaClass) idType;
-//            }
-//            boolean embeddable = idClass != null && JsfForm.isEmbeddableClass(idClass);
-//            JavaClass idConverter = null;
-//            Parameter p;
-//            Method getAsObjectE = null;
-//            Method getAsStringE = null;
-//            
-//            if (embeddable) {
-//                idConverter = JMIGenerationUtil.createClass(pkg, simpleClassName(idPropertyType) + "Converter"); //NOI18N
-//                JMIGenerationUtil.addInterface(idConverter, "javax.faces.convert.Converter");
-//                getAsObjectE = JMIGenerationUtil.createMethod(idConverter, "getAsObject", Modifier.PUBLIC, "java.lang.Object"); //NOI18N
-//                p = JMIGenerationUtil.createParameter(idConverter, "facesContext", "javax.faces.context.FacesContext"); //NOI18N
-//                getAsObjectE.getParameters().add(p);
-//                p  = JMIGenerationUtil.createParameter(idConverter, "uIComponent", "javax.faces.component.UIComponent"); //NOI18N
-//                getAsObjectE.getParameters().add(p);
-//                p  = JMIGenerationUtil.createParameter(idConverter, "string", "java.lang.String"); //NOI18N
-//                getAsObjectE.getParameters().add(p);
-//                
-//                getAsStringE = JMIGenerationUtil.createMethod(idConverter, "getAsString", Modifier.PUBLIC, "java.lang.String"); //NOI18N
-//                p = JMIGenerationUtil.createParameter(idConverter, "facesContext", "javax.faces.context.FacesContext"); //NOI18N
-//                getAsStringE.getParameters().add(p);
-//                p  = JMIGenerationUtil.createParameter(idConverter, "uIComponent", "javax.faces.component.UIComponent"); //NOI18N
-//                getAsStringE.getParameters().add(p);
-//                p  = JMIGenerationUtil.createParameter(idConverter, "object", "java.lang.Object"); //NOI18N
-//                getAsStringE.getParameters().add(p);
-//            }
-//            
-//            javaClass = JMIGenerationUtil.createClass(pkg, simpleConverterName);
-//            JMIGenerationUtil.addInterface(javaClass, "javax.faces.convert.Converter");
-//            
-//            Method getAsObject = JMIGenerationUtil.createMethod(javaClass, "getAsObject", Modifier.PUBLIC, "java.lang.Object"); //NOI18N
-//            p = JMIGenerationUtil.createParameter(javaClass, "facesContext", "javax.faces.context.FacesContext"); //NOI18N
-//            getAsObject.getParameters().add(p);
-//            p  = JMIGenerationUtil.createParameter(javaClass, "uIComponent", "javax.faces.component.UIComponent"); //NOI18N
-//            getAsObject.getParameters().add(p);
-//            p  = JMIGenerationUtil.createParameter(javaClass, "string", "java.lang.String"); //NOI18N
-//            getAsObject.getParameters().add(p);
-//
-//            String controllerReferenceName = JMIGenerationUtil.createImport(javaClass, controllerClass).getName();
-//            StringBuffer getAsObjectBody = new StringBuffer();
-//            getAsObjectBody.append("if (string == null) {\n return null;\n }\n");
-//            
-//            String controllerVariable;
-//            if (isInjection) {
-//                controllerVariable= controllerReferenceName + " controller = (" 
-//                        + controllerReferenceName 
-//                        + ") facesContext.getApplication().getELResolver().getValue(\nfacesContext.getELContext(), null, \"" 
-//                        + managedBeanName +"\");\n";
-//            } else {
-//                controllerVariable = controllerReferenceName + " controller = ("
-//                        + controllerReferenceName 
-//                        + ") facesContext.getApplication().getVariableResolver().resolveVariable(\nfacesContext, \"" 
-//                        + managedBeanName +"\");\n";
-//            }
-//            ArrayList<Method> paramSetters = new ArrayList<Method>();
-//            if (embeddable) {
-//                getAsObjectBody.append(idPropertyType + " id = new " 
-//                        + idPropertyType + "();\n");
-//                Method methods [] = JMIUtils.getMethods(idClass);
-//                boolean fieldAccess = JsfForm.isFieldAccess(idClass);
-//                JMIGenerationUtil.createImport(javaClass, "java.util.StringTokenizer");
-//                JMIGenerationUtil.createImport(idConverter, "java.util.StringTokenizer");
-//                getAsObjectBody.append("StringTokenizer idTokens = new StringTokenizer(string, \";\");\n");
-//                for (int i = 0; i < methods.length; i++) {
-//                    if (methods[i].getName().startsWith("get")) {
-//                        paramSetters.add(methods[i]);
-//                    }
-//                }
-//                int params = paramSetters.size();
-//                getAsObjectBody.append("String params[] = new String[" + params + "];\n"
-//                        + "int i = 0;\n while(idTokens.hasMoreTokens()) {\n"
-//                        + "params[i++] = idTokens.nextToken();\n }\n"
-//                        + "if (i != " + params + ") {\n"
-//                        + "throw new IllegalArgumentException(\"Expected format of parameter string is a set of "
-//                        + params + " IDs delimited by ;\");\n }\n");
-//                for (int i = 0; i < paramSetters.size(); i++) {
-//                    getAsObjectBody.append("id.s" + paramSetters.get(i).getName().substring(1) + "(" 
-//                            + createIdFieldInitialization(paramSetters.get(i).getType().getName(), "params[" + i + "]") + ");\n");
-//                }
-//                getAsObjectE.setBodyText(getAsObjectBody.toString() + "return id;\n");
-//                idConverter.getFeatures().add(getAsObjectE);
-//                getAsObjectBody.append(controllerVariable + "\n return controller.find" + simpleEntityName + "(id);");
-//            } else {
-//                getAsObjectBody.append(createIdFieldDeclaration(idPropertyType, "string") + "\n"
-//                        + controllerVariable
-//                        + "\n return controller.find" + simpleEntityName + "(id);");
-//            }
-//            getAsObject.setBodyText(getAsObjectBody.toString());
-//            javaClass.getFeatures().add(getAsObject);
-//            
-//            Method getAsString = JMIGenerationUtil.createMethod(javaClass, "getAsString", Modifier.PUBLIC, "java.lang.String"); //NOI18N
-//            p = JMIGenerationUtil.createParameter(javaClass, "facesContext", "javax.faces.context.FacesContext"); //NOI18N
-//            getAsString.getParameters().add(p);
-//            p  = JMIGenerationUtil.createParameter(javaClass, "uIComponent", "javax.faces.component.UIComponent"); //NOI18N
-//            getAsString.getParameters().add(p);
-//            p  = JMIGenerationUtil.createParameter(javaClass, "object", "java.lang.Object"); //NOI18N
-//            getAsString.getParameters().add(p);
-//            
-//            String entityReferenceName = JMIGenerationUtil.createImport(javaClass, entityClass).getName();
-//            String idPropertyTypeRefName = null;
-//            StringBuffer getAsStringBody = new StringBuffer();
-//            StringBuffer getAsStringEBody = new StringBuffer();
-//            getAsStringBody.append("if (object == null) {\n return null;\n }\n"
-//                    + "if(object instanceof " + entityReferenceName + ") {\n"
-//                    + entityReferenceName + " o = (" + entityReferenceName +") object;\n");
-//            if (embeddable) {
-//                idPropertyTypeRefName = JMIGenerationUtil.createImport(idConverter, idPropertyType).getName();
-//                getAsStringEBody.append("if (object == null) {\n return null;\n }\n"
-//                        + "if(object instanceof " + idPropertyTypeRefName + ") {\n"
-//                        + idPropertyTypeRefName + " o = (" + idPropertyTypeRefName +") object;\n");
-//                getAsStringBody.append("return ");
-//                getAsStringEBody.append("return ");
-//                for(int i = 0; i < paramSetters.size(); i++) {
-//                    if (i > 0) {
-//                        getAsStringBody.append(" + \";\" + ");
-//                        getAsStringEBody.append(" + \";\" + ");
-//                    }
-//                    getAsStringBody.append("o." + idGetter + "()." + paramSetters.get(i).getName() + "()");
-//                    getAsStringEBody.append("o." + paramSetters.get(i).getName() + "()");
-//                }
-//                getAsStringBody.append(";\n");
-//                getAsStringEBody.append(";\n");
-//            } else {
-//                getAsStringBody.append("return \"\" + o." + idGetter + "();\n");
-//            }
-//            getAsStringBody.append("} else {\n"
-//                    + "throw new IllegalArgumentException(\"object:\" + object + \" of type:\" + object.getClass().getName() + \"; expected type: " + entityClass +"\");\n}");
-//            getAsString.setBodyText(getAsStringBody.toString());
-//            javaClass.getFeatures().add(getAsString);
-//            if (embeddable) {
-//                getAsStringEBody.append("} else {\n"
-//                        + "throw new IllegalArgumentException(\"object:\" + object + \" of type:\" + object.getClass().getName() + \"; expected type: " + idPropertyTypeRefName +"\");\n}");
-//                getAsStringE.setBodyText(getAsStringEBody.toString());
-//                idConverter.getFeatures().add(getAsStringE);
-//            }
-//            
-//            rollback = false;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        } finally {
-//            JavaModel.getJavaRepository().endTrans(rollback);
+//        TypeElement idClass = null;
+//        TypeMirror idType = idGetter.resolve(workingCopy).getReturnType();
+//        if (TypeKind.DECLARED == idType.getKind()) {
+//            DeclaredType declaredType = (DeclaredType) idType;
+//            idClass = (TypeElement) declaredType.asElement();
 //        }
+//        boolean embeddable = idClass != null && JsfForm.isEmbeddableClass(idClass);
+//        FileObject idConverter = null;
+//        MethodModel.Variable p;
+//        MethodModel getAsObjectE = null;
+//        MethodModel getAsStringE = null;
+//
+//        if (embeddable) {
+//            idConverter = GenerationUtils.createClass(pkg, idClass.getSimpleName() + "Converter", null); //NOI18N
+//            GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
+//            TypeElement typeElement = generationUtils.getTypeElement();
+//            ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
+//            generationUtils.addImplementsClause(classTree, "javax.faces.convert.Converter");
+//
+//            getAsObjectE = MethodModel.create(
+//                    "getAsObject",
+//                    "java.lang.Object",
+//                    "",
+//                    new ArrayList<MethodModel.Variable>
+//                    );
+//            
+//            getAsObjectE = JMIGenerationUtil.createMethod(idConverter, "getAsObject", Modifier.PUBLIC, "java.lang.Object"); //NOI18N
+//            p = JMIGenerationUtil.createParameter(idConverter, "facesContext", "javax.faces.context.FacesContext"); //NOI18N
+//            getAsObjectE.getParameters().add(p);
+//            p  = JMIGenerationUtil.createParameter(idConverter, "uIComponent", "javax.faces.component.UIComponent"); //NOI18N
+//            getAsObjectE.getParameters().add(p);
+//            p  = JMIGenerationUtil.createParameter(idConverter, "string", "java.lang.String"); //NOI18N
+//            getAsObjectE.getParameters().add(p);
+//
+//            getAsStringE = JMIGenerationUtil.createMethod(idConverter, "getAsString", Modifier.PUBLIC, "java.lang.String"); //NOI18N
+//            p = JMIGenerationUtil.createParameter(idConverter, "facesContext", "javax.faces.context.FacesContext"); //NOI18N
+//            getAsStringE.getParameters().add(p);
+//            p  = JMIGenerationUtil.createParameter(idConverter, "uIComponent", "javax.faces.component.UIComponent"); //NOI18N
+//            getAsStringE.getParameters().add(p);
+//            p  = JMIGenerationUtil.createParameter(idConverter, "object", "java.lang.Object"); //NOI18N
+//            getAsStringE.getParameters().add(p);
+//        }
+//
+//        javaClass = JMIGenerationUtil.createClass(pkg, simpleConverterName);
+//        JMIGenerationUtil.addInterface(javaClass, "javax.faces.convert.Converter");
+//
+//        Method getAsObject = JMIGenerationUtil.createMethod(javaClass, "getAsObject", Modifier.PUBLIC, "java.lang.Object"); //NOI18N
+//        p = JMIGenerationUtil.createParameter(javaClass, "facesContext", "javax.faces.context.FacesContext"); //NOI18N
+//        getAsObject.getParameters().add(p);
+//        p  = JMIGenerationUtil.createParameter(javaClass, "uIComponent", "javax.faces.component.UIComponent"); //NOI18N
+//        getAsObject.getParameters().add(p);
+//        p  = JMIGenerationUtil.createParameter(javaClass, "string", "java.lang.String"); //NOI18N
+//        getAsObject.getParameters().add(p);
+//
+//        String controllerReferenceName = JMIGenerationUtil.createImport(javaClass, controllerClass).getName();
+//        StringBuffer getAsObjectBody = new StringBuffer();
+//        getAsObjectBody.append("if (string == null) {\n return null;\n }\n");
+//
+//        String controllerVariable;
+//        if (isInjection) {
+//            controllerVariable= controllerReferenceName + " controller = (" 
+//                    + controllerReferenceName 
+//                    + ") facesContext.getApplication().getELResolver().getValue(\nfacesContext.getELContext(), null, \"" 
+//                    + managedBeanName +"\");\n";
+//        } else {
+//            controllerVariable = controllerReferenceName + " controller = ("
+//                    + controllerReferenceName 
+//                    + ") facesContext.getApplication().getVariableResolver().resolveVariable(\nfacesContext, \"" 
+//                    + managedBeanName +"\");\n";
+//        }
+//        ArrayList<Method> paramSetters = new ArrayList<Method>();
+//        if (embeddable) {
+//            getAsObjectBody.append(idPropertyType + " id = new " 
+//                    + idPropertyType + "();\n");
+//            Method methods [] = JMIUtils.getMethods(idClass);
+//            boolean fieldAccess = JsfForm.isFieldAccess(idClass);
+//            JMIGenerationUtil.createImport(javaClass, "java.util.StringTokenizer");
+//            JMIGenerationUtil.createImport(idConverter, "java.util.StringTokenizer");
+//            getAsObjectBody.append("StringTokenizer idTokens = new StringTokenizer(string, \";\");\n");
+//            for (int i = 0; i < methods.length; i++) {
+//                if (methods[i].getName().startsWith("get")) {
+//                    paramSetters.add(methods[i]);
+//                }
+//            }
+//            int params = paramSetters.size();
+//            getAsObjectBody.append("String params[] = new String[" + params + "];\n"
+//                    + "int i = 0;\n while(idTokens.hasMoreTokens()) {\n"
+//                    + "params[i++] = idTokens.nextToken();\n }\n"
+//                    + "if (i != " + params + ") {\n"
+//                    + "throw new IllegalArgumentException(\"Expected format of parameter string is a set of "
+//                    + params + " IDs delimited by ;\");\n }\n");
+//            for (int i = 0; i < paramSetters.size(); i++) {
+//                getAsObjectBody.append("id.s" + paramSetters.get(i).getName().substring(1) + "(" 
+//                        + createIdFieldInitialization(paramSetters.get(i).getType().getName(), "params[" + i + "]") + ");\n");
+//            }
+//            getAsObjectE.setBodyText(getAsObjectBody.toString() + "return id;\n");
+//            idConverter.getFeatures().add(getAsObjectE);
+//            getAsObjectBody.append(controllerVariable + "\n return controller.find" + simpleEntityName + "(id);");
+//        } else {
+//            getAsObjectBody.append(createIdFieldDeclaration(idPropertyType, "string") + "\n"
+//                    + controllerVariable
+//                    + "\n return controller.find" + simpleEntityName + "(id);");
+//        }
+//        getAsObject.setBodyText(getAsObjectBody.toString());
+//        javaClass.getFeatures().add(getAsObject);
+//
+//        Method getAsString = JMIGenerationUtil.createMethod(javaClass, "getAsString", Modifier.PUBLIC, "java.lang.String"); //NOI18N
+//        p = JMIGenerationUtil.createParameter(javaClass, "facesContext", "javax.faces.context.FacesContext"); //NOI18N
+//        getAsString.getParameters().add(p);
+//        p  = JMIGenerationUtil.createParameter(javaClass, "uIComponent", "javax.faces.component.UIComponent"); //NOI18N
+//        getAsString.getParameters().add(p);
+//        p  = JMIGenerationUtil.createParameter(javaClass, "object", "java.lang.Object"); //NOI18N
+//        getAsString.getParameters().add(p);
+//
+//        String entityReferenceName = JMIGenerationUtil.createImport(javaClass, entityClass).getName();
+//        String idPropertyTypeRefName = null;
+//        StringBuffer getAsStringBody = new StringBuffer();
+//        StringBuffer getAsStringEBody = new StringBuffer();
+//        getAsStringBody.append("if (object == null) {\n return null;\n }\n"
+//                + "if(object instanceof " + entityReferenceName + ") {\n"
+//                + entityReferenceName + " o = (" + entityReferenceName +") object;\n");
+//        if (embeddable) {
+//            idPropertyTypeRefName = JMIGenerationUtil.createImport(idConverter, idPropertyType).getName();
+//            getAsStringEBody.append("if (object == null) {\n return null;\n }\n"
+//                    + "if(object instanceof " + idPropertyTypeRefName + ") {\n"
+//                    + idPropertyTypeRefName + " o = (" + idPropertyTypeRefName +") object;\n");
+//            getAsStringBody.append("return ");
+//            getAsStringEBody.append("return ");
+//            for(int i = 0; i < paramSetters.size(); i++) {
+//                if (i > 0) {
+//                    getAsStringBody.append(" + \";\" + ");
+//                    getAsStringEBody.append(" + \";\" + ");
+//                }
+//                getAsStringBody.append("o." + idGetter + "()." + paramSetters.get(i).getName() + "()");
+//                getAsStringEBody.append("o." + paramSetters.get(i).getName() + "()");
+//            }
+//            getAsStringBody.append(";\n");
+//            getAsStringEBody.append(";\n");
+//        } else {
+//            getAsStringBody.append("return \"\" + o." + idGetter + "();\n");
+//        }
+//        getAsStringBody.append("} else {\n"
+//                + "throw new IllegalArgumentException(\"object:\" + object + \" of type:\" + object.getClass().getName() + \"; expected type: " + entityClass +"\");\n}");
+//        getAsString.setBodyText(getAsStringBody.toString());
+//        javaClass.getFeatures().add(getAsString);
+//        if (embeddable) {
+//            getAsStringEBody.append("} else {\n"
+//                    + "throw new IllegalArgumentException(\"object:\" + object + \" of type:\" + object.getClass().getName() + \"; expected type: " + idPropertyTypeRefName +"\");\n}");
+//            getAsStringE.setBodyText(getAsStringEBody.toString());
+//            idConverter.getFeatures().add(getAsStringE);
+//        }
+//
 //        return javaClass;
-//    }
-//    
-//    private static JavaClass generateControllerClass(
-//            final String fieldName, 
-//            final FileObject pkg, 
-//            final String idProperty, 
-//            final String idGetter, 
-//            final String persistenceUnit, 
-//            final String simpleControllerName, 
-//            final String entityClass, 
-//            final String idPropertyType, 
-//            final String simpleEntityName,
-//            final List toOneRelMethods,
-//            final List toManyRelMethods,
-//            final boolean isInjection,
-//            final boolean isFieldAccess) {
+    }
+    
+    private static TypeElement generateControllerClass(
+            final String fieldName, 
+            final FileObject pkg, 
+            final ElementHandle<ExecutableElement> idGetter, 
+            final String persistenceUnit, 
+            final String simpleControllerName, 
+            final String entityClass, 
+            final String simpleEntityName,
+            final List<ElementHandle<ExecutableElement>> toOneRelMethods,
+            final List<ElementHandle<ExecutableElement>> toManyRelMethods,
+            final boolean isInjection,
+            final boolean isFieldAccess) {
+
+        return null;
+        
 //        JavaClass javaClass = null;
 //        boolean rollback = true;
 //        
@@ -1135,7 +1213,7 @@ public class JSFClientGenerator {
 //            JavaModel.getJavaRepository().endTrans(rollback);
 //        }
 //        return javaClass;
-//    }
+    }
 
     private static HashSet<String> CONVERTED_TYPES = new HashSet<String>();
     static {
@@ -1229,4 +1307,47 @@ public class JSFClientGenerator {
         boolean makeFirstLower = name.length() < 5 || (!Character.isUpperCase(name.charAt(4)));
         return makeFirstLower ? name.substring(3,4).toLowerCase() + name.substring(4) : name.substring(3);
     }
+
+    private static void addImplementsClause(FileObject fileObject, final String className, final String interfaceName) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        final boolean[] modified = new boolean[] { false };
+        ModificationResult modificationResult = javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
+                TypeMirror interfaceType = workingCopy.getElements().getTypeElement(interfaceName).asType();
+                if (!workingCopy.getTypes().isSubtype(typeElement.asType(), interfaceType)) {
+                    ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
+                    GenerationUtils.newInstance(workingCopy).addImplementsClause(classTree, interfaceName);
+                    modified[0] = true;
+                }
+            }
+        });
+        if (modified[0]) {
+            modificationResult.commit();
+        }
+    }
+
+    private static MethodTree createMethod(WorkingCopy workingCopy, Modifier[] modifiers, String returnType, String name, 
+            String[] params, String[] exceptions, String body) {
+        if (params.length % 2 != 0) {
+            throw new IllegalArgumentException("Number of params can't be odd");
+        }
+        List<MethodModel.Variable> paramsList = new ArrayList<MethodModel.Variable>();
+        for (int i = 0; i < params.length; i++) {
+            paramsList.add(MethodModel.Variable.create(params[i], params[i + 1]));
+            i++;
+        }
+
+        MethodModel methodModel = MethodModel.create(
+                name,
+                returnType,
+                body,
+                paramsList,
+                Arrays.asList(exceptions),
+                new HashSet<Modifier>(Arrays.asList(modifiers))
+                );
+        return MethodModelSupport.createMethodTree(workingCopy, methodModel);
+    }
+
 }
