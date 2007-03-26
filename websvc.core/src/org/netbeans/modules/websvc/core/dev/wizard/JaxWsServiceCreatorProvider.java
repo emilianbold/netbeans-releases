@@ -46,7 +46,7 @@ public class JaxWsServiceCreatorProvider implements ServiceCreatorProvider {
             return new JaxWsServiceCreator(projectInfo, wiz, false);
         } else if (projectType == ProjectInfo.EJB_PROJECT_TYPE) {
                 FileObject ddFolder = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory()).getDeploymentDescriptorFolder();
-                if (ddFolder==null || ddFolder.getFileObject("webservices.xml")==null) { //NOI18N
+                if (ddFolder==null || ddFolder.getFileObject("ejb-jar.xml")==null) { //NOI18N
                     return new JaxWsServiceCreator(projectInfo, wiz, false);
                 }
             }
