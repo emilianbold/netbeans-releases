@@ -119,7 +119,7 @@ public class JaxWsCodeGenerator {
     private static final String JAVA_CATCH =
             "'}' catch (Exception ex) '{'\n" + //NOI18N
             "   // TODO handle custom exceptions here\n" + //NOI18N
-            "'}'"; //NOI18N
+            "'}'\n"; //NOI18N
     
     // {0} = service java name (as variable, e.g. "AddNumbersService")
     // {1} = port java name (e.g. "AddNumbersPort")
@@ -142,7 +142,7 @@ public class JaxWsCodeGenerator {
             "   System.out.println(\"Result = \"+resp.get());\n" + //NOI18N
             "'}' catch (Exception ex) '{'\n" + //NOI18N
             "   // TODO handle custom exceptions here\n" + //NOI18N
-            "'}'"; //NOI18N
+            "'}'\n"; //NOI18N
     
     // {0} = service java name (as variable, e.g. "AddNumbersService")
     // {1} = port java name (e.g. "AddNumbersPort")
