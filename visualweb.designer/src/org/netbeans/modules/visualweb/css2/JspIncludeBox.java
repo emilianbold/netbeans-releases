@@ -30,7 +30,6 @@ import org.w3c.dom.Element;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.w3c.dom.Node;
 
 
 /**
@@ -83,8 +82,9 @@ public class JspIncludeBox extends ExternalDocumentBox {
                     NbBundle.getMessage(JspIncludeBox.class, "RecursiveFrame"), null, AUTO, AUTO);
             }
 
-            //context.visitForm(frameForm);
-            frameForm.setContextPage(webform);
+            // XXX Moved to designer/jsf/../JsfForm.
+//            //context.visitForm(frameForm);
+//            frameForm.setContextPage(webform);
         }
 
         JspIncludeBox box =

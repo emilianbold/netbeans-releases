@@ -1043,22 +1043,22 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
 // <missing designtime api>
 
 // <separation of models>
-    public static FileObject getContextFileForFragmentFile(FileObject fragmentFile) {
-        WebForm webform = WebForm.findWebFormForFileObject(fragmentFile);
-        WebForm contextWebform;
-        if (webform == null) {
-            contextWebform = null;
-        } else {
-            contextWebform = webform.getContextPage();
-        }
-        
-//        return contextWebform == null ? null : contextWebform.getModel().getMarkupFile();
-        if (contextWebform == null) {
-            return null;
-        }
-        DataObject jspDataObject = contextWebform.getJspDataObject();
-        return jspDataObject == null ? null : jspDataObject.getPrimaryFile();
-    }
+//    public static FileObject getContextFileForFragmentFile(FileObject fragmentFile) {
+//        WebForm webform = WebForm.findWebFormForFileObject(fragmentFile);
+//        WebForm contextWebform;
+//        if (webform == null) {
+//            contextWebform = null;
+//        } else {
+//            contextWebform = webform.getContextPage();
+//        }
+//        
+////        return contextWebform == null ? null : contextWebform.getModel().getMarkupFile();
+//        if (contextWebform == null) {
+//            return null;
+//        }
+//        DataObject jspDataObject = contextWebform.getJspDataObject();
+//        return jspDataObject == null ? null : jspDataObject.getPrimaryFile();
+//    }
     
     public static FileObject getExternalFormFileForElement(Element element) {
         WebForm webForm = WebForm.findWebFormForElement(element);

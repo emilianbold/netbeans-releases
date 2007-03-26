@@ -41,6 +41,7 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -111,6 +112,10 @@ public class JsfForm {
     
     // XXX Caching external jsf forms.
     private final ExternalDomProviderCache externalDomProviderCache = new ExternalDomProviderCache();
+    
+    // XXX Moved from the designer/../WebForm.
+    // XXX For fragments, this represents the assigned context page.
+    private JsfForm contextJsfForm;
     
 
     /** Creates a new instance of JsfForm */
@@ -274,7 +279,7 @@ public class JsfForm {
         return getJsfForm(facesModel);
     }
 
-    private static JsfForm findJsfForm(FileObject fileObject) {
+    /*private*/ static JsfForm findJsfForm(FileObject fileObject) {
         if (fileObject == null) {
             return null;
         }
@@ -1150,6 +1155,14 @@ public class JsfForm {
         return htmlDomProvider.isModelValid();
     }
     
+    private void clearHtml() {
+        htmlDomProvider.clearHtml();
+    }
+    
+    DataObject getJspDataObject() {
+        return htmlDomProvider.getJspDataObject();
+    }
+    
 //    public boolean canDropDesignBeansAtNode(DesignBean[] designBeans, Node node) {
 //        DesignBean parent = null;
 //        while (node != null) {
@@ -1424,6 +1437,11 @@ public class JsfForm {
         if (external == null) {
             return new Designer[0];
         }
+
+        // XXX Side-effect. Moved from the designer.
+        if (!hasRecursiveContextJsfForm(external)) {
+            external.setContextJsfForm(this);
+        }
         
         Designer[] designers = findDesigners(external);
         if (designers.length == 0) {
@@ -1579,6 +1597,81 @@ public class JsfForm {
         return frameForm;
     }
 
+    // XXX Moved from designer/../WebForm.
+    /** Get the context page for this fragment. This method should only return non-null
+     * for page fragments. The context page is a page which provides a "style context" for
+     * the fragment. Typically, the page is one of the pages which includes the page fragment,
+     * but that's not strictly necessary. The key thing is that the page fragment will pick
+     * up stylesheets etc. defined in the head of the context page.
+     * @return A context page for the fragment
+     */
+    JsfForm getContextJsfForm() {
+//        if (isFragment && (contextPage == null)) {
+        if (isFragment() && (contextJsfForm == null)) {
+            // Find a page
+            Iterator it =
+//                DesignerService.getDefault().getWebPages(getProject(), true, false).iterator();
+//                    InSyncService.getProvider().getWebPages(getProject(), true, false).iterator();
+                    htmlDomProvider.getWebPageFileObjectsInThisProject().iterator();
+
+            while (it.hasNext()) {
+                FileObject fo = (FileObject)it.next();
+
+                try {
+                    DataObject dobj = DataObject.find(fo);
+
+                    // XXX Very suspicious, how come that context page is any random page
+                    // whitin project?? What actually the context page is good for?
+                    // It seems it is a wrong architecture.
+//                    if (isWebFormDataObject(dobj)) {
+                    if (JsfSupportUtilities.isWebFormDataObject(dobj)) {
+//                        contextJsfForm = getWebFormForDataObject(dobj);
+                        contextJsfForm = getJsfForm(dobj);
+                        break;
+                    }
+                } catch (DataObjectNotFoundException dnfe) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dnfe);
+                }
+            }
+        }
+
+        return contextJsfForm;
+    }
+    
+    // XXX Moved from designer/../WebForm.
+    /** Set the associated context page for this page fragment. (Only allowed on
+     * page fragments.)
+     *  @see getContextPage()
+     */
+    private void setContextJsfForm(JsfForm contextJsfForm) {
+//        assert isFragment;
+        if (!isFragment()) {
+            return;
+        }
+
+        // XXX Context page notion from fragment should be removed.
+        if (this.contextJsfForm != contextJsfForm) {
+            // Force refresh such that the style links are recomputed
+            clearHtml();
+        }
+
+        this.contextJsfForm = contextJsfForm;
+    }
+    
+    private boolean hasRecursiveContextJsfForm(JsfForm contextJsfForm) {
+        if (contextJsfForm == null) {
+            return false;
+        }
+        JsfForm jsf = this;
+        while (jsf != null) {
+            JsfForm context = jsf.getContextJsfForm();
+            if (context == contextJsfForm) {
+                return true;
+            }
+            jsf = context;
+        }
+        return false;
+    }
     
 }
 

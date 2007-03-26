@@ -74,8 +74,9 @@ public class FrameBox extends ExternalDocumentBox {
                     NbBundle.getMessage(FrameBox.class, "RecursiveFrame"), null, AUTO, AUTO);
             }
 
-            //context.visitForm(frameForm);
-            frameForm.setContextPage(webform);
+            // XXX Moved to designer/jsf/../JsfForm.
+//            //context.visitForm(frameForm);
+//            frameForm.setContextPage(webform);
         }
 
         FrameBox box =

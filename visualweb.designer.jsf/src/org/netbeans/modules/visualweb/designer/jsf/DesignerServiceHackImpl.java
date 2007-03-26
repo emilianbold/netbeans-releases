@@ -1240,7 +1240,26 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //        }
 //        
 //        return contextWebform == null ? null : contextWebform.getModel().getMarkupFile();
-        return DesignerServiceHackProvider.getContextFileForFragmentFile(fragmentFile);
+//        return DesignerServiceHackProvider.getContextFileForFragmentFile(fragmentFile);
+//        WebForm webform = WebForm.findWebFormForFileObject(fragmentFile);
+        JsfForm jsfForm = JsfForm.findJsfForm(fragmentFile);
+        
+//        WebForm contextWebform;
+//        if (webform == null) {
+//            contextWebform = null;
+//        } else {
+//            contextWebform = webform.getContextPage();
+//        }
+        JsfForm contextJsfForm = jsfForm == null ? null : jsfForm.getContextJsfForm();
+        
+//        return contextWebform == null ? null : contextWebform.getModel().getMarkupFile();
+//        if (contextWebform == null) {
+        if (contextJsfForm == null) {
+            return null;
+        }
+//        DataObject jspDataObject = contextWebform.getJspDataObject();
+        DataObject jspDataObject = contextJsfForm.getJspDataObject();
+        return jspDataObject == null ? null : jspDataObject.getPrimaryFile();
     }
     
     public FileObject getExternalFormFileForElement(Element element) {

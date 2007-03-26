@@ -25,6 +25,9 @@ import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
+import org.netbeans.modules.visualweb.insync.models.FacesModel;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.w3c.dom.Element;
 
 /**
@@ -86,5 +89,12 @@ public final class JsfSupportUtilities {
         }
         return Util.isSpecialBean(markupDesignBean);
     }
+
+    public static boolean isWebFormDataObject(DataObject dataObject) {
+        return dataObject != null && isWebFormFileObject(dataObject.getPrimaryFile());
+    }
     
+    public static boolean isWebFormFileObject(FileObject fileObject) {
+        return fileObject != null && FacesModel.getInstance(fileObject) != null;
+    }
 }

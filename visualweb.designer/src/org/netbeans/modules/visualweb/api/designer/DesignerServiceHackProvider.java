@@ -129,9 +129,9 @@ public final class DesignerServiceHackProvider {
         DesignerServiceHackProviderImpl.copyBoxForElement(fromElement, toElement);
     }
 
-    public static FileObject getContextFileForFragmentFile(FileObject fragmentFile) {
-        return DesignerServiceHackProviderImpl.getContextFileForFragmentFile(fragmentFile);
-    }
+//    public static FileObject getContextFileForFragmentFile(FileObject fragmentFile) {
+//        return DesignerServiceHackProviderImpl.getContextFileForFragmentFile(fragmentFile);
+//    }
 
     public static FileObject getExternalFormFileForElement(Element element) {
         return DesignerServiceHackProviderImpl.getExternalFormFileForElement(element);

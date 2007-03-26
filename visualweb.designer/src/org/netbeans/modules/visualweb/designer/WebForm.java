@@ -136,7 +136,7 @@ public class WebForm implements Designer {
     private GridHandler gridHandler;
 //    private boolean isFragment;
 //    private boolean isPortlet;
-    private WebForm contextPage;
+//    private WebForm contextPage;
 //    private Exception renderFailure;
     private boolean renderFailureShown;
 //    private MarkupDesignBean renderFailureComponent;
@@ -1217,61 +1217,63 @@ public class WebForm implements Designer {
         return gridHandler;
     }
 
-    /** Get the context page for this fragment. This method should only return non-null
-     * for page fragments. The context page is a page which provides a "style context" for
-     * the fragment. Typically, the page is one of the pages which includes the page fragment,
-     * but that's not strictly necessary. The key thing is that the page fragment will pick
-     * up stylesheets etc. defined in the head of the context page.
-     * @return A context page for the fragment
-     */
-    public WebForm getContextPage() {
-//        if (isFragment && (contextPage == null)) {
-        if (isFragment() && (contextPage == null)) {
-            // Find a page
-            Iterator it =
-//                DesignerService.getDefault().getWebPages(getProject(), true, false).iterator();
-//                    InSyncService.getProvider().getWebPages(getProject(), true, false).iterator();
-                    htmlDomProvider.getWebPageFileObjectsInThisProject().iterator();
+    // XXX Moved to designer/jsf/../JsfForm.
+//    /** Get the context page for this fragment. This method should only return non-null
+//     * for page fragments. The context page is a page which provides a "style context" for
+//     * the fragment. Typically, the page is one of the pages which includes the page fragment,
+//     * but that's not strictly necessary. The key thing is that the page fragment will pick
+//     * up stylesheets etc. defined in the head of the context page.
+//     * @return A context page for the fragment
+//     */
+//    public WebForm getContextPage() {
+////        if (isFragment && (contextPage == null)) {
+//        if (isFragment() && (contextPage == null)) {
+//            // Find a page
+//            Iterator it =
+////                DesignerService.getDefault().getWebPages(getProject(), true, false).iterator();
+////                    InSyncService.getProvider().getWebPages(getProject(), true, false).iterator();
+//                    htmlDomProvider.getWebPageFileObjectsInThisProject().iterator();
+//
+//            while (it.hasNext()) {
+//                FileObject fo = (FileObject)it.next();
+//
+//                try {
+//                    DataObject dobj = DataObject.find(fo);
+//
+//                    // XXX Very suspicious, how come that context page is any random page
+//                    // whitin project?? What actually the context page is good for?
+//                    // It seems it is a wrong architecture.
+//                    if (isWebFormDataObject(dobj)) {
+//                        contextPage = getWebFormForDataObject(dobj);
+//
+//                        break;
+//                    }
+//                } catch (DataObjectNotFoundException dnfe) {
+//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dnfe);
+//                }
+//            }
+//        }
+//
+//        return contextPage;
+//    }
 
-            while (it.hasNext()) {
-                FileObject fo = (FileObject)it.next();
-
-                try {
-                    DataObject dobj = DataObject.find(fo);
-
-                    // XXX Very suspicious, how come that context page is any random page
-                    // whitin project?? What actually the context page is good for?
-                    // It seems it is a wrong architecture.
-                    if (isWebFormDataObject(dobj)) {
-                        contextPage = getWebFormForDataObject(dobj);
-
-                        break;
-                    }
-                } catch (DataObjectNotFoundException dnfe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dnfe);
-                }
-            }
-        }
-
-        return contextPage;
-    }
-
-    /** Set the associated context page for this page fragment. (Only allowed on
-     * page fragments.)
-     *  @see getContextPage()
-     */
-    public void setContextPage(WebForm contextPage) {
-//        assert isFragment;
-        assert isFragment();
-
-        // XXX Context page notion from fragment should be removed.
-        if (this.contextPage != contextPage) {
-            // Force refresh such that the style links are recomputed
-            clearHtml();
-        }
-
-        this.contextPage = contextPage;
-    }
+    // XXX Moved to designer/jsf/../JsfForm.
+//    /** Set the associated context page for this page fragment. (Only allowed on
+//     * page fragments.)
+//     *  @see getContextPage()
+//     */
+//    public void setContextPage(WebForm contextPage) {
+////        assert isFragment;
+//        assert isFragment();
+//
+//        // XXX Context page notion from fragment should be removed.
+//        if (this.contextPage != contextPage) {
+//            // Force refresh such that the style links are recomputed
+//            clearHtml();
+//        }
+//
+//        this.contextPage = contextPage;
+//    }
 
 //    // Tor: The name is up to you.
 //    public void destroy() {
