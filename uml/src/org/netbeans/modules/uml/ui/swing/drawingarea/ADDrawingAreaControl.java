@@ -2441,9 +2441,7 @@ public class ADDrawingAreaControl extends ApplicationView
             m_Name = validDiaName;
             if (fireEvents)
             {
-          // no need to set dirty just for name change, it's persisted right away
-//               setIsDirty(true);
-               
+               setIsDirty(true);               
                // Let folks know that the name has changed.
                fireDrawingAreaPropertyChange(DiagramAreaEnumerations.DAPK_NAME);
             }
