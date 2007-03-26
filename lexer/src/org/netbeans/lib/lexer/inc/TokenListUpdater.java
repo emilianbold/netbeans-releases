@@ -124,10 +124,10 @@ public final class TokenListUpdater {
                 // No tokens created yet (they get created lazily).
                 return; // Do nothing in this case
             }
-            // If fully lexed the tokens must mirror the input source -> offset == 0
-            assert (modOffset == 0);
+            // If fully lexed and no tokens then the tokens should start
+            // right at the modification offset
             modToken = null;
-            modTokenOffset = 0;
+            modTokenOffset = modOffset;
             index = 0;
 
         } else { // at least one token exists

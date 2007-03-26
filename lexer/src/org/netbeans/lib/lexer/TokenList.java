@@ -99,10 +99,6 @@ public interface TokenList<T extends TokenId> {
      * <br>
      * This method can only be called if the token at the given index
      * was already fetched by {@link tokenOrEmbeddingContainer(int)}.
-     * <br/>
-     * For branch token lists this method is only expected to be called
-     * after {@link #updateStartOffsetShift()} was called so it does not perform
-     * any checking whether the start offset of the token list is up-to-date.
      */
     int tokenOffset(int index);
     
