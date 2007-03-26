@@ -62,11 +62,12 @@ public class FrameBox extends ExternalDocumentBox {
             frameForm = webform.findExternalForm(src);
         }
 
-        boolean external = frameForm == WebForm.EXTERNAL;
+//        boolean external = frameForm == WebForm.EXTERNAL;
+        boolean external = frameForm == null;
 
-        if (frameForm == WebForm.EXTERNAL) {
-            frameForm = null;
-        }
+//        if (frameForm == WebForm.EXTERNAL) {
+//            frameForm = null;
+//        }
 
         if (frameForm != null) {
             if (context.isVisitedForm(frameForm)) {

@@ -63,7 +63,6 @@ import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.DocumentFragment;
@@ -82,7 +81,7 @@ public class WebForm implements Designer {
     /** Represents a webform that is external - and cannot be previewed
      * in the designer.
      */
-    public static final WebForm EXTERNAL = new WebForm();
+//    public static final WebForm EXTERNAL = new WebForm();
 
 //    /** A weak Map<DataObject,WebForm>. <b>Access locked by LOCK_WEB_FORMS</b>. */
 //    private static final Map webForms = new WeakHashMap();
@@ -182,12 +181,12 @@ public class WebForm implements Designer {
     } // End of JspDataObjectListener.
 
     
-    private boolean isClosing = false;
+//    private boolean isClosing = false;
 
-    private WebForm() {
-        // XXX Get rid of this constructor.
-        this.htmlDomProvider = null;
-    }
+//    private WebForm() {
+//        // XXX Get rid of this constructor.
+//        this.htmlDomProvider = null;
+//    }
 
     /**
      * Create a new webform object. dobj cannot be null.
@@ -2250,7 +2249,8 @@ public class WebForm implements Designer {
         if (externalDesigners.length > 0 && externalDesigners[0] instanceof WebForm) {
             return (WebForm)externalDesigners[0];
         } else {
-            return WebForm.EXTERNAL;
+//            return WebForm.EXTERNAL;
+            return null;
         }
     }
     

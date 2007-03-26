@@ -1071,7 +1071,8 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
         if ((includeBox != null) && includeBox instanceof JspIncludeBox) {
             WebForm frameForm = ((JspIncludeBox)includeBox).getExternalForm();
 
-            if ((frameForm != null) && (frameForm != WebForm.EXTERNAL)) {
+//            if ((frameForm != null) && (frameForm != WebForm.EXTERNAL)) {
+            if (frameForm != null) {
 //                return frameForm.getModel().getMarkupFile();
                 DataObject jspDataObject = frameForm.getJspDataObject();
                 return jspDataObject == null ? null : jspDataObject.getPrimaryFile();
