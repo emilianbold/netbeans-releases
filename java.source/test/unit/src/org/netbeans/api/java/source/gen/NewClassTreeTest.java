@@ -96,6 +96,46 @@ public class NewClassTreeTest extends GeneratorTest {
         assertEquals(golden, res);
     }
     
+    public void testAddArguments() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        new java.util.ArrayList();\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        new java.util.ArrayList(null);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ExpressionStatementTree st = (ExpressionStatementTree) method.getBody().getStatements().get(0); 
+                NewClassTree nct = (NewClassTree) st.getExpression();
+                workingCopy.rewrite(nct, make.NewClass(null, Collections.<ExpressionTree>emptyList(), nct.getIdentifier(), Collections.singletonList(make.Literal(null)), null));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
