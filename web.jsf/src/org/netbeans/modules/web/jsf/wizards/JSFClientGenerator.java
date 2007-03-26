@@ -28,10 +28,10 @@ import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -40,6 +40,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -562,8 +563,8 @@ public class JSFClientGenerator {
         }
     }
     
-    private static TypeElement generateConverter(
-            WorkingCopy workingCopy,
+    private static FileObject generateConverter(
+            final FileObject controllerFileObject,
             final FileObject pkg,
             final String simpleConverterName,
             final String controllerClass,
@@ -572,165 +573,196 @@ public class JSFClientGenerator {
             final String simpleEntityName,
             final ElementHandle<ExecutableElement> idGetter,
             final String managedBeanName,
-            final boolean isInjection) {
+            final boolean isInjection) throws IOException {
+
+        final boolean[] embeddable = new boolean[] { false };
+        final String[] idClassSimpleName = new String[1];
+        final String[] idPropertyType = new String[1];
+        final ArrayList<MethodModel> paramSetters = new ArrayList<MethodModel>();
+        final boolean[] fieldAccess = new boolean[] { false };
+        JavaSource controllerJavaSource = JavaSource.forFileObject(controllerFileObject);
+        controllerJavaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController compilationController) throws IOException {
+                compilationController.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeMirror idType = idGetter.resolve(compilationController).getReturnType();
+                if (TypeKind.DECLARED == idType.getKind()) {
+                    DeclaredType declaredType = (DeclaredType) idType;
+                    TypeElement idClass = (TypeElement) declaredType.asElement();
+                    embeddable[0] = idClass != null && JsfForm.isEmbeddableClass(idClass);
+                    idClassSimpleName[0] = idClass.getSimpleName().toString();
+                    idPropertyType[0] = idClass.getQualifiedName().toString();
+                    fieldAccess[0] = JsfForm.isFieldAccess(idClass);
+                    for (ExecutableElement method : ElementFilter.methodsIn(idClass.getEnclosedElements())) {
+                        if (method.getSimpleName().toString().startsWith("set")) {
+                            paramSetters.add(MethodModelSupport.createMethodModel(compilationController, method));
+                        }
+                    }
+                }
+            }
+        }, true);
         
-        return null;
+        String controllerReferenceName = controllerClass;
+        StringBuffer getAsObjectBody = new StringBuffer();
+        getAsObjectBody.append("if (string == null) {\n return null;\n }\n");
+
+        String controllerVariable;
+        if (isInjection) {
+            controllerVariable= controllerReferenceName + " controller = (" 
+                    + controllerReferenceName 
+                    + ") facesContext.getApplication().getELResolver().getValue(\nfacesContext.getELContext(), null, \"" 
+                    + managedBeanName +"\");\n";
+        } else {
+            controllerVariable = controllerReferenceName + " controller = ("
+                    + controllerReferenceName 
+                    + ") facesContext.getApplication().getVariableResolver().resolveVariable(\nfacesContext, \"" 
+                    + managedBeanName +"\");\n";
+        }
+        if (embeddable[0]) {
+            getAsObjectBody.append(idPropertyType[0] + " id = new " + idPropertyType[0] + "();\n");
+            getAsObjectBody.append("StringTokenizer idTokens = new StringTokenizer(string, \";\");\n");
+            int params = paramSetters.size();
+            getAsObjectBody.append("String params[] = new String[" + params + "];\n"
+                    + "int i = 0;\n while(idTokens.hasMoreTokens()) {\n"
+                    + "params[i++] = idTokens.nextToken();\n }\n"
+                    + "if (i != " + params + ") {\n"
+                    + "throw new IllegalArgumentException(\"Expected format of parameter string is a set of "
+                    + params + " IDs delimited by ;\");\n }\n");
+            for (int i = 0; i < paramSetters.size(); i++) {
+                MethodModel setter = paramSetters.get(i);
+                getAsObjectBody.append("id.s" + setter.getName().substring(1) + "(" 
+                        + createIdFieldInitialization(setter.getReturnType(), "params[" + i + "]") + ");\n");
+            }
+
+            getAsObjectBody.append(controllerVariable + "\n return controller.find" + simpleEntityName + "(id);");
+        } else {
+            getAsObjectBody.append(createIdFieldDeclaration(idPropertyType[0], "string") + "\n"
+                    + controllerVariable
+                    + "\n return controller.find" + simpleEntityName + "(id);");
+        }
         
-//        TypeElement javaClass = null;
-//        
-//        TypeElement idClass = null;
-//        TypeMirror idType = idGetter.resolve(workingCopy).getReturnType();
-//        if (TypeKind.DECLARED == idType.getKind()) {
-//            DeclaredType declaredType = (DeclaredType) idType;
-//            idClass = (TypeElement) declaredType.asElement();
-//        }
-//        boolean embeddable = idClass != null && JsfForm.isEmbeddableClass(idClass);
-//        FileObject idConverter = null;
-//        MethodModel.Variable p;
-//        MethodModel getAsObjectE = null;
-//        MethodModel getAsStringE = null;
-//
-//        if (embeddable) {
-//            idConverter = GenerationUtils.createClass(pkg, idClass.getSimpleName() + "Converter", null); //NOI18N
-//            GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
-//            TypeElement typeElement = generationUtils.getTypeElement();
-//            ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
-//            generationUtils.addImplementsClause(classTree, "javax.faces.convert.Converter");
-//
-//            getAsObjectE = MethodModel.create(
-//                    "getAsObject",
-//                    "java.lang.Object",
-//                    "",
-//                    new ArrayList<MethodModel.Variable>
-//                    );
-//            
-//            getAsObjectE = JMIGenerationUtil.createMethod(idConverter, "getAsObject", Modifier.PUBLIC, "java.lang.Object"); //NOI18N
-//            p = JMIGenerationUtil.createParameter(idConverter, "facesContext", "javax.faces.context.FacesContext"); //NOI18N
-//            getAsObjectE.getParameters().add(p);
-//            p  = JMIGenerationUtil.createParameter(idConverter, "uIComponent", "javax.faces.component.UIComponent"); //NOI18N
-//            getAsObjectE.getParameters().add(p);
-//            p  = JMIGenerationUtil.createParameter(idConverter, "string", "java.lang.String"); //NOI18N
-//            getAsObjectE.getParameters().add(p);
-//
-//            getAsStringE = JMIGenerationUtil.createMethod(idConverter, "getAsString", Modifier.PUBLIC, "java.lang.String"); //NOI18N
-//            p = JMIGenerationUtil.createParameter(idConverter, "facesContext", "javax.faces.context.FacesContext"); //NOI18N
-//            getAsStringE.getParameters().add(p);
-//            p  = JMIGenerationUtil.createParameter(idConverter, "uIComponent", "javax.faces.component.UIComponent"); //NOI18N
-//            getAsStringE.getParameters().add(p);
-//            p  = JMIGenerationUtil.createParameter(idConverter, "object", "java.lang.Object"); //NOI18N
-//            getAsStringE.getParameters().add(p);
-//        }
-//
-//        javaClass = JMIGenerationUtil.createClass(pkg, simpleConverterName);
-//        JMIGenerationUtil.addInterface(javaClass, "javax.faces.convert.Converter");
-//
-//        Method getAsObject = JMIGenerationUtil.createMethod(javaClass, "getAsObject", Modifier.PUBLIC, "java.lang.Object"); //NOI18N
-//        p = JMIGenerationUtil.createParameter(javaClass, "facesContext", "javax.faces.context.FacesContext"); //NOI18N
-//        getAsObject.getParameters().add(p);
-//        p  = JMIGenerationUtil.createParameter(javaClass, "uIComponent", "javax.faces.component.UIComponent"); //NOI18N
-//        getAsObject.getParameters().add(p);
-//        p  = JMIGenerationUtil.createParameter(javaClass, "string", "java.lang.String"); //NOI18N
-//        getAsObject.getParameters().add(p);
-//
-//        String controllerReferenceName = JMIGenerationUtil.createImport(javaClass, controllerClass).getName();
-//        StringBuffer getAsObjectBody = new StringBuffer();
-//        getAsObjectBody.append("if (string == null) {\n return null;\n }\n");
-//
-//        String controllerVariable;
-//        if (isInjection) {
-//            controllerVariable= controllerReferenceName + " controller = (" 
-//                    + controllerReferenceName 
-//                    + ") facesContext.getApplication().getELResolver().getValue(\nfacesContext.getELContext(), null, \"" 
-//                    + managedBeanName +"\");\n";
-//        } else {
-//            controllerVariable = controllerReferenceName + " controller = ("
-//                    + controllerReferenceName 
-//                    + ") facesContext.getApplication().getVariableResolver().resolveVariable(\nfacesContext, \"" 
-//                    + managedBeanName +"\");\n";
-//        }
-//        ArrayList<Method> paramSetters = new ArrayList<Method>();
-//        if (embeddable) {
-//            getAsObjectBody.append(idPropertyType + " id = new " 
-//                    + idPropertyType + "();\n");
-//            Method methods [] = JMIUtils.getMethods(idClass);
-//            boolean fieldAccess = JsfForm.isFieldAccess(idClass);
-//            JMIGenerationUtil.createImport(javaClass, "java.util.StringTokenizer");
-//            JMIGenerationUtil.createImport(idConverter, "java.util.StringTokenizer");
-//            getAsObjectBody.append("StringTokenizer idTokens = new StringTokenizer(string, \";\");\n");
-//            for (int i = 0; i < methods.length; i++) {
-//                if (methods[i].getName().startsWith("get")) {
-//                    paramSetters.add(methods[i]);
-//                }
-//            }
-//            int params = paramSetters.size();
-//            getAsObjectBody.append("String params[] = new String[" + params + "];\n"
-//                    + "int i = 0;\n while(idTokens.hasMoreTokens()) {\n"
-//                    + "params[i++] = idTokens.nextToken();\n }\n"
-//                    + "if (i != " + params + ") {\n"
-//                    + "throw new IllegalArgumentException(\"Expected format of parameter string is a set of "
-//                    + params + " IDs delimited by ;\");\n }\n");
-//            for (int i = 0; i < paramSetters.size(); i++) {
-//                getAsObjectBody.append("id.s" + paramSetters.get(i).getName().substring(1) + "(" 
-//                        + createIdFieldInitialization(paramSetters.get(i).getType().getName(), "params[" + i + "]") + ");\n");
-//            }
-//            getAsObjectE.setBodyText(getAsObjectBody.toString() + "return id;\n");
-//            idConverter.getFeatures().add(getAsObjectE);
-//            getAsObjectBody.append(controllerVariable + "\n return controller.find" + simpleEntityName + "(id);");
-//        } else {
-//            getAsObjectBody.append(createIdFieldDeclaration(idPropertyType, "string") + "\n"
-//                    + controllerVariable
-//                    + "\n return controller.find" + simpleEntityName + "(id);");
-//        }
-//        getAsObject.setBodyText(getAsObjectBody.toString());
-//        javaClass.getFeatures().add(getAsObject);
-//
-//        Method getAsString = JMIGenerationUtil.createMethod(javaClass, "getAsString", Modifier.PUBLIC, "java.lang.String"); //NOI18N
-//        p = JMIGenerationUtil.createParameter(javaClass, "facesContext", "javax.faces.context.FacesContext"); //NOI18N
-//        getAsString.getParameters().add(p);
-//        p  = JMIGenerationUtil.createParameter(javaClass, "uIComponent", "javax.faces.component.UIComponent"); //NOI18N
-//        getAsString.getParameters().add(p);
-//        p  = JMIGenerationUtil.createParameter(javaClass, "object", "java.lang.Object"); //NOI18N
-//        getAsString.getParameters().add(p);
-//
-//        String entityReferenceName = JMIGenerationUtil.createImport(javaClass, entityClass).getName();
-//        String idPropertyTypeRefName = null;
-//        StringBuffer getAsStringBody = new StringBuffer();
-//        StringBuffer getAsStringEBody = new StringBuffer();
-//        getAsStringBody.append("if (object == null) {\n return null;\n }\n"
-//                + "if(object instanceof " + entityReferenceName + ") {\n"
-//                + entityReferenceName + " o = (" + entityReferenceName +") object;\n");
-//        if (embeddable) {
-//            idPropertyTypeRefName = JMIGenerationUtil.createImport(idConverter, idPropertyType).getName();
-//            getAsStringEBody.append("if (object == null) {\n return null;\n }\n"
-//                    + "if(object instanceof " + idPropertyTypeRefName + ") {\n"
-//                    + idPropertyTypeRefName + " o = (" + idPropertyTypeRefName +") object;\n");
-//            getAsStringBody.append("return ");
-//            getAsStringEBody.append("return ");
-//            for(int i = 0; i < paramSetters.size(); i++) {
-//                if (i > 0) {
-//                    getAsStringBody.append(" + \";\" + ");
-//                    getAsStringEBody.append(" + \";\" + ");
-//                }
-//                getAsStringBody.append("o." + idGetter + "()." + paramSetters.get(i).getName() + "()");
-//                getAsStringEBody.append("o." + paramSetters.get(i).getName() + "()");
-//            }
-//            getAsStringBody.append(";\n");
-//            getAsStringEBody.append(";\n");
-//        } else {
-//            getAsStringBody.append("return \"\" + o." + idGetter + "();\n");
-//        }
-//        getAsStringBody.append("} else {\n"
-//                + "throw new IllegalArgumentException(\"object:\" + object + \" of type:\" + object.getClass().getName() + \"; expected type: " + entityClass +"\");\n}");
-//        getAsString.setBodyText(getAsStringBody.toString());
-//        javaClass.getFeatures().add(getAsString);
-//        if (embeddable) {
-//            getAsStringEBody.append("} else {\n"
-//                    + "throw new IllegalArgumentException(\"object:\" + object + \" of type:\" + object.getClass().getName() + \"; expected type: " + idPropertyTypeRefName +"\");\n}");
-//            getAsStringE.setBodyText(getAsStringEBody.toString());
-//            idConverter.getFeatures().add(getAsStringE);
-//        }
-//
-//        return javaClass;
+        final MethodModel getAsObject = MethodModel.create(
+                "getAsObject",
+                "java.lang.Object",
+                getAsObjectBody.toString(),
+                Arrays.asList(
+                    MethodModel.Variable.create("javax.faces.context.FacesContext", "facesContext"),
+                    MethodModel.Variable.create("javax.faces.component.UIComponent", "facesContext"),
+                    MethodModel.Variable.create("java.lang.String", "string")
+                ),
+                Collections.<String>emptyList(),
+                Collections.singleton(Modifier.PUBLIC)
+                );
+
+        String entityReferenceName = entityClass;
+        String idPropertyTypeRefName = null;
+        StringBuffer getAsStringBody = new StringBuffer();
+        StringBuffer getAsStringEBody = new StringBuffer();
+        getAsStringBody.append("if (object == null) {\n return null;\n }\n"
+                + "if(object instanceof " + entityReferenceName + ") {\n"
+                + entityReferenceName + " o = (" + entityReferenceName +") object;\n");
+        if (embeddable[0]) {
+            idPropertyTypeRefName = idPropertyType[0];
+            getAsStringEBody.append("if (object == null) {\n return null;\n }\n"
+                    + "if(object instanceof " + idPropertyTypeRefName + ") {\n"
+                    + idPropertyTypeRefName + " o = (" + idPropertyTypeRefName +") object;\n");
+            getAsStringBody.append("return ");
+            getAsStringEBody.append("return ");
+            for(int i = 0; i < paramSetters.size(); i++) {
+                if (i > 0) {
+                    getAsStringBody.append(" + \";\" + ");
+                    getAsStringEBody.append(" + \";\" + ");
+                }
+                getAsStringBody.append("o." + idGetter + "()." + paramSetters.get(i).getName() + "()");
+                getAsStringEBody.append("o." + paramSetters.get(i).getName() + "()");
+            }
+            getAsStringBody.append(";\n");
+            getAsStringEBody.append(";\n");
+        } else {
+            getAsStringBody.append("return \"\" + o." + idGetter + "();\n");
+        }
+        getAsStringBody.append("} else {\n"
+                + "throw new IllegalArgumentException(\"object:\" + object + \" of type:\" + object.getClass().getName() + \"; expected type: " + entityClass +"\");\n}");
+        
+        final MethodModel getAsString = MethodModel.create(
+                "getAsString",
+                "java.lang.String",
+                getAsStringBody.toString(),
+                Arrays.asList(
+                    MethodModel.Variable.create("javax.faces.context.FacesContext", "facesContext"),
+                    MethodModel.Variable.create("javax.faces.component.UIComponent", "facesContext"),
+                    MethodModel.Variable.create("java.lang.Object", "object")
+                ),
+                Collections.<String>emptyList(),
+                Collections.singleton(Modifier.PUBLIC)
+                );
+
+        FileObject converterFileObject = GenerationUtils.createClass(pkg, simpleConverterName, null);
+        JavaSource converterJavaSource = JavaSource.forFileObject(converterFileObject);
+        converterJavaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
+                TypeElement converterTypeElement = generationUtils.getTypeElement();
+                ClassTree classTree = workingCopy.getTrees().getTree(converterTypeElement);
+                ClassTree modifiedClassTree = generationUtils.addImplementsClause(classTree, "javax.faces.convert.Converter");
+                MethodTree getAsObjectTree = MethodModelSupport.createMethodTree(workingCopy, getAsObject);
+                MethodTree getAsStringTree = MethodModelSupport.createMethodTree(workingCopy, getAsString);
+                modifiedClassTree = workingCopy.getTreeMaker().addClassMember(modifiedClassTree, getAsObjectTree);
+                modifiedClassTree = workingCopy.getTreeMaker().addClassMember(modifiedClassTree, getAsStringTree);
+                workingCopy.rewrite(classTree, modifiedClassTree);
+            }
+        }).commit();
+
+        if (embeddable[0]) {
+            getAsStringEBody.append("} else {\n"
+                    + "throw new IllegalArgumentException(\"object:\" + object + \" of type:\" + object.getClass().getName() + \"; expected type: " + idPropertyTypeRefName +"\");\n}");
+            
+            final MethodModel getAsStringE = MethodModel.create(
+                    "getAsString",
+                    "java.lang.String",
+                    getAsStringEBody.toString(),
+                    Arrays.asList(
+                        MethodModel.Variable.create("javax.faces.context.FacesContext", "facesContext"),
+                        MethodModel.Variable.create("javax.faces.component.UIComponent", "facesContext"),
+                        MethodModel.Variable.create("java.lang.Object", "object")
+                    ),
+                    Collections.<String>emptyList(),
+                    Collections.singleton(Modifier.PUBLIC)
+                    );
+            
+            final MethodModel getAsObjectE = MethodModel.create(
+                    "getAsObject",
+                    "java.lang.Object",
+                    getAsObjectBody.toString() + "return id;\n",
+                    Arrays.asList(
+                        MethodModel.Variable.create("javax.faces.context.FacesContext", "facesContext"),
+                        MethodModel.Variable.create("javax.faces.component.UIComponent", "facesContext"),
+                        MethodModel.Variable.create("java.lang.String", "string")
+                    ),
+                    Collections.<String>emptyList(),
+                    Collections.singleton(Modifier.PUBLIC)
+                    );
+            
+            FileObject idConverter = GenerationUtils.createClass(pkg, idClassSimpleName[0] + "Converter", null); //NOI18N
+            JavaSource idConverterJavaSource = JavaSource.forFileObject(idConverter);
+            idConverterJavaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+                public void run(WorkingCopy workingCopy) throws IOException {
+                    workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
+                    TypeElement idConverterTypeElement = generationUtils.getTypeElement();
+                    ClassTree classTree = workingCopy.getTrees().getTree(idConverterTypeElement);
+                    ClassTree modifiedClassTree = generationUtils.addImplementsClause(classTree, "javax.faces.convert.Converter");
+                    MethodTree getAsObjectETree = MethodModelSupport.createMethodTree(workingCopy, getAsObjectE);
+                    MethodTree getAsStringETree = MethodModelSupport.createMethodTree(workingCopy, getAsStringE);
+                    modifiedClassTree = workingCopy.getTreeMaker().addClassMember(modifiedClassTree, getAsObjectETree);
+                    modifiedClassTree = workingCopy.getTreeMaker().addClassMember(modifiedClassTree, getAsStringETree);
+                    workingCopy.rewrite(classTree, modifiedClassTree);
+                }
+            }).commit();
+
+        }
+
+        return converterFileObject;
     }
     
     private static TypeElement generateControllerClass(
