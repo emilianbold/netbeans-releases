@@ -276,7 +276,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         public J2SELogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-java-j2seproject/Nodes"), 
                   Lookups.singleton(project));
-            setIconBaseWithExtension("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif");
+            setIconBaseWithExtension("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png");
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
             if (hasBrokenLinks()) {
                 broken = true;

@@ -59,10 +59,10 @@ public final class JavaNode extends DataNode implements ChangeListener {
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -7396485743899766258L;
 
-    private static final String JAVA_ICON_BASE = "org/netbeans/modules/java/resources/class.gif"; // NOI18N
+    private static final String JAVA_ICON_BASE = "org/netbeans/modules/java/resources/class.png"; // NOI18N
     private static final String CLASS_ICON_BASE = "org/netbeans/modules/java/resources/clazz.gif"; // NOI18N
 
-    private static final Image NEEDS_COMPILE = Utilities.loadImage("org/netbeans/modules/java/resources/needs-compile.gif");
+    private static final Image NEEDS_COMPILE = Utilities.loadImage("org/netbeans/modules/java/resources/needs-compile.png");
     
     private final Status status;
     private final AtomicBoolean isCompiled;

@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/emptyProject.html"/>
                 </file>
         
@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator.library"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/emptyLibrary.html"/>
                 </file>                
 
@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator.existing"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/existingProject.html"/>
                 </file>
 

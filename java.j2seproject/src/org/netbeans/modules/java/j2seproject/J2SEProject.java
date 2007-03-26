@@ -103,7 +103,7 @@ import org.w3c.dom.NodeList;
  */
 public final class J2SEProject implements Project, AntProjectListener {
     
-    private static final Icon J2SE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif")); // NOI18N
+    private static final Icon J2SE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png")); // NOI18N
 
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
