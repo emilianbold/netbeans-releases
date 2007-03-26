@@ -87,6 +87,7 @@ import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditor;
 import org.netbeans.modules.db.sql.visualeditor.Log;
 
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.ConnectionManager;
 
 /**
  * The top-level class for the QueryBuilder.
@@ -450,7 +451,12 @@ public class QueryBuilder extends TopComponent
         this.dbconn = dbconn;
         this.statement = statement;
 	this.vse = vse;
-        this.qbMetaData = new QueryBuilderMetaData(metadata, this);
+	// Either pass in metadata, or have it created from db
+	this.qbMetaData = 
+ 	    (metadata==null) ?
+            new QueryBuilderMetaData(dbconn, this) :
+	    new QueryBuilderMetaData(metadata, this) ;
+
 	
 	// It would be nice to have a short title, but there isn't a convenient one
         String title = dbconn.getName();
@@ -903,7 +909,7 @@ public class QueryBuilder extends TopComponent
 
     boolean checkSelect()  throws SQLException  {
         if (DEBUG)
-            System.out.println("checkSelect called. _queryModel.getSelect() = " + _queryModel.getSelect() + "\n " ); // NOI18N
+            System.out.println("checkSelect called. _queryModel.getSelect() = " + _queryModel.getSelect() ); // NOI18N
         if ( _queryModel.getSelect() != null ) {
             ArrayList selectColumns = new ArrayList();
             _queryModel.getSelect().getReferencedColumns(selectColumns);
@@ -915,7 +921,7 @@ public class QueryBuilder extends TopComponent
 
     boolean checkWhere()  throws SQLException {
         if (DEBUG)
-            System.out.println("checkWhere called... \n " ); // NOI18N
+            System.out.println("checkWhere called... " ); // NOI18N
         if ( _queryModel.getWhere() != null ) {
             ArrayList whereColumns = new ArrayList();
             _queryModel.getWhere().getReferencedColumns(whereColumns);
@@ -926,7 +932,7 @@ public class QueryBuilder extends TopComponent
 
     boolean checkGroupBy()  throws SQLException {
         if (DEBUG)
-            System.out.println("checkGroupBy called... \n " ); // NOI18N
+            System.out.println("checkGroupBy called... " ); // NOI18N
         if ( _queryModel.getGroupBy() != null ) {
             ArrayList groupByColumns = new ArrayList();
             _queryModel.getGroupBy().getReferencedColumns(groupByColumns);
@@ -938,7 +944,7 @@ public class QueryBuilder extends TopComponent
 
     boolean checkHaving()  throws SQLException {
         if (DEBUG)
-            System.out.println("checkHaving called... \n " ); // NOI18N
+            System.out.println("checkHaving called... " ); // NOI18N
         if ( _queryModel.getHaving() != null ) {
             ArrayList havingColumns = new ArrayList();
             _queryModel.getHaving().getReferencedColumns(havingColumns);
@@ -950,7 +956,7 @@ public class QueryBuilder extends TopComponent
 
     boolean checkOrderBy()  throws SQLException {
         if (DEBUG)
-            System.out.println("checkOrderBy called... \n " ); // NOI18N
+            System.out.println("checkOrderBy called... " ); // NOI18N
         OrderBy orderBy = _queryModel.getOrderBy();
         if ( orderBy != null ) {
             ArrayList orderByColumns = new ArrayList();
@@ -1001,8 +1007,7 @@ public class QueryBuilder extends TopComponent
                         System.out.println(
                                 " checkColumns called " +  // NOI18N
                                 " fromTableName = " + fromTableName  +  // NOI18N
-                                " fromTableSpec = " + fromTableSpec  +  // NOI18N
-                                " \n" ); // NOI18N
+                                " fromTableSpec = " + fromTableSpec ) ;  // NOI18N
                     // use the following function to check if fromTableSpec
                     // is in the database. If it is found update the column.
                     if ( checkColumnNameForTable( column, fromTableSpec )) {
@@ -1167,17 +1172,16 @@ public class QueryBuilder extends TopComponent
 
         ParameterMetaData pmd = null;
         int paramCount =  0;
-
         try {
             connection = getConnection() ;
             myStatement = connection.prepareStatement(sqlCommand) ;
             pmd = myStatement.getParameterMetaData();
             paramCount =  pmd.getParameterCount();
             if (DEBUG) {
-                System.out.println(" Parameter Count  = " + paramCount + "\n");
+                System.out.println(" Parameter Count  = " + paramCount);
                 for (int i = 1; i <= paramCount; i++) {
-                    System.out.println(" Parameter Type  = " + pmd.getParameterType(i) + "\n");
-                    System.out.println(" Parameter Type Name = " + pmd.getParameterTypeName(i) + "\n");
+                    System.out.println(" Parameter Type  = " + pmd.getParameterType(i));
+                    System.out.println(" Parameter Type Name = " + pmd.getParameterTypeName(i));
                 }
             }
         } catch ( SQLException e) {
@@ -1204,17 +1208,17 @@ public class QueryBuilder extends TopComponent
                 for (int i = 0; i < parameters.length; i++) {
                     parameters[i] = new String((String) list.get(i));
                 }
-                ParameterizedQueryDialog pqDlg = new ParameterizedQueryDialog(
-                    parameters, true);
+                ParameterizedQueryDialog pqDlg =
+		    new ParameterizedQueryDialog( parameters, true);
                 // System.out.println(pqDlg.getReturnStatus());
                 if (pqDlg.getReturnStatus() == ParameterizedQueryDialog.RETURNED_OK) {
+
                     values = pqDlg.getParameterValues();
-    
                     try {
                         for (int i = 0; i < values.length; i++) {
                             if (DEBUG) {
-                                System.out.println(" command  = " + sqlCommand + "\n");
-                                System.out.println("PreparedStatement i = " + i + " values = " + values[i] + "\n");
+                                System.out.println(" command  = " + sqlCommand);
+                                System.out.println("PreparedStatement i = " + i + " values = " + values[i]);
                             }
                             myStatement.setObject(i+1, ((String)values[i]),
                                                   pmd.getParameterType(i+1) );
@@ -1234,14 +1238,14 @@ public class QueryBuilder extends TopComponent
                 // we have a query which can not be parsed.
                 ArrayList  list = new ArrayList(paramCount);
                 if (DEBUG) {
-                    System.out.println(" param count = " + paramCount + "\n");
-                    System.out.println(" list size  = " + list.size()+ "\n");
+                    System.out.println(" param count = " + paramCount);
+                    System.out.println(" list size  = " + list.size());
                 }
                 String[] parameters = new String[paramCount];
                 String[] values = new String[paramCount];
                 if (DEBUG) {
-                    System.out.println(" parameters size  = " + parameters.length+ "\n");
-                    System.out.println(" values size  = " + values.length+ "\n");
+                    System.out.println(" parameters size  = " + parameters.length);
+                    System.out.println(" values size  = " + values.length);
                 }
     
                 for (int i = 0; i < paramCount; i++) {
@@ -1249,7 +1253,7 @@ public class QueryBuilder extends TopComponent
                 }
                 if (DEBUG) {
                     for (int i = 0; i < parameters.length; i++) {
-                        System.out.println(" parameter  = " + parameters[i] + "\n");
+                        System.out.println(" parameter  = " + parameters[i]);
                     }
                 }
                 ParameterizedQueryDialog pqDlg = new ParameterizedQueryDialog(
@@ -1261,8 +1265,8 @@ public class QueryBuilder extends TopComponent
                     try {
                         for (int i = 0; i < values.length; i++) {
                             if (DEBUG) {
-                                System.out.println(" command  = " + sqlCommand + "\n");
-                                System.out.println("PreparedStatement i = " + i + " values = " + values[i] + "\n");
+                                System.out.println(" command  = " + sqlCommand );
+                                System.out.println("PreparedStatement i = " + i + " values = " + values[i] );
                             }
                             myStatement.setObject(i+1, ((String)values[i]),
                                                   pmd.getParameterType(i+1) );
@@ -1476,7 +1480,7 @@ public class QueryBuilder extends TopComponent
         _queryBuilderPane.getQueryBuilderSqlTextArea().requestFocus();
 
         if ( DEBUG )
-            System.out.println(" _queryBuilderPane.getQueryBuilderSqlTextArea().requestFocus () called. " + "\n" ); // NOI18N
+            System.out.println(" _queryBuilderPane.getQueryBuilderSqlTextArea().requestFocus () called. " ); // NOI18N
 
     }
 

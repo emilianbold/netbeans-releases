@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querybuilder;
 
+import org.netbeans.api.db.explorer.DatabaseConnection;
+
 import org.netbeans.modules.db.sql.visualeditor.querymodel.Column;
 import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorMetaData;
 import org.netbeans.modules.db.sql.visualeditor.Log;
@@ -52,7 +54,9 @@ public class QueryBuilderMetaData {
 
     // Constructor, without external metaData
     // Used by DB Explorer and other clients who don't have a dependency on VSE
-    QueryBuilderMetaData () {
+    QueryBuilderMetaData (DatabaseConnection dbconn, QueryBuilder queryBuilder) {
+	this.metadata = new InternalVSEMetaDataImpl(dbconn);
+	this.queryBuilder = queryBuilder;
     }
 
 
