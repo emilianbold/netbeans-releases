@@ -33,6 +33,6 @@ public class AddWsdlImportAddAction extends AddWsdlImportAction {
      */
     @Override
     protected String getBundleName() {
-        return NbBundle.getMessage(BpelNodeAction.class, "CTL_DESC_AddSchemaImportAction");
+        return NbBundle.getMessage(BpelNodeAction.class, "CTL_DESC_AddWsdlImportAction");
     }
 }
