@@ -235,7 +235,11 @@ public class WatchesModel implements TreeModel {
         private PropertyChangeSupport propSupp = new PropertyChangeSupport(this);
         
         public JPDAWatchEvaluating(WatchesModel model, Watch w, JPDADebuggerImpl debugger) {
-            super(debugger, null, "" + w);
+            this(model, w, debugger, 0);
+        }
+        
+        private JPDAWatchEvaluating(WatchesModel model, Watch w, JPDADebuggerImpl debugger, int cloneNumber) {
+            super(debugger, null, (cloneNumber > 0) ? w + "_clone" + cloneNumber : "" + w);
             this.model = model;
             this.w = w;
             this.debugger = debugger;
@@ -421,9 +425,11 @@ public class WatchesModel implements TreeModel {
         public synchronized boolean isCurrent() {
             return evaluatedWatch != null;
         }
+        
+        private int cloneNumber = 1;
 
         public JPDAWatchEvaluating clone() {
-            return new JPDAWatchEvaluating(model, w, debugger);
+            return new JPDAWatchEvaluating(model, w, debugger, cloneNumber++);
         }
         
     }

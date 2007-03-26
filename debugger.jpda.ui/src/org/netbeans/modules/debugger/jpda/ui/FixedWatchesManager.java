@@ -84,7 +84,7 @@ NodeActionsProviderFilter, NodeModelFilter {
     );
         
         
-    private Map             fixedWatches = new HashMap ();
+    private Map             fixedWatches = new LinkedHashMap ();
     private HashSet         listeners;
     private ContextProvider contextProvider;
 

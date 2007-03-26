@@ -721,8 +721,10 @@ class AbstractVariable implements JDIObjectVariable, Customizer, Cloneable {
         return new FieldVariable (debugger, v, f, parentID, or);
     }
     
+    private int cloneNumber = 1;
+    
     public Variable clone() {
-        AbstractVariable clon = new AbstractVariable(debugger, value, id);
+        AbstractVariable clon = new AbstractVariable(debugger, value, id + "_clone"+(cloneNumber++));
         clon.genericType = this.genericType;
         return clon;
     }
