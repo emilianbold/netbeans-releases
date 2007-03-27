@@ -49,7 +49,6 @@ Microsystems, Inc. All Rights Reserved.
             </class-path-extension>
             <friend-packages>
                 <friend>org.netbeans.modules.websvc.rest</friend>
-                <friend>org.netbeans.modules.websvc.restapi</friend>
                 <package>com.sun.localization</package>
                 <package>com.sun.research.ws.wadl</package>
                 <package>com.sun.research.ws.wadl.util</package>
