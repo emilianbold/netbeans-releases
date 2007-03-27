@@ -40,6 +40,8 @@ public class CreateTestsDialog extends org.netbeans.performance.test.utilities.P
     
     private Node createTestsNode;
     
+    private static boolean firstTime = true;
+    
     /**
      * Creates a new instance of CreateTestsDialog
      * 
@@ -68,8 +70,12 @@ public class CreateTestsDialog extends org.netbeans.performance.test.utilities.P
     public ComponentOperator open(){
         // invoke Tools|Create JUnit Tests from the popup menu
         createTestsNode.performPopupActionNoBlock(CREATE_JUNIT_TESTS);
-        NbDialogOperator dialog = new NbDialogOperator("Select JUnit Version"); // NOI18N
-        new JButtonOperator(dialog, "Select").pushNoBlock(); // NOI18N
+        
+        // wait for the question dialog for the first time
+        if(firstTime) {
+            NbDialogOperator dialog = new NbDialogOperator("Select JUnit Version"); // NOI18N
+            new JButtonOperator(dialog, "Select").pushNoBlock(); // NOI18N
+        }
         
         return new NbDialogOperator(DIALOG_TITLE);
     }
