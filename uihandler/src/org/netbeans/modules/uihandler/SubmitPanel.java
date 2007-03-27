@@ -77,6 +77,8 @@ implements ExplorerManager.Provider, PropertyChangeListener {
         setLayout(new java.awt.BorderLayout());
 
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+
+        listView1.setTraversalAllowed(false);
         jSplitPane1.setLeftComponent(listView1);
 
         record.setEditable(false);
@@ -126,7 +128,6 @@ implements ExplorerManager.Provider, PropertyChangeListener {
 
         add(tabs, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
-
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -193,7 +194,6 @@ implements ExplorerManager.Provider, PropertyChangeListener {
     private javax.swing.JTabbedPane tabs;
     private javax.swing.JEditorPane text;
     // End of variables declaration//GEN-END:variables
-
     private ExplorerManager manager;
     
 }
