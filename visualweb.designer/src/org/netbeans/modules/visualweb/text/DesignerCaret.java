@@ -1532,6 +1532,14 @@ import org.w3c.dom.Node;
             DesignerCaret.this.setDot(evt.getDomPosition());
         }
         
+        public void componentMoved(DomDocumentEvent evt) {
+            if (component.hasCaret()) {
+                DomPosition pos = ModelViewMapper.getFirstDocumentPosition(component.getWebForm(), false);
+//                webform.getPane().getCaret().setDot(pos);
+//                webForm.getPane().setCaretDot(pos);
+                setDot(pos);
+            }
+        }
         // DomDocumentListener <<<
         //////////////////////////
     }

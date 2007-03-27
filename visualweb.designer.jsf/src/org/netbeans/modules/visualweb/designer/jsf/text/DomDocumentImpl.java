@@ -20,8 +20,6 @@
 package org.netbeans.modules.visualweb.designer.jsf.text;
 
 
-import java.util.EventListener;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.EventListenerList;
@@ -1396,6 +1394,11 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         }
     }
     
+    private void fireComponentMoved(DomDocumentEvent evt) {
+        for (DomDocumentListener l : getDomDocumentListeners()) {
+            l.componentMoved(evt);
+        }
+    }
     
     private final EventListenerList listenerList = new EventListenerList();
     
@@ -1454,5 +1457,127 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
             return position;
         }
     } // End of DefaultDomDocumentEvent.
+
+    
+    /** Transfer the given element such that it's parented at the given position */
+//    private boolean reparent(DesignBean bean, Element element, Position pos, WebForm webform) {
+//    private boolean reparentComponent(Element componentRootElement, /*Element element,*/ Position pos, WebForm webform) {
+    public boolean reparentComponent(Element componentRootElement, /*Element element,*/ DomPosition pos /*, WebForm webform*/) {
+//        if (pos == Position.NONE) {
+        if (pos == DomPosition.NONE) {
+            return false;
+        }
+
+        // First see where it's currently located
+//        Position currPos = Position.create(element, false);
+//        Position currPos = Position.create(componentRootElement, false);
+//        DomPosition currPos = webform.createDomPosition(componentRootElement, false);
+        DomPosition currPos = createDomPosition(componentRootElement, false);
+
+        if (pos.equals(currPos)) {
+            return true; // Already in the right place - done
+        }
+
+//        if (pos.isRendered()) {
+        if (MarkupService.isRenderedNode(pos.getNode())) {
+            pos = pos.getSourcePosition();
+        }
+
+//        if (pos == Position.NONE) {
+        if (pos == DomPosition.NONE) {
+            return false;
+        }
+
+        Node node = pos.getNode();
+
+        // Ensure the node is not in a DocumentFragment - if it is, moving
+        // an element here is going to remove it from the jsp!!
+        Node curr = node;
+
+        while (curr.getParentNode() != null) {
+            curr = curr.getParentNode();
+        }
+
+        //if (curr instanceof DocumentFragment) {
+//        if (curr != webform.getJspDom()) {
+        if (curr != jsfForm.getJspDom()) {
+            return false;
+        }
+
+        Node parentNode = node;
+        Node before = null;
+
+        if (node instanceof Text) {
+            parentNode = node.getParentNode();
+
+            if (pos.getOffset() == 0) {
+                before = node;
+            } else {
+                Text txt = (Text)node;
+
+                if (pos.getOffset() < txt.getLength()) {
+                    before = txt.splitText(pos.getOffset());
+                } else {
+                    // Ugh, what if it's the last node here??
+                    // XXX won't work right!
+                    before = txt.getNextSibling();
+                }
+            }
+        } else {
+            before = parentNode.getFirstChild();
+
+            for (int i = 0, n = pos.getOffset(); i < n; i++) {
+                if (before == null) {
+                    break;
+                }
+
+                before = before.getNextSibling();
+            }
+        }
+
+//        if (before == element) {
+        // XXX Comparing rendered with source element can never fit.
+        if (before == componentRootElement) {
+            return true;
+        }
+
+//        LiveUnit lu = webform.getModel().getLiveUnit();
+//        MarkupPosition markupPos = new MarkupPosition(parentNode, before);
+//        DesignBean parentBean = null;
+//        Node e = parentNode;
+//
+//        while (e != null) {
+////            if (e instanceof RaveElement) {
+////                parentBean = ((RaveElement)e).getDesignBean();
+//            if (e instanceof Element) {
+////                parentBean = InSyncService.getProvider().getMarkupDesignBeanForElement((Element)e);
+//                parentBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)e);
+//                
+//                if (parentBean != null) {
+//                    break;
+//                }
+//            }
+//
+//            e = e.getParentNode();
+//        }
+//
+//        if (bean == parentBean) {
+//            return false;
+//        }
+//
+//        boolean success = lu.moveBean(bean, parentBean, markupPos);
+//        boolean success = webform.moveComponent(componentRootElement, parentNode, before);
+        boolean success = jsfForm.moveComponent(componentRootElement, parentNode, before);
+
+////        if (webform.getPane().getCaret() != null) {
+//        if (webform.getPane().hasCaret()) {
+//            pos = ModelViewMapper.getFirstDocumentPosition(webform, false);
+////            webform.getPane().getCaret().setDot(pos);
+//            webform.getPane().setCaretDot(pos);
+//        }
+        fireComponentMoved(new DefaultDomDocumentEvent(this, null));
+
+        return success;
+    }
 
 }

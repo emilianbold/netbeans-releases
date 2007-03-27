@@ -1128,6 +1128,10 @@ public class JsfForm {
     public Element createComponent(String className, Node parent, Node before) {
         return htmlDomProvider.createComponent(className, parent, before);
     }
+    
+    public boolean moveComponent(Element componentRootElement, Node parentNode, Node before) {
+        return htmlDomProvider.moveComponent(componentRootElement, parentNode, before);
+    }
 
     public boolean isInlineEditing() {
         Designer[] designers = findDesigners(this);
