@@ -127,12 +127,9 @@ public class PageFlowController {
         int caseNum = 1;
         
         configModel.startTransaction();
-        NavigationCase navCase = configModel.getFactory().createNavigationCase();
-        
-        navCase.setToViewId(target.getDisplayName());
         FacesConfig facesConfig = configModel.getRootComponent();
         NavigationRule navRule = getRuleWithFromViewID(facesConfig, source.getDisplayName());
-        
+        NavigationCase navCase = configModel.getFactory().createNavigationCase();
         
         if (navRule == null) {
             navRule = configModel.getFactory().createNavigationRule();
@@ -141,16 +138,18 @@ public class PageFlowController {
         } else {
             caseNum = getNewCaseNumber(navRule);
         }
-        
-        navCase.setFromOutcome(CASE_STRING + Integer.toString(caseNum));
+       
+        navCase.setFromOutcome(CASE_STRING + Integer.toString(caseNum));        
+        navCase.setToViewId(target.getDisplayName());
         navRule.addNavigationCase(navCase);
+        
         configModel.endTransaction();
         try {
             configModel.sync();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        //        view.createEdge(navRule, navCase);
+        
         return navCase;
         
     }
