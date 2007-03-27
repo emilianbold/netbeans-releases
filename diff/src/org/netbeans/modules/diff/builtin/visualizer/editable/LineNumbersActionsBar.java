@@ -316,7 +316,7 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
                 if (dd.getBottomLeft() != -1) {
                     g.drawLine(0, dd.getBottomLeft(), clip.width, dd.getBottomLeft());
                 }
-                if (actionsEnabled) {
+                if (actionsEnabled && dd.canRollback()) {
                     if (dd.getDiff().getType() != Difference.ADD) {
                         Rectangle hotSpot = new Rectangle(1, dd.getTopLeft() + actionsYOffset, actionIconsWidth, actionIconsHeight);
                         if (hotSpot.contains(lastMousePosition) || idx == currentDifference) {
@@ -338,7 +338,7 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
                 if (dd.getBottomRight() != -1) {
                     g.drawLine(clip.x, dd.getBottomRight(), clip.x + clip.width, dd.getBottomRight());
                 }
-                if (actionsEnabled) {
+                if (actionsEnabled && dd.canRollback()) {
                     if (dd.getDiff().getType() == Difference.ADD) {
                         Rectangle hotSpot = new Rectangle(offset + 1, dd.getTopRight() + actionsYOffset, actionIconsWidth, actionIconsHeight);
                         if (hotSpot.contains(lastMousePosition) || idx == currentDifference) {

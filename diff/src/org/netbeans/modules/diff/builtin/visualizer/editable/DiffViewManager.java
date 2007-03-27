@@ -19,9 +19,8 @@
 package org.netbeans.modules.diff.builtin.visualizer.editable;
 
 import org.netbeans.api.diff.Difference;
-import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.Lookup;
@@ -312,6 +311,7 @@ class DiffViewManager implements ChangeListener {
 
     private void computeDecorations() {
         
+        BaseDocument document = (BaseDocument) master.getEditorPane2().getEditorPane().getDocument();
         EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(rightContentPanel.getEditorPane());
         int lineHeight = editorUI.getLineHeight();
         
@@ -319,7 +319,7 @@ class DiffViewManager implements ChangeListener {
         decorationsCached = new DecoratedDifference[diffs.length];
         for (int i = 0; i < diffs.length; i++) {
             Difference difference = diffs[i];
-            DecoratedDifference dd = new DecoratedDifference(difference);
+            DecoratedDifference dd = new DecoratedDifference(difference, canRollback(document, difference));
             
             if (difference.getType() == Difference.ADD) {
                 dd.topRight = (difference.getSecondStart() - 1) * lineHeight;
@@ -342,6 +342,19 @@ class DiffViewManager implements ChangeListener {
         }
     }
 
+    private boolean canRollback(BaseDocument document, Difference diff) {
+        if (!(document instanceof GuardedDocument)) return true;
+        int start, end;
+        if (diff.getType() == Difference.DELETE) {
+            start = end = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart());
+        } else {
+            start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
+            end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
+        }
+        MarkBlockChain mbc = ((GuardedDocument) document).getGuardedBlockChain();
+        return (mbc.compareBlock(start, end) & MarkBlock.OVERLAP) == 0;
+    }
+    
     /**
      * 1. find the difference whose top (first line) is closest to the center of the screen. If there is no difference on screen, proceed to #5
      * 2. find line offset of the found difference in the other document
@@ -466,15 +479,21 @@ class DiffViewManager implements ChangeListener {
     }    
 
     public static class DecoratedDifference {
-        private Difference  diff;
+        private final Difference    diff;
+        private final boolean       canRollback;
         private int         topLeft;            // top line in the left pane
         private int         bottomLeft = -1;    // bottom line in the left pane, -1 for ADDs
         private int         topRight;
         private int         bottomRight = -1;   // bottom line in the right pane, -1 for DELETEs
         private boolean     floodFill;          // should the whole difference be highlited
 
-        public DecoratedDifference(Difference difference) {
+        public DecoratedDifference(Difference difference, boolean canRollback) {
             diff = difference;
+            this.canRollback = canRollback;
+        }
+
+        public boolean canRollback() {
+            return canRollback;
         }
 
         public Difference getDiff() {

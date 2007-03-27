@@ -199,7 +199,9 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             DiffViewManager.DecoratedDifference [] decoratedDiffs = master.getManager().getDecorations();
             int idx = 0;
+            boolean everythingEditable = true;
             for (DiffViewManager.DecoratedDifference dd : decoratedDiffs) {
+                everythingEditable &= dd.canRollback();
                 g.setColor(master.getColor(dd.getDiff()));
                 g.setStroke(curDif == idx++ ? master.getBoldStroke() : cs);                            
                 if (dd.getBottomLeft() == -1) {
@@ -217,7 +219,7 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
                 }
             }
             
-            if (master.isActionsEnabled()) {
+            if (master.isActionsEnabled() && everythingEditable) {
                 List<HotSpot> newActionIcons = new ArrayList<HotSpot>();
                 Rectangle hotSpot = new Rectangle((getWidth() - actionIconsWidth) /2, editorsOffset, actionIconsWidth, actionIconsHeight);
                 if (hotSpot.contains(lastMousePosition)) {
