@@ -106,6 +106,27 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-        
+
+    
+    <folder name="Shortcuts">
+
+        <file name="D-F12.shadow">
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
+        </file>      
+
+        <file name="SD-F12.shadow">
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.instance"/>
+        </file>
+
+        <file name="O-F12.shadow">
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.instance"/>
+        </file>
+
+        <file name="SO-F12.shadow">
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.instance"/>
+        </file>
+     
+    </folder>  
+          
 </filesystem>
 
