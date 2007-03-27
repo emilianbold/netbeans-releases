@@ -19,17 +19,16 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.util.Collection;
-import java.util.Collections;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  *
@@ -56,7 +55,6 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
-        label.setBorder(deviceInfo.getDeviceTheme().getBorder(getComponent().getDocument().getSelectedComponents().contains(getComponent())));
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ListElementEventSourceCD.PROP_STRING));
         label.setText(ScreenSupport.wrapWithHtml(text));
         

@@ -16,7 +16,6 @@ package org.netbeans.modules.vmd.api.screen.display;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.font.TextAttribute;
 import java.util.ArrayList;
@@ -35,10 +34,7 @@ import java.util.Map;
  *
  */
 public class ScreenDeviceInfo {
-    
-    private static final Border NORMAL_BORDER = BorderFactory.createEmptyBorder(3, 3, 3, 3);
-    private static final Border SELECTED_BORDER = BorderFactory.createLineBorder(Color.BLUE, 3);
-    
+
     public enum Edge {
         TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT
     }
@@ -270,11 +266,7 @@ public class ScreenDeviceInfo {
             default: return null;
             }
         }
-        
-        public Border getBorder(boolean selected) {
-            return selected ? SELECTED_BORDER : NORMAL_BORDER;
-        }
-        
+
     }
     
 }

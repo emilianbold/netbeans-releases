@@ -19,18 +19,6 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.util.Collection;
-import java.util.Collections;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
@@ -41,6 +29,11 @@ import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.netbeans.modules.vmd.midp.components.items.ChoiceCD;
 import org.netbeans.modules.vmd.midp.components.items.ChoiceGroupCD;
 import org.openide.util.Utilities;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  *
@@ -89,7 +82,6 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
-        panel.setBorder(deviceInfo.getDeviceTheme().getBorder(getComponent().getDocument().getSelectedComponents().contains(getComponent())));
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ChoiceElementCD.PROP_STRING));
         label.setText(ScreenSupport.wrapWithHtml(text));
         

@@ -74,6 +74,14 @@ public class DevicePanel extends JPanel {
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
+        constraints.gridwidth = 3;
+        constraints.gridheight = 3;
+        constraints.fill = GridBagConstraints.BOTH;
+        add(topPanel,constraints);
+
+        constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 0;
         constraints.fill = GridBagConstraints.NONE;
         add(getDeviceInfo().getDeviceBorder(ScreenDeviceInfo.Edge.TOP_LEFT), constraints);
 
@@ -101,12 +109,6 @@ public class DevicePanel extends JPanel {
         constraints.gridy = 1;
         constraints.fill = GridBagConstraints.BOTH;
         add(displayPanel,constraints);
-
-        constraints = new GridBagConstraints();
-        constraints.gridx = 1;
-        constraints.gridy = 1;
-        constraints.fill = GridBagConstraints.BOTH;
-        add(topPanel,constraints);
 
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
@@ -155,17 +157,17 @@ public class DevicePanel extends JPanel {
         displayPanel.setPreferredSize (size);
         displayPanel.setMaximumSize (new Dimension (size.width, Integer.MAX_VALUE));
 
-        topPanel.reload ();
         displayPanel.setVisible (true);
         displayPanel.validate ();
-        displayPanel.repaint ();
+
+        topPanel.reload ();
     }
 
     public DesignComponent getDesignComponentAt (Point point) {
-        return getDesignComponentAt (controller.getEditedScreen (), displayPanel, point);
+        return getDesignComponentAt (controller.getEditedScreen (), this, point);
     }
 
-    private DesignComponent getDesignComponentAt (DesignComponent component, JComponent parentView, Point point) {
+    private static DesignComponent getDesignComponentAt (DesignComponent component, JComponent parentView, Point point) {
         if (component == null)
             return null;
         ScreenDisplayPresenter presenter = component.getPresenter (ScreenDisplayPresenter.class);
@@ -190,6 +192,21 @@ public class DevicePanel extends JPanel {
                 return ret;
         }
         return presenter.getSelectionShape ().contains (viewPoint) ? presenter.getRelatedComponent () : null;
+    }
+
+    public Point calculateTranslation (Container view) {
+        Point point = new Point ();
+        for (;;) {
+            if (view == null)
+                return null;
+            if (view == this)
+                break;
+            Point childPoint = view.getLocation ();
+            point.x += childPoint.x;
+            point.y += childPoint.y;
+            view = view.getParent ();
+        }
+        return point;
     }
 
 }

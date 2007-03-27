@@ -55,7 +55,6 @@ public class SpacerDisplayPresenter extends ScreenDisplayPresenter {
     }
 
     public void reload (ScreenDeviceInfo deviceInfo) {
-        separator.setBorder (deviceInfo.getDeviceTheme ().getBorder (getComponent ().getDocument ().getSelectedComponents ().contains (getComponent ())));
     }
 
     public Shape getSelectionShape () {

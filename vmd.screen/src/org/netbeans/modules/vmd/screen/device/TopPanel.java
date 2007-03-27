@@ -24,7 +24,11 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
 import org.netbeans.modules.vmd.screen.ScreenViewController;
+import org.netbeans.modules.vmd.screen.ScreenAccessController;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -34,14 +38,24 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
-import java.util.Collections;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author David Kaspar
  */
 public class TopPanel extends JPanel {
 
+    private static final Color COLOR_SELECTION_FILL = new Color (0x74, 0x8C, 0xC0, 128);
+    private static final Color COLOR_SELECTION_DRAW = Color.BLACK;
+
+    private static final Image IMAGE_INJECT = Utilities.loadImage ("org/netbeans/modules/vmd/screen/resources/inject.png"); // NOI18N
+
     private DevicePanel devicePanel;
+    private List<SelectionShape> selectionShapes = Collections.emptyList ();
+
+    private JComponent editedComponent;
+    private ScreenPropertyEditor editedEditor;
 
     public TopPanel (DevicePanel devicePanel) {
         this.devicePanel = devicePanel;
@@ -50,6 +64,8 @@ public class TopPanel extends JPanel {
         addMouseListener (new MouseAdapter() {
             public void mouseClicked (MouseEvent e) {
                 select (e);
+                if (e.getButton () == MouseEvent.BUTTON1  &&  e.getClickCount () == 2)
+                    editProperty (e);
                 if (e.isPopupTrigger ())
                     popupMenu (e);
             }
@@ -109,8 +125,44 @@ public class TopPanel extends JPanel {
         }));
     }
 
+    protected void paintComponent (Graphics g) {
+        super.paintComponent (g);
+        Graphics2D gr = (Graphics2D) g;
+
+        for (SelectionShape shape : selectionShapes) {
+            gr.translate (shape.x, shape.y);
+            gr.setColor (COLOR_SELECTION_FILL);
+            gr.fill (shape.shape);
+            gr.setColor (COLOR_SELECTION_DRAW);
+            gr.draw (shape.shape);
+            Rectangle rectangle = shape.shape.getBounds ();
+            gr.drawImage (IMAGE_INJECT, rectangle.x + rectangle.width - 20, rectangle.y - 8, null);
+            gr.translate (- shape.x, - shape.y);
+        }
+    }
+
     public void reload () {
-        // TODO
+        ScreenAccessController controller = devicePanel.getController ();
+        DesignComponent editedScreen = controller.getEditedScreen ();
+        ArrayList<SelectionShape> newSelectionShapes = new ArrayList<SelectionShape> ();
+        reloadSelectionShapes (newSelectionShapes, editedScreen);
+        selectionShapes = newSelectionShapes;
+        repaint ();
+    }
+
+    private void reloadSelectionShapes (ArrayList<SelectionShape> newSelectionShapes, DesignComponent component) {
+        ScreenDisplayPresenter presenter = component != null ? component.getPresenter (ScreenDisplayPresenter.class) : null;
+        if (presenter == null)
+            return;
+        if (devicePanel.getController ().getDocument ().getSelectedComponents ().contains (component)) {
+            Shape shape = presenter.getSelectionShape ();
+            if (shape != null) {
+                Point point = devicePanel.calculateTranslation (presenter.getView ());
+                newSelectionShapes.add (new SelectionShape (point.x, point.y, shape));
+            }
+        }
+        for (DesignComponent child : presenter.getChildren ())
+            reloadSelectionShapes (newSelectionShapes, child);
     }
 
     public void select (final MouseEvent e) {
@@ -165,6 +217,41 @@ public class TopPanel extends JPanel {
                 menu.show (TopPanel.this, e.getX (), e.getY ());
             }
         });
+    }
+
+    private void editProperty (final MouseEvent e) {
+        final DesignDocument document = devicePanel.getController ().getDocument ();
+        if (document == null)
+            return;
+        document.getTransactionManager ().readAccess (new Runnable() {
+            public void run () {
+                DesignComponent component = devicePanel.getDesignComponentAt (e.getPoint ());
+                ScreenDisplayPresenter presenter = component != null ? component.getPresenter (ScreenDisplayPresenter.class) : null;
+                if (presenter == null)
+                    return;
+                Collection<ScreenPropertyDescriptor> properties = presenter.getPropertyDescriptors ();
+                for (ScreenPropertyDescriptor property : properties) {
+                    Point editorOrigin = devicePanel.calculateTranslation (property.getRelatedView ());
+                    if (property.getSelectionShape ().contains (new Point (e.getX () - editorOrigin.x, e.getY () - editorOrigin.y))) {
+        //                property.getEditor ().createEditorComponent ();
+                        // TODO - edit
+                    }
+                }
+            }
+        });
+    }
+
+    private static class SelectionShape {
+
+        private int x, y;
+        private Shape shape;
+
+        public SelectionShape (int x, int y, Shape shape) {
+            this.x = x;
+            this.y = y;
+            this.shape = shape;
+        }
+
     }
 
 }

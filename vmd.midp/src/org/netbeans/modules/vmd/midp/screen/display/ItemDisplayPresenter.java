@@ -106,7 +106,6 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
-        panel.setBorder(deviceInfo.getDeviceTheme().getBorder(getComponent().getDocument().getSelectedComponents().contains(getComponent())));
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ItemCD.PROP_LABEL));
         label.setText(ScreenSupport.wrapWithHtml(text));
     }

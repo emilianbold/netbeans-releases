@@ -19,12 +19,13 @@
 
 package org.netbeans.modules.vmd.api.screen.display;
 
-import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.Presenter;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * A base presenter for the device display component. This presenter occupies the whole device display visible in the screen editor and
@@ -41,7 +42,7 @@ public abstract class ScreenDisplayPresenter extends Presenter {
     public abstract boolean isTopLevelDisplay ();
 
     /**
-     * Get children DesignComponent. Component elements are visible elements representing design components in this display.
+     * Gets children DesignComponent. Component elements are visible elements representing design components in this display.
      * @return the children component
      */
     public abstract Collection<DesignComponent> getChildren ();
@@ -73,6 +74,14 @@ public abstract class ScreenDisplayPresenter extends Presenter {
      */
     public abstract Shape getSelectionShape();
 //    public abstract Shape getSelectionShape(Point point);
+
+    /**
+     * Returns a collection of all screen property descriptors
+     * @return
+     */
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
+        return Collections.emptySet ();
+    }
 
 //    /**
 //     * Gets available injectors with mouse at this display point. If the supplied

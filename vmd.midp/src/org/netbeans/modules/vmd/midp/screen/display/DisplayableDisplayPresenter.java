@@ -16,9 +16,12 @@ package org.netbeans.modules.vmd.midp.screen.display;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
+import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -39,7 +42,9 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     private static final Image SIGNAL = Utilities.loadImage("org/netbeans/modules/vmd/midp/screen/display/resources/signal.png"); // NOI18N
     
     private DisplayableDisplayPanel panel;
-    
+
+    private ScreenPropertyEditor titleEditor;
+
     public DisplayableDisplayPresenter() {
         panel = new DisplayableDisplayPanel(this);
         panel.getBattery().setIcon(new ImageIcon(BATTERY));
@@ -67,7 +72,6 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
-        panel.setBorder(deviceInfo.getDeviceTheme().getBorder(getComponent().getDocument().getSelectedComponents().contains(getComponent())));
         DesignComponent ticker = getComponent().readProperty(DisplayableCD.PROP_TICKER).getComponent();
         String tickerText = "<ticker not set>"; // NOI18N
         if (ticker != null) {
@@ -76,5 +80,11 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
         panel.getTicker().setText(tickerText);
         panel.getTitle().setText(MidpValueSupport.getHumanReadableString(getComponent().readProperty(DisplayableCD.PROP_TITLE)));
     }
-    
+
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
+        if (titleEditor == null)
+            titleEditor = new ScreenStringPropertyEditor (getComponent (), DisplayableCD.PROP_TITLE);
+        return Collections.singletonList (new ScreenPropertyDescriptor (getComponent (), panel.getTitle (), new Rectangle (panel.getTitle ().getSize ()), titleEditor));
+    }
+
 }
