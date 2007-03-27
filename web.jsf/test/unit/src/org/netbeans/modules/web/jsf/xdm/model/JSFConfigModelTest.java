@@ -31,6 +31,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -332,5 +333,33 @@ public class JSFConfigModelTest extends NbTestCase {
         model.endTransaction();
         model.sync();
         assertEquals("RealPage4.jsp", rule.getFromViewId());
+    }
+    
+    /**
+     * This test makes sure that from-outcome is always listed before to-view-id regardless of which was set first.
+     * @throws java.lang.Exception 
+     */
+    public void test98691() throws Exception {
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-empty.xml");
+        FacesConfig facesConfig = model.getRootComponent();
+        
+        model.startTransaction();
+        NavigationRule newRule = model.getFactory().createNavigationRule();
+        newRule.setFromViewId("frompage.jsp");
+        NavigationCase newCase = model.getFactory().createNavigationCase();
+        
+        //When order is switched.
+        newCase.setToViewId("toPage.jsp");
+        newCase.setFromOutcome("fromoutcome");
+        
+        newRule.addNavigationCase(newCase);
+        facesConfig.addNavigationRule(newRule);
+        model.endTransaction();
+        model.sync();
+        
+        NodeList list = newCase.getPeer().getChildNodes();
+        
+        assertEquals(list.item(1).getNodeName(), "from-outcome");
+        assertEquals(list.item(3).getNodeName(), "to-view-id");
     }
 }
