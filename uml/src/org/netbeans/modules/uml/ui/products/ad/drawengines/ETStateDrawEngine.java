@@ -977,7 +977,12 @@ public class ETStateDrawEngine extends ETContainerDrawEngine implements IStateDr
                     }
                 }
             }
-            return ownedCompartments.get(index);
+            
+            if (index >= 0 && index < ownedCompartments.size() )
+            {
+               retVal = ownedCompartments.get(index);
+            }
+            return retVal;
         }
 
 }

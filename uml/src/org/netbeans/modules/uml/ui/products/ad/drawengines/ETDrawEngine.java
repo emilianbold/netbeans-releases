@@ -34,7 +34,6 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import javax.swing.SwingUtilities;
-
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleComponent;
@@ -44,7 +43,6 @@ import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleSelection;
 import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
-
 import org.netbeans.modules.uml.common.ETException;
 import org.netbeans.modules.uml.common.generics.IteratorT;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -117,10 +115,7 @@ import com.tomsawyer.graph.TSGraphObject;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
 import com.tomsawyer.editor.TSTransform;
 import java.util.StringTokenizer;
-
-//import org.openide.cookies.SourceCookie;
 import org.openide.explorer.ExplorerManager;
-//import org.openide.src.SourceElement;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.uml.ui.swing.testbed.addin.menu.Separator;
@@ -174,7 +169,8 @@ public abstract class ETDrawEngine extends ETTransformOwner implements IDrawEngi
 	protected boolean m_checkSyncStateDuringDraw;
 
 	private UIResources m_resources = null;
-        private int compIndex = 0;
+   private int compIndex = -1;
+
 
 	/*	 
 	 * Derived classes must implement this if no element is present.
@@ -416,12 +412,15 @@ public abstract class ETDrawEngine extends ETTransformOwner implements IDrawEngi
             Iterator iterator = this.getCompartments().iterator();
             while (iterator.hasNext()) {
                 Object curObject = iterator.next();
+                // set selection state for self first
+                if (curObject instanceof ICompartment) {
+                   ((ICompartment)curObject).setSelected(bSelected);
+                }
+                //set selection state for sub compartments if any
                 if (curObject instanceof ISimpleListCompartment) {
                     ISimpleListCompartment compartment = (ISimpleListCompartment) curObject;
-                    
                     Iterator < ICompartment > compartmentIterator = compartment.getCompartments().iterator();
                     while (compartmentIterator.hasNext()) {
-//					compartmentIterator.next().setSelected(bSelected);
                         ICompartment foundCompartment = compartmentIterator.next();
                         //for zonecompartments you have to go two levels deep...
                         if (foundCompartment  instanceof ISimpleListCompartment) {
@@ -437,11 +436,9 @@ public abstract class ETDrawEngine extends ETTransformOwner implements IDrawEngi
                             foundCompartment.setSelected(bSelected);
                         }                        
                     }
-                } else if (curObject instanceof IADCommentBodyCompartment) {
-                    ((IADCommentBodyCompartment)curObject).setSelected(bSelected);
                 } else if (curObject instanceof IADExpressionCompartment) {
                     ((IADExpressionCompartment)curObject).setSelected(bSelected);
-                }
+                } 
             }
         }
 
@@ -1385,7 +1382,7 @@ public abstract class ETDrawEngine extends ETTransformOwner implements IDrawEngi
 	}
 
 	private boolean dispatchKeyDownToCompartments(int nKeyCode, int nShift) {
-            boolean handled = false;
+               boolean handled = false;
             int count = getNumVisibleCompartments();
             for (int i = count-1; i >=0; i--) {
                 ICompartment pComp = getVisibleCompartment(i);
@@ -1396,55 +1393,61 @@ public abstract class ETDrawEngine extends ETTransformOwner implements IDrawEngi
                     }
                 }
             }
-            
-            //Jyothi: a11y work - cycle thru compartments when shift-RightArrow/LeftArrow is pressed
-            if (!handled && nShift == 0 && (nKeyCode==KeyEvent.VK_RIGHT || nKeyCode==KeyEvent.VK_LEFT)) {
-                ICompartment pComp = null;
-                int selectableCompCount = getNumSelectableCompartments();
-                for (int i=0; i<selectableCompCount; i++) {
-                    pComp = getSelectableCompartment(compIndex);
-                    
-                    if (pComp != null) {
-                        //Fixed issue 83794. Disabled the ability to select a
-                        // TemplateParametersCompartment for editing.
-                        if (pComp instanceof ITemplateParametersCompartment){
-                            // skip ITemplateParametersCompartment compartment and
-                            // process the next compartment instead.
-                            if (nKeyCode==KeyEvent.VK_RIGHT){
-                                // Advance the compartment index to the next compartment
-                                compIndex = compIndex +1;
-                                if (compIndex >= selectableCompCount)  compIndex = 0;
-                            }else if (nKeyCode==KeyEvent.VK_LEFT) {
-                                compIndex = compIndex -1;
-                                if (compIndex < 0) compIndex = selectableCompCount-1;
-                            }
-                            pComp = getSelectableCompartment(compIndex);
-                        }
-                        //1. deselect all selected compartment
-                        selectAllCompartments(false);
-                        //2. select this compartment
-                        pComp.setSelected(true);
-                        
-                        if (nKeyCode==KeyEvent.VK_RIGHT) {
-                            // Advance the compartment index to the next compartment
-                            compIndex = compIndex +1;
-                            if (compIndex >= selectableCompCount)  compIndex = 0;
-                        } else if (nKeyCode==KeyEvent.VK_LEFT) {
-                            compIndex = compIndex -1;
-                            if (compIndex < 0) compIndex = selectableCompCount-1;
-                        }
-                        invalidate();
-                        getDrawingArea().refresh(true);
-                        handled = true;
-                        break;
-                    } else {
-//                            System.err.println(" pComp is null! ");
-                    }
-                    
-                    if (handled)
-                        break;
-                }
-                
+            // Fixed IZ 99020 - IndexOutOfBoundsException when using keyboard to traverse
+            // Composite State compartment after deleting a Region Row
+            // Correct the logic to calculate the index of the compartment to be selected.
+            if (!handled && nShift == 0 && (nKeyCode==KeyEvent.VK_RIGHT || nKeyCode==KeyEvent.VK_LEFT))
+            {
+               ICompartment pComp = null;
+               int selectableCompCount = getNumSelectableCompartments();
+               if (nKeyCode==KeyEvent.VK_RIGHT)
+               {
+                  // calcualte the current compartment index
+                     compIndex = compIndex +1;
+                  if (compIndex >= selectableCompCount)  compIndex = 0;
+               }
+               else if (nKeyCode==KeyEvent.VK_LEFT)
+               {
+                  compIndex = compIndex -1;
+                  if (compIndex < 0) compIndex = selectableCompCount-1;
+               }
+               pComp = getSelectableCompartment(compIndex);
+               
+               if (pComp != null)
+               {
+                  //Fixed issue 83794. Disabled the ability to select a
+                  // TemplateParametersCompartment for editing.
+                  if (pComp instanceof ITemplateParametersCompartment)
+                  {
+                     // skip ITemplateParametersCompartment compartment and
+                     // process the next compartment instead.
+                     if (nKeyCode==KeyEvent.VK_RIGHT)
+                     {
+                        // Advance the compartment index to the next compartment
+                        compIndex = compIndex +1;
+                        if (compIndex >= selectableCompCount)  compIndex = 0;
+                     }
+                     else if (nKeyCode==KeyEvent.VK_LEFT)
+                     {
+                        compIndex = compIndex -1;
+                        if (compIndex < 0) compIndex = selectableCompCount-1;
+                     }
+                     pComp = getSelectableCompartment(compIndex);
+                  }
+                  //1. deselect all selected compartment
+                  selectAllCompartments(false);
+                  //2. select this compartment
+                  pComp.setSelected(true);
+                  invalidate();
+                  getDrawingArea().refresh(true);
+                  handled = true;
+                  
+               }
+               else
+               {
+                  // System.err.println(" pComp is null! ");
+               }
+               
             } //end of if(nshift==0)
             
             ICompartment oldDefault = null;
