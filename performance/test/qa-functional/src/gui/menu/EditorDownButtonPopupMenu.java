@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -52,7 +52,8 @@ public class EditorDownButtonPopupMenu extends org.netbeans.performance.test.uti
     }
     
     public void initialize(){
-        gui.Utilities.open10FilesFromJEdit();
+        gui.Utilities.openFiles("jEdit", getTenSelectedFiles());
+        waitNoEvent(20000);
     }
     
     public void prepare(){
@@ -67,6 +68,23 @@ public class EditorDownButtonPopupMenu extends org.netbeans.performance.test.uti
     
     public void shutdown(){
         EditorWindowOperator.closeDiscard();
+    }
+    
+    private static String[][] getTenSelectedFiles(){
+        String[][] files_path = {
+            {"bsh","Interpreter.java"},
+            {"bsh","JThis.java"},
+            {"bsh","Name.java"},
+            {"bsh","Parser.java"},
+            {"bsh","Primitive.java"},
+            {"com.microstar.xml","XmlParser.java"},
+            {"org.gjt.sp.jedit","BeanShell.java"},
+            {"org.gjt.sp.jedit","Buffer.java"},
+            {"org.gjt.sp.jedit","EditPane.java"},
+            {"org.gjt.sp.jedit","EditPlugin.java"},
+            {"org.gjt.sp.jedit","EditServer.java"}
+        };
+        return files_path;
     }
     
 }

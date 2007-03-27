@@ -13,11 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.window;
+
+import gui.Utilities;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -55,7 +57,7 @@ public class FindInSourceEditor extends org.netbeans.performance.test.utilities.
         TITLE = Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "find");
         
         // open a java file in the editor
-        editor = gui.Utilities.openJavaFile();
+        editor = Utilities.openFile("jEdit","bsh","Parser.java", true);
     }
     
     public void prepare() {

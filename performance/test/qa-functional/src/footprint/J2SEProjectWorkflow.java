@@ -62,6 +62,7 @@ public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
     public ComponentOperator open(){
         // Create, edit, build and execute a sample J2SE project
         j2seproject = FootprintUtilities.createproject("Samples|General", "Anagram Game", true);
+        
         FootprintUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
         FootprintUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
         FootprintUtilities.buildproject(j2seproject);

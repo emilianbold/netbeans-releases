@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -54,7 +54,7 @@ public class AutoCommentWindow extends org.netbeans.performance.test.utilities.P
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.javadoc.comments.Bundle","CTL_AUTOCOMMENT_WindowTitle");
     
         // open a java file in the editor
-        editor = gui.Utilities.openSmallJavaFile();
+        editor = gui.Utilities.openFile("PerformanceTestData","org.netbeans.test.performance", "Main20kB.java", true);
     }
     
     public void prepare() {

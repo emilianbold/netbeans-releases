@@ -13,11 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.window;
+
+import gui.Utilities;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -33,7 +35,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  * @author  mmirilovic@netbeans.org
  */
 public class OverrideMethods extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-
+    
     private static EditorOperator editor;
     private String MENU, TITLE;
     
@@ -54,14 +56,14 @@ public class OverrideMethods extends org.netbeans.performance.test.utilities.Per
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LBL_OverridePanel2_Title");
         
         // open a java file in the editor
-        editor = gui.Utilities.openJavaFile();
+        editor = Utilities.openFile("jEdit","bsh","Parser.java", true);
         waitNoEvent(5000);  // annotations, folds, toolbars, ...
     }
     
     public void prepare() {
         editor.makeComponentVisible();
         editor.setCaretPositionToLine(31);
-   }
+    }
     
     public ComponentOperator open() {
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
@@ -72,7 +74,7 @@ public class OverrideMethods extends org.netbeans.performance.test.utilities.Per
         if(editor!=null && editor.isShowing())
             editor.closeDiscard();
     }
-
+    
     
     /** Test could be executed internaly in IDE without XTest
      * @param args arguments from command line

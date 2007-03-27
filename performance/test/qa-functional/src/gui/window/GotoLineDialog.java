@@ -13,11 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.window;
+
+import gui.Utilities;
 
 import java.awt.event.KeyEvent;
 
@@ -53,12 +55,12 @@ public class GotoLineDialog extends org.netbeans.performance.test.utilities.Perf
     public void initialize() {
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "goto-title");
         // open a java file in the editor
-        editor = gui.Utilities.openJavaFile();
+        editor = Utilities.openFile("jEdit","bsh","Parser.java", true);
     }
     
     public void prepare() {
         // do nothing
-        gui.Utilities.workarroundMainMenuRolledUp();
+        Utilities.workarroundMainMenuRolledUp();
    }
     
     public ComponentOperator open(){

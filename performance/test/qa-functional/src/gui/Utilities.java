@@ -30,27 +30,32 @@ import javax.swing.tree.TreePath;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import org.netbeans.jellytools.actions.DeleteAction;
+import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+
 import org.netbeans.junit.ide.ProjectSupport;
 
 
@@ -110,7 +115,7 @@ public class Utilities {
         closeToolbar(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
                 Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
                 Bundle.getStringTrimmed("org.netbeans.modules.uihandler.Bundle","Toolbars/UIGestures"));
-
+        
         
     }
     
@@ -142,36 +147,6 @@ public class Utilities {
     }
     
     /**
-     * Choose ten selected files from JEdit project
-     * @return
-     */
-    public static String[][] getTenSelectedFiles(){
-        String[][] files_path = {
-            {"bsh","Interpreter.java"},
-            {"bsh","JThis.java"},
-            {"bsh","Name.java"},
-            {"bsh","Parser.java"},
-            {"bsh","Primitive.java"},
-            {"com.microstar.xml","XmlParser.java"},
-            {"org.gjt.sp.jedit","BeanShell.java"},
-            {"org.gjt.sp.jedit","Buffer.java"},
-            {"org.gjt.sp.jedit","EditPane.java"},
-            {"org.gjt.sp.jedit","EditPlugin.java"},
-            {"org.gjt.sp.jedit","EditServer.java"}
-        };
-        
-        return files_path;
-    }
-    
-    /**
-     * Open ten selected files from JEdit project
-     */
-    public static void open10FilesFromJEdit(){
-        openFiles("jEdit", getTenSelectedFiles());
-        new EventTool().waitNoEvent(20000);
-    }
-    
-    /**
      * Open files
      *
      * @param project project which will be used as source for files to be opened
@@ -198,8 +173,8 @@ public class Utilities {
      * Copy file f1 to f2
      * @param f1 file 1
      * @param f2 file 2
-     * @throws java.io.FileNotFoundException 
-     * @throws java.io.IOException 
+     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     public static void copyFile(File f1, File f2) throws java.io.FileNotFoundException, java.io.IOException{
         int data;
@@ -212,26 +187,40 @@ public class Utilities {
     }
     
     /**
-     * open a java file in the editor
-     * @return Editor tab with opened java file
+     * Invoke open action on file and wait for editor
+     * @param filename
+     * @param waitforeditor
+     * @return
      */
-    public static EditorOperator openJavaFile(){
-        Node openFile = new Node(new SourcePackagesNode("jEdit"),"bsh|Parser.java");
-        new OpenAction().performAPI(openFile);
-        return EditorWindowOperator.getEditor("Parser.java");
+    public static EditorOperator openFile(Node fileNode, String filename, boolean waitforeditor) {
+        new OpenAction().performAPI(fileNode);
         
+        if (waitforeditor) {
+            EditorOperator editorOperator = new EditorOperator(filename);
+            return editorOperator;
+        } else
+            return null;
+    }
+    
+    
+    public static EditorOperator openFile(String project, String filepackage, String filename, boolean waitforeditor) {
+        return openFile(new Node(new SourcePackagesNode(project), filepackage + "|" + filename), filename, waitforeditor);
     }
     
     /**
-     * open small java file in the editor
-     * @return Editor tab with opened file
+     * Invoke Edit Action on file and wait for editor
+     * @param project
+     * @param filepackage
+     * @param filename
+     * @return
      */
-    public static EditorOperator openSmallJavaFile(){
-        Node openFile = new Node(new SourcePackagesNode("PerformanceTestData"),"org.netbeans.test.performance|Main20kB.java");
-        new OpenAction().performAPI(openFile);
-        return EditorWindowOperator.getEditor("Main20kB.java");
-        
+    public static EditorOperator editFile(String project, String filepackage, String filename) {
+        Node filenode = new Node(new SourcePackagesNode(project), filepackage + "|" + filename);
+        new EditAction().performAPI(filenode);
+        EditorOperator editorOperator = new EditorOperator(filename);
+        return editorOperator;
     }
+    
     
     /**
      * open small form file in the editor
@@ -244,6 +233,184 @@ public class Utilities {
         
     }
     
+    
+    /**
+     * Edit file and type there a text
+     * @param filename file that will be eddited
+     * @param line line where put the text
+     * @param text write the text
+     * @param save save at the and
+     */
+    public static void insertToFile(String filename, int line, String text, boolean save) {
+        EditorOperator editorOperator = new EditorOperator(filename);
+        editorOperator.setCaretPositionToLine(line);
+        editorOperator.insert(text);
+        
+        if (save)
+            editorOperator.save();
+    }
+    
+    /**
+     * Create project
+     * @param category project's category
+     * @param project type of the project
+     * @param wait wait for background tasks
+     * @return name of recently created project
+     */
+    public static String createproject(String category, String project, boolean wait) {
+        // select Projects tab
+        ProjectsTabOperator.invoke();
+        
+        // create a project
+        NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
+        wizard.selectCategory(category);
+        wizard.selectProject(project);
+        wizard.next();
+        
+        NewProjectNameLocationStepOperator wizard_location = new NewProjectNameLocationStepOperator();
+        wizard_location.txtProjectLocation().clearText();
+        wizard_location.txtProjectLocation().typeText(System.getProperty("xtest.tmpdir"));
+        String pname = wizard_location.txtProjectName().getText();
+        
+        // if the project exists, try to generate new name
+        for (int i = 0; i < 5 && !wizard.btFinish().isEnabled(); i++) {
+            pname = pname+"1";
+            wizard_location.txtProjectName().clearText();
+            wizard_location.txtProjectName().typeText(pname);
+        }
+        wizard.finish();
+
+        // wait 10 seconds
+        waitForProjectCreation(10000, wait);
+        
+        return pname;
+    }
+    
+    
+    protected static void waitForProjectCreation(int delay, boolean wait){
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException exc) {
+            exc.printStackTrace(System.err);
+        }
+        
+        // wait for classpath scanning finish
+        if (wait) {
+            new QueueTool().waitEmpty(1000);
+            //checkScanFinished();
+            waitForPendingBackgroundTasks();
+            //} else {
+            //    ProjectSupport.waitScanFinished();
+        }
+    }
+    
+    
+    /**
+     * Delete project
+     * @param project project to be deleted
+     */
+    public static void deleteProject(String project) {
+        deleteProject(project, false);
+    }
+    
+    
+    public static void deleteProject(String project, boolean waitStatus) {
+        new DeleteAction().performAPI(ProjectsTabOperator.invoke().getProjectRootNode(project));
+
+        //delete project
+        NbDialogOperator deleteProject = new NbDialogOperator("Delete Project"); // NOI18N
+        JCheckBoxOperator delete_sources = new JCheckBoxOperator(deleteProject);
+        
+        if(delete_sources.isEnabled())
+            delete_sources.changeSelection(true);
+        
+        deleteProject.yes();
+        
+        waitForPendingBackgroundTasks();
+        
+        if(waitStatus)
+            MainWindowOperator.getDefault().waitStatusText("Finished building "+project+" (clean)"); // NOI18N
+
+        try {
+            //sometimes dialog rises
+            new NbDialogOperator("Question").yes(); // NOI18N
+        }catch(Exception exc){
+            System.err.println("No Question dialog rises - no problem this is just workarround!");
+            exc.printStackTrace(System.err);
+        }
+        
+    }
+    
+    
+    
+    /**
+     * Build project and wait for finish
+     * @param project
+     */
+    public static void buildproject(String project) {
+        ProjectRootNode prn = new ProjectsTabOperator().getProjectRootNode(project);
+        prn.buildProject();
+        MainWindowOperator.getDefault().waitStatusText("Finished building "+project); // NOI18N
+    }
+    
+    /**
+     * Invoke action on project node from popup menu
+     * @param project
+     * @param pushAction
+     */
+    public static void actionOnProject(String project, String pushAction) {
+        ProjectRootNode prn = new ProjectsTabOperator().getProjectRootNode(project);
+        prn.callPopup().pushMenuNoBlock(pushAction);
+    }
+    
+    /**
+     * Run project
+     * @param project
+     */
+    public static void runProject(String project) {
+        actionOnProject(project,"Run Project"); // NOI18N
+        // TODO MainWindowOperator.getDefault().waitStatusText("run"); // NOI18N
+    }
+    
+    /**
+     * Debug project
+     * @param project
+     */
+    public static void debugProject(String project) {
+        actionOnProject(project,"Debug Project"); // NOI18N
+        // TODO MainWindowOperator.getDefault().waitStatusText("debug"); // NOI18N
+    }
+    
+    
+    /**
+     * Test project
+     * @param project
+     */
+    public static void testProject(String project) {
+        actionOnProject(project, "Test Project"); // NOI18N
+        // TODO MainWindowOperator.getDefault().waitStatusText("test"); // NOI18N
+    }
+    
+    /**
+     * Deploy project and wait for finish
+     * @param project
+     */
+    public static void deployProject(String project) {
+        actionOnProject(project, "Deploy Project"); // NOI18N
+        waitForPendingBackgroundTasks();
+        MainWindowOperator.getDefault().waitStatusText("Finished building "+project+" (run-deploy)"); // NOI18N
+    }
+    
+    /**
+     * Verify project and wait for finish
+     * @param project
+     */
+    public static void verifyProject(String project) {
+        actionOnProject(project, "Verify Project"); // NOI18N
+        MainWindowOperator.getDefault().waitStatusText("Finished building "+project+" (verify)"); // NOI18N
+    }
+    
+    
     /**
      * Open project and wait until it's scanned
      * @param projectFolder Project's location
@@ -253,12 +420,36 @@ public class Utilities {
         waitScanFinished();
     }
     
+    public static void waitForPendingBackgroundTasks() {
+        waitForPendingBackgroundTasks(5);
+    }
+    
+    public static void waitForPendingBackgroundTasks(int n) {
+        // wait maximum n minutes
+        for (int i=0; i<n*60; i++) {
+            if (org.netbeans.progress.module.Controller.getDefault().getModel().getSize()==0)
+                return;
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException exc) {
+                exc.printStackTrace(System.err);
+                return;
+            }
+        }
+    }
+    
+    
+    /**
+     * Start Application server
+     * @param rto Runtime Tab
+     */
     public static void performApplicationServerStartup(RuntimeTabOperator rto) {
         TreePath path = null;
-       
+        
         try {
-            path = rto.tree().findPath("Servers|Sun Java System Application Server");
-        } catch (TimeoutExpiredException ex) {
+            path = rto.tree().findPath("Servers|Sun Java System Application Server"); // NOI18N
+        } catch (TimeoutExpiredException exc) {
+            exc.printStackTrace(System.err);
             throw new Error("Cannot find Application Server Node");
         }
         
@@ -266,15 +457,15 @@ public class Utilities {
         String serverIDEName = asNode.getText();
         asNode.select();
         
-       
+        
         
         JPopupMenuOperator popup = asNode.callPopup();
         if (popup == null) {
             throw new Error("Cannot get context menu for Application server node ");
         }
-        boolean startEnabled = popup.showMenuItem("Start").isEnabled();
-        if(startEnabled) { 
-            popup.pushMenuNoBlock("Start");
+        boolean startEnabled = popup.showMenuItem("Start").isEnabled(); // NOI18N
+        if(startEnabled) {
+            popup.pushMenuNoBlock("Start"); // NOI18N
         }
         
         waitForAppServerStarted(serverIDEName);
@@ -282,11 +473,12 @@ public class Utilities {
     
     private static void waitForAppServerStarted(String serverIDEName) {
         OutputOperator oot = new OutputOperator();
-                oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
-                OutputTabOperator asot = oot.getOutputTab(serverIDEName);
-                asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
-        asot.waitText("Application server startup complete");        
-    }    
+        oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
+        OutputTabOperator asot = oot.getOutputTab(serverIDEName);
+        asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
+        asot.waitText("Application server startup complete");         // NOI18N
+    }
+    
     /**
      * Wait finished scan - repeatedly
      */

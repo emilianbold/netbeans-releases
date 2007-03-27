@@ -86,13 +86,30 @@ public class CloseAllEditors extends org.netbeans.performance.test.utilities.Per
      * Prepare ten selected file from jEdit project
      */
     protected void prepareFiles(){
-        String[][] files_path = gui.Utilities.getTenSelectedFiles();
+        String[][] files_path = getTenSelectedFiles();
         
         openFileNodes = new Node[files_path.length];
         SourcePackagesNode sourcePackagesNode = new SourcePackagesNode("jEdit");
         for(int i=0; i<files_path.length; i++) {
                 openFileNodes[i] = new Node(sourcePackagesNode, files_path[i][0] + '|' + files_path[i][1]);
         }
+    }
+    
+    private static String[][] getTenSelectedFiles(){
+        String[][] files_path = {
+            {"bsh","Interpreter.java"},
+            {"bsh","JThis.java"},
+            {"bsh","Name.java"},
+            {"bsh","Parser.java"},
+            {"bsh","Primitive.java"},
+            {"com.microstar.xml","XmlParser.java"},
+            {"org.gjt.sp.jedit","BeanShell.java"},
+            {"org.gjt.sp.jedit","Buffer.java"},
+            {"org.gjt.sp.jedit","EditPane.java"},
+            {"org.gjt.sp.jedit","EditPlugin.java"},
+            {"org.gjt.sp.jedit","EditServer.java"}
+        };
+        return files_path;
     }
     
     /** Test could be executed internaly in IDE without XTest

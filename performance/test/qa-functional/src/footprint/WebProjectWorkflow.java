@@ -62,11 +62,7 @@ public class WebProjectWorkflow extends MemoryFootprintTestCase {
     public ComponentOperator open(){
         // Web project
         webproject = FootprintUtilities.createproject("Samples|Web", "Tomcat Servlet Example", false);
-        //EditorWindowOperator ewo = new EditorWindowOperator();
-        //EditorOperator eo = ewo.selectPage("index.html");
-        //eo.close(false);
-        //checkScanFinished();
-        FootprintUtilities.waitForPendingBackgroundTasks();
+        
         FootprintUtilities.openFile(webproject, "<default package>", "SessionExample.java", true);
         FootprintUtilities.buildproject(webproject);
         FootprintUtilities.deployProject(webproject);

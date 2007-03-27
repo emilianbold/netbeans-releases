@@ -19,22 +19,12 @@
 
 package footprint;
 
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
-
-import org.netbeans.jellytools.actions.DeleteAction;
-import org.netbeans.jellytools.actions.EditAction;
-import org.netbeans.jellytools.actions.OpenAction;
-
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
 
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 
@@ -44,50 +34,10 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class EPFootprintUtilities extends gui.Utilities{
-    
-    static void collapseProject(String project) {
-        ProjectRootNode prn = new ProjectsTabOperator().getProjectRootNode(project);
-        prn.collapse();
-    }
-    
-    static void deleteProject(String project) {
-        deleteProject(project, true);
-    }
-    
-    static void deleteProject(String project, boolean waitStatus) {
-        new DeleteAction().performAPI(ProjectsTabOperator.invoke().getProjectRootNode(project));
-
-        //delete project
-        NbDialogOperator deleteProject = new NbDialogOperator("Delete Project");
-        JCheckBoxOperator delete_sources = new JCheckBoxOperator(deleteProject);
-        
-        if(delete_sources.isEnabled())
-            delete_sources.changeSelection(true);
-        
-        deleteProject.yes();
-        
-        waitForPendingBackgroundTasks();
-        
-        if(waitStatus)
-            MainWindowOperator.getDefault().waitStatusText("Finished building "+project+" (clean)");
-
-        try {
-            //sometimes dialog rises
-            new NbDialogOperator("Question").yes();
-        }catch(Exception exc){
-            System.err.println("No Question dialog rises - no problem this is just workarround!");
-            exc.printStackTrace(System.err);
-        }
-        
-    }
+public class EPFootprintUtilities extends gui.EPUtilities{
     
     static String creatJ2EEeproject(String category, String project, boolean wait) {
         return createProjectGeneral(category, project, wait, true);
-    }
-    
-    static String createproject(String category, String project, boolean wait) {
-        return createProjectGeneral(category, project, wait, false);
     }
     
     private static String createProjectGeneral(String category, String project, boolean wait, boolean j2eeProject) {
@@ -111,72 +61,18 @@ public class EPFootprintUtilities extends gui.Utilities{
         }
         
         // if the project exists, try to generate new name
-        int iter = 0;
-        while(!wizard.btFinish().isEnabled() && iter < 5){
+        for (int i = 0; i < 5 && !wizard.btFinish().isEnabled(); i++) {
             pname = pname+"1";
             wizard_location.txtProjectName().clearText();
             wizard_location.txtProjectName().typeText(pname);
-            iter++;
         }
         wizard.finish();
-        
-        // wait for 10 seconds
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-        }
-        
-        // wait for classpath scanning finish
-        if (wait) {
-            new QueueTool().waitEmpty(1000);
-            //checkScanFinished();
-            waitForPendingBackgroundTasks();
-            //} else {
-            //    ProjectSupport.waitScanFinished();
-        }
+
+        // wait 10 seconds
+        waitForProjectCreation(10000, wait);
         
         return pname;
     }
-    
-    static void buildproject(String project) {
-        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
-        ProjectRootNode prn = pto.getProjectRootNode(project);
-        prn.buildProject();
-        MainWindowOperator.getDefault().waitStatusText("Finished building "+project);
-    }
-    
-    static void actionOnProject(String project, String pushAction) {
-        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
-        ProjectRootNode prn = pto.getProjectRootNode(project);
-        prn.callPopup().pushMenuNoBlock(pushAction);
-    }
-    
-    static void runProject(String project) {
-        actionOnProject(project,"Run Project");
-        //MainWindowOperator.getDefault().waitStatusText("run");
-    }
-    
-    static void debugProject(String project) {
-        actionOnProject(project,"Debug Project");
-        //MainWindowOperator.getDefault().waitStatusText("debug");
-    }
-    
-    
-    static void testProject(String project) {
-        actionOnProject(project, "Test Project");
-        //MainWindowOperator.getDefault().waitStatusText("test");
-    }
-    
-    static void deployProject(String project) {
-        actionOnProject(project, "Deploy Project");
-        MainWindowOperator.getDefault().waitStatusText("Finished building "+project+" (run-deploy)");
-    }
-    
-    static void verifyProject(String project) {
-        actionOnProject(project, "Verify Project");
-        MainWindowOperator.getDefault().waitStatusText("Finished building "+project+" (verify)");
-    }
-    
     
     static void killRunOnProject(String project) {
         killProcessOnProject(project, "run");
@@ -195,53 +91,4 @@ public class EPFootprintUtilities extends gui.Utilities{
         node.select();
         node.performPopupAction("Terminate Process");
     }
-    
-    static EditorOperator openFile(String project, String path, String filename, boolean waitforeditor) {
-        return openFile(new Node(new ProjectsTabOperator().getProjectRootNode(project), path + "|" + filename), filename, waitforeditor);
-    }
-    
-    static EditorOperator openFile(Node fileNode, String fileName, boolean waitforeditor){
-        new OpenAction().perform(fileNode);
-        if (waitforeditor) {
-            EditorOperator editorOperator = new EditorOperator(fileName);
-            editorOperator.activateWindow();
-            return editorOperator;
-        } else
-            return null;
-    }
-    
-    static EditorOperator editFile(String project, String path, String filename) {
-        Node filenode = new Node(new ProjectsTabOperator().getProjectRootNode(project), path + "|" + filename);
-        new EditAction().perform(filenode);
-        EditorOperator editorOperator = new EditorOperator(filename);
-        editorOperator.activateWindow();
-        return editorOperator;
-    }
-    
-    static void closeFile(String filename, boolean save) {
-        new EditorOperator(filename).close(save);
-    }
-    
-    static void insertToFile(String filename, int line, String text, boolean save) {
-        EditorOperator editorOperator = new EditorOperator(filename);
-        editorOperator.activateWindow();
-        editorOperator.setCaretPositionToLine(line);
-        editorOperator.insert(text);
-        if (save) editorOperator.save();
-    }
-    
-    static void waitForPendingBackgroundTasks() {
-        // wait maximum 5 minutes
-        for (int i=0; i<5*60; i++) {
-            if (org.netbeans.progress.module.Controller.getDefault().getModel().getSize()==0)
-                return;
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                return;
-            }
-            
-        }
-    }
-    
 }

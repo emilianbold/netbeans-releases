@@ -13,14 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.window;
 
 import org.netbeans.jellytools.DocumentsDialogOperator;
-import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.actions.DocumentsAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -31,8 +31,6 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class DocumentsDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-
-    private static EditorOperator editor;
 
     /** Creates a new instance of DocumentsDialog */
     public DocumentsDialog(String testName) {
@@ -47,8 +45,8 @@ public class DocumentsDialog extends org.netbeans.performance.test.utilities.Per
     }
     
     public void initialize(){
-        gui.Utilities.open10FilesFromJEdit();
-        editor = new EditorOperator("");
+        gui.Utilities.openFiles("jEdit", getTenSelectedFiles());
+        waitNoEvent(20000);
     }
     
     public void prepare() {
@@ -63,8 +61,24 @@ public class DocumentsDialog extends org.netbeans.performance.test.utilities.Per
     }
 
     public void shutdown(){
-        if(editor!=null && editor.isShowing())
-            editor.closeDiscard();
+        EditorWindowOperator.closeDiscard();
+    }
+    
+    private static String[][] getTenSelectedFiles(){
+        String[][] files_path = {
+            {"bsh","Interpreter.java"},
+            {"bsh","JThis.java"},
+            {"bsh","Name.java"},
+            {"bsh","Parser.java"},
+            {"bsh","Primitive.java"},
+            {"com.microstar.xml","XmlParser.java"},
+            {"org.gjt.sp.jedit","BeanShell.java"},
+            {"org.gjt.sp.jedit","Buffer.java"},
+            {"org.gjt.sp.jedit","EditPane.java"},
+            {"org.gjt.sp.jedit","EditPlugin.java"},
+            {"org.gjt.sp.jedit","EditServer.java"}
+        };
+        return files_path;
     }
     
 }

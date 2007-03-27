@@ -81,7 +81,8 @@ public class RefactoringRename extends MemoryFootprintTestCase {
         // jEdit project
         log("Opening project jEdit");
         ProjectsTabOperator.invoke();
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"jEdit41");
+        FootprintUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"jEdit41");
+        FootprintUtilities.waitForPendingBackgroundTasks();
         
         // find existing node
         Node packagenode = new Node(new SourcePackagesNode("jEdit"), "org.gjt.sp.jedit");
@@ -106,12 +107,12 @@ public class RefactoringRename extends MemoryFootprintTestCase {
         
         // invoke Rename
         Node filenode = new Node(packagenode, rename_from);
-        filenode.callPopup().pushMenuNoBlock("Refactor|Rename...");
+        filenode.callPopup().pushMenuNoBlock("Refactor|Rename..."); // NOI18N
         
-        NbDialogOperator renamedialog = new NbDialogOperator("Rename  " + rename);
+        NbDialogOperator renamedialog = new NbDialogOperator("Rename  " + rename); // NOI18N
         
         JTextFieldOperator txtfNewName = new JTextFieldOperator(renamedialog);
-        JButtonOperator btnRefactor = new JButtonOperator(renamedialog,"Refactor");
+        JButtonOperator btnRefactor = new JButtonOperator(renamedialog,"Refactor"); // NOI18N
         
         // if the project exists, try to generate new name
         rename_to = rename_to+"1";
@@ -119,21 +120,21 @@ public class RefactoringRename extends MemoryFootprintTestCase {
         txtfNewName.clearText();
         txtfNewName.typeText(rename_to);
         
-        new JCheckBoxOperator(renamedialog,"Apply Rename on Comments").changeSelection(true);
+        new JCheckBoxOperator(renamedialog,"Apply Rename on Comments").changeSelection(true); // NOI18N
         btnRefactor.push();
         
-        TopComponentOperator refactoringwindow = new TopComponentOperator("Refactoring");
+        TopComponentOperator refactoringwindow = new TopComponentOperator("Refactoring"); // NOI18N
         
         new QueueTool().waitEmpty(1000);
-        new JButtonOperator(refactoringwindow, "Do Refactoring").push();
-        MainWindowOperator.getDefault().waitStatusText("Save All finished");
+        new JButtonOperator(refactoringwindow, "Do Refactoring").push(); // NOI18N
+        MainWindowOperator.getDefault().waitStatusText("Save All finished"); // NOI18N
         
         rename_to = rename_from;
         return refactoringwindow;
     }
     
     public void close(){
-        FootprintUtilities.closeProject("jEdit");
+        ProjectSupport.closeProject("jEdit");
     }
     
     public static void main(java.lang.String[] args) {

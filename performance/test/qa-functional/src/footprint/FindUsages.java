@@ -20,7 +20,6 @@
 package footprint;
 
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -71,22 +70,22 @@ public class FindUsages extends MemoryFootprintTestCase {
     public ComponentOperator open(){
         // jEdit project
         log("Opening project jEdit");
-        ProjectsTabOperator.invoke();
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"jEdit41");
+        FootprintUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"jEdit41");
+        FootprintUtilities.waitForPendingBackgroundTasks();
         
         // invoke Find Usages
         Node filenode = new Node(new SourcePackagesNode("jEdit"), "org.gjt.sp.jedit" + "|" + "jEdit.java");
-        filenode.callPopup().pushMenuNoBlock("Find Usages");
+        filenode.callPopup().pushMenuNoBlock("Find Usages"); // NOI18N
         
-        NbDialogOperator findusagesdialog = new NbDialogOperator("Find Usages");
-        new JCheckBoxOperator(findusagesdialog,"Search in Comments").setSelected(true);
-        new JButtonOperator(findusagesdialog,"Find").push();
+        NbDialogOperator findusagesdialog = new NbDialogOperator("Find Usages"); // NOI18N
+        new JCheckBoxOperator(findusagesdialog,"Search in Comments").setSelected(true); // NOI18N
+        new JButtonOperator(findusagesdialog,"Find").push(); // NOI18N
         
-        return new TopComponentOperator("Usages");
+        return new TopComponentOperator("Usages"); // NOI18N
     }
     
     public void close(){
-        FootprintUtilities.closeProject("jEdit");
+        ProjectSupport.closeProject("jEdit");
     }
     
     public static void main(java.lang.String[] args) {

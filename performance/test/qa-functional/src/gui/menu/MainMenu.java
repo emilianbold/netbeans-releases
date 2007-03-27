@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -47,7 +47,7 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
     private JMenuOperator testedMenu;
     
     private EditorOperator editor;
-
+    
     /** Creates a new instance of MainMenu */
     public MainMenu(String testName) {
         super(testName);
@@ -139,7 +139,7 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
     
     protected void testMenuWithJava(String bundle, String menu) {
         if(editor == null) {
-            editor = Utilities.openJavaFile();
+            editor = Utilities.openFile("jEdit","bsh","Parser.java", true);
             waitNoEvent(5000);
         }
         testMenu(bundle, menu);
@@ -157,7 +157,7 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
         menuBar.pushMenu(menuPath,"|");
         return testedMenu;
     }
-
+    
     public void close() {
         super.close();
         

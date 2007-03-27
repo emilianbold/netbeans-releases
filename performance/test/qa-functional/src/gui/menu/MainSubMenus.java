@@ -47,6 +47,9 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     
     private TopComponentOperator editor;
     
+    private JMenuItemOperator mio;
+    private MouseDriver mdriver;
+    
     private static final int repeat_original = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue(); // initialize original value
     
     /** Creates a new instance of MainSubMenus */
@@ -82,13 +85,13 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     }
     
     public void testViewCodeFoldsMenu(){
-        editor = Utilities.openSmallJavaFile();
+        editor = Utilities.openFile("PerformanceTestData","org.netbeans.test.performance", "Main20kB.java", true);
         waitNoEvent(5000);
         testSubMenu("org.netbeans.core.Bundle","Menu/View", "org.netbeans.modules.editor.Bundle", "Menu/View/CodeFolds");
     }
     
     public void testViewEditorsMenu(){
-        editor = Utilities.openSmallFormFile();
+        editor = Utilities.openFile("PerformanceTestData","org.netbeans.test.performance", "Main20kB.java", true);
         waitNoEvent(10000);
         testSubMenu("org.netbeans.core.Bundle","Menu/View", "org.netbeans.core.multiview.Bundle", "CTL_EditorsAction");
     }
@@ -159,9 +162,6 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     private String getFromBundle(String bundle, String key){
         return org.netbeans.jellytools.Bundle.getStringTrimmed(bundle,key);
     }
-    
-    private JMenuItemOperator mio;
-    private MouseDriver mdriver;
     
     public void prepare(){
         MainWindowOperator.getDefault().menuBar().pushMenu(mainMenuPath,"|");
