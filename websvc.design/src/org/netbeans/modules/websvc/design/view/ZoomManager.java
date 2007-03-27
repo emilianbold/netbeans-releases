@@ -76,6 +76,21 @@ public class ZoomManager {
     public ZoomManager(Scene scene) {
         this.scene = scene;
         listeners = new EventListenerList();
+        scene.addSceneListener(new Scene.SceneListener(){
+            public void sceneRepaint() {
+            }
+
+            public void sceneValidating() {
+            }
+
+            public void sceneValidated() {
+                int newZoomPercentage = (int)(getScene().getZoomFactor()*100);
+                if(newZoomPercentage != zoomPercentage) {
+                    zoomPercentage = newZoomPercentage;
+                    fireZoomEvent(zoomPercentage);
+                }
+            }
+        });
     }
 
     /**
