@@ -19,15 +19,11 @@
 
 package org.netbeans.core.startup;
 
-// May use core, GUI, ad nauseum.
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -51,9 +47,9 @@ import org.openide.util.RequestProcessor;
 final class NbEvents extends Events {
     private Logger logger = Logger.getLogger(NbEvents.class.getName());
 
-	private int moduleCount;
+    private int moduleCount;
 	
-	private int counter;
+    private int counter;
 
     /** Handle a logged event.
      * CAREFUL that this is called synchronously, usually within a write
@@ -95,8 +91,9 @@ final class NbEvents extends Events {
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_start_enable_modules"));
         } else if (message == FINISH_ENABLE_MODULES) {
-            List modules = (List)args[0];
+            List<Module> modules = NbCollections.checkedListByCopy((List) args[0], Module.class, true);
             if (! modules.isEmpty()) {
+                logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_finish_enable_modules"));
                 dumpModulesList(modules);
             }
             setStatusText(
@@ -106,7 +103,7 @@ final class NbEvents extends Events {
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_start_disable_modules"));
         } else if (message == FINISH_DISABLE_MODULES) {
-            List modules = (List)args[0];
+            List<Module> modules = NbCollections.checkedListByCopy((List) args[0], Module.class, true);
             if (! modules.isEmpty()) {
                 logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_finish_disable_modules"));
                 dumpModulesList(modules);
@@ -239,15 +236,13 @@ final class NbEvents extends Events {
     /** Print a nonempty list of modules to console (= log file).
      * @param modules the modules
      */
-    private void dumpModulesList(Collection modules) {
-        Iterator it = modules.iterator();
-        if (! it.hasNext()) throw new IllegalArgumentException();
+    private void dumpModulesList(Collection<Module> modules) {
+        if (modules.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
         StringBuilder buf = new StringBuilder(modules.size() * 100 + 1);
-        buf.append(NbBundle.getMessage(NbEvents.class, "TEXT_finish_enable_modules"));
         String lineSep = System.getProperty("line.separator");
-        buf.append(lineSep);
-        while (it.hasNext()) {
-            Module m = (Module)it.next();
+        for (Module m : modules) {
             buf.append('\t'); // NOI18N
             buf.append(m.getCodeName());
             buf.append(" ["); // NOI18N
