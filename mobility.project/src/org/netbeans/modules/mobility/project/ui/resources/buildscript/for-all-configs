@@ -1,18 +1,21 @@
 <xsl:comment>for-all-configs targets</xsl:comment>
     
-    <target name="for-all-configs">
-        <antcall target="${{target.to.call}}" inheritall="false" inheritrefs="false">
-            <param name="config.active" value=""/>
-        </antcall>
-        <xsl:for-each select="/project:project/project:configuration/configs:configurations/configs:configuration">
-            <antcall target="${{target.to.call}}" inheritall="false" inheritrefs="false">
-                <param name="config.active">
-                    <xsl:attribute name="value">
-                        <xsl:value-of select="."/>
-                    </xsl:attribute>
-                </param>
-            </antcall>
-        </xsl:for-each>
+    <target name="for-all-configs" depends="load-properties">
+        <fail unless="libs.ant-contrib.classpath">Classpath to Ant Contrib library (libs.ant-contrib.classpath property) is not set.</fail>
+        <property name="selected.configurations" value="${{all.configurations}}"/>
+        <taskdef resource="net/sf/antcontrib/antlib.xml">
+            <classpath>
+                <pathelement path="${{libs.ant-contrib.classpath}}"/>
+            </classpath>
+        </taskdef>
+        <for list="${{selected.configurations}}" param="cfg" keepgoing="true" trim="true">
+            <sequential>
+                <echo>Active project configuration: @{cfg}</echo>
+                <antcall target="${{target.to.call}}" inheritall="false" inheritrefs="false">
+                    <param name="config.active" value="@{{cfg}}"/>
+                </antcall>
+            </sequential>
+        </for>
     </target>
     <target name="jar-all">
         <antcall target="for-all-configs">

@@ -34,6 +34,8 @@ import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor {
     
     public static final String CONFIG_ACTIVE = "config.active"; //NOI18N
+    public static final String ALL_CONFIGURATIONS = "all.configurations"; //NOI18N
+    public static final String SELECTED_CONFIGURATIONS = "selected.configurations"; //NOI18N
     public static final String CONFIG_DISPLAY_NAME = "display.name"; //NOI18N
     public static final String CONFIG_DISPLAY_COLOR = "display.color"; //NOI18N
     public static final String ABILITIES = "abilities";//NOI18N
@@ -126,6 +128,8 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
         if (set == null) {
             set = new HashSet();
             set.add(new PropertyDescriptor(CONFIG_ACTIVE, false, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
+            set.add(new PropertyDescriptor(ALL_CONFIGURATIONS, true, DefaultPropertyParsers.STRING_PARSER,  " "));//NOI18N
+            set.add(new PropertyDescriptor(SELECTED_CONFIGURATIONS, false, DefaultPropertyParsers.STRING_PARSER));
             set.add(new PropertyDescriptor(CONFIG_DISPLAY_NAME, true, DefaultPropertyParsers.STRING_PARSER));
             set.add(new PropertyDescriptor(CONFIG_DISPLAY_COLOR, true, DefaultPropertyParsers.STRING_PARSER));
             set.add(new PropertyDescriptor(ABILITIES, true, DefaultPropertyParsers.ABILITIES_PARSER));

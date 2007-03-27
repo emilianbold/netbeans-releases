@@ -30,16 +30,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mobility.project.ui.J2MECustomizerProvider;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -47,12 +44,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  * Helper class implementing ProjectConfigurationProvider for Ant based projects.
@@ -66,21 +57,6 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
     public static final String PROJ_PROP_CONFIGURATION_ACTIVE = "config.active";  // NOI18N
     
     /**
-     * XML element name used to store configurations in <code>project.xml</code>.
-     */
-    static final String CONFIGS_NAME = "configurations"; // NOI18N
-    
-    /**
-     * XML element name used to store one configuration in <code>project.xml</code>.
-     */
-    static final String CONFIG_NAME = "configuration"; // NOI18N
-    
-    /**
-     * XML namespace used to store configurations in <code>project.xml</code>.
-     */
-    static final String CONFIGS_NS = "http://www.netbeans.org/ns/project-configurations/1"; // NOI18N
-    
-    /**
      * Default configuration name.
      */
     static public final String DEFAULT_CONFIGURATION_NAME = "DefaultConfiguration"; // NOI18N
@@ -91,7 +67,6 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
     public static final String PROJECT_PROPERTIES = "ProjectProperties"; // NOI18N
     
     protected final AntProjectHelper h;
-    protected final AuxiliaryConfiguration aux;
     private TreeMap<String,ProjectConfiguration> configurations;
     private PropertyChangeSupport psp;
     private ProjectConfiguration activeConfiguration;
@@ -104,9 +79,8 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
      * @param helper AntProjectHelper for accessing Ant project properties.
      * @param emp ExtensibleMetadataProvider to access project XML.
      */
-    public ProjectConfigurationsHelper(AntProjectHelper helper, AuxiliaryConfiguration aux, J2MEProject p) {
+    public ProjectConfigurationsHelper(AntProjectHelper helper, J2MEProject p) {
         this.h = helper;
-        this.aux = aux;
         this.p = p;
     }
     
@@ -118,64 +92,45 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
     }
     
     /**
-     * Load <config> from project.xml.
-     * @param create if true, create an empty element if it was missing, else leave as null
-     */
-    protected Element loadConfigs(final boolean create) {
-        Element configs = aux.getConfigurationFragment(CONFIGS_NAME, CONFIGS_NS, true);
-        if (configs == null && create) {
-            configs = XMLUtil.createDocument("ignore", null, null, null).createElementNS(CONFIGS_NS, CONFIGS_NAME); // NOI18N
-        }
-        return configs;
-    }
-    
-    /**
-     * Store <config> to project.xml (i.e. to memory and mark project modified).
-     */
-    protected void storeConfigs(final Element configs) {
-        assert configs != null && configs.getLocalName().equals(CONFIGS_NAME) && CONFIGS_NS.equals(configs.getNamespaceURI());
-        aux.putConfigurationFragment(configs, true);
-    }
-    
-    /**
      * Append new configuration to the project.
      * @param configName String new configuration name
      * @return boolean success
      */
     public final boolean addConfiguration(final String configName) {
         if (configName == null || configName.equals(getDefaultConfiguration().getDisplayName())) return false;
-        return (ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+        boolean ret = (ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
-                final Element configs = loadConfigs(true);
-                boolean success;
-                try {
-                    success = addConfig(configName, configs);
-                } catch (IllegalArgumentException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    return Boolean.FALSE;
+                EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                String cfgs = props.getProperty(DefaultPropertiesDescriptor.ALL_CONFIGURATIONS);
+                if (cfgs == null) cfgs = ""; //NOI18N
+                boolean add = true;
+                StringBuffer sb = new StringBuffer(" ");
+                for (String s : cfgs.split(",")) { //NOI18N
+                    if (s.trim().length() > 0) {
+                        int i = s.compareTo(configName);
+                        if (i == 0) return Boolean.FALSE;
+                        else if (i > 0) {
+                            add = false;
+                            sb.append(',').append(configName);
+                        }
+                        sb.append(',').append(s);
+                    }
                 }
-                if (success) {
-                    storeConfigs(configs);
+                if (add) {
+                    sb.append(',').append(configName);
                 }
-                return Boolean.valueOf(success);
+                props.put(DefaultPropertiesDescriptor.ALL_CONFIGURATIONS, sb.toString());
+                h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                return Boolean.TRUE;
             }
         })).booleanValue();
-    }
-    
-    protected static boolean addConfig(final String configName, final Element configs) {
-        Node nextConfig = null;
-        final NodeList subEls = configs.getElementsByTagNameNS(CONFIGS_NS, CONFIG_NAME);
-        int comp = -1;
-        for (int i=0; i<subEls.getLength() && comp < 0; i++) {
-            nextConfig = subEls.item(i);
-            comp = getConfigName(nextConfig).compareTo(configName);
+        try {
+            ProjectManager.getDefault().saveProject(p);
+            return ret;
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
         }
-        if (comp == 0) return false;
-        // Need to insert a new record before nextRef.
-        final Element newConfigEl = createConfigElement(configs.getOwnerDocument(), configName);
-        // Note: OK if nextConfig == null, that means insert as last child.
-        configs.insertBefore(newConfigEl, nextConfig);
-        return true;
+        return false;
     }
     
     public Map<String,String> getAbilitiesFor(final ProjectConfiguration cfg) {
@@ -208,49 +163,38 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
      */
     public final boolean removeConfiguration(final ProjectConfiguration config) {
         if (config == null || config.equals(getDefaultConfiguration())) return false;
-        return (ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+        boolean ret = (ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
-                final Element configs = loadConfigs(true);
-                boolean success;
-                try {
-                    success = removeConfig(config.getDisplayName(), configs);
-                } catch (IllegalArgumentException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    return Boolean.FALSE;
-                }
-                if (success) {
-                    storeConfigs(configs);
-                }
-                // Note: try to delete obsoleted properties from both project.properties
-                // and private.properties, just in case.
-                final String[] PROPS_PATHS = {
-                    AntProjectHelper.PROJECT_PROPERTIES_PATH,
-                    AntProjectHelper.PRIVATE_PROPERTIES_PATH,
-                };
-                final String projProp = "configs." + config.getDisplayName(); // NOI18N
-                for (int i = 0; i < PROPS_PATHS.length; i++) {
-                    final EditableProperties props = h.getProperties(PROPS_PATHS[i]);
-                    if (props.containsKey(projProp)) {
-                        props.remove(projProp);
-                        h.putProperties(PROPS_PATHS[i], props);
-                        success = true;
+                EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                String cfgs = props.getProperty(DefaultPropertiesDescriptor.ALL_CONFIGURATIONS);
+                if (cfgs == null) return Boolean.FALSE;
+                boolean succ = false;
+                StringBuffer sb = new StringBuffer();
+                for (String s : cfgs.split(",")) { //NOI18N
+                    if (s.equals(config.getDisplayName())) {
+                        succ = true;
+                    } else {
+                        if (sb.length() > 0) sb.append(',');
+                        sb.append(s);
                     }
                 }
-                return Boolean.valueOf(success);
+                if (succ) {
+                    final String projProp = "configs." + config.getDisplayName(); // NOI18N
+                    for (String key : props.keySet().toArray(new String[0])) {
+                        if (key.startsWith(projProp)) props.remove(key);
+                    }
+                    props.put(DefaultPropertiesDescriptor.ALL_CONFIGURATIONS, sb.toString());
+                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                }
+                return Boolean.valueOf(succ);
             }
         })).booleanValue();
-    }
-    
-    protected static boolean removeConfig(final String configName, final Element configs) {
-        final NodeList subEls = configs.getElementsByTagNameNS(CONFIGS_NS, CONFIG_NAME);
-        for (int i=0; i<subEls.getLength(); i++) {
-            final Node configEl = subEls.item(i);
-            if (getConfigName(configEl).equals(configName)) {
-                configs.removeChild(configEl);
-                return true;
-            }
+        try {
+            ProjectManager.getDefault().saveProject(p);
+            return ret;
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
         }
-        // Searched through to the end and did not find it.
         return false;
     }
     
@@ -267,27 +211,19 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
         if (configurations == null) {
             configurations = ProjectManager.mutex().readAccess(new Mutex.Action<TreeMap<String,ProjectConfiguration>>() {
                 public TreeMap<String,ProjectConfiguration> run() {
-                    final Element configs = loadConfigs(false);
                     final TreeMap<String,ProjectConfiguration> newByName = new TreeMap<String,ProjectConfiguration>(new Comparator<String>() {
                         public int compare(String o1, String o2) {
                             return DEFAULT_CONFIGURATION_NAME.equals(o1) ? (DEFAULT_CONFIGURATION_NAME.equals(o2) ? 0 : -1) : (DEFAULT_CONFIGURATION_NAME.equals(o2) ? 1 : o1.compareToIgnoreCase(o2));
                         }
                     });
                     newByName.put(getDefaultConfiguration().getDisplayName(),getDefaultConfiguration());
-                    if (configs != null) {
-                        try {
-                            final NodeList subEls = configs.getElementsByTagNameNS(CONFIGS_NS, CONFIG_NAME);
-                            for (int i=0; i<subEls.getLength(); i++) {
-                                final String configName = getConfigName(subEls.item(i));
-                                final ProjectConfiguration conf = oldConfig == null ? null : oldConfig.get(configName);
-                                if ( conf == null ) {
-                                    final ProjectConfiguration confNew = createConfiguration(configName);
-                                    newByName.put(configName, confNew);
-                                } else
-                                    newByName.put(configName,conf);
+                    String cfgs = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(DefaultPropertiesDescriptor.ALL_CONFIGURATIONS);
+                    if (cfgs != null) {
+                        for (String configName : cfgs.split(",")) { //NOII8N
+                            if (configName.length() > 0 && !configName.equals(" ")) { //NOI18N
+                                ProjectConfiguration conf = oldConfig == null ? null : oldConfig.get(configName);
+                                newByName.put(configName, conf == null ? createConfiguration(configName) : conf);
                             }
-                        } catch (IllegalArgumentException e) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                         }
                     }
                     return newByName;
@@ -295,25 +231,6 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
             });
         }
         return configurations == null ? null : Collections.unmodifiableCollection(configurations.values());
-    }
-    
-    protected static String getConfigName(final Node xml) throws IllegalArgumentException {
-        if (!CONFIG_NAME.equals(xml.getLocalName()) || !CONFIGS_NS.equals(xml.getNamespaceURI())) {
-            throw new IllegalArgumentException("bad element name: " + xml); // NOI18N
-        }
-        final NodeList l = xml.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.TEXT_NODE) {
-                return ((Text)l.item(i)).getNodeValue();
-            }
-        }
-        return null;
-    }
-    
-    private static Element createConfigElement(final Document ownerDocument, final String configName) {
-        final Element el = ownerDocument.createElementNS(CONFIGS_NS, CONFIG_NAME);
-        el.appendChild(ownerDocument.createTextNode(configName));
-        return el;
     }
     
     /**
@@ -395,8 +312,7 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
                     return null;
                 }
             });
-            final ProjectManager pm = ProjectManager.getDefault();
-            pm.saveProject(pm.findProject(h.getProjectDirectory()));
+            ProjectManager.getDefault().saveProject(p);
         } catch (MutexException me) {
             ErrorManager.getDefault().notify(me.getException());
         }
@@ -407,15 +323,6 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
     }
     
     public void configurationXmlChanged(final AntProjectEvent ev) {
-        if (psp != null && AntProjectHelper.PROJECT_XML_PATH.equals(ev.getPath())) {
-            final TreeMap<String,ProjectConfiguration> old = configurations;
-            final ProjectConfiguration oldCFs[]=old.values().toArray(new ProjectConfiguration[old.size()]);
-            configurations = null;
-            final ProjectConfiguration newCFs[] = getConfigurations(old).toArray(new ProjectConfiguration[0]);
-            if (!Arrays.equals(oldCFs, newCFs)) {
-                psp.firePropertyChange(PROP_CONFIGURATIONS, oldCFs, newCFs);
-            }
-        }
     }
     
     public synchronized void propertiesChanged(final AntProjectEvent ev) {
@@ -428,6 +335,13 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
                 psp.firePropertyChange(PROP_CONFIGURATION_ACTIVE, oldAC, newAC);
             }
         } else if (AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(ev.getPath())) {
+            final TreeMap<String,ProjectConfiguration> old = configurations;
+            final ProjectConfiguration oldCFs[]=old.values().toArray(new ProjectConfiguration[old.size()]);
+            configurations = null;
+            final ProjectConfiguration newCFs[] = getConfigurations(old).toArray(new ProjectConfiguration[0]);
+            if (!Arrays.equals(oldCFs, newCFs)) {
+                psp.firePropertyChange(PROP_CONFIGURATIONS, oldCFs, newCFs);
+            }
             psp.firePropertyChange(PROJECT_PROPERTIES, null, getActiveConfiguration());
         }
     }

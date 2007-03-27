@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -88,6 +89,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.Node;
 
@@ -104,6 +106,11 @@ public final class J2MEProject implements Project, AntProjectListener {
         }
     };
     
+    static final String CONFIGS_NAME = "configurations"; // NOI18N
+    static final String CONFIG_NAME = "configuration"; // NOI18N
+    static final String CONFIGS_NS = "http://www.netbeans.org/ns/project-configurations/1"; // NOI18N
+
+    final AuxiliaryConfiguration aux;
     final AntProjectHelper helper;
     final GeneratedFilesHelper genFilesHelper;
     Lookup lookup;
@@ -181,9 +188,9 @@ public final class J2MEProject implements Project, AntProjectListener {
     J2MEProject(AntProjectHelper helper) {
         this.helper = helper;
         addRoots(helper);
-        AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
+        aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
-        configHelper = new ProjectConfigurationsHelper(helper, aux, this);
+        configHelper = new ProjectConfigurationsHelper(helper, this);
         genFilesHelper = new GeneratedFilesHelper(helper);
         midletsCacheHelper = new MIDletsCacheHelper(helper, configHelper);
         
@@ -314,6 +321,17 @@ public final class J2MEProject implements Project, AntProjectListener {
                             }
                         }
                     }
+                    Set<String> cfgs = removeConfigurationsFromProjectXml();
+                    if (!cfgs.isEmpty()) {
+                        modified = true;
+                        cfgs.addAll(Arrays.asList(proj.getProperty(DefaultPropertiesDescriptor.ALL_CONFIGURATIONS).split(",")));
+                        cfgs.remove(" "); cfgs.remove(""); //NOI18N
+                        StringBuffer sb = new StringBuffer(" "); //NOI18N
+                        for (String s : cfgs) {
+                            sb.append(',').append(s);
+                        }
+                        proj.setProperty(DefaultPropertiesDescriptor.ALL_CONFIGURATIONS, sb.toString());
+                    }
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
                     if (modified) helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, proj);
                     return null;
@@ -328,6 +346,29 @@ public final class J2MEProject implements Project, AntProjectListener {
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
+    }
+    
+    private Set<String> removeConfigurationsFromProjectXml() {
+        TreeSet<String> cfgs = new TreeSet();
+        Element configs = aux.getConfigurationFragment(CONFIGS_NAME, CONFIGS_NS, true);
+        if (configs != null) {
+            try {
+                NodeList subEls = configs.getElementsByTagNameNS(CONFIGS_NS, CONFIG_NAME);
+                for (int i=0; i<subEls.getLength(); i++) {
+                    final NodeList l = subEls.item(i).getChildNodes();
+                    for (int j = 0; j < l.getLength(); j++) {
+                        if (l.item(j).getNodeType() == Node.TEXT_NODE) {
+                            cfgs.add(((Text)l.item(j)).getNodeValue());
+                        }
+                    }
+                }
+                aux.removeConfigurationFragment(CONFIGS_NAME, CONFIGS_NS, true);
+            } catch (IllegalArgumentException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+
+        }
+        return cfgs;
     }
     
     /**

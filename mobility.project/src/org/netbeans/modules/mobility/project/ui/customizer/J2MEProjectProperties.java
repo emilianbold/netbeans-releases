@@ -263,11 +263,6 @@ public class J2MEProjectProperties implements ProjectProperties {
                         pi.encode();
                     }
                     
-                    // Reread the properties. It may have changed when
-                    // e.g. when setting references to another projects
-                    EditableProperties sharedProps = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    EditableProperties privateProps = antProjectHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    
                     final ProjectConfiguration configs[] = configHelper.getConfigurations().toArray(new ProjectConfiguration[0]);
                     final HashSet<ProjectConfiguration> newConfigs = new HashSet<ProjectConfiguration>(Arrays.asList(devConfigs));
                     for (int i=0; i<configs.length; i++) {
@@ -279,6 +274,12 @@ public class J2MEProjectProperties implements ProjectProperties {
                         configHelper.addConfiguration(cfg.getDisplayName());
                     }
                     
+                    
+                    // Reread the properties. It may have changed when
+                    // e.g. when setting references to another projects
+                    EditableProperties sharedProps = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    EditableProperties privateProps = antProjectHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+
                     // Set the changed properties
                     for( final PropertyInfo pi:properties.values()) {
                         final PropertyDescriptor pd = pi.getPropertyDescriptor();

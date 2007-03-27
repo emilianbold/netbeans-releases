@@ -20,23 +20,19 @@
 package org.netbeans.modules.mobility.project;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
-
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
-import org.netbeans.spi.mobility.project.PropertyParser;
-import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.modules.mobility.project.ui.CfgSelectionPanel;
 import org.netbeans.spi.project.support.ant.*;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.mobility.project.ui.QuickRunPanel;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
@@ -44,7 +40,9 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.*;
 import org.openide.util.HelpCtx;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /** Action provider of the J2SE project. This is the place where to do
@@ -153,8 +151,8 @@ public class J2MEActionProvider implements ActionProvider {
                 }
             }
             return files;
-        } 
-        return null;        
+        }
+        return null;
     }
     
     public String[] getTargetNames(final String command) {
@@ -181,6 +179,12 @@ public class J2MEActionProvider implements ActionProvider {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
         }
+        if (COMMAND_BUILD_ALL.equals(command) || COMMAND_CLEAN_ALL.equals(command)
+                || COMMAND_DEPLOY_ALL.equals(command) || COMMAND_JAVADOC_ALL.equals(command)
+                || COMMAND_REBUILD_ALL.equals(command)) {
+            if (!showCfgSelectionDialog(command)) return ;
+        }
+        
         final Runnable action = new Runnable() {
             public void run() {
                 String[] targetNames = getTargetNames(command);
@@ -236,11 +240,36 @@ public class J2MEActionProvider implements ActionProvider {
             }
         };
         
-//        if (this.bkgScanSensitiveActions.contains(command)) {
-//            JavaMetamodel.getManager().invokeAfterScanFinished(action, NbBundle.getMessage(J2MEActionProvider.class,"ACTION_"+command)); //NOI18N
-//        } else {
-            action.run();
-//        }
+        //        if (this.bkgScanSensitiveActions.contains(command)) {
+        //            JavaMetamodel.getManager().invokeAfterScanFinished(action, NbBundle.getMessage(J2MEActionProvider.class,"ACTION_"+command)); //NOI18N
+        //        } else {
+        action.run();
+        //        }
+    }
+    
+    private boolean showCfgSelectionDialog(final String command) {
+        return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
+                String allCfg = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(DefaultPropertiesDescriptor.ALL_CONFIGURATIONS);
+                if (allCfg == null || allCfg.trim().length() == 0) return Boolean.FALSE;
+                EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                String selectedCfg = priv.getProperty(DefaultPropertiesDescriptor.SELECTED_CONFIGURATIONS);
+                CfgSelectionPanel panel = new CfgSelectionPanel(allCfg, selectedCfg);
+                if (DialogDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(new DialogDescriptor(panel, NbBundle.getMessage(CfgSelectionPanel.class, "Title_CfgSelection_" + command), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CfgSelectionPanel.class), null)))) { //NOI18N
+                    String newSel = panel.getSelectedConfigurations();
+                    if (selectedCfg != null && selectedCfg.equals(newSel)) return Boolean.TRUE;
+                    priv.put(DefaultPropertiesDescriptor.SELECTED_CONFIGURATIONS, newSel);
+                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
+                    try {
+                        ProjectManager.getDefault().saveProject(project);
+                        return Boolean.TRUE;
+                    } catch (IOException ioe) {
+                        ErrorManager.getDefault().notify(ioe);
+                    }                    
+                }
+                return Boolean.FALSE;
+            }
+        }).booleanValue();
     }
     
     protected String evaluateProperty(final EditableProperties ep, final String propertyName, final String configuration) {
@@ -269,7 +298,7 @@ public class J2MEActionProvider implements ActionProvider {
     }
     
     @SuppressWarnings("deprecation")
-	private String encodeURL(final String orig) {
+    private String encodeURL(final String orig) {
         final StringTokenizer slashTok = new StringTokenizer(orig, "/", true); // NOI18N
         final StringBuffer path = new StringBuffer();
         while (slashTok.hasMoreTokens()) {
@@ -287,8 +316,8 @@ public class J2MEActionProvider implements ActionProvider {
         return path.toString();
     }
     
-    public boolean isActionEnabled( @SuppressWarnings("unused") final String command, 
-    								@SuppressWarnings("unused") final Lookup context ) {
+    public boolean isActionEnabled( @SuppressWarnings("unused") final String command,
+            @SuppressWarnings("unused") final Lookup context ) {
         return true;
-    }    
+    }
 }

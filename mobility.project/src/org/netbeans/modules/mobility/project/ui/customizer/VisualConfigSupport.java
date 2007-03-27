@@ -72,6 +72,7 @@ public final class VisualConfigSupport {
     
     final JList configurationList;
     final JButton addConfigButton;
+    final JButton renameConfigButton;
     final JButton removeConfigButton;
     final JButton duplicateButton;
     final JButton saveButton;
@@ -80,7 +81,7 @@ public final class VisualConfigSupport {
     
     J2MEProjectProperties properties;
     
-    public VisualConfigSupport(JList configurationList, JButton addConfigButton, JButton removeConfigButton, JButton duplicateButton, JButton saveButton) {
+    public VisualConfigSupport(JList configurationList, JButton addConfigButton, JButton renameConfigButton, JButton removeConfigButton, JButton duplicateButton, JButton saveButton) {
         // Remember all controls
         this.configurationList = configurationList;
         this.configurationModel = new DefaultListModel();
@@ -88,6 +89,7 @@ public final class VisualConfigSupport {
         this.configurationList.setCellRenderer( new ConfigurationCellRenderer() );
         
         this.addConfigButton = addConfigButton;
+        this.renameConfigButton = renameConfigButton;
         this.removeConfigButton = removeConfigButton;
         this.duplicateButton = duplicateButton;
         this.saveButton = saveButton;
@@ -97,6 +99,7 @@ public final class VisualConfigSupport {
         
         // On all buttons
         addConfigButton.addActionListener( csl );
+        renameConfigButton.addActionListener( csl );
         removeConfigButton.addActionListener( csl );
         duplicateButton.addActionListener( csl );
         saveButton.addActionListener( csl );
@@ -227,29 +230,53 @@ public final class VisualConfigSupport {
     }
     
     protected void duplicateElement( ) {
-        final ProjectConfiguration cfg = (ProjectConfiguration) configurationList.getSelectedValue();
-        assert cfg != null : "Duplicate button should be disabled"; // NOI18N
-        final ProjectConfiguration cfgs[] = getConfigurationItems();
-        final HashSet<String> allNames = new HashSet<String>(cfgs.length);
-        for (int i=0; i<cfgs.length; i++) {
-            allNames.add(cfgs[i].getDisplayName());
+        final Object cfgs[] = configurationList.getSelectedValues();
+        assert cfgs.length > 0 : "Duplicate button should be disabled"; // NOI18N
+        final ProjectConfiguration allCfgs[] = getConfigurationItems();
+        final HashSet<String> allNames = new HashSet<String>(allCfgs.length);
+        for (int i=0; i<allCfgs.length; i++) {
+            allNames.add(allCfgs[i].getDisplayName());
         }
-        final CloneConfigurationPanel ccp = new CloneConfigurationPanel(allNames);
-        final DialogDescriptor dd = new DialogDescriptor(ccp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_DuplConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
-        ccp.setDialogDescriptor(dd);
-        final String newName = NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd)) ? ccp.getName() : null;
-        if (newName != null) {
-            final ProjectConfiguration newCfg = new ProjectConfiguration() {
-                public String getDisplayName() {
-                    return newName;
+        if (cfgs.length == 1) {
+            final CloneConfigurationPanel ccp = new CloneConfigurationPanel(allNames);
+            final DialogDescriptor dd = new DialogDescriptor(ccp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_DuplConfiguration", ((ProjectConfiguration)cfgs[0]).getDisplayName()), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
+            ccp.setDialogDescriptor(dd);
+            final String newName = NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd)) ? ccp.getName() : null;
+            if (newName != null) {
+                copyProperties(((ProjectConfiguration)cfgs[0]).getDisplayName(), newName);
+                configurationList.setSelectedValue(addCfg(newName), true);
+                fireActionPerformed();
+            }
+        } else {
+            final HashSet<String> cloneNames = new HashSet<String>(cfgs.length);
+            for (int i=0; i<cfgs.length; i++) {
+                cloneNames.add(((ProjectConfiguration)cfgs[i]).getDisplayName());
+            }
+            final CloneConfigurationPanel2 ccp = new CloneConfigurationPanel2(allNames, cloneNames);
+            final DialogDescriptor dd = new DialogDescriptor(ccp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_DuplConfigurations"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
+            ccp.setDialogDescriptor(dd);
+            if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
+                String prefix = ccp.getPrefix();
+                String suffix = ccp.getSuffix();
+                for (int i=0; i<cfgs.length; i++) {
+                    ProjectConfiguration cfg = (ProjectConfiguration)cfgs[i];
+                    String newName = prefix + cfg.getDisplayName() + suffix;
+                    copyProperties(cfg.getDisplayName(), newName);
+                    configurationList.setSelectedValue(addCfg(newName), true);
                 }
-            };
-            
-            configurationModel.addElement(newCfg);
-            copyProperties(cfg.getDisplayName(), newName);
-            configurationList.setSelectedValue(newCfg, true);
-            fireActionPerformed();
+                fireActionPerformed();
+            }
         }
+    }
+ 
+    private ProjectConfiguration addCfg(final String newName) {
+        final ProjectConfiguration newCfg = new ProjectConfiguration() {
+            public String getDisplayName() {
+                return newName;
+            }
+        };
+        configurationModel.addElement(newCfg);
+        return newCfg;
     }
     
     private void copyProperties(final String srcCfg, final String targetCfg) {
@@ -270,19 +297,44 @@ public final class VisualConfigSupport {
     }
     
     protected void removeElement() {
-        
         final int si = configurationList.getSelectedIndex();
-        
         assert si > 0 : "Remove button should be disabled"; // NOI18N
-        
-        final ProjectConfiguration cfg = (ProjectConfiguration) configurationList.getSelectedValue();
-        final NotifyDescriptor desc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_ReallyRemove", cfg.getDisplayName()), NotifyDescriptor.YES_NO_OPTION); //NOI18N
+        Object cfgs[] = configurationList.getSelectedValues();
+        StringBuffer text = new StringBuffer(((ProjectConfiguration)cfgs[0]).getDisplayName()); //NOI18N
+        for (int i=1; i<cfgs.length; i++) text.append("\", \"").append(((ProjectConfiguration)cfgs[i]).getDisplayName()); //NOI18N
+        final NotifyDescriptor desc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_ReallyRemove", text), NotifyDescriptor.YES_NO_OPTION); //NOI18N
         if (NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(desc))) {
-            
-            configurationModel.remove( si );
-            removeProperties(cfg.getDisplayName());
+            for (int i = cfgs.length-1; i>=0; i--) {
+                configurationModel.removeElement(cfgs[i]);
+                removeProperties(((ProjectConfiguration)cfgs[i]).getDisplayName());
+            }
             configurationList.setSelectedIndex(si < configurationModel.getSize() ? si : si - 1);
             fireActionPerformed();
+        }
+    }
+    
+    protected void renameElement() {
+       final Object cfgs[] = configurationList.getSelectedValues();
+       assert cfgs.length > 0 : "Rename button should be disabled"; // NOI18N
+       for (Object o : cfgs) {
+            ProjectConfiguration cfg = (ProjectConfiguration)o;
+            final ProjectConfiguration allCfgs[] = getConfigurationItems();
+            final HashSet<String> allNames = new HashSet<String>(allCfgs.length);
+            for (int i=0; i<allCfgs.length; i++) {
+                allNames.add(allCfgs[i].getDisplayName());
+            }
+            final CloneConfigurationPanel ccp = new CloneConfigurationPanel(allNames);
+            final DialogDescriptor dd = new DialogDescriptor(ccp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_RenConfiguration", cfg.getDisplayName()), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
+            ccp.setDialogDescriptor(dd);
+            Object ret = DialogDisplayer.getDefault().notify(dd);
+            if (NotifyDescriptor.OK_OPTION.equals(ret)) {
+                String newName = ccp.getName();
+                copyProperties(cfg.getDisplayName(), newName);
+                removeProperties(cfg.getDisplayName());
+                configurationModel.removeElement(cfg);
+                configurationList.setSelectedValue(addCfg(newName), true);
+                fireActionPerformed();
+            } else if (NotifyDescriptor.CANCEL_OPTION.equals(ret)) return;
         }
     }
     
@@ -296,20 +348,24 @@ public final class VisualConfigSupport {
     }
     
     protected void saveElement() {
-        final ProjectConfiguration cfg = (ProjectConfiguration) configurationList.getSelectedValue();
-        assert cfg != null : "Save button should be disabled"; // NOI18N
+        final Object cfgs[] = configurationList.getSelectedValues();
+        assert cfgs.length > 0 : "Save button should be disabled"; // NOI18N
         final FileObject[] tmps = getConfigurationTemplates();
         final HashSet<String> allNames = new HashSet<String>();
         for (int i=0; i<tmps.length; i++) {
             allNames.add(tmps[i].getName());
         }
         final JButton SAVE_OPTION = new JButton(NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_SaveBtn")); //NOI18N
-        final SaveConfigurationPanel scp = new SaveConfigurationPanel(cfg.getDisplayName() + PlatformConvertor.CFG_TEMPLATE_SUFFIX, allNames, SAVE_OPTION);
         SAVE_OPTION.setMnemonic(NbBundle.getMessage(VisualConfigSupport.class, "MNM_VCS_SaveBtn").charAt(0)); //NOI18N
         SAVE_OPTION.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VisualConfigSupport.class, "ACSD_VCS_SaveBtn")); //NOI18N
-        final DialogDescriptor dd = new DialogDescriptor(scp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_SaveConfiguration"), true, new Object[] {SAVE_OPTION, NotifyDescriptor.CANCEL_OPTION}, SAVE_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(SaveConfigurationPanel.class), null); //NOI18N
-        if (SAVE_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
-            saveConfigurationTemplate(cfg.getDisplayName(), scp.getName());
+        for (Object o : cfgs) {
+            ProjectConfiguration cfg = (ProjectConfiguration)o;
+            final SaveConfigurationPanel scp = new SaveConfigurationPanel(cfg.getDisplayName() + PlatformConvertor.CFG_TEMPLATE_SUFFIX, allNames, SAVE_OPTION);
+            final DialogDescriptor dd = new DialogDescriptor(scp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_SaveConfiguration", cfg.getDisplayName()), true, new Object[] {SAVE_OPTION, NotifyDescriptor.CANCEL_OPTION}, SAVE_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(SaveConfigurationPanel.class), null); //NOI18N
+            Object ret = DialogDisplayer.getDefault().notify(dd);
+            if (SAVE_OPTION.equals(ret)) {
+                saveConfigurationTemplate(cfg.getDisplayName(), scp.getName());
+            } else if (DialogDescriptor.CANCEL_OPTION.equals(ret)) return;
         }
     }
     
@@ -420,6 +476,8 @@ public final class VisualConfigSupport {
             
             if ( source == addConfigButton ) {
                 addNewConfig();
+            } else if ( source == renameConfigButton ) {
+                renameElement();
             } else if ( source == removeConfigButton ) {
                 removeElement();
             } else if ( source == duplicateButton ) {
@@ -444,6 +502,7 @@ public final class VisualConfigSupport {
     
     protected void refreshButtons() {
         final boolean sel = configurationList.getSelectedIndex() > 0;
+        renameConfigButton.setEnabled(sel);
         removeConfigButton.setEnabled(sel);
         duplicateButton.setEnabled(sel);
         saveButton.setEnabled(sel);
