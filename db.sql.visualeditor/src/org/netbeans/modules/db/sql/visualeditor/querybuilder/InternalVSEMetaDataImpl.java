@@ -55,6 +55,7 @@ public class InternalVSEMetaDataImpl implements VisualSQLEditorMetaData {
     private Hashtable 		fkImportedTable = new Hashtable(30) ;
     private Hashtable 		columnNameTable = new Hashtable(30) ;
     private Hashtable 		allColumnsTable = new Hashtable(400) ;
+    private Hashtable 		pkTable = new Hashtable(30) ;
 
     /** Constructor */
 
@@ -73,8 +74,11 @@ public class InternalVSEMetaDataImpl implements VisualSQLEditorMetaData {
     }
 
 
-    /*
-     * getSchemas()
+    /**
+     * Returns the schemas that are included in this DataSource/DatabaseConnection
+     * Used during Add Table and similar operations.
+     *
+     * @return the List of schema names
      */
     /* getSchemas() is different from the other metadata calls, in that it just asks the
      * dbconn or datasource for the list of schemas, not the database
@@ -89,10 +93,12 @@ public class InternalVSEMetaDataImpl implements VisualSQLEditorMetaData {
         return schemas;
     }
 
-
     /**
-     * getTables()
+     * Returns the tables (and views) in this DataSource/DatabaseConnection
+     * 
+     * @return the List of tables/views, each in the form of a {@literal List<schema, table>}
      */
+    // public List<List<String>> getTables(String schema) throws SQLException ;
     public List<List<String>> getTables()
 	throws SQLException
     {
@@ -134,8 +140,50 @@ public class InternalVSEMetaDataImpl implements VisualSQLEditorMetaData {
     }
 
 
-    /*
-     * getPrimaryKeys()
+    /**
+     * Returns the columns in the specified schema/table.
+     * @return a List of column names
+     */
+    public List<String> getColumns(String schema, String table)
+	throws SQLException
+    {
+        Log.getLogger().entering( "InternalVSEMetaDataImpl", "getColumns", new Object[]{schema,table});
+
+        if ( databaseMetaData == null )
+	    initMetaData() ;
+        
+	String fullTableName=mergeTableName(schema, table);
+        List<String> columnNames = (List<String>)columnNameTable.get(fullTableName) ;
+        Log.getLogger().finest( "    cache hit="+ (columnNames!=null)) ;
+        if (columnNames != null)
+	    return columnNames ;
+        
+        columnNames = new ArrayList<String>() ;
+        ResultSet rs = databaseMetaData.getColumns(null, schema, table, "%"); // NOI18N
+        if (rs != null) {
+            while (rs.next()) {
+                columnNames.add(rs.getString("COLUMN_NAME")); // NOI18N
+            }
+            rs.close();
+            
+            if ( Log.getLogger().isLoggable(java.util.logging.Level.FINEST)) {
+                for (int j=0; j<columnNames.size(); j++)
+                    Log.getLogger().finest("     Column:" + (String) columnNames.get(j) ); // NOI18N
+            }
+        }
+	Log.getLogger().finest( "   getColumnNames loaded  "+columnNames.size() ) ;
+        columnNameTable.put(fullTableName, columnNames) ;
+//         for ( int i = 0 ; i < columnNames.size() ; i++) {
+//             allColumnsTable.put(columnNames.get(i),fullTableName) ;
+//         }
+        return columnNames ;
+    }
+
+
+    /**
+     * Returns the primary key columns for the given schema/table combination.
+     *
+     * @return the List of columns
      */
     public List<String> getPrimaryKeys(String schema, String table)
 	throws SQLException
@@ -169,8 +217,10 @@ public class InternalVSEMetaDataImpl implements VisualSQLEditorMetaData {
 
 
 
-    /**
-     * getImportedKeys()
+    /***
+     * Returns the imported keys for the given schema/table.
+     * @return the List of imported Keys.  Each key is a List of the form
+     * <br> {@literal <foreign schema, foreign table, foreign column, primary schema, primary table, primary column>}
      */
     public List<List<String>> getImportedKeys(String schema, String table)
 	throws SQLException
@@ -178,8 +228,10 @@ public class InternalVSEMetaDataImpl implements VisualSQLEditorMetaData {
 	return getForeignKeys(schema, table, false);
     }
 
-    /**
-     * getExportedKeys()
+    /***
+     * Returns the exported keys for the given schema/table.
+     * @return the List of exported keys.  Each key is a List of the form
+     * <br> {@literal <foreign schema, foreign table, foreign column, primary schema, primary table, primary column>}
      */
     public List<List<String>> getExportedKeys(String schema, String table)
 	throws SQLException
@@ -187,9 +239,6 @@ public class InternalVSEMetaDataImpl implements VisualSQLEditorMetaData {
 	return getForeignKeys(schema, table, true);
     }
     
-    /**
-     * New
-     */
     private List<List<String>> getForeignKeys(String schema, String table, boolean exported)
 	throws SQLException
     {
@@ -232,77 +281,6 @@ public class InternalVSEMetaDataImpl implements VisualSQLEditorMetaData {
         return keys ;
     }
 
-//     /**
-//      * Returns the imported key columns for this table -- i.e., the columns
-//      * whose value is a foreign key for another table.  These columns are
-//      * displayed with a special icon in the Query Builder.
-//      */
-//     public Hashtable importKcTable = new Hashtable(hashSizeForTables) ;
-//     public List getImportedKeyColumns(String fullTableName)
-// 	throws SQLException
-//     {
-//         logInfo( dataSourceInfo.getName() + " getImportedKeyColumns " + fullTableName ) ;
-//         if ( dbmdh == null )
-// 	    initMetaData() ;
-        
-//         List keys = (List)importKcTable.get(fullTableName) ;
-//         if ( keys != null )
-// 	    return keys ;
-        
-//         keys = new ArrayList();
-//         String[] tableDesrip = parseTableName(fullTableName) ;
-//         ResultSet rs = databaseMetaData.getImportedKeys(null, tableDesrip[0], tableDesrip[1] );
-//         if (rs != null) {
-//             String name;
-//             while (rs.next()) {
-//                 name = rs.getString("FKCOLUMN_NAME"); // NOI18N
-//                 keys.add(name);
-//             }
-//             rs.close();
-//         }
-//         importKcTable.put(fullTableName, keys) ;
-//         return keys ;        
-//     }
-
-
-    /*
-     * getColumns
-     */
-    public List<String> getColumns(String schema, String table)
-	throws SQLException
-    {
-        Log.getLogger().entering( "InternalVSEMetaDataImpl", "getColumns", new Object[]{schema,table});
-
-        if ( databaseMetaData == null )
-	    initMetaData() ;
-        
-	String fullTableName=mergeTableName(schema, table);
-        List<String> columnNames = (List<String>)columnNameTable.get(fullTableName) ;
-        Log.getLogger().finest( "    cache hit="+ (columnNames!=null)) ;
-        if (columnNames != null)
-	    return columnNames ;
-        
-        columnNames = new ArrayList<String>() ;
-        ResultSet rs = databaseMetaData.getColumns(null, schema, table, "%"); // NOI18N
-        if (rs != null) {
-            while (rs.next()) {
-                columnNames.add(rs.getString("COLUMN_NAME")); // NOI18N
-            }
-            rs.close();
-            
-            if ( Log.getLogger().isLoggable(java.util.logging.Level.FINEST)) {
-                for (int j=0; j<columnNames.size(); j++)
-                    Log.getLogger().finest("     Column:" + (String) columnNames.get(j) ); // NOI18N
-            }
-        }
-	Log.getLogger().finest( "   getColumnNames loaded  "+columnNames.size() ) ;
-        columnNameTable.put(fullTableName, columnNames) ;
-//         for ( int i = 0 ; i < columnNames.size() ; i++) {
-//             allColumnsTable.put(columnNames.get(i),fullTableName) ;
-//         }
-        return columnNames ;
-    }
-
 
 //     private DatasourceConnectionListener listener = new DatasourceConnectionListener() {
 //         public void dataSourceConnectionModified() {
@@ -324,9 +302,7 @@ public class InternalVSEMetaDataImpl implements VisualSQLEditorMetaData {
 //     }
     
 //     private void loadAllColumns() throws SQLException {
-
 //         logInfo( dataSourceInfo.getName() + " loading all columns" ) ;
-
 //         List<List<String>> tabs = getTables() ;
 //         for ( int i = 0 ; i < tabs.size() ; i++ ) {
 // 	    String schema = tabs.get(i).get(0);
@@ -367,39 +343,7 @@ public class InternalVSEMetaDataImpl implements VisualSQLEditorMetaData {
         pkTable.clear() ;
     }
 
-    /****
-     * Returns the a List of String objects of the primary key columns.
-     */
-    public Hashtable pkTable = new Hashtable(hashSizeForTables) ;
-//     public List getPrimaryKeys(String fullTableName) throws SQLException
-//     {
-//         logInfo( dataSourceInfo.getName() + " getPrimaryKeys " + fullTableName ) ;
-
-//         if ( dbmdh == null )
-// 	    initMetaData() ;
-        
-//         List primaryKeys = (List)pkTable.get(fullTableName) ;
-//         if ( primaryKeys != null )
-// 	    return primaryKeys ;
-        
-//         primaryKeys = new ArrayList();
-
-//         String[] tableDesrip = parseTableName(fullTableName) ;
-
-//         ResultSet rs = databaseMetaData.getPrimaryKeys(null, tableDesrip[0], tableDesrip[1] );
-//         if (rs != null) {
-//             String name;
-//             while (rs.next()) {
-//                 name = rs.getString("COLUMN_NAME"); // NOI18N
-//                 primaryKeys.add(name);
-//             }
-//             rs.close();
-//         }
-//         pkTable.put(fullTableName, primaryKeys) ;
-//         return primaryKeys ;
-//     }
        
-    /* ================================================================ */
     /*****
      * parse a full table name, e.g. Schema.Table or Table
      * and returns an array where 
