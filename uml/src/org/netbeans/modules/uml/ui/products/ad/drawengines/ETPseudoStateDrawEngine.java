@@ -20,44 +20,33 @@
 
 package org.netbeans.modules.uml.ui.products.ad.drawengines;
 
+import com.tomsawyer.drawing.geometry.TSConstRect;
 import java.awt.Color;
 import java.awt.GradientPaint;
-import java.awt.Polygon;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.geom.GeneralPath;
-
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IPseudoState;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.BaseElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.primitivetypes.IPseudostateKind;
 import org.netbeans.modules.uml.core.metamodel.diagrams.ReconnectEdgeCreateConnectorKind;
-import org.netbeans.modules.uml.core.support.umlsupport.ETPoint;
 import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.ETSize;
 import org.netbeans.modules.uml.core.support.umlsupport.IETPoint;
 import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.IETSize;
-import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
 import org.netbeans.modules.uml.ui.products.ad.application.action.ContextMenuActionClass;
 import org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI;
-import org.netbeans.modules.uml.ui.products.ad.viewfactory.IETGraphObjectUI;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.GDISupport;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawInfo;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETNodeUI;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ILabelManager;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TSLabelKind;
-import com.tomsawyer.editor.TSESolidObject;
 import com.tomsawyer.editor.graphics.TSEGraphics;
-//import com.tomsawyer.util.TSConstRect;
-import com.tomsawyer.drawing.geometry.TSConstRect;
-//import com.tomsawyer.util.TSTransform;
-import com.tomsawyer.editor.TSTransform;
-import java.awt.Dimension;
+import org.netbeans.modules.uml.ui.products.ad.viewfactory.IETGraphObjectUI;
 
 /**
  * @author jingmingm
@@ -65,7 +54,7 @@ import java.awt.Dimension;
  */
 public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
 {
-   private boolean bHorizontal = false;
+   //private boolean bHorizontal = false;
    
    private static final int DEFAULT_WIDTH  = 22;
    private static final int DEFAULT_HEIGHT = 22;
@@ -74,12 +63,24 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
    private static final int DECISION_NODE_WIDTH = 20;
    private static final int DECISION_NODE_HEIGHT = 30;
    
+   private static final String HORIZONTAL = "Horizontal";          // NOI18N
+   private static final String PSEUDOSTATE = "PseudoState";       // NOI18N
+   private static final String INITIAL = PSEUDOSTATE + " Initial"; // NOI18N
+   private static final String CHOICE = PSEUDOSTATE + " Choice";   // NOI18N
+   private static final String FORK = PSEUDOSTATE + " Fork";       // NOI18N
+   private static final String JOIN = PSEUDOSTATE + " Join";       // NOI18N
+   private static final String JOIN_HORIZONTAL = JOIN + " " + HORIZONTAL;          // NOI18N
+   private static final String SHALLOW_HISTORY = PSEUDOSTATE + " ShallowHistory";  // NOI18N
+   private static final String DEEP_HISTORY = PSEUDOSTATE + " DeepHistory";        // NOI18N
+   private static final String ENTRYPOINT = PSEUDOSTATE + " EntryPoint";           // NOI18N
+   private static final String JUNCTION = PSEUDOSTATE + " Junction";               // NOI18N
+   
    public String getElementType()
    {
       String type = super.getElementType();
       if (type == null)
       {
-         type = new String("PseudoState");
+         type = new String(PSEUDOSTATE);
       }
       return type;
    }
@@ -466,17 +467,17 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
                if (delimiter > 0)
                {
                   String kindStr = initStr.substring(delimiter + 1);
-                  String kindStrLower = kindStr.toLowerCase();
+                  //String kindStrLower = kindStr.toLowerCase();
                   
-                  if( kindStrLower.equals("pseudostate join"))
+                  if( kindStr.equalsIgnoreCase(JOIN))
                   {
                      retVal.setSize(FORK_NODE_WIDTH, FORK_NODE_HEIGHT);
                   }
-                  else if( kindStrLower.equals("pseudostate join horizontal"))
+                  else if( kindStr.equalsIgnoreCase(JOIN_HORIZONTAL))
                   {
                      retVal.setSize(FORK_NODE_HEIGHT, FORK_NODE_WIDTH);
                   }
-                  else if( kindStrLower.equals("pseudostate choice"))
+                  else if( kindStr.equalsIgnoreCase(CHOICE))
                   {
                      retVal.setSize(DECISION_NODE_WIDTH,DECISION_NODE_HEIGHT);
                   }
@@ -505,37 +506,38 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
          if (delimiter > 0)
          {
             String kindStr = initialStr.substring(delimiter + 1);
-            String kindStrLower = kindStr.toLowerCase();
-            if( kindStrLower.equals("pseudostate choice"))
+            //String kindStrLower = kindStr.toLowerCase();
+            
+            if( kindStr.equalsIgnoreCase(CHOICE))
             {
                kind = IPseudostateKind.PK_CHOICE;
             }
-            else if( kindStrLower.equals("pseudostate deephistory"))
+            else if( kindStr.equalsIgnoreCase(DEEP_HISTORY))
             {
                kind = IPseudostateKind.PK_DEEPHISTORY;
             }
-            else if( kindStrLower.equals("pseudostate fork"))
+            else if( kindStr.equalsIgnoreCase(FORK))
             {
                kind = IPseudostateKind.PK_FORK;
             }
-            else if( kindStrLower.equals("pseudostate join"))
+            else if( kindStr.equalsIgnoreCase(JOIN))
             {
                kind = IPseudostateKind.PK_JOIN;
             }
-            else if( kindStrLower.equals("pseudostate join horizontal"))
+            else if( kindStr.equalsIgnoreCase(JOIN_HORIZONTAL ))
             {
                kind = IPseudostateKind.PK_JOIN;
-               bHorizontal = true;
+               //bHorizontal = true;
             }
-            else if( kindStrLower.equals("pseudostate junction"))
+            else if( kindStr.equalsIgnoreCase(JUNCTION))
             {
                kind = IPseudostateKind.PK_JUNCTION;
             }
-            else if( kindStrLower.equals("pseudostate shallowhistory"))
+            else if( kindStr.equalsIgnoreCase(SHALLOW_HISTORY))
             {
                kind = IPseudostateKind.PK_SHALLOWHISTORY;
             }
-            else if( kindStrLower.equals("pseudostate entrypoint"))
+            else if( kindStr.equalsIgnoreCase(ENTRYPOINT))
             {
                kind = IPseudostateKind.PK_ENTRYPOINT;
             }
@@ -544,8 +546,22 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
       return kind;
    }
    
+   public boolean isHorizontalJoin()
+   {
+      boolean bHorizontalJoin = false;
+      IETGraphObjectUI nodeUI = this.getParent();
+      String initStr = (nodeUI != null ? nodeUI.getInitStringValue() : "");
+      if (initStr != null || initStr.length() > 0)
+      {
+         bHorizontalJoin = (initStr.indexOf(JOIN_HORIZONTAL) != -1);  // NOI18N
+      }
+      return bHorizontalJoin;
+   }
+   
+   
    public boolean setSensitivityAndCheck(String id, ContextMenuActionClass pClass)
    {
+      boolean isReadOnly = isParentDiagramReadOnly();
       boolean bFlag = handleStandardLabelSensitivityAndCheck(id, pClass);
       if (!bFlag)
       {
@@ -556,15 +572,19 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
             {
                boolean isDisplayed = labelMgr.isDisplayed(TSLabelKind.TSLK_NAME);
                pClass.setChecked(isDisplayed);
-               bFlag = isParentDiagramReadOnly() ? false : true;
+               bFlag = isReadOnly ? false : true;
             }
+         }
+         else if (id.equals("MBK_SHOW_VERTICAL_FORK") ||
+               id.equals("MBK_SHOW_HORIZONTAL_FORK"))
+         {
+            bFlag = !isReadOnly;
          }
          else
          {
             bFlag = super.setSensitivityAndCheck(id, pClass);
          }
       }
-      
       return bFlag;
    }
    
@@ -583,8 +603,38 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
             }
             handled = true;
          }
+         // Fixed IZ=78636
+         // Added an menu item to the context menu to change a join/merge node 
+         // from vertical to horizontal and vice versa.
+         else if (id.equals("MBK_SHOW_VERTICAL_FORK") ||
+               id.equals("MBK_SHOW_HORIZONTAL_FORK"))
+         {
+            IETNodeUI nodeUI = getNodeUI();
+            if (nodeUI != null)
+            {  
+               TSConstRect rect = nodeUI.getBounds();
+               double width = rect.getWidth();
+               double height = rect.getHeight();
+               // rotate the dimension of the join/merge around its center point
+               resize(Math.round((long)height), Math.round((long)width), false);
+               
+               //Change the initString accordingly
+               String oldInitStr = getInitializationString();
+               String newInitStr = "";
+               if (oldInitStr != null && oldInitStr.length() > 0)
+               {
+                  int strHorizontalIndex = oldInitStr.lastIndexOf(HORIZONTAL);
+                  
+                  newInitStr = (strHorizontalIndex > -1 ?
+                     (oldInitStr.substring(0, strHorizontalIndex)).trim() :
+                     oldInitStr.concat(" " + HORIZONTAL));
+                  
+                  nodeUI.setInitStringValue(newInitStr);
+               }
+            }
+            handled = true;
+         }
       }
-      
       if (!handled)
       {
          handled = super.onHandleButton(e, id);
@@ -616,6 +666,14 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
          subMenu.add(createMenuAction(loadString("IDS_SHOW_PSEUDOSTATENAME"), "MBK_SHOW_PSEUDOSTATE_NAME"));
          //manager.add(subMenu);
       }
+      
+      // Fixed IZ=78636
+      // Added an menu item to the context menu to change a join/merge node 
+      // from vertical to horizontal and vice versa.
+      ContextMenuActionClass menuItem = (isHorizontalJoin() ?
+         createMenuAction(loadString("IDS_POPUP_STATE_TO_VERTICAL_JOIN"), "MBK_SHOW_VERTICAL_FORK") :
+         createMenuAction(loadString("IDS_POPUP_STATE_TO_HORIZONTAL_JOIN"), "MBK_SHOW_HORIZONTAL_FORK") );
+      manager.add(menuItem);
    }
    
    /**
@@ -696,7 +754,7 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
       // DecisionNode, FlowFinalNode, ForkNode, InitialNode, JoinNode, MergeNode &
       // ActivityFinalNode
       String metaType = getMetaTypeOfElement();
-      if (metaType.equals("PseudoState"))
+      if (metaType.equals(PSEUDOSTATE))
       {
          isValid = true;
       }
