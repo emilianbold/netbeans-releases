@@ -83,18 +83,17 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         addListener();
     }
 
-    // Create the popup menu:
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-//            SystemAction.get(AddProjectDataSourceAction.class
-            SystemAction.get(ResolveProjectDataSourceAction.class),
-            SystemAction.get(RefreshProjectDataSourceAction.class)
-        };
-    }
+//    // Create the popup menu:
+//    public Action[] getActions(boolean context) {
+//        return new Action[] {
+//            SystemAction.get(ResolveProjectDataSourceAction.class),
+//            SystemAction.get(RefreshProjectDataSourceAction.class)
+//        };
+//    }
 
-    public Action getPreferredAction() {
-        return SystemAction.get(AddProjectDataSourceAction.class);
-    }
+//    public Action getPreferredAction() {
+//        return SystemAction.get(ResolveProjectDataSourceAction.class);
+//    }
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx("projrave_ui_elements_project_nav_data_source_ref_node"); // NOI18N
@@ -114,10 +113,10 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         }
         
         boolean isBroken = false;
-        // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
-        if (this.getChildren().getNodes().length > 0)
-            if (BrokenDataSourceSupport.isBroken(nbProject))
-                isBroken = true;
+//        // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
+//        if (this.getChildren().getNodes().length > 0)
+//            if (BrokenDataSourceSupport.isBroken(nbProject))
+//                isBroken = true;
 
        if (isBroken){
             Image brokenBadge = Utilities.mergeImages(dSContainerImage, brokenDsReferenceBadge, 8, 0);
@@ -141,9 +140,9 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
        
         boolean isBroken = false;
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
-        if (this.getChildren().getNodes().length > 0)
-            if (BrokenDataSourceSupport.isBroken(nbProject))
-                isBroken = true;
+//        if (this.getChildren().getNodes().length > 0)
+//            if (BrokenDataSourceSupport.isBroken(nbProject))
+//                isBroken = true;
         
         return isBroken ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N;
     }

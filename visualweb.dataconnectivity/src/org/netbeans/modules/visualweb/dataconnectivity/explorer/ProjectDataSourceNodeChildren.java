@@ -139,11 +139,12 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Proj
                     // ignore
                 }
                 
-                if (DataSourceResolver.getInstance().isDataSourceMissing(nbProject, dispName)){
-                    return brokenBadgedImage;
-                } else{
-                    return datasourceImage;
-                }
+//                if (DataSourceResolver.getInstance().isDataSourceMissing(nbProject, dispName)){
+//                    return brokenBadgedImage;
+//                } else{
+//                    return datasourceImage;
+//                }
+                return datasourceImage;
             }
             
             public Image getOpenedIcon(int type){
