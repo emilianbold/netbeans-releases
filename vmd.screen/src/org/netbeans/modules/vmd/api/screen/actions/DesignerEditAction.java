@@ -37,7 +37,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 
-
 /**
  *
  * @author Karol Harezlak

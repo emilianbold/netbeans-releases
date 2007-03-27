@@ -28,7 +28,7 @@ import org.openide.util.Utilities;
  * @author breh
  */
 public class ScreenResourceCategoryDescriptorSupport {
-    //TODO Add tOrdering
+
     public static ScreenResourceCategoryDescriptor ASSIGNED_COMMANDS = new ScreenResourceCategoryDescriptor (
             "Assigned Commands",
             Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/command_16.png"),
@@ -50,6 +50,6 @@ public class ScreenResourceCategoryDescriptorSupport {
             Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/command_16.png"),
             "Assigned Item Commands",
             50,
-            ScreenResourceOrderingController.getArrayOrdering(FormCD.PROP_ITEMS)
+            ScreenResourceOrderingController.getDefaultOrdering()
     );
 }
