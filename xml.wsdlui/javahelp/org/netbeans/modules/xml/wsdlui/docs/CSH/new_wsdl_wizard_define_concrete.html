@@ -17,7 +17,7 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 
 <p>The New WSDL Document wizard enables you to create a WSDL file from scratch. 
-To open the wizard, you right-click the Process Files folder and choose New > WSDL Document.</p>
+To open the wizard in a BPEL Module project, you right-click the Process Files folder and choose New > WSDL Document.</p>
 
 <p>The Concrete Configuration page prompts you to enter information about the binding, service, and port.</p>
 
@@ -31,8 +31,7 @@ A <i>port</i> associates a binding with a network address, thus defining an indi
 
   <li><b>Binding Name.</b> Enter a name for the binding. The default value is derived from the WSDL name.</li>
 
-  <li><b>Binding Type.</b> Select the type of binding. 
-  The appropriate extensibility elements will be added to the WSDL file. </li>
+  <li><b>Binding Type.</b> Select the type of binding.</li>
 
   <li><b>Binding Subtype.</b> The choices vary depending on the binding type.</li>
 
@@ -62,8 +61,8 @@ A <i>port</i> associates a binding with a network address, thus defining an indi
   then an error message appears at the bottom of the wizard page and the Finish button is disabled.</p>
 
 <p>When you click Finish, the WSDL file is created. The WSDL Editor appears in WSDL view. 
-  The tree structure includes nodes for the port type, operation, message(s), binding, service, and port 
-  that you specified in the wizard.</p>
+  The tree structure includes nodes for the port type, operation, messages, binding, service, and port that you specified in the wizard. 
+  In addition, the binding node and the service node contain the appropriate binding-specific subnodes (for example, <tt>soap:binding</tt>).</p>
 
 <ul class="note">
   <li>If you selected the SOAP binding type, then the port's <tt>soap:address</tt> node includes a Location property.
