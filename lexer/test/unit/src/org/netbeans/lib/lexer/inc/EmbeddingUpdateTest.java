@@ -93,6 +93,10 @@ public class EmbeddingUpdateTest extends NbTestCase {
         assertEquals(1, etc.removedTokenCount());
         assertEquals(SimplePlainTokenId.language(), etc.language());
         assertEquals(0, etc.embeddedChangeCount());
+        
+        
+        doc.remove(3, 8); // there will be empty /**/ so test empty embedded sequence
+        doc.insertString(3, "x", null); // there will be empty /**/
     }        
         
 }
