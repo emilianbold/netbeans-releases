@@ -45,7 +45,6 @@ import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.modules.diff.NestableDiffView;
-import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer;
 import org.netbeans.modules.diff.builtin.visualizer.SourceTranslatorAction;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
@@ -960,19 +959,11 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
                 diffs = NO_DIFFERENCES;
                 return;
             }
-            boolean isTrim = false;
-            if (diff instanceof BuiltInDiffProvider) {
-                isTrim = ((BuiltInDiffProvider) diff).isTrimLines();
-                ((BuiltInDiffProvider) diff).setTrimLines(false);
-            }
             try {
                 diffs = diff.computeDiff(first, second);
                 diffChanged();
             } catch (IOException e) {
                 diffs = NO_DIFFERENCES;
-            }
-            if (diff instanceof BuiltInDiffProvider) {
-                ((BuiltInDiffProvider) diff).setTrimLines(isTrim);
             }
         }
     }
