@@ -190,6 +190,10 @@ class GrammarManager extends FileChangeAdapter implements DocumentListener {
             return false;
         }
         
+        if (guarded == null) {
+            return false;
+        }
+        
         // slow loop matchibng range overlaps
         for (int i = 0; i<guarded.length; i+=2) {
             int start = guarded[i].getOffset();
