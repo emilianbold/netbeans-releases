@@ -96,11 +96,11 @@ FacesDndSupport.UpdateSuspender {
     public DomSynchronizer(JsfForm jsfForm) {
         this.jsfForm = jsfForm;
 
-        currentDOM = jsfForm.getHtmlDomProvider().getJspDom();
+        currentDOM = jsfForm.getJspDom();
 
         if (currentDOM == null) {
             jsfForm.getFacesModel().sync();
-            currentDOM = jsfForm.getHtmlDomProvider().getJspDom();
+            currentDOM = jsfForm.getJspDom();
 
                 // XXX What was this good for?
 //                if (currentDOM == null) {
@@ -1008,7 +1008,7 @@ FacesDndSupport.UpdateSuspender {
 //                    new IllegalStateException(); // XXX What to log?
 //        }
 
-        return n == jsfForm.getHtmlDomProvider().getJspDom();
+        return n == jsfForm.getJspDom();
     }
 
     /**
@@ -1142,7 +1142,7 @@ FacesDndSupport.UpdateSuspender {
             return null;
         }
 
-        org.w3c.dom.Document doc = jsfForm.getHtmlDomProvider().getJspDom();
+        org.w3c.dom.Document doc = jsfForm.getJspDom();
         DocumentFragment fragment = doc.createDocumentFragment();
 
         // Duplicate and move all the nodes in the HTML DOM into the new fragment
@@ -1387,14 +1387,14 @@ FacesDndSupport.UpdateSuspender {
     public void updateDomListeners() {
         boolean wasDifferent = false;
 
-        if (currentDOM != jsfForm.getHtmlDomProvider().getJspDom()) {
+        if (currentDOM != jsfForm.getJspDom()) {
             wasDifferent = true;
 
             if (currentDOM != null) {
                 unregisterDomListeners();
             }
 
-            currentDOM = jsfForm.getHtmlDomProvider().getJspDom();
+            currentDOM = jsfForm.getJspDom();
 
             if (currentDOM == null) {
                 return;

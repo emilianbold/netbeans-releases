@@ -1118,7 +1118,8 @@ public class JsfForm {
     }
 
     public Document getJspDom() {
-        return htmlDomProvider.getJspDom();
+//        return htmlDomProvider.getJspDom();
+        return getFacesModel().getJspDom();
     }
     
     Document getHtmlDom() {

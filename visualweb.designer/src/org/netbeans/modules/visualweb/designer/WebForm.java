@@ -742,23 +742,23 @@ public class WebForm implements Designer {
     }
     
 
-    /**
-     * Get the document associated with this webform.
-     */
-    public org.w3c.dom.Document getJspDom() {
-// <separation of models>
-//        MarkupUnit unit = model.getMarkupUnit();
-//
-//        if (unit == null) { // possible when project has closed
-//            return null;
-//        }
-//
-//        return (RaveDocument)unit.getDocument();
-// ====
-//        return InSyncService.getProvider().getJspDomForMarkupFile(getModel().getMarkupFile());
-        return htmlDomProvider.getJspDom();
-// </separation of models>
-    }
+//    /**
+//     * Get the document associated with this webform.
+//     */
+//    public org.w3c.dom.Document getJspDom() {
+//// <separation of models>
+////        MarkupUnit unit = model.getMarkupUnit();
+////
+////        if (unit == null) { // possible when project has closed
+////            return null;
+////        }
+////
+////        return (RaveDocument)unit.getDocument();
+//// ====
+////        return InSyncService.getProvider().getJspDomForMarkupFile(getModel().getMarkupFile());
+//        return htmlDomProvider.getJspDom();
+//// </separation of models>
+//    }
 
     public org.w3c.dom.Document getHtmlDom() {
 //        return InSyncService.getProvider().getHtmlDomForMarkupFile(getModel().getMarkupFile());

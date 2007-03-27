@@ -226,6 +226,6 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
         DocumentFragment fragment = htmlDomProviderImpl.renderHtmlForMarkupDesignBean(markupDesignBean);
         // XXX To get it into source document so it can work (Positions work only against source doc!).
         // TODO Change the positions to work over the rendered document, and also attach this fragment to the rendered doc.
-        return (DocumentFragment)htmlDomProviderImpl.getJspDom().importNode(fragment, true);
+        return (DocumentFragment)htmlDomProviderImpl.getJsfForm().getJspDom().importNode(fragment, true);
    }
 }
