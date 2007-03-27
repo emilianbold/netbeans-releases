@@ -157,7 +157,11 @@
                         <code-name-base>org.netbeans.modules.java.source</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-                </test-type>
+                     <test-dependency>
+                        <code-name-base>org.netbeans.core</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+               </test-type>
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.refactoring.api</package>
