@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process 
+    name="AsynchronousSampleClient" 
+    targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient"
+    xmlns:partnerNS="http://enterprise.netbeans.org/bpel/AsynchronousSample"
+    xmlns:wsdlNS="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient"
+    xmlns:xs="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient"
+    xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable">
+
+    <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSample" location="AsynchronousSample.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+    <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient" location="AsynchronousSampleClient.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+   
+    <partnerLinks>
+      <partnerLink name="partnerLinkA" 
+         partnerLinkType="wsdlNS:AsynchronousClientPartnerLinkType" 
+         myRole="AsynchronousClientProvider" />
+      <partnerLink name="partnerLinkB" 
+         partnerLinkType="partnerNS:AsyncPartnerLinkType" 
+         myRole="serviceRequestor"
+         partnerRole="serviceProvider" />         
+    </partnerLinks>
+
+    <variables>
+      <variable name="inputVar" messageType="wsdlNS:requestMessageClient"/>
+      <variable name="outputVar" messageType="wsdlNS:responseMessageClient"/>
+      <variable name="partnerInputVar" messageType="partnerNS:requestMessage"/>
+      <variable name="partnerOutputVar" messageType="partnerNS:responseMessage"/>
+    </variables>
+    
+    <correlationSets>
+      <correlationSet name="correlator" properties="wsdlNS:correlatorProp"/>
+    </correlationSets>        
+
+    <sequence>   
+       <receive 
+          name="start"
+          partnerLink="partnerLinkA"
+          portType="wsdlNS:MyPortTypeClient"
+          operation="operationA"
+          variable="inputVar"
+          createInstance="yes">
+        <correlations>
+          <correlation set="correlator" initiate="yes"/>
+        </correlations>
+       </receive>
+
+      <assign name="assign1">
+         <copy>
+            <from variable="inputVar" part="inputType"/>
+            <to variable="partnerInputVar" part="inputType"/>
+         </copy>
+      </assign> 
+
+      <invoke name="invokepartner"  
+              partnerLink="partnerLinkB"
+              portType="partnerNS:MyPortType" 
+              operation="asyncOperation"
+              inputVariable="partnerInputVar"/>
+
+       <receive 
+          name="receiveCallback"
+          partnerLink="partnerLinkB"
+          portType="partnerNS:MyCallbackPortType"
+          operation="onResult"
+          variable="partnerOutputVar"
+          createInstance="no">
+          <correlations>
+            <correlation set="correlator"/>
+          </correlations>
+       </receive>
+              
+      <assign name="assign2">
+         <copy>
+            <from variable="partnerOutputVar" part="resultType"/>
+            <to variable="outputVar" part="resultType"/>
+         </copy>
+      </assign> 
+       
+      <reply name="end"  
+              partnerLink="partnerLinkA"
+              portType="wsdlNS:MyPortTypeClient" 
+              operation="operationA"
+              variable="outputVar"/>
+
+   </sequence>
+</process>

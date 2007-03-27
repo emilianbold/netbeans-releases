@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process 
+    name="AsynchronousSample" 
+    targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSample"
+    xmlns:wsdlNS="http://enterprise.netbeans.org/bpel/AsynchronousSample"
+    xmlns:xs="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace"
+    xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable">
+    <import location="AsynchronousSample.xsd" importType="http://www.w3.org/2001/XMLSchema" namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace"/>
+    <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSample" location="AsynchronousSample.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+    
+   <partnerLinks>
+      <partnerLink name="partnerLinkA" 
+         partnerLinkType="wsdlNS:AsyncPartnerLinkType" 
+         myRole="serviceProvider" 
+         partnerRole="serviceRequestor"/>
+   </partnerLinks>
+ 
+   <variables>
+     <variable name="inputVar" messageType="wsdlNS:requestMessage"/>
+     <variable name="outputVar" messageType="wsdlNS:responseMessage"/>
+   </variables>
+
+   <sequence>   
+       <receive 
+          name="start"
+          partnerLink="partnerLinkA"
+          portType="wsdlNS:MyPortType"
+          operation="asyncOperation"
+          variable="inputVar"
+          createInstance="yes"/>
+          
+      <assign name="assign">
+         <copy>
+            <from variable="inputVar" part="inputType"/>
+            <to variable="outputVar" part="resultType"/>
+         </copy>
+      </assign>  
+  
+      <invoke name="end"  
+              partnerLink="partnerLinkA"
+              portType="wsdlNS:MyCallbackPortType" 
+              operation="onResult"
+              inputVariable="outputVar"/>
+   </sequence>
+</process>

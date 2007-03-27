@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<webservices xmlns='http://java.sun.com/xml/ns/j2ee' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://java.sun.com/xml/ns/j2ee http://www.ibm.com/webservices/xsd/j2ee_web_services_1_1.xsd' version='1.1'>
+    <webservice-description>
+        <webservice-description-name>AirlineReservationService</webservice-description-name>
+        <wsdl-file>META-INF/wsdl/AirlineReservationService.wsdl</wsdl-file>
+        <jaxrpc-mapping-file>META-INF/AirlineReservationService-mapping.xml</jaxrpc-mapping-file>
+        <port-component xmlns:wsdl-port_ns='http://www.sun.com/javaone/05/AirlineReservationService'>
+            <port-component-name>AirlineReservationService</port-component-name>
+            <wsdl-port>wsdl-port_ns:AirlineReservationPortTypePort</wsdl-port>
+            <service-endpoint-interface>partnerservices.AirlineReservationPortType</service-endpoint-interface>
+            <service-impl-bean>
+                <ejb-link>AirlineReservationService</ejb-link>
+            </service-impl-bean>
+        </port-component>
+    </webservice-description>
+    <webservice-description>
+        <webservice-description-name>HotelReservationService</webservice-description-name>
+        <wsdl-file>META-INF/wsdl/HotelReservationService.wsdl</wsdl-file>
+        <jaxrpc-mapping-file>META-INF/HotelReservationService-mapping.xml</jaxrpc-mapping-file>
+        <port-component xmlns:wsdl-port_ns='http://www.sun.com/javaone/05/HotelReservationService'>
+            <port-component-name>HotelReservationService</port-component-name>
+            <wsdl-port>wsdl-port_ns:HotelReservationPortTypePort</wsdl-port>
+            <service-endpoint-interface>partnerservices.HotelReservationPortType</service-endpoint-interface>
+            <service-impl-bean>
+                <ejb-link>HotelReservationService</ejb-link>
+            </service-impl-bean>
+        </port-component>
+    </webservice-description>
+    <webservice-description>
+        <webservice-description-name>VehicleReservationService</webservice-description-name>
+        <wsdl-file>META-INF/wsdl/VehicleReservationService.wsdl</wsdl-file>
+        <jaxrpc-mapping-file>META-INF/VehicleReservationService-mapping.xml</jaxrpc-mapping-file>
+        <port-component xmlns:wsdl-port_ns='http://www.sun.com/javaone/05/VehicleReservationService'>
+            <port-component-name>VehicleReservationService</port-component-name>
+            <wsdl-port>wsdl-port_ns:VehicleReservationPortTypePort</wsdl-port>
+            <service-endpoint-interface>partnerservices.VehicleReservationPortType</service-endpoint-interface>
+            <service-impl-bean>
+                <ejb-link>VehicleReservationService</ejb-link>
+            </service-impl-bean>
+        </port-component>
+    </webservice-description>
+</webservices>

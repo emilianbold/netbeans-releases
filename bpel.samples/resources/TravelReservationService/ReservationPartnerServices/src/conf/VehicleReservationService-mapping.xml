@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<java-wsdl-mapping xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.1" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee    http://www.ibm.com/webservices/xsd/j2ee_jaxrpc_mapping_1_1.xsd">
+<package-mapping>
+<package-type>partnerservices</package-type>
+<namespaceURI>http://www.sun.com/javaone/05/VehicleReservationService</namespaceURI>
+</package-mapping>
+<package-mapping>
+<package-type>javax.xml.soap</package-type>
+<namespaceURI>http://www.opentravel.org/OTA/2003/05</namespaceURI>
+</package-mapping>
+<service-interface-mapping>
+<service-interface>partnerservices.VehicleReservationService</service-interface>
+<wsdl-service-name xmlns:serviceNS="http://www.sun.com/javaone/05/VehicleReservationService">serviceNS:VehicleReservationService</wsdl-service-name>
+<port-mapping>
+<port-name>VehicleReservationPortTypePort</port-name>
+<java-port-name>VehicleReservationPortTypePort</java-port-name>
+</port-mapping>
+</service-interface-mapping>
+<service-endpoint-interface-mapping>
+<service-endpoint-interface>partnerservices.VehicleReservationPortType</service-endpoint-interface>
+<wsdl-port-type xmlns:portTypeNS="http://www.sun.com/javaone/05/VehicleReservationService">portTypeNS:VehicleReservationPortType</wsdl-port-type>
+<wsdl-binding xmlns:bindingNS="http://www.sun.com/javaone/05/VehicleReservationService">bindingNS:VehicleReservationSoapBinding</wsdl-binding>
+<service-endpoint-method-mapping>
+<java-method-name>reserveVehicle</java-method-name>
+<wsdl-operation>reserveVehicle</wsdl-operation>
+<method-param-parts-mapping>
+<param-position>0</param-position>
+<param-type>javax.xml.soap.SOAPElement</param-type>
+<wsdl-message-mapping>
+<wsdl-message xmlns:wsdlMsgNS="http://www.sun.com/javaone/05/VehicleReservationService">wsdlMsgNS:ReserveVehicleIn</wsdl-message>
+<wsdl-message-part-name>itinerary</wsdl-message-part-name>
+<parameter-mode>IN</parameter-mode>
+</wsdl-message-mapping>
+</method-param-parts-mapping>
+</service-endpoint-method-mapping>
+<service-endpoint-method-mapping>
+<java-method-name>cancelVehicle</java-method-name>
+<wsdl-operation>cancelVehicle</wsdl-operation>
+<method-param-parts-mapping>
+<param-position>0</param-position>
+<param-type>javax.xml.soap.SOAPElement</param-type>
+<wsdl-message-mapping>
+<wsdl-message xmlns:wsdlMsgNS="http://www.sun.com/javaone/05/VehicleReservationService">wsdlMsgNS:CancelVehicleIn</wsdl-message>
+<wsdl-message-part-name>itinerary</wsdl-message-part-name>
+<parameter-mode>IN</parameter-mode>
+</wsdl-message-mapping>
+</method-param-parts-mapping>
+<wsdl-return-value-mapping>
+<method-return-value>boolean</method-return-value>
+<wsdl-message xmlns:wsdlMsgNS="http://www.sun.com/javaone/05/VehicleReservationService">wsdlMsgNS:CancelVehicleOut</wsdl-message>
+<wsdl-message-part-name>succeeded</wsdl-message-part-name>
+</wsdl-return-value-mapping>
+</service-endpoint-method-mapping>
+</service-endpoint-interface-mapping>
+</java-wsdl-mapping>

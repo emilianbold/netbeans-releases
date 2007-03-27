@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<process name="TravelReservationService" targetNamespace="tres" 
+xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable" 
+xmlns:tns="tres" xmlns:tres="http://www.sun.com/javaone/05/TravelReservationService" 
+xmlns:ares="http://www.sun.com/javaone/05/AirlineReservationService" 
+xmlns:vres="http://www.sun.com/javaone/05/VehicleReservationService" 
+xmlns:hres="http://www.sun.com/javaone/05/HotelReservationService" 
+xmlns:ota="http://www.opentravel.org/OTA/2003/05">
+    <import location="OTA_TravelItinerary.xsd" importType="http://www.w3.org/2001/XMLSchema" namespace="http://www.opentravel.org/OTA/2003/05"/>
+    <import namespace="http://www.sun.com/javaone/05/TravelReservationService" location="TravelReservationService.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+  <import namespace="http://www.sun.com/javaone/05/AirlineReservationService" location="AirlineReservationService.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+  <import namespace="http://www.sun.com/javaone/05/VehicleReservationService" location="VehicleReservationService.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+  <import namespace="http://www.sun.com/javaone/05/HotelReservationService" location="HotelReservationService.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+
+<partnerLinks>
+    <partnerLink name="Travel" partnerLinkType="tres:TravelReservationPartnerLinkType" myRole="TravelReservationServiceRole"/>
+    <partnerLink name="Airline" partnerLinkType="ares:AirlineReservationPartnerLinkType" partnerRole="AirlineReservationServiceRole" myRole="AirlineReservationCallbackServiceRole"/>
+    <partnerLink name="Vehicle" partnerLinkType="vres:VehicleReservationPartnerLinkType" partnerRole="VehicleReservationServiceRole" myRole="VehicleReservationCallbackServiceRole"/>
+    <partnerLink name="Hotel" partnerLinkType="hres:HotelReservationPartnerLinkType" partnerRole="HotelReservationServiceRole" myRole="HotelReservationCallbackServiceRole"/>
+  </partnerLinks>
+  
+  
+  <variables>
+    <variable name="CancelVehicleOut" messageType="vres:CancelVehicleOut"/>
+    <variable name="CancelVehicleIn" messageType="vres:CancelVehicleIn"/>
+    <variable name="CancelAirlineOut" messageType="ares:CancelAirlineOut"/>
+    <variable name="CancelAirlineIn" messageType="ares:CancelAirlineIn"/>
+    <variable name="ItineraryIn" messageType="tres:ItineraryIn"/>
+    <variable name="ItineraryOut" messageType="tres:ItineraryOut"/>
+    <variable name="ItineraryFault" messageType="tres:ItineraryFault"/>
+    <variable name="ReserveAirlineIn" messageType="ares:ReserveAirlineIn"/>
+    <variable name="AirlineReservedIn" messageType="ares:AirlineReservedIn"/>
+    <variable name="ReserveVehicleIn" messageType="vres:ReserveVehicleIn"/>
+    <variable name="VehicleReservedIn" messageType="vres:VehicleReservedIn"/>
+    <variable name="ReserveHotelIn" messageType="hres:ReserveHotelIn"/>
+    <variable name="CancelHotelIn" messageType="hres:CancelHotelIn"/>
+    <variable name="CancelHotelOut" messageType="hres:CancelHotelOut"/>
+    <variable name="HotelReservedIn" messageType="hres:HotelReservedIn"/>
+  </variables>
+  <correlationSets>
+    <correlationSet name="ItineraryCorrelator" properties="tres:ItineraryRefId"/>
+  </correlationSets>
+  <sequence name="Main">
+    <receive name="ReceiveItinerary" partnerLink="Travel" portType="tres:TravelReservationPortType" operation="buildItinerary" createInstance="yes" variable="ItineraryIn">
+      <correlations>
+        <correlation set="ItineraryCorrelator" initiate="yes"/>
+      </correlations>
+    </receive>
+    <assign name="CopyItineraryIn">
+      <copy>
+        <from variable="ItineraryIn" part="itinerary"/>
+        <to variable="ItineraryOut" part="itinerary"/>
+      </copy>
+      <copy>
+        <from variable="ItineraryIn" part="itinerary"/>
+        <to variable="ReserveAirlineIn" part="itinerary"/>
+      </copy>
+      <copy>
+        <from variable="ItineraryIn" part="itinerary"/>
+        <to variable="ReserveVehicleIn" part="itinerary"/>
+      </copy>
+      <copy>
+        <from variable="ItineraryIn" part="itinerary"/>
+        <to variable="ReserveHotelIn" part="itinerary"/>
+      </copy>
+    </assign>
+    <if name="HasAirline">
+    	<condition>
+    		not($ItineraryIn.itinerary/ItineraryInfo/ReservationItems/Item/Air)
+    	</condition>
+        <sequence>
+          <invoke name="ReserveAirline" partnerLink="Airline" portType="ares:AirlineReservationPortType" operation="reserveAirline" inputVariable="ReserveAirlineIn">
+            <correlations>
+              <correlation set="ItineraryCorrelator"/>
+            </correlations>
+          </invoke>
+          <pick name="Pick1">
+            <onMessage partnerLink="Airline" operation="airlineReserved" portType="ares:AirlineReservationCallbackPortType" variable="AirlineReservedIn">
+              <correlations>
+                <correlation set="ItineraryCorrelator" initiate="no"/>
+              </correlations>
+              <assign name="CopyAirlineReservation">
+            <copy>
+              <from variable="AirlineReservedIn" part="itinerary"/>
+              <to variable="ItineraryOut" part="itinerary"/>
+            </copy>
+            <copy>
+              <from variable="AirlineReservedIn" part="itinerary"/>
+              <to variable="ReserveVehicleIn" part="itinerary"/>
+            </copy>
+          </assign>
+            </onMessage>
+            <onAlarm>
+              <for>'P0Y0M0DT0H0M20S'</for>
+              <sequence name="AirlineCancelSequence">
+                <assign name="CopyAirlineCancellation">
+                  <copy>
+                    <from>$ReserveAirlineIn.itinerary/ota:ItineraryRef</from>
+                    <to variable="CancelAirlineIn" part="itinerary"/>
+                  </copy>
+                </assign>
+                <invoke name="CancelAirline" partnerLink="Airline" operation="cancelAirline" portType="ares:AirlineReservationPortType" inputVariable="CancelAirlineIn" outputVariable="CancelAirlineOut"/>
+              </sequence>
+            </onAlarm>
+          </pick>
+        </sequence>
+    </if>
+    <if name="HasVehicle">    
+    	<condition>
+    		not($ItineraryIn.itinerary/ItineraryInfo/ReservationItems/Item/Vehicle)
+    	</condition>
+        <sequence>
+          <invoke name="ReserveVehicle" partnerLink="Vehicle" portType="vres:VehicleReservationPortType" operation="reserveVehicle" inputVariable="ReserveVehicleIn">
+            <correlations>
+              <correlation set="ItineraryCorrelator"/>
+            </correlations>
+          </invoke>
+          <pick name="Pick2">
+            <onMessage partnerLink="Vehicle" operation="vehicleReserved" portType="vres:VehicleReservationCallbackPortType" variable="VehicleReservedIn">
+              <correlations>
+                <correlation set="ItineraryCorrelator" initiate="no"/>
+              </correlations>
+              <assign name="CopyVehicleReservation">
+            <copy>
+              <from variable="VehicleReservedIn" part="itinerary"/>
+              <to variable="ItineraryOut" part="itinerary"/>
+            </copy>
+            <copy>
+              <from variable="VehicleReservedIn" part="itinerary"/>
+              <to variable="ReserveHotelIn" part="itinerary"/>
+            </copy>
+          </assign>
+            </onMessage>
+            <onAlarm>
+              <for>'P0Y0M0DT0H0M20S'</for>
+              <sequence name="CancelVehicleSequence">
+                <assign name="CopyVehicleCancellation">
+                  <copy>
+                    <from>$ReserveVehicleIn.itinerary/ota:ItineraryRef</from>
+                    <to variable="CancelVehicleIn" part="itinerary"/>
+                  </copy>
+                </assign>
+                <invoke name="CancelVehicle" partnerLink="Vehicle" operation="cancelVehicle" portType="vres:VehicleReservationPortType" inputVariable="CancelVehicleIn" outputVariable="CancelVehicleOut"/>
+              </sequence>
+            </onAlarm>
+          </pick>
+        </sequence> 
+    </if>
+    <if name="HasHotel">
+      <condition>
+            not($ItineraryIn.itinerary/ItineraryInfo/ReservationItems/Item/Hotel)
+      </condition> 
+        <sequence>
+          <invoke name="ReserveHotel" partnerLink="Hotel" portType="hres:HotelReservationPortType" operation="reserveHotel" inputVariable="ReserveHotelIn">
+            <correlations>
+              <correlation set="ItineraryCorrelator"/>
+            </correlations>
+          </invoke>
+          <pick name="Timeout" createInstance="no">
+            <onMessage partnerLink="Hotel" portType="hres:HotelReservationCallbackPortType" operation="hotelReserved" variable="HotelReservedIn">
+              <correlations>
+                <correlation set="ItineraryCorrelator"/>
+              </correlations>
+              <sequence name="HotelReserved">
+                <assign name="CopyHotelReservation">
+                  <copy>
+                    <from variable="HotelReservedIn" part="itinerary"/>
+                    <to variable="ItineraryOut" part="itinerary"/>
+                  </copy>
+                </assign>
+              </sequence>
+            </onMessage>
+            <onAlarm>
+              <for>'P0Y0M0DT0H0M20S'</for>
+                    <sequence name="Timer">
+                        <assign name="CopyHotelCancellation">
+                            <copy>
+                                <from>$ReserveHotelIn.itinerary/ItineraryRef</from>
+                                <to variable="CancelHotelIn" part="itinerary"/>
+                            </copy>
+                        </assign>            
+                        <invoke name="CancelHotel" partnerLink="Hotel" portType="hres:HotelReservationPortType" operation="cancelHotel" inputVariable="CancelHotelIn" outputVariable="CancelHotelOut"/>
+                    </sequence>
+            </onAlarm>
+          </pick>
+        </sequence>
+    </if>
+    <reply name="ReturnItinerary" partnerLink="Travel" portType="tres:TravelReservationPortType" operation="buildItinerary" variable="ItineraryOut"/>
+  </sequence>
+</process>
+
