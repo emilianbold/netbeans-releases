@@ -79,7 +79,9 @@ public class OpenWebPackProject extends org.netbeans.performance.test.utilities.
         ProjectSupport.closeProject(projectName);
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
-    
+    protected void shutdown() {
+        log("::shutdown");
+    }    
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new OpenWebPackProject("measureTime"));
     }

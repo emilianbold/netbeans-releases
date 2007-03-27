@@ -46,7 +46,17 @@ public class AddComponentLibraryDialog extends org.netbeans.performance.test.uti
     
     protected void initialize() {
         log("::initialize");
-        openNode = new Node(new ProjectsTabOperator().getProjectRootNode("VisualWebProject"),org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.displayName"));
+        Node projectRoot = null;
+        try {
+            projectRoot = new ProjectsTabOperator().getProjectRootNode("VisualWebProject");
+            projectRoot.select();
+            
+        } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
+            fail("Cannot find and select project root node");
+        }
+        String nodePath = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.displayName");
+        log("Node path = "+nodePath);
+        openNode = new Node(projectRoot,nodePath);
     }
     
     public void prepare() {

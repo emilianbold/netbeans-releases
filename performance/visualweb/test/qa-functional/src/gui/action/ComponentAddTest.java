@@ -21,6 +21,8 @@ package gui.action;
 
 import gui.window.PaletteComponentOperator;
 import gui.window.WebFormDesignerOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -79,12 +81,23 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
     
     public void initialize() {
         log("::initialize");
+        
+        Node projectRoot = null;
+        try {
+            projectRoot = new ProjectsTabOperator().getProjectRootNode("VisualWebProject");
+            projectRoot.select();
+            
+        } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
+            fail("Cannot find and select project root node");
+        }
+        
         PaletteComponentOperator.invoke();
     }
     
     public void prepare() {
         log("::prepare");
         surface = gui.VWPUtilities.openedWebDesignerForJspFile("VisualWebProject", "Page1");
+        log("Surface is visible now: "+surface.isVisible());
         
         palette = new PaletteComponentOperator();
         palette.getCategoryListOperator(categoryName).selectItem(componentName);

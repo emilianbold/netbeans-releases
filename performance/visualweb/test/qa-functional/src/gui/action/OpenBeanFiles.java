@@ -83,7 +83,23 @@ public class OpenBeanFiles  extends org.netbeans.performance.test.utilities.Perf
     public void prepare() {
         log("::prepare");
         beanPath = "Source Packages"+"|"+"visualwebproject"+"|"+beanName;
-        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode("VisualWebProject"), beanPath);
+        log("Bean Path = "+beanPath);
+        Node projectRoot = null;
+        try {
+            projectRoot = new ProjectsTabOperator().getProjectRootNode("VisualWebProject");
+            projectRoot.select();
+            
+        } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
+            fail("Cannot find and select project root node");
+        }
+
+        try {
+            this.openNode = new Node(projectRoot, beanPath);
+            this.openNode.select();
+            
+        } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
+            fail("Cannot find and select bean node"); 
+        }
         
         if (this.openNode == null) {
             throw new Error("Cannot find node "+beanPath);

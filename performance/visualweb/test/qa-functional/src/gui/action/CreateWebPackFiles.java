@@ -119,12 +119,18 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     
     public void initialize(){
 	log("::initialize::");
-        new ProjectsTabOperator().getProjectRootNode(project_name).select();
+        Node projectRoot = null;
+        try {
+            projectRoot = new ProjectsTabOperator().getProjectRootNode(project_name);
+            projectRoot.select();
+            
+        } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
+            fail("Cannot find and select project root node");
+        }
     }
 
     public void prepare(){
         log("::prepare::");
-        //new NewFileAction().perform();
 
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
         

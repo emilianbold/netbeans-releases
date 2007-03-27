@@ -83,8 +83,16 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
 
     
     public void prepare() {
-        proj = new ProjectsTabOperator().getProjectRootNode(targetProject);
-        proj.select();
+        
+        proj = null;
+        try {
+            proj = new ProjectsTabOperator().getProjectRootNode(targetProject);
+            proj.select();
+            
+        } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
+            fail("Cannot find and select project root node");
+        }
+        
         
         projectMenu = proj.callPopup();
     }
