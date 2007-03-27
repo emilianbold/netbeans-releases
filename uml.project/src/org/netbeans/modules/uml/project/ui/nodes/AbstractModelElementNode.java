@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -52,12 +52,9 @@ import org.netbeans.modules.uml.ui.support.ADTransferable;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
-import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
-import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewDiagramType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewPackageType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewElementType;
@@ -87,14 +84,9 @@ import org.openide.util.datatransfer.PasteType;
  * @author Craig Conover, craig.conover@sun.com
  */
 public abstract class AbstractModelElementNode extends AbstractNode
-{
-//	private static IPropertyDefinitionFactory mDefFactory = null;
-//	private static IPropertyElementManager   mPropEleMgr = null;
-    
+{   
     private boolean mIsInitalized = false;
-    
-    //private WeakReference < Node.PropertySet[] > mPropertySheet = null;
-    
+
     public final static String ELEMENT_TYPE_PROJECT = "Project"; // NOI18N
     public final static String ELEMENT_TYPE_PACKAGE = "Package"; // NOI18N
     public final static String ELEMENT_TYPE_CLASS = "Class"; // NOI18N
@@ -105,31 +97,31 @@ public abstract class AbstractModelElementNode extends AbstractNode
     public final static String ELEMENT_TYPE_INTERACTION = "Interaction"; // NOI18N
     public final static String ELEMENT_TYPE_INTERFACE = "Interface"; // NOI18N
     public final static String ELEMENT_TYPE_DATA_TYPE = "DataType"; // NOI18N
-	public final static String ELEMENT_TYPE_ALIASED_TYPE = "AliasedType"; // NOI18N
+    public final static String ELEMENT_TYPE_ALIASED_TYPE = "AliasedType"; // NOI18N
     public final static String ELEMENT_TYPE_ATTRIBUTE = "Attribute"; // NOI18N
     public final static String ELEMENT_TYPE_OPERATION = "Operation"; // NOI18N
     public final static String ELEMENT_TYPE_PART_FACADE = "PartFacade"; // NOI18N
     public final static String ELEMENT_TYPE_ARTIFACT = "Artifact"; // NOI18N
     public final static String ELEMENT_TYPE_NODE = "Node"; // NOI18N
-	public final static String ELEMENT_TYPE_ACTOR = "Actor"; // NOI18N
+    public final static String ELEMENT_TYPE_ACTOR = "Actor"; // NOI18N
     public final static String ELEMENT_TYPE_ENUMERATION = "Enumeration"; // NOI18N
     public final static String ELEMENT_TYPE_DERIVATION_CLASSIFIER = "DerivationClassifier"; // NOI18N
-	public final static String ELEMENT_TYPE_ASSOCIATION_CLASS = "AssociationClass"; // NOI18N
+    public final static String ELEMENT_TYPE_ASSOCIATION_CLASS = "AssociationClass"; // NOI18N
     public final static String ELEMENT_TYPE_COLLABORATION = "Collaboration"; // NOI18N
-	public final static String ELEMENT_TYPE_USECASE = "UseCase"; // NOI18N
-	public final static String ELEMENT_TYPE_ACTIVITYGROUP = "ActivityGroup"; // NOI18N
-	public final static String ELEMENT_TYPE_FINALNODE = "FinalNode"; // NOI18N
-	public final static String ELEMENT_TYPE_FINALSTATE = "FinalState"; // NOI18N
-	public final static String ELEMENT_TYPE_FORKNODE = "ForkNode"; // NOI18N
-	public final static String ELEMENT_TYPE_INITIALNODE = "InitialNode"; // NOI18N
-	public final static String ELEMENT_TYPE_INVOCATIONNODE = "InvocationNode"; // NOI18N
-	public final static String ELEMENT_TYPE_LIFELINE = "Lifeline"; // NOI18N
-	public final static String ELEMENT_TYPE_STEREOTYPE = "Stereotype"; // NOI18N
-	public final static String ELEMENT_TYPE_COMMENT = "Comment"; // NOI18N
-	public final static String ELEMENT_TYPE_DEPLOYMENTSPECIFICATION = "DeploymentSpecification"; // NOI18N
-	public final static String ELEMENT_TYPE_COMPONENT = "Component"; // NOI18N
-	
-	
+    public final static String ELEMENT_TYPE_USECASE = "UseCase"; // NOI18N
+    public final static String ELEMENT_TYPE_ACTIVITYGROUP = "ActivityGroup"; // NOI18N
+    public final static String ELEMENT_TYPE_FINALNODE = "FinalNode"; // NOI18N
+    public final static String ELEMENT_TYPE_FINALSTATE = "FinalState"; // NOI18N
+    public final static String ELEMENT_TYPE_FORKNODE = "ForkNode"; // NOI18N
+    public final static String ELEMENT_TYPE_INITIALNODE = "InitialNode"; // NOI18N
+    public final static String ELEMENT_TYPE_INVOCATIONNODE = "InvocationNode"; // NOI18N
+    public final static String ELEMENT_TYPE_LIFELINE = "Lifeline"; // NOI18N
+    public final static String ELEMENT_TYPE_STEREOTYPE = "Stereotype"; // NOI18N
+    public final static String ELEMENT_TYPE_COMMENT = "Comment"; // NOI18N
+    public final static String ELEMENT_TYPE_DEPLOYMENTSPECIFICATION = "DeploymentSpecification"; // NOI18N
+    public final static String ELEMENT_TYPE_COMPONENT = "Component"; // NOI18N
+    
+    
     public final static String ELEMENT_TYPE_SOURCE_FILE_ARTIFACT = "SourcFileArtifact"; // NOI18N
     public static final String ELEMENT_TYPE_DEPENDENCY = "Dependency"; // NOI18N
     public static final String ELEMENT_TYPE_REALIZATION = "Realization"; // NOI18N
@@ -149,7 +141,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
     public final static Integer[] AVAILABLE_NEW_TYPES = new Integer[]
     {
         NEW_TYPE_DIAGRAM, NEW_TYPE_PACKAGE, NEW_TYPE_ELEMENT,
-                NEW_TYPE_ATTRIBUTE, NEW_TYPE_OPERATION
+        NEW_TYPE_ATTRIBUTE, NEW_TYPE_OPERATION
     };
     
     public final static int TOTAL_NEW_TYPES = AVAILABLE_NEW_TYPES.length;
@@ -163,21 +155,18 @@ public abstract class AbstractModelElementNode extends AbstractNode
     public final static String ADDIN_ID_SHOW_AS_XML = "ShowAsXML"; // NOI18N
     
     //Cache to improve performance
-	Action newAction=null;
+    Action newAction=null;
     
     /**
      * Create a new abstract model element node.
      */
-    //public AbstractModelElementNode(Node node)
     public AbstractModelElementNode()
     {
-        //super(node, new Children.SortedArray());
         this(new UMLChildren());
     }
     
     public AbstractModelElementNode(Children ch)
     {
-        //super(node, new Children.SortedArray());
         this(ch, null);
     }
     
@@ -190,7 +179,6 @@ public abstract class AbstractModelElementNode extends AbstractNode
     //public AbstractModelElementNode(Node node, Lookup lookup)
     public AbstractModelElementNode(Lookup lookup)
     {
-        //super(node, new Children.SortedArray(), lookup);
         this(new UMLChildren(), lookup);
     }
     
@@ -224,34 +212,22 @@ public abstract class AbstractModelElementNode extends AbstractNode
         
         return retVal;
     }
-	
+    
     
     public void setDisplayName(String s)
     {
         setDisplayName(s, true);
     }
-
+    
     // conover
     public void setDisplayName(String s, boolean notify)
     {
         super.setDisplayName(s);
-
+        
         if (notify)
-           notifyPropertySetsChange();
+            notifyPropertySetsChange();
     }
     
-//	/**
-//	 * Gets the property element manager for the node.
-//	 */
-//	public IPropertyElementManager getPropertyElementManager()
-//	{
-//		if (mPropEleMgr == null)
-//		{
-//			mPropEleMgr = new PropertyElementManager();
-//			mPropEleMgr.setPDFactory(getFactory());
-//		}
-//		return mPropEleMgr;
-//	}
     
     //**************************************************
     // Node Overrides
@@ -279,7 +255,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
                 return new NewType[]
                 {
                     new NewPackageType(this),
-                            new NewElementType(this)
+                    new NewElementType(this)
                 };
             }
             
@@ -288,8 +264,8 @@ public abstract class AbstractModelElementNode extends AbstractNode
                 return new NewType[]
                 {
                     new NewDiagramType(this),
-                            new NewPackageType(this),
-                            new NewElementType(this)
+                    new NewPackageType(this),
+                    new NewElementType(this)
                 };
             }
             
@@ -303,10 +279,10 @@ public abstract class AbstractModelElementNode extends AbstractNode
                 return new NewType[]
                 {
                     new NewDiagramType(this),
-                            new NewPackageType(this),
-                            new NewElementType(this),
-                            new NewAttributeType(this),
-                            new NewOperationType(this)
+                    new NewPackageType(this),
+                    new NewElementType(this),
+                    new NewAttributeType(this),
+                    new NewOperationType(this)
                 };
             }
         } // if getModelElement() instanceof INamespace
@@ -335,58 +311,49 @@ public abstract class AbstractModelElementNode extends AbstractNode
         ArrayList<Action> actions = new ArrayList <Action>();
         
         actions.add(SystemAction.get(OpenAction.class));
-		
-		// cvc - CR 6287660 & 6276911
-		//commented out - moved to getNewAction() to improve performance
-		/*if (!(getParentNode() instanceof UMLDiagramsRootNode) &&
-			!getElementType().equals(ELEMENT_TYPE_ABSTRACTION) &&
-			!getElementType().equals(ELEMENT_TYPE_AGGREGATION) &&
-			!getElementType().equals(ELEMENT_TYPE_ASSOCIATION) &&
-			!getElementType().equals(ELEMENT_TYPE_DEPENDENCY) &&
-			!getElementType().equals(ELEMENT_TYPE_GENERALIZATION) &&
-			!getElementType().equals(ELEMENT_TYPE_PERMISSION) &&
-			!getElementType().equals(ELEMENT_TYPE_REALIZATION) &&
-			!getElementType().equals(ELEMENT_TYPE_USAGE))*/
-		Action newAction=getNewAction();
-		if(newAction!=null)
-		{
-			actions.add(newAction);
-		}
-		
-		// cvc - CR 6276911
-		// Save and Close actions were on every node, but are only 
-		// enabled/valid for Diagram nodes
-		// if (this instanceof UMLDiagramNode)
-		// {
-		// 	actions.add(SystemAction.get(SaveDiagramAction.class));
-		// 	actions.add(SystemAction.get(CloseDiagramAction.class));
-		// }
-		
+        
+        // cvc - CR 6287660 & 6276911
+        //commented out - moved to getNewAction() to improve performance
+                /*if (!(getParentNode() instanceof UMLDiagramsRootNode) &&
+                        !getElementType().equals(ELEMENT_TYPE_ABSTRACTION) &&
+                        !getElementType().equals(ELEMENT_TYPE_AGGREGATION) &&
+                        !getElementType().equals(ELEMENT_TYPE_ASSOCIATION) &&
+                        !getElementType().equals(ELEMENT_TYPE_DEPENDENCY) &&
+                        !getElementType().equals(ELEMENT_TYPE_GENERALIZATION) &&
+                        !getElementType().equals(ELEMENT_TYPE_PERMISSION) &&
+                        !getElementType().equals(ELEMENT_TYPE_REALIZATION) &&
+                        !getElementType().equals(ELEMENT_TYPE_USAGE))*/
+        Action newAction=getNewAction();
+        if(newAction!=null)
+        {
+            actions.add(newAction);
+        }
+        
         actions.add(null);
         
-		String eType=null;
-		if(getParentNode()!=null && getParentNode().getParentNode()!=null)
-			eType=getParentNode().getParentNode().getName();
-		if(eType==null || !eType.equals("Imported Elements"))//NoI18n
-			actions.add(SystemAction.get(DeleteAction.class));
+        String eType=null;
+        if(getParentNode()!=null && getParentNode().getParentNode()!=null)
+            eType=getParentNode().getParentNode().getName();
+        if(eType==null || !eType.equals("Imported Elements"))//NoI18n
+            actions.add(SystemAction.get(DeleteAction.class));
         actions.add(SystemAction.get(RenameAction.class));
         
-		actions.add(null);
+        actions.add(null);
         
         addContextMenus(actions);
         
-		actions.add(null);  
+        actions.add(null);
         
-//      actions.add(SystemAction.get(SourceControlSubMenuAction.class));
-		//To improve performance, cache this action
-
-		// Source control Sub menu Actions are created based on the SCM status of the nodes so every time we need
-		//to get the actions freshly so they can't be checked for null
+        //      actions.add(SystemAction.get(SourceControlSubMenuAction.class));
+        //To improve performance, cache this action
+        
+        // Source control Sub menu Actions are created based on the SCM status of the nodes so every time we need
+        //to get the actions freshly so they can't be checked for null
 /*		if(scSubMenuAction==null)
-			scSubMenuAction=new SourceControlSubMenuAction();		
-		actions.add(scSubMenuAction);
-*/       
-		actions.add(null);
+                        scSubMenuAction=new SourceControlSubMenuAction();
+                actions.add(scSubMenuAction);
+ */
+        actions.add(null);
         
         actions.add(SystemAction.get(PropertiesAction.class));;
         
@@ -394,34 +361,34 @@ public abstract class AbstractModelElementNode extends AbstractNode
         actions.toArray(retVal);
         return retVal;
     }
-	
-	private Action getNewAction()
-	{
-		// TODO: this needs to be reviewed as to what node should have new type action
-		
-		if(newAction==null)
-		{
-			if (!(getParentNode() instanceof UMLDiagramsRootNode) &&
-				getModelElement()!=null &&
-				!getElementType().equals(ELEMENT_TYPE_ABSTRACTION) &&
-				!getElementType().equals(ELEMENT_TYPE_AGGREGATION) &&
-				!getElementType().equals(ELEMENT_TYPE_ASSOCIATION) &&
-				!getElementType().equals(ELEMENT_TYPE_DEPENDENCY) &&
-				!getElementType().equals(ELEMENT_TYPE_GENERALIZATION) &&
-				!getElementType().equals(ELEMENT_TYPE_PERMISSION) &&
-				!getElementType().equals(ELEMENT_TYPE_REALIZATION) &&
-				!getElementType().equals(ELEMENT_TYPE_USAGE) &&
-				!getElementType().equals(ELEMENT_TYPE_ACTOR) &&
-				!getElementType().equals(ELEMENT_TYPE_DIAGRAM) &&
-				!getElementType().equals(ELEMENT_TYPE_PROXY_DIAGRAM) &&
-				!getElementType().equals(""))
-			{
-				newAction=SystemAction.get(NewAction.class);
-			}
-		}
-		return newAction;
-	}
-	
+    
+    private Action getNewAction()
+    {
+        // TODO: this needs to be reviewed as to what node should have new type action
+        
+        if(newAction==null)
+        {
+            if (!(getParentNode() instanceof UMLDiagramsRootNode) &&
+                    getModelElement()!=null &&
+                    !getElementType().equals(ELEMENT_TYPE_ABSTRACTION) &&
+                    !getElementType().equals(ELEMENT_TYPE_AGGREGATION) &&
+                    !getElementType().equals(ELEMENT_TYPE_ASSOCIATION) &&
+                    !getElementType().equals(ELEMENT_TYPE_DEPENDENCY) &&
+                    !getElementType().equals(ELEMENT_TYPE_GENERALIZATION) &&
+                    !getElementType().equals(ELEMENT_TYPE_PERMISSION) &&
+                    !getElementType().equals(ELEMENT_TYPE_REALIZATION) &&
+                    !getElementType().equals(ELEMENT_TYPE_USAGE) &&
+                    !getElementType().equals(ELEMENT_TYPE_ACTOR) &&
+                    !getElementType().equals(ELEMENT_TYPE_DIAGRAM) &&
+                    !getElementType().equals(ELEMENT_TYPE_PROXY_DIAGRAM) &&
+                    !getElementType().equals(""))
+            {
+                newAction=SystemAction.get(NewAction.class);
+            }
+        }
+        return newAction;
+    }
+    
     
     /**
      * Retrievse the for the model element using property elements and property
@@ -444,9 +411,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
         String elementType = getElementType();
         
         if (elementType.length() > 0)
-        {
-            //PropertySet[] elementProperties = retreiveProperties(elementType);
-            
+        {  
             PropertySet[] elementProperties = retreiveProperties();
             if (elementProperties != null)
             {
@@ -473,7 +438,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
     }
     
     public Transferable clipboardCopy()
-    throws IOException
+            throws IOException
     {
         ADTransferable retVal = new ADTransferable("DRAGGEDITEMS"); // NOI18N
         retVal.addModelElement(getModelElement());
@@ -497,7 +462,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
     }
     
     public Transferable clipboardCut()
-    throws IOException
+            throws IOException
     {
         return clipboardCopy();
     }
@@ -516,13 +481,8 @@ public abstract class AbstractModelElementNode extends AbstractNode
         final ETList<IElement> modelElements = new ETArrayList<IElement>();
         final List<String> diagrams = new LinkedList<String>();
         
-//			ModelElementCookie meCookie = (ModelElementCookie)
-//					curNode.getCookie(ModelElementCookie.class);
-//			IElement element = (IElement)
-//					curNode.getCookie(IElement.class);
-        
         IProjectTreeItem treeItem = (IProjectTreeItem)
-        this.getLookup().lookup(IProjectTreeItem.class);
+                this.getLookup().lookup(IProjectTreeItem.class);
         
         if (treeItem == null)
             return;
@@ -541,18 +501,22 @@ public abstract class AbstractModelElementNode extends AbstractNode
         {
             if (treeItem.getImportedModelElement() != null)
                 modelElements.add(treeItem.getImportedModelElement());
-        } else if (treeItem.isDiagram())
+        }
+        else if (treeItem.isDiagram())
         {
             if (treeItem.getDescription() != null &&
                     treeItem.getDescription().length() > 0)
             {
                 diagrams.add(treeItem.getDescription());
             }
-        } else if (treeItem.getModelElement() != null)
+        }
+        else if (treeItem.getModelElement() != null)
         {
             IElement elem = treeItem.getModelElement();
             modelElements.add(elem);
         }
+        
+        super.destroy();
         
         Runnable runnable = new Runnable()
         {
@@ -568,7 +532,6 @@ public abstract class AbstractModelElementNode extends AbstractNode
                 final IProxyDiagramManager proxyDiagramManager =
                         ProxyDiagramManager.instance();
                 
-                //for (int k=0; k<numDias; k++)
                 for (final String curDiagramName: diagrams)
                 {
                     proxyDiagramManager.removeDiagram(curDiagramName);
@@ -584,26 +547,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
         return true;
     }
     
-//   /**
-//    * Determine which paste operations are allowed when a given transferable
-//	  * is in the clipboard.
-//    * For example, a node representing a Java package will permit classes to
-//	  * be pasted into it.
-//    * @param t the transferable in the clipboard
-//    * @return array of operations that are allowed
-//    */
-//    public abstract PasteType[] getPasteTypes (Transferable t)
-//    {
-//      PasteType[] retVal = new PasteType[0];
-//      PasteType type = getDropType(t, DnDConstants.ACTION_COPY);
-//      if(type != null)
-//      {
-//         retVal = new PasteType[1];
-//         retVal[0] = type;
-//      }
-//
-//      return retVal;
-//    }
+ 
     
     protected void createPasteTypes(Transferable t, List s)
     {
@@ -622,7 +566,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
         
         // cvc - CR 6363187 - can't DnD more than one model element in tree
         // This method has been overhauled to fix the bug.
-
+        
         try
         {
             if (trans instanceof ADTransferable)
@@ -631,7 +575,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
                 {
                     Object obj = trans.getTransferData(ADTransferable.ADDataFlavor);
                     ADTransferable adTrans = (ADTransferable)trans;
-    
+                    
                     if (obj != null)
                     {
                         if (this instanceof ITreeItem)
@@ -647,7 +591,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
             else if (trans instanceof ExTransferable)
             {
                 ExTransferable exTrans = (ExTransferable)trans;
-    
+                
                 if (this instanceof ITreeItem)
                 {
                     ITreeItem item = (ITreeItem)this;
@@ -659,60 +603,19 @@ public abstract class AbstractModelElementNode extends AbstractNode
             else
             {
                 Log.write(
-                    "Unexpected Transferrable subtype parameter, "  // NOI18N
-                    + trans.getClass().getName() + ". Should not be " // NOI18N
-                    + "an issue but proactively logging ocurrence."); // NOI18N
+                        "Unexpected Transferrable subtype parameter, "  // NOI18N
+                        + trans.getClass().getName() + ". Should not be " // NOI18N
+                        + "an issue but proactively logging ocurrence."); // NOI18N
             }
         } // try
-            
+        
         catch (Exception e)
         {
-            // e.printStackTrace();
             Log.stackTrace(e);
         }
         
-//            DispatchHelper heleper = new DispatchHelper();
-//            IProjectTreeEventDispatcher disp = heleper.getProjectTreeDispatcher();
-//            
-//            if (disp != null)
-//            {
-//                IEventPayload payload = disp.createPayload("ProjectTreeBeginDrag"); //$NON-NLS-1$
-//                IProjectTreeDragVerify context = new ProjectTreeDragVerifyImpl();
-//                
-//                if (this instanceof ITreeItem)
-//                {
-//                    IProjectTreeItem[] items = {((ITreeItem)this).getData()};
-//                    disp.fireBeginDrag(null, items, context, payload);
-//                }
-//            }
-        
         return retVal;
     }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // Helper Methods
-    ////////////////////////////////////////////////////////////////////////////
-    
-//	/**
-//	 * Gets the property definition factory for the node.  The property
-//	 * definitions factory uses a configration file to generate property
-//	 * defintions.  The propety defintion is basically an abstract description
-//	 * of the properties to be displayed for the model elements.
-//	 *
-//	 * @return The property definition factory.
-//	 */
-//	protected IPropertyDefinitionFactory getFactory()
-//	{
-//		if( mDefFactory == null)
-//		{
-//			String file = getDefinitionFile();
-//			mDefFactory = new PropertyDefinitionFactory();
-//			mDefFactory.setDefinitionFile(file);
-//			mDefFactory.buildDefinitionsUsingFile();
-//		}
-//
-//		return mDefFactory;
-//	}
     
     
     
@@ -751,36 +654,42 @@ public abstract class AbstractModelElementNode extends AbstractNode
         ArrayList<Action> actions = new ArrayList<Action>();
         FileSystem system = Repository.getDefault().getDefaultFileSystem();
         
-		if (system != null)
-		{
-			FileObject fo = system.findResource(path);
-			DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
-			if (df != null) {
-				DataObject actionObjects[] = df.getChildren();
-				for (int i = 0; i < actionObjects.length; i++) 
-				{
-					InstanceCookie ic = (InstanceCookie) actionObjects[i].getCookie(InstanceCookie.class);
-					if (ic == null) continue;
-					Object instance;
-					try {
-						instance = ic.instanceCreate();
-					} catch (IOException e) {
-						// ignore
-						e.printStackTrace();
-						continue;
-					} catch (ClassNotFoundException e) {
-						// ignore
-						e.printStackTrace();
-						continue;
-					}
-					if (instance instanceof Action)
-						actions.add((Action)instance);
-					else if (instance instanceof JSeparator)
-						actions.add(null);
-				}
-			}
-		}
-				
+        if (system != null)
+        {
+            FileObject fo = system.findResource(path);
+            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+            if (df != null)
+            {
+                DataObject actionObjects[] = df.getChildren();
+                for (int i = 0; i < actionObjects.length; i++)
+                {
+                    InstanceCookie ic = (InstanceCookie) actionObjects[i].getCookie(InstanceCookie.class);
+                    if (ic == null) continue;
+                    Object instance;
+                    try
+                    {
+                        instance = ic.instanceCreate();
+                    }
+                    catch (IOException e)
+                    {
+                        // ignore
+                        e.printStackTrace();
+                        continue;
+                    }
+                    catch (ClassNotFoundException e)
+                    {
+                        // ignore
+                        e.printStackTrace();
+                        continue;
+                    }
+                    if (instance instanceof Action)
+                        actions.add((Action)instance);
+                    else if (instance instanceof JSeparator)
+                        actions.add(null);
+                }
+            }
+        }
+        
         Action[] retVal = new Action[actions.size()];
         actions.toArray(retVal);
         return retVal;
@@ -791,23 +700,15 @@ public abstract class AbstractModelElementNode extends AbstractNode
     {
         Node.PropertySet[] retVal = null;
         
-//        if ((mPropertySheet != null) && (mPropertySheet.get() != null))
-//        {
-//            retVal = mPropertySheet.get();
-//        }
-//        
-//        else
-        {
-            retVal = buildProperties();
-//            mPropertySheet = new WeakReference(retVal);
-        }
+        retVal = buildProperties();
         
         return retVal;
     }
     
     // Jyothi: Fix for Bug#6258627-Naming a component doesn't update the property sheet Name to the new value.
-    // This method is a hack.. and is NOT supposed to be used in any other scenario 
-    public void notifyPropertySetsChange() {
+    // This method is a hack.. and is NOT supposed to be used in any other scenario
+    public void notifyPropertySetsChange()
+    {
         firePropertySetsChange(null, retreiveProperties());
     }
     
@@ -833,23 +734,23 @@ public abstract class AbstractModelElementNode extends AbstractNode
     {
         // cvc - CR 6363187 - can't DnD more than one model element in tree
         // This inner class has been overhauled to fix the bug.
-
+        
         private IProjectTreeItem mTreeItem = null;
         private Transferable mTransferable = null;
         private int mAction = DnDConstants.ACTION_NONE;
         
         public ModelPasteType(
-            Transferable transferable,
-            IProjectTreeItem data,
-            int action)
+                Transferable transferable,
+                IProjectTreeItem data,
+                int action)
         {
             mTreeItem = data;
             mTransferable = transferable;
             mAction = action;
         }
         
-        public Transferable paste() 
-            throws IOException
+        public Transferable paste()
+                throws IOException
         {
             fireEndDrag();
             return null;
@@ -865,8 +766,6 @@ public abstract class AbstractModelElementNode extends AbstractNode
             
             if (mAction != DnDConstants.ACTION_NONE)
             {
-                //m_InDragProcess = false;
-                
                 DispatchHelper dispatcherHelper = new DispatchHelper();
                 IProjectTreeEventDispatcher disp = dispatcherHelper.getProjectTreeDispatcher();
                 
@@ -879,7 +778,6 @@ public abstract class AbstractModelElementNode extends AbstractNode
                     disp.fireEndDrag(null, mTransferable, mAction, context, payload);
                     
                     retVal = !context.isCancel();
-                    //m_DragPaths = null;
                 }
             }
             return retVal;
