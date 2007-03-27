@@ -55,6 +55,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactory;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
@@ -619,5 +620,21 @@ public class JaxWsUtils {
             }
         }
         return res;
+    }
+    
+    public static boolean isEjbJavaEE5orHigher(Project project) {
+        ProjectInfo projectInfo = new ProjectInfo(project);
+        return isEjbJavaEE5orHigher(projectInfo);
+    }
+    
+    public static boolean isEjbJavaEE5orHigher(ProjectInfo projectInfo) {
+        int projectType = projectInfo.getProjectType();
+        if (projectType == ProjectInfo.EJB_PROJECT_TYPE) {
+                FileObject ddFolder = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory()).getDeploymentDescriptorFolder();
+                if (ddFolder==null || ddFolder.getFileObject("ejb-jar.xml")==null) { //NOI18N
+                    return true;
+                }
+        }
+        return false;
     }
 }

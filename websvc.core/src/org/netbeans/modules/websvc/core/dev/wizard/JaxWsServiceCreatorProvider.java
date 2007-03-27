@@ -19,12 +19,11 @@
 
 package org.netbeans.modules.websvc.core.dev.wizard;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.ServiceCreator;
 import org.netbeans.modules.websvc.core.ServiceCreatorProvider;
-import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.WizardDescriptor;
 import org.netbeans.modules.j2ee.common.Util;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -44,15 +43,12 @@ public class JaxWsServiceCreatorProvider implements ServiceCreatorProvider {
                 (projectInfo.isJwsdpSupported())
                 ) {
             return new JaxWsServiceCreator(projectInfo, wiz, false);
-        } else if (projectType == ProjectInfo.EJB_PROJECT_TYPE) {
-                FileObject ddFolder = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory()).getDeploymentDescriptorFolder();
-                if (ddFolder==null || ddFolder.getFileObject("ejb-jar.xml")==null) { //NOI18N
-                    return new JaxWsServiceCreator(projectInfo, wiz, false);
-                }
-            }
+        } else if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) {
+            return new JaxWsServiceCreator(projectInfo, wiz, false);
+        }
         else if (!Util.isJavaEE5orHigher(project) &&
-                   (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) {
-               if ((!projectInfo.isJsr109Supported() && projectType == ProjectInfo.WEB_PROJECT_TYPE && !projectInfo.isJsr109oldSupported())) {
+                   (projectType == ProjectInfo.WEB_PROJECT_TYPE)) {
+               if ((!projectInfo.isJsr109Supported() && !projectInfo.isJsr109oldSupported())) {
                    return new JaxWsServiceCreator(projectInfo, wiz, true);
                }
         }
