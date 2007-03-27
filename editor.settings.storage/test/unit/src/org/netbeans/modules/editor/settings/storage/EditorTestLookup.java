@@ -22,14 +22,20 @@ package org.netbeans.modules.editor.settings.storage;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import junit.framework.Assert;
+import org.openide.filesystems.AbstractFileSystem;
+import org.openide.filesystems.DefaultAttributes;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileSystem.Status;
+import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
@@ -110,11 +116,34 @@ public class EditorTestLookup extends ProxyLookup {
     
     public static void setLookup(URL[] layers, File workDir, Object[] instances, ClassLoader cl, Class [] exclude)
     throws IOException, PropertyVetoException {
-        FileSystem writeableFs = createLocalFileSystem(workDir, new String[0]);
-        XMLFileSystem layersFs = new XMLFileSystem();
-        layersFs.setXmlUrls(layers);
+        ArrayList<FileSystem> fs = new ArrayList<FileSystem>();
+        fs.add(createLocalFileSystem(workDir, new String[0]));
+
+        ArrayList<URL> xmlLayers = new ArrayList<URL>();
+        for(URL layer : layers) {
+            if (layer.getPath().endsWith(".xml")) {
+                xmlLayers.add(layer);
+            } else if (layer.getPath().endsWith(".zip")) {
+                if (!xmlLayers.isEmpty()) {
+                    XMLFileSystem layersFs = new XMLFileSystem();
+                    layersFs.setXmlUrls(xmlLayers.toArray(new URL [xmlLayers.size()]));
+                    fs.add(layersFs);
+                    xmlLayers.clear();
+                }
+                
+                fs.add(new ZipFileSystem(layer));
+            } else {
+                throw new IOException("Expecting .xml or .zip layers, but not '" + layer.getPath() + "'");
+            }
+        }
         
-        setLookup(new FileSystem [] { writeableFs, layersFs }, instances, cl, exclude);
+        if (!xmlLayers.isEmpty()) {
+            XMLFileSystem layersFs = new XMLFileSystem();
+            layersFs.setXmlUrls(xmlLayers.toArray(new URL [xmlLayers.size()]));
+            fs.add(layersFs);
+        }
+        
+        setLookup(fs.toArray(new FileSystem [fs.size()]), instances, cl, exclude);
     }
     
     private static void setLookup(FileSystem [] fs, Object[] instances, ClassLoader cl, Class [] exclude)
@@ -210,4 +239,57 @@ public class EditorTestLookup extends ProxyLookup {
             return icon;
         }
     } // End of SystemFileSystem class
+    
+    private static final class ZipFileSystem extends AbstractFileSystem {
+
+        private final String zipPath;
+        
+        public ZipFileSystem(URL zipURL) throws IOException {
+            this.zipPath = zipURL.toString();
+            
+            File zipFile = File.createTempFile("ZipFileSystem", ".zip");
+            zipFile.deleteOnExit();
+            
+            OutputStream os = new FileOutputStream(zipFile);
+            try {
+                InputStream is = zipURL.openStream();
+                try {
+                    byte [] buffer = new byte [1024];
+                    int size;
+                    while(0 < (size = is.read(buffer, 0, buffer.length))) {
+                        os.write(buffer, 0, size);
+                    }
+                } finally {
+                    is.close();
+                }
+            } finally {
+                os.close();
+            }
+            
+            JarFileSystem jfs = new JarFileSystem();
+            try {
+                jfs.setJarFile(zipFile);
+            } catch (PropertyVetoException pve) {
+                IOException ioe = new IOException();
+                ioe.initCause(pve);
+                throw ioe;
+            }
+            
+            JarFileSystem.Impl jfsImpl = new JarFileSystem.Impl(jfs);
+            DefaultAttributes attribs = new DefaultAttributes(jfsImpl, jfsImpl, jfsImpl);
+            
+            this.info = jfsImpl;
+            this.change = jfsImpl;
+            this.list = attribs;
+            this.attr = attribs;
+        }
+        
+        public String getDisplayName() {
+            return "ZipFileSystem[" + zipPath;
+        }
+
+        public boolean isReadOnly() {
+            return true;
+        }
+    } // End of ZipFileSystem class
 }
