@@ -22,7 +22,8 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Menu">
         <folder name="Refactoring">
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.refactoring.spi.impl.Bundle"/>
-            <attr name="SafeDeleteAction.instance/LastSeparator.instance" boolvalue="true"/>
+            <attr name="SafeDeleteAction.instance/UseSuperTypeAction.instance" boolvalue="true"/>
+            <attr name="UseSuperTypeAction.instance/LastSeparator.instance" boolvalue="true"/>
             <file name="LastSeparator.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
@@ -36,6 +37,9 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="SafeDeleteAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.SafeDeleteAction"/>
+            </file>
+            <file name="UseSuperTypeAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.java.ui.UseSuperTypeAction"/>
             </file>
             <file name="RenameAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RenameAction"/>
@@ -86,6 +90,9 @@ Microsystems, Inc. All Rights Reserved.
           <file name="org-netbeans-modules-refactoring-spi-impl-RedoAction.instance"/>
           <file name="org-netbeans-modules-refactoring-api-ui-SafeDeleteAction.instance">
               <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.safeDeleteAction"/>
+          </file>
+          <file name="org-netbeans-modules-refactoring-api-ui-UseSuperTypeAction.instance">
+              <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.JavaRefactoringActionsFactory.useSuperTypeAction"/>
           </file>
           <file name="org-netbeans-modules-refactoring-api-ui-RenameAction.instance">
               <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.renameAction"/>
