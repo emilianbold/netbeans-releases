@@ -40,7 +40,7 @@ public class ExceptionsSettings {
     }
     
     public String getUserName() {
-        return prefs().get(userProp, "");
+        return prefs().get(userProp, "GUEST");
     }
 
     public void setUserName(String userName) {
