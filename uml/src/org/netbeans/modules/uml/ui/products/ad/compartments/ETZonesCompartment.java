@@ -29,12 +29,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
-
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ITaggedValue;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IGraphEventKind;
-import org.netbeans.modules.uml.core.support.umlsupport.ETDeviceRect;
 import org.netbeans.modules.uml.core.support.umlsupport.ETPoint;
 import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.ETSize;
@@ -65,13 +63,12 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.INotificationTarge
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ISetCursorEvent;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IStretchContext;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ModelElementChangedKind;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.PointConversions;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.StretchContextType;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
 import com.tomsawyer.editor.TSENode;
-//import com.tomsawyer.util.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
+import org.netbeans.modules.uml.ui.support.viewfactorysupport.ISimpleListCompartment;
 
 /*
  * 
@@ -868,22 +865,38 @@ public abstract class ETZonesCompartment extends ETSimpleListCompartment impleme
     */
    int getCompartmentRowIndex(ActionEvent event)
    {
+      int iIndex = -1;
       if (null == event)
          throw new IllegalArgumentException();
-
+      
       ensureProperDividerCount();
-
+      
       final TSConstPoint ptLogical = getLogicalMouseLocation(event);
-
-      // Remember, TS vertical axis points up
-      int lRowOffset = getLogicalBoundingRect().getTop() - (int)ptLogical.getY();
-
-      int iIndex = m_zonedividers.getZoneIndex(lRowOffset);
+      
+      if ( ptLogical != null)
+      {
+         // Remember, TS vertical axis points up
+         int lRowOffset = getLogicalBoundingRect().getTop() - (int)ptLogical.getY();
+         
+         iIndex = m_zonedividers.getZoneIndex(lRowOffset);
+      }
+      // Fixed issue 99019.
+      // In case users use F10 to bring up the context menu on the selected region,
+      // there's no mouse point. Need to find the zone index based on the selected zone.
+      else
+      {
+         IADZoneCompartment selectedZone = getSelectedZoneCompartment();
+         if (selectedZone != null)
+         {
+            iIndex = this.getCompartmentIndex(selectedZone);
+         }
+      }
+      
       if ((-1 == iIndex) && (getNumCompartments() > 0))
       {
          iIndex = 0;
       }
-
+      
       return iIndex;
    }
 
@@ -896,22 +909,36 @@ public abstract class ETZonesCompartment extends ETSimpleListCompartment impleme
     */
    protected int getCompartmentColumnIndex(ActionEvent event)
    {
+      int iIndex = -1;
       if (null == event)
          throw new IllegalArgumentException();
-
+      
       // Make sure we haven't messed up our vectors
       ensureProperDividerCount();
-
+      
       final TSConstPoint ptLogical = getLogicalMouseLocation(event);
-
-      int lColumnOffset = (int)ptLogical.getX() - getLogicalBoundingRect().getLeft();
-
-      int iIndex = m_zonedividers.getZoneIndex(lColumnOffset);
+      if ( ptLogical != null)
+      {
+         int lColumnOffset = (int)ptLogical.getX() - getLogicalBoundingRect().getLeft();
+         iIndex = m_zonedividers.getZoneIndex(lColumnOffset);
+      }
+      // Fixed issue 99019. 
+      // In case users use F10 to bring up the context menu on the selected region,
+      // there's no mouse point. Need to find the zone index based on the selected zone.
+      else
+      {
+         IADZoneCompartment selectedZone = getSelectedZoneCompartment();
+         if (selectedZone != null)
+         {
+            iIndex = this.getCompartmentIndex(selectedZone);
+         }
+      }
+      
       if (-1 == iIndex && getNumCompartments() > 0)
       {
          iIndex = 0;
       }
-
+      
       return iIndex;
    }
 
@@ -1450,6 +1477,43 @@ public abstract class ETZonesCompartment extends ETSimpleListCompartment impleme
 //        super.setSelected(pValue);
     }
     
+     public IADZoneCompartment getSelectedZoneCompartment()
+     {
+        IADZoneCompartment zoneCompartment = null;
+        IADZoneCompartment selectedZone = null;
+        ETList <ICompartment> zoneCompList = getCompartments();
+        if (zoneCompList != null && zoneCompList.size() > 0)
+        {
+           for (int i=0; i<zoneCompList.size(); i++)
+           {
+              ICompartment comp = zoneCompList.get(i);
+              // there should be any case where mode than one zone compartment being selected;
+              // but if it happens, only returns the 1st selected zone in the list.
+
+              if (comp != null && comp instanceof IADZoneCompartment)
+              {   
+                 // check if the name compartment of this comp is selected.
+                 zoneCompartment = (IADZoneCompartment) comp;
+                 if (zoneCompartment  instanceof ISimpleListCompartment)
+                 {
+                    Iterator <ICompartment> compartmentIter = zoneCompartment.getCompartments().iterator();
+                    while (compartmentIter.hasNext())
+                    {
+                       ICompartment nameCompartment = compartmentIter.next();
+                       if (nameCompartment != null && nameCompartment.isSelected())
+                       {
+                          selectedZone = zoneCompartment;
+                          break;
+                       }
+                    }
+                 }
+              }
+           }
+        }
+        return selectedZone;
+     }
+     
+     
     public boolean handleKeyDown(int keyCode, int Shift) {
         boolean handled = super.handleKeyDown(keyCode,Shift);
         
