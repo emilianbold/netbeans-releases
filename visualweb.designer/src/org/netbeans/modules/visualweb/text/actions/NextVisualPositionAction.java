@@ -152,7 +152,8 @@ public class NextVisualPositionAction extends TextAction {
 
         int numSelected = sm.getNumSelected();
 //        ArrayList beans = new ArrayList(numSelected);
-        List<Rectangle> rectangles = new ArrayList<Rectangle>(numSelected);
+//        List<Rectangle> rectangles = new ArrayList<Rectangle>(numSelected);
+        List<Point> points = new ArrayList<Point>(numSelected);
         List<CssBox> boxes = new ArrayList<CssBox>(numSelected);
 //        Iterator it = sm.iterator();
 ////        ModelViewMapper mapper = webform.getMapper();
@@ -177,10 +178,11 @@ public class NextVisualPositionAction extends TextAction {
             //elements.add(box.getElement());
             boxes.add(box);
 
-            Rectangle r =
-                new Rectangle(box.getAbsoluteX(), box.getAbsoluteY(), box.getWidth(),
-                    box.getHeight());
-            rectangles.add(r);
+//            Rectangle r =
+//                new Rectangle(box.getAbsoluteX(), box.getAbsoluteY(), box.getWidth(),
+//                    box.getHeight());
+//            rectangles.add(r);
+            points.add(new Point(box.getAbsoluteX(), box.getAbsoluteY()));
         }
 
 //        GridHandler gm = GridHandler.getInstance();
@@ -233,6 +235,8 @@ public class NextVisualPositionAction extends TextAction {
 
 //        gm.move(webform.getPane(), /*beans,*/ rectangles, boxes, Position.NONE, offsetX, offsetY,
 //            snapDisabled);
-        gm.move(webform.getPane(), /*beans,*/ rectangles, boxes, DomPosition.NONE, offsetX, offsetY, snapDisabled);
+//        gm.move(webform.getPane(), /*beans,*/ rectangles, boxes, DomPosition.NONE, offsetX, offsetY, snapDisabled);
+        gm.move(webform.getPane(), /*beans,*/ points.toArray(new Point[points.size()]), boxes.toArray(new CssBox[boxes.size()]),
+                DomPosition.NONE, offsetX, offsetY, snapDisabled);
     }
 }

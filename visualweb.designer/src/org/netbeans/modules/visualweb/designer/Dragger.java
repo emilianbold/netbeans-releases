@@ -349,8 +349,14 @@ public class Dragger extends Interaction implements KeyListener {
 
 //                    if ((pos != Position.NONE) || (grid && hasMoved(prevX, prevY))) {
                     if ((pos != DomPosition.NONE) || (grid && hasMoved(prevX, prevY))) {
-                        gm.move(pane, /*beans,*/ selections, boxes, pos, prevX, prevY,
-                            action == DRAG_FREE);
+//                        gm.move(pane, /*beans,*/ selections, boxes, pos, prevX, prevY,
+//                            action == DRAG_FREE);
+                        List<Point> points = new ArrayList<Point>();
+                        for (Rectangle selection : selections) {
+                            points.add(new Point(selection.x, selection.y));
+                        }
+                        gm.move(pane, /*beans,*/ points.toArray(new Point[points.size()]), boxes.toArray(new CssBox[boxes.size()]),
+                                pos, prevX, prevY, action == DRAG_FREE);
                     } // else: didn't really move ...
                 }
 
