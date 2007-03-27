@@ -47,6 +47,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.dev.wizard.nodes.WsdlNode;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperGenerator;
@@ -403,9 +404,9 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             return false; // invalid WSDL file
         }
         
-        if (Util.isJavaEE5orHigher(project) ||
-                (!jsr109Supported && !jsr109oldSupported ||
-                (!jsr109Supported && jsr109oldSupported && jwsdpSupported ))) {
+        //if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) ||
+        //        (!jsr109Supported && !jsr109oldSupported ||
+        //        (!jsr109Supported && jsr109oldSupported && jwsdpSupported ))) {
             if (wsdlModel != null) {
                 if (service == null) {
                     wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_NoService")); // NOI18N
@@ -424,7 +425,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     return false;
                 }
             }
-        }
+        //}
         
         //warning if the project directory has embedded spaces
         //TODO - Remove this when the jwsdp version that fixes this problem is available
@@ -508,7 +509,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                 jButtonBrowsePort.setEnabled(false);
             } else {
                 fireChange(); //call to disable Finish button
-                if (Util.isJavaEE5orHigher(project) ||
+                if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) ||
                         (!jsr109Supported && !jsr109oldSupported ||
                         (!jsr109Supported && jsr109oldSupported && jwsdpSupported))) {
                     createModel();
