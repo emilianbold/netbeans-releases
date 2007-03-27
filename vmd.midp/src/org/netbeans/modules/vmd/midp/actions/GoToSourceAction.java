@@ -85,7 +85,7 @@ public final class GoToSourceAction extends SystemAction {
                 if (document == null)
                     return;
                 JEditorPane[] panes = editorSupport[0].getOpenedPanes ();
-                if (panes.length < 1)
+                if (panes == null || panes.length < 1)
                     return;
                 JEditorPane pane = panes[0];
 
