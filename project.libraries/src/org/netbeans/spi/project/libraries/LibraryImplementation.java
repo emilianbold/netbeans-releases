@@ -25,8 +25,8 @@ import java.util.List;
 
 /**
  * Base SPI interface for library. This SPI class is used as a model by the libraries framework.
- * The LibraryTypeProvider implementor should rather use
- * org.netbeans.spi.project.libraries.support.LibrariesSupport.createLibraryImplementation
+ * The {@link LibraryTypeProvider} implementor should rather use
+ * {@link org.netbeans.spi.project.libraries.support.LibrariesSupport#createLibraryImplementation}
  * factory method to create default LibraryImplementation than to implement this interface.
  */
 public interface LibraryImplementation {
