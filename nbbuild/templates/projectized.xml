@@ -101,7 +101,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
         <property name="javahelp.search" value="JavaHelpSearch"/>
         <property name="javahelp.excludes" value="credits.html"/>
-        <property name="netbeans.zipped.sources.dir" value="target/sources"/>
+        <property name="netbeans.zipped.sources.dir" value="build/sources"/>
     </target>
     
     <target name="test-lib-init" depends="init">
@@ -140,12 +140,12 @@ Microsystems, Inc. All Rights Reserved.
         </ant>
     </target>
 
-    <target name="sources-exist" depends="build-init">
+    <target name="check-sources-exist" depends="build-init">
         <available file="${src.dir}" property="sources.exist"/>
     </target>
     
-    <target name="sources-zip" depends="build-init, sources-exist" if="sources.exist" description="Simple sources zip creation intended for use in maven repository.">
-        <mkdir dir="${netbeans.zipped.sources.dir}/${code.name.base.dashes}"/>
+    <target name="sources-zip" depends="build-init, check-sources-exist" if="sources.exist" description="Simple sources zip creation intended for use in maven repository.">
+        <mkdir dir="${netbeans.zipped.sources.dir}"/>
         <zip zipfile="${netbeans.zipped.sources.dir}/${code.name.base.dashes}.zip"
              basedir="${src.dir}"/>
     </target>
