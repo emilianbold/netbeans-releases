@@ -123,6 +123,32 @@ public class VariablesNodeModel implements NodeModel {
     private Map shortDescriptionMap = new HashMap();
     
     public String getShortDescription (final Object o) throws UnknownTypeException {
+        if (o == TreeModel.ROOT)
+            return NbBundle.getBundle(VariablesNodeModel.class).getString("CTL_LocalsModel_Column_Name_Desc");
+        if (o == "NoInfo") // NOI18N
+            return NbBundle.getMessage(VariablesNodeModel.class, "CTL_No_Info_descr");
+        if (o == "No current thread") { // NOI18N
+            return NbBundle.getMessage(VariablesNodeModel.class, "NoCurrentThreadVar");
+        }
+        if (o instanceof JPDAClassType) {
+            return NbBundle.getMessage(VariablesNodeModel.class, "MSG_VariablesFilter_StaticNode_descr");    // NOI18N
+        }
+        if (o instanceof ClassVariable) {
+            return NbBundle.getMessage(VariablesNodeModel.class, "MSG_VariablesFilter_Class_descr");    // NOI18N
+        }
+        if (o instanceof ReturnVariable) {
+            return NbBundle.getMessage(VariablesNodeModel.class, "MSG_VariablesFilter_Return_descr", ((ReturnVariable) o).methodName()+"()");    // NOI18N
+        }
+        if (o == "lastOperations") { // NOI18N
+            return NbBundle.getMessage(VariablesNodeModel.class, "MSG_LastOperations_descr");
+        }
+        String str = o.toString();
+        if (str.startsWith("SubArray")) { // NOI18N
+            int index = str.indexOf('-');
+            return NbBundle.getMessage (VariablesNodeModel.class,
+                    "CTL_LocalsModel_Column_Descr_SubArray",
+                    str.substring(8, index), str.substring(index + 1));
+        }
         synchronized (shortDescriptionMap) {
             Object shortDescription = shortDescriptionMap.remove(o);
             if (shortDescription instanceof String) {
@@ -148,9 +174,7 @@ public class VariablesNodeModel implements NodeModel {
         return "";
     }
     
-    private String getShortDescriptionSynch (Object o) {
-        if (o == TreeModel.ROOT)
-            return NbBundle.getBundle(VariablesNodeModel.class).getString("CTL_LocalsModel_Column_Name_Desc");
+    protected String getShortDescriptionSynch (Object o) {
         if (o instanceof Field) {
             if (o instanceof ObjectVariable) {
                 String type = ((ObjectVariable) o).getType ();
@@ -204,35 +228,11 @@ public class VariablesNodeModel implements NodeModel {
             } catch (InvalidExpressionException ex) {
                 return ex.getLocalizedMessage ();
             }
-        String str = o.toString();
-        if (str.startsWith("SubArray")) { // NOI18N
-            int index = str.indexOf('-');
-            return NbBundle.getMessage (VariablesNodeModel.class,
-                    "CTL_LocalsModel_Column_Descr_SubArray",
-                    str.substring(8, index), str.substring(index + 1));
-        }
-        if (o == "NoInfo") // NOI18N
-            return NbBundle.getMessage(VariablesNodeModel.class, "CTL_No_Info_descr");
-        if (o == "No current thread") { // NOI18N
-            return NbBundle.getMessage(VariablesNodeModel.class, "NoCurrentThreadVar");
-        }
-        if (o instanceof JPDAClassType) {
-            return NbBundle.getMessage(VariablesNodeModel.class, "MSG_VariablesFilter_StaticNode_descr");    // NOI18N
-        }
-        if (o instanceof ClassVariable) {
-            return NbBundle.getMessage(VariablesNodeModel.class, "MSG_VariablesFilter_Class_descr");    // NOI18N
-        }
-        if (o instanceof ReturnVariable) {
-            return NbBundle.getMessage(VariablesNodeModel.class, "MSG_VariablesFilter_Return_descr", ((ReturnVariable) o).methodName()+"()");    // NOI18N
-        }
-        if (o == "lastOperations") { // NOI18N
-            return NbBundle.getMessage(VariablesNodeModel.class, "MSG_LastOperations_descr");
-        }
         return null;
         //throw new UnknownTypeException (o);
     }
     
-    private void testKnown(Object o) throws UnknownTypeException {
+    protected void testKnown(Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) return ;
         if (o instanceof Field) return ;
         if (o instanceof LocalVariable) return ;

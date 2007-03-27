@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,6 +25,7 @@ import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+
 import org.openide.util.NbBundle;
 
 
@@ -50,9 +51,7 @@ public class WatchesNodeModel extends VariablesNodeModel {
         return super.getDisplayName (o);
     }
     
-    public String getShortDescription (Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT)
-            return TreeModel.ROOT;
+    protected String getShortDescriptionSynch (Object o) {
         if (o instanceof JPDAWatch) {
             JPDAWatch w = (JPDAWatch) o;
             boolean evaluated;
@@ -74,7 +73,12 @@ public class WatchesNodeModel extends VariablesNodeModel {
                     return ex.getLocalizedMessage ();
                 }
         }
-        return super.getShortDescription (o);
+        return super.getShortDescriptionSynch(o);
+    }
+    
+    protected void testKnown(Object o) throws UnknownTypeException {
+        if (o instanceof JPDAWatch) return ;
+        super.testKnown(o);
     }
     
     public String getIconBase (Object o) throws UnknownTypeException {

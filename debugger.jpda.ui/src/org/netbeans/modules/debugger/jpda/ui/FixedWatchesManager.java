@@ -219,12 +219,6 @@ NodeActionsProviderFilter, NodeModelFilter {
     
     public String getShortDescription (NodeModel original, Object node) 
     throws UnknownTypeException {
-        if (fixedWatches.containsKey (node)) {
-            Variable v = (Variable) node;
-            return ((String) fixedWatches.get (node)) + 
-                " = (" + v.getType () + ") " + 
-                v.getValue ();
-        }
         return original.getShortDescription (node);
     }
     
