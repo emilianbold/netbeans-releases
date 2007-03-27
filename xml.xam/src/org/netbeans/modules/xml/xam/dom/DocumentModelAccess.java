@@ -91,6 +91,16 @@ public abstract class DocumentModelAccess extends ModelAccess {
     
     public abstract Element duplicate(Element element);
 
+    /**
+     * Reorder children list of an element.
+     * @param element the parent element with children to be reordered
+     * @param newIndexes array indexed by existing indexes, with values representing reordered indexes
+     * @param updater the component wrapper of the given element.
+     */
+    public void reorderChildren(Element element, int[] newIndexes, NodeUpdater updater) {
+        throw new UnsupportedOperationException("Not support yet by this DocumentModelAccess");
+    }
+
     public String getXmlFragmentInclusive(Element element) {
         if (getModel() == null) {
             throw new UnsupportedOperationException("Unavailable because access does not support getModel()");
@@ -220,7 +230,7 @@ public abstract class DocumentModelAccess extends ModelAccess {
     public abstract Node getNewEventNode(PropertyChangeEvent evt);
 
     public abstract Node getNewEventParentNode(PropertyChangeEvent evt);
-
+    
     public String lookupNamespaceURI(Node node, List<Node> pathToRoot) {
         String prefix = node.getPrefix();
         if (prefix == null) prefix = ""; //NOI18N

@@ -455,6 +455,8 @@ public class XDMAccess extends DocumentModelAccess {
     }
 
 	// To fix the attribute order issue when using getAttributeMap().keySet().iterator()
+
+	// To fix the attribute order issue when using getAttributeMap().keySet().iterator()
     public class AttributeMap<K,V> extends HashMap<K,V> {
 		List<K> keys = new ArrayList<K>();
 		public AttributeKeySet<K> keySet() {
@@ -488,5 +490,17 @@ public class XDMAccess extends DocumentModelAccess {
 		public int size() {
 			return keys.size();
 		}
-	}	
+	}
+
+    @Override
+    public void reorderChildren(org.w3c.dom.Element element, int[] permutation,
+                                NodeUpdater updater) {
+        if (noMutations()) return;
+        Element xdmElem = (Element)element;
+        if(xdmElem.isInTree()) {
+            updater.updateReference(xdmModel.reorderChildren(xdmElem, permutation));
+        } else {
+            xdmElem.reorderChildren(permutation);
+        }
+    }
 }
