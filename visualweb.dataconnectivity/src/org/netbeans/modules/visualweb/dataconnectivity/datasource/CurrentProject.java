@@ -114,8 +114,11 @@ public class CurrentProject   {
     }
     
     public static Project getOpenedProject() {
-        Project[] prjs = OpenProjects.getDefault().getOpenProjects();       
-        project = prjs[prjs.length-1];
+        Project[] prjs = OpenProjects.getDefault().getOpenProjects();    
+        if (prjs.length > 0)
+            project = prjs[prjs.length-1];
+        else
+            project = null;
         return project;
     }
     
