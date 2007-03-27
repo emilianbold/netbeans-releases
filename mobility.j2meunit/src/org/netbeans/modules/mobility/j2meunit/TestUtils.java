@@ -19,10 +19,7 @@
 
 package org.netbeans.modules.mobility.j2meunit;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 
@@ -39,14 +36,12 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.ArrayType;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -94,7 +89,28 @@ public class TestUtils {
                 : fullName.substring(lastDotIndex + 1);
     }
 
-    static String getPackageName(String fullName) {
+    /*public static ExpressionTree getReturnTypeTree(TypeMirror returnType, WorkingCopy workingCopy) {
+        TreeMaker maker = workingCopy.getTreeMaker();
+        if (returnType.getKind().isPrimitive())
+            return maker.Identifier(returnType.toString());
+        else if (returnType.getKind().equals(TypeKind.ARRAY)) {
+            return null;
+        } else {
+            return maker.QualIdent(workingCopy.getTypes().asElement(returnType));
+        }
+
+    }
+
+    private static ExpressionTree getArrayReturnType(TypeMirror returnType, WorkingCopy workingCopy) {
+        TreeMaker maker = workingCopy.getTreeMaker();
+        if (returnType.getKind().equals(TypeKind.ARRAY)) {
+            ArrayType arrayReturnType=(ArrayType) returnType;
+
+        }
+
+    }*/
+
+    public static String getPackageName(String fullName) {
         if (fullName != null) {
             int i = fullName.lastIndexOf('.');
             return (i != -1) ? fullName.substring(0, i) : ""; //NOI18N

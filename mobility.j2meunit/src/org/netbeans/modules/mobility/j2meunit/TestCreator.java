@@ -796,10 +796,11 @@ public class TestCreator {
 
                     statements.add(methodCallStmt);
                 } else {
-                    ExpressionTree retTypeTree = retTypeKind.isPrimitive()
+/*                    ExpressionTree retTypeTree = retTypeKind.isPrimitive()
                             ? maker.Identifier(retType.toString())
                             : maker.QualIdent(
-                            workingCopy.getTypes().asElement(retType));
+                            workingCopy.getTypes().asElement(retType));*/
+                    Tree retTypeTree=maker.Type(retType);
 
                     VariableTree expectedValue = maker.Variable(
                             maker.Modifiers(NO_MODIFIERS),
