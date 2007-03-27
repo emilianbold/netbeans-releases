@@ -27,7 +27,6 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -41,7 +40,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SingleSelectionModel;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -50,8 +48,16 @@ import org.netbeans.core.windows.view.ui.Tabbed;
 import org.netbeans.swing.tabcontrol.SlideBarDataModel;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
-import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.openide.util.ChangeSupport;
 import org.openide.windows.TopComponent;
+
+/*
+ * Adapts SlideBar to match Tabbed interface, which is used by TabbedHandler
+ * for talking to component containers. SlideBar is driven indirectly,
+ * through modifications of its model.
+ *
+ * @author Dafe Simonek
+ */
 
 /*
  * Adapts SlideBar to match Tabbed interface, which is used by TabbedHandler
@@ -70,10 +76,7 @@ public final class TabbedSlideAdapter implements Tabbed {
     private SlideBar slideBar;
     /** List of action listeners */
     private List<ActionListener> actionListeners;
-    /** List of selection listeners */
-    private List<ChangeListener> selectionListeners;
-    /** selection change event - stateless, so we can cache */
-    private final ChangeEvent selectionEvt = new ChangeEvent(this);
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     /** Creates a new instance of SlideBarTabs */
     public TabbedSlideAdapter(String side) {
@@ -138,31 +141,15 @@ public final class TabbedSlideAdapter implements Tabbed {
     }
     
     public void addChangeListener(ChangeListener listener) {
-        if (selectionListeners == null) {
-            selectionListeners = new ArrayList<ChangeListener>();
-        }
-        selectionListeners.add(listener);
+        cs.addChangeListener(listener);
     }    
     
     public void removeChangeListener(ChangeListener listener) {
-        if (selectionListeners != null) {
-            selectionListeners.remove(listener);
-            if (selectionListeners.isEmpty()) {
-                selectionListeners = null;
-            }
-        }
+        cs.removeChangeListener(listener);
     }
     
     final void postSelectionEvent() {
-        List<ChangeListener> list;
-        synchronized (this) {
-            if (selectionListeners == null)
-                return;
-            list = Collections.unmodifiableList(selectionListeners);
-        }
-        for (int i = 0; i < list.size(); i++) {
-            list.get(i).stateChanged(selectionEvt);
-        }
+        cs.fireChange();
     }
     
     public void addPropertyChangeListener(String name, PropertyChangeListener listener) {

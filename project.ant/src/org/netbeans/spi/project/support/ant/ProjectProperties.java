@@ -24,13 +24,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ant.FileChangeSupport;
@@ -43,6 +40,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
@@ -149,7 +147,7 @@ final class ProjectProperties {
         private final AntProjectHelper helper;
         private EditableProperties properties = null;
         private boolean loaded = false;
-        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final ChangeSupport cs = new ChangeSupport(this);
         private boolean writing = false;
         
         public PP(String path, AntProjectHelper helper) {
@@ -304,27 +302,20 @@ final class ProjectProperties {
         }
         
         public synchronized void addChangeListener(ChangeListener l) {
-            listeners.add(l);
+            cs.addChangeListener(l);
         }
         
         public synchronized void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
+            cs.removeChangeListener(l);
         }
         
         private void fireChange() {
-            final ChangeListener[] ls;
-            synchronized (this) {
-                if (listeners.isEmpty()) {
-                    return;
-                }
-                ls = listeners.toArray(new ChangeListener[listeners.size()]);
+            if (!cs.hasListeners()) {
+                return;
             }
-            final ChangeEvent ev = new ChangeEvent(this);
             final Mutex.Action<Void> action = new Mutex.Action<Void>() {
                 public Void run() {
-                    for (ChangeListener l : ls) {
-                        l.stateChanged(ev);
-                    }
+                    cs.fireChange();
                     return null;
                 }
             };

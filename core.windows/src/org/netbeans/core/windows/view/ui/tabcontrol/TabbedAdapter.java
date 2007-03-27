@@ -44,10 +44,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.actions.ActionUtils;
-import org.netbeans.swing.tabcontrol.LocationInformer;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.WinsysInfoForTabbed;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
+import org.openide.util.ChangeSupport;
 
 /** Adapter class that implements a pseudo JTabbedPane API on top
  * of the new tab control.  This class should eventually be eliminated
@@ -59,12 +59,10 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     
     public static final int DOCUMENT = 1;
     
-    /** Utility field holding list of ChangeListeners. */
-    private transient java.util.ArrayList<ChangeListener> changeListenerList;
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     /** Debugging flag. */
     private static final boolean DEBUG = Debug.isLoggable(TabbedAdapter.class);
-    private ChangeEvent changeEvent = new ChangeEvent(this);
     
     private PropertyChangeListener tooltipListener, weakTooltipListener;
 
@@ -381,30 +379,20 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
      * @param listener The listener to register.
      *
      */
-    public synchronized void addChangeListener(javax.swing.event.ChangeListener listener) {
-        if (changeListenerList == null ) {
-            changeListenerList = new java.util.ArrayList<ChangeListener>();
-        }
-        changeListenerList.add(listener);
+    public void addChangeListener(ChangeListener listener) {
+        cs.addChangeListener(listener);
     }    
     
     /** Removes ChangeListener from the list of listeners.
      * @param listener The listener to remove.
      *
      */
-    public synchronized void removeChangeListener(javax.swing.event.ChangeListener listener) {
-        if (changeListenerList != null ) {
-            changeListenerList.remove(listener);
-        }
+    public void removeChangeListener(ChangeListener listener) {
+        cs.removeChangeListener(listener);
     }
     
     /** Notifies all registered listeners about the event. */
     private void fireStateChanged() {
-        java.util.ArrayList<ChangeListener> list;
-        synchronized (this) {
-            if (changeListenerList == null) return;
-            list = new ArrayList<ChangeListener>( changeListenerList );
-        }
         //Note: Firing the events while holding the tree lock avoids many
         //gratuitous repaints that slow down switching tabs.  To demonstrate this,
         //comment this code out and run the IDE with -J-Dawt.nativeDoubleBuffering=true
@@ -423,9 +411,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         }
         
         synchronized (getTreeLock()) {
-            for (int i = 0; i < list.size(); i++) {
-                ((javax.swing.event.ChangeListener)list.get(i)).stateChanged(changeEvent);
-            }
+            cs.fireChange();
         }
     }
     

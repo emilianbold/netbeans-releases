@@ -745,7 +745,7 @@ public final class Util {
      */
     public static abstract class ComputedPropertyProvider implements PropertyProvider, PropertyChangeListener {
         private final PropertyEvaluator eval;
-        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final ChangeSupport cs = new ChangeSupport(this);
         protected ComputedPropertyProvider(PropertyEvaluator eval) {
             this.eval = eval;
             eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
@@ -762,31 +762,17 @@ public final class Util {
             return getProperties(vals);
         }
         public final void addChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.add(l);
-            }
+            cs.addChangeListener(l);
         }
         public final void removeChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.remove(l);
-            }
+            cs.removeChangeListener(l);
         }
         public final void propertyChange(PropertyChangeEvent evt) {
             String p = evt.getPropertyName();
             if (p != null && !inputProperties().contains(p)) {
                 return;
             }
-            ChangeEvent ev = new ChangeEvent(this);
-            Iterator<ChangeListener> it;
-            synchronized (listeners) {
-                if (listeners.isEmpty()) {
-                    return;
-                }
-                it = new HashSet<ChangeListener>(listeners).iterator();
-            }
-            while (it.hasNext()) {
-                it.next().stateChanged(ev);
-            }
+            cs.fireChange();
         }
     }
     

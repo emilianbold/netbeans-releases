@@ -34,7 +34,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -62,6 +61,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -93,7 +93,7 @@ public class FolderNodeFactory implements NodeFactory {
         
         private final FreeformProject p;
         private List<Element> keys = new ArrayList<Element>();
-        private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private ChangeSupport cs = new ChangeSupport(this);
         
         public RootChildren(FreeformProject p) {
             this.p = p;
@@ -124,11 +124,11 @@ public class FolderNodeFactory implements NodeFactory {
                 // #50328, #58491 - post setKeys to different thread to prevent deadlocks
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        fireChange();
+                        cs.fireChange();
                     }
                 });
             } else {
-                fireChange();
+                cs.fireChange();
             }
         }
         
@@ -150,21 +150,13 @@ public class FolderNodeFactory implements NodeFactory {
         }
 
         public void addChangeListener(ChangeListener l) {
-            listeners.add(l);
+            cs.addChangeListener(l);
         }
 
         public void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
+            cs.removeChangeListener(l);
         }
         
-        private void fireChange() {
-            List<ChangeListener> list = new ArrayList<ChangeListener>();
-            list.addAll(listeners);
-            for (ChangeListener ls : listeners) {
-                ls.stateChanged(new ChangeEvent(this));
-            }
-        }
-
         public Node node(Element itemEl) {
             
             Element locationEl = Util.findElement(itemEl, "location", FreeformProjectType.NS_GENERAL); // NOI18N
@@ -248,7 +240,7 @@ public class FolderNodeFactory implements NodeFactory {
     
     static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
         
-        EventListenerList ell = new EventListenerList();        
+        private final ChangeSupport cs = new ChangeSupport(this);
         private final FileObject root;
         private final PathMatcher matcher;
         
@@ -272,24 +264,15 @@ public class FolderNodeFactory implements NodeFactory {
         }
         
         public void stateChanged( ChangeEvent e) {            
-            Object[] listeners = ell.getListenerList();     
-            ChangeEvent event = null;
-            for (int i = listeners.length-2; i>=0; i-=2) {
-                if (listeners[i] == ChangeListener.class) {             
-                    if ( event == null) {
-                        event = new ChangeEvent( this );
-                    }
-                    ((ChangeListener)listeners[i+1]).stateChanged( event );
-                }
-            }
+            cs.fireChange();
         }        
     
         public void addChangeListener( ChangeListener listener ) {
-            ell.add( ChangeListener.class, listener );
+            cs.addChangeListener(listener);
         }        
                         
         public void removeChangeListener( ChangeListener listener ) {
-            ell.remove( ChangeListener.class, listener );
+            cs.removeChangeListener(listener);
         }
         
     }

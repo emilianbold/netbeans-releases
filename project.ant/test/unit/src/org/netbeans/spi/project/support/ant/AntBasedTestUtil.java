@@ -59,12 +59,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -611,17 +611,14 @@ public class AntBasedTestUtil {
     public static final class TestMutablePropertyProvider implements PropertyProvider {
 
         public final Map<String,String> defs;
-        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final ChangeSupport cs = new ChangeSupport(this);
 
         public TestMutablePropertyProvider(Map<String,String> defs) {
             this.defs = defs;
         }
 
         public void mutated() {
-            ChangeEvent ev = new ChangeEvent(this);
-            for (ChangeListener l : listeners) {
-                l.stateChanged(ev);
-            }
+            cs.fireChange();
         }
 
         public Map<String,String> getProperties() {
@@ -629,11 +626,11 @@ public class AntBasedTestUtil {
         }
 
         public void addChangeListener(ChangeListener l) {
-            listeners.add(l);
+            cs.addChangeListener(l);
         }
 
         public void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
+            cs.removeChangeListener(l);
         }
 
     }

@@ -19,36 +19,46 @@
 
 package org.netbeans.modules.java.platform.wizard;
 
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.beans.*;
-import java.util.*;
-import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.event.*;
-import javax.swing.*;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
-import javax.accessibility.Accessible;
-import javax.accessibility.AccessibleContext;
-
-import org.openide.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-
 import org.netbeans.modules.java.platform.PlatformSettings;
 import org.netbeans.spi.java.platform.PlatformInstall;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author  sd99038, Tomas  Zezula
  */
-public class LocationChooser extends javax.swing.JFileChooser  implements PropertyChangeListener {
+public class LocationChooser extends JFileChooser implements PropertyChangeListener {
         
 
     private static final Dimension PREFERRED_SIZE = new Dimension (500,340);
@@ -114,7 +124,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
                     }
                 }
             }
-            this.firer.fireStateChanged();
+            this.firer.cs.fireChange();
         }
     }
 
@@ -224,9 +234,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
     public static class Panel implements WizardDescriptor.Panel {
             
         LocationChooser             component;
-        Collection<ChangeListener> listeners = new ArrayList<ChangeListener>();
-
-
+        private final ChangeSupport cs = new ChangeSupport(this);
 
         public java.awt.Component getComponent() {
             if (component == null) {
@@ -248,11 +256,11 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         }
         
         public void addChangeListener(ChangeListener l) {
-            listeners.add(l);
+            cs.addChangeListener(l);
         }
 
         public void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
+            cs.removeChangeListener(l);
         }
         
         public void storeSettings(Object settings) {
@@ -274,18 +282,6 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
             return ((LocationChooser)this.getComponent ()).getPlatformInstall ();
         }
         
-        void fireStateChanged() {
-            ChangeListener[] ll;
-            synchronized (this) {
-                if (listeners.isEmpty())
-                    return;
-                ll = listeners.toArray(new ChangeListener[0]);
-            }
-            ChangeEvent ev = new ChangeEvent(this);
-            for (int i = 0; i < ll.length; i++)
-                ll[i].stateChanged(ev);
-        }
-
     }
     
     private static class MergedIcon implements Icon {

@@ -20,10 +20,6 @@
 package org.netbeans.core;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -31,13 +27,14 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 
 /** Important places in the system.
 *
 * @author Jaroslav Tulach
 */
 public final class NbPlaces extends Object {
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     /** No instance outside this class.
     */
@@ -56,26 +53,15 @@ public final class NbPlaces extends Object {
     }
     
     public void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        cs.addChangeListener(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        cs.removeChangeListener(l);
     }
     
     void fireChange() {
-        ChangeListener[] l;
-        synchronized (listeners) {
-            l = listeners.toArray(new ChangeListener[listeners.size()]);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for (int i = 0; i < l.length; i++) {
-            l[i].stateChanged(ev);
-        }
+        cs.fireChange();
     }
 
     /** Environment node. Place for all transient information about

@@ -46,12 +46,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.AntSettings;
 import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -95,7 +95,7 @@ public final class AntBridge {
     }
     private static Reference<AntInstance> antInstance = null;
     
-    private static List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private static final ChangeSupport cs = new ChangeSupport(AntBridge.class);
     
     private static final class MiscListener implements PropertyChangeListener, LookupListener {
         MiscListener() {}
@@ -153,26 +153,19 @@ public final class AntBridge {
      * location of the installed copy of Ant.
      */
     public static synchronized void addChangeListener(ChangeListener l) {
-        listeners.add(l);
+        cs.addChangeListener(l);
     }
     
     /**
      * Stop listening for changes in the contents of the bridge.
      */
     public static synchronized void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
+        cs.removeChangeListener(l);
     }
     
     private static void fireChange() {
         antInstance = null;
-        ChangeEvent ev = new ChangeEvent(AntBridge.class);
-        ChangeListener[] ls;
-        synchronized (AntBridge.class) {
-            ls = listeners.toArray(new ChangeListener[listeners.size()]);
-        }
-        for (ChangeListener l : ls) {
-            l.stateChanged(ev);
-        }
+        cs.fireChange();
     }
     
     /**

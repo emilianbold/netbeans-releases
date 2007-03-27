@@ -126,29 +126,6 @@ final class CustomizeScriptPanel extends javax.swing.JPanel {
 
         public final void addChangeListener (ChangeListener l) {}
         public final void removeChangeListener (ChangeListener l) {}
-        /*
-        private final Set listeners = new HashSet (1); // Set<ChangeListener>
-        public final void addChangeListener (ChangeListener l) {
-            synchronized (listeners) {
-                listeners.add (l);
-            }
-        }
-        public final void removeChangeListener (ChangeListener l) {
-            synchronized (listeners) {
-                listeners.remove (l);
-            }
-        }
-        protected final void fireChangeEvent () {
-            Iterator it;
-            synchronized (listeners) {
-                it = new HashSet (listeners).iterator ();
-            }
-            ChangeEvent ev = new ChangeEvent (this);
-            while (it.hasNext ()) {
-                ((ChangeListener) it.next ()).stateChanged (ev);
-            }
-        }
-        */
 
         public void readSettings (Object settings) {
             ShortcutWizard wiz = (ShortcutWizard) settings;

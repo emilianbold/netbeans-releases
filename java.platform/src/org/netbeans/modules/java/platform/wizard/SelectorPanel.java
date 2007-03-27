@@ -25,7 +25,6 @@ import java.awt.Insets;
 import java.awt.event.ItemListener;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.ButtonGroup;
@@ -33,13 +32,13 @@ import javax.swing.ButtonModel;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.java.platform.InstallerRegistry;
 import org.netbeans.spi.java.platform.CustomPlatformInstall;
 import org.netbeans.spi.java.platform.GeneralPlatformInstall;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -122,7 +121,7 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
     }
 
     public void itemStateChanged(java.awt.event.ItemEvent e) {
-        this.firer.fireChange();
+        this.firer.cs.fireChange();
     }
     
     
@@ -162,23 +161,15 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
     
     public static class Panel implements WizardDescriptor.Panel {
         
-        private List<ChangeListener> listeners;
+        private final ChangeSupport cs = new ChangeSupport(this);
         private SelectorPanel component;
         
         public synchronized void removeChangeListener(ChangeListener l) {
-            assert l != null;
-            if (this.listeners == null) {
-                return;
-            }
-            this.listeners.remove(l);
+            cs.removeChangeListener(l);
         }
 
         public synchronized void addChangeListener(ChangeListener l) {
-            assert l != null;
-            if (this.listeners == null) {
-                this.listeners = new ArrayList<ChangeListener>();
-            }
-            this.listeners.add(l);
+            cs.addChangeListener(l);
         }                
 
         public void readSettings(Object settings) {
@@ -220,18 +211,5 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
             return null;
         }
         
-        void fireChange () {
-            ChangeListener[] _listeners;
-            synchronized (this) {
-                if (this.listeners == null) {
-                    return;
-                }
-                _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
-            }
-            ChangeEvent event = new ChangeEvent (this);
-            for (int i=0; i<_listeners.length; i++) {
-                _listeners[i].stateChanged(event);
-            }
-        }        
     }
 }

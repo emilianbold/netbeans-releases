@@ -15,23 +15,25 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *//*
- * DefaultTabDataModel.java
- *
- * Created on May 26, 2003, 3:41 PM
  */
 
 package org.netbeans.swing.tabcontrol;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
 import org.netbeans.swing.tabcontrol.event.VeryComplexListDataEvent;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListDataEvent;
-import java.util.*;
+import org.openide.util.ChangeSupport;
 
 /**
  * Default implementation of TabDataModel.
@@ -52,10 +54,7 @@ public class DefaultTabDataModel implements TabDataModel {
 
     private L list = new L();
 
-    /**
-     * Utility field holding list of ChangeListeners.
-     */
-    private transient ArrayList<ChangeListener> changeListenerList;
+    private final ChangeSupport cs = new ChangeSupport(this);
 
     /**
      * Creates a new instance of DefaultTabDataModel
@@ -410,7 +409,7 @@ public class DefaultTabDataModel implements TabDataModel {
                     i);
             l.intervalAdded(event);
         }
-        fireChange();
+        cs.fireChange();
     }
 
     private void fireIntervalRemoved(ListDataEvent event) {
@@ -422,7 +421,7 @@ public class DefaultTabDataModel implements TabDataModel {
                     i);
             l.intervalRemoved(event);
         }
-        fireChange();
+        cs.fireChange();
     }
 
     private void fireContentsChanged(ListDataEvent event) {
@@ -434,7 +433,7 @@ public class DefaultTabDataModel implements TabDataModel {
                     i);
             l.contentsChanged(event);
         }
-        fireChange();
+        cs.fireChange();
     }
 
     private void fireIndicesAdded(ComplexListDataEvent event) {
@@ -446,7 +445,7 @@ public class DefaultTabDataModel implements TabDataModel {
                     i);
             l.indicesAdded(event);
         }
-        fireChange();
+        cs.fireChange();
     }
 
     private void fireIndicesRemoved(ComplexListDataEvent event) {
@@ -458,7 +457,7 @@ public class DefaultTabDataModel implements TabDataModel {
                     i);
             l.indicesRemoved(event);
         }
-        fireChange();
+        cs.fireChange();
     }
 
     private void fireIndicesChanged(ComplexListDataEvent event) {
@@ -470,7 +469,7 @@ public class DefaultTabDataModel implements TabDataModel {
                     i);
             l.indicesChanged(event);
         }
-        fireChange();
+        cs.fireChange();
     }
 
     public String toString() {
@@ -499,11 +498,8 @@ public class DefaultTabDataModel implements TabDataModel {
      *
      * @param listener The listener to register.
      */
-    public synchronized void addChangeListener(ChangeListener listener) {
-        if (changeListenerList == null) {
-            changeListenerList = new ArrayList<ChangeListener>();
-        }
-        changeListenerList.add(listener);
+    public void addChangeListener(ChangeListener listener) {
+        cs.addChangeListener(listener);
     }
 
     /**
@@ -511,29 +507,8 @@ public class DefaultTabDataModel implements TabDataModel {
      *
      * @param listener The listener to remove.
      */
-    public synchronized void removeChangeListener(
-            javax.swing.event.ChangeListener listener) {
-        if (changeListenerList != null) {
-            changeListenerList.remove(listener);
-        }
-    }
-
-    ChangeEvent event = null;
-
-    private void fireChange() {
-        java.util.ArrayList list;
-        synchronized (this) {
-            if (changeListenerList == null)
-                return;
-            list = (java.util.ArrayList) changeListenerList.clone();
-        }
-        if (event == null) {
-            event = new ChangeEvent(this);
-        }
-        for (int i = 0; i < list.size(); i++) {
-            ((javax.swing.event.ChangeListener) list.get(i)).stateChanged(
-                    event);
-        }
+    public void removeChangeListener(ChangeListener listener) {
+        cs.removeChangeListener(listener);
     }
 
     public int indexOf(TabData td) {

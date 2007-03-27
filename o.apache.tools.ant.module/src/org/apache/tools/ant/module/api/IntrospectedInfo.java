@@ -42,6 +42,7 @@ import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.bridge.IntrospectionHelperProxy;
 import org.openide.ErrorManager;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -91,8 +92,7 @@ public final class IntrospectedInfo {
     /** definitions first by kind then by name to class name */
     private Map<String,Map<String,String>> namedefs = new TreeMap<String,Map<String,String>>();
     
-    private Set<ChangeListener> listeners = new HashSet<ChangeListener>(5);
-    private Set<ChangeListener> tonotify = new HashSet<ChangeListener>(5);
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     private ChangeListener antBridgeListener = new ChangeListener() {
         public void stateChanged(ChangeEvent ev) {
@@ -161,9 +161,7 @@ public final class IntrospectedInfo {
      * @since 2.6
      */
     public void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        cs.addChangeListener(l);
     }
     
     /** Remove a listener to changes in the definition set.
@@ -171,36 +169,19 @@ public final class IntrospectedInfo {
      * @since 2.6
      */
     public void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        cs.removeChangeListener(l);
     }
     
     private class ChangeTask implements Runnable {
         public void run() {
-            ChangeListener[] listeners2;
-            synchronized (listeners) {
-                if (tonotify.isEmpty()) return;
-                listeners2 = tonotify.toArray(new ChangeListener[tonotify.size()]);
-                tonotify.clear();
-            }
-            ChangeEvent ev = new ChangeEvent(IntrospectedInfo.this);
-            for (ChangeListener l : listeners2) {
-                l.stateChanged(ev);
-            }
+            cs.fireChange();
         }
     }
     private void fireStateChanged() {
         if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
             AntModule.err.log("IntrospectedInfo.fireStateChanged");
         }
-        synchronized (listeners) {
-            if (listeners.isEmpty()) return;
-            if (tonotify.isEmpty()) {
-                RequestProcessor.getDefault().post(new ChangeTask());
-            }
-            tonotify.addAll(listeners);
-        }
+        RequestProcessor.getDefault().post(new ChangeTask());
     }
     
     /** Get definitions.

@@ -15,27 +15,21 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *//*
- * DefaultTabSelectionModel.java
- *
- * Created on May 26, 2003, 5:37 PM
  */
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Set;
+import javax.swing.SingleSelectionModel;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListDataEvent;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.netbeans.swing.tabcontrol.event.ArrayDiff;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
 import org.netbeans.swing.tabcontrol.event.VeryComplexListDataEvent;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListDataEvent;
-import java.util.Iterator;
-import java.util.Set;
+import org.openide.util.ChangeSupport;
 
 /**
  * Default implementation of tab selection model.  Listens to the supplied data
@@ -49,10 +43,7 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
         ComplexListDataListener {
     TabDataModel dataModel;
     int sel = -1;
-    /**
-     * Utility field holding list of ChangeListeners.
-     */
-    private transient ArrayList<ChangeListener> changeListenerList;
+    private final ChangeSupport cs = new ChangeSupport(this);
 
     /**
      * Creates a new instance of DefaultTabSelectionModel
@@ -72,7 +63,7 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
 
     public void clearSelection() {
         sel = -1;
-        fireStateChanged();
+        cs.fireChange();
     }
 
     public int getSelectedIndex() {
@@ -92,7 +83,7 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
                    + " but model size is only " + dataModel.size());
             }
             sel = index;
-            fireStateChanged();
+            cs.fireChange();
         }
     }
 
@@ -115,7 +106,7 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
                             sel = dataModel.size() - 1;
                         }
                     }
-                    fireStateChanged();
+                    cs.fireChange();
                 }
             }
         } else {
@@ -131,7 +122,7 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
                 } else {
                     sel += (end - start) - 1;
                 }
-                fireStateChanged();
+                cs.fireChange();
             }
         }
     }
@@ -162,7 +153,7 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
         }
         if (offset > 0) {
             sel += offset;
-            fireStateChanged();
+            cs.fireChange();
         }
     }
 
@@ -180,15 +171,15 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
         }
         if (sel == dataModel.size()) {
             sel -= 1;
-            fireStateChanged();
+            cs.fireChange();
             return;
         }
         if (dataModel.size() == 0) {
             sel = -1;
-            fireStateChanged();
+            cs.fireChange();
         } else if (offset != 0) {
             sel = Math.max( -1, Math.min (sel + offset, -1));
-            fireStateChanged();
+            cs.fireChange();
         }
     }
 
@@ -215,7 +206,7 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
             //Don't iterate if everything was closed, we know what to do
             if (dataModel.size() == 0) {
                 sel = -1;
-                fireStateChanged();
+                cs.fireChange();
                 return;
             }
             
@@ -257,38 +248,18 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
             }
             
             if (offset != 0) {
-                fireStateChanged();
+                cs.fireChange();
             }
         }
         //do nothing
     }
 
-    public synchronized void addChangeListener(ChangeListener listener) {
-        if (changeListenerList == null) {
-            changeListenerList = new ArrayList<ChangeListener>();
-        }
-        changeListenerList.add(listener);
+    public void addChangeListener(ChangeListener listener) {
+        cs.addChangeListener(listener);
     }
 
     public synchronized void removeChangeListener(ChangeListener listener) {
-        if (changeListenerList != null) {
-            changeListenerList.remove(listener);
-        }
-    }
-
-    ChangeEvent ce = new ChangeEvent(this);
-
-    private void fireStateChanged() {
-        ArrayList<ChangeListener> list;
-        synchronized (this) {
-            if (changeListenerList == null) {
-                return;
-            }
-            list = new ArrayList<ChangeListener>( changeListenerList );
-        }
-        for( ChangeListener l : list ) {
-            l.stateChanged(ce);
-        }
+        cs.removeChangeListener(listener);
     }
 
 }

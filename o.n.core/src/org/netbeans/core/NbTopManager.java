@@ -35,7 +35,6 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.TopSecurityManager;
 import org.netbeans.core.startup.MainLookup;
@@ -47,6 +46,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -217,33 +217,23 @@ public abstract class NbTopManager {
     public static final class NbStatusDisplayer extends org.openide.awt.StatusDisplayer {
         /** Default constructor for lookup. */
         public NbStatusDisplayer() {}
-        private List<ChangeListener> listeners = null;
+        private final ChangeSupport cs = new ChangeSupport(this);
         private String text = ""; // NOI18N
         public void setStatusText(String text) {
-            ChangeListener[] _listeners;
             synchronized (this) {
                 this.text = text;
-                if (listeners == null || listeners.isEmpty()) {
-                    return;
-                } else {
-                    _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
-                }
             }
-            ChangeEvent e = new ChangeEvent(this);
-            for (int i = 0; i < _listeners.length; i++) {
-                _listeners[i].stateChanged(e);
-            }
+            cs.fireChange();
             Logger.getLogger(NbStatusDisplayer.class.getName()).log(Level.FINE, "Status text updated: {0}", text);
         }
         public synchronized String getStatusText() {
             return text;
         }
-        public synchronized void addChangeListener(ChangeListener l) {
-            if (listeners == null) listeners = new ArrayList<ChangeListener>();
-            listeners.add(l);
+        public void addChangeListener(ChangeListener l) {
+            cs.addChangeListener(l);
         }
-        public synchronized void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
+        public void removeChangeListener(ChangeListener l) {
+            cs.removeChangeListener(l);
         }
     }
 

@@ -51,6 +51,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Document;
@@ -71,7 +72,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     private Reference<StyledDocument> styledDocRef = null;
     private Object parseLock; // see init()
 
-    private Set<ChangeListener> listeners; // see init()
+    private final ChangeSupport cs = new ChangeSupport(this);
     private EditorCookie.Observable editor = null;
     
     private DocumentBuilder documentBuilder;
@@ -83,7 +84,6 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     public AntProjectSupport (FileObject fo) {
         this.fo = fo;
         parseLock = new Object ();
-        listeners = new HashSet<ChangeListener>();
         rp = new RequestProcessor("AntProjectSupport[" + fo + "]"); // NOI18N
     }
   
@@ -317,15 +317,11 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     }
     
     public void addChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add (l);
-        }
+        cs.addChangeListener(l);
     }
     
     public void removeChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove (l);
-        }
+        cs.removeChangeListener(l);
     }
     
     private final RequestProcessor rp;
@@ -333,12 +329,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     
     protected void fireChangeEvent(boolean delay) {
         AntModule.err.log ("AntProjectSupport.fireChangeEvent: fo=" + fo);
-        Iterator<ChangeListener> it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent (this);
-        ChangeFirer f = new ChangeFirer(it, ev);
+        ChangeFirer f = new ChangeFirer();
         synchronized (this) {
             if (task == null) {
                 task = rp.post(f, delay ? REPARSE_DELAY : 0);
@@ -348,12 +339,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         }
     }
     private final class ChangeFirer implements Runnable {
-        private final Iterator<ChangeListener> it;
-        private final ChangeEvent ev;
-        public ChangeFirer(Iterator<ChangeListener> it, ChangeEvent ev) {
-            this.it = it;
-            this.ev = ev;
-        }
+        public ChangeFirer() {}
         public void run () {
             AntModule.err.log ("AntProjectSupport.ChangeFirer.run");
             synchronized (AntProjectSupport.this) {
@@ -362,13 +348,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
                 }
                 task = null;
             }
-            while (it.hasNext ()) {
-                try {
-                    it.next().stateChanged(ev);
-                } catch (RuntimeException re) {
-                    AntModule.err.notify (re);
-                }
-            }
+            cs.fireChange();
         }
     }
     

@@ -53,6 +53,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbCollections;
@@ -220,7 +221,7 @@ public class PropertyUtils {
         private static final RequestProcessor RP = new RequestProcessor("PropertyUtils.FilePropertyProvider.RP"); // NOI18N
         
         private final File properties;
-        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final ChangeSupport cs = new ChangeSupport(this);
         private Map<String,String> cached = null;
         private long cachedTime = 0L;
         
@@ -260,19 +261,12 @@ public class PropertyUtils {
         
         private void fireChange() {
             cachedTime = -1L; // force reload
-            final ChangeListener[] ls;
-            synchronized (this) {
-                if (listeners.isEmpty()) {
-                    return;
-                }
-                ls = listeners.toArray(new ChangeListener[listeners.size()]);
+            if (!cs.hasListeners()) {
+                return;
             }
-            final ChangeEvent ev = new ChangeEvent(this);
             final Mutex.Action<Void> action = new Mutex.Action<Void>() {
                 public Void run() {
-                    for (ChangeListener l : ls) {
-                        l.stateChanged(ev);
-                    }
+                    cs.fireChange();
                     return null;
                 }
             };
@@ -293,11 +287,11 @@ public class PropertyUtils {
         }
         
         public synchronized void addChangeListener(ChangeListener l) {
-            listeners.add(l);
+            cs.addChangeListener(l);
         }
         
         public synchronized void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
+            cs.removeChangeListener(l);
         }
 
         public void fileCreated(FileChangeSupportEvent event) {

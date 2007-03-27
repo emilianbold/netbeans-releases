@@ -24,14 +24,11 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.modules.project.ant.FileChangeSupport;
@@ -47,7 +44,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
+import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -204,7 +201,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     
     private final class StatusImpl implements FileBuiltQuery.Status, PropertyChangeListener/*<DataObject>*/, FileChangeListener, FileChangeSupportListener, Runnable {
         
-        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final ChangeSupport cs = new ChangeSupport(this);
         private Boolean built = null;
         private final DataObject source;
         private File target;
@@ -232,7 +229,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
                 }
             }
             if (doFire) {
-                fireChange();
+                cs.fireChange();
             }
             return b;
         }
@@ -269,29 +266,11 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         }
         
         public void addChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.add(l);
-            }
+            cs.addChangeListener(l);
         }
         
         public void removeChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.remove(l);
-            }
-        }
-        
-        private void fireChange() {
-            ChangeListener[] _listeners;
-            synchronized (listeners) {
-                if (listeners.isEmpty()) {
-                    return;
-                }
-                _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
-            }
-            ChangeEvent ev = new ChangeEvent(this);
-            for (ChangeListener l : _listeners) {
-                l.stateChanged(ev);
-            }
+            cs.removeChangeListener(l);
         }
         
         private void update() {

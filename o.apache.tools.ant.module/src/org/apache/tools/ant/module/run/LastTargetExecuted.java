@@ -21,11 +21,8 @@ package org.apache.tools.ant.module.run;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.openide.execution.ExecutorTask;
@@ -33,6 +30,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.ChangeSupport;
 
 /**
  * Records the last Ant target(s) that was executed.
@@ -53,7 +51,7 @@ public class LastTargetExecuted {
         LastTargetExecuted.verbosity = verbosity;
         LastTargetExecuted.targets = targets;
         LastTargetExecuted.properties = properties;
-        fireChange();
+        cs.fireChange();
     }
     
     /**
@@ -102,7 +100,7 @@ public class LastTargetExecuted {
         if (apc == null) {
             // Can happen in case the build script was deleted (similar to #84874).
             // Also make sure to disable RunLastTargetAction.
-            fireChange();
+            cs.fireChange();
             return null;
         }
         TargetExecutor t = new TargetExecutor(apc, targets);
@@ -111,29 +109,14 @@ public class LastTargetExecuted {
         return t.execute();
     }
     
-    private static final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private static final ChangeSupport cs = new ChangeSupport(LastTargetExecuted.class);
     
     public static void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        cs.addChangeListener(l);
     }
     
     public static void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    
-    private static void fireChange() {
-        ChangeEvent ev = new ChangeEvent(LastTargetExecuted.class);
-        ChangeListener[] ls;
-        synchronized (listeners) {
-            ls = listeners.toArray(new ChangeListener[listeners.size()]);
-        }
-        for (ChangeListener l : ls) {
-            l.stateChanged(ev);
-        }
+        cs.removeChangeListener(l);
     }
     
 }

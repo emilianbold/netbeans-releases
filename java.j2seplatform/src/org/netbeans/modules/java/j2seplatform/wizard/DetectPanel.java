@@ -19,34 +19,44 @@
 
 package org.netbeans.modules.java.j2seplatform.wizard;
 
+import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.*;
-import javax.swing.event.*;
-import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-
-import org.openide.filesystems.*;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.util.HelpCtx;
-
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.ChangeSupport;
 
 /**
  * This Panel launches autoconfiguration during the New J2SE Platform sequence.
@@ -61,12 +71,12 @@ import org.openide.WizardDescriptor;
 public class DetectPanel extends javax.swing.JPanel {
 
     private NewJ2SEPlatform primaryPlatform;
-    private ArrayList listeners;
+    private final ChangeSupport cs = new ChangeSupport(this);
 
     /**
      * Creates a detect panel
      * start the task and update on its completion
-     * @param p the platform being customized.
+     * @param primaryPlatform the platform being customized.
      */
     public DetectPanel(NewJ2SEPlatform primaryPlatform) {
         initComponents();
@@ -103,7 +113,7 @@ public class DetectPanel extends javax.swing.JPanel {
     }
 
     private void handleNameChange () {
-        this.fireChange();
+        cs.fireChange();
     }
 
     /** This method is called from within the constructor to
@@ -271,15 +281,11 @@ public class DetectPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_selectSources
     
     public final synchronized void addChangeListener (ChangeListener listener) {
-        if (this.listeners == null)
-            this.listeners = new ArrayList ();
-        this.listeners.add (listener);
+        cs.addChangeListener(listener);
     }
 
     public final synchronized void removeChangeListener (ChangeListener listener) {
-        if (this.listeners == null)
-            return;
-        this.listeners.remove (listener);
+        cs.removeChangeListener(listener);
     }
 
     public String getPlatformName() {
@@ -304,24 +310,11 @@ public class DetectPanel extends javax.swing.JPanel {
         this.javadoc.setText(jdoc == null ? "" : jdoc);             //NOI18N
     }
 
-    protected final void fireChange () {
-        Iterator it = null;
-        synchronized (this) {
-            if (this.listeners == null)
-                return;
-            it = ((ArrayList)this.listeners.clone()).iterator();
-        }
-        ChangeEvent event = new ChangeEvent (this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(event);
-        }
-    }
-
     /**
      * Updates static information from the detected platform's properties
      */
     void updateData() {
-        Map m = primaryPlatform.getSystemProperties();        
+        Map<String,String> m = primaryPlatform.getSystemProperties();
         // if the name is empty, fill something in:
         if ("".equals(jdkName.getText())) {
             jdkName.setText(getInitialName (m));
@@ -385,7 +378,7 @@ public class DetectPanel extends javax.swing.JPanel {
         private DetectPanel         component;
         private RequestProcessor.Task task;
         private final J2SEWizardIterator  iterator;
-        private Collection          changeList = new ArrayList();
+        private final ChangeSupport cs = new ChangeSupport(this);
         private boolean             detected;
         private boolean             valid;
         private boolean             firstPass=true;
@@ -397,7 +390,7 @@ public class DetectPanel extends javax.swing.JPanel {
         }
 
         public void addChangeListener(ChangeListener l) {
-            changeList.add(l);
+            cs.addChangeListener(l);
         }
 
         public java.awt.Component getComponent() {
@@ -424,7 +417,7 @@ public class DetectPanel extends javax.swing.JPanel {
             if (v == valid)
                 return;
             valid = v;
-            fireStateChange();
+            cs.fireChange();
         }
 
         public HelpCtx getHelp() {
@@ -442,16 +435,15 @@ public class DetectPanel extends javax.swing.JPanel {
             String jdocPath = null;
             ClassPath src = platform.getSourceFolders();
             if (src.entries().size()>0) {
-                URL folderRoot = ((ClassPath.Entry)src.entries().get(0)).getURL();
+                URL folderRoot = src.entries().get(0).getURL();
                 if ("jar".equals(folderRoot.getProtocol())) {   //NOI18N
                     folderRoot = FileUtil.getArchiveFile (folderRoot);
                 }
                 srcPath = new File(URI.create(folderRoot.toExternalForm())).getAbsolutePath();
             }
             else if (firstPass) {
-                Iterator il = platform.getInstallFolders().iterator();
-                if (il.hasNext()) {
-                    File base = FileUtil.toFile ((FileObject)il.next());
+                for (FileObject folder : platform.getInstallFolders()) {
+                    File base = FileUtil.toFile(folder);
                     if (base!=null) {
                         File f = new File (base,"src.zip"); //NOI18N
                         if (f.canRead()) {
@@ -466,18 +458,17 @@ public class DetectPanel extends javax.swing.JPanel {
                     }
                 }                
             }
-            List jdoc = platform.getJavadocFolders();
+            List<URL> jdoc = platform.getJavadocFolders();
             if (jdoc.size()>0) {
-                URL folderRoot = (URL)jdoc.get(0);
+                URL folderRoot = jdoc.get(0);
                 if ("jar".equals(folderRoot.getProtocol())) {
                     folderRoot = FileUtil.getArchiveFile (folderRoot);
                 }
                 jdocPath = new File (URI.create(folderRoot.toExternalForm())).getAbsolutePath();
             }
             else if (firstPass) {
-                Iterator il = platform.getInstallFolders().iterator();
-                if (il.hasNext()) {
-                    File base = FileUtil.toFile ((FileObject)il.next());
+                for (FileObject folder : platform.getInstallFolders()) {
+                    File base = FileUtil.toFile(folder);
                     if (base!=null) {
                         File f = new File (base,"docs"); //NOI18N
                         if (f.isDirectory() && f.canRead()) {
@@ -508,20 +499,8 @@ public class DetectPanel extends javax.swing.JPanel {
             task.schedule(0);
         }
 
-        void fireStateChange() {
-            ChangeListener[] ll;
-            synchronized (this) {
-                if (changeList.isEmpty())
-                    return;
-                ll = (ChangeListener[])changeList.toArray(new ChangeListener[0]);
-            }
-            ChangeEvent ev = new ChangeEvent(this);
-            for (int i = 0; i < ll.length; i++)
-                ll[i].stateChanged(ev);
-        }
-
         public void removeChangeListener(ChangeListener l) {
-            changeList.remove(l);
+            cs.removeChangeListener(l);
         }
 
 	/**
@@ -531,8 +510,8 @@ public class DetectPanel extends javax.swing.JPanel {
         public void storeSettings(Object settings) {
             if (isValid()) {                                
                 String name = component.getPlatformName();                
-                List src = new ArrayList ();
-                List jdoc = new ArrayList ();
+                List<PathResourceImplementation> src = new ArrayList<PathResourceImplementation>();
+                List<URL> jdoc = new ArrayList<URL>();
                 String srcPath = this.component.getSources();
                 if (srcPath!=null) {
                     File f = new File (srcPath);
@@ -597,7 +576,7 @@ public class DetectPanel extends javax.swing.JPanel {
          * Revalidates the Wizard Panel
          */
         public void taskFinished(Task task) {
-            SwingUtilities.invokeLater( new Runnable () {
+            EventQueue.invokeLater(new Runnable() {
                 public void run () {
                     component.updateData ();
                     component.jdkName.setEditable(true);

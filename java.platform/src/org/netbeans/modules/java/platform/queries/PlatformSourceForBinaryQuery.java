@@ -24,9 +24,6 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.ArrayList;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -36,6 +33,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
@@ -98,7 +96,7 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
     private static class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
                         
         private JavaPlatform platform;
-        private ArrayList<ChangeListener> listeners;
+        private final ChangeSupport cs = new ChangeSupport(this);
                         
         public Result (JavaPlatform platform) {
             this.platform = platform;
@@ -110,41 +108,22 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             return sources.getRoots();
         }
                         
-        public synchronized void addChangeListener (ChangeListener l) {
+        public void addChangeListener (ChangeListener l) {
             assert l != null : "Listener can not be null";  //NOI18N
-            if (this.listeners == null) {
-                this.listeners = new ArrayList<ChangeListener>();
-            }
-            this.listeners.add (l);
+            cs.addChangeListener(l);
         }
                         
-        public synchronized void removeChangeListener (ChangeListener l) {
+        public void removeChangeListener (ChangeListener l) {
             assert l != null : "Listener can not be null";  //NOI18N
-            if (this.listeners == null) {
-                return;
-            }
-            this.listeners.remove (l);
+            cs.removeChangeListener(l);
         }
         
         public void propertyChange (PropertyChangeEvent event) {
             if (JavaPlatform.PROP_SOURCE_FOLDER.equals(event.getPropertyName())) {
-                this.fireChange ();
+                cs.fireChange();
             }
         }
         
-        private void fireChange () {
-            Iterator it = null;
-            synchronized (this) {
-                if (this.listeners == null) {
-                    return;
-                }
-                it = ((ArrayList)this.listeners.clone()).iterator ();
-            }
-            ChangeEvent event = new ChangeEvent (this);
-            while (it.hasNext()) {
-                ((ChangeListener)it.next()).stateChanged(event);
-            }
-        }
     }
     
     private static class UnregisteredPlatformResult implements SourceForBinaryQuery.Result {

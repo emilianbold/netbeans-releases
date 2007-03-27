@@ -23,11 +23,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
@@ -35,9 +33,11 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
 
 /**
@@ -46,26 +46,22 @@ import org.openide.util.WeakListeners;
  */
 public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImplementation {
 
-    private final Map/*<URL,SourceForBinaryQuery.Result>*/ cache = new HashMap();
-    private final Map/*<URL,URL>*/ normalizedURLCache = new HashMap();
+    private final Map<URL,SourceForBinaryQuery.Result> cache = new HashMap<URL,SourceForBinaryQuery.Result>();
+    private final Map<URL,URL> normalizedURLCache = new HashMap<URL,URL>();
 
     /** Default constructor for lookup. */
     public J2SELibrarySourceForBinaryQuery() {}
 
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) this.cache.get (binaryRoot);
+        SourceForBinaryQuery.Result res = cache.get(binaryRoot);
         if (res != null) {
             return res;
         }
         boolean isNormalizedURL = isNormalizedURL(binaryRoot);
-        LibraryManager lm = LibraryManager.getDefault ();
-        Library[] libs = lm.getLibraries();
-        for (int i=0; i< libs.length; i++) {
-            String type = libs[i].getType ();
+        for (Library lib : LibraryManager.getDefault().getLibraries()) {
+            String type = lib.getType ();
             if (J2SELibraryTypeProvider.LIBRARY_TYPE.equalsIgnoreCase(type)) {
-                List classes = libs[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
-                for (Iterator it = classes.iterator(); it.hasNext();) {
-                    URL entry = (URL) it.next();
+                for (URL entry : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
                     URL normalizedEntry;
                     if (isNormalizedURL) {
                         normalizedEntry = getNormalizedURL(entry);
@@ -74,7 +70,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                         normalizedEntry = entry;
                     }
                     if (normalizedEntry != null && normalizedEntry.equals(binaryRoot)) {
-                        res =  new Result(entry, libs[i]);
+                        res =  new Result(entry, lib);
                         cache.put (binaryRoot, res);
                         return res;
                     }
@@ -93,7 +89,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         //Todo: Should listen on the LibrariesManager and cleanup cache        
         // in this case the search can use the cache onle and can be faster 
         // from O(n) to O(ln(n))
-        URL normalizedURL = (URL) this.normalizedURLCache.get (url);
+        URL normalizedURL = normalizedURLCache.get(url);
         if (normalizedURL == null) {
             FileObject fo = URLMapper.findFileObject(url);
             if (fo != null) {
@@ -126,27 +122,26 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         
         private Library lib;
         private URL entry;
-        private ArrayList listeners;
+        private final ChangeSupport cs = new ChangeSupport(this);
         private FileObject[] cache;
         
         public Result (URL queryFor, Library lib) {
             this.entry = queryFor;
             this.lib = lib;
-            this.lib.addPropertyChangeListener ((PropertyChangeListener)WeakListeners.create(PropertyChangeListener.class,this,this.lib));
+            this.lib.addPropertyChangeListener(WeakListeners.propertyChange(this, this.lib));
         }
         
         public synchronized FileObject[] getRoots () {
             if (this.cache == null) {
                 if (this.lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH).contains(entry)) {
-                    List src = this.lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
-                    List result = new ArrayList ();
-                    for (Iterator sit = src.iterator(); sit.hasNext();) {
-                        FileObject sourceRootURL = URLMapper.findFileObject((URL) sit.next());
+                    List<FileObject> result = new ArrayList<FileObject>();
+                    for (URL u : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC)) {
+                        FileObject sourceRootURL = URLMapper.findFileObject(u);
                         if (sourceRootURL!=null) {
                             result.add (sourceRootURL);
                         }
                     }
-                    this.cache = (FileObject[]) result.toArray(new FileObject[result.size()]);
+                    this.cache = result.toArray(new FileObject[result.size()]);
                 }
                 else {
                     this.cache = new FileObject[0];
@@ -157,18 +152,12 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         
         public synchronized void addChangeListener (ChangeListener l) {
             assert l != null : "Listener cannot be null"; // NOI18N
-            if (this.listeners == null) {
-                this.listeners = new ArrayList ();
-            }
-            this.listeners.add (l);
+            cs.addChangeListener(l);
         }
         
         public synchronized void removeChangeListener (ChangeListener l) {
             assert l != null : "Listener cannot be null"; // NOI18N
-            if (this.listeners == null) {
-                return;
-            }
-            this.listeners.remove (l);
+            cs.removeChangeListener(l);
         }
         
         public void propertyChange (PropertyChangeEvent event) {
@@ -176,21 +165,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                 synchronized (this) {                    
                     this.cache = null;
                 }
-                this.fireChange ();
-            }
-        }
-        
-        private void fireChange () {
-            Iterator it = null;
-            synchronized (this) {
-                if (this.listeners == null) {
-                    return;
-                }
-                it = ((ArrayList)this.listeners.clone()).iterator();
-            }
-            ChangeEvent event = new ChangeEvent (this);
-            while (it.hasNext ()) {
-                ((ChangeListener)it.next()).stateChanged(event);
+                cs.fireChange();
             }
         }
         

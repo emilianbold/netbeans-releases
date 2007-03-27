@@ -44,7 +44,7 @@ public class @@WIZARD_PANEL_CLASS@@ implements WizardDescriptor.Panel {
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
     /*
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);

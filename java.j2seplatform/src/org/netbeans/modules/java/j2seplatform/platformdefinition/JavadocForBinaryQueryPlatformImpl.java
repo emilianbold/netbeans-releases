@@ -18,19 +18,13 @@
  */
 
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
+
 import java.beans.PropertyChangeEvent;
-
 import java.beans.PropertyChangeListener;
-
-
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
-import javax.swing.event.ChangeEvent;
-
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -40,9 +34,8 @@ import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-
 import org.openide.filesystems.URLMapper;
-
+import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
 
 /**
@@ -70,7 +63,7 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
         class R implements JavadocForBinaryQuery.Result, PropertyChangeListener {
 
             private JavaPlatform platform;
-            private ArrayList listeners;
+            private final ChangeSupport cs = new ChangeSupport(this);
             private URL[] cachedRoots;
 
             public R (JavaPlatform plat) {
@@ -80,29 +73,22 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
 
             public synchronized URL[] getRoots() {
                 if (this.cachedRoots == null) {
-                    ArrayList l = new ArrayList();
-                    for (Iterator i2 = this.platform.getJavadocFolders().iterator(); i2.hasNext();) {
-                        URL u = (URL)i2.next();
+                    List<URL> l = new ArrayList<URL>();
+                    for (URL u : platform.getJavadocFolders()) {
                         l.add(getIndexFolder(u));
                     }
-                    this.cachedRoots = (URL[])l.toArray(new URL[l.size()]);
+                    this.cachedRoots = l.toArray(new URL[l.size()]);
                 }
                 return this.cachedRoots;
             }
 
             public synchronized void addChangeListener(ChangeListener l) {
                 assert l != null : "Listener can not be null";      //NOI18N
-                if (this.listeners == null) {
-                    this.listeners = new ArrayList ();
-                }
-                this.listeners.add (l);
+                cs.addChangeListener(l);
             }
             public synchronized void removeChangeListener(ChangeListener l) {
                 assert l != null : "Listener can not be null";  //NOI18N
-                if (this.listeners == null) {
-                    return;
-                }
-                this.listeners.remove (l);
+                cs.removeChangeListener(l);
             }
             
             public void propertyChange (PropertyChangeEvent event) {
@@ -110,21 +96,7 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
                     synchronized (this) {
                         this.cachedRoots = null;
                     }
-                    this.fireChange ();
-                }
-            }
-            
-            private void fireChange () {
-                Iterator it = null;
-                synchronized (this) {
-                    if (this.listeners == null) {
-                        return;
-                    }
-                    it = ((ArrayList)this.listeners.clone()).iterator();
-                }
-                ChangeEvent event = new ChangeEvent (this);
-                while (it.hasNext()) {
-                    ((ChangeListener)it.next()).stateChanged(event);
+                    cs.fireChange();
                 }
             }
             

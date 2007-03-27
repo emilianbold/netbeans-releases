@@ -21,21 +21,19 @@ package org.apache.tools.ant.module.wizards.shortcut;
 
 import java.awt.Component;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListModel;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
 /**
@@ -270,26 +268,15 @@ final class SelectFolderPanel extends JPanel implements DocumentListener {
                 getPanel().displayNameField.getText().length() > 0;
         }
 
-        private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+        private final ChangeSupport cs = new ChangeSupport(this);
         public final void addChangeListener (ChangeListener l) {
-            synchronized (listeners) {
-                listeners.add (l);
-            }
+            cs.addChangeListener(l);
         }
         public final void removeChangeListener (ChangeListener l) {
-            synchronized (listeners) {
-                listeners.remove (l);
-            }
+            cs.removeChangeListener(l);
         }
         protected final void fireChangeEvent () {
-            ChangeListener[] ls;
-            synchronized (listeners) {
-                ls = listeners.toArray(new ChangeListener[listeners.size()]);
-            }
-            ChangeEvent ev = new ChangeEvent (this);
-            for (ChangeListener l : ls) {
-                l.stateChanged(ev);
-            }
+            cs.fireChange();
         }
 
         public void readSettings (Object settings) {

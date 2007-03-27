@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.ant.freeform;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
@@ -31,6 +28,7 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.w3c.dom.Element;
 
@@ -50,7 +48,7 @@ final class FreeformSources implements Sources, AntProjectListener {
     }
     
     private Sources delegate;
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     public SourceGroup[] getSourceGroups(final String type) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
@@ -106,34 +104,16 @@ final class FreeformSources implements Sources, AntProjectListener {
     }
     
     public void addChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.add(changeListener);
-        }
+        cs.addChangeListener(changeListener);
     }
     
     public void removeChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.remove(changeListener);
-        }
-    }
-    
-    private void fireChange() {
-        ChangeListener[] _listeners;
-        synchronized (listeners) {
-            delegate = null;
-            if (listeners.isEmpty()) {
-                return;
-            }
-            _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for (ChangeListener l : _listeners) {
-            l.stateChanged(ev);
-        }
+        cs.removeChangeListener(changeListener);
     }
     
     public void configurationXmlChanged(AntProjectEvent ev) {
-        fireChange();
+        delegate = null;
+        cs.fireChange();
     }
     
     public void propertiesChanged(AntProjectEvent ev) {

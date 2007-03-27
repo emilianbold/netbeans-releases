@@ -21,10 +21,8 @@ package org.netbeans.modules.favorites;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.MockServices;
@@ -38,6 +36,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 
 public class VisibilityQueryWorksTest extends NbTestCase {
@@ -249,25 +248,17 @@ public class VisibilityQueryWorksTest extends NbTestCase {
         }
 
         
-        private ArrayList listeners = new ArrayList();
-        public synchronized void addChangeListener(ChangeListener l) {
-            listeners.add(l);
+        private final ChangeSupport cs = new ChangeSupport(this);
+        public void addChangeListener(ChangeListener l) {
+            cs.addChangeListener(l);
         }
 
-        public synchronized void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
+        public void removeChangeListener(ChangeListener l) {
+            cs.removeChangeListener(l);
         }
         
         public void fire() {
-            ChangeEvent ev = new ChangeEvent(this);
-            ChangeListener[] arr;
-            synchronized (this) {
-                arr = (ChangeListener[])listeners.toArray(new ChangeListener[0]);
-            }
-            
-            for (int i = 0; i < arr.length; i++) {
-                arr[i].stateChanged(ev);
-            }
+            cs.fireChange();
         }
     }
     //

@@ -20,12 +20,11 @@
 package org.netbeans.modules.ant.freeform.ui;
 
 import java.awt.Component;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -36,7 +35,7 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
 
     private BasicProjectInfoPanel component;
     private WizardDescriptor wizardDescriptor;
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final ChangeSupport cs = new ChangeSupport(this);
 
     public BasicProjectInfoWizardPanel() {
         getComponent().setName(NbBundle.getMessage(BasicProjectInfoWizardPanel.class, "WizardPanel_NameAndLocation"));
@@ -66,26 +65,11 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
     }
     
     public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        cs.addChangeListener(l);
     }
     
     public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    
-    final void fireChangeEvent() {
-        Set<ChangeListener> ls;
-        synchronized (listeners) {
-            ls = new HashSet<ChangeListener>(listeners);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for (ChangeListener l : ls) {
-            l.stateChanged(ev);
-        }
+        cs.removeChangeListener(l);
     }
     
     public void readSettings(Object settings) {
@@ -104,7 +88,7 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
     }
     
     public void stateChanged(ChangeEvent e) {
-        fireChangeEvent();
+        cs.fireChange();
     }
     
 }

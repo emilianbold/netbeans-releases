@@ -19,13 +19,12 @@
 
 package org.netbeans.core.windows.services;
 
-
-
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
@@ -33,19 +32,45 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowListener;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.logging.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.WindowConstants;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicLookAndFeel;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-import org.openide.*;
+import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.util.*;
-
+import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 // XXX Before as org.netbeans.core.NbPresenter
 
@@ -58,7 +83,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     
     /** variable holding current modal dialog in the system */
     public static NbPresenter currentModalDialog;
-    private static final Set<ChangeListener> listeners = new HashSet<ChangeListener>();
+    private static final ChangeSupport cs = new ChangeSupport(NbPresenter.class);
     
     protected NotifyDescriptor descriptor;
     
@@ -942,26 +967,15 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     
     // Used by JavaHelp:
     public static void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        cs.addChangeListener(l);
     }
     public static void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        cs.removeChangeListener(l);
     }
     private static void fireChangeEvent() {
-        SwingUtilities.invokeLater(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
             public void run() {
-                Iterator<ChangeListener> it;
-                synchronized (listeners) {
-                    it = new HashSet<ChangeListener>(listeners).iterator();
-                }
-                ChangeEvent ev = new ChangeEvent(NbPresenter.class);
-                while (it.hasNext()) {
-                    it.next().stateChanged(ev);
-                }
+                cs.fireChange();
             }
         });
     }

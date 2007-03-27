@@ -20,11 +20,9 @@
 package org.apache.tools.ant.module.wizards.shortcut;
 
 import java.awt.Component;
-import java.util.HashSet;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -183,30 +181,19 @@ final class IntroPanel extends javax.swing.JPanel {
                    getPanel().keyboardCheck.isSelected ();
         }
 
-        private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+        private final ChangeSupport cs = new ChangeSupport(this);
         public final void addChangeListener (ChangeListener l) {
-            synchronized (listeners) {
-                listeners.add (l);
-            }
+            cs.addChangeListener(l);
         }
         public final void removeChangeListener (ChangeListener l) {
-            synchronized (listeners) {
-                listeners.remove (l);
-            }
+            cs.removeChangeListener(l);
         }
         protected final void fireChangeEvent () {
             // #44409: need to update the PROP_SHOW_* flags before storeSettings is called,
             // because then it will be too late (iterator will already have progressed):
             // XXX workaround should no longer be necessary...
             storeSettings(wiz);
-            ChangeListener[] ls;
-            synchronized (listeners) {
-                ls = listeners.toArray(new ChangeListener[listeners.size()]);
-            }
-            ChangeEvent ev = new ChangeEvent (this);
-            for (ChangeListener l : ls) {
-                l.stateChanged (ev);
-            }
+            cs.fireChange();
         }
 
         public void readSettings (Object settings) {

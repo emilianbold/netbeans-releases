@@ -20,15 +20,13 @@
 package org.apache.tools.ant.module.wizards.shortcut;
 
 import java.awt.Component;
-import java.util.HashSet;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 final class ShortcutIterator implements WizardDescriptor.Iterator {
@@ -164,26 +162,15 @@ final class ShortcutIterator implements WizardDescriptor.Iterator {
         return panels[index];
     }
 
-    private transient Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private transient ChangeSupport cs = new ChangeSupport(this);
     public final void addChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add (l);
-        }
+        cs.addChangeListener(l);
     }
     public final void removeChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove (l);
-        }
+        cs.removeChangeListener(l);
     }
     protected final void fireChangeEvent () {
-        ChangeListener[] ls;
-        synchronized (listeners) {
-            ls = listeners.toArray(new ChangeListener[listeners.size()]);
-        }
-        ChangeEvent ev = new ChangeEvent (this);
-        for (ChangeListener l : ls) {
-            l.stateChanged(ev);
-        }
+        cs.fireChange();
     }
 
 }

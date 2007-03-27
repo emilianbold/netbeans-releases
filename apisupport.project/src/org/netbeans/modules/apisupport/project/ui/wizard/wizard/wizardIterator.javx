@@ -100,7 +100,7 @@ public final class @@ITERATOR_CLASS@@ implements WizardDescriptor.Iterator {
     // the number of panels changes in response to user input, then uncomment
     // the following and call when needed: fireChangeEvent();
     /*
-    private Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);

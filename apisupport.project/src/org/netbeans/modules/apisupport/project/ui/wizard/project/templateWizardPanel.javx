@@ -41,7 +41,7 @@ public class @@TEMPLATENAME@@WizardPanel implements WizardDescriptor.Panel,
         return component.valid(wizardDescriptor);
     }
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set/*<ChangeListener>*/ listeners = new HashSet(1); // or can use ChangeSupport in NB 6.0
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);

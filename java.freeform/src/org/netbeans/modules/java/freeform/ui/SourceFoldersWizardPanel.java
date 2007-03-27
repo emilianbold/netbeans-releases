@@ -21,12 +21,9 @@ package org.netbeans.modules.java.freeform.ui;
 
 import java.awt.Component;
 import java.io.File;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -41,6 +38,7 @@ import org.openide.util.HelpCtx;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -82,26 +80,15 @@ public class SourceFoldersWizardPanel implements WizardDescriptor.Panel, ChangeL
         return true;
     }
     
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final ChangeSupport cs = new ChangeSupport(this);
     public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        cs.addChangeListener(l);
     }
     public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        cs.removeChangeListener(l);
     }
     protected final void fireChangeEvent() {
-        Collection<ChangeListener> ls;
-        synchronized (listeners) {
-            ls = new HashSet<ChangeListener>(listeners);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for (ChangeListener l : ls) {
-            l.stateChanged(ev);
-        }
+        cs.fireChange();
     }
     
     public void readSettings(Object settings) {

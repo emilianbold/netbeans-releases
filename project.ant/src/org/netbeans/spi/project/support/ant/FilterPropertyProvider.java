@@ -19,11 +19,10 @@
 
 package org.netbeans.spi.project.support.ant;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
 
 /**
@@ -34,11 +33,11 @@ import org.openide.util.WeakListeners;
 public abstract class FilterPropertyProvider implements PropertyProvider {
 
     private PropertyProvider delegate;
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final ChangeSupport cs = new ChangeSupport(this);
     private final ChangeListener strongListener = new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
             //System.err.println("DPP: change from current provider " + delegate);
-            fireChange();
+            cs.fireChange();
         }
     };
     private ChangeListener weakListener = null; // #50572: must be weak
@@ -67,7 +66,7 @@ public abstract class FilterPropertyProvider implements PropertyProvider {
         this.delegate = delegate;
         weakListener = WeakListeners.change(strongListener, delegate);
         delegate.addChangeListener(weakListener);
-        fireChange();
+        cs.fireChange();
     }
 
     public final Map<String, String> getProperties() {
@@ -76,25 +75,11 @@ public abstract class FilterPropertyProvider implements PropertyProvider {
 
     public final synchronized void addChangeListener(ChangeListener listener) {
         // XXX could listen to delegate only when this has listeners
-        listeners.add(listener);
+        cs.addChangeListener(listener);
     }
 
     public final synchronized void removeChangeListener(ChangeListener listener) {
-        listeners.add(listener);
-    }
-
-    private void fireChange() {
-        ChangeListener[] ls;
-        synchronized (this) {
-            if (listeners.isEmpty()) {
-                return;
-            }
-            ls = listeners.toArray(new ChangeListener[listeners.size()]);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for(ChangeListener l : ls) {
-            l.stateChanged(ev);
-        }
+        cs.removeChangeListener(listener);
     }
 
 }

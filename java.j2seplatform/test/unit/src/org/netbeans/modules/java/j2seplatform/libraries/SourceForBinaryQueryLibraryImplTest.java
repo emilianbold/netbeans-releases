@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.java.j2seplatform.libraries;
 
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
@@ -43,7 +42,6 @@ import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.masterfs.MasterURLMapper;
 
-
 /**
  * J2SELibrarySourceForBinaryQuery test
  *
@@ -52,8 +50,7 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase implements L
     
     private Lookup lookup;
     
-    
-    public SourceForBinaryQueryLibraryImplTest(java.lang.String testName) {
+    public SourceForBinaryQueryLibraryImplTest(String testName) {
         super(testName);
         TestUtil.setLookup(Lookups.proxy(this));
     }
@@ -233,22 +230,20 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase implements L
     
     private static class SFBQResultListener implements ChangeListener {
         
-        private List queue;
-        
-        public SFBQResultListener () {
-            this.queue = new ArrayList ();
-        }
+        private final List<ChangeEvent> queue = new ArrayList<ChangeEvent>();
+
+        public SFBQResultListener() {}
         
         public void clearEventQueue () {
             this.queue.clear();
         }
 
-        public void stateChanged(javax.swing.event.ChangeEvent event) {
+        public void stateChanged(ChangeEvent event) {
             this.queue.add (event);
         }
         
         public ChangeEvent[] getEvents () {
-            return (ChangeEvent[]) this.queue.toArray(new ChangeEvent[this.queue.size()]);
+            return queue.toArray(new ChangeEvent[queue.size()]);
         }                                    
     }
     

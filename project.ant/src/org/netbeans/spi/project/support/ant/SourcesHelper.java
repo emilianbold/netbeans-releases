@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -52,6 +51,7 @@ import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
 
 // XXX should perhaps be legal to call add* methods at any time (should update things)
@@ -566,7 +566,7 @@ public final class SourcesHelper {
     
     private final class SourcesImpl implements Sources, PropertyChangeListener, FileChangeSupportListener {
         
-        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final ChangeSupport cs = new ChangeSupport(this);
         private boolean haveAttachedListeners;
         private final Set<File> rootsListenedTo = new HashSet<File>();
         /**
@@ -668,29 +668,11 @@ public final class SourcesHelper {
                     FileChangeSupport.DEFAULT.addListener(this, rootLocation);
                 }
             }
-            synchronized (listeners) {
-                listeners.add(listener);
-            }
+            cs.addChangeListener(listener);
         }
         
         public void removeChangeListener(ChangeListener listener) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
-        }
-        
-        private void fireChange() {
-            ChangeListener[] _listeners;
-            synchronized (listeners) {
-                if (listeners.isEmpty()) {
-                    return;
-                }
-                _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
-            }
-            ChangeEvent ev = new ChangeEvent(this);
-            for (ChangeListener l : _listeners) {
-                l.stateChanged(ev);
-            }
+            cs.removeChangeListener(listener);
         }
         
         private void maybeFireChange() {
@@ -707,7 +689,7 @@ public final class SourcesHelper {
                 }
             }
             if (change) {
-                fireChange();
+                cs.fireChange();
             }
         }
 

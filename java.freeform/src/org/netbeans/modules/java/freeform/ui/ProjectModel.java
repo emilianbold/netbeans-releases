@@ -23,13 +23,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.ProjectManager;
@@ -42,6 +40,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 
 /**
@@ -90,31 +89,20 @@ public class ProjectModel  {
         resetState();
     }
     
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final ChangeSupport cs = new ChangeSupport(this);
     public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        cs.addChangeListener(l);
     }
     
     public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        cs.removeChangeListener(l);
     }
 
     /**
      * Notifies only about change in source folders and compilation units.
      */
     protected final void fireChangeEvent() {
-        Collection<ChangeListener> ls;
-        synchronized (listeners) {
-            ls = new HashSet<ChangeListener>(listeners);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for (ChangeListener l : ls) {
-            l.stateChanged(ev);
-        }
+        cs.fireChange();
     }
     
     private void resetState() {

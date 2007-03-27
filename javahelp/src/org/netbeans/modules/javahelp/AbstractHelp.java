@@ -19,17 +19,18 @@
 
 package org.netbeans.modules.javahelp;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import javax.help.HelpSet;
-
-import org.openide.util.*;
-
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.javahelp.Help;
+import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /** An implementation of the JavaHelp system (a little more concrete).
 * @author Jesse Glick
@@ -97,20 +98,14 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
     }
     
     public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        cs.addChangeListener(l);
     }
     
     public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        cs.removeChangeListener(l);
     }
     
-    /** all change listeners
-     */    
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     /** Fire a change event to all listeners.
      */    
@@ -123,15 +118,8 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
             });
             return;
         }
-        Set<ChangeListener> lsnrs;
-        synchronized (listeners) {
-            lsnrs = new HashSet<ChangeListener>(listeners);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
         Installer.log.fine("Help.stateChanged");
-        for (ChangeListener chl: lsnrs) {
-            chl.stateChanged(ev);
-        }
+        cs.fireChange();
     }
     
 }
