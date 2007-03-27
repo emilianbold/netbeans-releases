@@ -44,7 +44,6 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
     private static final int ACTIONS_BAR_WIDTH = 16;
     private static final int LINES_BORDER_WIDTH = 4;
     private static final Point POINT_ZERO = new Point(0, 0);
-    private static final int MAGIC_PADDING = 50;    // this should be at least height of a horizontal scrollbar
     
     private final Image insertImage = org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/insert.png"); // NOI18N
     private final Image removeImage = org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/remove.png"); // NOI18N
@@ -271,7 +270,7 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
     }
     
     public Dimension getPreferredSize() {
-        return new Dimension(getBarWidth(), master.getEditorPane().getPreferredSize().height + MAGIC_PADDING);
+        return new Dimension(getBarWidth(), Short.MAX_VALUE);
     }
 
     private int getBarWidth() {
