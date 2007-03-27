@@ -24,7 +24,6 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
@@ -42,7 +41,6 @@ import java.util.LinkedList;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JWindow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
