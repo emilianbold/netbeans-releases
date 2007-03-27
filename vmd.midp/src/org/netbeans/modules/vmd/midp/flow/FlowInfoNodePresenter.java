@@ -34,12 +34,12 @@ import org.netbeans.modules.vmd.api.model.DesignEventFilter;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
+import org.netbeans.modules.vmd.api.screen.actions.DesignerEditAction;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 
 import javax.swing.*;
 import java.awt.datatransfer.Transferable;
 import java.util.*;
-import org.netbeans.modules.vmd.api.screen.actions.AbstractDesignerEditAction;
 
 /**
  * @author David Kaspar
@@ -162,7 +162,7 @@ public final class FlowInfoNodePresenter extends FlowNodePresenter {
             Collection<? extends ActionsPresenter> presenters = descriptor.getRepresentedComponent ().getPresenters (ActionsPresenter.class);
             for (ActionsPresenter presenter : presenters) {
                 for (Action action : presenter.getActions ()) {
-                    if (action instanceof AbstractDesignerEditAction) {
+                    if (action instanceof DesignerEditAction) {
                         if (action.isEnabled ())
                             action.actionPerformed (null);
                         return;
