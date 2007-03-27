@@ -119,7 +119,9 @@ public class JavaScript {
         while (
             !input.eof () && (
                 input.next () == ' ' ||
-                input.next () == '\t'
+                input.next () == '\t' ||
+                input.next () == '\n' ||
+                input.next () == '\r'
             )
         )
             input.read ();
