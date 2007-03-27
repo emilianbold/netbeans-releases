@@ -450,8 +450,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         Object o = dispResults.get(idx);
         if (o instanceof SearchHistoryPanel.DispRevision) {
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
-            FileObject fo = FileUtil.toFileObject(drev.getRevision().getLogInfoHeader().getFile());
-            org.netbeans.modules.versioning.util.Utils.openFile(fo, drev.getRevision().getNumber());
+            try {
+                ViewRevisionAction.view(drev.getRevision().getLogInfoHeader().getFile(), drev.getRevision().getNumber(), null);
+            } catch (Exception e) {
+                Logger.getLogger(SummaryView.class.getName()).log(Level.INFO, e.getMessage(), e);
+            }
         }
     }    
     private void diffPrevious(int idx) {

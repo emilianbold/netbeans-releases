@@ -42,6 +42,8 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.text.DateFormat;
 
 /**
@@ -114,6 +116,7 @@ class RevisionNode extends AbstractNode {
             return new Action [] {
                 new RollbackAction(),
                 new RollbackChangeAction(),
+                new OpenRevisionAction(),
                 new FindCommitAction(false),
                 new FindCommitAction(true),
             };
@@ -278,6 +281,21 @@ class RevisionNode extends AbstractNode {
         }
     }
 
+    private class OpenRevisionAction extends AbstractAction {
+
+        public OpenRevisionAction() {
+            putValue(Action.NAME, NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View", revision.getRevision().getNumber()));  // NOI18N
+        }
+
+        public void actionPerformed(ActionEvent ex) {
+            try {
+                ViewRevisionAction.view(revision.getRevision().getLogInfoHeader().getFile(), revision.getRevision().getNumber(), null);
+            } catch (Exception e) {
+                Logger.getLogger(RevisionNode.class.getName()).log(Level.INFO, e.getMessage(), e);
+            }
+        }
+    }
+    
     private class RollbackAction extends AbstractAction {
 
         public RollbackAction() {

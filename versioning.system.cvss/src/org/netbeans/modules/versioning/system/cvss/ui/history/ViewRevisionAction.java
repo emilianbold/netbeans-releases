@@ -27,7 +27,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -95,28 +94,36 @@ public class ViewRevisionAction extends AbstractAction implements Runnable {
         for (File file : ctx.getRootFiles()) {
             if (file.isDirectory()) continue;
             try {
-                File original = VersionsCache.getInstance().getRemoteFile(file, revision, null);
-                File daoFile = new File(tempFolder, file.getName());
-                Utils.copyStreamsCloseAll(new FileOutputStream(daoFile), new FileInputStream(original));
-                daoFile.deleteOnExit();
-                final FileObject fo = FileUtil.toFileObject(daoFile);
-                try {
-                    DataObject dao = DataObject.find(fo);
-                    final EditorCookie ec = dao.getCookie(EditorCookie.class);
-                    if (ec != null) {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                Utils.openFile(fo, revision);
-                            }
-                        });
-                    }
-                } catch (DataObjectNotFoundException e) {
-                    // no data obejct for the file, ignore it
-                }
+                view(file, revision, tempFolder);
             } catch (Exception e) {
                 // the file cannot be opened, ignore
             }
         }
     }
 
+    /**
+     * Open a file in the given revision in editor.
+     * 
+     * @param base base file
+     * @param revision revision to open 
+     * @param tempFolder temporary folder to use, it can be null bu this is not recommended if you will be calling this on multiple files in a row
+     * @throws Exception if something goes wrong
+     */
+    public static void view(File base, final String revision, File tempFolder) throws Exception {
+        if (tempFolder == null) tempFolder = Utils.getTempFolder();
+        File original = VersionsCache.getInstance().getRemoteFile(base, revision, null);
+        File daoFile = new File(tempFolder, base.getName());
+        Utils.copyStreamsCloseAll(new FileOutputStream(daoFile), new FileInputStream(original));
+        daoFile.deleteOnExit();
+        final FileObject fo = FileUtil.toFileObject(daoFile);
+        DataObject dao = DataObject.find(fo);
+        EditorCookie ec = dao.getCookie(EditorCookie.class);
+        if (ec != null) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    Utils.openFile(fo, revision);
+                }
+            });
+        }
+    }
 }
