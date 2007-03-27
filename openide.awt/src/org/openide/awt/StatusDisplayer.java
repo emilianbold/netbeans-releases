@@ -18,12 +18,9 @@
  */
 package org.openide.awt;
 
-import org.openide.util.Lookup;
-
-import java.util.*;
-
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.util.Lookup;
+import org.openide.util.ChangeSupport;
 
 
 /** Permits control of a status line.
@@ -43,7 +40,7 @@ public abstract class StatusDisplayer {
      */
     public static synchronized StatusDisplayer getDefault() {
         if (INSTANCE == null) {
-            INSTANCE = (StatusDisplayer) Lookup.getDefault().lookup(StatusDisplayer.class);
+            INSTANCE = Lookup.getDefault().lookup(StatusDisplayer.class);
 
             if (INSTANCE == null) {
                 INSTANCE = new Trivial();
@@ -90,7 +87,7 @@ public abstract class StatusDisplayer {
      * @see "#32154"
      */
     private static final class Trivial extends StatusDisplayer {
-        private List<ChangeListener> listeners = null;
+        private final ChangeSupport cs = new ChangeSupport(this);
         private String text = ""; // NOI18N
 
         public synchronized String getStatusText() {
@@ -108,32 +105,16 @@ public abstract class StatusDisplayer {
                 System.err.println("(" + text + ")"); // NOI18N
             }
 
-            fireChange();
+            cs.fireChange();
         }
 
-        public synchronized void addChangeListener(ChangeListener l) {
-            if (listeners == null) {
-                listeners = new ArrayList<ChangeListener>();
-            }
-
-            listeners.add(l);
+        public void addChangeListener(ChangeListener l) {
+            cs.addChangeListener(l);
         }
 
-        public synchronized void removeChangeListener(ChangeListener l) {
-            if (listeners != null) {
-                listeners.remove(l);
-            }
+        public void removeChangeListener(ChangeListener l) {
+            cs.removeChangeListener(l);
         }
 
-        protected final void fireChange() {
-            if ((listeners != null) && !listeners.isEmpty()) {
-                ChangeEvent ev = new ChangeEvent(this);
-                Iterator<ChangeListener> it = listeners.iterator();
-
-                while (it.hasNext()) {
-                    it.next().stateChanged(ev);
-                }
-            }
-        }
     }
 }

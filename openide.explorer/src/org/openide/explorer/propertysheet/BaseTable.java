@@ -16,16 +16,11 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * BaseTable.java
- *
- * Created on 13 October 2003, 12:52
- */
+
 package org.openide.explorer.propertysheet;
 
 import java.awt.AWTKeyStroke;
 import org.openide.util.NbBundle;
-
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
@@ -51,12 +46,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
-
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventObject;
-import java.util.List;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -87,7 +78,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
-
+import org.openide.util.ChangeSupport;
 
 /** A base class for property-sheet style tables.  This class handles all of
  * the non-property specific behaviors of the property sheet.  It is not
@@ -141,11 +132,7 @@ abstract class BaseTable extends JTable implements FocusListener {
      * there are no headers */
     protected LineDragListener dragListener;
 
-    /**A change event for reuse */
-    private transient final ChangeEvent chEvent = new ChangeEvent(this);
-
-    /** The list of change listeners */
-    private transient List<ChangeListener> changeListenerList;
+    private final ChangeSupport cs = new ChangeSupport(this);
 
     /** Flag which, if true, means that the next call to paint() should trigger
      * calculating the fixed row height based on the font size */
@@ -975,38 +962,22 @@ abstract class BaseTable extends JTable implements FocusListener {
 
     /** Registers ChangeListener to receive events.
      * @param listener The listener to register.  */
-    public final synchronized void addChangeListener(ChangeListener listener) {
-        if (changeListenerList == null) {
-            changeListenerList = new ArrayList<ChangeListener>();
-        }
-
-        changeListenerList.add(listener);
+    public final void addChangeListener(ChangeListener listener) {
+        cs.addChangeListener(listener);
     }
 
     /** Removes ChangeListener from the list of listeners.
      * @param listener The listener to remove. */
-    public final synchronized void removeChangeListener(ChangeListener listener) {
-        if (changeListenerList != null) {
-            changeListenerList.remove(listener);
-        }
+    public final void removeChangeListener(ChangeListener listener) {
+        cs.removeChangeListener(listener);
     }
 
     /** Notifies all registered listeners about the event.
      */
     void fireChange() {
-        List list;
-
-        synchronized (this) {
-            if (changeListenerList == null) {
-                return;
-            }
-
-            list = (List) ((ArrayList) changeListenerList).clone();
-        }
-
-        for (int i = 0; i < list.size(); i++) {
-            ((ChangeListener) list.get(i)).stateChanged(chEvent);
-        }
+        if (cs != null) {
+            cs.fireChange();
+        } // else in constructor
     }
 
     //****************************** Focus listener implementation ************

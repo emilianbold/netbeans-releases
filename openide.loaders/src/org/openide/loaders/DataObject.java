@@ -1051,25 +1051,22 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     private static final class ModifiedRegistry extends HashSet<DataObject> {
         static final long serialVersionUID =-2861723614638919680L;
         
-        /** Set of listeners listening to changes to the set of modified objs */
-        private Set<ChangeListener> listeners;
+        private final ChangeSupport cs = new ChangeSupport(this);
 
         ModifiedRegistry() {}
 
         /** Adds new listener.
         * @param chl new listener
         */
-        public final synchronized void addChangeListener (final ChangeListener chl) {
-            if (listeners == null) listeners = new HashSet<ChangeListener>(5);
-            listeners.add(chl);
+        public final void addChangeListener(final ChangeListener chl) {
+            cs.addChangeListener(chl);
         }
 
         /** Removes listener from the listener list.
         * @param chl listener to remove
         */
-        public final synchronized void removeChangeListener (final ChangeListener chl) {
-            if (listeners == null) return;
-            listeners.remove(chl);
+        public final void removeChangeListener(final ChangeListener chl) {
+            cs.removeChangeListener(chl);
         }
 
         /***** overriding of methods which change content in order to notify
@@ -1077,30 +1074,19 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         @Override
         public boolean add (DataObject o) {
             boolean result = super.add(o);
-            if (result) fireChangeEvent(new ChangeEvent(this));
+            if (result) {
+                cs.fireChange();
+            }
             return result;
         }
 
         @Override
         public boolean remove (Object o) {
             boolean result = super.remove(o);
-            if (result) fireChangeEvent(new ChangeEvent(this));
+            if (result) {
+                cs.fireChange();
+            }
             return result;
-        }
-
-        /** Fires change event to all listeners.
-        * @param che change event
-        */
-        protected final void fireChangeEvent (ChangeEvent che) {
-            if (listeners == null) return;
-            Set<ChangeListener> clones;
-            synchronized (this) {
-                clones = new HashSet<ChangeListener>(listeners);
-            }
-            // fire on cloned list to prevent from modifications when firing
-            for (ChangeListener l : clones) {
-                l.stateChanged(che);
-            }
         }
 
     }  // end of ModifiedRegistry inner class

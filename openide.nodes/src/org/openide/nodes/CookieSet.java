@@ -23,9 +23,8 @@ import java.lang.ref.WeakReference;
 
 import java.util.*;
 
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -45,8 +44,7 @@ public final class CookieSet extends Object implements Lookup.Provider {
     /** list of cookies (Class, Node.Cookie) */
     private HashMap<Class, R> map = new HashMap<Class,R>(31);
 
-    /** set of listeners */
-    private EventListenerList listeners = new EventListenerList();
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     /** potential instance content */
     private final CookieSetLkp ic;
@@ -217,14 +215,14 @@ public final class CookieSet extends Object implements Lookup.Provider {
     * @param l the listener to add
     */
     public void addChangeListener(ChangeListener l) {
-        listeners.add(ChangeListener.class, l);
+        cs.addChangeListener(l);
     }
 
     /** Remove a listener to changes in the cookie set.
     * @param l the listener to remove
     */
     public void removeChangeListener(ChangeListener l) {
-        listeners.remove(ChangeListener.class, l);
+        cs.removeChangeListener(l);
     }
     
     
@@ -276,23 +274,7 @@ public final class CookieSet extends Object implements Lookup.Provider {
     /** Fires change event
     */
     final void fireChangeEvent() {
-        Object[] arr = listeners.getListenerList();
-
-        if (arr.length > 0) {
-            ChangeEvent ev = null;
-
-            // Process the listeners last to first, notifying
-            // those that are interested in this event
-            for (int i = arr.length - 2; i >= 0; i -= 2) {
-                if (arr[i] == ChangeListener.class) {
-                    if (ev == null) {
-                        ev = new ChangeEvent(this);
-                    }
-
-                    ((ChangeListener) arr[i + 1]).stateChanged(ev);
-                }
-            }
-        }
+        cs.fireChange();
     }
 
     /** Attaches cookie to given class and all its superclasses and

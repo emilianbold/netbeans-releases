@@ -18,13 +18,12 @@
  */
 package org.openide.awt;
 
-import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
-
 import java.util.LinkedList;
 
 import javax.swing.event.*;
 import javax.swing.undo.*;
+import org.openide.util.ChangeSupport;
 
 
 /** Undo and Redo manager for top components and workspace elements.
@@ -97,8 +96,7 @@ public interface UndoRedo {
     public static class Manager extends UndoManager implements UndoRedo {
         static final long serialVersionUID = 6721367974521509720L;
 
-        /** listener list */
-        private final EventListenerList list = new EventListenerList();
+        private final ChangeSupport cs = new ChangeSupport(this);
 
         /** vector of Edits to run */
         private LinkedList<UndoableEditEvent> runus = new LinkedList<UndoableEditEvent>(); // for fix of #8692
@@ -158,20 +156,6 @@ public interface UndoRedo {
             return super.canUndo();
         }
 
-        private void fireChange() {
-            Object[] l = list.getListenerList();
-
-            if (l.length == 0) {
-                return;
-            }
-
-            ChangeEvent ev = new ChangeEvent(this);
-
-            for (int i = l.length - 1; i >= 0; i -= 2) {
-                ((ChangeListener) l[i]).stateChanged(ev);
-            }
-        }
-
         private void updateTask() {
             /* The following task is finished when there are no
              * undoable edits waiting to be added to undoredo.
@@ -195,7 +179,7 @@ public interface UndoRedo {
                             superUndoableEditHappened(ue);
                         }
 
-                        fireChange();
+                        cs.fireChange();
                     }
                 }
             }
@@ -214,13 +198,13 @@ public interface UndoRedo {
 
         //#32313 - synchronization of this method was removed
         public void addChangeListener(ChangeListener l) {
-            list.add(ChangeListener.class, l);
+            cs.addChangeListener(l);
         }
 
         /* Removes the listener
         */
         public void removeChangeListener(ChangeListener l) {
-            list.remove(ChangeListener.class, l);
+            cs.removeChangeListener(l);
         }
 
         public String getUndoPresentationName() {

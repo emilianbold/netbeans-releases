@@ -20,12 +20,11 @@
 package org.openide.actions;
 
 import java.beans.PropertyChangeListener;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
 import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -41,7 +40,7 @@ import org.openide.windows.WindowManager;
 * @author   Petr Hamernik, Ian Formanek
 */
 public final class NewAction extends NodeAction {
-    /** Imlementation of ActSubMenuInt */
+
     private static ActSubMenuModel model = new ActSubMenuModel(null);
 
     protected void performAction(Node[] activatedNodes) {
@@ -104,18 +103,7 @@ public final class NewAction extends NodeAction {
 
     protected boolean enable(Node[] activatedNodes) {
         NewType[] types = getNewTypes();
-
-        // notify listeners
-        Object[] listeners = model.getListenerList();
-
-        if (listeners.length > 0) {
-            ChangeEvent ev = new ChangeEvent(model);
-
-            for (int i = listeners.length - 1; i >= 0; i -= 2) {
-                ((ChangeListener) listeners[i]).stateChanged(ev);
-            }
-        }
-
+        model.cs.fireChange();
         return (types.length > 0);
     }
 
@@ -149,8 +137,10 @@ public final class NewAction extends NodeAction {
     }
 
     /** Implementation of ActSubMenuInt */
-    private static class ActSubMenuModel extends EventListenerList implements Actions.SubMenuModel {
+    private static class ActSubMenuModel implements Actions.SubMenuModel {
         static final long serialVersionUID = -4273674308662494596L;
+
+        final ChangeSupport cs = new ChangeSupport(this);
 
         /** lookup to read the new types from or null if they whould be taken
          * directly from top component's selected nodes
@@ -236,13 +226,13 @@ public final class NewAction extends NodeAction {
         /** Adds change listener for changes of the model.
         */
         public void addChangeListener(ChangeListener l) {
-            add(ChangeListener.class, l);
+            cs.addChangeListener(l);
         }
 
         /** Removes change listener for changes of the model.
         */
         public void removeChangeListener(ChangeListener l) {
-            remove(ChangeListener.class, l);
+            cs.removeChangeListener(l);
         }
     }
      // end of ActSubMenuModel

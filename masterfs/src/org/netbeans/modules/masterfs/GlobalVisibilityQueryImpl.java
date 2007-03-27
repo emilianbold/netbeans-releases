@@ -23,13 +23,11 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.FileObject;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
 // XXX - one would expect this class in core but there is problem that 
@@ -45,7 +43,7 @@ import org.openide.util.NbPreferences;
  */ 
 public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation {
     static GlobalVisibilityQueryImpl INSTANCE;
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     /**
      * Keep it synchronized with IDESettings.PROP_IGNORED_FILES
@@ -76,30 +74,16 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
      * Add a listener to changes.
      * @param l a listener to add
      */
-    public synchronized void addChangeListener(ChangeListener l) {
-        listeners.add(l);
+    public void addChangeListener(ChangeListener l) {
+        cs.addChangeListener(l);
     }
 
     /**
      * Stop listening to changes.
      * @param l a listener to remove
      */
-    public synchronized void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
-    }
-
-    private void fireChange() {
-        ChangeListener[] _listeners;
-        synchronized (this) {
-            if (listeners.isEmpty()) {
-                return;
-            }
-            _listeners = (ChangeListener[]) listeners.toArray(new ChangeListener[listeners.size()]);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for (int i = 0; i < _listeners.length; i++) {
-            _listeners[i].stateChanged(ev);
-        }
+    public void removeChangeListener(ChangeListener l) {
+        cs.removeChangeListener(l);
     }
 
     private Pattern getIgnoreFilesPattern() {
@@ -117,7 +101,7 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
             public void preferenceChange(PreferenceChangeEvent evt) {
                 if (PROP_IGNORED_FILES.equals(evt.getKey())) {
                     ignoreFilesPattern = null;
-                    fireChange();
+                    cs.fireChange();
                 }
                 
             }

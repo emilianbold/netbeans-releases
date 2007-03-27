@@ -21,10 +21,8 @@ package org.openide.loaders;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.*;
 import java.lang.ref.WeakReference;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.filesystems.*;
@@ -32,7 +30,7 @@ import org.openide.filesystems.*;
 import org.netbeans.junit.*;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
-
+import org.openide.util.ChangeSupport;
 
 public class FolderChildrenTest extends LoggingTestCaseHid {
     public FolderChildrenTest() {
@@ -248,7 +246,7 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
 
         private boolean selectA = true;
                     
-        ArrayList listeners = new ArrayList();
+        private final ChangeSupport cs = new ChangeSupport(this);
         
         public boolean acceptDataObject (DataObject obj) {
             String fileName = obj.getPrimaryFile().getName();
@@ -258,23 +256,18 @@ public class FolderChildrenTest extends LoggingTestCaseHid {
         }
         
         public void addChangeListener( ChangeListener listener ) {
-            listeners.add( listener );
+            cs.addChangeListener(listener);
         }
         
         public void removeChangeListener( ChangeListener listener ) {
-            listeners.remove( listener );
+            cs.removeChangeListener(listener);
         }
         
         public void fire( ) {
         
             selectA = !selectA;
             
-            ChangeEvent che = new ChangeEvent( this );
-            
-            for( Iterator it = listeners.iterator(); it.hasNext(); ) {
-                ChangeListener chl = (ChangeListener)it.next();
-                chl.stateChanged( che );
-            }
+            cs.fireChange();
         }
         
     }
