@@ -346,10 +346,26 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //
 //        return pageBox.createPreviewImage(width, height);
         // XXX Moved from DesignerHackProviderImpl.
-        Designer[] designers = JsfForm.getDesignersForDataObject(dobj);
+//        Designer[] designers = JsfForm.getDesignersForDataObject(dobj);
+//        if (designers.length == 0) {
+//            return null;
+//        }
+        JsfForm jsfForm = JsfForm.getJsfForm(dobj);
+        if (jsfForm == null) {
+            return null;
+        }
+        // XXX Moved from designer/../DesignerHackProviderImpl.
+//        webform.getModel().sync();
+        jsfForm.syncModel();
+//        if (webform.getModel().isBusted()) {
+        if (jsfForm.isModelBusted()) {
+            return null;
+        }
+        Designer[] designers = JsfForm.getDesigners(jsfForm);
         if (designers.length == 0) {
             return null;
         }
+        
         return DesignerServiceHackProvider.getPageBoxPreviewImage(/*dobj,*/ designers[0], width, height);
     }
 

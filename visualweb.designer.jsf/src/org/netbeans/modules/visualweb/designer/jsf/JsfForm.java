@@ -225,18 +225,27 @@ public class JsfForm {
         return designer;
     }
     
-    static Designer[] getDesignersForDataObject(DataObject jsfJspDataObject) {
-        JsfForm jsfForm = getJsfForm(jsfJspDataObject);
-        if (jsfForm == null) {
-            return new Designer[0];
-        }
+    static Designer[] getDesigners(JsfForm jsfForm) {
         Designer[] designers = findDesigners(jsfForm);
         if (designers.length == 0) {
             Designer designer = createDesigner(jsfForm);
             return new Designer[] {designer};
         }
-        
         return designers;
+    }
+    
+    static Designer[] getDesignersForDataObject(DataObject jsfJspDataObject) {
+        JsfForm jsfForm = getJsfForm(jsfJspDataObject);
+        if (jsfForm == null) {
+            return new Designer[0];
+        }
+//        Designer[] designers = findDesigners(jsfForm);
+//        if (designers.length == 0) {
+//            Designer designer = createDesigner(jsfForm);
+//            return new Designer[] {designer};
+//        }
+//        return designers;
+        return getDesigners(jsfForm);
     }
 
 //    static Designer[] findDesignersForFileObject(FileObject jsfJspFileObject) {
@@ -1147,12 +1156,16 @@ public class JsfForm {
         return domDocumentImpl;
     }
     
-    private void syncModel() {
+    /*private*/ void syncModel() {
         htmlDomProvider.syncModel();
     }
     
     boolean isModelValid() {
         return htmlDomProvider.isModelValid();
+    }
+    
+    boolean isModelBusted() {
+        return htmlDomProvider.isModelBusted();
     }
     
     private void clearHtml() {
@@ -1443,12 +1456,13 @@ public class JsfForm {
             external.setContextJsfForm(this);
         }
         
-        Designer[] designers = findDesigners(external);
-        if (designers.length == 0) {
-            Designer designer = createDesigner(external);
-            return new Designer[] {designer};
-        }
-        return designers;
+//        Designer[] designers = findDesigners(external);
+//        if (designers.length == 0) {
+//            Designer designer = createDesigner(external);
+//            return new Designer[] {designer};
+//        }
+//        return designers;
+        return getDesigners(external);
     }
     
     // XXX Copied/modified from designer/../ExternalDocumentBox.

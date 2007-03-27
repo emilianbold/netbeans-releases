@@ -175,13 +175,14 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
         
         WebForm webform = (WebForm)designer;
 
-//        webform.getModel().sync();
-        webform.syncModel();
-
-//        if (webform.getModel().isBusted()) {
-        if (webform.isModelBusted()) {
-            return null;
-        }
+        // XXX Moved to designer/jsf/../DesignerHackImpl.
+////        webform.getModel().sync();
+//        webform.syncModel();
+//
+////        if (webform.getModel().isBusted()) {
+//        if (webform.isModelBusted()) {
+//            return null;
+//        }
 
         Element body = webform.getHtmlBody();
 
