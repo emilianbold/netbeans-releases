@@ -21,6 +21,8 @@
 package org.netbeans.modules.vmd.midp.screen;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.NameType;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceItemPresenter;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
@@ -42,6 +44,10 @@ public class CommandEventSourceSRItemPresenter extends ScreenResourceItemPresent
     public boolean isActiveFor (DesignComponent component) {
         DesignComponent thisComponent = getComponent ();
         return thisComponent != null  &&  component != null  &&  thisComponent.readProperty (CommandEventSourceCD.PROP_DISPLAYABLE).getComponent () == component;
+    }
+
+    public InfoPresenter.NameType getNameType() {
+        return InfoPresenter.NameType.PRIMARY;
     }
 
 }

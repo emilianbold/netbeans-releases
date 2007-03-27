@@ -88,7 +88,13 @@ public final class EventSourceSupport {
                 case SECONDARY:
                     return "Command";
                 case TERTIARY:
-                    return null;
+                    StringBuffer nameWithParent = new StringBuffer();
+                    nameWithParent.append("<HTML>"); //NOI18N
+                    nameWithParent.append(resolveName(component));
+                    nameWithParent.append(" <font color=\"#808080\">["); 
+                    nameWithParent.append(component.getParentComponent().getPresenter(InfoPresenter.class).getEditableName());
+                    nameWithParent.append("]");
+                    return nameWithParent.toString();
                 default:
                     throw Debug.illegalState ();
             }

@@ -132,6 +132,9 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
                     ArraySupport.remove (menu, SVGMenuCD.PROP_ELEMENTS, component);
                 }
             }
+        
+        
+        
         );
     }
 

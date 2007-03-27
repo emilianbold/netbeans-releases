@@ -14,6 +14,8 @@
 package org.netbeans.modules.vmd.midp.screen;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.NameType;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceItemPresenter;
 
@@ -33,6 +35,10 @@ public class ResourceSRItemPresenter extends ScreenResourceItemPresenter {
     @Override
     public boolean isActiveFor (DesignComponent component) {
         return true;
+    }
+
+    public InfoPresenter.NameType getNameType() {
+        return InfoPresenter.NameType.PRIMARY;
     }
 
 }

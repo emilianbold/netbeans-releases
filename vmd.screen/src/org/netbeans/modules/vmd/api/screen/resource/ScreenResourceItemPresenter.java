@@ -15,6 +15,7 @@ package org.netbeans.modules.vmd.api.screen.resource;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 
 /**
  * Screen resource presenter
@@ -35,6 +36,12 @@ public abstract class ScreenResourceItemPresenter extends Presenter {
      * @return true, if active for the component
      */
     public abstract boolean isActiveFor (DesignComponent component);
+    
+     /**
+     * Returns name type for InfoPresenter
+     * @return NameType - PRIMARY, SECONDARY or TERTIARY 
+     */
+    public abstract InfoPresenter.NameType getNameType();
 
     public final DesignComponent getRelatedComponent () {
         return getComponent ();

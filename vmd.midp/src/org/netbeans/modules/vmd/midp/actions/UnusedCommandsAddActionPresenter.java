@@ -38,7 +38,9 @@ import org.openide.util.NbBundle;
  * @author Karol Harezlak
  */
 abstract class UnusedCommandsAddActionPresenter extends AddActionPresenter {
+    
     //TODO Because of havy use of this class created actions should be somehow cashed and reuse!!
+    
     public static final String DISPLAY_NAME_ADD = NbBundle.getMessage(UnusedCommandsAddActionPresenter.class, "NAME_UnusedCommandsAddActionPresenter"); //NOI18N
     
     public static final Presenter createForDisplayable(String displayName, int order){
@@ -88,30 +90,12 @@ abstract class UnusedCommandsAddActionPresenter extends AddActionPresenter {
             final InfoPresenter infoPresenter = unusedCommand.getPresenter(InfoPresenter.class);
             if (infoPresenter == null)
                 throw new IllegalStateException("No Info Presenter for component: " + unusedCommand); //NOI18N
-            //newAddActions.add(getInstance(unusedCommand, infoPresenter, this));
             AddActionItem item = createUnusedCommandAction(unusedCommand, infoPresenter, this);
             item.resolveAction(getComponent());
             newAddActions.add(item);
         }
         return newAddActions.toArray(new AddActionItem[newAddActions.size()]);
     }
-    
-    //private static Map<DesignComponent, AddActionItem> instances = new WeakHashMap<DesignComponent, AddActionItem>();
-    
-//    private static final AddActionItem getInstance(DesignComponent unusedCommandComponent,
-//                                                   InfoPresenter infoPresenter,
-//                                                   UnusedCommandsAddActionPresenter presenter) {
-//        
-//        AddActionItem action = instances.get(unusedCommandComponent);
-//        if (action != null) {
-//            action.resolveAction(unusedCommandComponent);
-//            return action;
-//        }
-//        action = createUnusedCommandAction(unusedCommandComponent, infoPresenter, presenter);
-//        instances.put(unusedCommandComponent, action);
-//        
-//        return action;
-//    }
     
     private static final AddActionItem createUnusedCommandAction(final DesignComponent unusedCommandComponent,
                                                                  final InfoPresenter infoPresenter,

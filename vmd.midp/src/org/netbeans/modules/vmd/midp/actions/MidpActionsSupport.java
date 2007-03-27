@@ -30,7 +30,9 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.AddAction;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteAction;
 import org.netbeans.modules.vmd.api.properties.common.PropertiesAction;
-import org.netbeans.modules.vmd.api.screen.actions.EditAction;
+import org.netbeans.modules.vmd.api.screen.actions.DesignerEditAction;
+import org.netbeans.modules.vmd.api.screen.actions.DesignerEditParentAction;
+
 
 import org.openide.util.actions.SystemAction;
 
@@ -41,7 +43,20 @@ public final class MidpActionsSupport {
 
     public static void addCommonActionsPresenters (List<Presenter> presenters, boolean allowEdit, boolean allowGoToSource, boolean allowRename, boolean allowDelete, boolean allowProperties) {
         if (allowEdit)
-            presenters.add (ActionsPresenter.create (20, SystemAction.get(EditAction.class)));
+            presenters.add (ActionsPresenter.create (20,SystemAction.get(DesignerEditAction.class)));
+        if (allowGoToSource)
+            presenters.add (ActionsPresenter.create (20, SystemAction.get(GoToSourceAction.class)));
+        if (allowRename)
+            presenters.add (ActionsPresenter.create (30, SystemAction.get(RenameAction.class)));
+        if (allowDelete)
+            presenters.add (ActionsPresenter.create (40, SystemAction.get(DeleteAction.class)));
+        if (allowProperties)
+            presenters.add (ActionsPresenter.create (60, SystemAction.get(PropertiesAction.class)));
+    }
+    
+    public static void addCommonActionsPresentersParentEditAction (List<Presenter> presenters, boolean allowEdit, boolean allowGoToSource, boolean allowRename, boolean allowDelete, boolean allowProperties) {
+        if (allowEdit)
+            presenters.add (ActionsPresenter.create (20,SystemAction.get(DesignerEditParentAction.class)));
         if (allowGoToSource)
             presenters.add (ActionsPresenter.create (20, SystemAction.get(GoToSourceAction.class)));
         if (allowRename)

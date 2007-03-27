@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.vmd.midpnb.components.items;
 
+import java.awt.Image;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
@@ -33,20 +34,18 @@ import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 import org.openide.util.Utilities;
 
-import java.awt.*;
-
 /**
  *
  * @author Anton Chechel
  */
 public class ItemSupport {
-
+    
     private static final Resolver SVG_MENU_ELEMENT_RESOLVER = new ElementResolver(SVGMenuElementEventSourceCD.PROP_STRING, SVGMenuElementEventSourceCD.ICON_PATH);
-
+    
     public static Resolver createSVGMenuElementInfoResolver () {
         return SVG_MENU_ELEMENT_RESOLVER;
     }
-
+   
     private static class ElementResolver implements InfoPresenter.Resolver {
 
         private String propertyName;

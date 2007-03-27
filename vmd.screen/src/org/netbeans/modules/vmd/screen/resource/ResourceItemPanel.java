@@ -34,6 +34,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceItemPresenter;
 import org.netbeans.modules.vmd.screen.GradientBorder;
 
 /**
@@ -53,18 +55,31 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
     
     // called from AWT and document transaction
     public void reload() {
-        InfoPresenter presenter = component.getPresenter(InfoPresenter.class);
-        assert presenter != null;
-        
-        setText(presenter.getDisplayName(InfoPresenter.NameType.PRIMARY));
-        
-        Image image = presenter.getIcon(InfoPresenter.IconType.COLOR_16x16);
+        InfoPresenter infoPresenter = component.getPresenter(InfoPresenter.class);
+        ScreenResourceItemPresenter itemPresenter = component.getPresenter(ScreenResourceItemPresenter.class);
+        assert infoPresenter != null : "Null InfoPresenter"; //NOI18N
+        assert itemPresenter != null : "Null ScreenResourceItemPresenter"; //NOI18N
+        InfoPresenter.NameType nameType = itemPresenter.getNameType();
+        Image image = infoPresenter.getIcon(InfoPresenter.IconType.COLOR_16x16);
         setIcon(image != null ? new ImageIcon(image) : null);
         
         if (component.getDocument().getSelectedComponents().contains(component)) {
             setBorder(SELECTED_RESOURCE_BORDER);
         } else {
             setBorder(RESOURCE_BORDER);
+        }
+         switch (nameType) {
+            case PRIMARY:
+                setText(infoPresenter.getDisplayName(nameType));
+                return;
+            case SECONDARY:
+                setText(infoPresenter.getDisplayName(nameType));
+                return;
+            case TERTIARY:
+                setText(infoPresenter.getDisplayName(nameType));
+                return;
+            default:
+                throw Debug.illegalState();
         }
     }
     

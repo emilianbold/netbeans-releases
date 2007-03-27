@@ -51,6 +51,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.*;
 import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
 
 
@@ -147,10 +148,15 @@ public class ItemCD extends ComponentDescriptor {
     }
 
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
-        MidpActionsSupport.addCommonActionsPresenters (presenters, false, false, false, false, false);
+        for (Presenter presenter : presenters.toArray(new Presenter[presenters.size()])) {
+            if (presenter instanceof ActionsPresenter)
+                presenters.remove(presenter);
+        }      
+        MidpActionsSupport.addCommonActionsPresentersParentEditAction(presenters, true, true, true, true, true);
         MidpActionsSupport.addNewActionPresenter(presenters, CommandCD.TYPEID);
         MidpActionsSupport.addUnusedCommandsAddActionForItem(presenters);
         MidpActionsSupport.addMoveActionPresenter(presenters, FormCD.PROP_ITEMS);
+        
         super.gatherPresenters (presenters);
     }
 
