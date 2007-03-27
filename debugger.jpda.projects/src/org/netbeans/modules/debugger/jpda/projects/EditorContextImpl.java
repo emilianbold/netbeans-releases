@@ -611,7 +611,7 @@ public class EditorContextImpl extends EditorContext {
                                 Tree tree = SourceUtils.treeFor(ci, elm);
                                 int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
                                 EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-                                result[0] = NbDocument.findLineNumber(editor.getDocument(), pos) + 1;
+                                result[0] = NbDocument.findLineNumber(editor.openDocument(), pos) + 1;
                                 //return elms.getSourcePosition(elm).getLine();
                             }
                         }
@@ -619,7 +619,7 @@ public class EditorContextImpl extends EditorContext {
                 }
             },true);
         } catch (IOException ioex) {
-            //XXX: log the exception?
+            ErrorManager.getDefault().notify(ioex);
             return -1;
         }
         return result[0];
