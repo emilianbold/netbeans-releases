@@ -106,7 +106,7 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             
             String databaseProductName = null;
             try {
-                databaseProductName = dbConnection.getJDBCConnection().getMetaData().getDatabaseProductName();
+                databaseProductName = dbConnection.getJDBCConnection().getMetaData().getDatabaseProductName().replaceAll("\\s{1}", "");
             } catch (SQLException sqle) {
                 sqle.printStackTrace();
             }
@@ -124,26 +124,30 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             DataSourceInfo dataSourceInfo = new DataSourceInfo(dsName, driverClassName, url, validationQuery, username, password);
                                     
             // Logic to reuse the datasource exist in the project. No necessary to create new data source
-            ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(designBean);            
+            ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(designBean); 
             
-            // If Datasource exists in the project use its name
-            try {
-                DesignTimeDataSourceHelper dsHelper = new DesignTimeDataSourceHelper();
+            DesignTimeDataSourceHelper dsHelper = null;
+            try { 
+                dsHelper = new DesignTimeDataSourceHelper();
+            } catch (NamingException ne) {
+                // XXX Swallow exception for now - clean up later
+            }
+            
+            // If Datasource exists in the project use its name       
+            try { 
                 DesignTimeDataSource dtDs = dsHelper.getDataSource(dataSourceInfo.getName());
             } catch (NamingException ne) {
                 // XXX Swallow exception for now - clean up later
             }
             
             // Add the data sources to the project
-            projectDataSourceManager.addDataSource(dataSourceInfo);            
             try {
-                DesignTimeDataSourceHelper dsHelper = new DesignTimeDataSourceHelper();
+                projectDataSourceManager.addDataSource(dataSourceInfo);
                 dsHelper.addDataSource( dsName, driverClassName, url, null,  username, password);
             } catch (NamingException ne) {
-                ne.printStackTrace();
+                // XXX Swallow exception for now - clean up later
             }
-            
-            
+                        
             // no need to do this once the switch is made to use NetBeans connections
             addJdbcDriver(jdbcDriver);
                         

@@ -73,7 +73,6 @@ public class DesignTimeDataSourceHelper {
     private static final String    ATTR_PASSWORD   = "password"; // NOI18N
     private static final String    ATTR_QUERY      = "validationQuery"; // NOI18N
     private static final String    ATTR_REFERENCES = "references" ;
-    private Context                ctx;
     private DesignTimeDataSource[] dataSources;
     private String[]               dataSourceNames;
     private boolean                isDataSourceAdded;
@@ -82,14 +81,7 @@ public class DesignTimeDataSourceHelper {
     public DesignTimeDataSourceHelper() throws NamingException {
         dataSources     = null;
         dataSourceNames = null;
-        isDataSourceAdded = false;
-        
-        Context existingCtx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
-        if (existingCtx == null)  {
-            ctx.getEnvironment();
-        }
-        
-        ctx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
+        isDataSourceAdded = false;        
     }
 
     public DataSourceExport[] getDataSourceExports() throws NamingException {
@@ -301,6 +293,7 @@ public class DesignTimeDataSourceHelper {
      * @returns an ArrayList of Binding objects
      */
     public ArrayList getAllDataSourceBindings( ) throws NamingException  {
+        Context ctx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
         return getNamesAndDataSources( ctx, DS_SUBCTX, "" ) ;
     } 
     public ArrayList getNamesAndDataSources( Context curCtx, String startName, String dsNamePrefix ) 
@@ -338,8 +331,9 @@ public class DesignTimeDataSourceHelper {
 
     public DesignTimeDataSource getDataSourceFromFullName(String fullName)
         throws NamingException {
-                
-        Context existingCtx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
+               
+        Context ctx = null;
+        Context existingCtx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());       
         if (existingCtx == null)  
             ctx.getEnvironment();
                 
@@ -372,9 +366,9 @@ public class DesignTimeDataSourceHelper {
     }
     public DesignTimeDataSource addFullNameDataSource(String name, DesignTimeDataSource ds )
         throws NamingException {
-
-        try {          
-            ctx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
+        
+        Context ctx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
+        try {                      
             ctx.bind(name, ds);
         } catch (NameAlreadyBoundException e) {
             throw e;
@@ -401,7 +395,7 @@ public class DesignTimeDataSourceHelper {
 
     public void deleteDataSource(String name) throws NamingException {
         String thisName = DS_SUBCTX + "/" + name ;
-        ctx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
+        Context ctx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
         ctx.unbind(thisName); // NOI18N
         
         // Now clean up the tree
@@ -434,9 +428,9 @@ public class DesignTimeDataSourceHelper {
      */
     public boolean nameInUseInContext( String name ) {
         String thisName = DS_SUBCTX + "/" + name ;
+        Context ctx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
         
-        try {
-            ctx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
+        try {            
             Object obj = ctx.lookup(thisName) ;
             // found!
             return true ;
@@ -475,7 +469,7 @@ public class DesignTimeDataSourceHelper {
      * deletions automatically refresh, but changes to a datasource cannot be detected.
      */
     public void save() throws NamingException {
-        ctx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
+        Context ctx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
         ctx.addToEnvironment("save-context", "true"); // 2nd arg is ignored // NOI18N
     }
 
@@ -543,7 +537,7 @@ public class DesignTimeDataSourceHelper {
         try {
            while (it.hasNext()) {
                String key = (String)it.next();
-               ctx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
+               Context ctx = ProjectContextManager.getInstance().lookup(CurrentProject.getProject());
                ctx.bind(key, bindings.get(key));
            }
         } catch (NamingException ne) {
