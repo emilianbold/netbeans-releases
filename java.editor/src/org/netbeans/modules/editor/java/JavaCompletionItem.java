@@ -20,6 +20,7 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.awt.Color;
 import java.awt.Font;
@@ -253,6 +254,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
         BaseDocument doc = (BaseDocument)c.getDocument();
         String text = getInsertPrefix().toString();
         if (text != null) {
+            int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
+            if (semiPos > -2)
+                toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
                 TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
                 if (sequence == null) {
@@ -288,11 +292,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
             doc.atomicLock();
             try {
                 String textToReplace = doc.getText(offset, len);
-                if (text.equals(textToReplace)) return;
-                
+                if (text.equals(textToReplace)) {
+                    if (semiPos > -1)
+                        doc.insertString(semiPos, ";", null); //NOI18N
+                    return;
+                }                
                 Position position = doc.createPosition(offset);
+                Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                 doc.remove(offset, len);
                 doc.insertString(position.getOffset(), text, null);
+                if (semiPosition != null)
+                    doc.insertString(semiPosition.getOffset(), ";", null);
             } catch (BadLocationException e) {
                 // Can't update
             } finally {
@@ -360,6 +370,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             BaseDocument doc = (BaseDocument)c.getDocument();
             final StringBuilder text = new StringBuilder();
+            int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
+            if (semiPos > -2)
+                toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
                 TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
                 if (sequence == null) {
@@ -399,15 +412,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append(cnt++);
                 sb.append(" instanceof=\"int\" default=\"\"}]"); //NOI18N                
             }
-            if (len > 0) {
-                doc.atomicLock();
-                try {
+            doc.atomicLock();
+            try {
+                Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
+                if (len > 0)
                     doc.remove(offset, len);
-                } catch (BadLocationException e) {
-                    // Can't update
-                } finally {
-                    doc.atomicUnlock();
-                }
+                if (semiPosition != null)
+                    doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
+            } catch (BadLocationException e) {
+                // Can't update
+            } finally {
+                doc.atomicUnlock();
             }
             CodeTemplateManager ctm = CodeTemplateManager.get(doc);
             if (ctm != null) {
@@ -572,6 +587,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             final BaseDocument doc = (BaseDocument)c.getDocument();
             final StringBuilder text = new StringBuilder();
+            final int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
+            if (semiPos > -2)
+                toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
                 TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
                 if (sequence == null) {
@@ -690,12 +708,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             // Update the text
                             doc.atomicLock();
                             try {
+                                Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                                 TreePath tp = controller.getTreeUtilities().pathFor(offset);
                                 text.insert(0, AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)));
                                 String textToReplace = doc.getText(offset, finalLen);
                                 if (textToReplace.contentEquals(text)) return;
                                 doc.remove(offset, finalLen);
                                 doc.insertString(offset, text.toString(), null);
+                                if (semiPosition != null)
+                                    doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                             } catch (BadLocationException e) {
                                 // Can't update
                             } finally {
@@ -1192,6 +1213,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
             } else {                
                 BaseDocument doc = (BaseDocument)c.getDocument();
                 String text = ""; //NOI18N
+                int semiPos = add.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
+                if (semiPos > -2)
+                    add = add.length() > 1 ? add.substring(0, add.length() - 1) : null;
                 TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
                 if (sequence == null) {
                     text += add;
@@ -1221,15 +1245,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         add = null;
                     }
                 }
-                if (len > 0) {
-                    doc.atomicLock();
-                    try {
+                doc.atomicLock();
+                try {
+                    Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
+                    if (len > 0)
                         doc.remove(offset, len);
-                    } catch (BadLocationException e) {
-                        // Can't update
-                    } finally {
-                        doc.atomicUnlock();
-                    }
+                    if (semiPosition != null)
+                        doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
+                } catch (BadLocationException e) {
+                    // Can't update
+                } finally {
+                    doc.atomicUnlock();
                 }
                 CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
@@ -1509,6 +1535,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
             offset += len;
             len = 0;
+            int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
+            if (semiPos > -2)
+                toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             BaseDocument doc = (BaseDocument)c.getDocument();
             TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset);
             if (sequence != null) {
@@ -1555,8 +1584,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
             doc.atomicLock();
             try {
                 Position position = doc.createPosition(offset);
+                Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                 doc.remove(offset, len);
                 doc.insertString(position.getOffset(), text, null);
+                if (semiPosition != null)
+                    doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
             } catch (BadLocationException e) {
             } finally {
                 doc.atomicUnlock();
@@ -1676,6 +1708,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
             offset += len;
             len = 0;
+            int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
+            if (semiPos > -2)
+                toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset);
             if (sequence != null) {
                 sequence.movePrevious();
@@ -1722,8 +1757,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
             doc.atomicLock();
             try {
                 Position position = doc.createPosition(offset);
+                Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                 doc.remove(offset, len);
                 doc.insertString(position.getOffset(), text, null);
+                if (semiPosition != null)
+                    doc.insertString(position.getOffset(), ";", null); //NOI18N
             } catch (BadLocationException e) {
             } finally {
                 doc.atomicUnlock();
@@ -1772,6 +1810,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
             final BaseDocument doc = (BaseDocument)c.getDocument();
             final StringBuilder text = new StringBuilder();
+            final int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
+            if (semiPos > -2)
+                toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
                 TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
                 if (sequence == null) {
@@ -1815,12 +1856,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         // Update the text
                         doc.atomicLock();
                         try {
+                            Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                             TreePath tp = controller.getTreeUtilities().pathFor(offset);
                             text.insert(0, "@" + AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem))); //NOI18N
                             String textToReplace = doc.getText(offset, finalLen);
                             if (textToReplace.contentEquals(text)) return;
                             doc.remove(offset, finalLen);
                             doc.insertString(offset, text.toString(), null);
+                            if (semiPosition != null)
+                                doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                         } catch (BadLocationException e) {
                             // Can't update
                         } finally {
@@ -2077,6 +2121,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
             final BaseDocument doc = (BaseDocument)c.getDocument();
             final StringBuilder text = new StringBuilder();
+            final int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
+            if (semiPos > -2)
+                toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             if (toAdd != null && !toAdd.equals("\n")) { //NOI18N
                 TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
                 if (sequence == null) {
@@ -2172,15 +2219,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             sb.append(")");//NOI18N
                         }
                         sb.append(text);
-                        if (finalLen > 0) {
-                            doc.atomicLock();
-                            try {
+                        doc.atomicLock();
+                        try {
+                            Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
+                            if (finalLen > 0)
                                 doc.remove(offset, finalLen);
-                            } catch (BadLocationException e) {
-                                // Can't update
-                            } finally {
-                                doc.atomicUnlock();
-                            }
+                            if (semiPosition != null)
+                                doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
+                        } catch (BadLocationException e) {
+                            // Can't update
+                        } finally {
+                            doc.atomicUnlock();
                         }
                         CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                         if (ctm != null) {
@@ -2389,6 +2438,65 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return s;
     }
     
+    private static int findPositionForSemicolon(JTextComponent c) {
+        final int[] ret = new int[] {-1};
+        final int offset = c.getSelectionEnd();
+        try {
+            JavaSource js = JavaSource.forDocument(c.getDocument());
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(JavaSource.Phase.PARSED);
+                    Tree t = null;
+                    TreePath tp = controller.getTreeUtilities().pathFor(offset);
+                    while (t == null && tp != null) {
+                        switch(tp.getLeaf().getKind()) {
+                            case EXPRESSION_STATEMENT:
+                                t = tp.getLeaf();
+                                break;
+                            case RETURN:
+                                t = ((ReturnTree)tp.getLeaf()).getExpression();
+                                break;
+                            case THROW:
+                                t = ((ThrowTree)tp.getLeaf()).getExpression();
+                                break;                            
+                        }
+                        tp = tp.getParentPath();
+                    }
+                    if (t != null) {
+                        SourcePositions sp = controller.getTrees().getSourcePositions();
+                        int endPos = (int)sp.getEndPosition(tp.getCompilationUnit(), t);
+                        TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(controller, offset, endPos);
+                        if (ts != null && ts.token().id() != JavaTokenId.SEMICOLON)
+                            ret[0] = ts.offset() + ts.token().length();
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+        }
+        return ret[0];
+    }
+    
+    private static TokenSequence<JavaTokenId> findLastNonWhitespaceToken(CompilationController controller, int startPos, int endPos) {
+        TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+        ts.move(endPos);
+        while(ts.movePrevious()) {
+            int offset = ts.offset();
+            if (offset < startPos)
+                return null;
+            switch (ts.token().id()) {
+            case WHITESPACE:
+            case LINE_COMMENT:
+            case BLOCK_COMMENT:
+                break;
+            default:
+                return ts;
+            }
+        }
+        return null;
+    }
+
     private static class ParamDesc {
         private String fullTypeName;
         private String typeName;
