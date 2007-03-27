@@ -523,13 +523,12 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
                         } else {
                             g.fillRect(3, y, BAR_WIDTH - 3, editorUI.getLineHeight());
                             g.setColor(colorBorder);
-                            g.drawLine(2, y, 2, y + editorUI.getLineHeight());
+                            int y1 = y + editorUI.getLineHeight();
+                            g.drawLine(2, y, 2, y1);
                             if (ad.getSecondStart() == line) {
                                 g.drawLine(2, y, BAR_WIDTH - 1, y);
                             }
-                            if (ad.getSecondEnd() == line) {
-                                g.drawLine(2, y + editorUI.getLineHeight(), BAR_WIDTH - 1, y + editorUI.getLineHeight());
-                            }
+                            g.drawLine(2, y1, BAR_WIDTH - 1, y1);
                         }
                     }
                     y += editorUI.getLineHeight();
