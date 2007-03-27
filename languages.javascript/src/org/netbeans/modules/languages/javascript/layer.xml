@@ -64,6 +64,23 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="javascript">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
+                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+                    </file>
+                    <file name="SeparatorBeforeWhereUsedAction.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <file name="SeparatorAfterSelectInPopupAction.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="SeparatorBeforeWhereUsedAction.instance/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance/org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance" boolvalue="true"/>        
+                    <attr name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance/SeparatorAfterSelectInPopupAction.instance" boolvalue="true"/>
+                </folder>
                 <folder name="FoldManager">
                     <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
                 </folder>
