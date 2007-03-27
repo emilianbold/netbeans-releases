@@ -58,8 +58,10 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChain;
 import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChains;
 import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChainsProvider;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.netbeans.modules.websvc.core.WebServiceTransferable;
+import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
 import org.netbeans.modules.websvc.core.jaxws.actions.AddOperationAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsRefreshAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.WsTesterPageAction;
@@ -295,7 +297,7 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
         // need to compute from annotations
         
         String wsURI=null;
-        if (isJsr109Supported(project) && Util.isJavaEE5orHigher(project)) {
+        if (isJsr109Supported(project) && Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) ) {
             try {
                 wsURI = getServiceUri(moduleType);
             } catch (UnsupportedEncodingException ex) {
