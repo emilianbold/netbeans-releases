@@ -55,6 +55,7 @@ public class FormDisplayPresenter extends DisplayableDisplayPresenter {
         
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.weightx = 1.0;
+        constraints.weightx = 1.0;
         constraints.fill = GridBagConstraints.BOTH;
         constraints.gridx = GridBagConstraints.REMAINDER;
         constraints.gridy = GridBagConstraints.RELATIVE;

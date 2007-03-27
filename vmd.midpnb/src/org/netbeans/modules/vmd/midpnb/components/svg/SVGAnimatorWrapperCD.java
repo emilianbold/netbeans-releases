@@ -173,7 +173,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                         DesignComponent svgAnimWrapper = getComponent();
                         DesignDocument document = svgAnimWrapper.getDocument();
                         String sourcePath = getSourcePath(document);
-                        String srcDir = sourcePath.substring(sourcePath.lastIndexOf('/'));
+                        String srcDir = sourcePath.substring(sourcePath.lastIndexOf('/')); //NOI18N
                         
                         String fullPath = (String) transferable.getTransferData(dataFlavor);
                         String path = fullPath.substring(fullPath.lastIndexOf(srcDir) + srcDir.length()).trim();

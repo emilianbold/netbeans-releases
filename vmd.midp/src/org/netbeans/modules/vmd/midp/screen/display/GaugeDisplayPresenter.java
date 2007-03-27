@@ -56,8 +56,10 @@ public class GaugeDisplayPresenter extends ItemDisplayPresenter {
             }
         };
         panel.setOpaque(false);
+        panel.setPreferredSize(new Dimension(200, 40)); // TODO compute it from fontSize
         setContentComponent(panel);
     }
+    
     
     private void paintGauge(Graphics g) {
         if (size == null) { // did not realoaded yet
@@ -114,11 +116,6 @@ public class GaugeDisplayPresenter extends ItemDisplayPresenter {
         } else if (value > maxValue) {
             value = maxValue;
         }
-        
-        Dimension size = new Dimension(deviceInfo.getCurrentScreenSize());
-        size.height = 60;
-        size.width -= 10;
-        panel.setMinimumSize(size);
         
         panel.repaint();
     }

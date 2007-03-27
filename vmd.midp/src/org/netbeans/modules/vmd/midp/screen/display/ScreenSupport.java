@@ -20,6 +20,8 @@
 package org.netbeans.modules.vmd.midp.screen.display;
 
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.SourceGroup;
@@ -161,4 +163,11 @@ public final class ScreenSupport {
         }
         return icon;
     }
+    
+    public static final int getFontHeight(Graphics g, Font f) {
+        assert (g != null) && (f != null);
+        FontMetrics fm = g.getFontMetrics(f);
+        return fm.getHeight();
+    }
+
 }

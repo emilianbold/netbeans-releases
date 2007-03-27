@@ -42,10 +42,14 @@ import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScree
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.openide.util.NbBundle;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
+import org.netbeans.modules.vmd.midpnb.screen.display.TableItemDisplayPresenter;
 
 
 
@@ -93,10 +97,10 @@ public class TableItemCD extends ComponentDescriptor {
         );
     }
     
-//    protected void gatherPresenters (ArrayList<Presenter> presenters) {
-//        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
-//        super.gatherPresenters (presenters);
-//    }
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+        super.gatherPresenters (presenters);
+    }
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
@@ -133,6 +137,7 @@ public class TableItemCD extends ComponentDescriptor {
             DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_MODEL),
             // screen
             new DisplayableResourceCategoriesPresenter(),
+            new TableItemDisplayPresenter(),
             //accept
             new MidpResourcesAcceptTypePresenter().addType(SimpleTableModelCD.TYPEID, PROP_MODEL)
         );
