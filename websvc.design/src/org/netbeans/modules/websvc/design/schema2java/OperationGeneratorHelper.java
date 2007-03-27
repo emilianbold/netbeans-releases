@@ -44,10 +44,12 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.design.util.SourceUtils;
+import org.netbeans.modules.websvc.design.view.actions.ParamModel;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
@@ -96,9 +98,9 @@ public class OperationGeneratorHelper {
     public Operation addWsOperation(WSDLModel wsdlModel,
             String portTypeName,
             String operationName,
-            Object parameterType,
-            Object returnType,
-            Object faultType) {
+            List<ParamModel> parameterTypes,
+            ReferenceableSchemaComponent returnType,
+            List<ReferenceableSchemaComponent> faultTypes) {
         
         WSDLComponentFactory factory = wsdlModel.getFactory();
         Definitions definitions = wsdlModel.getDefinitions();
@@ -125,14 +127,18 @@ public class OperationGeneratorHelper {
             Schema schema = schemaModel.getSchema();
             
             GlobalElement paramElement = null;
-            if (parameterType instanceof GlobalType) {
-                paramElement = schemaModel.getFactory().createGlobalElement();
-                paramElement.setName(operationName+"_param");
-                NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)parameterType, GlobalType.class);
-                paramElement.setType(typeRef);
-                schema.addElement(paramElement);
-            } else if (parameterType instanceof GlobalElement) {
-                paramElement=(GlobalElement)parameterType;
+            
+            if (parameterTypes.size()>0) {
+                ReferenceableSchemaComponent parameterType = parameterTypes.get(0).getParamType();
+                if (parameterType instanceof GlobalType) {
+                    paramElement = schemaModel.getFactory().createGlobalElement();
+                    paramElement.setName(operationName+"_param");
+                    NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)parameterType, GlobalType.class);
+                    paramElement.setType(typeRef);
+                    schema.addElement(paramElement);
+                } else if (parameterType instanceof GlobalElement) {
+                    paramElement=(GlobalElement)parameterType;
+                }
             }
             
             GlobalElement returnElement = null;

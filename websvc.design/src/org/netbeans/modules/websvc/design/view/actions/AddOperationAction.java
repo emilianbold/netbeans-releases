@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.IOException;
+import java.util.List;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -34,6 +35,7 @@ import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
 import org.netbeans.modules.websvc.design.util.Util;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
@@ -97,11 +99,11 @@ public class AddOperationAction extends AbstractAction {
                         
                         WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
                         String operationName = panel.getOperationName();
-                        Object parameterType = panel.getParameterType();
-                        Object returnType = panel.getReturnType();
-                        Object faultType = panel.getFaultType();
+                        List<ParamModel> parameterTypes = panel.getParameterTypes();
+                        ReferenceableSchemaComponent returnType = panel.getReturnType();
+                        List<ReferenceableSchemaComponent> faultTypes = panel.getFaultTypes();
                         Operation operation = generatorHelper.addWsOperation(wsdlModel, generatorHelper.getPortTypeName(implementationClass),
-                                operationName, parameterType, returnType, faultType);
+                                operationName, parameterTypes, returnType, faultTypes);
                         generatorHelper.generateJavaArtifacts(service, implementationClass, operationName);
                         
                         //TODO:this will go away when the recopying of the changed wsdls and schemas
