@@ -22,16 +22,14 @@ package org.netbeans.modules.refactoring.java.ui;
 import java.util.Collection;
 import java.util.Dictionary;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.spi.ui.JavaActionsImplementationProvider;
 import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceRefactoringUI;
 import org.netbeans.modules.refactoring.java.ui.RefactoringActionsProvider.NodeToFileObject;
-import org.netbeans.modules.refactoring.java.ui.RefactoringActionsProvider.TextComponentRunnable;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -185,4 +183,37 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         return false;
     }    
 
+    @Override
+    public boolean canUseSuperType(Lookup lookup) {
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if(nodes.size() != 1)
+            return false;
+        Node node = nodes.iterator().next();
+        DataObject dObj = node.getCookie(DataObject.class);
+        if(null == dObj)
+            return false;
+        FileObject fileObj = dObj.getPrimaryFile();
+        if(null == fileObj || !RetoucheUtils.isRefactorable(fileObj))
+            return false;
+        
+        return true;
+    }
+
+    @Override
+    public void doUseSuperType(Lookup lookup) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        final Dictionary dictionary = lookup.lookup(Dictionary.class);
+        if (RefactoringActionsProvider.isFromEditor(ec)) {
+            new RefactoringActionsProvider.TextComponentRunnable(ec){
+                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
+                                                            int startOffset,
+                                                            int endOffset,
+                                                            CompilationInfo info) {
+                    Element selected = selectedElement.resolveElement(info);
+                    return new UseSuperTypeRefactoringUI(selectedElement);
+                }
+            }.run();
+        }
+    }
+    
 }

@@ -20,6 +20,7 @@
 package org.netbeans.modules.refactoring.java.api.ui;
 
 import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceAction;
+import org.netbeans.modules.refactoring.java.ui.UseSuperTypeAction;
 import org.openide.util.ContextAwareAction;
 
 /**
@@ -93,8 +94,7 @@ public final class JavaRefactoringActionsFactory {
      * @return an instance of UseSuperTypeAction
      */
     public static ContextAwareAction useSuperTypeAction() {
-        throw new UnsupportedOperationException("Not supported yet.");
-//        return (UseSuperTypeAction) UseSuperTypeAction.findObject(UseSuperTypeAction.class, true);
+        return (UseSuperTypeAction) UseSuperTypeAction.findObject(UseSuperTypeAction.class, true);
     }
     
     public static ContextAwareAction extractSuperclassAction() {

@@ -26,6 +26,7 @@ import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
+import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.spi.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -71,6 +72,8 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             return new PullUpRefactoringPlugin((PullUpRefactoring)refactoring);
         } else if (refactoring instanceof PushDownRefactoring) {
             return new PushDownRefactoringPlugin((PushDownRefactoring) refactoring);
+        } else if (refactoring instanceof UseSuperTypeRefactoring) {
+            return new UseSuperTypeRefactoringPlugin((UseSuperTypeRefactoring) refactoring);
         }
         return null;
     }
