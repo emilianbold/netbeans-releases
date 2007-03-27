@@ -25,6 +25,7 @@ import java.io.FileWriter;
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
@@ -125,6 +126,7 @@ public class CopyDiagramAction extends NodeAction
         ProductArchiveImpl archive = new ProductArchiveImpl(original_p);
         IProductArchiveElement ele = archive.getElement(IProductArchiveDefinitions.DIAGRAMINFO_STRING);
         ele.addAttributeString(IProductArchiveDefinitions.DIAGRAMNAME_STRING, newName);
+        ele.addAttributeString(IProductArchiveDefinitions.DIAGRAM_XMIID, UMLXMLManip.generateId(true));
         archive.save(clone_p);
         
         // persist layout file
