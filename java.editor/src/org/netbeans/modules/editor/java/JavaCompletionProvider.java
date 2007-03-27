@@ -1924,8 +1924,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (et.getKind() == Tree.Kind.PARENTHESIZED) {
                 exp = ((ParenthesizedTree)et).getExpression();
             } else if (et.getKind() == Tree.Kind.TYPE_CAST) {
-                if(env.getSourcePositions().getEndPosition(env.getRoot(), et) > offset ||
-                    ((TypeCastTree)et).getExpression().getKind() == Tree.Kind.IDENTIFIER)
+                if (env.getSourcePositions().getEndPosition(env.getRoot(), ((TypeCastTree)et).getType()) <= offset)
                     exp = ((TypeCastTree)et).getType();
             } else if (et.getKind() == Tree.Kind.ASSIGNMENT) {
                 Tree t = ((AssignmentTree)et).getExpression();
@@ -3479,6 +3478,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (text.endsWith(")")) //NOI18N
                                 return null;
                         }
+                        break;
+                    case TYPE_CAST:
+                        TypeCastTree tct = (TypeCastTree)tree;
+                        if (env.getSourcePositions().getEndPosition(env.getRoot(), tct.getType()) <= offset)
+                            return null;
+                        break;
                 }
                 lastTree = tree;
                 path = path.getParentPath();

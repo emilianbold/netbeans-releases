@@ -188,7 +188,7 @@ public final class TreeUtilities {
                 case RPAREN:
                     if (path.getLeaf().getKind() == Tree.Kind.ENHANCED_FOR_LOOP || path.getLeaf().getKind() == Tree.Kind.FOR_LOOP ||
                             path.getLeaf().getKind() == Tree.Kind.IF || path.getLeaf().getKind() == Tree.Kind.WHILE_LOOP ||
-                            path.getLeaf().getKind() == Tree.Kind.DO_WHILE_LOOP)
+                            path.getLeaf().getKind() == Tree.Kind.DO_WHILE_LOOP || path.getLeaf().getKind() == Tree.Kind.TYPE_CAST)
                         break;
                 case SEMICOLON:
                     if (path.getLeaf().getKind() == Tree.Kind.FOR_LOOP &&
