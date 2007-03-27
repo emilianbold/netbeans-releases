@@ -461,7 +461,7 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
      * get URL for Web Service Tester Page
      */
     public String getTesterPageURL() {
-        if (isJsr109Supported(project) && (Util.isJavaEE5orHigher(project))) {
+        if (isJsr109Supported(project) && (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project))) {
             return getWebServiceURL()+"?Tester"; //NOI18N
         } else {
             return getWebServiceURL(); //NOI18N
