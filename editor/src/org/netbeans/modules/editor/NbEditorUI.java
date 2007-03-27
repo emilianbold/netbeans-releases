@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.AttributeSet;
@@ -381,9 +382,12 @@ public class NbEditorUI extends ExtEditorUI {
 
             if (globalSystemAction instanceof CallbackSystemAction){
                 Object key = ((CallbackSystemAction)globalSystemAction).getActionMapKey();
-                Object ea = c.getActionMap ().get (key);
-                if (editorAction.equals(ea)){
-                    c.getActionMap ().remove(key);
+                ActionMap am = c.getActionMap();
+                if (am != null) {
+                    Object ea = am.get(key);
+                    if (editorAction.equals(ea)) {
+                        am.remove(key);
+                    }
                 }
             }                        
                                 
