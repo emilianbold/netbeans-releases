@@ -24,6 +24,7 @@ import java.awt.event.ItemListener;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
@@ -321,7 +322,7 @@ public final class AddPackageVisualPanel1 extends JPanel implements DocumentList
     
     public void itemStateChanged(ItemEvent event)
     {
-        if (!jCheckBox1.isSelected() && !isDiagramNameValid())
+        if (!jCheckBox1.isSelected() && !Util.isDiagramNameValid(jTextField2.getText().trim()))
             validatePackageName();
             
         panel.fireChangeEvent();
@@ -394,28 +395,27 @@ public final class AddPackageVisualPanel1 extends JPanel implements DocumentList
     private void validateDiagramName()
     {
         valid = true;
-        if (!isDiagramNameValid())
+        if (!Util.isDiagramNameValid(jTextField2.getText().trim()))
         {
             valid = false;
             errorType = INVALID_DIAGRAME_NAME;
         }
     }
     
-    
-    private boolean isDiagramNameValid()
-    {
-        String diagramName = jTextField2.getText().trim();
-        if (diagramName.length() == 0)
-            return false;
-        
-        String[] badCharArray = invalid.split(" ");
-        for (String c : badCharArray)
-        {     
-            if ( diagramName.indexOf(c) != -1)  
-                return false;
-        }
-        return true;
-    }
+//    
+//    private boolean isDiagramNameValid(String diagramName)
+//    {
+//        if (diagramName.length() == 0)
+//            return false;
+//        
+//        String[] badCharArray = invalid.split(" ");
+//        for (String c : badCharArray)
+//        {     
+//            if ( diagramName.indexOf(c) != -1)  
+//                return false;
+//        }
+//        return true;
+//    }
     
     public boolean isValid(WizardDescriptor descriptor)
     {
@@ -441,7 +441,7 @@ public final class AddPackageVisualPanel1 extends JPanel implements DocumentList
                 break;
             case AddPackageVisualPanel1.INVALID_DIAGRAME_NAME:
                 errorMsg = NbBundle.getMessage(AddPackageVisualPanel1.class,
-                        "MSG_Invalid_Diagram_Name", invalid);
+                        "MSG_Invalid_Diagram_Name", jTextField2.getText());
                 break;
         }
         descriptor.putProperty("WizardPanel_errorMessage", errorMsg);

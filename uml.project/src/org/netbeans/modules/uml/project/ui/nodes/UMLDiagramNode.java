@@ -29,7 +29,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
@@ -51,7 +50,10 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaPropertyKind;
 import org.netbeans.modules.uml.propertysupport.DefinitionPropertyBuilder;
 import javax.swing.Action;
+import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.project.ui.nodes.actions.CopyDiagramAction;
+import org.netbeans.modules.uml.ui.controls.newdialog.AddPackageVisualPanel1;
+import org.openide.DialogDisplayer;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
@@ -316,6 +318,17 @@ public class UMLDiagramNode extends UMLElementNode
     public void setName(String val)
     throws IllegalArgumentException
     {
+        
+        if (!Util.isDiagramNameValid(val))
+        {
+            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(
+                    AddPackageVisualPanel1.class,
+                    "MSG_Invalid_Diagram_Name", val)); // NOI18N
+            DialogDisplayer.getDefault().notify(msg);
+            return;
+        }
+        
+        
         // cvc - 6288598
         // the name can be "" (empty string) when it is enclosed inside a
         // parent node that is expanding (Activity Diagram) and it is getting

@@ -36,6 +36,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.dom4j.Document;
+import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
@@ -117,19 +118,23 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
             String charList = "";
             boolean bNameHasSpaces = sDiagramName.length() > trimmedLen;
             
-            if (badCharList != null && badCharList.length() > 0) {
-                charList = badCharList.trim();
-                String []badCharArray = charList.split(" ");
-                for (String c : badCharArray) {
-                    if (c.length() == 0) {
-                        continue;
-                    }
-                    if ( sDiagramName.indexOf(c) != -1) {   // name contains bad char
-                        nameHasBadChar = true;
-                        break;
-                    }
-                }
+            if (!Util.isDiagramNameValid(trimmedName))
+            {
+                nameHasBadChar = true;
             }
+//            if (badCharList != null && badCharList.length() > 0) {
+//                charList = badCharList.trim();
+//                String []badCharArray = charList.split(" ");
+//                for (String c : badCharArray) {
+//                    if (c.length() == 0) {
+//                        continue;
+//                    }
+//                    if ( sDiagramName.indexOf(c) != -1) {   // name contains bad char
+//                        nameHasBadChar = true;
+//                        break;
+//                    }
+//                }
+//            }
             
             if (trimmedLen == 0) {
                 errorMsg = bundle.getString("IDS_DIAGRAMNAME_EMPTY"); // NOI18N
@@ -138,10 +143,8 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
                 errorMsg = bundle.getString("IDS_DIAGRAMNAME_HAS_SPACES"); // NOI18N
                 valid = false;
             } else if(nameHasBadChar) {
-                errorMsg = NbBundle.getMessage(
-                        NewUMLDiagVisualPanel1.class,
-                        "IDS_DIAGRAMNAME_HAS_BADCHARS", // NOI18N
-                        charList);
+                errorMsg = NbBundle.getMessage(NewUMLDiagVisualPanel1.class,
+                        "MSG_Invalid_Diagram_Name", trimmedName);
                 valid = false;
             }
         }

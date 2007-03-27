@@ -22,6 +22,7 @@ package org.netbeans.modules.uml.project.ui.nodes.actions;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
@@ -30,6 +31,7 @@ import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.project.UMLProjectModule;
 import org.netbeans.modules.uml.project.ui.nodes.UMLDiagramNode.DiagramCookie;
+import org.netbeans.modules.uml.ui.controls.newdialog.AddPackageVisualPanel1;
 import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchiveDefinitions;
 import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchiveElement;
 import org.netbeans.modules.uml.ui.support.archivesupport.ProductArchiveImpl;
@@ -80,9 +82,20 @@ public class CopyDiagramAction extends NodeAction
             if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION)
             {
                 String name = d.getInputText();
-                createDiagram(DiagramTypesManager.instance().
+                if (Util.isDiagramNameValid(name))
+                {
+                    createDiagram(DiagramTypesManager.instance().
                         getUMLType(diagram.getDiagramKindName()),
                         diagram.getNamespace(), name);
+                }
+                else
+                {
+                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(
+                            AddPackageVisualPanel1.class,  
+                            "MSG_Invalid_Diagram_Name", name)); // NOI18N
+                    DialogDisplayer.getDefault().notify(msg);
+                    
+                }
             }
         }
     }
