@@ -445,14 +445,14 @@ public class WebForm implements Designer {
         }
     }
     
-    public static WebForm getWebFormForDataObject(DataObject jsfJspDataObject) {
-        Designer[] designers = getHtmlDomProviderService().getDesignersForDataObject(jsfJspDataObject);
-        if (designers.length > 0 && designers[0] instanceof WebForm) {
-            return (WebForm)designers[0];
-        } else {
-            return null;
-        }
-    }
+//    public static WebForm getWebFormForDataObject(DataObject jsfJspDataObject) {
+//        Designer[] designers = getHtmlDomProviderService().getDesignersForDataObject(jsfJspDataObject);
+//        if (designers.length > 0 && designers[0] instanceof WebForm) {
+//            return (WebForm)designers[0];
+//        } else {
+//            return null;
+//        }
+//    }
     
 //    public static WebForm findWebFormForFileObject(FileObject jsfJspFileObject) {
 ////        synchronized (LOCK_WEB_FORMS) {
@@ -2427,9 +2427,9 @@ public class WebForm implements Designer {
             return "DOMDocumentReplaced"; // NOI18N
         }
 
-        public Designer[] getDesignersForDataObject(DataObject jsfJspDataObject) {
-            return new Designer[0];
-        }
+//        public Designer[] getDesignersForDataObject(DataObject jsfJspDataObject) {
+//            return new Designer[0];
+//        }
 
 //        public Designer[] findDesignersForFileObject(FileObject jsfJspFileObject) {
 //            return new Designer[0];
