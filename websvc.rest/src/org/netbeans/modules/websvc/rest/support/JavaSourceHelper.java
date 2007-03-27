@@ -10,17 +10,24 @@
 package org.netbeans.modules.websvc.rest.support;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.List;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -148,6 +155,24 @@ public class JavaSourceHelper {
         return className[0];
     }
     
+    public static String getClassType(JavaSource source) {
+        final String[] className = new String[1];
+        
+        try {
+            source.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    ClassTree tree = getTopLevelClassTree(controller);
+                    className[0] = controller.getCompilationUnit().getPackageName().toString() +
+                            "." + tree.getSimpleName().toString();
+                }
+            }, true);
+        } catch (IOException ex) {
+            
+        }
+        
+        return className[0];
+    }
+    
     public static String getPackageName(JavaSource source) {
         final String[] packageName = new String[1];
         
@@ -246,24 +271,25 @@ public class JavaSourceHelper {
         return templateDO.createFromTemplate(dataFolder, targetName);
     }
     
-    public static void addAnnotation(WorkingCopy copy, Tree tree, String annotation,
-            List<Object> arguments) {
+    public static void addClassAnnotation(WorkingCopy copy, String annotation,
+            Object[] arguments) {
         TreeMaker maker = copy.getTreeMaker();
+        ClassTree tree = getTopLevelClassTree(copy);
         List<ExpressionTree> argumentTrees = new ArrayList<ExpressionTree>();
         
         for (Object argument : arguments) {
-            argumentTrees.add(maker.Literal(argument));
+            if (argument instanceof ExpressionTree) {
+                argumentTrees.add((ExpressionTree) argument);
+            } else {
+                argumentTrees.add(maker.Literal(argument));
+            }
         }
         
         AnnotationTree newAnnotation = maker.Annotation(
                 maker.Identifier(annotation),
                 argumentTrees);
-    
-        ModifiersTree modifiers = null;
         
-        if (tree.getKind() == Tree.Kind.CLASS) {
-            modifiers = ((ClassTree) tree).getModifiers();
-        }
+        ModifiersTree modifiers = tree.getModifiers();
         
         if (modifiers != null) {
             ModifiersTree newModifiers = maker.addModifiersAnnotation(
@@ -279,10 +305,163 @@ public class JavaSourceHelper {
         CompilationUnitTree modifiedTree = tree;
         
         for (String imp : imports) {
-            modifiedTree = maker.addCompUnitImport(modifiedTree, 
+            modifiedTree = maker.addCompUnitImport(modifiedTree,
                     maker.Import(maker.Identifier(imp), false));
         }
         
         copy.rewrite(tree, modifiedTree);
+    }
+    
+    public static ClassTree addField(WorkingCopy copy, ClassTree tree,
+            Modifier[] modifiers, String[] annotations, Object[] annotationAttrs,
+            String name, Object type) {
+        
+        TreeMaker maker = copy.getTreeMaker();
+        ClassTree modifiedTree = tree;
+        
+        Tree typeTree = createTypeTree(copy, type);
+        
+        ModifiersTree modifiersTree = createModifiersTree(copy, modifiers,
+                annotations, annotationAttrs);
+        
+        VariableTree variableTree = maker.Variable(modifiersTree, name,
+                typeTree, null);
+        System.out.println("variableTree = " + variableTree);
+        return maker.insertClassMember(modifiedTree, 0, variableTree);
+    }
+    
+    public static ClassTree addConstructor(WorkingCopy copy, ClassTree tree,
+            Modifier[] modifiers, String[] parameters,
+            Object[] paramTypes, String bodyText) {
+        TreeMaker maker = copy.getTreeMaker();
+        ModifiersTree modifiersTree = createModifiersTree(copy, modifiers, null, null);
+        ModifiersTree paramModTree = maker.Modifiers(Collections.<Modifier>emptySet());
+        List<VariableTree> paramTrees = new ArrayList<VariableTree>();
+        
+        for (int i = 0; i < parameters.length; i++) {
+            paramTrees.add(maker.Variable(paramModTree,
+                    parameters[i], createTypeTree(copy, paramTypes[i]), null));
+        }
+        
+        MethodTree methodTree = maker.Constructor(modifiersTree,
+                Collections.<TypeParameterTree>emptyList(),
+                paramTrees,
+                Collections.<ExpressionTree>emptyList(),
+                bodyText);
+        
+        return maker.addClassMember(tree, methodTree);
+    }
+    
+    public static ClassTree addMethod(WorkingCopy copy, ClassTree tree,
+            Modifier[] modifiers, String[] annotations, Object[] annotationAttrs,
+            String name, String returnType,
+            String[] parameters, Object[] paramTypes,
+            String bodyText) {
+        TreeMaker maker = copy.getTreeMaker();
+        ModifiersTree modifiersTree = createModifiersTree(copy, modifiers,
+                annotations, annotationAttrs);
+        Tree returnTypeTree = createTypeTree(copy, returnType);
+        
+        ModifiersTree paramModTree = maker.Modifiers(
+                Collections.<Modifier>emptySet());
+        List<VariableTree> paramTrees = new ArrayList<VariableTree>();
+        
+        if (parameters != null) {
+            for (int i = 0; i < parameters.length; i++) {
+                paramTrees.add(maker.Variable(paramModTree,
+                        parameters[i], createTypeTree(copy, paramTypes[i]), null));
+            }
+        }
+        
+        MethodTree methodTree = maker.Method(modifiersTree,
+                name, returnTypeTree,
+                Collections.<TypeParameterTree>emptyList(),
+                paramTrees,
+                Collections.<ExpressionTree>emptyList(),
+                bodyText,
+                null);
+        
+        return maker.addClassMember(tree, methodTree);
+    }
+    
+    public static AssignmentTree createAssignmentTree(WorkingCopy copy, String variable,
+            Object value) {
+        TreeMaker maker = copy.getTreeMaker();
+        
+        return maker.Assignment(maker.Identifier(variable), maker.Literal(value));
+    }
+    
+    private static Tree createTypeTree(WorkingCopy copy, Object type) {
+        if (type instanceof String) {
+            TypeElement element = copy.getElements().getTypeElement((String) type);
+            return copy.getTreeMaker().QualIdent(element);
+        } else {
+            return (Tree) type;
+        }
+    }
+    
+    public static Tree createParameterizedTypeTree(WorkingCopy copy,
+            String type, String[] typeArgs) {
+        TreeMaker maker = copy.getTreeMaker();
+        Tree typeTree = createTypeTree(copy, type);
+        List<ExpressionTree> typeArgTrees = new ArrayList<ExpressionTree>();
+        
+        for (String arg : typeArgs) {
+            typeArgTrees.add((ExpressionTree)  createTypeTree(copy, arg));
+        }
+        
+        return maker.ParameterizedType(typeTree, typeArgTrees);
+    }
+    
+    private static ModifiersTree createModifiersTree(WorkingCopy copy,
+            Modifier[] modifiers, String[] annotations,
+            Object[] annotationAttrs) {
+        TreeMaker maker = copy.getTreeMaker();
+        Set<Modifier> modifierSet = new HashSet<Modifier>();
+        
+        for (Modifier modifier : modifiers) {
+            modifierSet.add(modifier);
+        }
+        
+        List<AnnotationTree> annotationTrees = createAnnotationTrees(copy,
+                annotations, annotationAttrs);
+        
+        return maker.Modifiers(modifierSet, annotationTrees);
+    }
+    
+    private static List<AnnotationTree> createAnnotationTrees(WorkingCopy copy,
+            String[] annotations, Object[] annotationAttrs) {
+        TreeMaker maker = copy.getTreeMaker();
+        List<AnnotationTree> annotationTrees = null;
+        
+        if (annotations != null) {
+            annotationTrees = new ArrayList<AnnotationTree>();
+            
+            for (int i = 0; i < annotations.length; i++) {
+                String annotation = annotations[i];
+                List<ExpressionTree> expressionTrees = Collections.<ExpressionTree>emptyList();
+                
+                if (annotationAttrs != null) {
+                    Object attr = annotationAttrs[i];
+                    
+                    if (attr != null) {
+                        expressionTrees = new ArrayList<ExpressionTree>();
+                        
+                        if (attr instanceof ExpressionTree) {
+                            expressionTrees.add((ExpressionTree) attr);
+                        } else {
+                            expressionTrees.add(maker.Literal(attr));
+                        }
+                    }
+                }
+                
+                annotationTrees.add(maker.Annotation(maker.Identifier(annotation),
+                        expressionTrees));
+            }
+        } else {
+            annotationTrees = Collections.<AnnotationTree>emptyList();
+        }
+        
+        return annotationTrees;
     }
 }
