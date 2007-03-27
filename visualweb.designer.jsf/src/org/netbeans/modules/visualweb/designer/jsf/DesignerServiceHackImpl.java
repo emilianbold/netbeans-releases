@@ -39,6 +39,7 @@ import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import java.awt.EventQueue;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -47,11 +48,13 @@ import java.net.URL;
 import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
@@ -254,8 +257,19 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
             }
 
             Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(bean);
+            
+            // XXX Moved from DesignerHackProviderImpl.
+            Designer[] designers = JsfForm.getDesignersForDataObject(dobj);
+            if (designers.length == 0) {
+                return null;
+            }
+            // XXX Why it is used the main window graphics??
+            WindowManager wm = WindowManager.getDefault();
+            Graphics2D g2d = (Graphics2D)wm.getMainWindow().getGraphics();
 // <<< Moved from designer/PageBox.paintCssPreview
-            return DesignerServiceHackProvider.getCssPreviewImage(dobj, cssStyle, cssStyleClasses,
+            return DesignerServiceHackProvider.getCssPreviewImage(/*dobj,*/
+                    designers[0], g2d,
+                    cssStyle, cssStyleClasses,
                     /*bean,*/ componentRootElement, df, element,
                     width, height);
 // >>> Moved from designer/PageBox.paintCssPreview
@@ -331,7 +345,12 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //        PageBox pageBox = PageBox.getPageBox(null, webform, body);
 //
 //        return pageBox.createPreviewImage(width, height);
-        return DesignerServiceHackProvider.getPageBoxPreviewImage(dobj, width, height);
+        // XXX Moved from DesignerHackProviderImpl.
+        Designer[] designers = JsfForm.getDesignersForDataObject(dobj);
+        if (designers.length == 0) {
+            return null;
+        }
+        return DesignerServiceHackProvider.getPageBoxPreviewImage(/*dobj,*/ designers[0], width, height);
     }
 
 //    public String[] getCssIdentifiers(String propertyName) {

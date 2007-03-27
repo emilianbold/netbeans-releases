@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.visualweb.api.designer;
 
+import java.awt.Graphics2D;
 import org.netbeans.modules.visualweb.designer.DesignerServiceHackProviderImpl;
 import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
@@ -27,7 +28,6 @@ import java.net.URL;
 import java.util.Map;
 
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
@@ -44,11 +44,11 @@ public final class DesignerServiceHackProvider {
     private DesignerServiceHackProvider() {
     }
 
-    public static Image getCssPreviewImage(DataObject dataObject,
+    public static Image getCssPreviewImage(/*DataObject dataObject,*/ Designer designer, Graphics2D g2d,
     String cssStyle, String[] cssStyleClasses,
     /*MarkupDesignBean bean,*/ Element componentRootElement, DocumentFragment df, Element element,
     int width, int height) {
-        return DesignerServiceHackProviderImpl.getCssPreviewImage(dataObject, cssStyle, cssStyleClasses,
+        return DesignerServiceHackProviderImpl.getCssPreviewImage(/*dataObject,*/ designer, g2d, cssStyle, cssStyleClasses,
                 /*bean,*/ componentRootElement, df, element,
                 width, height);
     }
@@ -57,8 +57,8 @@ public final class DesignerServiceHackProvider {
         return DesignerServiceHackProviderImpl.getCssPreviewImage(properties, base, width, height);
     }
 
-    public static Image getPageBoxPreviewImage(DataObject dobj, int width, int height) {
-        return DesignerServiceHackProviderImpl.getPageBoxPreviewImage(dobj, width, height);
+    public static Image getPageBoxPreviewImage(/*DataObject dobj,*/ Designer designer, int width, int height) {
+        return DesignerServiceHackProviderImpl.getPageBoxPreviewImage(/*dobj,*/designer, width, height);
     }
 
     public static boolean canDrop(DataFlavor flavor) {

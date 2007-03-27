@@ -51,6 +51,7 @@ import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 
 import org.apache.xerces.dom.DocumentImpl;
+import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -124,19 +125,25 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
 //        }
 //
 //        WebForm webform = DesignerUtils.getWebForm(dobj);
-    public static Image getCssPreviewImage(DataObject dataObject, String cssStyle, String[] cssStyleClasses,
+    public static Image getCssPreviewImage(/*DataObject dataObject,*/ Designer designer, Graphics2D g2d,
+    String cssStyle, String[] cssStyleClasses,
     /*MarkupDesignBean bean,*/ Element componentRootElement, DocumentFragment df, Element element,
     int width, int height) {
-        WebForm webform = WebForm.getWebFormForDataObject(dataObject);
-
-        if (webform == null) {
+//        WebForm webform = WebForm.getWebFormForDataObject(dataObject);
+//
+//        if (webform == null) {
+//            return null;
+//        }
+        if (!(designer instanceof WebForm)) {
             return null;
         }
+        
+        WebForm webform = (WebForm)designer;
 
         // Phew! On to the preview painting.
         PageBox pageBox = PageBox.getPageBox(null, webform, webform.getHtmlBody());
-        WindowManager wm = WindowManager.getDefault();
-        Graphics2D g2d = (Graphics2D)wm.getMainWindow().getGraphics();
+//        WindowManager wm = WindowManager.getDefault();
+//        Graphics2D g2d = (Graphics2D)wm.getMainWindow().getGraphics();
 
         return pageBox.paintCssPreview(g2d, cssStyle,
                 /*bean,*/ componentRootElement, df, element,
@@ -156,12 +163,17 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
 //        // Copied from navigation/../PageFlowGraph to get rid of dependencies.
 //        // Obtain a page box for the given page
 //        WebForm webform = DesignerUtils.getWebForm(dobj);
-    public static Image getPageBoxPreviewImage(DataObject dobj, int width, int height) {
-        WebForm webform = WebForm.getWebFormForDataObject(dobj);
-
-        if (webform == null) {
+    public static Image getPageBoxPreviewImage(/*DataObject dobj,*/ Designer designer, int width, int height) {
+//        WebForm webform = WebForm.getWebFormForDataObject(dobj);
+//
+//        if (webform == null) {
+//            return null;
+//        }
+        if (!(designer instanceof WebForm)) {
             return null;
         }
+        
+        WebForm webform = (WebForm)designer;
 
 //        webform.getModel().sync();
         webform.syncModel();
