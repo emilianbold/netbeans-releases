@@ -361,5 +361,18 @@ public class JSFConfigModelTest extends NbTestCase {
         
         assertEquals(list.item(1).getNodeName(), "from-outcome");
         assertEquals(list.item(3).getNodeName(), "to-view-id");
+        
+        //One more test to make sure that even if the outcome is reset, it is still listed as first.
+        model.startTransaction();
+        newCase.setFromOutcome("fromoutcome2");
+        model.endTransaction();
+        model.sync();
+        
+        NodeList list2 = newCase.getPeer().getChildNodes();        
+        assertEquals(list.item(1).getNodeName(), "from-outcome");
+        assertEquals(list.item(3).getNodeName(), "to-view-id");
     }
+    
+    
+    
 }
