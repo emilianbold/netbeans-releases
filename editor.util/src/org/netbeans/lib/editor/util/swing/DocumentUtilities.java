@@ -19,9 +19,11 @@
 
 package org.netbeans.lib.editor.util.swing;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -45,6 +47,10 @@ public final class DocumentUtilities {
     private static final Object TYPING_MODIFICATION_DOCUMENT_PROPERTY = new Object();
     
     private static final Object TYPING_MODIFICATION_KEY = new Object();
+    
+    private static Field numReadersField;
+    
+    private static Field currWriterField;
     
     
     private DocumentUtilities() {
@@ -386,6 +392,79 @@ public final class DocumentUtilities {
      */
     public static String getModificationText(DocumentEvent evt) {
         return (String)getEventProperty(evt, String.class);
+    }
+    
+    /**
+     * Check whether the given document is read-locked by at least one thread
+     * or whether it was write-locked by the current thread.
+     * <br/>
+     * The method currently only works for {@link javax.swing.text.AbstractDocument}
+     * based documents and it uses reflection.
+     * <br/>
+     * Unfortunately the AbstractDocument does not allow to detect
+     * whether exactly this thread has done the read locking
+     * or whether it was another thread.
+     * 
+     * @param doc non-null document instance.
+     * @return true if the document was read-locked by some thread
+     *   or false if not (or if doc not-instanceof AbstractDocument).
+     * @since 1.17
+     */
+    public static boolean isReadLocked(Document doc) {
+        if (checkAbstractDoc(doc)) {
+            if (isWriteLocked(doc))
+                return true;
+            if (numReadersField == null) {
+                try {
+                    numReadersField = AbstractDocument.class.getDeclaredField("numReaders");
+                } catch (NoSuchFieldException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                numReadersField.setAccessible(true);
+            }
+            try {
+                return numReadersField.getInt(doc) > 0;
+            } catch (IllegalAccessException ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Check whether the given document is write-locked by the current thread.
+     * <br/>
+     * The method currently only works for {@link javax.swing.text.AbstractDocument}
+     * based documents and it uses reflection.
+     * 
+     * @param doc non-null document instance.
+     * @return true if the document was write-locked by the current thread
+     *   or false if not (or if doc not-instanceof AbstractDocument).
+     * @since 1.17
+     */
+    public static boolean isWriteLocked(Document doc) {
+        if (checkAbstractDoc(doc)) {
+            if (currWriterField == null) {
+                try {
+                    currWriterField = AbstractDocument.class.getDeclaredField("currWriter");
+                } catch (NoSuchFieldException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                currWriterField.setAccessible(true);
+            }
+            try {
+                return currWriterField.get(doc) == Thread.currentThread();
+            } catch (IllegalAccessException ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
+        return false; // not AbstractDocument
+    }
+    
+    private static boolean checkAbstractDoc(Document doc) {
+        if (doc == null)
+            throw new IllegalArgumentException("document is null");
+        return (doc instanceof AbstractDocument);
     }
     
     /**
