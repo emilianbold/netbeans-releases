@@ -58,6 +58,7 @@ public abstract class Index {
     private static Properties segments;
     private static Map<String, String> invertedSegments;
     private static File cacheFolder;
+    private static boolean test;
     private static File segmentsFile;
     private static int index = 0;
     
@@ -215,12 +216,17 @@ public abstract class Index {
         return cacheFolder;
     }
     
+    public static boolean isTest () {
+        return test;
+    }
+    
     /**
      * Only for unit tests!
      *
      */
     static synchronized void setCacheFolder (final File folder) {
         assert folder != null && folder.exists() && folder.canRead() && folder.canWrite();
+        test = true;
         cacheFolder = folder;
     }
     

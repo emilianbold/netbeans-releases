@@ -55,6 +55,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.RAMDirectory;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.modules.java.source.usages.LuceneIndexMBeanImpl;
@@ -88,7 +89,7 @@ class LuceneIndex extends Index {
     /** Creates a new instance of LuceneIndex */
     private LuceneIndex (final File refCacheRoot) throws IOException {
         assert refCacheRoot != null;
-        this.directory = FSDirectory.getDirectory(refCacheRoot, new NBLockFactory ());
+        this.directory = FSDirectory.getDirectory(refCacheRoot, Index.isTest() ? NoLockFactory.getNoLockFactory() : new NBLockFactory());
     }
 
     @SuppressWarnings("unchecked") // NOI18N, unchecked - lucene has source 1.4
