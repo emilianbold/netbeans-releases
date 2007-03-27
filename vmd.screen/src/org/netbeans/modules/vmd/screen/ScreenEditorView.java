@@ -33,11 +33,11 @@ public class ScreenEditorView implements DataEditorView {
 
     private static final long serialVersionUID = -1;
 
+    public static final String SCREEN_EDITOR_VIEW_DISPLAY_NAME = "Screen";
+
     private DataObjectContext context;
     private transient ScreenViewController controller;
     
-    public static final String SCREEN_EDITOR_VIEW_DISPALY_NAME = "Screen"; //NOI18N
-
     public ScreenEditorView (DataObjectContext context) {
         this.context = context;
         init ();
@@ -64,7 +64,7 @@ public class ScreenEditorView implements DataEditorView {
     }
 
     public String getDisplayName () {
-        return SCREEN_EDITOR_VIEW_DISPALY_NAME;
+        return SCREEN_EDITOR_VIEW_DISPLAY_NAME;
     }
 
     public HelpCtx getHelpCtx () {
