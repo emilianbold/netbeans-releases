@@ -451,6 +451,9 @@ public class CasaWrapperModel extends CasaModelImpl {
         System.out.println("Got WSDLEndpoint Action.. Pt: " + portType);
         
         String wsdlLocation = casaWrapperModel.getWSDLLocation(casaPort);
+        if (wsdlLocation.equals("../jbiasa/casa.wsdl")) { // NOI18N
+            wsdlLocation = null;    // no need to import itself
+        }
         System.out.println("Got WSDL location: " + wsdlLocation);
         
         ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
@@ -484,15 +487,17 @@ public class CasaWrapperModel extends CasaModelImpl {
         Collection<Import> imports = definitions.getImports();
         
         boolean foundImport = false;
-        for (Import imprt : imports) {
-            if (imprt.getNamespace().equals(qName.getNamespaceURI()) &&
-                    imprt.getLocation().equals(wsdlLocation)) {
-                foundImport = true;
-                break;
+        if (wsdlLocation != null) {
+            for (Import imprt : imports) {
+                if (imprt.getNamespace().equals(qName.getNamespaceURI()) &&
+                        imprt.getLocation().equals(wsdlLocation)) {
+                    foundImport = true;
+                    break;
+                }
             }
         }
         Import newImport = null;
-        if (!foundImport) {
+        if (wsdlLocation != null && !foundImport) {
             newImport = wsdlModel.getFactory().createImport();
             newImport.setNamespace(qName.getNamespaceURI());
             newImport.setLocation(wsdlLocation);
