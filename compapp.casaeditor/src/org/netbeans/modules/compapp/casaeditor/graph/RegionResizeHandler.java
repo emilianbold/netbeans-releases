@@ -89,7 +89,10 @@ public class RegionResizeHandler implements MoveStrategy, MoveProvider {
         int boundary = RegionUtilities.MIN_REGION_WIDTH;
         int minimumResizerEdge = 0;
         if (minimumEdgeResizer != null) {
-            minimumResizerEdge = minimumEdgeResizer.getLocation().x + RegionUtilities.RESIZER_WIDTH;
+            minimumResizerEdge = 
+                    minimumEdgeResizer.getLocation().x + 
+                    RegionUtilities.RESIZER_WIDTH + 
+                    RegionUtilities.HORIZONTAL_LEFT_WIDGET_GAP;
             boundary += minimumResizerEdge;
         }
         // When we move the resizer to the left, child nodes that the resizer
@@ -228,14 +231,16 @@ public class RegionResizeHandler implements MoveStrategy, MoveProvider {
             Rectangle childRect = new Rectangle(
                     child.getLocation(), 
                     child.getBounds().getSize());
-            childRect.width += RegionUtilities.HORIZONTAL_EXPANSION_GAP;
+            childRect.width += RegionUtilities.HORIZONTAL_RIGHT_WIDGET_GAP;
             Point originalChildLocation = mOriginalChildWidgetLocationMap.get(child);
 
             Point childEdgeLocation = new Point(
                     resizerRect.x - child.getBounds().width, 
                     child.getLocation().y);
-            childEdgeLocation.x -= RegionUtilities.HORIZONTAL_EXPANSION_GAP;
-            childEdgeLocation.x = childEdgeLocation.x < 0 ? 0 : childEdgeLocation.x;
+            childEdgeLocation.x -= RegionUtilities.HORIZONTAL_RIGHT_WIDGET_GAP;
+            childEdgeLocation.x = childEdgeLocation.x < RegionUtilities.HORIZONTAL_LEFT_WIDGET_GAP ? 
+                RegionUtilities.HORIZONTAL_LEFT_WIDGET_GAP : 
+                childEdgeLocation.x;
             
             if (childRect.intersects(resizerRect)) {
                 // Move child left.

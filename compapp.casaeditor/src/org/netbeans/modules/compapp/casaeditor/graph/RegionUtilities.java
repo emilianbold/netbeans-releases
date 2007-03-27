@@ -59,8 +59,12 @@ public class RegionUtilities {
     
     // The number of pixels of extra space that should exist between
     // a widget and it's region's right border.
-    public static final int HORIZONTAL_EXPANSION_GAP = 10;
+    public static final int HORIZONTAL_RIGHT_WIDGET_GAP = 10;
     
+    // The number of pixels of extra space that should exist between
+    // a widget and it's region's left border.
+    public static final int HORIZONTAL_LEFT_WIDGET_GAP = 30;
+
     // The number of pixels of extra space that should exist between
     // a widget and the bottom of the scene.
     public static final int VERTICAL_EXPANSION_GAP   = 60;
@@ -163,7 +167,7 @@ public class RegionUtilities {
                 return;
             }
             
-            int maxRightRegionXSpan  = findMaximumWidgetXSpan(HORIZONTAL_EXPANSION_GAP, rightRegion);
+            int maxRightRegionXSpan  = findMaximumWidgetXSpan(HORIZONTAL_RIGHT_WIDGET_GAP, rightRegion);
             
             // The left and middle regions expand only enough to fit their widgets.
             int leftWidth   = leftRegion.getPreferredBounds().width;
