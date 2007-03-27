@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,6 +22,7 @@ package org.netbeans.modules.debugger.jpda.ui;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -403,7 +404,11 @@ public class Evaluator extends javax.swing.JPanel {
                     if (!(evt.getNewValue() instanceof FilteredKeymap)) {
                         // We have to do that lazily, because the property change
                         // is fired *before* the keymap is actually changed!
-                        RequestProcessor.getDefault().post(new KeymapUpdater(), 100);
+                        if (EventQueue.isDispatchThread()) {
+                            EventQueue.invokeLater(new KeymapUpdater());
+                        } else {
+                            RequestProcessor.getDefault().post(new KeymapUpdater(), 100);
+                        }
                     }
                 }
             });
