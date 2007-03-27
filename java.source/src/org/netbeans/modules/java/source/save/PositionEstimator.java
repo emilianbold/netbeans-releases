@@ -807,6 +807,8 @@ public abstract class PositionEstimator {
                     } else if (JavaTokenId.JAVADOC_COMMENT == token.id()) {
                         break;
                     }
+                    if (wideEnd > treeEnd)
+                        break;
                 }
                 if (wideEnd < treeEnd) wideEnd = treeEnd;
                 data.add(new int[] { previousEnd, wideEnd, previousEnd });

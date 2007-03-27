@@ -67,7 +67,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit1"));
 //        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit2"));
         suite.addTest(new ClassMemberTest("testMemberIndent93735_1"));
-//        suite.addTest(new ClassMemberTest("testMemberIndent93735_2"));
+        suite.addTest(new ClassMemberTest("testMemberIndent93735_2"));
         return suite;
     }
 
