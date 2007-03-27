@@ -53,15 +53,15 @@ final class CustomizerSources extends NbPropertyPanel.Single {
                     EventQueue.invokeLater(new Runnable() { // wait for combo to close, at least
                         public void run() {
                             if (!UIUtil.showAcceptCancelDialog(
-                                    getMessage("CustomizerSources.title.enable_lint_unchecked"),
-                                    getMessage("CustomizerSources.text.enable_lint_unchecked"),
-                                    getMessage("CustomizerSources.button.enable_lint_unchecked"),
-                                    getMessage("CustomizerSources.button.skip_lint_unchecked"),
+                                    getMessage("CustomizerSources.title.enable_lint"),
+                                    getMessage("CustomizerSources.text.enable_lint"),
+                                    getMessage("CustomizerSources.button.enable_lint"),
+                                    getMessage("CustomizerSources.button.skip_lint"),
                                     NotifyDescriptor.QUESTION_MESSAGE)) {
                                 return;
                             }
                             String options = getProperty(SingleModuleProperties.JAVAC_COMPILERARGS);
-                            String added = "-Xlint:unchecked"; // NOI18N
+                            String added = "-Xlint -Xlint:-serial"; // NOI18N
                             if (options == null || options.length() == 0) {
                                 options = added;
                             } else {
