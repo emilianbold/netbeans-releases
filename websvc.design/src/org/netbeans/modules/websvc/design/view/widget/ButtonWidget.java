@@ -19,22 +19,30 @@
 
 package org.netbeans.modules.websvc.design.view.widget;
 
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.geom.RoundRectangle2D;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.Scene;
 
 /**
  * @author Ajit Bhate
  */
-public class ButtonWidget extends Widget {
+public class ButtonWidget extends AbstractMouseActionsWidget {
     
     private ImageLabelWidget button;
     private Action action;
+    private Insets margin = new Insets(2, 8, 2, 8);
    
     /**
      *
@@ -87,13 +95,19 @@ public class ButtonWidget extends Widget {
         super(scene);
         this.button = button;
         addChild(button);
-        setBorder(BorderFactory.createBevelBorder(true));
+        setBorder(new ButtonBorder(true,margin));
         button.setBorder(BorderFactory.createEmptyBorder(4));
         setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.CENTER, 4));
         getActions().addAction(ButtonAction.DEFAULT);
     }
     
+    
+    public void setMargin(Insets margin) {
+        this.margin = margin;
+        revalidate();
+        repaint();
+    }
     
     /**
      *
@@ -170,7 +184,7 @@ public class ButtonWidget extends Widget {
     /**
      * Called when mouse is clicked on the widget.
      */
-    protected void mouseClicked() {
+    public void mouseClicked() {
         //simply delegate to swing action
         if(action!=null) {
             action.actionPerformed(new ActionEvent(this,0, 
@@ -180,23 +194,108 @@ public class ButtonWidget extends Widget {
         }
     }
 
-    /**
-     * Called when mouse is moved over on the widget.
-     * change color?
-     */
-    protected void mouseEntered() {
-    }
-    
-    /**
-     * Called when mouse is moved away from the widget.
-     * change color?
-     */
-    protected void mouseExited() {
-    }
-    
     private static ImageLabelWidget createImageLabelWidget(Scene scene, Action action) {
         String label = (String)action.getValue(Action.NAME);
         Image image = ((ImageIcon)action.getValue(Action.SMALL_ICON)).getImage();
         return new ImageLabelWidget(scene,image,label);
     }
+
+    private static class ButtonBorder implements Border, MouseActions {
+        private boolean rollover = false;
+        private boolean pressed = false;
+        private boolean enabled = true;
+        private Insets insets;
+        
+        public ButtonBorder(boolean enabled, Insets insets) {
+            this.enabled = enabled;
+            this.insets = insets;
+        }
+        
+        public Insets getInsets() {
+            return insets;
+        }
+
+        public void paint(Graphics2D g2, Rectangle rect) {
+            Paint oldPaint = g2.getPaint();
+            
+            if (enabled) {
+                g2.setPaint(BORDER_COLOR);
+                g2.fill(new RoundRectangle2D.Double(rect.x, rect.y,
+                            rect.width, rect.height, 6, 6));
+
+                if (pressed) {
+                    g2.setPaint(new Color(0xCCCCCC));
+                } else {
+                    g2.setPaint(new GradientPaint(
+                            0, rect.y + 1, BACKGROUND_COLOR_1,
+                            0, rect.y + rect.height * 0.5f, 
+                            BACKGROUND_COLOR_2, true));
+                }
+
+                if (rollover) {
+                    g2.fill(new RoundRectangle2D.Double(rect.x + 1.5, rect.y + 1.5,
+                            rect.width - 3, rect.height - 3, 3, 3));
+                } else {
+                    g2.fill(new RoundRectangle2D.Double(rect.x + 1, rect.y + 1,
+                            rect.width - 2, rect.height - 2, 4, 4));
+                }
+            } else {
+                g2.setPaint(grayFilter(BORDER_COLOR));
+                g2.fill(new RoundRectangle2D.Double(rect.x, rect.y,
+                            rect.width, rect.height, 6, 6));
+                
+                g2.setPaint(BACKGROUND_COLOR_DISABLED);
+                g2.fill(new RoundRectangle2D.Double(rect.x + 1, rect.y + 1,
+                        rect.width - 2, rect.height - 2, 4, 4));
+            }
+            
+            g2.setPaint(oldPaint);
+        }
+
+        public boolean isOpaque() {
+            return true;
+        }
+        
+        public void mousePressed() {
+            pressed = true;
+        }
+        
+        public void mouseReleased() {
+            pressed = false;
+        }
+        
+        public void mouseEntered() {
+            rollover = true;
+        }
+        
+        public void mouseExited() {
+            rollover = false;
+        }
+        
+        public void mouseClicked() {
+        }
+
+    }    
+    
+    
+    private static Color grayFilter(Color color) {
+        int y = Math.round(0.299f * color.getRed() 
+                + 0.587f * color.getGreen() 
+                + 0.114f * color.getBlue());
+        
+        if (y < 0) {
+            y = 0;
+        } else if (y > 255) {
+            y = 255;
+        }
+        
+        return new Color(y, y, y);
+    }
+    
+    private static final Color BORDER_COLOR = new Color(0x7F9DB9);
+    private static final Color BACKGROUND_COLOR_1 = new Color(0xD2D2DD);    
+    private static final Color BACKGROUND_COLOR_2 = new Color(0xF8F8F8);    
+    private static final Color BACKGROUND_COLOR_DISABLED = new Color(0xE4E4E4);
+    private static final Color ENABLED_TEXT_COLOR = new Color(0x222222);
+    private static final Color DISABLED_TEXT_COLOR = new Color(0x888888);
 }

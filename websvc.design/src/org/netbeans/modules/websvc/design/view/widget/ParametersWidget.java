@@ -35,7 +35,7 @@ import org.openide.util.Utilities;
 /**
 Opeit Bhate
  */
-public class ParametersWidget extends RoundedRectangleWidget implements ExpandableWidget{
+public class ParametersWidget extends AbstractTitledWidget {
     
     private static final Color TITLE_COLOR = new Color(153,153,255);
     private static final Color TITLE_COLOR2 = new Color(178,178,255);
@@ -47,9 +47,7 @@ public class ParametersWidget extends RoundedRectangleWidget implements Expandab
     private transient Input input;
 
     private transient Widget contentWidget;
-    private transient HeaderWidget headerWidget;
     private transient Widget buttons;
-    private transient ExpanderWidget expander;
     private transient ImageLabelWidget headerLabelWidget;
 
     
@@ -60,34 +58,14 @@ public class ParametersWidget extends RoundedRectangleWidget implements Expandab
      * @param operation 
      */
     public ParametersWidget(Scene scene, Input input) {
-        super(scene);
+        super(scene,GAP,BORDER_COLOR);
         this.input = input;
-        setRadius(GAP);
-        setBorderColor(BORDER_COLOR);
-        setTitleColor(TITLE_COLOR,TITLE_COLOR2);
         createContent();
     }
     
     private void createContent() {
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
-        boolean expanded = ExpanderWidget.isExpanded(this, true);
-        expander = new ExpanderWidget(getScene(), this, expanded);
-
-        headerWidget = new HeaderWidget(getScene(), expander);
-        headerWidget.setLayout(new LeftRightLayout(32));
-
-        buttons = new Widget(getScene());
-        buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
-                LayoutFactory.SerialAlignment.JUSTIFY, 8));
-
-        buttons.addChild(expander);
-
-        headerWidget.addChild(buttons);
-
-        addChild(headerWidget);
-        setTitleWidget(headerWidget);
-        
         contentWidget = new Widget(getScene());
         contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
@@ -107,10 +85,17 @@ public class ParametersWidget extends RoundedRectangleWidget implements Expandab
         headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, 
                 NbBundle.getMessage(OperationWidget.class, "LBL_Input"), 
                 "("+noOfParams+")");
-        headerWidget.addChild(0,headerLabelWidget);
+        getHeaderWidget().addChild(headerLabelWidget);
 
-        
-        if(expanded) {
+        buttons = new Widget(getScene());
+        buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 8));
+
+        buttons.addChild(getExpanderWidget());
+
+        getHeaderWidget().addChild(buttons);
+
+        if(isExpanded()) {
             expandWidget();
         } else {
             collapseWidget();

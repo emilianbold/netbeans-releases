@@ -30,7 +30,7 @@ import org.openide.util.Utilities;
 /**
  * @author Ajit Bhate
  */
-public class FaultsWidget extends RoundedRectangleWidget {
+public class FaultsWidget extends AbstractTitledWidget {
     
     private static final Color TITLE_COLOR = new Color(255,153,102);
     private static final Color TITLE_COLOR2 = new Color(255,178,128);
@@ -48,25 +48,24 @@ public class FaultsWidget extends RoundedRectangleWidget {
      * @param operation  
      */
     public FaultsWidget(Scene scene, Operation operation) {
-        super(scene);
+        super(scene,GAP,BORDER_COLOR);
         this.operation = operation;
-        setRadius(GAP);
-        setBorderColor(BORDER_COLOR);
-        setTitleColor(TITLE_COLOR,TITLE_COLOR2);
         createContent();
     }
     
     private void createContent() {
         if (operation==null) return;
         
+        getHeaderWidget().setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
         headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, 
                 NbBundle.getMessage(OperationWidget.class, "LBL_Faults"), 
                 "To be implemented");
-        addChild(0,headerLabelWidget);
-        setTitleWidget(headerLabelWidget);
-
+        getHeaderWidget().addChild(headerLabelWidget);
     }
 
+    protected boolean isExpandable() {
+        return false;
+    }
 }

@@ -31,6 +31,20 @@ package org.netbeans.modules.websvc.design.view.widget;
 public interface ExpandableWidget {
 
     /**
+     * Set the expanded state of the widget.
+     *
+     * @param  expanded  true to expand, false to collapse.
+     */
+    void setExpanded(boolean expanded);
+
+    /**
+     * Indicates if this widget is expanded or collapsed.
+     *
+     * @return  true if expanded, false if collapsed.
+     */
+    boolean isExpanded();
+
+    /**
      * Perform whatever steps are necessary to collapse this expandable
      * widget. This may remove child widgets, or animate the preferred
      * bounds of the widget, using the provided expander.

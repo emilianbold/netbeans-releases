@@ -46,8 +46,8 @@ import org.openide.util.Utilities;
  *
  * @author Ajit Bhate
  */
-public class OperationsWidget extends RoundedRectangleWidget 
-        implements ExpandableWidget, PropertyChangeListener{
+public class OperationsWidget extends AbstractTitledWidget 
+        implements PropertyChangeListener{
     
     private static final Color BORDER_COLOR = new Color(180,180,255);
     private static final Color TITLE_COLOR = new Color(204,204,255);
@@ -60,9 +60,7 @@ public class OperationsWidget extends RoundedRectangleWidget
     private transient Action addAction;
 
     private transient Widget contentWidget;
-    private transient HeaderWidget headerWidget;
     private transient Widget buttons;
-    private transient ExpanderWidget expander;
     private transient ImageLabelWidget headerLabelWidget;
 
     
@@ -75,11 +73,8 @@ public class OperationsWidget extends RoundedRectangleWidget
      * @param wsdlModel 
      */
     public OperationsWidget(Scene scene, Service service, FileObject implementationClass, WSDLModel wsdlModel) {
-        super(scene);
+        super(scene,GAP,BORDER_COLOR);
         this.wsdlModel = wsdlModel;
-        setRadius(GAP);
-        setBorderColor(BORDER_COLOR);
-        setTitleColor(TITLE_COLOR,TITLE_COLOR2);
         addAction = new AddOperationAction(service, implementationClass);
         addAction.addPropertyChangeListener(this);
         addAction.putValue(Action.SMALL_ICON, new ImageIcon(IMAGE));
@@ -95,15 +90,9 @@ public class OperationsWidget extends RoundedRectangleWidget
         
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
-        boolean expanded = ExpanderWidget.isExpanded(this, true);
-        expander = new ExpanderWidget(getScene(), this, expanded);
-
-        headerWidget = new HeaderWidget(getScene(), expander);
-        headerWidget.setLayout(new LeftRightLayout(32));
-
         headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, 
                 NbBundle.getMessage(OperationWidget.class, "LBL_Operations"));
-        headerWidget.addChild(headerLabelWidget);
+        getHeaderWidget().addChild(headerLabelWidget);
         updateHeaderLabel();
 
         buttons = new Widget(getScene());
@@ -113,13 +102,10 @@ public class OperationsWidget extends RoundedRectangleWidget
         ButtonWidget addButton = new ButtonWidget(getScene(), addAction);
 
         buttons.addChild(addButton);
-        buttons.addChild(expander);
+        buttons.addChild(getExpanderWidget());
 
-        headerWidget.addChild(buttons);
+        getHeaderWidget().addChild(buttons);
 
-        addChild(headerWidget);
-        setTitleWidget(headerWidget);
-        
         contentWidget = new Widget(getScene());
         contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
@@ -129,7 +115,7 @@ public class OperationsWidget extends RoundedRectangleWidget
             }
         }
         
-        if(expanded) {
+        if(isExpanded()) {
             expandWidget();
         } else {
             collapseWidget();

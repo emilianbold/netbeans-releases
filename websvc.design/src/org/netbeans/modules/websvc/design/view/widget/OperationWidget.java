@@ -37,7 +37,7 @@ import org.openide.util.Utilities;
  *
  * @author Ajit Bhate
  */
-public class OperationWidget extends RoundedRectangleWidget implements ExpandableWidget{
+public class OperationWidget extends AbstractTitledWidget {
     
     private static final Color TITLE_COLOR = new Color(180,180,255);
     private static final Color TITLE_COLOR2 = new Color(204,204,255);
@@ -54,9 +54,7 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
     private Operation operation;
     
     private transient Widget contentWidget;
-    private transient HeaderWidget headerWidget;
     private transient Widget buttons;
-    private transient ExpanderWidget expander;
     private transient ImageLabelWidget headerLabelWidget;
 
     private Widget inputWidget;
@@ -70,10 +68,7 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
      * @param operation
      */
     public OperationWidget(Scene scene, Operation operation) {
-        super(scene);
-        setBorderColor(BORDER_COLOR);
-        setTitleColor(TITLE_COLOR,TITLE_COLOR2);
-        setRadius(GAP);
+        super(scene,GAP,BORDER_COLOR);
         this.operation=operation;
         getActions().addAction(ActionFactory.createPopupMenuAction(
                 new DesignViewPopupProvider(new Action [] {
@@ -83,26 +78,6 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
     
     private void createContent() {
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
-
-        boolean expanded = ExpanderWidget.isExpanded(this, true);
-        expander = new ExpanderWidget(getScene(), this, expanded);
-
-        headerWidget = new HeaderWidget(getScene(), expander);
-        headerWidget.setLayout(new LeftRightLayout(32));
-
-        buttons = new Widget(getScene());
-        buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
-                LayoutFactory.SerialAlignment.JUSTIFY, 8));
-
-        buttons.addChild(expander);
-
-        headerWidget.addChild(buttons);
-
-        addChild(headerWidget);
-        setTitleWidget(headerWidget);
-        
-        contentWidget = new Widget(getScene());
-        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
         String typeOfOperation ="";
         Image image = null;
@@ -118,8 +93,17 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
         }
         headerLabelWidget = new ImageLabelWidget(getScene(), image, operation.getName(), 
                 "("+typeOfOperation+")");
-        headerWidget.addChild(0,headerLabelWidget);
+        getHeaderWidget().addChild(headerLabelWidget);
 
+        buttons = new Widget(getScene());
+        buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 8));
+        buttons.addChild(getExpanderWidget());
+
+        getHeaderWidget().addChild(buttons);
+
+        contentWidget = new Widget(getScene());
+        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
         inputWidget = new ParametersWidget(getScene(),operation.getInput());
         outputWidget = new OutputWidget(getScene(),operation.getOutput());
         faultWidget = new FaultsWidget(getScene(),operation);
@@ -128,7 +112,7 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
         contentWidget.addChild(outputWidget);
         contentWidget.addChild(faultWidget);
         contentWidget.addChild(descriptionWidget);
-        if(expanded) {
+        if(isExpanded()) {
             expandWidget();
         } else {
             collapseWidget();

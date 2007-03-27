@@ -30,7 +30,7 @@ import org.openide.util.Utilities;
 /**
  * @author Ajit Bhate
  */
-public class OutputWidget extends RoundedRectangleWidget {
+public class OutputWidget extends AbstractTitledWidget {
     
     private static final Color TITLE_COLOR = new Color(126,204,126);
     private static final Color TITLE_COLOR2 = new Color(153,204,153);
@@ -48,24 +48,23 @@ public class OutputWidget extends RoundedRectangleWidget {
      * @param output  
      */
     public OutputWidget(Scene scene, Output output) {
-        super(scene);
+        super(scene,GAP,BORDER_COLOR);
         this.output = output;
-        setRadius(GAP);
-        setBorderColor(BORDER_COLOR);
-        setTitleColor(TITLE_COLOR,TITLE_COLOR2);
         createContent();
     }
     
     private void createContent() {
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
+        getHeaderWidget().setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
         headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, output==null?
                 NbBundle.getMessage(OperationWidget.class, "LBL_OutputNone"): 
                 NbBundle.getMessage(OperationWidget.class, "LBL_Output", output.getName()), 
                 null);
-        addChild(0,headerLabelWidget);
-        setTitleWidget(headerLabelWidget);
-
+       getHeaderWidget().addChild(headerLabelWidget);
     }
 
+    protected boolean isExpandable() {
+        return false;
+    }
 }

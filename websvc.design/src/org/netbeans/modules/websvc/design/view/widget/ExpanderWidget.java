@@ -20,9 +20,9 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.geom.GeneralPath;
@@ -58,8 +58,6 @@ public class ExpanderWidget extends ButtonWidget {
     private static Map<Object, Boolean> expandedCache;
     /** The expandable (content) widget. */
     private ExpandableWidget expandable;
-    /** True if expanded, false if collapsed. */
-    private boolean isExpanded;
 
     static {
         expandedCache = new WeakHashMap<Object, Boolean>();
@@ -113,12 +111,13 @@ public class ExpanderWidget extends ButtonWidget {
     public ExpanderWidget(Scene scene, ExpandableWidget expandable,
             boolean expanded) {
         super(scene, expanded ? IMAGE_COLLAPSE : IMAGE_EXPAND);
-        getButton().setPreferredSize(new Dimension(20, 20));
+        setMargin(new Insets(2, 2, 2, 2));
         this.expandable = expandable;
-        isExpanded = expanded;
         setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
-                setExpanded(!isExpanded());
+                ExpanderWidget.this.expandable.setExpanded(
+                        !ExpanderWidget.this.expandable.isExpanded());
+                
             }
         });
     }
@@ -129,7 +128,7 @@ public class ExpanderWidget extends ButtonWidget {
      * @return  true if expanded, false if collapsed.
      */
     public boolean isExpanded() {
-        return isExpanded;
+        return expandable.isExpanded();
     }
 
     /**
@@ -155,13 +154,7 @@ public class ExpanderWidget extends ButtonWidget {
     public void setExpanded(boolean expanded) {
         // Save the state of the expandable in case it gets recreated later.
         expandedCache.put(expandable.hashKey(), Boolean.valueOf(expanded));
-        isExpanded = expanded;
         setImage(expanded ? IMAGE_COLLAPSE : IMAGE_EXPAND);
-        if (isExpanded) {
-            expandable.expandWidget();
-        } else {
-            expandable.collapseWidget();
-        }
     }
 
 }
