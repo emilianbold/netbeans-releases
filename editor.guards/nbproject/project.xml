@@ -59,24 +59,18 @@ Microsystems, Inc. All Rights Reserved.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
-                        <run-dependency>
-                            <release-version>1</release-version>
-                            <specification-version>1.10</specification-version>
-                        </run-dependency>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.util</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
-                        <run-dependency>
-                            <release-version>1</release-version>
-                            <specification-version>1.13</specification-version>
-                        </run-dependency>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor</code-name-base>
-                        <compile-dependency/>
                         <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                 </test-type>
                 <test-type>
