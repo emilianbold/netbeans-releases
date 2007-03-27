@@ -5,10 +5,6 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.db.sql.visualeditor</code-name-base>
             <suite-component/>
-            <class-path-extension>
-                <runtime-relative-path>ext/jgraph.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/jgraph.jar</binary-origin>
-            </class-path-extension>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.db</code-name-base>
@@ -70,8 +66,12 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
-                <subpackages>org.netbeans.modules.db.sql.visualeditor</subpackages>
+                <package>org.netbeans.modules.db.sql.visualeditor.api</package>
             </friend-packages>
-        </data>
+            <class-path-extension>
+                <runtime-relative-path>ext/jgraph.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jgraph.jar</binary-origin>
+            </class-path-extension>
+            </data>
     </configuration>
 </project>
