@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -410,10 +411,15 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
 		String implVersion, String implVendor, URL sealBase )
 		throws IllegalArgumentException {
 	synchronized (packages) {
-            Package pkg = super.definePackage (name, specTitle, specVersion, specVendor, implTitle,
-			implVersion, implVendor, sealBase);
-            packages.put(name, pkg);
-            return pkg;
+            try {
+                Package pkg = super.definePackage(name, specTitle, specVersion, specVendor, implTitle,
+                        implVersion, implVendor, sealBase);
+                packages.put(name, pkg);
+                return pkg;
+            } catch (IllegalArgumentException x) {
+                Exceptions.attachMessage(x, "If you are getting this, probably it is because you have several modules trying to load from the same package. This is not supported (#71524).");
+                throw x;
+            }
 	}
     }
 
