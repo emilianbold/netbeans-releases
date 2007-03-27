@@ -288,6 +288,30 @@ Microsystems, Inc. All Rights Reserved.
       </zipfileset>
     </zip>
   </target>
+  
+  <!-- build source zips for selected modules - useful for populating maven repository only-->
+  <target name="build-source-zips" depends="init" description="Builds source zips for maven repository inclusion.">
+      <pathconvert property="modules.fullpath" >
+          <path>
+              <dirset dir="${nb_all}" includes="${config.modules.stable}" />
+          </path>
+          <mapper type="identity" />
+      </pathconvert>
+      
+      <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
+      
+      <pathconvert property="modules.foreach" dirsep="/" pathsep=",">
+          <path path="${modules.sorted}" />
+          <mapper>
+              <globmapper handledirsep="true" from="${nb_all}/*" to="*" />
+          </mapper>
+      </pathconvert>
+      
+      <property name="netbeans.zipped.sources.dir" location="build/source-zips" />
+      
+      <for-each startdir=".." target="sources-zip" locations="${modules.foreach}"/>
+  </target>
+  
       
   <target name="javadoc-generate-xml" depends="init" >
       <echo file="${export.apichanges}/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
