@@ -253,10 +253,11 @@ public class JavaScript {
         List result = new ArrayList ();
         if (context instanceof SyntaxContext) {
             ASTPath path = ((SyntaxContext) context).getASTPath ();
-            DatabaseManager databaseManager = DatabaseManager.getDefault ();
-            Collection c = databaseManager.getIds (path, true);
+            Document doc = context.getDocument();
+            Collection c = Semantic.getGlobalIds(doc);
             result.addAll (c);
-            c = databaseManager.getIds (DatabaseManager.FOLDER);
+            Semantic.Info info = Semantic.getInfo(doc);
+            c = info.getScopeIds(path);
             result.addAll (c);
             return result;
         }
@@ -533,7 +534,6 @@ public class JavaScript {
         if (!(item instanceof ASTToken)) {
             return;
         }
-        DatabaseManager manager = DatabaseManager.getDefault();
         Semantic.Info info = Semantic.getInfo(doc);
         Semantic.Declaration decl = info.getItem(item);
         if (info == null || decl == null) {
