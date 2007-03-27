@@ -1160,6 +1160,21 @@ public class Util
         return false;
     }
     
+    public static boolean isDiagramNameValid(String diagramName)
+    {
+        if (diagramName == null || diagramName.trim().length() == 0)
+            return false;
+        
+        for (String c : IDS_INVALID_CHARS)
+        {
+            if ( diagramName.indexOf(c) != -1)
+                return false;
+        }
+        return true;
+    }
+    
+    public static String[] IDS_INVALID_CHARS = {"\\",  "/",  "*", ":", "?", ".", "&"};
+    
     private static SimpleDateFormat cDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private static SimpleDateFormat cDateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static List types = Arrays.asList("Interface", "Class", "Enumeration");
