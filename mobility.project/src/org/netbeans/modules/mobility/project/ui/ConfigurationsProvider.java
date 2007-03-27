@@ -29,6 +29,7 @@
 package org.netbeans.modules.mobility.project.ui;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +40,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
@@ -46,7 +48,6 @@ import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileAttributeEvent;
@@ -100,7 +101,7 @@ class ConfigurationsProvider
                     { //NOI18N
                         file = FileUtil.getArchiveFile(roots[i]);
                         icon = openedIcon = new ImageIcon(Utilities.loadImage(ARCHIVE_ICON));
-                        node=PackageView.createPackageView(GenericSources.group(project,roots[i],file.getNameExt(),file.getNameExt(),icon, openedIcon));
+                        node=PackageView.createPackageView(new LibrariesSourceGroup(roots[i],file.getNameExt(),icon, openedIcon));
                     }
                     //Add a file or folder
                     else
@@ -343,4 +344,75 @@ class ConfigurationsProvider
         }        
         return brokenArray;
     }
+    
+    static class LibrariesSourceGroup implements SourceGroup {
+
+        private final FileObject root;
+        private final String displayName;
+        private final Icon icon;
+        private final Icon openIcon;
+
+        /**
+         * Creates new LibrariesSourceGroup
+         * @param root the classpath root
+         * @param displayName the display name presented to user
+         * @param icon closed icon
+         * @param openIcon opened icon
+         */          
+        LibrariesSourceGroup (FileObject root, String displayName, Icon icon, Icon openIcon) {
+            assert root != null;
+            this.root = root;
+            this.displayName = displayName;
+            this.icon = icon;
+            this.openIcon = openIcon;
+        }
+
+
+        public FileObject getRootFolder() {
+            return this.root;
+        }
+
+        public String getName() {
+            try {        
+                return root.getURL().toExternalForm();
+            } catch (FileStateInvalidException fsi) { 
+                ErrorManager.getDefault().notify (fsi);
+                return root.toString();
+            }
+        }
+
+        public String getDisplayName() {
+            return this.displayName;
+        }
+
+        public Icon getIcon(boolean opened) {
+            return opened ? openIcon : icon;
+        }
+
+        public boolean contains(FileObject file) throws IllegalArgumentException {
+            return root.equals(file) || FileUtil.isParentOf(root,file);
+        }
+
+        public boolean equals (Object other) {
+            if (!(other instanceof LibrariesSourceGroup)) {
+                return false;
+            }
+            LibrariesSourceGroup osg = (LibrariesSourceGroup) other;
+            return displayName == null ? osg.displayName == null : displayName.equals (osg.displayName) &&
+                root == null ? osg.root == null : root.equals (osg.root);  
+        }
+
+        public int hashCode () {
+            return ((displayName == null ? 0 : displayName.hashCode())<<16) | ((root==null ? 0 : root.hashCode()) & 0xffff);
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            //Not needed
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            //Not needed
+        }
+    }
+
 }
