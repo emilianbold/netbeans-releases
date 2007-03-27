@@ -321,7 +321,8 @@ public abstract class ExternalDocumentBox extends DocumentBox {
 //        RaveElement.setStyleParent(body, element);
         CssProvider.getEngineService().setStyleParentForElement(body, element);
 //        ((RaveDocument)frameForm.getDom()).setCssEngine(webform.getDom().getCssEngine());
-        CssProvider.getEngineService().reuseCssEngineForDocument(frameForm.getJspDom(), webform.getJspDom());
+//        CssProvider.getEngineService().reuseCssEngineForDocument(frameForm.getJspDom(), webform.getJspDom());
+        frameForm.reuseCssStyle(webform);
 
 //        XhtmlCssEngine engine = CssLookup.getCssEngine(body);
 //        if (engine != null) {

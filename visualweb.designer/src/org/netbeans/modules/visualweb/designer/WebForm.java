@@ -2254,6 +2254,13 @@ public class WebForm implements Designer {
         }
     }
     
+    public void reuseCssStyle(WebForm webForm) {
+        if (webForm == null) {
+            return;
+        }
+        htmlDomProvider.reuseCssStyle(webForm.htmlDomProvider);
+    }
+    
     
     private static class HtmlDomProviderListener implements HtmlDomProvider.HtmlDomProviderListener {
         private final WebForm webForm;

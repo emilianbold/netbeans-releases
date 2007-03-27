@@ -93,7 +93,7 @@ is divided into following sections:
         <property name="javac.debug" value="true"/>
         <property name="javadoc.preview" value="true"/>
         <property name="application.args" value=""/>
-        <property name="project.encoding" value="${file.encoding}"/>
+        <property name="source.encoding" value="${file.encoding}"/>
         <property name="includes" value="**"/>
         <property name="excludes" value=""/>
     </target>
@@ -132,18 +132,40 @@ is divided into following sections:
             <attribute name="debug" default="${javac.debug}"/>
             <element name="customize" optional="true"/>
             <sequential>
-                <depend srcdir="@{srcdir}" destdir="@{destdir}" cache="${build.dir}/depcache">
-                    <classpath>
-                        <path path="@{classpath}"/>
-                    </classpath>
-                </depend>
-                <javac srcdir="@{srcdir}" sourcepath="" destdir="@{destdir}" debug="@{debug}" deprecation="${javac.deprecation}" encoding="${project.encoding}" source="${javac.source}" target="${javac.target}" includes="@{includes}" excludes="@{excludes}" includeantruntime="false">
+                <javac srcdir="@{srcdir}" sourcepath="" destdir="@{destdir}" debug="@{debug}" deprecation="${javac.deprecation}" encoding="${source.encoding}" source="${javac.source}" target="${javac.target}" includes="@{includes}" excludes="@{excludes}" includeantruntime="false">
                     <classpath>
                         <path path="@{classpath}"/>
                     </classpath>
                     <compilerarg line="${javac.compilerargs}"/>
                     <customize/>
                 </javac>
+            </sequential>
+        </macrodef>
+        <macrodef name="depend" uri="http://www.netbeans.org/ns/j2se-project/3">
+            <attribute name="srcdir" default="${src.dir}"/>
+            <attribute name="destdir" default="${build.classes.dir}"/>
+            <attribute name="classpath" default="${javac.classpath}"/>
+            <sequential>
+                <depend srcdir="@{srcdir}" destdir="@{destdir}" cache="${build.dir}/depcache" includes="${includes}" excludes="${excludes}">
+                    <classpath>
+                        <path path="@{classpath}"/>
+                    </classpath>
+                </depend>
+            </sequential>
+        </macrodef>
+        <macrodef name="force-recompile" uri="http://www.netbeans.org/ns/j2se-project/3">
+            <attribute name="destdir" default="${build.classes.dir}"/>
+            <sequential>
+                <fail unless="javac.includes">Must set javac.includes</fail>
+                <pathconvert property="javac.includes.binary" pathsep=",">
+                    <path>
+                        <filelist dir="@{destdir}" files="${javac.includes}"/>
+                    </path>
+                    <globmapper from="*.java" to="*.class"/>
+                </pathconvert>
+                <delete>
+                    <files includes="${javac.includes.binary}"/>
+                </delete>
             </sequential>
         </macrodef>
     </target>
@@ -271,6 +293,7 @@ is divided into following sections:
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target name="-do-compile" depends="init,deps-jar,-pre-pre-compile,-pre-compile" if="have.sources">
+        <j2seproject3:depend/>
         <j2seproject3:javac/>
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.dir}" includes="${includes}" excludes="${build.classes.excludes},${excludes}"/>
@@ -287,6 +310,7 @@ is divided into following sections:
     </target>
     <target name="-do-compile-single" depends="init,deps-jar,-pre-pre-compile">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+        <j2seproject3:force-recompile/>
         <j2seproject3:javac includes="${javac.includes}" excludes=""/>
     </target>
     <target name="-post-compile-single">
@@ -370,7 +394,7 @@ is divided into following sections:
             </customize>
         </j2seproject1:java>
     </target>
-    <target name="run-single" depends="init,compile-single">
+    <target name="run-single" depends="init,compile">
         <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
         <j2seproject1:java classname="${run.class}"/>
     </target>
@@ -398,7 +422,7 @@ is divided into following sections:
         <fail unless="debug.class">Must select one file in the IDE or set debug.class</fail>
         <j2seproject3:debug classname="${debug.class}"/>
     </target>
-    <target name="debug-single" if="netbeans.home" depends="init,compile-single,-debug-start-debugger,-debug-start-debuggee-single"/>
+    <target name="debug-single" if="netbeans.home" depends="init,compile,-debug-start-debugger,-debug-start-debuggee-single"/>
     <target name="-pre-debug-fix" depends="init">
         <fail unless="fix.includes">Must set fix.includes</fail>
         <property name="javac.includes" value="${fix.includes}.java"/>
@@ -441,6 +465,7 @@ is divided into following sections:
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target name="-do-compile-test" if="have.tests" depends="init,compile,-pre-pre-compile-test,-pre-compile-test">
+        <j2seproject3:depend srcdir="${test.src.dir}" destdir="${build.test.classes.dir}" classpath="${javac.test.classpath}"/>
         <j2seproject3:javac srcdir="${test.src.dir}" destdir="${build.test.classes.dir}" debug="true" classpath="${javac.test.classpath}"/>
         <copy todir="${build.test.classes.dir}">
             <fileset dir="${test.src.dir}" includes="${includes}" excludes="${build.classes.excludes},${excludes}"/>
@@ -457,6 +482,7 @@ is divided into following sections:
     </target>
     <target name="-do-compile-test-single" if="have.tests" depends="init,compile,-pre-pre-compile-test,-pre-compile-test-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+        <j2seproject3:force-recompile destdir="${build.test.classes.dir}"/>
         <j2seproject3:javac srcdir="${test.src.dir}" destdir="${build.test.classes.dir}" debug="true" classpath="${javac.test.classpath}" includes="${javac.includes}" excludes=""/>
         <copy todir="${build.test.classes.dir}">
             <fileset dir="${test.src.dir}" includes="${includes}" excludes="${build.classes.excludes},${excludes}"/>
@@ -494,7 +520,7 @@ is divided into following sections:
     <target name="-post-test-run-single" if="have.tests" depends="init,compile-test-single,-pre-test-run-single,-do-test-run-single">
         <fail if="tests.failed">Some tests failed; see details above.</fail>
     </target>
-    <target name="test-single" depends="init,compile-test-single,-pre-test-run-single,-do-test-run-single,-post-test-run-single" description="Run single unit test."/>
+    <target name="test-single" depends="init,compile-test,-pre-test-run-single,-do-test-run-single,-post-test-run-single" description="Run single unit test."/>
     <!--
     =======================
     JUNIT DEBUGGING SECTION
