@@ -47,6 +47,7 @@ Microsystems, Inc. All Rights Reserved.
                     <include name="java/j2seproject/src/**/*.xsd"/>
                     <include name="j2ee/earproject/src/**/*.xsd"/>
                     <include name="j2ee/ejbjarproject/src/**/*.xsd"/>
+                    <include name="projects/*/src/**/*.xsd"/>
                     <include name="web/project/src/**/*.xsd"/>
                 </fileset>
             </path>
