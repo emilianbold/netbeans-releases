@@ -21,6 +21,7 @@ package org.netbeans.modules.project.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
@@ -31,9 +32,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.TestSupport;
@@ -100,9 +105,15 @@ public class OpenProjectListTest extends NbTestCase {
     }
 
     public void testOpen () throws Exception {
-        assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0);        
+        assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0);
+        CharSequence log = Log.enable("org.netbeans.ui", Level.FINE);
         OpenProjectList.getDefault ().open (project1, true);        
         assertTrue ("Project1 is opened.", OpenProjectList.getDefault ().isOpen (project1));
+        Pattern p = Pattern.compile("Opening.*1.*TestProject", Pattern.MULTILINE | Pattern.DOTALL);
+        Matcher m = p.matcher(log);
+        if (!m.find()) {
+            fail("There should be TestProject\n" + log.toString());
+        }
         
         assertTrue ("Document f1_1_open is loaded.", handler.openFiles.contains (f1_1_open.getURL ().toExternalForm ()));
         assertTrue ("Document f1_2_open is loaded.", handler.openFiles.contains (f1_2_open.getURL ().toExternalForm ()));
@@ -113,7 +124,13 @@ public class OpenProjectListTest extends NbTestCase {
         assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0); 
         ChangeListener list = new ChangeListener();
         OpenProjectList.getDefault().addPropertyChangeListener(list);
+        CharSequence log = Log.enable("org.netbeans.ui", Level.FINE);
         OpenProjectList.getDefault ().open (project1, true);
+        Pattern p = Pattern.compile("Opening.*1.*TestProject", Pattern.MULTILINE | Pattern.DOTALL);
+        Matcher m = p.matcher(log);
+        if (!m.find()) {
+            fail("There should be TestProject\n" + log.toString());
+        }
         assertEquals(0, list.oldCount);
         assertEquals(1, list.newCount);
         OpenProjectList.getDefault ().open (project2, true);
@@ -130,7 +147,13 @@ public class OpenProjectListTest extends NbTestCase {
     public void testClose () throws Exception {
         testOpen ();
         
+        CharSequence log = Log.enable("org.netbeans.ui", Level.FINE);
         OpenProjectList.getDefault().close(new Project[] {project1}, false);
+        Pattern p = Pattern.compile("Closing.*1.*TestProject", Pattern.MULTILINE | Pattern.DOTALL);
+        Matcher m = p.matcher(log);
+        if (!m.find()) {
+            fail("There should be TestProject\n" + log);
+        }
         assertFalse ("Document f1_1_open isn't loaded.", handler.openFiles.contains (f1_1_open.getURL ().toExternalForm ()));
         assertFalse ("Document f1_2_open isn't loaded.", handler.openFiles.contains (f1_2_open.getURL ().toExternalForm ()));
         assertFalse ("Document f2_1_open isn't loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
@@ -151,11 +174,34 @@ public class OpenProjectListTest extends NbTestCase {
         assertTrue ("Document f2_1_open is still loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
     }
     
+    public void testSerialize() throws Exception {
+        testOpen();
+        Field f = OpenProjectList.class.getDeclaredField("INSTANCE");
+        f.setAccessible(true);
+        f.set(null, null);
+        
+        CharSequence whatIsLoggedWhenDeserializing = Log.enable("org.netbeans.ui", Level.FINE);
+        
+        Project[] arr = OpenProjectList.getDefault().getOpenProjects();
+        assertEquals("One", 1, arr.length);
+        Pattern p = Pattern.compile("Initializing.*1.*TestProject", Pattern.MULTILINE | Pattern.DOTALL);
+        Matcher m = p.matcher(whatIsLoggedWhenDeserializing);
+        if (!m.find()) {
+            fail("There should be TestProject\n" + whatIsLoggedWhenDeserializing);
+        }
+    }
+    
     public void testOpenDependingProject () throws Exception {
         assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0);        
+        CharSequence log = Log.enable("org.netbeans.ui", Level.FINE);
         OpenProjectList.getDefault ().open (project2, true);        
         assertTrue ("Project1 is opened.", OpenProjectList.getDefault ().isOpen (project1));
         assertTrue ("Project2 is opened.", OpenProjectList.getDefault ().isOpen (project2));
+        Pattern p = Pattern.compile("Opening.*2.*TestProject", Pattern.MULTILINE | Pattern.DOTALL);
+        Matcher m = p.matcher(log);
+        if (!m.find()) {
+            fail("There should be TestProject\n" + log);
+        }
         
         assertTrue ("Document f1_1_open is loaded.", handler.openFiles.contains (f1_1_open.getURL ().toExternalForm ()));
         assertTrue ("Document f1_2_open is loaded.", handler.openFiles.contains (f1_2_open.getURL ().toExternalForm ()));

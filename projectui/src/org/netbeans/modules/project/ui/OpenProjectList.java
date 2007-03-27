@@ -44,6 +44,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
@@ -138,11 +141,13 @@ public final class OpenProjectList {
     public static OpenProjectList getDefault() {
         boolean needNotify = false;
         
+        Project[] inital = null;
         synchronized ( OpenProjectList.class ) {
             if ( INSTANCE == null ) {
                 needNotify = true;
                 INSTANCE = new OpenProjectList();
                 INSTANCE.openProjects = loadProjectList();                
+                inital = INSTANCE.openProjects.toArray(new Project[0]);
                 INSTANCE.recentTemplates = new ArrayList<String>( OpenProjectListSettings.getInstance().getRecentTemplates() );
                 URL mainProjectURL = OpenProjectListSettings.getInstance().getMainProjectURL();
                 // Load recent project list
@@ -169,6 +174,9 @@ public final class OpenProjectList {
                 notifyOpened(p);             
             }
             
+        }
+        if (inital != null) {
+            log(createRecord("UI_INIT_PROJECTS", inital));
         }
         
         return INSTANCE;
@@ -349,6 +357,10 @@ public final class OpenProjectList {
         
         final boolean recentProjectsChangedCopy = recentProjectsChanged;
         
+        LogRecord[] addedRec = createRecord("UI_OPEN_PROJECTS", projectsToOpen.toArray(new Project[0])); // NOI18N
+        log(addedRec);
+        
+        
         Mutex.EVENT.readAccess(new Action<Void>() {
             public Void run() {
                 pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, oldprjs.toArray(new Project[oldprjs.size()]), 
@@ -419,6 +431,8 @@ public final class OpenProjectList {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
+        LogRecord[] removedRec = createRecord("UI_CLOSED_PROJECTS", projects); // NOI18N
+        log(removedRec);
     }
         
     public synchronized Project[] getOpenProjects() {
@@ -683,6 +697,7 @@ public final class OpenProjectList {
     private static List<Project> loadProjectList() {               
         List<URL> URLs = OpenProjectListSettings.getInstance().getOpenProjectsURLs();
         List<Project> projects = URLs2Projects( URLs );
+        
         return projects;        
     }
     
@@ -1165,6 +1180,55 @@ public final class OpenProjectList {
             }
             close(toRemove.toArray(new Project[toRemove.size()]), false);
         }
+    }
+    
+    private static LogRecord[] createRecord(String msg, Project[] projects) {
+        if (projects.length == 0) {
+            return null;
+        }
+        
+        Map<String,int[]> counts = new HashMap<String,int[]>();
+        for (Project p : projects) {
+            String n = p.getClass().getName();
+            int[] cnt = counts.get(n);
+            if (cnt == null) {
+                cnt = new int[1];
+                counts.put(n, cnt);
+            }
+            cnt[0]++;
+        }
+        
+        Logger logger = Logger.getLogger("org.netbeans.ui.projects"); // NOI18N
+        LogRecord[] arr = new LogRecord[counts.size()];
+        int i = 0;
+        for (Map.Entry<String,int[]> entry : counts.entrySet()) {
+            LogRecord rec = new LogRecord(Level.CONFIG, msg);
+            rec.setParameters(new Object[] { entry.getKey(), afterLastDot(entry.getKey()), entry.getValue()[0] });
+            rec.setLoggerName(logger.getName());
+            rec.setResourceBundle(NbBundle.getBundle(OpenProjectList.class));
+            rec.setResourceBundleName(OpenProjectList.class.getPackage().getName()+".Bundle");
+            
+            arr[i++] = rec;
+        }
+        
+        return arr;
+    }
+    
+    private static void log(LogRecord[] arr) {
+        if (arr == null) {
+            return;
+        }
+        Logger logger = Logger.getLogger("org.netbeans.ui.projects"); // NOI18N
+        for (LogRecord r : arr) {
+            logger.log(r);
+        }
+    }
+    private static String afterLastDot(String s) {
+        int index = s.lastIndexOf('.');
+        if (index == -1) {
+            return s;
+        }
+        return s.substring(index + 1);
     }
     
 }    
