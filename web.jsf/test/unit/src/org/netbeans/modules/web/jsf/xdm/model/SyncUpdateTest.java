@@ -3,12 +3,10 @@ package org.netbeans.modules.web.jsf.xdm.model;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 import javax.swing.text.Document;
 import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 
@@ -26,18 +24,15 @@ public class SyncUpdateTest extends NbTestCase {
     
     public void testSyncRuleElement() throws Exception {
         
-        List<NavigationRule> navRules;
-        
         JSFConfigModel model = Util.loadRegistryModel("faces-config-03.xml");
         
-        navRules = model.getRootComponent().getNavigationRules();
+        NavigationRule rule = model.getRootComponent().getNavigationRules().get(0);
         
-        assertEquals("afaa", navRules.get(0).getFromViewId());
+        assertEquals("afaa", rule.getFromViewId());
         
         Util.setDocumentContentTo(model, "faces-config-04.xml");
-        navRules = model.getRootComponent().getNavigationRules();
         
-        assertEquals("newafaa", navRules.get(0).getFromViewId());
+        assertEquals("newafaa", rule.getFromViewId());
     }
     
     public boolean propertyChangeCalled = false; 
@@ -77,9 +72,4 @@ public class SyncUpdateTest extends NbTestCase {
         
         assertTrue(propertyChangeCalled);
     }
-
-    
-    
-    
-    
 }

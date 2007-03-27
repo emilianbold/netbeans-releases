@@ -58,7 +58,7 @@ public class JSFConfigModelImpl extends AbstractDocumentModel<JSFConfigComponent
     }
 
     protected ComponentUpdater<JSFConfigComponent> getComponentUpdater() {
-        return null;
+        return new SyncUpdateVisitor();
     }
 
     public FacesConfig getRootComponent() {
