@@ -387,7 +387,11 @@ public class TreeModelNode extends AbstractNode {
         Children ch = getChildren();
         try {
             if (ch instanceof TreeModelChildren) {
-                ((TreeModelChildren) ch).refreshChildren(refreshSubNodes);
+                if (model.isLeaf(object)) {
+                    setChildren(Children.LEAF);
+                } else {
+                    ((TreeModelChildren) ch).refreshChildren(refreshSubNodes);
+                }
             } else if (!model.isLeaf (object)) {
                 setChildren(new TreeModelChildren (model, treeModelRoot, object));
             }
