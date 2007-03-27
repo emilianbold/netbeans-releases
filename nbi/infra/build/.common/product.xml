@@ -325,7 +325,7 @@
                 value="${downloads.cache.dir}/${current.downloaded.path}"/>
             <set 
                 property="current.temp.dir" 
-                value="${package.dir}/${product.data.path}/tmpdir"/>
+                value="${work.dir}/temp"/>
             
             <set 
                 property="current.packaged.data.file" 
