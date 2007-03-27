@@ -24,13 +24,11 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -77,6 +75,10 @@ public final class FolderPathLookup extends AbstractLookup {
         
         for (Iterator i = files.iterator(); i.hasNext(); ) {
             FileObject file = (FileObject) i.next();
+            if (!file.isValid()) {
+                // Can happen after modules are disabled. Ignore it.
+                continue;
+            }
             
             try {
                 DataObject d = DataObject.find(file);
