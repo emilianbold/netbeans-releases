@@ -21,6 +21,8 @@ package org.openide.actions;
 
 
 import java.awt.event.ActionEvent;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
@@ -36,6 +38,8 @@ import org.openide.actions.*;
 import org.openide.actions.ActionsInfraHid.UsefulThings;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.Lookup;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.Presenter;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
 
@@ -51,11 +55,7 @@ public class PasteActionTest extends AbstractCallbackActionTestHidden {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(PasteActionTest.class));
-    }
-    
-    protected Class actionClass () {
+    protected Class<? extends CallbackSystemAction> actionClass() {
         return PasteAction.class;
     }
     
@@ -66,18 +66,18 @@ public class PasteActionTest extends AbstractCallbackActionTestHidden {
     public void testListenersAreUnregisteredBug32073 () throws Exception {
         action.assertListeners ("When we created clone, we added a listener", 1);
         
-        java.lang.ref.WeakReference ref = new java.lang.ref.WeakReference (clone);
+        Reference<?> ref = new WeakReference<Object>(clone);
         clone = null;
         assertGC ("Clone can disappear", ref);
         action.assertListeners ("No listeners, as the clone has been GCed", 0);
     }
     
     public void testPresenterCanBeGCedIssue47314 () throws Exception {
-        javax.swing.JMenuItem item = ((org.openide.util.actions.Presenter.Popup)clone).getPopupPresenter ();
+        javax.swing.JMenuItem item = ((Presenter.Popup) clone).getPopupPresenter();
         
-        java.lang.ref.WeakReference itemref = new java.lang.ref.WeakReference (item);
+        Reference<?> itemref = new WeakReference<Object>(item);
         item = null;
-        java.lang.ref.WeakReference ref = new java.lang.ref.WeakReference (clone);
+        Reference<?> ref = new WeakReference<Object>(clone);
         clone = null;
         assertGC ("Item can disappear", itemref);
         assertGC ("Clone can disappear", ref);

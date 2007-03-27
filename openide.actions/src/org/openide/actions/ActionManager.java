@@ -48,7 +48,7 @@ public abstract class ActionManager extends Object {
      * @since 4.2
      */
     public static ActionManager getDefault() {
-        ActionManager am = (ActionManager) Lookup.getDefault().lookup(ActionManager.class);
+        ActionManager am = Lookup.getDefault().lookup(ActionManager.class);
 
         if (am == null) {
             am = new Trivial();
@@ -70,6 +70,7 @@ public abstract class ActionManager extends Object {
      * Nonabstract since 4.11.
      * @deprecated Just use {@link java.awt.event.ActionListener#actionPerformed} directly instead. Since 4.11.
      */
+    @Deprecated
     public void invokeAction(Action a, ActionEvent e) {
         a.actionPerformed(e);
     }

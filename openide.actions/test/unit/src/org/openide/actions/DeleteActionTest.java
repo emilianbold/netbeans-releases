@@ -19,31 +19,17 @@
 
 package org.openide.actions;
 
+import org.openide.util.actions.CallbackSystemAction;
 
-import java.util.Arrays;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-
-import junit.textui.TestRunner;
-
-import org.netbeans.junit.*;
-import org.openide.actions.*;
-import org.openide.util.Lookup;
-
-
-/** Test behaviour of DeleteAction intogether with clonning.
+/**
+ * Test behavior of DeleteAction together with cloning.
  */
 public class DeleteActionTest extends AbstractCallbackActionTestHidden {
     public DeleteActionTest(String name) {
         super(name);
     }
 
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(DeleteActionTest.class));
-    }
-
-    
-    protected Class actionClass () {
+    protected Class<? extends CallbackSystemAction> actionClass() {
         return DeleteAction.class;
     }
     

@@ -109,7 +109,7 @@ public final class MoveUpAction extends NodeAction {
 
         // now start listening to reordering changes
         cookie.addChangeListener((OrderingListener) getProperty(PROP_ORDER_LISTENER));
-        curIndexCookie = new WeakReference(cookie);
+        curIndexCookie = new WeakReference<Index>(cookie);
 
         int index = cookie.indexOf(activatedNodes[0]);
 

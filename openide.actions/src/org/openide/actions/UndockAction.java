@@ -29,6 +29,7 @@ import org.openide.util.actions.CallbackSystemAction;
 * @author   Petr Hamernik, Ian Formanek
 * @deprecated Do not use.
 */
+@Deprecated
 public class UndockAction extends CallbackSystemAction {
     public String getName() {
         return NbBundle.getMessage(UndockAction.class, "UndockWindow");

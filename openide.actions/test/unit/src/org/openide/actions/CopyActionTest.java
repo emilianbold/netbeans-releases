@@ -19,31 +19,17 @@
 
 package org.openide.actions;
 
+import org.openide.util.actions.CallbackSystemAction;
 
-import java.util.Arrays;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-
-import junit.textui.TestRunner;
-
-import org.netbeans.junit.*;
-import org.openide.actions.*;
-import org.openide.util.Lookup;
-
-
-/** Test behaviour of CopyAction intogether with clonning.
+/**
+ * Test behavior of CopyAction together with cloning.
  */
 public class CopyActionTest extends AbstractCallbackActionTestHidden {
     public CopyActionTest(String name) {
         super(name);
     }
 
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(CopyActionTest.class));
-    }
-
-    
-    protected Class actionClass () {
+    protected Class<? extends CallbackSystemAction> actionClass() {
         return CopyAction.class;
     }
     

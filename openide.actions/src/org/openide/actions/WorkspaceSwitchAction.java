@@ -18,7 +18,6 @@
  */
 package org.openide.actions;
 
-import org.openide.awt.Actions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -41,6 +40,8 @@ import org.openide.awt.Mnemonics;
 * @author Ales Novak
  * @deprecated No longer used since there are no more workspaces.
 */
+@Deprecated
+@SuppressWarnings({"unchecked", "deprecation"})
 public class WorkspaceSwitchAction extends CallableSystemAction {
     public String getName() {
         return NbBundle.getBundle(WorkspaceSwitchAction.class).getString("WorkspacesItems");

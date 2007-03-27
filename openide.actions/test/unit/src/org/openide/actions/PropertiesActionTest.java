@@ -19,7 +19,6 @@
 
 package org.openide.actions;
 
-import java.lang.reflect.InvocationTargetException;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -27,6 +26,7 @@ import org.openide.nodes.Node;
 import javax.swing.Action;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
+import org.openide.util.actions.SystemAction;
 
 /** Issue 68299.
  *
@@ -54,18 +54,17 @@ public class PropertiesActionTest extends NbTestCase {
     public void testEnableOnNotNullProperties () throws Exception {
         PropertySet [] s = new PropertySet [] { new PropertySet () {
                         public Property[] getProperties () {
-                            Property p = new Property (String.class) {
+                            Property p = new Property<String>(String.class) {
                                 public boolean canRead () {
                                     return true;
                                 }
                                 public boolean canWrite () {
                                     return true;
                                 }
-                                public Object getValue () throws IllegalAccessException,InvocationTargetException {
+                                public String getValue() {
                                     return null;
                                 }
-                                public void setValue (Object val) throws IllegalAccessException,IllegalArgumentException,InvocationTargetException {
-                                }
+                                public void setValue(String val) {}
                             };
                             return new Property [] { p };
                         }
@@ -84,9 +83,7 @@ public class PropertiesActionTest extends NbTestCase {
         
         assertEquals ("Node has the given properties.", pros, n.getPropertySets ());
         
-        Node[] activatedNodes = new Node [] { n };
-        
-        PropertiesAction pa = (PropertiesAction) PropertiesAction.get (PropertiesAction.class);
+        PropertiesAction pa = SystemAction.get(PropertiesAction.class);
         Action a = pa.createContextAwareInstance (n.getLookup ());
         
         assertTrue ("PropertiesAction is enabled.", a.isEnabled ());

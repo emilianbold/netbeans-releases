@@ -112,10 +112,10 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
     * @param forMenu true if will be presented in menu or false if presented in popup
     * @param list (can be null)
     */
-    private static List generate(Action toolsAction, boolean forMenu) {
+    private static List<JMenuItem> generate(Action toolsAction, boolean forMenu) {
         ActionManager am = ActionManager.getDefault();
         SystemAction[] actions = am.getContextActions();
-        List list = new ArrayList(actions.length);
+        List<JMenuItem> list = new ArrayList<JMenuItem>(actions.length);
 
         boolean separator = false;
         boolean firstItemAdded = false; // flag to prevent adding separator before actual menu items
@@ -129,14 +129,11 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
             lookup = null;
         }
 
-        for (int i = 0; i < actions.length; i++) {
-            Action a;
+        for (Action a : actions) {
 
             // Retrieve context sensitive action instance if possible.
-            if ((lookup != null) && actions[i] instanceof ContextAwareAction) {
-                a = ((ContextAwareAction) actions[i]).createContextAwareInstance(lookup);
-            } else {
-                a = actions[i];
+            if (lookup != null && a instanceof ContextAwareAction) {
+                a = ((ContextAwareAction) a).createContextAwareInstance(lookup);
             }
 
             if (a == null) {
@@ -184,11 +181,13 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
     //------------------------------------------
 
     /** @deprecated Useless, see {@link ActionManager}. */
+    @Deprecated
     public static void setModel(Model m) {
         throw new SecurityException();
     }
 
     /** @deprecated Useless, see {@link ActionManager}. */
+    @Deprecated
     public static interface Model {
         public SystemAction[] getActions();
 
@@ -219,9 +218,9 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
                 return items;
             }
             // generate directly list of menu items
-            List l = generate(toolsAction, true);
+            List<JMenuItem> l = generate(toolsAction, true);
             timestamp = gl().getTimestamp();
-            return (JMenuItem[]) l.toArray(new JMenuItem[l.size()]);
+            return l.toArray(new JMenuItem[l.size()]);
         }
         
         

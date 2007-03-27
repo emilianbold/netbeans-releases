@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.junit.MockServices;
 import org.openide.nodes.AbstractNode;
@@ -43,8 +44,8 @@ public abstract class ActionsInfraHid {
     
     public static final UsefulThings UT;
     static {
-        MockServices.setServices(new Class[] {UsefulThings.class});
-        UT = (UsefulThings) Lookup.getDefault().lookup(UsefulThings.class);
+        MockServices.setServices(UsefulThings.class);
+        UT = Lookup.getDefault().lookup(UsefulThings.class);
     }
     
     /** An action manager and top component registry.
@@ -106,23 +107,23 @@ public abstract class ActionsInfraHid {
             updateLookup ();
         }
         
-        private Set opened = null;
+        private Set<TopComponent> opened = null;
         
-        public Set getOpened() {
+        public Set<TopComponent> getOpened() {
             return opened;
         }
         
-        public void setOpened(Set nue) {
-            Set old = opened;
+        public void setOpened(Set<TopComponent> nue) {
+            Set<TopComponent> old = opened;
             opened = nue;
             firePropertyChange(PROP_OPENED, old, nue);
         }
         
         private void updateLookup () {
-            ArrayList items = new ArrayList ();
+            List<IPair> items = new ArrayList<IPair>();
             if (currentNodes != null) {
-                for (int i = 0; i < currentNodes.length; i++) {
-                    items.add (new IPair (currentNodes[i]));
+                for (Node n : currentNodes) {
+                    items.add(new IPair(n));
                 }
             } else {
                 items.add (IPair.NULL_NODES);
@@ -178,7 +179,7 @@ public abstract class ActionsInfraHid {
         doGC(10);
     }
     public static void doGC(int count) {
-        ArrayList l = new ArrayList(count);
+        List<Object> l = new ArrayList<Object>(count);
         while (count-- > 0) {
             System.gc();
             System.runFinalization();

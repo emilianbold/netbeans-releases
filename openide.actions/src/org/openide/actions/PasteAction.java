@@ -52,6 +52,7 @@ import org.openide.util.UserCancelException;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.Presenter;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
 
@@ -183,6 +184,7 @@ public final class PasteAction extends CallbackSystemAction {
      * <code>org.openide.util.datatransfer.PasteType</code>.
     * @param types the new types to allow, or <code>null</code>
     */
+    @Deprecated
     public void setPasteTypes(PasteType[] types) {
         this.types = types;
 
@@ -571,7 +573,7 @@ public final class PasteAction extends CallbackSystemAction {
      */
     static final class NodeSelector extends Object implements NodeListener, Runnable {
         /** All added children */
-        private List added;
+        private List<Node> added;
 
         /** node we are listening to */
         private Node node;
@@ -603,7 +605,7 @@ public final class PasteAction extends CallbackSystemAction {
 
             this.children = node.getChildren().getNodes(true);
 
-            this.added = new ArrayList();
+            this.added = new ArrayList<Node>();
             this.node.addNodeListener(this);
         }
 
@@ -625,7 +627,7 @@ public final class PasteAction extends CallbackSystemAction {
                 return;
             }
 
-            Node[] arr = (Node[]) added.toArray(new Node[added.size()]);
+            Node[] arr = added.toArray(new Node[added.size()]);
 
 
 // bugfix #22698, don't select the added nodes
@@ -807,11 +809,11 @@ bigloop:
         }
 
         public boolean isEnabled() {
-            return ((PasteAction) PasteAction.get(PasteAction.class)).isEnabled();
+            return SystemAction.get(PasteAction.class).isEnabled();
         }
 
         public Object getValue(String key) {
-            return ((PasteAction) PasteAction.get(PasteAction.class)).getValue(key);
+            return SystemAction.get(PasteAction.class).getValue(key);
         }
     }
 }

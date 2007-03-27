@@ -19,18 +19,19 @@
 
 package org.openide.actions;
 
-
-import java.util.Arrays;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-
-import junit.textui.TestRunner;
-
-import org.netbeans.junit.*;
-import org.openide.actions.*;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.actions.CallbackSystemAction;
-
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /** Test behaviour of regular callback actions.
  */
@@ -39,11 +40,8 @@ public abstract class AbstractCallbackActionTestHidden extends NbTestCase {
         super(name);
     }
 
-
-
-
     /** global action */
-    protected org.openide.util.actions.CallbackSystemAction global;
+    protected CallbackSystemAction global;
     
     /** our action that is being added into the map */
     protected OurAction action = new OurAction ();
@@ -59,25 +57,23 @@ public abstract class AbstractCallbackActionTestHidden extends NbTestCase {
     /** that is the action being clonned to */
     private Lookup lookup;
     
-    /** Which action to test should be subclass of CallbackSystemAction.
+    /** Which action to test.
      */
-    protected abstract Class actionClass ();
+    protected abstract Class<? extends CallbackSystemAction> actionClass();
     
     /** The key that is used in the action map
      */
     protected abstract String actionKey ();
 
-    
-    
     protected boolean runInEQ () {
         return true;
     }
     
     protected void setUp() throws Exception {
-        global = (CallbackSystemAction)CallbackSystemAction.get (actionClass ());
+        global = SystemAction.get(actionClass());
         map = new ActionMap ();
         map.put (actionKey (), action);
-        lookup = org.openide.util.lookup.Lookups.singleton(map);
+        lookup = Lookups.singleton(map);
         // Retrieve context sensitive action instance if possible.
         clone = global.createContextAwareInstance(lookup);
         
@@ -104,11 +100,11 @@ public abstract class AbstractCallbackActionTestHidden extends NbTestCase {
         assertTrue ("Clone is correctly enabled", clone.isEnabled ());
     }
     
-    protected static final class OurAction extends javax.swing.AbstractAction {
+    protected static final class OurAction extends AbstractAction {
         private int cnt;
-        private java.util.HashSet listeners = new java.util.HashSet ();
+        private Set<PropertyChangeListener> listeners = new HashSet<PropertyChangeListener>();
         
-        public void actionPerformed(java.awt.event.ActionEvent e) {
+        public void actionPerformed(ActionEvent e) {
             cnt++;
         }
         
@@ -133,23 +129,22 @@ public abstract class AbstractCallbackActionTestHidden extends NbTestCase {
             }
         }
         
-        public void addPropertyChangeListener (java.beans.PropertyChangeListener listener) {
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
             super.addPropertyChangeListener (listener);
             listeners.add (listener);
         }        
         
-        public synchronized void removePropertyChangeListener (java.beans.PropertyChangeListener listener) {
+        public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
             super.removePropertyChangeListener (listener);
             listeners.remove (listener);
             notifyAll ();
         }
     } // end of OurAction
     
-    protected static final class CntListener extends Object
-    implements java.beans.PropertyChangeListener {
+    protected static final class CntListener implements PropertyChangeListener {
         private int cnt;
         
-        public void propertyChange(java.beans.PropertyChangeEvent evt) {
+        public void propertyChange(PropertyChangeEvent evt) {
             cnt++;
         }
         

@@ -42,7 +42,7 @@ public final class MoveDownAction extends NodeAction {
     private static final String PROP_ORDER_LISTENER = "sellistener"; // NOI18N
 
     /** Holds index cookie on which we are listening */
-    private Reference curIndexCookie;
+    private Reference<Index> curIndexCookie;
 
     /* Initilizes the set of properties.
     */
@@ -54,9 +54,8 @@ public final class MoveDownAction extends NodeAction {
         putProperty(PROP_ORDER_LISTENER, sl);
     }
 
-    /** Getter for curIndexCookie */
     private Index getCurIndexCookie() {
-        return ((curIndexCookie == null) ? null : (Index) curIndexCookie.get());
+        return curIndexCookie == null ? null : curIndexCookie.get();
     }
 
     protected void performAction(Node[] activatedNodes) {
@@ -99,7 +98,7 @@ public final class MoveDownAction extends NodeAction {
 
         // now start listening to reordering changes
         cookie.addChangeListener((OrderingListener) getProperty(PROP_ORDER_LISTENER));
-        curIndexCookie = new WeakReference(cookie);
+        curIndexCookie = new WeakReference<Index>(cookie);
 
         return (nodeIndex >= 0) && (nodeIndex < (cookie.getNodesCount() - 1));
     }

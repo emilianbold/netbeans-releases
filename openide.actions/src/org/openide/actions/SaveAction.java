@@ -25,6 +25,7 @@ import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
@@ -34,7 +35,7 @@ import org.openide.util.actions.CookieAction;
 * @author   Jan Jancura, Petr Hamernik, Ian Formanek, Dafe Simonek
 */
 public class SaveAction extends CookieAction {
-    private static Class dataObject;
+    private static Class<? extends Node.Cookie> dataObject;
     private static java.lang.reflect.Method getNodeDelegate;
 
     public SaveAction() {
@@ -46,7 +47,7 @@ public class SaveAction extends CookieAction {
     }
 
     protected void performAction(final Node[] activatedNodes) {
-        SaveCookie sc = (SaveCookie) activatedNodes[0].getCookie(SaveCookie.class);
+        SaveCookie sc = activatedNodes[0].getCookie(SaveCookie.class);
         assert sc != null : "SaveCookie must be present on " + activatedNodes[0] + ". " +
                 "See http://www.netbeans.org/issues/show_bug.cgi?id=68285 for details on overriding " + activatedNodes[0].getClass().getName() + ".getCookie correctly.";
         
@@ -74,15 +75,15 @@ public class SaveAction extends CookieAction {
     private String getSaveMessage(Node n) {
         if (dataObject == null) {
             // read the class
-            ClassLoader l = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
 
             if (l == null) {
                 l = getClass().getClassLoader();
             }
 
             try {
-                dataObject = Class.forName("org.openide.loaders.DataObject", true, l); // NOI18N
-                getNodeDelegate = dataObject.getMethod("getNodeDelegate", new Class[0]); // NOI18N
+                dataObject = Class.forName("org.openide.loaders.DataObject", true, l).asSubclass(Node.Cookie.class); // NOI18N
+                getNodeDelegate = dataObject.getMethod("getNodeDelegate"); // NOI18N
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }

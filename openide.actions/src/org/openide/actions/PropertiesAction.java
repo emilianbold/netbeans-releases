@@ -63,7 +63,7 @@ public class PropertiesAction extends NodeAction {
     public JMenuItem getPopupPresenter() {
         JMenuItem prop = new Actions.MenuItem(this, false);
 
-        CustomizeAction customizeAction = (CustomizeAction) SystemAction.get(CustomizeAction.class);
+        CustomizeAction customizeAction = SystemAction.get(CustomizeAction.class);
 
         if (customizeAction.isEnabled()) {
             JInlineMenu mi = new JInlineMenu();
@@ -107,9 +107,8 @@ public class PropertiesAction extends NodeAction {
         }
 
         private Node[] nodes() {
-            Collection c = lookup.lookupAll(Node.class);
-
-            return (Node[]) c.toArray(new Node[c.size()]);
+            Collection<? extends Node> c = lookup.lookupAll(Node.class);
+            return c.toArray(new Node[c.size()]);
         }
 
         /** Overrides superclass method, adds delegate description. */
@@ -153,7 +152,7 @@ public class PropertiesAction extends NodeAction {
         public JMenuItem getPopupPresenter() {
             JMenuItem prop = new Actions.MenuItem(this, false);
 
-            Action customizeAction = (CustomizeAction) SystemAction.get(CustomizeAction.class);
+            Action customizeAction = SystemAction.get(CustomizeAction.class);
 
             // Retrieve context sensitive action instance if possible.
             if (lookup != null) {
