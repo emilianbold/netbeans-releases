@@ -2439,7 +2439,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     }
     
     private static int findPositionForSemicolon(JTextComponent c) {
-        final int[] ret = new int[] {-1};
+        final int[] ret = new int[] {-2};
         final int offset = c.getSelectionEnd();
         try {
             JavaSource js = JavaSource.forDocument(c.getDocument());
@@ -2452,6 +2452,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     TreePath tp = controller.getTreeUtilities().pathFor(offset);
                     while (t == null && tp != null) {
                         switch(tp.getLeaf().getKind()) {
+                            case IMPORT:
                             case EXPRESSION_STATEMENT:
                                 t = tp.getLeaf();
                                 break;
@@ -2460,7 +2461,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 break;
                             case THROW:
                                 t = ((ThrowTree)tp.getLeaf()).getExpression();
-                                break;                            
+                                break;
                         }
                         tp = tp.getParentPath();
                     }
@@ -2468,8 +2469,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         SourcePositions sp = controller.getTrees().getSourcePositions();
                         int endPos = (int)sp.getEndPosition(tp.getCompilationUnit(), t);
                         TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(controller, offset, endPos);
-                        if (ts != null && ts.token().id() != JavaTokenId.SEMICOLON)
-                            ret[0] = ts.offset() + ts.token().length();
+                        if (ts != null) {
+                            ret[0] = ts.token().id() == JavaTokenId.SEMICOLON ? -1 : ts.offset() + ts.token().length();
+                        }
                     }
                 }
             }, true);
