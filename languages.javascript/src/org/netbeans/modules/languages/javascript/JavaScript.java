@@ -309,23 +309,26 @@ public class JavaScript {
             String item = (String) it.next ();
             String description = getLibrary ().getProperty 
                 (context, item, "description");
-            if (description == null)
+            if (description == null) {
                 result.add (CompletionSupport.createCompletionItem (
                     item,
-                    "<html><b><font color=" + color + ">" + item + 
+                    "<html><b><font color=" + color + ">" + item +  
                         "</font></b></html>",
+                    "<html><b>" + item +  "</b></html>",
                     null,
                     priority
                 ));
-            else
+            } else {
                 result.add (CompletionSupport.createCompletionItem (
                     item,
                     "<html><b><font color=" + color + ">" + item + 
                         ": </font></b><font color=black> " + 
                         description + "</font></html>",
+                    "<html><b>" + item + ":  " + description + "</html>",
                     null,
                     priority
                 ));
+            }
         }
         return result;
     }
