@@ -376,7 +376,7 @@ public final class JsfJspEditorSupport extends DataEditorSupport
                 } else {
                     CloneableTopComponent editor = jsfJavaEditorSupport.doOpenDesigner();
                     // XXX Trick to use designer comp to find multiview, the jsp component might not be part of multiview yet.
-                    jsfJavaEditorSupport.viewJspSource(editor);
+                    //jsfJavaEditorSupport.viewJspSource(editor);
                 }
             }
         }
