@@ -68,6 +68,7 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     
     private FoldOperation operation;
     private Document doc;
+    private ParserManagerImpl parserManager;
     private int evalState = STOPPED;
     
     
@@ -85,7 +86,7 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
         if (d instanceof NbEditorDocument) {
             this.doc = d;
             this.operation = operation;
-            ParserManagerImpl parserManager = (ParserManagerImpl)ParserManagerImpl.get(doc);
+            parserManager = (ParserManagerImpl)ParserManagerImpl.get(doc);
             parserManager.addASTEvaluator (this);
             parserManager.forceEvaluation(this);
         }
@@ -191,8 +192,10 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
      */
     public void release () {
         //S ystem.out.println("release " + mimeType + " : " + operation + " : " + this);
-        if (doc != null)
-            ParserManagerImpl.get (doc).removeASTEvaluator (this);
+        if (doc != null) {
+            parserManager.removeASTEvaluator (this);
+        }
+        parserManager = null;
     }
 
     
@@ -304,7 +307,8 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     void init (Document doc) {
         this.doc = doc;
         this.operation = null;
-        ParserManagerImpl.get (doc).addASTEvaluator (this);
+        parserManager = (ParserManagerImpl)ParserManagerImpl.get(doc);
+        parserManager.addASTEvaluator(this);
     }
     
     List<FoldItem> getFolds() {

@@ -369,22 +369,18 @@ public class ParserManagerImpl extends ParserManager {
     
     // innerclasses ............................................................
     
-    private static class DocListener implements DocumentListener, 
-    LanguagesManagerListener {
+    private static class DocListener implements DocumentListener, LanguagesManagerListener {
         
-        private WeakReference<ParserManagerImpl>       pmwr;
-        private ParserManagerImpl pman;
+        private WeakReference<ParserManagerImpl> pmwr;
         
         DocListener (ParserManagerImpl pm, Document doc) {
             pmwr = new WeakReference<ParserManagerImpl> (pm);
-            pman = pm;
             doc.addDocumentListener (this);
             LanguagesManager.getDefault ().addLanguagesManagerListener (this);
         }
         
         private ParserManagerImpl getPM () {
             ParserManagerImpl pm = pmwr.get ();
-            pman = null;
             if (pm != null) return pm;
             LanguagesManager.getDefault ().removeLanguagesManagerListener (this);
             return null;
