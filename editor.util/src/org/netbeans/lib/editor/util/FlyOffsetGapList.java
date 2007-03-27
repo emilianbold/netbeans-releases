@@ -133,8 +133,9 @@ public abstract class FlyOffsetGapList<E> extends GapList<E> {
      * like {@link #elementOffset(int)} does or get end offset of the last element
      * if {@link #size()} is passed as index parameter.
      *
-     * @param index of the element in the list.
-     *  Index equal to <code>size()</code> can be used 
+     * @param indexOrSize index of the element in the list.
+     *  Index equal to <code>size()</code> can be used to get end offset
+     *  of the last element.
      * @return offset of the element.
      * @throws IndexOutOfBoundsException if index > size() or lower than zero
      */
