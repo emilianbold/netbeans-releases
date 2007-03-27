@@ -942,7 +942,8 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             ToolTipManager.sharedInstance().unregisterComponent(tree);
             scrollPane.getViewport().remove(tree);
         }
-        scrollPane.setViewport(null);
+        if (scrollPane!=null)
+            scrollPane.setViewport(null);
         if (refCallerTC != null) {
             TopComponent tc = (TopComponent) refCallerTC.get();
             if (tc != null && tc.isShowing()) {
