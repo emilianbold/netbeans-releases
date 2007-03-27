@@ -75,6 +75,7 @@ public class CreateTestsDialog extends org.netbeans.performance.test.utilities.P
         if(firstTime) {
             NbDialogOperator dialog = new NbDialogOperator("Select JUnit Version"); // NOI18N
             new JButtonOperator(dialog, "Select").pushNoBlock(); // NOI18N
+            firstTime = false;
         }
         
         return new NbDialogOperator(DIALOG_TITLE);
