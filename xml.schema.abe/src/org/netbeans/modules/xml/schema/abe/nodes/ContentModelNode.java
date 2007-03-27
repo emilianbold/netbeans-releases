@@ -27,7 +27,8 @@ import org.netbeans.modules.xml.schema.abe.InstanceUIContext;
 import org.netbeans.modules.xml.schema.abe.action.AttributeOnElementNewType;
 import org.netbeans.modules.xml.schema.abe.action.CompositorOnElementNewType;
 import org.netbeans.modules.xml.schema.abe.action.ElementOnElementNewType;
-import org.netbeans.modules.xml.schema.abe.nodes.properties.BaseABENodeProperty;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
@@ -60,13 +61,11 @@ public class ContentModelNode extends ABEAbstractNode {
         }
         
         try {
-            BaseABENodeProperty property = new BaseABENodeProperty(
+            Node.Property name = new PropertySupport.Name(
                     this,
-                    String.class,
-                    ContentModel.PROP_NAME,
                     NbBundle.getMessage(ContentModelNode.class, "PROP_ContentModelNode_Name"),
                     NbBundle.getMessage(ContentModelNode.class, "PROP_ContentModelNode_NameDesc"));
-            set.put(property);
+            set.put(name);
         } catch (Exception ex) {
         }
         
@@ -100,6 +99,12 @@ public class ContentModelNode extends ABEAbstractNode {
             ntl.add(nt);
         }
         return  ntl.toArray(new NewType[ntl.size()]);
+    }
+    
+    public boolean canRename() {
+        if(canWrite())
+            return true;
+        return false;
     }
     
     protected String getTypeDisplayName() {
