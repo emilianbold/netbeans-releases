@@ -69,9 +69,12 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
     private static final String PATH_PAGEFLOW_ACTIONS = "PageFlowEditor/PopupActions"; // NOI18N
 //        private static final String PATH_PAGEFLOW_ACTIONS = "PageFlowEditor/application/x-pageflow/Popup"; // NOI18N
     private void initialize() {
+        InstanceContent ic = new InstanceContent();
+        ic.add(graphScene);
+        Lookup lookup = new AbstractLookup(ic);
+        
         graphPopup = Utilities.actionsToPopup(
-                SystemFileSystemSupport.getActions(PATH_PAGEFLOW_ACTIONS),
-                getLookup());
+                SystemFileSystemSupport.getActions(PATH_PAGEFLOW_ACTIONS), lookup);
         //        graphPopup = new JPopupMenu("Transition Menu");
         //
         //        graphPopup = new JPopupMenu();
