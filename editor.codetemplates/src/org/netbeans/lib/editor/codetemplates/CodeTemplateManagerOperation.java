@@ -354,9 +354,9 @@ implements LookupListener, Runnable, SettingsChangeListener {
                     String abbreviation = (String)entry.getKey();
                     String abbrevText = (String)entry.getValue();
 
-                    String parametrizedText = abbrevText.replaceAll(
+                    String parametrizedText = abbrevText.replaceFirst(
                             "([^|]+)[|]([^|]+)", "$1\\${cursor}$2"); // NOI18N
-                    parametrizedText.replaceAll("[|][|]", "[|]"); // NOI18N
+                    parametrizedText = parametrizedText.replaceAll("[|]{2}", "|"); // NOI18N
 
                     String desc = abbrevText;
                     int nlInd = abbrevText.indexOf('\n');
