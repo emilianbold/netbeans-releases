@@ -15,18 +15,24 @@ package org.netbeans.modules.websvc.rest.codegen;
  */
 class Constants {
     
-    public static final String[] CONTAINER_ANNOTATION_IMPORTS = {
+    public static final String[] CONTAINER_IMPORTS = {
         "com.sun.ws.rest.api.UriTemplate",                      //NOI18N
         "com.sun.ws.rest.api.HttpMethod",                       //NOI18N
-        "javax.annotation.Resource"                             //NOI18N
+        "javax.annotation.Resource",                            //NOI18N
+        "com.sun.ws.rest.api.representation.JAXBRepresentation", //NOI18N
+        "javax.xml.bind.JAXBContext",                           //NOI18N
+        "com.sun.ws.rest.api.WebApplicationException"           //NOI18N
                 //"com.sun.ws.rest.api.ProduceMime",                      //NOI18N
                 //"com.sun.ws.rest.api.ConsumeMime",                      //NOI18N
                 //"com.sun.ws.rest.api.UriParam"                          //NOI18N
     };
     
-    public static final String[] ITEM_ANNOTATION_IMPORTS = {
+    public static final String[] ITEM_IMPORTS = {
         "com.sun.ws.rest.api.UriTemplate",                      //NOI18N
         "com.sun.ws.rest.api.HttpMethod",                       //NOI18N
+        "com.sun.ws.rest.api.representation.JAXBRepresentation", //NOI18N
+        "javax.xml.bind.JAXBContext",                           //NOI18N
+        "com.sun.ws.rest.api.WebApplicationException"           //NOI18N
         //"com.sun.ws.rest.api.ProduceMime",                      //NOI18N
         //"com.sun.ws.rest.api.ConsumeMime",                      //NOI18N
         //"com.sun.ws.rest.api.UriParam"                          //NOI18N

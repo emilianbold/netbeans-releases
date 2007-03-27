@@ -354,12 +354,14 @@ public class JavaSourceHelper {
     
     public static ClassTree addMethod(WorkingCopy copy, ClassTree tree,
             Modifier[] modifiers, String[] annotations, Object[] annotationAttrs,
-            String name, String returnType,
+            String name, Object returnType,
             String[] parameters, Object[] paramTypes,
             String bodyText) {
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifiersTree = createModifiersTree(copy, modifiers,
                 annotations, annotationAttrs);
+        
+        System.out.println("returnType = " + returnType);
         Tree returnTypeTree = createTypeTree(copy, returnType);
         
         ModifiersTree paramModTree = maker.Modifiers(
