@@ -56,7 +56,7 @@ public class DesignerEditAction extends SystemAction  {
                 continue;
             MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
             for (MultiViewPerspective perspective : handler.getPerspectives()) {
-                if (perspective.getDisplayName().equals(ScreenEditorView.SCREEN_EDITOR_VIEW_DISPALY_NAME)) {
+                if (perspective.getDisplayName().equals(ScreenEditorView.SCREEN_EDITOR_VIEW_DISPLAY_NAME)) {
                     handler.requestVisible(perspective);
                     requestComponentVisibility();
                     break;
