@@ -48,21 +48,4 @@ public class VWPUtilities extends gui.Utilities{
         return surface;
     }
 
-    public static void waitForPendingBackgroundTasks() {
-        waitForPendingBackgroundTasks(5);
-    }
-    
-    public static void waitForPendingBackgroundTasks(int n) {
-        // wait maximum n minutes
-        for (int i=0; i<n*60; i++) {
-            if (org.netbeans.progress.module.Controller.getDefault().getModel().getSize()==0)
-                return;
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                return;
-            }
-        }
-    }
-    
 }
