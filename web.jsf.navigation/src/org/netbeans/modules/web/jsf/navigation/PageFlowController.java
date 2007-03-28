@@ -42,7 +42,10 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.xml.xam.Model.State;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -51,6 +54,8 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 
 /**
  *
@@ -59,7 +64,6 @@ import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
 public class PageFlowController {
     private PageFlowView view;
     private JSFConfigModel configModel;
-    //    private Project project;
     private FileObject webFolder;
     private Collection<FileObject> webFiles;
     
@@ -83,24 +87,10 @@ public class PageFlowController {
         
         setupGraph();
         view.layoutSceneImmediately();
-        
-        
-        //        configModel.addComponentListener(new ComponentListener(){
-        //            public void valueChanged(ComponentEvent evt) {
-        //                //                System.out.println("ValueChanged: " + evt);
-        //            }
-        //
-        //            public void childrenAdded(ComponentEvent evt) {
-        //                //                System.out.println("childrenAdded: " + evt);
-        //            }
-        //
-        //            public void childrenDeleted(ComponentEvent evt) {
-        //                //                System.out.println("\n\n\n\n\n\nchildrenDeleted: " + evt);
-        //            }
-        //        });
     }
     
-    PropertyChangeListener pcl;
+    private PropertyChangeListener pcl;
+    private FileChangeListener fcl;
     
     public void registerListeners() {
         if( pcl == null ) {
@@ -109,12 +99,23 @@ public class PageFlowController {
                 configModel.addPropertyChangeListener(pcl);
             }
         }
+        if( fcl == null ){
+            fcl = new WebFolderListener();
+            if( webFolder != null ){
+                webFolder.addFileChangeListener(fcl);
+            }
+        }
         
     }
     
+    /**
+     * Unregister any listeners.
+     */
     public void unregisterListeners() {
         if ( pcl != null && configModel != null )
             configModel.removePropertyChangeListener(pcl);
+        if (fcl != null && webFolder != null )
+            webFolder.removeFileChangeListener(fcl);
     }
     
     /**
@@ -486,7 +487,6 @@ public class PageFlowController {
                 iae.printStackTrace();
                 //                throw iae;
             }
-            
         }
         
         /**
@@ -510,12 +510,50 @@ public class PageFlowController {
         }
         
         
-        
-        
-        
     }
     
     
-    
+    private class WebFolderListener extends FileChangeAdapter{
+        
+        public void fileDataCreated(FileEvent fe) {
+            try         {
+                FileObject fileObj = fe.getFile();
+                DataObject dataObj = DataObject.find(fileObj);
+                webFiles.add(fileObj);
+                if ( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ){
+                    PageFlowNode node = new PageFlowNode(dataObj.getNodeDelegate());
+                    view.createNode(node, null, null);
+                    view.validateGraph();
+                }
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        public void fileChanged(FileEvent fe) {
+            System.out.println("File Changed Event: " + fe);
+        }
+        
+        public void fileDeleted(FileEvent fe) {
+            
+            //This is tricky because we don't just want the NameExt, we want the display name.
+            //                String displayName = fe.getFile().getNameExt();
+            ////                DataObject dataObj = DataObject.find(fe.getFile());
+            //                PageFlowNode node = pageName2Node.remove(displayName);
+            //                view.removeNode(node);
+            //                PageFlowNode pfn = new PageFlowNode
+            //                view.validateGraph();
+            
+        }
+        
+        public void fileRenamed(FileRenameEvent fe) {
+            System.out.println("File Rename Event: " + fe);
+        }
+        public void fileFolderCreated(FileEvent fe) {
+            
+        }
+        
+        
+    }
     
 }

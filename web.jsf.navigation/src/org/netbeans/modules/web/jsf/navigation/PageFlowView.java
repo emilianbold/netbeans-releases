@@ -89,13 +89,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return pfc;
     }
     
-    //    PageFlowView(JSFConfigEditorContext context, InstanceContent ic ){
-    //        super( new AbstractLookup( ic ) );
-    //        ic.add( initializePalette() );
-    //        this.context = context;
-    //
-    //
-    //    }
+
     /** Weak reference to the lookup. */
     private WeakReference<Lookup> lookupWRef = new WeakReference<Lookup>(null);
     
@@ -157,9 +151,6 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         JScrollPane pane = new JScrollPane(view);
         pane.setVisible(true);
         
-        //        Dimension viewDim = pane.getViewportBorderBounds().getSize();
-        //        scene.setPreferredBounds(pane.getViewportBorderBounds());
-        //        scene.setPreferredSize(pane.getViewportBorderBounds().getSize());
         add(pane, BorderLayout.CENTER);
         
         try{
@@ -404,6 +395,10 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
 
     
+    /**
+     * Remove the Edge from the scene.
+     * @param node 
+     */
     public void removeEdge( NavigationCaseNode node ){
         
         scene.removeEdge(node);
@@ -411,6 +406,10 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         //            setActivatedNodes(new org.openide.nodes.Node[]{actNode});
         setActivatedNodes(null);
         
+    }
+    
+    public void removeNode( PageFlowNode node ){
+        scene.removeNode(node);        
     }
     
 }
