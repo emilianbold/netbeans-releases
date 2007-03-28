@@ -40,7 +40,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
     
@@ -65,7 +64,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
         this.targetFolder = targetFolder;
         this.javaObject = javaObject;
         this.pasteType = pasteType;
-        this.refactoring = new MoveRefactoring(new ProxyLookup(Lookups.singleton(javaObject.getPrimaryFile()),Lookups.fixed(handles.toArray(new Object[handles.size()]))));
+        this.refactoring = new MoveRefactoring(Lookups.fixed(javaObject.getPrimaryFile(), handles.toArray(new Object[handles.size()])));
     }
     
     public String getName() {
