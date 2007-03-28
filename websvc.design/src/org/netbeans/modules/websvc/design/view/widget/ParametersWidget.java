@@ -47,7 +47,8 @@ public class ParametersWidget extends AbstractTitledWidget {
     private transient Widget buttons;
     private transient ImageLabelWidget headerLabelWidget;
 
-    
+    private transient TableModel model;
+    private transient TableWidget parameterTable;
     
     /** 
      * Creates a new instance of OperationWidget 
@@ -70,11 +71,14 @@ public class ParametersWidget extends AbstractTitledWidget {
         Message message = null;
         if(input!=null && input.getMessage()!=null && ((message=input.getMessage().get())!=null)) {
             noOfParams = message.getParts().size();
-            for(Part part:message.getParts()) {
-                String parameter = (part.getElement()!=null?""+part.getElement().getQName():
-                    part.getType()!=null?""+part.getType().getQName():"");
-                contentWidget.addChild(new LabelWidget(getScene(),parameter));
-            }
+//            for(Part part:message.getParts()) {
+//                String parameter = (part.getElement()!=null?""+part.getElement().getQName():
+//                    part.getType()!=null?""+part.getType().getQName():"");
+//                contentWidget.addChild(new LabelWidget(getScene(),parameter));
+//            }
+            model = new ParametersTableModel(input);
+            parameterTable = new TableWidget(getScene(),model);
+            contentWidget.addChild(parameterTable);
         } else {
             contentWidget.addChild(new LabelWidget(getScene(),
                     NbBundle.getMessage(OperationWidget.class, "LBL_InputNone")));
