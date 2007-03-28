@@ -24,11 +24,14 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-el">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.el.lexer.resources.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.el.lexer.resources.Bundle"/>
-                        </file>
+                
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-el-lexer-token-colorings.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.el.lexer.resources.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
                 </folder>
             </folder>

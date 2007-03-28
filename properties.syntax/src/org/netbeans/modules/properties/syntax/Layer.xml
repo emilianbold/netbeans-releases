@@ -25,13 +25,17 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-properties">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.properties.syntax.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.properties.syntax.Bundle"/>
-                        </file>
+
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-properties-syntax-token-colorings.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.properties.syntax.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
                 </folder>
+                
                 <file name="Settings.settings" url="PropertiesOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.properties.syntax.PropertiesKit"/>

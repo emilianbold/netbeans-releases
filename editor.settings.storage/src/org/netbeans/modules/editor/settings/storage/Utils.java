@@ -163,7 +163,7 @@ public class Utils {
             return fo.getFileSystem().getStatus().annotateName(defaultValue, Collections.singleton(fo));
         } catch (FileStateInvalidException ex) {
             if (LOG.isLoggable(Level.INFO)) {
-                logOnce(Level.INFO, "Can't find localized name of " + fo, ex); //NOI18N
+                logOnce(LOG, Level.INFO, "Can't find localized name of " + fo, ex); //NOI18N
             }
             return defaultValue;
         }
@@ -182,7 +182,7 @@ public class Utils {
                 return ((ResourceBundle) bundleInfo[1]).getString(key);
             } catch (MissingResourceException ex) {
                 if (!silent && LOG.isLoggable(Level.INFO)) {
-                    logOnce(Level.INFO, "The bundle '" + bundleInfo[0] + "' is missing key '" + key + "'.", ex); //NOI18N
+                    logOnce(LOG, Level.INFO, "The bundle '" + bundleInfo[0] + "' is missing key '" + key + "'.", ex); //NOI18N
                 }
             }
         }
@@ -226,12 +226,12 @@ public class Utils {
                         bundleInfo = new Object [] { bundleName, NbBundle.getBundle(bundleName) };
                     } catch (MissingResourceException ex) {
                         if (!silent && LOG.isLoggable(Level.INFO)) {
-                            logOnce(Level.INFO, "Can't find resource bundle for " + fo.getPath(), ex); //NOI18N
+                            logOnce(LOG, Level.INFO, "Can't find resource bundle for " + fo.getPath(), ex); //NOI18N
                         }
                     }
                 } else {
                     if (!silent && LOG.isLoggable(Level.FINE)) {
-                        logOnce(Level.FINE, "The file " + fo.getPath() + " does not specify its resource bundle.", null); //NOI18N
+                        logOnce(LOG, Level.FINE, "The file " + fo.getPath() + " does not specify its resource bundle.", null); //NOI18N
                     }
                 }
 
@@ -249,13 +249,13 @@ public class Utils {
     }
     
     private static final Set<String> ALREADY_LOGGED = Collections.synchronizedSet(new HashSet<String>());
-    private static void logOnce(Level level, String msg, Throwable t) {
+    public static void logOnce(Logger logger, Level level, String msg, Throwable t) {
         if (!ALREADY_LOGGED.contains(msg)) {
             ALREADY_LOGGED.add(msg);
             if (t != null) {
-                LOG.log(level, msg, t);
+                logger.log(level, msg, t);
             } else {
-                LOG.log(level, msg);
+                logger.log(level, msg);
             }
             
             if (ALREADY_LOGGED.size() > 100) {

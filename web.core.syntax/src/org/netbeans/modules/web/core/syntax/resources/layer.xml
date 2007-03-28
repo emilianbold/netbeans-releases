@@ -27,13 +27,17 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-jsp">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
-                        </file>
+                
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-token-colorings.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
                 </folder>
+                    
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-web-core-syntax-JspUpToDateStatusProviderFactory.instance"/>
                 </folder>
@@ -110,14 +114,17 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             <folder name="x-tag">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
-                        </file>
+
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-token-colorings.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
                 </folder>
-                
+
                 <folder name="Popup">
                     <folder name="goto">
                         <!--

@@ -78,14 +78,16 @@ Microsystems, Inc. All Rights Reserved.
 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.resources.Bundle"/>
                 
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.resources.Bundle"/>
-                        </file>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-java-token-colorings.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.resources.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
                 </folder>
-
+                
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance"/>
                     <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>

@@ -48,20 +48,24 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.db.sql.editor.SQLEditorKit"/>
                 </file>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="NetBeans-SQL-fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.sql.editor.resources.Bundle"/>
-                        </file>
+
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-db-sql-editor-token-colorings.xml" url="NetBeans-SQL-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.sql.editor.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-db-sql-editor-token-colorings.xml" url="CityLights-SQL-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.sql.editor.resources.Bundle"/>
+                            </file>
+                        </folder>
                     </folder>
                 </folder>
-                <folder name="CityLights">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="CityLights-SQL-fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.sql.editor.resources.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
+                    
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="org-netbeans-modules-db-sql-editor-ui-actions-ConnectionAction.instance"/>
