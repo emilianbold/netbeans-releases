@@ -45,7 +45,10 @@ import java.security.PrivilegedAction;
 import java.awt.EventQueue;
 import javax.swing.JFileChooser ;
 
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -69,6 +72,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
@@ -1149,28 +1153,13 @@ public class JsfProjectUtils {
      * @throws an IOException if there was a problem adding the reference
      */
     public static boolean addLibraryReferences(Project project, Library[] libraries, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
-        Lookup lookup = project.getLookup();
-        
-        JsfProjectClassPathExtender cpJsfExtender = (JsfProjectClassPathExtender) lookup.lookup(JsfProjectClassPathExtender.class);
-        if (cpJsfExtender != null) {
+        // XXX NetBeans API not finished yet
+        // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
+        String type = ClassPath.COMPILE;
             try {
-                return cpJsfExtender.addLibraryReferences(libraries, role);
-            } catch (IOException ex) {
-                return false;
-            }
-        }
-        
-        // XXX Wait for the new ProjectClassPathModifier implementation
-        ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) lookup.lookup(ProjectClassPathExtender.class);
-        if (cpExtender != null) {
-            for (int i = 0; i < libraries.length; i++) {
-                try {
-                    cpExtender.addLibrary(libraries[i]);
+            return ProjectClassPathModifier.addLibraries(libraries, getSourceRoot(project), type);
                 } catch (IOException e) {
-                    // Should continue to add the rest libraries, many exceptions happened in NetBeans codes are not fatal.
-                }
-            }
-            return true;
+            // Should continue here, many exceptions happened in NetBeans codes are not fatal.
         }
 
         return false;
@@ -1186,15 +1175,15 @@ public class JsfProjectUtils {
      * @throws an IOException if there was a problem removing the reference
      */
     public static boolean removeLibraryReferences(Project project, Library[] libraries, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
-        Lookup lookup = project.getLookup();
-
-        JsfProjectClassPathExtender cpJsfExtender = (JsfProjectClassPathExtender) lookup.lookup(JsfProjectClassPathExtender.class);
-        if (cpJsfExtender != null) {
-            return cpJsfExtender.removeLibraryReferences(libraries, role);
+        // XXX NetBeans API not finished yet
+        // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
+        String type = ClassPath.COMPILE;
+        try {
+            return ProjectClassPathModifier.removeLibraries(libraries, getSourceRoot(project), type);
+        } catch (IOException e) {
+            // Should continue here, many exceptions happened in NetBeans codes are not fatal.
         }
         
-        // XXX No removeLibraries method in ProjectClassPathExtender, wait for the new ProjectClassPathModifier implementation
-
         return false;
     }
     
@@ -1209,13 +1198,29 @@ public class JsfProjectUtils {
      * XXX Will be Deprecated when the new ProjectClassPathModifier implementation is available
      */
     public static boolean hasLibraryReference(Project project, Library library, JsfProjectClassPathExtender.LibraryRole role) {
+        List lst = library.getContent("classpath");
+        if (lst.isEmpty()) {
+            return false;
+        }
+
+        URL url = (URL) lst.get(0);
+        FileObject obj = URLMapper.findFileObject(url);
+        if (obj == null) {
+            return false;
+        }
+
         Lookup lookup = project.getLookup();
-        JsfProjectClassPathExtender cpJsfExtender = (JsfProjectClassPathExtender) lookup.lookup(JsfProjectClassPathExtender.class);
-        if (cpJsfExtender != null) {
-            return cpJsfExtender.hasLibraryReference(library, role);
+        ClassPathProvider cpProvider = (ClassPathProvider) lookup.lookup(ClassPathProvider.class);
+        if (cpProvider == null) {
+            return false;
         }
         
-        return false;
+        // XXX NetBeans API not finished yet
+        // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
+        String type = ClassPath.COMPILE;
+        ClassPath cp = cpProvider.findClassPath(getSourceRoot(project), type);
+
+        return cp.contains(obj);
     }
     
     /**
