@@ -26,6 +26,7 @@ public class RenameSequenceDialog extends AbstractNameValidationDialog {
 	private Sequence sequence;
 	
 	public RenameSequenceDialog(Sequence sequence) {
+		super(sequence.getName());
 		this.sequence = sequence;
 	}
 	

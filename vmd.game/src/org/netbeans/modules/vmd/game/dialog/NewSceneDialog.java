@@ -27,10 +27,12 @@ public class NewSceneDialog extends AbstractNameValidationDialog {
 	private GlobalRepository gameDesign;
 
 	public NewSceneDialog(GlobalRepository gameDesign) {
+		super("");
 		this.gameDesign = gameDesign;
 	}
 	
 	public NewSceneDialog(Scene scene) {
+		super("");
 		this.gameDesign = scene.getGameDesign();
 		this.scene = scene;
 	}

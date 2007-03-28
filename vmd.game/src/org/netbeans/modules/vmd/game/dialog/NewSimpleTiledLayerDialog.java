@@ -34,6 +34,7 @@ public class NewSimpleTiledLayerDialog extends AbstractNameValidationDialog {
 	
 	/** Creates a new instance of DuplicateTiledLayerDialog */
 	public NewSimpleTiledLayerDialog(ImageResource imgRes, int[][] grid, int tileWidth, int tileHeight) {
+		super("");
 		this.imgRes = imgRes;
 		this.grid = grid;
 		this.tileWidth = tileWidth;
@@ -68,5 +69,5 @@ public class NewSimpleTiledLayerDialog extends AbstractNameValidationDialog {
 	protected void handleOKButton() {
 		this.imgRes.getGameDesign().createTiledLayer(this.fieldName.getText(), this.imgRes, this.grid, tileWidth, tileHeight);
 	}
-	
+
 }

@@ -31,6 +31,7 @@ public class DuplicateTiledLayerDialog extends AbstractNameValidationDialog {
 	
 	/** Creates a new instance of DuplicateTiledLayerDialog */
 	public DuplicateTiledLayerDialog(TiledLayer tiledLayer) {
+		super(tiledLayer.getName());
 		this.tiledLayer = tiledLayer;
 	}
 

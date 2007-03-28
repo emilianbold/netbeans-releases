@@ -25,6 +25,7 @@ public class RenameTiledLayerDialog extends AbstractNameValidationDialog {
 	private TiledLayer tiledLayer;
 	
 	public RenameTiledLayerDialog(TiledLayer tiledLayer) {
+		super(tiledLayer.getName());
 		this.tiledLayer = tiledLayer;
 	}
 	

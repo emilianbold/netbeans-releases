@@ -28,9 +28,11 @@ public abstract class AbstractNameValidationDialog extends javax.swing.JPanel im
     private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif"));
 	private DialogDescriptor dd;
 
+	private String initialTextContent;
 	
 	/** Creates new form AbstractNameValidationDialog */
-	public AbstractNameValidationDialog() {
+	public AbstractNameValidationDialog(String initialTextContent) {
+		this.initialTextContent = initialTextContent;
 		initComponents();
 		manualInit();
 	}
@@ -108,9 +110,12 @@ public abstract class AbstractNameValidationDialog extends javax.swing.JPanel im
     // End of variables declaration//GEN-END:variables
 
 	private void manualInit() {
-		this.labelError.setForeground(Color.RED);		
-		this.labelSequenceName.setLabelFor(this.fieldName);		
+		this.fieldName.setText(this.initialTextContent);
+		this.fieldName.selectAll();
 		this.fieldName.getDocument().addDocumentListener(new LayerFieldListener());
+		
+		this.labelError.setForeground(Color.RED);		
+		this.labelSequenceName.setLabelFor(this.fieldName);	
 		
 		this.labelError.setIcon(ICON_ERROR);
 		this.labelError.setText(getInitialStateDescriptionText());
@@ -118,6 +123,7 @@ public abstract class AbstractNameValidationDialog extends javax.swing.JPanel im
 
 	public void setDialogDescriptor(DialogDescriptor dd) {
 		this.dd = dd;
+		this.dd.setValid(false);
 	}
 	
 	private static boolean isValidJavaIdentifier(String str) {

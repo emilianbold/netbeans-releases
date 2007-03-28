@@ -25,6 +25,7 @@ public class RenameSceneDialog extends AbstractNameValidationDialog {
 	private Scene scene;
 	
 	public RenameSceneDialog(Scene scene) {
+		super(scene.getName());
 		this.scene = scene;
 	}
 	
@@ -57,6 +58,5 @@ public class RenameSceneDialog extends AbstractNameValidationDialog {
 	protected void handleOKButton() {
 		this.scene.setName(this.fieldName.getText());
 	}
-
 
 }

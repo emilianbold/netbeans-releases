@@ -25,6 +25,7 @@ public class RenameSpriteDialog extends AbstractNameValidationDialog {
 	private Sprite sprite;
 	
 	public RenameSpriteDialog(Sprite sprite) {
+		super(sprite.getName());
 		this.sprite = sprite;
 	}
 	
@@ -55,6 +56,5 @@ public class RenameSpriteDialog extends AbstractNameValidationDialog {
 	protected void handleOKButton() {
 		this.sprite.setName(this.fieldName.getText());
 	}
-
 
 }

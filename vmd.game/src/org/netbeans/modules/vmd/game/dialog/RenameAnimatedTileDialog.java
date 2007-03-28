@@ -25,6 +25,7 @@ public class RenameAnimatedTileDialog extends AbstractNameValidationDialog {
 	private AnimatedTile tile;
 	
 	public RenameAnimatedTileDialog(AnimatedTile tile) {
+		super(tile.getName());
 		this.tile = tile;
 	}
 	

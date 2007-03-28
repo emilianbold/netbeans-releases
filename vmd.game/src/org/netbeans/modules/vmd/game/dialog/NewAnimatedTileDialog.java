@@ -35,6 +35,7 @@ public class NewAnimatedTileDialog extends AbstractNameValidationDialog {
 	
 	/** Creates a new instance of NewAnimatedTileDialog */
 	public NewAnimatedTileDialog(ImageResource imgRes, int tileWidth, int tileHeight) {
+		super("");
 		this.imageResource = imgRes;
 		this.tileWidth = tileWidth;
 		this.tileHeight = tileHeight;

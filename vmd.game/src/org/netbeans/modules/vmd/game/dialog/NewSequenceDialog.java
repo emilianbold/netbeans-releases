@@ -35,6 +35,7 @@ public class NewSequenceDialog extends AbstractNameValidationDialog  {
 	}
 	
 	public NewSequenceDialog(SequenceContainer sequenceContainer, Sequence toCopy) {
+		super(toCopy == null ? "" : toCopy.getName());
 		this.sequenceContainer = sequenceContainer;
 		this.sequence = toCopy;
 	}

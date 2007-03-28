@@ -115,7 +115,6 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 		return null;
 	}
 
-	//TODO : fire property change events on Layers, once i give them some props :)
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		if (rowIndex < 0 || rowIndex >= this.scene.getLayerCount() || columnIndex < 0 || columnIndex >= COLS) {
 			throw new IllegalArgumentException("Arguments rowIndex = " + rowIndex + ", columnIndex = " + columnIndex + " are illegal for table of " + 
@@ -139,6 +138,9 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 				break;
 			case COL_INDEX_LAYER_NAME:
 				String name = (String) aValue;
+				if (name.equals(layer.getName())) {
+					return;
+				}
 				if (!this.scene.getGameDesign().isComponentNameAvailable(name)) {
 					DialogDisplayer.getDefault().notify(
 							new DialogDescriptor.Message("Layer cannot be renamed because component name '" 
