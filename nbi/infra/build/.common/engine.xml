@@ -234,6 +234,8 @@
       This target is not intended to be called directly.
     -->
     <target name="-release">
+        <echo message="Release URL is ${release.url}"/>
+        <echo message="Archive is ${dist.dir}/${engine.dist.file.name}"/>
         <release-engine url="${release.url}"
                         archive="${dist.dir}/${engine.dist.file.name}"/>
     </target>
