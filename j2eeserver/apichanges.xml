@@ -86,6 +86,26 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="settableTimeouts">
+            <api name="plugins"/>
+            <summary>
+                New static fields on InstanceProperties
+            </summary>
+            <version major="1" minor="22"/>
+            <date day="22" month="3" year="2007"/>
+            <author login="vkraemer"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Eliminate completely hard-code timeout for startup, shutdown
+                    and deployment operations.  Current hard-coded timeouts 
+                    remain the default for plugins that do not provide 
+                    per-instance settings.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="InstanceProperties"/>
+            <issue number="98089"/>
+        </change>
         <change id="ensureResourceDefinedUpdate">
             <api name="j2eeserver"/>
             <summary>

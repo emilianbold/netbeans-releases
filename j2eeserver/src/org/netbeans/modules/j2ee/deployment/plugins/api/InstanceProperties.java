@@ -85,6 +85,30 @@ public abstract class InstanceProperties {
      */
     public static final String HTTP_PORT_NUMBER = "httpportnumber";
     
+      /**
+     * Startup timeout property, The number of seconds to allow before assuming 
+     *   that a request to start an instance has failed
+     * 
+     *  @since 1.22
+     */
+    public static final String STARTUP_TIMEOUT = "startupTimeout";
+
+    /**
+     * Shutdown timeout property, The number of seconds to allow before assuming 
+     *   that a request to stop an instance has failed
+     * 
+     *  @since 1.22
+     */
+    public static final String SHUTDOWN_TIMEOUT = "shutdownTimeout";
+
+    /**
+     * Deployment timeout property, The number of seconds to allow before 
+     *   assuming that a request to deploy a project to an instance has failed
+     * 
+     *  @since 1.22
+     */
+    public static final String DEPLOYMENT_TIMEOUT = "deploymentTimeout";
+
     /**
      * List of listeners which listen to instance properties changes
      */
