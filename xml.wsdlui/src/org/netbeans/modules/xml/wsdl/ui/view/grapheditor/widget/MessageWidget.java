@@ -138,19 +138,6 @@ public class MessageWidget extends AbstractWidget<Message>
         getActions().addAction(((PartnerScene) scene).getDnDAction());
     }
     
-    private MessagesWidget getMessagesWidget() {
-        for (Widget widget = this; widget != null; 
-                widget = widget.getParentWidget())
-        {
-            if (widget instanceof MessagesWidget) {
-                return (MessagesWidget) widget;
-            }
-        }
-        
-        return null;
-    }
-    
-    
     private void removeContent() {
         if (table != null) {
             table.removeChildren();
@@ -445,17 +432,15 @@ public class MessageWidget extends AbstractWidget<Message>
     
     
     public void collapseWidget(ExpanderWidget expander) {
-        if (contentWidget.getParentWidget() != null)
-            removeChild(contentWidget);
+        contentWidget.setVisible(false);
     }
 
     public void expandWidget(ExpanderWidget expander) {
-        if (contentWidget.getParentWidget() == null)
-            addChild(contentWidget);
+        contentWidget.setVisible(true);
     }
 
     public boolean isCollapsed() {
-        return contentWidget.getParentWidget() == null;
+        return contentWidget.isVisible();
     }
 
     @Override

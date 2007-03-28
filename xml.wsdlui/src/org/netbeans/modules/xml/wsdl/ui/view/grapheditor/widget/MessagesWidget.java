@@ -295,7 +295,7 @@ public class MessagesWidget extends Widget implements
     
     
     public boolean isCollapsed() {
-        return contentWidget.getParentWidget() == null;
+        return contentWidget.isVisible();
     }
     
     public void expandForDragAndDrop() {

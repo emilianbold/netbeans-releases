@@ -20,10 +20,8 @@
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -158,29 +156,11 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     }
 
     public void expandWidget(ExpanderWidget expander) {
-        if (mContentWidget.getParentWidget() == null) {
-            addChild(mContentWidget);
-            getScene().revalidate();
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    // It is quite likely that this widget just got wider
-                    // because of the new children widgets. Save the width
-                    // of the parent collaborations widget as its new
-                    // minimum size so we do not shrink when we are
-                    // collapsed, which would probably annoy the user.
-                    Widget parent = getCollaborationWidget();
-                    Rectangle bounds = parent.getBounds();
-                    parent.setMinimumSize(new Dimension(bounds.width, 0));
-                }
-            });
-        }
+        mContentWidget.setVisible(true);
     }
 
     public void collapseWidget(ExpanderWidget expander) {
-        if (mContentWidget.getParentWidget() != null) {
-            removeChild(mContentWidget);
-            getScene().revalidate();
-        }
+        mContentWidget.setVisible(false);
     }
     
     public void collapseWidget() {
@@ -240,7 +220,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     }
 
     public boolean isCollapsed() {
-        return mContentWidget.getParentWidget() == null;
+        return mContentWidget.isVisible();
     }
 
     public Object hashKey() {

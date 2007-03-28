@@ -40,11 +40,9 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.xml.namespace.QName;
 
 import org.netbeans.api.visual.action.ActionFactory;
@@ -335,7 +333,7 @@ public class CollaborationsWidget extends Widget
     }
 
     public boolean isCollapsed() {
-        return mCollaborationContentWidget.getParentWidget() == null;
+        return mCollaborationContentWidget.isVisible();
     }
     
     
