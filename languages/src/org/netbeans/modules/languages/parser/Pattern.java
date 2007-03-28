@@ -147,9 +147,17 @@ public class Pattern {
                                     input.read ();
                                     int ch1 = 0;
                                     for (int i = 16*16*16; i >= 1; i/=16) {
-                                        int ii = input.next () - '0';
-                                        if (ii < 0 | ii > 15)
+                                        char c = input.next ();
+                                        int ii = 0;
+                                        if ('0' <= c && c <= '9') {
+                                            ii = c - '0';
+                                        } else if ('a' <= c && c <= 'f') {
+                                            ii = c - 'a';
+                                        } else if ('A' <= c && c <= 'F') {
+                                            ii = c - 'A';
+                                        } else {
                                             throw new ParseException ("Wrong character after \\u:" + input.toString ());
+                                        }
                                         ch1 += ii * i;
                                         input.read ();
                                     }
@@ -267,9 +275,17 @@ public class Pattern {
                                             l = 0;
                                             for (int i = 16*16*16; i >= 1; i/=16) {
                                                 input.read ();
-                                                int ii = input.next () - '0';
-                                                if (ii < 0 | ii > 15)
+                                                char c = input.next ();
+                                                int ii = 0;
+                                                if ('0' <= c && c <= '9') {
+                                                    ii = c - '0';
+                                                } else if ('a' <= c && c <= 'f') {
+                                                    ii = c - 'a';
+                                                } else if ('A' <= c && c <= 'F') {
+                                                    ii = c - 'A';
+                                                } else {
                                                     throw new ParseException ("Wrong character after \\u:" + input.toString ());
+                                                }
                                                 l += ii * i;
                                             }
                                             break;
