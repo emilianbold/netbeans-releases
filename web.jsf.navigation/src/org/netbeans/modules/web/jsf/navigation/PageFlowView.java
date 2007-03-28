@@ -180,8 +180,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         //        scene.removeChildren();
         
         //Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
-        Collection<Node> nodes = new HashSet<Node>(scene.getNodes());
-        for( Node node : nodes ){
+        Collection<PageFlowNode> nodes = new HashSet<PageFlowNode>(scene.getNodes());
+        for( PageFlowNode node : nodes ){
             scene.removeNodeWithEdges(node);
         }
         scene.validate();
@@ -209,7 +209,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * @param glyphs
      * @return
      */
-    protected VMDNodeWidget createNode( Node pageNode, String type, List<Image> glyphs) {
+    protected VMDNodeWidget createNode( PageFlowNode pageNode, String type, List<Image> glyphs) {
         VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
         //        String pageName = pageNode.getName();
         //        if( pageNode instanceof DataNode ){

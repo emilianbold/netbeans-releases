@@ -77,7 +77,7 @@ import org.openide.util.Utilities;
  * @author Joelle Lam
  */
 // TODO - remove popup menu action
-public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, PinNode> {
+public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNode, PinNode> {
     
     private LayerWidget backgroundLayer = new LayerWidget(this);
     private LayerWidget mainLayer = new LayerWidget(this);
@@ -121,7 +121,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, PinNo
         actions.addAction(popupGraphAction);
         actions.addAction(dragNdropAction);
         
-        GridGraphLayout<Node, NavigationCaseNode> gglayout = new GridGraphLayout<Node, NavigationCaseNode> ();
+        GridGraphLayout<PageFlowNode, NavigationCaseNode> gglayout = new GridGraphLayout<PageFlowNode, NavigationCaseNode> ();
         gglayout.setChecker(true);
         
         sceneLayout = LayoutFactory.createSceneGraphLayout(this, gglayout);
@@ -185,7 +185,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, PinNo
      * @param node the node
      * @return the widget attached to the node, will return null if
      */
-    protected Widget attachNodeWidget(Node node) {
+    protected Widget attachNodeWidget(PageFlowNode node) {
         assert node != null;
         VMDNodeWidget nodeWidget = new VMDNodeWidget(this);
         nodeWidget.setNodeName(node.getDisplayName());
@@ -259,7 +259,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, PinNo
      * @param pinNode 
      * @return the widget attached to the pin, null, if it is a default pin
      */
-    protected Widget attachPinWidget(Node node, PinNode pinNode) {
+    protected Widget attachPinWidget(PageFlowNode node, PinNode pinNode) {
         assert node != null;
         
         if( pinNode.isDefault() ){
