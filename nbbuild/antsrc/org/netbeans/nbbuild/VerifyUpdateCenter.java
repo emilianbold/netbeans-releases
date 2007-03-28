@@ -109,8 +109,10 @@ public final class VerifyUpdateCenter extends Task {
                 return;
             }
             SortedSet<String> updatedCNBs = new TreeSet<String>();
+            Set<String> newCNBs = new HashSet<String>();
             for (Manifest m : manifests) {
                 String cnb = findCNB(m);
+                newCNBs.add(cnb);
                 boolean doUpdate = true;
                 Manifest old = updated.get(cnb);
                 if (old != null) {
@@ -124,6 +126,7 @@ public final class VerifyUpdateCenter extends Task {
                 }
             }
             SortedMap<String,SortedSet<String>> updateProblems = findInconsistencies(new HashSet<Manifest>(updated.values()), loader);
+            updateProblems.keySet().retainAll(newCNBs); // ignore problems in now-deleted modules
             checkForProblems(updateProblems, "Inconsistency(ies) in " + updates + " relative to " + oldUpdates);
             log(oldUpdates + " after updating " + updatedCNBs + " from " + updates + " remains consistent");
         }
