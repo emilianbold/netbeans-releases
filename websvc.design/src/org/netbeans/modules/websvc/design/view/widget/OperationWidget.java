@@ -28,7 +28,6 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
-import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -39,8 +38,6 @@ import org.openide.util.Utilities;
  */
 public class OperationWidget extends AbstractTitledWidget {
     
-    private static final Color TITLE_COLOR = new Color(180,180,255);
-    private static final Color TITLE_COLOR2 = new Color(204,204,255);
     private static final Color BORDER_COLOR = new Color(153,153,255);
     private static final int GAP = 16;
 

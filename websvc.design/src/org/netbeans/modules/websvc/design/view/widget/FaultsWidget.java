@@ -32,8 +32,6 @@ import org.openide.util.Utilities;
  */
 public class FaultsWidget extends AbstractTitledWidget {
     
-    private static final Color TITLE_COLOR = new Color(255,153,102);
-    private static final Color TITLE_COLOR2 = new Color(255,178,128);
     private static final Color BORDER_COLOR = new Color(255,138,76);
     private static final int GAP = 16;
     private static final Image IMAGE  = Utilities.loadImage

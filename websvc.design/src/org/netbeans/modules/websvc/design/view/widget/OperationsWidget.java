@@ -34,7 +34,6 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
 import org.netbeans.modules.websvc.design.view.actions.AddOperationAction;
-import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -50,8 +49,6 @@ public class OperationsWidget extends AbstractTitledWidget
         implements PropertyChangeListener{
     
     private static final Color BORDER_COLOR = new Color(180,180,255);
-    private static final Color TITLE_COLOR = new Color(204,204,255);
-    private static final Color TITLE_COLOR2 = new Color(229,229,255);
     private static final int GAP = 16;
     private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/operation.png"); // NOI18N   

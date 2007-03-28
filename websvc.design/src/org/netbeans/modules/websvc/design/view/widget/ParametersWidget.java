@@ -26,7 +26,6 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Input;
-import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.openide.util.NbBundle;
@@ -37,8 +36,6 @@ Opeit Bhate
  */
 public class ParametersWidget extends AbstractTitledWidget {
     
-    private static final Color TITLE_COLOR = new Color(153,153,255);
-    private static final Color TITLE_COLOR2 = new Color(178,178,255);
     private static final Color BORDER_COLOR = new Color(128,128,255);
     private static final int GAP = 16;
     private static final Image IMAGE  = Utilities.loadImage

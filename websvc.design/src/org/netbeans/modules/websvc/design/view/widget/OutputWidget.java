@@ -32,8 +32,6 @@ import org.openide.util.Utilities;
  */
 public class OutputWidget extends AbstractTitledWidget {
     
-    private static final Color TITLE_COLOR = new Color(126,204,126);
-    private static final Color TITLE_COLOR2 = new Color(153,204,153);
     private static final Color BORDER_COLOR = new Color(102,204,102);
     private static final int GAP = 16;
     private static final Image IMAGE  = Utilities.loadImage
