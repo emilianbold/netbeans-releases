@@ -203,6 +203,10 @@ public class CasaWrapperModel extends CasaModelImpl {
      * Sets the endpoint name of a casa port.
      */
     public void setEndpointName(final CasaPort casaPort, String endpointName) { 
+        if (!isDefinedInCompApp(casaPort)) {
+            throw new RuntimeException("Cannot change endpoint defined in component projects."); // NOI18N
+        }
+        
         CasaEndpointRef endpointRef = casaPort.getConsumes();
         if (endpointRef == null) {
             endpointRef = casaPort.getProvides();
@@ -216,6 +220,16 @@ public class CasaWrapperModel extends CasaModelImpl {
      */
     public void setEndpointName(final CasaEndpointRef endpointRef, 
             String endpointName) {
+        CasaPort casaPort = getCasaPort(endpointRef);
+        if (casaPort == null) {
+            CasaServiceEngineServiceUnit seSU = getCasaEngineServiceUnit(endpointRef);
+            if (seSU.isInternal()) {
+                throw new RuntimeException("Cannot change endpoint in internal JBI modules."); // NOI18N                
+            }
+        } else if (!isDefinedInCompApp(casaPort)) {
+            throw new RuntimeException("Cannot change endpoint defined in component projects."); // NOI18N
+        }
+        
         setEndpointName(endpointRef, endpointRef, endpointName);
     }
         
@@ -445,10 +459,10 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     private static void populateBindingAndPort(final CasaPort casaPort, 
-            final Port port, final QName qName, String bType) {
+            final Port port, final QName interfaceQName, String bType) {
         
         CasaWrapperModel casaWrapperModel = (CasaWrapperModel) casaPort.getModel();
-        PortType portType = casaWrapperModel.getCasaPortType(casaPort);
+        PortType portType = casaWrapperModel.getPortType(interfaceQName); //casaWrapperModel.getCasaPortType(casaPort);
         System.out.println("Got WSDLEndpoint Action.. Pt: " + portType);
         
         String wsdlLocation = casaWrapperModel.getWSDLLocation(casaPort);
@@ -490,7 +504,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         boolean foundImport = false;
         if (wsdlLocation != null) {
             for (Import imprt : imports) {
-                if (imprt.getNamespace().equals(qName.getNamespaceURI()) &&
+                if (imprt.getNamespace().equals(interfaceQName.getNamespaceURI()) &&
                         imprt.getLocation().equals(wsdlLocation)) {
                     foundImport = true;
                     break;
@@ -500,7 +514,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         Import newImport = null;
         if (wsdlLocation != null && !foundImport) {
             newImport = wsdlModel.getFactory().createImport();
-            newImport.setNamespace(qName.getNamespaceURI());
+            newImport.setNamespace(interfaceQName.getNamespaceURI());
             newImport.setLocation(wsdlLocation);
         }
         
@@ -900,6 +914,24 @@ public class CasaWrapperModel extends CasaModelImpl {
 //            }
 //        }
 //        return null;
+    }
+    
+    private PortType getPortType(final QName interfaceQName) {
+        CasaPortTypes casaPortTypes = getRootComponent().getPortTypes();
+        for (CasaLink link : casaPortTypes.getLinks()) {
+            String href = link.getHref();
+            try {
+                PortType pt = (PortType) this.getWSDLComponentFromXLinkHref(href);
+                //System.out.println("Got PortType: " + pt.getName());
+                if (interfaceQName.getNamespaceURI().equals( pt.getModel().getDefinitions().getTargetNamespace()) &&
+                        interfaceQName.getLocalPart().equals(pt.getName())) {
+                    return pt;
+                }
+            } catch (Exception ex) {
+                System.out.println("Failed to fetch portType: " + interfaceQName);
+            }
+        }
+        return null;
     }
     
     private String getWSDLLocation(final CasaPort casaPort) {
@@ -2238,6 +2270,13 @@ public class CasaWrapperModel extends CasaModelImpl {
     
     /**
      * Sets name of an endpoint.
+     * To keep model integrity, the following side effects of this change 
+     * could occur, if applicable: 
+     * <UL>
+     * <LI> The name of the corresponding WSDL port in WSDL file (casa.wsdl) 
+     * is updated;
+     * <LI> The containing casa port's link href is updated.
+     * </UL>
      */
     private void setEndpointName(final CasaComponent component, 
             CasaEndpointRef endpointRef, String endpointName) {
