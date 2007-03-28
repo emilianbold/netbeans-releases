@@ -721,8 +721,8 @@ public class CvsVersioningSystem {
                 if (original == null) throw new IOException("Unable to get BASE revision of " + file);
 
                 File daoFile = new File(destination, file.getName());
-                org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(daoFile), new FileInputStream(original));
                 daoFile.deleteOnExit();
+                org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(daoFile), new FileInputStream(original)); 
             }
         }
 

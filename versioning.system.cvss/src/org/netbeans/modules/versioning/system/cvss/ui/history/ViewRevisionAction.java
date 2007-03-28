@@ -90,7 +90,6 @@ public class ViewRevisionAction extends AbstractAction implements Runnable {
     public void run() {
         final String revision = settings.getRevision();
         File tempFolder = Utils.getTempFolder();
-        tempFolder.deleteOnExit();
         for (File file : ctx.getRootFiles()) {
             if (file.isDirectory()) continue;
             try {
@@ -113,8 +112,8 @@ public class ViewRevisionAction extends AbstractAction implements Runnable {
         if (tempFolder == null) tempFolder = Utils.getTempFolder();
         File original = VersionsCache.getInstance().getRemoteFile(base, revision, null);
         File daoFile = new File(tempFolder, base.getName());
-        Utils.copyStreamsCloseAll(new FileOutputStream(daoFile), new FileInputStream(original));
         daoFile.deleteOnExit();
+        Utils.copyStreamsCloseAll(new FileOutputStream(daoFile), new FileInputStream(original)); 
         final FileObject fo = FileUtil.toFileObject(daoFile);
         DataObject dao = DataObject.find(fo);
         EditorCookie ec = dao.getCookie(EditorCookie.class);
