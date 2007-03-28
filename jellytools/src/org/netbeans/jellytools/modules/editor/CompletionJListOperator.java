@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -55,8 +55,8 @@ public class CompletionJListOperator extends JListOperator {
     public static final String INSTANT_SUBSTITUTION = "InstantSubstitution";
     
     /**
-     * This constructor is intended to use just for your own risk. 
-     * It could happen, that document is changed during invocation and 
+     * This constructor is intended to use just for your own risk.
+     * It could happen, that document is changed during invocation and
      * this costructor fails.
      */
     public CompletionJListOperator() {
@@ -72,7 +72,7 @@ public class CompletionJListOperator extends JListOperator {
     }
     
     private static List getCompletionItems(JList compJList)
-    throws Exception {
+            throws Exception {
         ListModel model = (ListModel) compJList.getModel();
         // dump items to List
         List<Object> data = new ArrayList<Object>(model.getSize());
@@ -83,104 +83,78 @@ public class CompletionJListOperator extends JListOperator {
     }
     
     private static JList findCompletionJList() {
-        // Path to the completion model:
-        // CompletionImpl.get().layout.completionPopup.getCompletionScrollPane()
-        // .view.getModel()
-        final CompletionImpl comp = CompletionImpl.get();
-        try {
-            //CompletionLayout.class
-            Field layoutField = CompletionImpl.class.getDeclaredField("layout");
-            layoutField.setAccessible(true);
-            Object layout = layoutField.get(comp);
-            //CompletionLayout.CompletionPopup.class
-            Field popupField = layout.getClass().getDeclaredField("completionPopup");
-            popupField.setAccessible(true);
-            final Object popup = popupField.get(layout);
-            //CompletionScrollPane.class
-            final Field csPaneField = popup.getClass().getDeclaredField(
-                    "completionScrollPane");
-            csPaneField.setAccessible(true);
-            final String PLEASE_WAIT = Bundle.getStringTrimmed(
-                    "org.netbeans.modules.editor.completion.Bundle",
-                    "completion-please-wait");
-            Object compSPane = waitFor(new Waitable() {                
-                public Object actionProduced(Object obj) {
-                    Object compSPane = null;
-                    if (DocumentWatcher.isActive() && DocumentWatcher.isModified()) {
-                        return INSTANT_SUBSTITUTION;
+        final String PLEASE_WAIT = Bundle.getStringTrimmed(
+                "org.netbeans.modules.editor.completion.Bundle",
+                "completion-please-wait");
+        final Object result = waitFor(new Waitable() {
+            public Object actionProduced(Object obj) {
+                if (DocumentWatcher.isActive() && DocumentWatcher.isModified()) {
+                    return INSTANT_SUBSTITUTION;
+                }
+                try {
+                    // Path to the completion model:
+                    // CompletionImpl.get().layout.completionPopup.getCompletionScrollPane()
+                    // .view.getModel()
+                    CompletionImpl comp = CompletionImpl.get();
+                    //CompletionLayout.class
+                    Field layoutField = CompletionImpl.class.getDeclaredField("layout");
+                    layoutField.setAccessible(true);
+                    Object layout = layoutField.get(comp);
+                    //CompletionLayout.CompletionPopup.class
+                    Field popupField = layout.getClass().getDeclaredField("completionPopup");
+                    popupField.setAccessible(true);
+                    Object popup = popupField.get(layout);
+                    //CompletionScrollPane.class
+                    Field csPaneField = popup.getClass().getDeclaredField("completionScrollPane");
+                    csPaneField.setAccessible(true);
+                    
+                    Object compSPane = csPaneField.get(popup);
+                    if(compSPane == null) {
+                        return null;
                     }
-                    try {
-                        compSPane = csPaneField.get(popup);
-                        if (compSPane != null) {
-                            // check if all result providers finished
-                            Field crField = comp.getClass().getDeclaredField("completionResult");
-                            crField.setAccessible(true);
-                            Object completionResult = crField.get(comp);
-                            if (completionResult == null) {
-                                //System.out.println(":: completionResult == null");
-                                return compSPane;
-                            }
-                            Method grsMethod = completionResult.getClass().getDeclaredMethod("getResultSets");
-                            grsMethod.setAccessible(true);
-                            Object resultSets = grsMethod.invoke(completionResult, new Object[0]);
-                            Method iarfMethod = comp.getClass().getDeclaredMethod("isAllResultsFinished",
-                                    List.class);
-                            iarfMethod.setAccessible(true);
-                            Boolean allResultsFinished = (Boolean) iarfMethod.invoke(comp, resultSets);
-                            if (!allResultsFinished) {
-                                System.out.println(System.currentTimeMillis()+": all CC Results not finished yet.");
-                                compSPane = null;
-                            }
+                    
+                    // check if all result providers finished
+                    Field crField = comp.getClass().getDeclaredField("completionResult");
+                    crField.setAccessible(true);
+                    Object completionResult = crField.get(comp);
+                    if (completionResult != null) {
+                        Method grsMethod = completionResult.getClass().getDeclaredMethod("getResultSets");
+                        grsMethod.setAccessible(true);
+                        Object resultSets = grsMethod.invoke(completionResult, new Object[0]);
+                        Method iarfMethod = comp.getClass().getDeclaredMethod("isAllResultsFinished", List.class);
+                        iarfMethod.setAccessible(true);
+                        Boolean allResultsFinished = (Boolean) iarfMethod.invoke(comp, resultSets);
+                        if (!allResultsFinished) {
+                            System.out.println(System.currentTimeMillis()+": all CC Results not finished yet.");
+                            return null;
                         }
-                    } catch (Exception ex) {
-                        throw new JemmyException("Invovation of " +
-                                "getCompletionScrollPane() failed", ex);
                     }
-                    return compSPane;
-                }
-                
-                public String getDescription() {
-                    return "Wait getCompletionScrollPane() not null";
-                }
-            });
-            //CompletionJList.class
-            if (compSPane.equals(INSTANT_SUBSTITUTION)) {
-                return null;
-            }
-            Field viewField = compSPane.getClass().getDeclaredField("view");
-            viewField.setAccessible(true);
-            final CompletionJList compJList =
-                    (CompletionJList) viewField.get(compSPane);
-            Object result = waitFor(new Waitable() {
-                public Object actionProduced(Object obj) {
-                    List list = null;
-                    if (DocumentWatcher.isActive() && DocumentWatcher.isModified()) {
-                        return INSTANT_SUBSTITUTION;
-                    }
-                    try {
-                        list = getCompletionItems(compJList);
-                    } catch (java.lang.Exception ex) {
-                        throw new JemmyException(getDescription()+" failed", ex);
-                    }
+                    
+                    Field viewField = compSPane.getClass().getDeclaredField("view");
+                    viewField.setAccessible(true);
+                    CompletionJList compJList = (CompletionJList) viewField.get(compSPane);
+                    List list = getCompletionItems(compJList);
                     // check if it is no a 'Please Wait' item
                     if (list.size() > 0 && !(list.contains(PLEASE_WAIT))) {
-                        return list;
+                        System.out.println(list);
+                        return compJList;
                     } else {
                         return null;
                     }
+                } catch (Exception ex) {
+                    throw new JemmyException("Exception when waiting for completion items.", ex);
                 }
-                public String getDescription() {
-                    return "Wait for completion items data";
-                }
-            });
-            if (result.equals(INSTANT_SUBSTITUTION)) {
-                return null;
             }
-            return compJList;
-        } catch (Exception ex) {
-            throw new JemmyException("Cannot find CompletionJList component", ex);
-        }
+            
+            public String getDescription() {
+                return "Wait for completion items data";
+            }
+        });
         
+        if (result.equals(INSTANT_SUBSTITUTION)) {
+            return null;
+        }
+        return (CompletionJList)result;
     }
     
     private static Object waitFor(Waitable action) {
