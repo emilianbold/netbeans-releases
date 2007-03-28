@@ -20,6 +20,7 @@
 package gui.action;
 
 import gui.window.WebFormDesignerOperator;
+import org.netbeans.jellytools.EditorOperator;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -66,6 +67,7 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
     
     public void initialize(){
         log("::initialize::");
+        EditorOperator.closeDiscardAll();
     }
     
     public void prepare(){
@@ -98,8 +100,8 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
     public void close(){
         log("::close");
         super.close();
-        if(testedComponentOperator != null) { 
-            ((WebFormDesignerOperator)testedComponentOperator).close(); 
+        if(testedComponentOperator != null) {
+            ((WebFormDesignerOperator)testedComponentOperator).close();
         }
     }
     
