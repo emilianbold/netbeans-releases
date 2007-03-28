@@ -49,9 +49,9 @@ import junit.framework.AssertionFailedError;
  * @author Jesse Glick, Jaroslav Tulach
  */
 public class MockServices {
-    
+
     private MockServices() {}
-    
+
     /**
      * Set (or reset) the set of mock services.
      * Clears any previous registration.
@@ -78,10 +78,10 @@ public class MockServices {
                 for (int i = 0; i < x; i++) {
                     ts[i].setContextClassLoader(l);
                 }
-                logger().log(Level.FINE, "Set context class loader on {0} threads", x);
+                LOG.log(Level.FINE, "Set context class loader on {0} threads", x);
                 break;
             } else {
-                logger().fine("Race condition getting all threads, restarting...");
+                LOG.fine("Race condition getting all threads, restarting...");
                 continue;
             }
         }
@@ -90,14 +90,14 @@ public class MockServices {
             Class mainLookup = Class.forName("org.netbeans.core.startup.MainLookup");
             Method sClsLoaderChanged = mainLookup.getDeclaredMethod("systemClassLoaderChanged",ClassLoader.class);
             sClsLoaderChanged.setAccessible(true);
-            sClsLoaderChanged.invoke(null,l);            
+            sClsLoaderChanged.invoke(null,l);
         } catch (ClassNotFoundException x) {
-            // Fine, not using org.netbeans.core.startup isn't reachable.
+            // Fine, not using core.jar.
         } catch(Exception exc) {
-            logger().log(Level.WARNING, "MainLookup couldn't be notified about the context class loader change", exc);
+            LOG.log(Level.WARNING, "MainLookup couldn't be notified about the context class loader change", exc);
         }
-        
-        try {            
+
+        try {
             Class lookup = Class.forName("org.openide.util.Lookup");
             Method defaultLookup = lookup.getDeclaredMethod("resetDefaultLookup");
             defaultLookup.setAccessible(true);
@@ -105,18 +105,16 @@ public class MockServices {
         } catch (ClassNotFoundException x) {
             // Fine, not using org-openide-lookup.jar.
         } catch (Exception x) {
-            logger().log(Level.WARNING, "Could not reset Lookup.getDefault()", x);
+            LOG.log(Level.WARNING, "Could not reset Lookup.getDefault()", x);
         }
     }
-    
-    private static Logger logger() {
-        return Logger.getLogger(MockServices.class.getName());
-    }
-    
+
+    private static final Logger LOG = Logger.getLogger(MockServices.class.getName());
+
     private static final class ServiceClassLoader extends ClassLoader {
-        
+
         private final Class<?>[] services;
-        
+
         public ServiceClassLoader(Class<?>[] services) {
             super(MockServices.class.getClassLoader());
             for (Class c : services) {
@@ -137,7 +135,7 @@ public class MockServices {
             }
             this.services = services;
         }
-        
+
         public URL getResource(String name) {
             Enumeration<URL> r;
             try {
@@ -147,7 +145,7 @@ public class MockServices {
             }
             return r.hasMoreElements() ? r.nextElement() : null;
         }
-        
+
         public Enumeration<URL> getResources(String name) throws IOException {
             if (name.equals("META-INF/services/org.openide.util.Lookup") || name.equals("META-INF/services/org.openide.util.Lookup$Provider")) {
                 // Lookup.getDefault checks for these, and we need to really mask it.
@@ -201,14 +199,14 @@ public class MockServices {
             }
             return supe;
         }
-        
+
         /*
         public Class<?> loadClass(String name) throws ClassNotFoundException {
             // XXX make sure services can be loaded
             return super.loadClass(name);
         }
          */
-        
+
     }
-    
+
 }
