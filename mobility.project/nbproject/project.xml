@@ -323,17 +323,18 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.j2me.cdc.platform.nokias80</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project</friend>
-                <friend>org.netbeans.modules.j2me.cdc.project.ui.wizards</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.nokiaS80</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.ricoh</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.savaje</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.semc</friend>
+                <friend>org.netbeans.modules.j2me.cdc.project.ui.wizards</friend>
                 <friend>org.netbeans.modules.mobility.editor</friend>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.mobility.plugins.blackberry</friend>
                 <friend>org.netbeans.modules.mobility.plugins.javase</friend>
                 <friend>org.netbeans.modules.mobility.svgcore</friend>
                 <friend>org.netbeans.modules.mvd</friend>
+                <friend>org.netbeans.modules.vmd.midp</friend>
                 <package>org.netbeans.api.mobility.project</package>
                 <package>org.netbeans.api.mobility.project.ui.customizer</package>
                 <package>org.netbeans.modules.mobility.project</package>
@@ -343,7 +344,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.spi.mobility.project</package>
                 <package>org.netbeans.spi.mobility.project.support</package>
                 <package>org.netbeans.spi.mobility.project.ui.customizer</package>
-                <package>org.netbeans.spi.mobility.project.ui.customizer.support</package>                
+                <package>org.netbeans.spi.mobility.project.ui.customizer.support</package>
             </friend-packages>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>

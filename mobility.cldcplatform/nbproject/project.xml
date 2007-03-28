@@ -155,8 +155,8 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.mobility.project</friend>
                 <friend>org.netbeans.modules.mobility.svgcore</friend>
                 <friend>org.netbeans.modules.mvd</friend>
+                <friend>org.netbeans.modules.vmd.midp</friend>
                 <package>org.netbeans.modules.mobility.cldcplatform</package>
-                <package>org.netbeans.modules.mobility.cldcplatform.libraries</package>
                 <package>org.netbeans.modules.mobility.cldcplatform.wizard</package>
             </friend-packages>
         </data>
