@@ -22,6 +22,7 @@ package org.netbeans.editor.ext.html.parser;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -149,11 +150,18 @@ public final class SyntaxParser {
             SyntaxElement sel = getElementChain(0);
             while (sel != null) {
                 parsedElements.add(sel);
-                sel = sel.getNext();
+                SyntaxElement next_sel = sel.getNext();
+                
+                if(next_sel != null && (next_sel == sel || next_sel.getElementOffset() <= sel.getElementOffset())) {
+                    Logger.getLogger(SyntaxParser.class.getName()).warning(
+                            "The SyntaxParser.getElementChain() cycles. Please report this and attach the document content."); //NOI18N
+                }
+                
+                sel = next_sel;
             }
             
         }catch(BadLocationException ble) {
-            ble.printStackTrace();;
+            ble.printStackTrace();
         }
     }
     
