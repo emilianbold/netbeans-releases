@@ -169,17 +169,12 @@ public abstract class Index {
     }
     
     public static File getClassFolder (final File root) throws IOException {
-        try {
-            return getClassFolderImpl(root.toURI().toURL());
-        } catch (MalformedURLException mue) {
-            ErrorManager.getDefault().notify (mue);
-            return null;
-        }
-    }
+        return getClassFolderImpl(root.toURI().toURL());
+    }        
     
     private static File getClassFolderImpl (final URL url) throws IOException {
         final File dataFolder = getDataFolder (url);
-        final File result= new File (dataFolder, CLASSES);
+        final File result = FileUtil.normalizeFile(new File (dataFolder, CLASSES));
         if (!result.exists()) {
             result.mkdir();
         }

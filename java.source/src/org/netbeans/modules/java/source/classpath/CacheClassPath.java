@@ -41,6 +41,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -139,6 +140,12 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                                     url = foo;
                                 }
                             }
+                        }
+                        try {
+                            File sigs = Index.getClassFolder(url);
+                            this.cache.add (ClassPathSupport.createResource(sigs.toURI().toURL()));
+                        } catch (IOException ioe) {
+                            Exceptions.printStackTrace(ioe);
                         }
                         this.cache.add (ClassPathSupport.createResource(url));
                     }
