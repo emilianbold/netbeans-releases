@@ -152,9 +152,9 @@ public class Pattern {
                                         if ('0' <= c && c <= '9') {
                                             ii = c - '0';
                                         } else if ('a' <= c && c <= 'f') {
-                                            ii = c - 'a';
+                                            ii = c - 'a' + 10;
                                         } else if ('A' <= c && c <= 'F') {
-                                            ii = c - 'A';
+                                            ii = c - 'A' + 10;
                                         } else {
                                             throw new ParseException ("Wrong character after \\u:" + input.toString ());
                                         }
@@ -280,9 +280,9 @@ public class Pattern {
                                                 if ('0' <= c && c <= '9') {
                                                     ii = c - '0';
                                                 } else if ('a' <= c && c <= 'f') {
-                                                    ii = c - 'a';
+                                                    ii = c - 'a' + 10;
                                                 } else if ('A' <= c && c <= 'F') {
-                                                    ii = c - 'A';
+                                                    ii = c - 'A' + 10;
                                                 } else {
                                                     throw new ParseException ("Wrong character after \\u:" + input.toString ());
                                                 }
