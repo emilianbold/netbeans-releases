@@ -139,9 +139,9 @@ implements PropertyChangeListener {
         initializeResizer(mMainLayer, mLeftResizer);
         initializeResizer(mMainLayer, mMiddleResizer);
 
-        WithinRegionMover moverBindingRegion  = new WithinRegionMover(mModel, false, false);
-        WithinRegionMover moverEngineRegion   = new WithinRegionMover(mModel, true,  false);
-        WithinRegionMover moverExternalRegion = new WithinRegionMover(mModel, true,  true);
+        WidgetMover moverBindingRegion  = new WidgetMover(mModel, false, false);
+        WidgetMover moverEngineRegion   = new WidgetMover(mModel, true,  false);
+        WidgetMover moverExternalRegion = new WidgetMover(mModel, true,  true);
         mMoveActionBindingRegion  = ActionFactory.createMoveAction(moverBindingRegion,  moverBindingRegion);
         mMoveActionEngineRegion   = ActionFactory.createMoveAction(moverEngineRegion,   moverEngineRegion);
         mMoveActionExternalRegion = ActionFactory.createMoveAction(moverExternalRegion, moverExternalRegion);
@@ -583,6 +583,9 @@ implements PropertyChangeListener {
            }
        }
    }
+
+    
+    // We basically update our selection state when an external component
 
     
     // We basically update our selection state when an external component
