@@ -67,6 +67,23 @@ public class CompletionProviderImpl implements CompletionProvider {
     }
 
     public int getAutoQueryTypes (JTextComponent component, String typedText) {
+        if (".".equals(typedText)) { // NOI18N
+            Document doc = component.getDocument ();
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
+            TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
+            int offset = component.getCaret().getDot();
+            if (offset <= 1) {
+                return 0;
+            }
+            tokenSequence.move(offset - 2);
+            if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
+                return 0;
+            }
+            Token token = tokenSequence.token ();
+            if (token.id().name().indexOf("identifier") > -1) { // NOI18N [PENDING]
+                return COMPLETION_QUERY_TYPE;
+            }
+        }
         return 0;
     }
     
