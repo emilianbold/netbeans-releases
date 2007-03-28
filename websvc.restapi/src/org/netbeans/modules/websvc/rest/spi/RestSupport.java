@@ -18,9 +18,14 @@
  */
 package org.netbeans.modules.websvc.rest.spi;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -57,6 +62,7 @@ public abstract class RestSupport {
     public static final String RESTBEANS_TEST_DIR = "nbproject/private/restbeans";
     public static final String COMMAND_TEST_RESTBEANS = "test.restbeans";
     public static final String REST_SUPPORT_ON = "rest.support.on";
+    public static final String TEST_RESBEANS = "test-resbeans.html";
     
     AntProjectHelper helper;
 
@@ -92,35 +98,71 @@ public abstract class RestSupport {
      * @param destDir directory to write test client files in.
      * @return test file object, containing token BASE_URL_TOKEN whether used or not.
      */
-    public FileObject generateTestClient(File testdir) throws IOException {
-        //TODO Ayub
+    public FileObject generateTestClient(File testdir) throws IOException {        
         if (! testdir.isDirectory()) {
             testdir.mkdirs();
         }
         FileObject dir = FileUtil.toFileObject(testdir);
-        FileObject testFO = dir.getFileObject("test-resbeans.js");
+        FileObject testFO = dir.getFileObject(TEST_RESBEANS);
         if (testFO == null) {
-            testFO = dir.createData("test-resbeans.js");
+            testFO = dir.createData(TEST_RESBEANS);
         }
         FileLock lock = null;
         BufferedWriter writer = null;
+        BufferedReader reader = null;
         try {
             lock = testFO.lock();
             OutputStream os = testFO.getOutputStream(lock);
             writer = new BufferedWriter(new OutputStreamWriter(os));
-            writer.newLine();
-            writer.write("Test REST beans: "+BASE_URL_TOKEN);
-            writer.newLine();
+            InputStream is = RestSupport.class.getResourceAsStream("resources/"+TEST_RESBEANS);
+            reader = new BufferedReader(new InputStreamReader(is));
+            String line;
+            String lineSep = "\n";//Unix
+            if(File.separatorChar == '\\')//Windows
+                lineSep = "\r\n";
+            while((line = reader.readLine()) != null) {
+                writer.write(line);
+                writer.write(lineSep);
+            }
         } finally {
             if (writer != null) {
                 writer.flush();
                 writer.close();
             }
             if (lock != null) lock.releaseLock();
+            if (reader != null) {
+                reader.close();
+            }
         }
+        copyFile("resources/expand.gif", testdir, "expand.gif");
+        copyFile("resources/collapse.gif", testdir, "collapse.gif");
+        copyFile("resources/item.gif", testdir, "item.gif");
         return testFO;
     }
 
+    private void copyFile(String path, File testdir, String name) throws IOException {
+        File df = new File(testdir, name);
+        if(!df.exists()) {
+            InputStream is = null;
+            OutputStream os = null;
+            try {
+                is = RestSupport.class.getResourceAsStream(path);
+                os = new FileOutputStream(df);
+                byte[] bytes = new byte[1000];
+                while (is.read(bytes) != -1) {
+                    os.write(bytes);
+                }
+            } finally {
+                if(os != null) {
+                    os.flush();
+                    os.close();
+                }
+                if(is != null)
+                    is.close();            
+            }
+        }
+    }
+    
     /**
      *  Add SWDP library for given source file on specified class path types.
      * 
