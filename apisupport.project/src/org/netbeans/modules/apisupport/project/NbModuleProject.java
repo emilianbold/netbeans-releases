@@ -80,6 +80,7 @@ import org.netbeans.modules.apisupport.project.queries.FileEncodingQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.JavadocForBinaryImpl;
 import org.netbeans.modules.apisupport.project.queries.SourceForBinaryImpl;
 import org.netbeans.modules.apisupport.project.queries.SubprojectProviderImpl;
+import org.netbeans.modules.apisupport.project.queries.TemplateAttributesProvider;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -229,6 +230,7 @@ public final class NbModuleProject implements Project {
             LookupProviderSupport.createSourcesMerger(),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
+            new TemplateAttributesProvider(getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG),
             new FileEncodingQueryImpl());
         lookup = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-apisupport-project/Lookup"); //NOI18N
     }

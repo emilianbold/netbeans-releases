@@ -37,6 +37,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.queries.FileEncodingQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.TemplateAttributesProvider;
 import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView;
 import org.netbeans.modules.apisupport.project.ui.SuiteOperations;
@@ -100,6 +101,7 @@ public final class SuiteProject implements Project {
             new SuiteCustomizer(this, helper, eval),
             new PrivilegedTemplatesImpl(),
             new SuiteOperations(this),
+            new TemplateAttributesProvider(helper, false),
             new FileEncodingQueryImpl());
         lookup = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-apisupport-project-suite/Lookup");
     }

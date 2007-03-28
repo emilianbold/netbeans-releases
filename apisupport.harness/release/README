@@ -688,6 +688,9 @@ module, or in nbbuild/user.build.properties for a netbeans.org module). You may
 also define just ${nbjdk.home} directly, without using ${nbjdk.active}, if you do
 not need to use the Java Platform Manager to set up the JDK definition.
 
+project.license [since 6.0] - license to use for newly created files in the project
+(applies also to suites); default is 'cddl' for modules inside netbeans.org.
+
 release.dir - "${basedir}/release"; location of a directory full of files to
 copy unmodified to the output cluster.
 
