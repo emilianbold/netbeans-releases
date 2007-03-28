@@ -115,13 +115,22 @@ public final class ScreenAccessController implements AccessController, EditedScr
     }
     
     // called in AWT and document transaction
+    // call this method from notifyEventFired only
     private void refreshModel() {
         allEditableScreens = EditedScreenSupport.getAllEditableScreensInDocument(document);
         
         editedScreenCombo.removeActionListener(editedScreenComboListener);
         editedScreenCombo.setModel(new DefaultComboBoxModel(allEditableScreens.toArray()));
+        if (! allEditableScreens.contains(editedScreen))
+            editedScreen = null;
         editedScreenCombo.setSelectedItem(editedScreen);
         editedScreenCombo.addActionListener(editedScreenComboListener);
+        
+        if (editedScreen == null  &&  allEditableScreens.size () > 0) {
+            editedScreen = allEditableScreens.get(0);
+            EditedScreenSupport.getSupportForDocument(document).setEditedScreenComponentID(editedScreen.getComponentID());
+            return;
+        }
         
         refreshPanels();
     }
