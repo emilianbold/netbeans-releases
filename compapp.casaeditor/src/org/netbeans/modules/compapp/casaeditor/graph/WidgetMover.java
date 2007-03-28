@@ -275,7 +275,7 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
             mSnapPoint = null;
         }
         
-        // If we mvoe a middle/right region widget so that it overlaps another,
+        // If we move a middle/right region widget so that it overlaps another,
         // then we simply revert the move.
         if (widget instanceof CasaNodeWidgetEngine) {
             CasaNodeWidget moveWidget = (CasaNodeWidget) widget;
@@ -284,9 +284,7 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
                     new Widget[] { moveWidget },
                     moveWidget.getEntireBounds());
             if (overlappedWidget != null) {
-                widget.getScene().getSceneAnimator().animatePreferredLocation(
-                        widget,
-                        mOriginalLocation);
+                widget.setPreferredLocation(mOriginalLocation);
             }
         }
         

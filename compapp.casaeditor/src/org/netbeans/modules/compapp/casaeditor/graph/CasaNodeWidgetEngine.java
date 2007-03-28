@@ -46,6 +46,11 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     private static final int MINIMUM_SE_NODE_HEIGHT   = 20;
     private static final int MINIMUM_SE_NODE_WIDTH    = 120;
     
+    // The amount of space below the widget,
+    // to help visually separate it from other widgets that might
+    // be immediately below it.
+    private static final int TRAILING_VERTICAL_GAP    = 4;
+    
     private CasaEngineTitleWidget mTitleWidget;
     private String mNodeType;
     
@@ -184,6 +189,14 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         addDependency(pinSizer);
     }
 
+    
+    public Rectangle getEntireBounds() {
+        Dimension d = getBounds().getSize();
+        return new Rectangle(
+                getLocation(), 
+                new Dimension(d.width, d.height + TRAILING_VERTICAL_GAP));
+    }
+    
     /**
      * Sets all node properties at once.
      */

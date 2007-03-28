@@ -50,6 +50,11 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
     
     private static final int BORDER_WIDTH             =  2;
     
+    // The amount of space below the widget's label, 
+    // to help visually separate it from other widgets that might
+    // be immediately below it.
+    private static final int TRAILING_VERTICAL_GAP    =  10;
+
     private Widget mBodyWidget;
     private ImageWidget mVerticalTextImageWidget;
     private CasaBindingBadges mBadges;
@@ -205,11 +210,14 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
     // Our getBounds() may not yet accurately reflect the actual
     // height of our component, so we calculate it here in case we need it now.
     public Rectangle getEntireBounds() {
+        Point p     = getLocation();
+        Dimension d = getBounds().getSize();
+        
         Rectangle bounds = new Rectangle(
-                Math.min(getLocation().x, mNameWidget.getLocation().x),
-                getLocation().y,
-                Math.max(getBounds().width, mNameWidget.getBounds().width),
-                getBounds().height + mNameWidget.getBounds().height);
+                Math.min(p.x, mNameWidget.getLocation().x),
+                p.y,
+                Math.max(d.width, mNameWidget.getBounds().width),
+                d.height + mNameWidget.getBounds().height);
 
         int bodyHeight = VERT_TEXT_BAR_MIN_HEIGHT;
         bodyHeight = Math.max(bodyHeight, mVerticalTextImageWidget.getPreferredBounds().height);
@@ -221,7 +229,8 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         bounds.height = 
                 bodyHeight + 
                 BORDER_WIDTH * 2 + 
-                getNameWidgetBounds().height;
+                getNameWidgetBounds().height + 
+                TRAILING_VERTICAL_GAP;
         return bounds;
     }
 

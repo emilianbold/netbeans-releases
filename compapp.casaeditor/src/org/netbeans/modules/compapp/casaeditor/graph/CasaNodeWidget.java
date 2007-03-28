@@ -165,6 +165,7 @@ public abstract class CasaNodeWidget extends Widget {
     public boolean isEditable() {
         return mEditable;
     }
+    
     public void setEditable(boolean bValue) {
         mEditable = bValue;
     }
@@ -172,6 +173,7 @@ public abstract class CasaNodeWidget extends Widget {
     public boolean isWSPolicyAttached() {
         return mWSPolicyAttached;
     }
+    
     public void setWSPolicyAttached(boolean bValue) {
         mWSPolicyAttached = bValue;
     }
