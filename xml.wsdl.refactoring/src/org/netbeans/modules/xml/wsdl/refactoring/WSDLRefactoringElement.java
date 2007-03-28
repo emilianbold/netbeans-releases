@@ -12,6 +12,8 @@ package org.netbeans.modules.xml.wsdl.refactoring;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.ui.TreeElement;
+import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
@@ -23,6 +25,8 @@ import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.ui.actions.ShowSourceAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
@@ -46,6 +50,7 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
     public WSDLRefactoringElement(Model model, Referenceable target, Component comp) {
         this.model=model;
         this.comp=comp;
+        
         try {
             if(model instanceof WSDLModel) {
                 ModelSource ms = model.getModelSource();
@@ -54,9 +59,10 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
                         DataObject dObj = DataObject.find(source);
                         if(dObj != null && dObj instanceof WSDLDataObject) {
                             this.node = NodesFactory.getInstance().create(comp);
-                    }
+                        } 
                 }
             }
+            
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -84,10 +90,22 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
    
         
     public String getText() {
+        if(node == null){
+            //in case of embedded SchemaComponent, use the TreeElementFactory as the UIHelper 
+           TreeElement elem = TreeElementFactory.getTreeElement(comp);
+           return elem.getText(true);
+        }
         return node.getName();
     }
 
     public String getDisplayText() {
+        if(node == null){
+            //in case of embedded Schema, the component is a SchemaComponent
+            //The NodeFactory returns a null node. use the TreeElementFactory as the UIHelper 
+            // to locate the factory that handles schema components
+           TreeElement elem = TreeElementFactory.getTreeElement(comp);
+           return elem.getText(true);
+        }
         return node.getHtmlDisplayName();
     }
 
@@ -102,9 +120,13 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
     //     System.out.println("XMLRefactoringElement:: openInEditor called");
          Action preferredAction = SystemAction.get(ShowSourceAction.class);
          String command = (String)preferredAction.getValue(Action.ACTION_COMMAND_KEY);
+         if(node == null) {
+             node  = new AbstractNode(Children.LEAF);
+         }
 	 ActionEvent ae = new ActionEvent(node, 0, command);
 	 preferredAction.actionPerformed(ae);
      
      }
-     
+    
+         
 }

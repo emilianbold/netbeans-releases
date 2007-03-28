@@ -41,8 +41,8 @@ public class WSDLTreeFactoryImpl implements TreeElementFactoryImplementation {
     public TreeElement getTreeElement(Object o) {
         TreeElement result = null;
         if (o instanceof RefactoringElement) {
-            WSDLComponent u = ((RefactoringElement)o).getLookup().lookup(WSDLComponent.class);
-            if (u!=null) {
+            Component u = ((RefactoringElement)o).getLookup().lookup(Component.class);
+            if (u!=null && u instanceof WSDLComponent) {
                 result = new WSDLTreeElement((RefactoringElement) o);
             }
         }else if( o instanceof WSDLComponent){
