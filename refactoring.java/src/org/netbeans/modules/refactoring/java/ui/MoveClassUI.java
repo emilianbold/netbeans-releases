@@ -65,7 +65,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
         this.targetFolder = targetFolder;
         this.javaObject = javaObject;
         this.pasteType = pasteType;
-        this.refactoring = new MoveRefactoring(new ProxyLookup(Lookups.fixed(handles.toArray(new Object[handles.size()])),Lookups.fixed(handles.toArray(new Object[handles.size()]))));
+        this.refactoring = new MoveRefactoring(new ProxyLookup(Lookups.singleton(javaObject.getPrimaryFile()),Lookups.fixed(handles.toArray(new Object[handles.size()]))));
     }
     
     public String getName() {
