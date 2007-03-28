@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
+import org.netbeans.modules.vmd.api.screen.editor.EditedScreenSupport;
 import org.netbeans.modules.vmd.screen.ScreenAccessController;
 import org.netbeans.modules.vmd.screen.ScreenEditorView;
 import org.openide.util.HelpCtx;
@@ -94,16 +95,13 @@ public class DesignerEditAction extends SystemAction  {
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                final ScreenAccessController ac = document.getListenerManager().getAccessController(ScreenAccessController.class);
-                if (ac == null)
-                    return;
                 final DesignComponent component = getSelectedComponent(document);
                 if (component != null) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             document.getTransactionManager().readAccess(new Runnable() {
                                 public void run() {
-                                    ac.setEditedComponent(component);
+                                    EditedScreenSupport.getSupportForDocument(document).setEditedScreenComponentID (component.getComponentID());
                                 }
                             });
                         }

@@ -23,6 +23,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
+import org.netbeans.modules.vmd.api.screen.editor.EditedScreenSupport;
 import org.netbeans.modules.vmd.screen.ScreenAccessController;
 
 /**
@@ -38,16 +39,14 @@ public final class DesignerEditParentAction extends DesignerEditAction {
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                final ScreenAccessController ac = document.getListenerManager().getAccessController(ScreenAccessController.class);
-                if (ac == null)
-                    return;
-                final DesignComponent component = getSelectedComponent(document);
-                if (component != null) {
+                DesignComponent component = getSelectedComponent(document);
+                final DesignComponent parentComponent = component != null ? component.getParentComponent() : null;
+                if (parentComponent != null) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             document.getTransactionManager().readAccess(new Runnable() {
                                 public void run() {
-                                    ac.setEditedComponent(component.getParentComponent());
+                                    EditedScreenSupport.getSupportForDocument(document).setEditedScreenComponentID (parentComponent.getComponentID());
                                 }
                             });
                         }

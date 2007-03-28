@@ -38,13 +38,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
+import org.netbeans.modules.vmd.api.screen.editor.EditedScreenSupport;
 
 /**
  * TODO - implement refresh of only components those were claimed as dirty by their ScreenPresenters - similar to Flow
  *
  * @author David Kaspar
  */
-public final class ScreenAccessController implements AccessController {
+public final class ScreenAccessController implements AccessController, EditedScreenSupport.Listener {
     
     private final DesignDocument document;
     
@@ -59,7 +60,7 @@ public final class ScreenAccessController implements AccessController {
     private List<DesignComponent> allEditableScreens = Collections.emptyList();
     
     // Called in document transaction
-    public ScreenAccessController(DesignDocument document) {
+    public ScreenAccessController(final DesignDocument document) {
         this.document = document;
         
         devicePanel = new DevicePanel(this);
@@ -70,21 +71,27 @@ public final class ScreenAccessController implements AccessController {
         editedScreenCombo.setRenderer(new EditedComboRenderer());
         editedScreenComboListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ActiveDocumentSupport.getDefault().getActiveDocument().getTransactionManager().readAccess(new Runnable() {
+                document.getTransactionManager().readAccess(new Runnable() {
                     public void run() {
-                        setEditedComponent((DesignComponent) editedScreenCombo.getSelectedItem());
+                        DesignComponent component = (DesignComponent) editedScreenCombo.getSelectedItem();
+                        EditedScreenSupport.getSupportForDocument(document).setEditedScreenComponentID(component != null ? component.getComponentID() : -1);
                     }
                 });
             }
         };
         editedScreenCombo.addActionListener(editedScreenComboListener);
+        EditedScreenSupport.getSupportForDocument(document).addListener(this); // TODO - maybe possible memory leak, since "this" is an access controller holding design document
     }
     
-    public void setEditedComponent(DesignComponent component) {
-        setEditedScreen(component);
-        refreshPanels();
+    public void editedScreenChanged(long editedScreenComponentID) {
+        editedScreen = document.getComponentByUID(EditedScreenSupport.getSupportForDocument(document).getEditedScreenComponentID());
+        editedScreenCombo.removeActionListener(editedScreenComboListener);
+        editedScreenCombo.setSelectedItem(editedScreen);
+        editedScreenCombo.addActionListener(editedScreenComboListener);
+        
+        refreshPanels ();
     }
-    
+
     // Called in document transaction
     public void writeAccess(Runnable runnable) {
         runnable.run();
@@ -109,36 +116,14 @@ public final class ScreenAccessController implements AccessController {
     
     // called in AWT and document transaction
     private void refreshModel() {
-        allEditableScreens = getEditableScreens();
+        allEditableScreens = EditedScreenSupport.getAllEditableScreensInDocument(document);
         
         editedScreenCombo.removeActionListener(editedScreenComboListener);
         editedScreenCombo.setModel(new DefaultComboBoxModel(allEditableScreens.toArray()));
         editedScreenCombo.setSelectedItem(editedScreen);
         editedScreenCombo.addActionListener(editedScreenComboListener);
         
-        if (editedScreen == null  ||  ! allEditableScreens.contains(editedScreen))
-            setEditedScreen(allEditableScreens.size() > 0 ? allEditableScreens.get(0) : null);
-        
         refreshPanels();
-    }
-    
-    private List<DesignComponent> getEditableScreens() {
-        ArrayList<DesignComponent> screens = new ArrayList<DesignComponent> ();
-        for (DesignComponent component : DocumentSupport.gatherAllComponentsContainingPresenterClass(document, ScreenDisplayPresenter.class)) {
-            if (component.getPresenter(ScreenDisplayPresenter.class).isTopLevelDisplay())
-                screens.add(component);
-        }
-        return screens;
-    }
-    
-    // called in AWT and document transaction
-    private void setEditedScreen(DesignComponent component) {
-        // TODO - hideNotify
-        editedScreen = component;
-        editedScreenCombo.removeActionListener(editedScreenComboListener);
-        editedScreenCombo.setSelectedItem(component);
-        editedScreenCombo.addActionListener(editedScreenComboListener);
-        // TODO - reload
     }
     
     public void refreshPanels() {
