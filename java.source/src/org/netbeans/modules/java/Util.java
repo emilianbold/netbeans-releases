@@ -140,56 +140,7 @@ public final class Util extends Object {
         IndentEngine engine = IndentEngine.find(doc); // NOI18N
         return engine.createWriter(doc, offset, writer);
     }
-
-        
-    /**
-     * Retrieves file's encoding. If the file does not specify any encoding,
-     * null is returned. Note: an empty string is also a legal value, which also
-     * means platform-default encoding.
-     * @deprecated Disclaimer: this method is <B>not an API method</B>. It may not
-     * be available in future releases.
-     * @param someFile file object to retrieve encoding for
-     * @return encoding string, or null if no explicit encoding is given.
-     */
-    public static String getFileEncoding0(FileObject someFile) {
-        return (String)someFile.getAttribute(ATTR_FILE_ENCODING);
-    }
-    
-    /**
-     * Retrieves file's encoding. Returns the default encoding for java files,
-     * if the file's specific encoding is not set.
-     * @deprecated Disclaimer: this method is <B>not an API method</B>. It may not
-     * be available in future releases.
-     * @param someFile file object to retrieve encoding for
-     * @return encoding string, or null if no explicit encoding is given in file's
-     * or IDE's settings.
-     */
-    public static String getFileEncoding(FileObject someFile) {
-        String enc = getFileEncoding0(someFile);
-        if (enc == null) {
-//XXX:Todo fix this when moved back to java/src where JavaSettings exist            enc = JavaSettings.getDefault().getDefaultEncoding();
-            enc = null;
-        }
-        if ("".equals(enc))
-            return null;
-        else
-            return enc;
-    }
-    
-    /**
-     * Retrieves file's encoding. Returns the default encoding for java files,
-     * if the file's specific encoding is not set.
-     * This implementation stores the encoding information into file's extended
-     * attributes (so it won't work on JARs).
-     * @deprecated Disclaimer: this method is <B>not an API method</B>. It may not
-     * be available in future releases.
-     * @param someFile file object to set encoding for
-     * @param enc encoding string. Null means revert to the default encoding.
-     */
-    public static void setFileEncoding(FileObject someFile, String enc) throws IOException {
-        someFile.setAttribute(ATTR_FILE_ENCODING, enc);
-    }               
-
+                      
     public static char[] readContents(Reader r) throws IOException {
         int read = 0;
         int total = 0;

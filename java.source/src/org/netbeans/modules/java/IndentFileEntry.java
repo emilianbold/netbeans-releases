@@ -20,11 +20,13 @@
 package org.netbeans.modules.java;
 
 import java.io.*;
+import java.nio.charset.Charset;
 
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
+import org.netbeans.api.queries.FileEncodingQuery;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -96,8 +98,8 @@ public abstract class IndentFileEntry extends FileEntry.Format {
         FileObject fo = f.createData (name, ext);
         java.text.Format frm = createFormat (f, name, ext);
         InputStream is=getFile ().getInputStream ();
-        String encoding = Util.getFileEncoding(getFile());
-        Reader reader=encoding==null ? new InputStreamReader(is) : new InputStreamReader(is,encoding);
+        Charset encoding = FileEncodingQuery.getEncoding(getFile());
+        Reader reader = new InputStreamReader(is,encoding);
         BufferedReader r = new BufferedReader (reader);
         StyledDocument doc = createDocument(createEditorKit(fo.getMIMEType()));
         IndentEngine eng = (IndentEngine)indentEngine.get();
@@ -112,9 +114,9 @@ public abstract class IndentFileEntry extends FileEntry.Format {
         try {
             FileLock lock = fo.lock ();
             try {
-                encoding = Util.getFileEncoding(fo);
+                encoding = FileEncodingQuery.getEncoding(fo);
                 OutputStream os=fo.getOutputStream(lock);
-                OutputStreamWriter w = encoding==null ? new OutputStreamWriter(os) : new OutputStreamWriter(os, encoding);
+                OutputStreamWriter w = new OutputStreamWriter(os, encoding);
                 try {
                     String line = null;
                     String current;
