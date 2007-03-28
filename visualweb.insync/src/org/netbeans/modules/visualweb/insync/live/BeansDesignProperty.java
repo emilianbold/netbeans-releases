@@ -173,48 +173,13 @@ public class BeansDesignProperty extends SourceDesignProperty {
                 String binding = "#{"+ ((FacesDesignContext)lb.getDesignContext()).getReferenceName() + "." + lb.getInstanceName() + "}";
                 if (isMarkup)
                     return binding;
-                String typeName = getJavaTypeName(getPropertyDescriptor().getPropertyType().getName());
+                String typeName = getPropertyDescriptor().getPropertyType().getCanonicalName();
                 return "(" + typeName + ")getValue(\"" + binding + "\")";
             }
             //System.err.println("JLP.toSource: valueSource:" + (isMarkup ? value.toString() : toJavaInitializationString(value)));
             return isMarkup ? value.toString() : toJavaInitializationString(value);
         }
         return "null/*!!BAD PROPERTY TYPE SET!!*/";
-    }
-
-    static HashMap arrayTypeKeyHash = new HashMap();
-    static {
-        arrayTypeKeyHash.put("B", "byte");   //NOI18N
-        arrayTypeKeyHash.put("C", "char");   //NOI18N
-        arrayTypeKeyHash.put("D", "double");   //NOI18N
-        arrayTypeKeyHash.put("F", "float");   //NOI18N
-        arrayTypeKeyHash.put("I", "int");   //NOI18N
-        arrayTypeKeyHash.put("J", "long");   //NOI18N
-        arrayTypeKeyHash.put("S", "short");   //NOI18N
-        arrayTypeKeyHash.put("Z", "boolean");   //NOI18N
-        arrayTypeKeyHash.put("V", "void");   //NOI18N
-    }
-
-    public static String getJavaTypeName(String tn) {
-        if (tn.startsWith("[")) {   //NOI18N
-            int depth = 0;
-            while (tn.startsWith("[")) {   //NOI18N
-                tn = tn.substring(1);
-                depth++;
-            }
-            if (tn.startsWith("L")) {   //NOI18N
-                tn = tn.substring(1);
-                tn = tn.substring(0, tn.length() - 1);
-            }
-            else {
-                char typeKey = tn.charAt(0);
-                tn = (String)arrayTypeKeyHash.get("" + typeKey);   //NOI18N
-            }
-            for (int i = 0; i < depth; i++) {
-                tn += "[]";   //NOI18N
-            }
-        }
-        return tn;
     }
 
     /**
