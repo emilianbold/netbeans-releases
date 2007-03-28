@@ -109,6 +109,8 @@ public class LanguagesNavigator implements NavigatorPanel {
             tree.setRootVisible (false);
             tree.setShowsRootHandles (true);
             tree.addMouseListener (new Listener ());
+            tree.setToggleClickCount(99999); // [PENDING]
+            /*
             tree.addTreeSelectionListener (new TreeSelectionListener () {
                 public void valueChanged (TreeSelectionEvent e) {
                     selectionChanged ();
@@ -122,6 +124,7 @@ public class LanguagesNavigator implements NavigatorPanel {
                     selectionChanged ();
                 }
             });
+            */
             panelUI = new JScrollPane (tree);
         }
         return panelUI;
