@@ -109,7 +109,7 @@ public class AXIModelBuilderQuery extends AbstractModelBuilder {
     
     public void visit(GlobalAttribute schemaComponent) {
         affectsModel = true;
-        canView = true;
+        canView = false;
     }
     
     public void visit(LocalAttribute component) {
