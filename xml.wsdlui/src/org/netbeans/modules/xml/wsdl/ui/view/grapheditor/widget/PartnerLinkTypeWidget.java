@@ -92,9 +92,8 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
         mHeaderWidget.setMinimumSize(new Dimension(0, 30));
 
         mContentWidget = new PartnerLinkTypeContentWidget(getScene(), mPartnerLinkType);
-        if (ExpanderWidget.isExpanded(this, EXPANDED_DEFAULT)) {
-            addChild(mContentWidget);
-        }
+        addChild(mContentWidget);
+        mContentWidget.setVisible(ExpanderWidget.isExpanded(this, EXPANDED_DEFAULT));
 
         getActions().addAction(((PartnerScene) getScene()).getDnDAction());
     }

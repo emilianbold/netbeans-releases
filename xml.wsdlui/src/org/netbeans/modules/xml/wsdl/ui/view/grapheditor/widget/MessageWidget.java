@@ -132,9 +132,9 @@ public class MessageWidget extends AbstractWidget<Message>
         setLayout(LayoutFactory.createVerticalLayout());
         
         createContent();
-        if (expanded) {
-            addChild(contentWidget);
-        }
+        addChild(contentWidget);
+        contentWidget.setVisible(expanded);
+        
         getActions().addAction(((PartnerScene) scene).getDnDAction());
     }
     
