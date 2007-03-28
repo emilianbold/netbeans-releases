@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -29,6 +29,7 @@ import java.util.Set;
 import javax.swing.JTree;
 import javax.swing.Timer;
 import javax.swing.tree.TreePath;
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.soa.mapper.common.IMapperEvent;
 import org.netbeans.modules.soa.mapper.common.IMapperLink;
@@ -38,6 +39,7 @@ import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IFieldNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IMethoid;
 import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IMethoidNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.tree.IMapperTreeNode;
+import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIType;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
@@ -55,7 +57,10 @@ import org.netbeans.modules.xslt.mapper.view.NodeCreatorVisitor;
 import org.netbeans.modules.xslt.mapper.view.SetExpressionVisitor;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
 import org.netbeans.modules.xslt.model.AttrValueTamplateHolder;
+import org.netbeans.modules.xslt.model.Attribute;
 import org.netbeans.modules.xslt.model.AttributeValueTemplate;
+import org.netbeans.modules.xslt.model.Element;
+import org.netbeans.modules.xslt.model.NamespaceSpec;
 import org.netbeans.modules.xslt.model.SequenceConstructor;
 import org.netbeans.modules.xslt.model.SequenceElement;
 import org.netbeans.modules.xslt.model.XslComponent;
@@ -188,7 +193,7 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
             expr = AbstractXPathModelHelper.getInstance().newXPathNumericLiteral(new Long(0));
         } else if (methodName.equals(Constants.DURATION_LITERAL)) {
             expr = AbstractXPathModelHelper.getInstance()
-            .newXPathStringLiteral("P0Y0M0DT0H0M0S");
+                    .newXPathStringLiteral("P0Y0M0DT0H0M0S");
         } else if (methodName.equals(Constants.STRING_LITERAL) || methodName.equals(Constants.XPATH_LITERAL)) {
             expr = AbstractXPathModelHelper.getInstance().newXPathStringLiteral("");
         } else {
@@ -200,7 +205,7 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
             } else if (mfo.getAttribute(Constants.XPATH_OPERATOR) != null) {
                 String opname = (String) mfo.getAttribute(Constants.XPATH_OPERATOR);
                 
-                //Workaround for bug in XPath OM to fix IZ95683  
+                //Workaround for bug in XPath OM to fix IZ95683
                 if ("=".equals(opname)){
                     opname = "==";
                 }
@@ -299,28 +304,28 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
         if (mapper.getContext() != null){
             XslModel xslModel = mapper.getContext().getXSLModel();
             if (xslModel == null || xslModel.getState() != XslModel.State.VALID){
-                errorMessages += 
+                errorMessages +=
                         NbBundle.getMessage(ModelBridge.class, "MSG_Error_BadXSL");// NOI18N
             }
             
             AXIComponent typeIn = mapper.getContext().getSourceType();
             if (typeIn == null || typeIn.getModel().getState() != XslModel.State.VALID){
-                errorMessages += 
+                errorMessages +=
                         NbBundle.getMessage(ModelBridge.class, "MSG_Error_BadInputSchema");// NOI18N
                 
             }
             AXIComponent typeOut = mapper.getContext().getTargetType();
             if (typeOut == null || typeOut.getModel().getState() != XslModel.State.VALID){
-                 errorMessages += 
-                         NbBundle.getMessage(ModelBridge.class, "MSG_Error_BadOutputSchema");// NOI18N
-           }
+                errorMessages +=
+                        NbBundle.getMessage(ModelBridge.class, "MSG_Error_BadOutputSchema");// NOI18N
+            }
         } else {
-            errorMessages += 
+            errorMessages +=
                     NbBundle.getMessage(ModelBridge.class, "MSG_Error_BadXSLTMAP");// NOI18N
             
         }
         
-//         if (!errorMessages.isEmpty()){
+        //         if (!errorMessages.isEmpty()){
         if (errorMessages != null && ! "".equals(errorMessages)) { // NOI18N
             mapper.setError( NbBundle.getMessage(ModelBridge.class, "MSG_Error_Diagram", errorMessages));// NOI18N);
             return false;
@@ -394,42 +399,58 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
     public static XslComponent createXslElementOrAttribute(XslComponent parent, AXIComponent type){
         assert (parent instanceof SequenceConstructor);
         XslModel model = parent.getModel();
-        AttrValueTamplateHolder newXslElement = null;
+        XslComponent nameHolder = null;
         if (type instanceof AbstractAttribute) {
-            newXslElement = model.getFactory().createAttribute();
+            nameHolder = model.getFactory().createAttribute();
         } else if (type instanceof AbstractElement){
-            newXslElement = model.getFactory().createElement();
+            nameHolder = model.getFactory().createElement();
         } else {
             assert false : "Cant recognize element type for new XSL element";
         }
-        
-        if (newXslElement != null){
-            
-            String name = ((AXIType) type).getName();
-            String namespace = type.getTargetNamespace();
-            QName elementQName = new QName(namespace, name);
+        //
+        if (nameHolder != null){
+            AttributeValueTemplate nameAVT;
+            AttributeValueTemplate namespaceAVT = null;
             //
-            AttributeValueTemplate nameAVT =
-                    newXslElement.createTemplate(elementQName);
+            String name = ((AXIType) type).getName();
+            if (AxiomUtils.isUnqualified(type)) {
+                nameAVT = ((AttrValueTamplateHolder)nameHolder).
+                        createTemplate(name);
+                namespaceAVT = ((AttrValueTamplateHolder)nameHolder).
+                        createTemplate("");
+            } else {
+                String namespace = type.getTargetNamespace();
+                QName elementQName = new QName(namespace, name);
+                nameAVT = ((AttrValueTamplateHolder)nameHolder).
+                        createTemplate(elementQName);
+            }
             //
             if (model.isIntransaction()) {
-                newXslElement.setName(nameAVT);
+                //
+                ((AttrValueTamplateHolder)nameHolder).setName(nameAVT);
+                if (namespaceAVT != null) {
+                    ((NamespaceSpec)nameHolder).setNamespace(namespaceAVT);
+                }
                 //
                 ((SequenceConstructor)parent).appendSequenceChild(
-                        (SequenceElement)newXslElement);
+                        (SequenceElement)nameHolder);
             } else {
                 model.startTransaction();
                 try {
-                    newXslElement.setName(nameAVT);
+                    //
+                    ((AttrValueTamplateHolder)nameHolder).setName(nameAVT);
+                    if (namespaceAVT != null) {
+                        ((NamespaceSpec)nameHolder).setNamespace(namespaceAVT);
+                    }
                     //
                     ((SequenceConstructor)parent).appendSequenceChild(
-                            (SequenceElement)newXslElement);
+                            (SequenceElement)nameHolder);
                 } finally {
                     model.endTransaction();
                 }
             }
         }
-        return newXslElement;
+        return nameHolder;
     }
     
     /**
