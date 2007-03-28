@@ -39,11 +39,12 @@ import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.project.ui.UMLUserInterface;
 import org.netbeans.modules.uml.project.ui.nodes.UMLModelRootNode;
 import org.openide.modules.ModuleInstall;
-
 import org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.ADProjectTreeEngine;
 import org.netbeans.modules.uml.project.ui.NetBeansUMLProjectTreeModel;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -131,6 +132,12 @@ public class UMLProjectModule extends ModuleInstall
                 pDiaMgr.closeAllDiagrams();
             }
         }
+        TopComponent tc = WindowManager.getDefault().findTopComponent("designpattern");
+        if (tc != null)
+            tc.close();
+        tc = WindowManager.getDefault().findTopComponent("documentation");
+        if (tc != null)
+            tc.close();
         OpenProjects.getDefault().close(projects);      
     }
     
