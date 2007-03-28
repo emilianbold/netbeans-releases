@@ -404,9 +404,14 @@ public class SvnConfigFiles {
         try {            
             system = new Ini(new FileReader(file));
         } catch (FileNotFoundException ex) {
-            system = new Ini();
+            // ignore
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+
+        if(system == null) {
+            system = new Ini();
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not load the file " + filePath + ". Falling back on svn defaults."); // NOI18N
         }
         
         Ini global = null;      
@@ -417,14 +422,10 @@ public class SvnConfigFiles {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-                
+         
         if(global != null) {
             merge(global, system);
-        }        
-
-        if(system.size() < 1) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not load the file " + filePath + ". Falling back on svn defaults."); // NOI18N
-        }
+        }                
         return system;
     }
 
