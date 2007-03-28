@@ -47,7 +47,7 @@ import org.openide.util.Lookup.Result;
  * <li>Creating from a package file</li>
  * <li>Creating from an existing expanded directory</li>
  * </nl>
- *
+ * 
  * <p>
  * The first case is used during initial component import in the UI which must
  * be fast. At this time only a limited amount of information from the complib
@@ -55,19 +55,19 @@ import org.openide.util.Lookup.Result;
  * methods. Calling other methods requires that the complib package first be
  * expanded. Once expanded, any method can be called.
  * </p>
- *
+ * 
  * <p>
  * The second case is used when a library is already installed and is persisted
  * on disk in expanded form.
  * </p>
- *
+ * 
  * @author Edwin Goei
  */
 public class ExtensionComplib extends Complib {
 
     /**
      * ClassLoader used to load l10n resources from a *.complib file
-     *
+     * 
      * @author Edwin Goei
      */
     private static class ResourceClassLoader extends URLClassLoader {
@@ -80,7 +80,7 @@ public class ExtensionComplib extends Complib {
 
     /**
      * ClassLoader used to load classes from an expanded component library
-     *
+     * 
      * @author Edwin Goei
      */
     private static class LibraryClassLoader extends URLClassLoader {
@@ -244,6 +244,7 @@ public class ExtensionComplib extends Complib {
             libClassLoader = new LibraryClassLoader();
             libClassLoader.appendToClassPath(getRuntimePath());
             libClassLoader.appendToClassPath(getDesignTimePath());
+            libClassLoader.appendToClassPath(getHelpPath());
         }
         return libClassLoader;
     }

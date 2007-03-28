@@ -808,11 +808,11 @@ public class ComplibServiceProvider implements ComplibService {
 
         removeExistingInstalledComplib(identifer);
 
-        // Temporarily install the complib into the system so that UI
-        // Item-s can be created and then rollback if a problem occurs
+        /*
+         * Temporarily install the complib into the system so that UI Item-s can
+         * be created and then rollback if a problem occurs
+         */
         ExtensionComplib complib = scope.installComplibPackage(pkg);
-        fireAddableComplibsChanged(scope);
-
         try {
             addToPalette(complib);
         } catch (ComplibException e1) {
@@ -820,6 +820,9 @@ public class ComplibServiceProvider implements ComplibService {
             remove(complib);
             throw e1;
         }
+        JavaHelpStorage.installComplibHelp(complib);
+
+        fireAddableComplibsChanged(scope);
         return complib;
     }
 
@@ -841,13 +844,38 @@ public class ComplibServiceProvider implements ComplibService {
 
         removeExistingInstalledComplib(identifer);
 
-        // Temporarily install the complib into the system so that UI
-        // Item-s can be created and then rollback if a problem occurs
+        /*
+         * Temporarily install the complib into the system so that UI Item-s can
+         * be created and then rollback if a problem occurs
+         */
         ExtensionComplib newComplib = scope.installComplib(projectComplib);
-        fireAddableComplibsChanged(scope);
-
         addToPalette(newComplib);
+        JavaHelpStorage.installComplibHelp(newComplib);
+        fireAddableComplibsChanged(scope);
     }
+
+    // TODO Remove
+    // /**
+    // * Install complib help into system.
+    // *
+    // * @param complib
+    // */
+    // private void xinstallComplibHelp(ExtensionComplib complib) {
+    // URL hsUrl = HelpSet.findHelpSet(complib.getClassLoader(), complib
+    // .getHelpSetFile());
+    // try {
+    // HelpSet helpSet = new HelpSet(complib.getClassLoader(), hsUrl);
+    // if (helpSet == null) {
+    // IdeUtil
+    // .logError("Unable to access HelpSet file for component library: "
+    // + complib.getHelpSetFile());
+    // }
+    // HelpSetProvider.setHelpSets(helpSet);
+    // } catch (HelpSetException e) {
+    // IdeUtil.logWarning("Unable to add HelpSet for component library: "
+    // + complib, e);
+    // }
+    // }
 
     /**
      * Replace any existing installed complib with the same identifier
@@ -944,6 +972,14 @@ public class ComplibServiceProvider implements ComplibService {
     public void remove(ExtensionComplib complib) {
         // Remove from the UI
         removeFromPaletteCategories(complib);
+
+        // Remove from IDE Help
+        try {
+            JavaHelpStorage.uninstallComplibHelp(complib);
+        } catch (IOException e) {
+            IdeUtil.logWarning(
+                    "Unable to remove component library Help from system", e);
+        }
 
         // Remove from user scope
         Scope.USER.remove(complib);

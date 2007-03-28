@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListResourceBundle;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -44,10 +45,11 @@ import org.netbeans.modules.visualweb.complib.Complib.InitialPaletteItem;
 
 /**
  * Represents configuration information for a component library.
- *
+ * 
  * @author Edwin Goei
  */
 class ComplibManifest {
+
     static final String MISSING = "Missing attribute: "; // NOI18N
 
     static final String PREFIX = "X-Rave-"; // NOI18N
@@ -70,6 +72,9 @@ class ComplibManifest {
 
     private static final String ATT_RESOURCE_BUNDLE = "resourceBundleBaseName"; // NOI18N
 
+    /** Used to look in META-INF/ as a fall back */
+    private static final String RESOURCE_BUNDLE_PREFIX = "META-INF.";
+
     /** XPath constants begin with XP_ */
 
     private static final String XP_PREFIX = "/" + ELM_ROOT + "/"; // NOI18N
@@ -89,9 +94,6 @@ class ComplibManifest {
     private static final String XP_DESIGN_TIME_PATH = XP_PREFIX
             + ELM_DESIGN_TIME_PATH; // NOI18N
 
-    private static final String XP_PREPEND_RUNTIME_PATH = XP_DESIGN_TIME_PATH
-            + "/@prependRuntimePath"; // NOI18N
-
     private static final String XP_JAVADOC_PATH = XP_PREFIX + "javadocPath"; // NOI18N
 
     private static final String XP_SOURCE_PATH = XP_PREFIX + "sourcePath"; // NOI18N
@@ -102,6 +104,10 @@ class ComplibManifest {
     private static final String XP_HELP_PATH = XP_PREFIX + "helpPath"; // NOI18N
 
     private static final String XP_HELP_PREFIX = XP_HELP_PATH + "/@helpPrefix"; // NOI18N
+
+    /** @since NetBeans Visual Web 6 */
+    private static final String XP_HELP_SET_FILE = XP_HELP_PATH
+            + "/@helpSetFile"; // NOI18N
 
     private static final String XP_INITIAL_PALETTE_FOLDER = XP_PREFIX
             + "initialPalette/folder"; // NOI18N
@@ -168,6 +174,12 @@ class ComplibManifest {
 
     /** Help prefix that is associated with the help path */
     private String helpPrefix;
+
+    /**
+     * "/" separated path to HelpSet file relative to helpPath. eg.
+     * "help/my-help.hs"
+     */
+    private String helpSetFile;
 
     /**
      * Relative complib resource path to a sun-faces-config.xml type code
@@ -257,8 +269,6 @@ class ComplibManifest {
                 throw new ManifestAttributeException(MISSING + DESIGN_TIME_PATH);
             }
             this.declaredDesignTimePath = splitPath(val);
-            // Always prepend the runtime path to the design-time path
-            this.prependRuntimePath = true;
 
             ArrayList<String> al = new ArrayList<String>(runtimePath);
             al.addAll(splitPath(val));
@@ -389,10 +399,14 @@ class ComplibManifest {
         if ("1.0".equals(versionString)) {
             version = 1;
         } else if ("1.1".equals(versionString)) {
+            // VWP 5.5, Shortfin
             version = 11;
+        } else if ("1.2".equals(versionString)) {
+            // NetBeans 6 Visual Web, Longfin
+            version = 12;
         } else {
             throw new ComplibException(
-                    "Complib configuration root element @version must be '1.0' or '1.1'"); // NOI18N
+                    "Complib configuration root element @version must be '1.0' or '1.1' or '1.2'"); // NOI18N
         }
 
         initResourceBundle(root, resourceClassLoader);
@@ -412,7 +426,6 @@ class ComplibManifest {
 
         // Design-time jars, typically at least one, but no longer required
         this.declaredDesignTimePath = getConfigPath(XP_DESIGN_TIME_PATH);
-        this.prependRuntimePath = getBoolean(XP_PREPEND_RUNTIME_PATH, true);
 
         // Javadoc will be added to library reference, if any
         this.javadocPath = getConfigPath(XP_JAVADOC_PATH);
@@ -428,25 +441,30 @@ class ComplibManifest {
         if (attr != null) {
             this.helpPrefix = attr.getValue();
         }
+        attr = (Attr) XmlUtil.selectSingleNode(doc, XP_HELP_SET_FILE);
+        if (attr != null) {
+            this.helpSetFile = attr.getValue();
+        }
         this.helpPath = getConfigPath(XP_HELP_PATH);
 
         // Init the optional initial palette structure data
         initPaletteData();
 
-        // Default value is J2EE 1.4
+        // Default value is J2EE 1.4 for backward compatibility before VWP 5.5
         eeSpecVersion = EeSpecVersion.J2EE_1_4;
-        if (version == 11) {
-            // Value of null means not specified so use default
-            attr = (Attr) XmlUtil.selectSingleNode(doc, XP_EE_SPEC_VERSION);
-            String stringVal = attr == null ? null : attr.getValue();
+        // Value of null means not specified so use default
+        attr = (Attr) XmlUtil.selectSingleNode(doc, XP_EE_SPEC_VERSION);
+        String stringVal = attr == null ? null : attr.getValue();
+        // Complibs before VWP 5.5, will not contain this attribute
+        if (stringVal != null) {
             if ("5".equals(stringVal)) {
                 eeSpecVersion = EeSpecVersion.JAVA_EE_5;
-            } else if (!"1.4".equals(stringVal)) {
+            } else if (version > 11 && !"1.4".equals(stringVal)) {
+                // If VWP 5.5 and later, enforce fixed set of values
                 throw new ComplibException(BAD_VALUE + XP_EE_SPEC_VERSION);
             }
         }
-
-        // Value of null means
+        // Value of null means not specified
         this.sunFacesConfig = getOptionalTextNode(XP_SUN_FACES_CONFIG, null);
     }
 
@@ -610,6 +628,14 @@ class ComplibManifest {
             try {
                 rb = ResourceBundle.getBundle(rbBaseName, Locale.getDefault(),
                         resourceClassLoader);
+            } catch (MissingResourceException mre) {
+                // @since NetBeans 6 Visual Web
+                // If not found, then try looking in the META-INF/ directory
+                if (!rbBaseName.startsWith(RESOURCE_BUNDLE_PREFIX)) {
+                    rb = ResourceBundle.getBundle(RESOURCE_BUNDLE_PREFIX
+                            + rbBaseName, Locale.getDefault(),
+                            resourceClassLoader);
+                }
             } catch (RuntimeException e) {
                 // Warn user and default to using no resource bundle
                 IdeUtil.logWarning(e);
@@ -657,18 +683,12 @@ class ComplibManifest {
         return declaredDesignTimePath;
     }
 
-    // TODO Remove this unneeded method
-    List<String> getFullDesignTimePath() {
-        ArrayList<String> al = new ArrayList<String>();
-        if (prependRuntimePath) {
-            al.addAll(runtimePath);
-        }
-        al.addAll(declaredDesignTimePath);
-        return al;
-    }
-
     List<String> getHelpPath() {
         return helpPath == null ? EMPTY_LIST : helpPath;
+    }
+
+    String getHelpSetFile() {
+        return helpSetFile;
     }
 
     /**

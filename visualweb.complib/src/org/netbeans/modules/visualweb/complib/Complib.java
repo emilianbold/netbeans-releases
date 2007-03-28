@@ -32,14 +32,14 @@ import java.util.List;
  * Represents a component library consisting of a collection of components. This
  * is either a built-in or an extension component library provided by a third
  * party.
- *
- *
+ * 
+ * 
  * @author Edwin Goei
  */
 public abstract class Complib {
     /**
      * Represents an identifier for a Component Library.
-     *
+     * 
      * @author Edwin Goei
      */
     public static class Identifier {
@@ -75,7 +75,7 @@ public abstract class Complib {
 
         /**
          * Return Namespace URI
-         *
+         * 
          * @return namespace URI
          */
         public URI getNamespaceUri() {
@@ -84,7 +84,7 @@ public abstract class Complib {
 
         /**
          * Return version
-         *
+         * 
          * @return version
          */
         public Version getVersion() {
@@ -151,7 +151,7 @@ public abstract class Complib {
     /**
      * For initial palette, represents a container that can contain
      * InitialPaletteItem children.
-     *
+     * 
      * @author Edwin Goei
      */
     private static abstract class AbstractParent {
@@ -374,6 +374,16 @@ public abstract class Complib {
     }
 
     /**
+     * Return the help set file. Null means none found. "/" separated path to
+     * HelpSet file relative to helpPath. eg. "help/my-help.hs"
+     * 
+     * @return the help set file. Null means none found.
+     */
+    public String getHelpSetFile() {
+        return compLibManifest.getHelpSetFile();
+    }
+
+    /**
      * Return the help prefix. Null means no prefix attribute found.
      * 
      * @return the help prefix. Null means no prefix attribute found.
@@ -435,7 +445,7 @@ public abstract class Complib {
     /**
      * Returns a ClassLoader that can be used to obtain design-time metadata for
      * a component library. Typically, both the runtime and design-time classes
-     * are accessible.
+     * are accessible as well as JavaHelp jars.
      * 
      * @return ClassLoader
      */
