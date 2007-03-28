@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
@@ -29,6 +29,7 @@ import java.util.EnumSet;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -68,6 +69,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit2"));
         suite.addTest(new ClassMemberTest("testMemberIndent93735_1"));
         suite.addTest(new ClassMemberTest("testMemberIndent93735_2"));
+        suite.addTest(new ClassMemberTest("testAddArrayMember"));
         return suite;
     }
 
@@ -949,6 +951,67 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                         workingCopy.rewrite(classTree, copy);
                     }
                 }
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddArrayMember() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    public java.util.List[] taragui() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    public List<E>[] newlyCreatedMethod() {\n" + 
+            "    }\n" +
+            "    \n" +
+            "    public java.util.List[] taragui() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                TypeMirror mirror = workingCopy.getElements().getTypeElement("java.util.List").asType();
+                mirror = workingCopy.getTypes().getArrayType(mirror);
+                MethodTree njuMethod = (MethodTree) classTree.getMembers().get(1);
+                njuMethod = make.Method(
+                        njuMethod.getModifiers(),
+                        "newlyCreatedMethod",
+                        make.Type(mirror),
+                        njuMethod.getTypeParameters(), 
+                        njuMethod.getParameters(),
+                        njuMethod.getThrows(),
+                        njuMethod.getBody(),
+                        (ExpressionTree) njuMethod.getDefaultValue()
+                );
+                ClassTree copy = make.insertClassMember(classTree, 0, njuMethod);
+                workingCopy.rewrite(classTree, copy);
             }
             
             public void cancel() {
