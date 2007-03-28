@@ -90,6 +90,9 @@ public class OutlinePanelProvider implements NavigatorPanel {
     public void panelDeactivated() {
         currentContextResult.removeLookupListener(outlineLookupListener);
         currentContextResult = null;
+        
+        // XXX #99299 Memory leak. Removing the tree when the panel is deactivated.
+        OutlinePanel.getDefault().setActiveBeans(new DesignBean[0]);
     }
 
     public Lookup getLookup() {
