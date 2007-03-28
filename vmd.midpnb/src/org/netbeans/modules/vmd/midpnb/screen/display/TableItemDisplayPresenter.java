@@ -48,7 +48,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     
     private static final int BORDER_LINE_WIDTH = 1;
     private static final int CELL_INSETS = 2;
-    private static final int DOUBLE_CELL_INSETS = CELL_INSETS << 1;
+    private static final int DOUBLE_CELL_INSETS = CELL_INSETS * 2;
     
     private static final Stroke BORDER_STROKE = new BasicStroke(1, BasicStroke.CAP_SQUARE,
             BasicStroke.JOIN_ROUND, 0f,  new float[] {3f ,3f}, 0f);
@@ -74,7 +74,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     }
     
     private void paintTable(Graphics g) {
-        Font headersFont = label.getFont();
+        Font headersFont = label.getFont().deriveFont(Font.BOLD);
         Font valuesFont = label.getFont();
         int cummulativeY = 0;
         
@@ -83,14 +83,11 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
             g.drawString("No model specified", CELL_INSETS, cummulativeY);
         } else {
             Graphics2D g2D = (Graphics2D)g;
-            final Dimension size = panel.getSize();
-            int x = 0;
-            int y = 0;
-            final int width = size.width;
-            final int height = size.height;
+            Dimension oldSize = panel.getSize();
+            final int width = oldSize.width;
+            final int height = oldSize.height;
             
             int headersY = 0;
-            int valuesY = 0;
             
             int[] colWidths = getColWidths(g, values, columnNames, headersFont, valuesFont);
             
@@ -98,9 +95,9 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
                 g.setFont(headersFont);
                 headersY = cummulativeY;
                 cummulativeY += ScreenSupport.getFontHeight(g, headersFont);
-                int cummulativeX = x + CELL_INSETS + BORDER_LINE_WIDTH;
+                int cummulativeX = CELL_INSETS + BORDER_LINE_WIDTH;
                 // draw headers ...
-                for (int i=0; (i < columnNames.length) && (cummulativeX < width); i++) {
+                for (int i = 0; (i < columnNames.length) && (cummulativeX < width); i++) {
                     String name = columnNames[i];
                     if (name != null) {
                         g.drawString(name, cummulativeX, cummulativeY);
@@ -113,12 +110,11 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
             
             if (values != null) {
                 g.setFont(valuesFont);
-                valuesY = cummulativeY;
-                for (int i=0; (i < values.length) && (cummulativeY < height); i++) {
+                for (int i = 0; (i < values.length) && (cummulativeY < height); i++) {
                     String[] row = values[i];
                     cummulativeY += ScreenSupport.getFontHeight(g, valuesFont);
-                    int cummulativeX = x + CELL_INSETS + BORDER_LINE_WIDTH;
-                    for (int j=0; (j < row.length) && (cummulativeX < width); j++) {
+                    int cummulativeX = CELL_INSETS + BORDER_LINE_WIDTH;
+                    for (int j = 0; (j < row.length) && (cummulativeX < width); j++) {
                         String cell = row[j];
                         if (cell != null) {
                             g.drawString(cell, cummulativeX, cummulativeY);
@@ -133,25 +129,26 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
             g2D.setStroke(BORDER_STROKE);
             g.drawRect(0, 0, width - 1, height - 1);
             g.drawLine(0, cummulativeY, width, cummulativeY);
+            int borderY = 0;
             if (columnNames != null) {
-                cummulativeY += ScreenSupport.getFontHeight(g, headersFont) + DOUBLE_CELL_INSETS;
-                g.drawLine(0, cummulativeY, width, cummulativeY);
-                cummulativeY++;
+                borderY += ScreenSupport.getFontHeight(g, headersFont) + DOUBLE_CELL_INSETS;
+                g.drawLine(0, borderY, width, borderY);
+                borderY++;
             }
             if (values != null) {
                 // horizontal lines
-                for (int i=0; (i < values.length) && (cummulativeY < height); i++) {
-                    cummulativeY += ScreenSupport.getFontHeight(g, valuesFont) + DOUBLE_CELL_INSETS;
-                    g.drawLine(0, cummulativeY, width, cummulativeY);
-                    cummulativeY ++;
+                for (int i = 0; (i < values.length) && (borderY < height); i++) {
+                    borderY += ScreenSupport.getFontHeight(g, valuesFont) + DOUBLE_CELL_INSETS;
+                    g.drawLine(0, borderY, width, borderY);
+                    borderY++;
                 }
                 
                 // vertical lines
-                int cummulativeX = x;
+                int borderX = 0;
                 int rows = values[0].length;
-                for (int i=0; (i < rows) && (cummulativeX < width); i++) {
-                    g.drawLine(cummulativeX, headersY, cummulativeX, height - 1);
-                    cummulativeX += colWidths[i];
+                for (int i = 0; (i < rows) && (borderX < width); i++) {
+                    g.drawLine(borderX, headersY, borderX, height - 1);
+                    borderX += colWidths[i];
                 }
             }
         }
@@ -185,7 +182,25 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
             }
         }
         
+        panel.setPreferredSize(calculatePrefferedSize());
         panel.repaint();
+    }
+    
+     // TODO compute 14 from fontSize
+    private Dimension calculatePrefferedSize() {
+        final Dimension oldSize = panel.getPreferredSize();
+        if (!hasModel) {
+            return oldSize;
+        }
+        
+        int height = 0;
+        if (columnNames != null) {
+            height += CELL_INSETS + 14 + BORDER_LINE_WIDTH;
+        }
+        if (values != null) {
+            height += (DOUBLE_CELL_INSETS + 14 + BORDER_LINE_WIDTH) * values.length;
+        }
+        return new Dimension(oldSize.width, height);
     }
     
     // TODO make parameter generic and move to ArraySupport class (gatherPrimitiveValues)
@@ -200,44 +215,14 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     private int[] getColWidths(Graphics g, String[][] values, String[] headers, Font headersFont, Font valuesFont) {
         if (values == null) {
             return new int[0];
-        } // else
+        }
         
-        final int tableRows = values.length;
         final int tableCols = values[0].length;
-//        final int defaultCellWidth = g.getFontMetrics(valuesFont).charWidth('X') + DOUBLE_CELL_INSETS;
-//        final FontMetrics valuesFM = g.getFontMetrics(valuesFont);
-//        final FontMetrics headersFM = g.getFontMetrics(headersFont);
         
         final int[] colWidths = new int[tableCols];
         for (int i = 0; i < tableCols; i++) {
-//            colWidths[i] = defaultCellWidth;
             colWidths[i] = panel.getSize().width / tableCols;
         }
-        
-        
-//        for (int i = 0; i < tableCols; i++) {
-//            for (int j = 0; j < tableRows; j++) {
-//                String value = values[j][i];
-//                if (value != null) {
-//                    int width = valuesFM.stringWidth(value) + DOUBLE_CELL_INSETS;
-//                    if (width > colWidths[i]) {
-//                        colWidths[i] = width;
-//                    }
-//                }
-//            }
-//        }
-//        // column headers (they might be bigger)
-//        if (headers != null) {
-//            for (int i = 0; i < tableCols; i++) {
-//                String columnName = headers[i];
-//                if (columnName != null) {
-//                    int width = headersFM.stringWidth(columnName) + DOUBLE_CELL_INSETS;
-//                    if (width > colWidths[i]) {
-//                        colWidths[i] = width;
-//                    }
-//                }
-//            }
-//        }
         
         return colWidths;
     }
