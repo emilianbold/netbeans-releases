@@ -965,13 +965,13 @@ Microsystems, Inc. All Rights Reserved.
    <p>
      <api group="lookup" name="org.openide.loaders.CreateFromTemplateAttributesProvider" type="export" category="official">
        Attributes provider is registered in <code>META-INF/services</code>. It provides
-       <a href="#property-package">package</a> attribute for java templates using scripting support.
+       <code>package</code> attribute for java templates using scripting support.
      </api>
    </p>
    <p>
      <api group="property" name="package" type="export" category="official">
        <code>package</code> attribute contains java package as <code>String</code> for newly created
-       <a href="#lookup-org.openide.loaders.CreateFromTemplateAttributesProvider">templates</a>.
+       templates using scripting.
      </api>
    </p>
  </answer>

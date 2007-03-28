@@ -640,8 +640,8 @@ Nothing.
   <p>
      <api group="lookup" name="org.openide.loaders.CreateFromTemplateAttributesProviderInProjectLookup" type="import" category="official">
        The attribute providers registered in project lookups. Collected template
-       attributes are exposed by <a href="#org.openide.loaders.CreateFromTemplateAttributesProvider">
-       org.openide.loaders.CreateFromTemplateAttributesProvider</a>.
+       attributes are exposed by
+       <code>org.openide.loaders.CreateFromTemplateAttributesProvider</code>.
      </api>
   </p>
  </answer>
@@ -661,8 +661,8 @@ Nothing.
   <p>
      <api group="lookup" name="org.openide.loaders.CreateFromTemplateAttributesProvider" type="export" category="official">
        The attributes provider is registered in <code>META-INF/services</code>. It collects
-       attributes from <a href="#org.openide.loaders.CreateFromTemplateAttributesProviderInProjectLookup">
-       org.openide.loaders.CreateFromTemplateAttributesProvider</a>s
+       attributes from
+       <code>org.openide.loaders.CreateFromTemplateAttributesProvider</code>s
        registered in project lookups.
        It provides
        <a href="#property-project.license">project.license</a> attribute for file templates using scripting support.
@@ -672,7 +672,7 @@ Nothing.
      <api group="property" name="project.license" type="export" category="official">
        <code>project.license</code> attribute contains project license as <code>String</code> for newly created
        <a href="#lookup-org.openide.loaders.CreateFromTemplateAttributesProvider">templates</a>.
-       It is used to import <a href="#layer-TemplatesLicenses">license templates</a>.
+       It is used to import license templates.
        The <code>default</code> is used if the attribute was not found in any
        project lookup.
      </api>
