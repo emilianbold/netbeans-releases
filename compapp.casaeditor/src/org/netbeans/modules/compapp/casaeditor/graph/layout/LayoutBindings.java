@@ -34,7 +34,8 @@ public final class LayoutBindings extends CustomizablePersistLayout {
     
     
     public LayoutBindings() {
-        setYSpacing(20);
+        // just use the inherent widget vertical spacing
+        setYSpacing(0);
     }
     
     

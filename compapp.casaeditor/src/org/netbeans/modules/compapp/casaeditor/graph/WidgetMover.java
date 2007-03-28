@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.compapp.casaeditor.graph;
 
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import org.netbeans.api.visual.action.MoveProvider;
@@ -37,8 +36,9 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
     private CasaWrapperModel mModel;
     private boolean mCanMoveHorizontal;
     private boolean mCanStretchHorizontal;
-    private Point mSnapPoint;
+    
     private Point mOriginalLocation;
+    private boolean mIsWidgetFronted;
     
     
     public WidgetMover(
@@ -58,8 +58,6 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
         if (originalLocation.equals(suggestedLocation)) {
             return originalLocation;
         }
-        
-        mSnapPoint = null;
         
         assert widget instanceof CasaNodeWidget;
         CasaNodeWidget moveWidget = (CasaNodeWidget) widget;
@@ -112,12 +110,6 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
             }
         }
         
-        // Ensure the widget location is not directly on top of another widget.
-        if (moveWidget instanceof CasaNodeWidgetBinding) {
-            // TODO we currently only check overlap on wsdl endpoints.
-            mSnapPoint = checkWidgetOverlap(moveWidget, retPoint.x, retPoint.y);
-        }
-        
         return retPoint;
     }
     
@@ -145,116 +137,6 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
         }
         return null;
     }
-        
-    private static Point checkWidgetOverlap(
-            CasaNodeWidget moveWidget, 
-            int suggestedX, 
-            int suggestedY)
-    {
-        CasaNodeWidget overlappedWidget = getOverlappedWidget(
-                moveWidget.getParentWidget(), 
-                new Widget[] { moveWidget }, 
-                moveWidget.getEntireBounds());
-        if (overlappedWidget != null) {
-            return fixWidgetOverlap(moveWidget, overlappedWidget, suggestedX, suggestedY);
-        }
-        return null;
-    }
-    
-    private static Point fixWidgetOverlap(
-            CasaNodeWidget moveWidget, 
-            CasaNodeWidget overlappedWidget,
-            int suggestedX,
-            int suggestedY)
-    {
-        Rectangle moveWidgetRect = moveWidget.getEntireBounds();
-        Rectangle overlappedWidgetRect = overlappedWidget.getEntireBounds();
-        
-        int topOfMoveWidget    = moveWidget.getLocation().y;
-        int bottomOfMoveWidget = moveWidget.getLocation().y + moveWidgetRect.height;
-        int halfwayOfMoveWidget =
-                moveWidget.getLocation().y +
-                (moveWidgetRect.height / 2);
-        int halfwayOfOverlappedWidget =
-                overlappedWidget.getLocation().y +
-                (overlappedWidgetRect.height / 2);
-        
-        // We have four conditions we need to check for.
-        
-        if (
-        // 1. bottom of moveWidget  is below halfway of overlappedWidget
-                bottomOfMoveWidget <= halfwayOfOverlappedWidget) {
-            // set the snap to keep moveWidget above
-            Point fixedLocation = new Point(suggestedX, suggestedY);
-            fixedLocation.y = overlappedWidget.getLocation().y - moveWidgetRect.height;
-            return fixedLocation;
-            
-        } else if (
-        // 2. bottom of moveWidget  is below halfway of overlappedWidget
-        //    halfway of moveWidget is above halfway of overlappedWidget
-                bottomOfMoveWidget > halfwayOfOverlappedWidget &&
-                halfwayOfMoveWidget < halfwayOfOverlappedWidget) {
-            // move overlappedWidget up
-            Point newOverlappedWidgetLocation = overlappedWidget.getLocation();
-            int overlap = moveWidgetRect.intersection(overlappedWidgetRect).height;
-            int nonOverlap = overlappedWidgetRect.height - overlap;
-            newOverlappedWidgetLocation.y = moveWidget.getLocation().y - overlap;
-            moveOverlappedWidget(overlappedWidget, moveWidget, newOverlappedWidgetLocation, overlappedWidgetRect);
-            
-            // set the snap to move moveWidget down
-            Point fixedLocation = new Point(suggestedX, suggestedY);
-            fixedLocation.y += nonOverlap;
-            return fixedLocation;
-
-            
-        } else if (
-        // 3. top of moveWidget     is above halfway of overlappedWidget
-        //    halfway of moveWidget is below halfway of overlappedWidget
-                topOfMoveWidget < halfwayOfOverlappedWidget &&
-                halfwayOfMoveWidget > halfwayOfOverlappedWidget) {
-            // move overlappedWidget down
-            Point newOverlappedWidgetLocation = overlappedWidget.getLocation();
-            int overlap = moveWidgetRect.intersection(overlappedWidgetRect).height;
-            int nonOverlap = overlappedWidgetRect.height - overlap;
-            newOverlappedWidgetLocation.y = 
-                    (moveWidget.getLocation().y + moveWidgetRect.height) - 
-                    nonOverlap;
-            moveOverlappedWidget(overlappedWidget, moveWidget, newOverlappedWidgetLocation, overlappedWidgetRect);
-            
-            // set the snap to move moveWidget up
-            Point fixedLocation = new Point(suggestedX, suggestedY);
-            fixedLocation.y -= nonOverlap;
-            return fixedLocation;
-
-        } else if (
-        // 4. top of moveWidget     is below halfway of overlappedWidget
-                topOfMoveWidget >= halfwayOfOverlappedWidget) {
-            // set the snap to keep moveWidget below
-            Point fixedLocation = new Point(suggestedX, suggestedY);
-            fixedLocation.y = overlappedWidget.getLocation().y + overlappedWidgetRect.height;
-            return fixedLocation;
-        }
-        
-        return null;
-    }
-    
-    private static void moveOverlappedWidget(
-            CasaNodeWidget overlappedWidget, 
-            CasaNodeWidget moveWidget, 
-            Point newOverlappedWidgetLocation,
-            Rectangle overlappedWidgetRect)
-    {
-        Rectangle proposedOverlappedWidgetRect = new Rectangle(
-                newOverlappedWidgetLocation, 
-                new Dimension(overlappedWidgetRect.width, overlappedWidgetRect.height));
-        if (getOverlappedWidget(
-                overlappedWidget.getParentWidget(), 
-                new Widget[] { moveWidget, overlappedWidget }, 
-                proposedOverlappedWidgetRect) == null) {
-            overlappedWidget.setPreferredLocation(newOverlappedWidgetLocation);
-            overlappedWidget.persistLocation();
-        }
-    }
     
     
     
@@ -262,38 +144,39 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
     
     public void movementStarted(Widget widget) {
         mOriginalLocation = widget.getLocation();
+        mIsWidgetFronted = false;
     }
     
     public void movementFinished(Widget widget) {
+        Point tmpOriginalLocation = mOriginalLocation;
+        mOriginalLocation = null;
+        mIsWidgetFronted = false;
+        
         // Widget not moved, ignore.
-        if (widget.getPreferredLocation().equals(mOriginalLocation)) {
+        if (widget.getPreferredLocation().equals(tmpOriginalLocation)) {
             return;
         }
         
-        if (mSnapPoint != null) {
-            widget.setPreferredLocation(mSnapPoint);
-            mSnapPoint = null;
-        }
-        
-        // If we move a middle/right region widget so that it overlaps another,
-        // then we simply revert the move.
-        if (widget instanceof CasaNodeWidgetEngine) {
-            CasaNodeWidget moveWidget = (CasaNodeWidget) widget;
-            CasaNodeWidget overlappedWidget = getOverlappedWidget(
-                    moveWidget.getParentWidget(),
-                    new Widget[] { moveWidget },
-                    moveWidget.getEntireBounds());
-            if (overlappedWidget != null) {
-                widget.setPreferredLocation(mOriginalLocation);
+        CasaNodeWidget moveWidget = (CasaNodeWidget) widget;
+        CasaNodeWidget overlappedWidget = getOverlappedWidget(
+                moveWidget.getParentWidget(),
+                new Widget[] { moveWidget },
+                moveWidget.getEntireBounds());
+        if (overlappedWidget != null) {
+            if (widget instanceof CasaNodeWidgetEngine) {
+                // If we move a middle/right region widget so that it overlaps another,
+                // then we simply revert the move.
+                widget.setPreferredLocation(tmpOriginalLocation);
+            } else if (widget instanceof CasaNodeWidgetBinding) {
+                // If we move a left region widget so that it overlaps another,
+                // then we invoke the region layout to ensure space.
+                CasaModelGraphScene scene = (CasaModelGraphScene) moveWidget.getScene();
+                scene.invokeRegionLayout(scene.getBindingRegion(), true);
             }
         }
         
         // Save the widget location.
-        if (widget instanceof CasaNodeWidget) {
-            ((CasaNodeWidget) widget).persistLocation();
-        }
-        
-        mOriginalLocation = null;
+        moveWidget.persistLocation();
     }
     
     public Point getOriginalLocation(Widget widget) {
@@ -305,18 +188,16 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
             return;
         }
         
-        // Ensure that once we have moved the widget, it is 
-        // brought in front of the other widgets it may be moved over.
-        widget.bringToFront();
-        
-        Point previousLocation = widget.getLocation();
         if (
-                previousLocation != null &&
-                previousLocation.x != location.x &&
-                previousLocation.y != location.y)
+                !mIsWidgetFronted &&
+                mOriginalLocation != null &&
+                !mOriginalLocation.equals(location))
         {
-            // Ensure that the widget, if indeed it was moved, is always
-            // in front - so that the user sees it on top during the move.
+            // Ensure that the widget, if indeed it was moved, is brought to
+            // the front - so that the user sees it on top during the move.
+            mIsWidgetFronted = true;
+            // bringToFront is rather slow during an actual mouse move, so
+            // we avoid calling this more than we need to.
             widget.bringToFront();
         }
         

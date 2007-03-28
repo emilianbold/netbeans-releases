@@ -48,6 +48,12 @@ public class YOrderComparator implements Comparator<CasaNodeWidget> {
             if (y1 == y2) {
                 int order1 = getOrderNumber(port1);
                 int order2 = getOrderNumber(port2);
+                if (order1 == order2) {
+                    // Just return the top-most widget (z-order).
+                    return 
+                            w2.getParentWidget().getChildren().indexOf(w2) - 
+                            w1.getParentWidget().getChildren().indexOf(w1);
+                }
                 return order1 - order2;
             } else if (y1 < y2) {
                 return -1;
