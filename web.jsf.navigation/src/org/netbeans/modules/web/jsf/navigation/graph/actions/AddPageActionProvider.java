@@ -47,7 +47,6 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
     private class AddPageAction extends AbstractAction {
         
         private PageFlowScene scene;
-        private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18N
         
         /** Creates a new instance of OpenPageAction
          * @param scene
@@ -69,8 +68,7 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
             try {
                 PageFlowController pfc = scene.getPageFlowView().getPageFlowController();
                 
-                FileObject parentFolder = pfc.getProject().getProjectDirectory();
-                FileObject webFileObject = parentFolder.getFileObject(DEFAULT_DOC_BASE_FOLDER);
+                FileObject webFileObject = pfc.getWebFolder();
                 
                 String name = FileUtil.findFreeFileName(webFileObject, "page", "jsp");
                 name = JOptionPane.showInputDialog("Select Page Name", name);

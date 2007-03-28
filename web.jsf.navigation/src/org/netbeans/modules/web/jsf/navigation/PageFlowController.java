@@ -51,8 +51,6 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
 
 /**
  *
@@ -61,11 +59,15 @@ import org.openide.loaders.DataFolder;
 public class PageFlowController {
     private PageFlowView view;
     private JSFConfigModel configModel;
-    private Project project;
+    //    private Project project;
+    private FileObject webFolder;
     private Collection<FileObject> webFiles;
     
     private HashMap<NavigationCase,NavigationCaseNode> case2Node = new HashMap<NavigationCase,NavigationCaseNode>();
     private  HashMap<String,PageFlowNode> pageName2Node = new HashMap<String,PageFlowNode>();
+    
+    
+    private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
     
     /** Creates a new instance of PageFlowController
      * @param context
@@ -75,7 +77,8 @@ public class PageFlowController {
         this.view = view;
         FileObject configFile = context.getFacesConfigFile();
         configModel = ConfigurationUtils.getConfigModel(configFile,true);
-        project = FileOwnerQuery.getOwner(configFile);
+        Project project = FileOwnerQuery.getOwner(configFile);
+        FileObject webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
         webFiles = getAllProjectRelevantFilesObjects();
         
         setupGraph();
@@ -138,8 +141,8 @@ public class PageFlowController {
         } else {
             caseNum = getNewCaseNumber(navRule);
         }
-       
-        navCase.setFromOutcome(CASE_STRING + Integer.toString(caseNum));        
+        
+        navCase.setFromOutcome(CASE_STRING + Integer.toString(caseNum));
         navCase.setToViewId(target.getDisplayName());
         navRule.addNavigationCase(navCase);
         
@@ -195,9 +198,7 @@ public class PageFlowController {
     
     
     private Collection<FileObject> getAllProjectRelevantFilesObjects() {
-        FileObject parentFolder = project.getProjectDirectory();
-        FileObject webFileObject = parentFolder.getFileObject("web");
-        Collection<FileObject> webFiles = getProjectJSPFileOjbects(webFileObject);
+        Collection<FileObject> webFiles = getProjectJSPFileOjbects(webFolder);
         //        System.out.println("Web Files: " + webFiles);
         return webFiles;
         
@@ -230,19 +231,10 @@ public class PageFlowController {
      **/
     public boolean setupGraph(){
         assert configModel !=null;
-        assert project != null;
+        assert webFolder != null;
         assert webFiles != null;
         
         view.clearGraph();
-        
-        //        if( !configModel.inSync() ){
-        //            try {
-        //                configModel.sync();
-        //            } catch (IOException ex) {
-        //                ex.printStackTrace();
-        //            }
-        //        }
-        
         
         FacesConfig facesConfig = configModel.getRootComponent();
         
@@ -429,6 +421,11 @@ public class PageFlowController {
     
     
     
+    /**
+     * Renames a page in the faces configuration file.
+     * @param oldDisplayName
+     * @param newDisplayName
+     */
     public void renamePageInModel(String oldDisplayName, String newDisplayName ) {
         configModel.startTransaction();
         FacesConfig facesConfig = configModel.getRootComponent();
@@ -453,8 +450,12 @@ public class PageFlowController {
         }
     }
     
-    public Project getProject() {
-        return project;
+    /**
+     * Gets the WebFolder which contains the jsp pages.
+     * @return FileObject webfolder
+     */
+    public FileObject getWebFolder() {
+        return webFolder;
     }
     
     

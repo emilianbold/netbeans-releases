@@ -192,8 +192,7 @@ public class MapActionUtility {
                     scene = (PageFlowScene) obj;
                     PageFlowController pfc = scene.getPageFlowView().getPageFlowController();
                     
-                    FileObject parentFolder = pfc.getProject().getProjectDirectory();
-                    FileObject webFileObject = parentFolder.getFileObject("web");
+                    FileObject webFileObject = pfc.getWebFolder();
                     
                     String name = FileUtil.findFreeFileName(webFileObject, "page", "jsp");
                     name = JOptionPane.showInputDialog("Select Page Name", name);
