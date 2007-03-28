@@ -140,7 +140,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                 if (getJbiProjectType(p) != null) {
                     String pname = p.getProjectDirectory().getName();
                     // todo: 01/24/07 needs to check for duplicates...
-                    if (!mModel.existingServiceUnit(pname)) {
+                    if (!mModel.existingServiceEngineServiceUnit(pname)) {
                         curState = ConnectorState.ACCEPT;
                     } 
                 } 
@@ -151,7 +151,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                     dfoList.get(0).equals("JBIMGR_SU_TRANSFER")) {
                     region = getScene().getExternalRegion();
                     String projName /*suName*/ = (String) dfoList.get(1); // FIXME: 
-                    if (!mModel.existingServiceUnit(projName)) { // FIXME: existingExternalServiceUnit?
+                    if (!mModel.existingServiceEngineServiceUnit(projName)) { // FIXME: existingExternalServiceUnit?
                         curState = ConnectorState.ACCEPT;
                     } 
                 }
