@@ -46,7 +46,6 @@ import java.awt.EventQueue;
 import javax.swing.JFileChooser ;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
@@ -1209,16 +1208,10 @@ public class JsfProjectUtils {
             return false;
         }
 
-        Lookup lookup = project.getLookup();
-        ClassPathProvider cpProvider = (ClassPathProvider) lookup.lookup(ClassPathProvider.class);
-        if (cpProvider == null) {
-            return false;
-        }
-        
         // XXX NetBeans API not finished yet
         // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
         String type = ClassPath.COMPILE;
-        ClassPath cp = cpProvider.findClassPath(getSourceRoot(project), type);
+        ClassPath cp = ClassPath.getClassPath(getSourceRoot(project), type);
 
         return cp.contains(obj);
     }
