@@ -48,7 +48,6 @@ public class ElementsService {
     private ASTService model;
     private Name.Table names;
     private Types types;
-    private MethodCharacterization mcCache;
     private VariableCharacterization vcCache;
     private Element vcKey;
     private Tree vcTree;
@@ -152,14 +151,6 @@ public class ElementsService {
 	return false;
     }
     
-    public boolean isOverridden(Element s) {
-	return getMethodCharacterization().isOverridden(s);
-    }
-    
-    public boolean overrides(ExecutableElement s) {
-        return getMethodCharacterization().overrides(s);
-    }
-    
     public boolean referenced(Element e, Element parent) {
 	return getCharacterization(parent).referenced(e);
     }
@@ -168,27 +159,11 @@ public class ElementsService {
 	return getCharacterization(parent).assigned(e);
     }
     
-    private MethodCharacterization getMethodCharacterization() {
-        if (mcCache == null) {
-            mcCache = new MethodCharacterization(jctypes, (JCTree)model.getRoot());
-        }
-        return mcCache;
-    }
-    
     VariableCharacterization getCharacterization(Element s) {
 	if(s!=vcKey|| vcCache==null) {
             vcTree = trees.getTree(s);
-	    vcCache = new VariableCharacterization(vcTree, model, this);
+	    vcCache = new VariableCharacterization(vcTree);
 	    vcKey= s;
-	}
-	return vcCache;
-    }
-    
-    VariableCharacterization getCharacterization(Tree t) {
-	if(t!=vcTree|| vcCache==null) {
-	    vcCache = new VariableCharacterization(t, model, this);
-	    vcTree = t;
-            vcKey = null;
 	}
 	return vcCache;
     }
@@ -237,10 +212,6 @@ public class ElementsService {
     
     public boolean isLocal(Element element) {
         return ((Symbol)element).isLocal();
-    }
-    
-    public int getInstanceReferenceCount(Tree t) {
-        return getCharacterization(t).getThisUseCount();
     }
     
     public CharSequence getFullName(Element element) {

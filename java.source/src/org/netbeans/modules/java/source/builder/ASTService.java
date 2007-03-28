@@ -21,11 +21,9 @@ package org.netbeans.modules.java.source.builder;
 import org.netbeans.modules.java.source.engine.ASTModel;
 import org.netbeans.modules.java.source.engine.TreeFinder;
 import org.netbeans.modules.java.source.engine.RootTree;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
@@ -35,13 +33,11 @@ import org.netbeans.modules.java.source.engine.TreeFinder;
 import org.netbeans.modules.java.source.engine.ReattributionException;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.TreeScanner;
 
 import com.sun.tools.javac.code.*;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
-import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.*;
 import java.util.Collections;
 import org.netbeans.api.java.source.transform.UndoEntry;
@@ -56,15 +52,7 @@ public final class ASTService implements ASTModel {
     
     private RootTree root;
     private UndoList undoList;
-    private TreeFactory treeFactory;
-    private Name.Table names;
-    private Symtab symtab;
-    private ElementsService elements;
-    private Source source;
     private Map<JavaFileObject, Map<JCTree, Integer>> endPosTables;
-    
-    // Debugging flag that verifies tree changes are correct after translation.
-    private boolean reattribute = Boolean.getBoolean("jackpot.always.attribute"); //NOI18N
 
     private static final Context.Key<ASTService> treeKey = new Context.Key<ASTService>();
     
@@ -81,11 +69,6 @@ public final class ASTService implements ASTModel {
     protected ASTService(Context context) {
         context.put(treeKey, this);
         undoList = UndoListService.instance(context);
-        treeFactory = TreeFactory.instance(context);
-        names = Name.Table.instance(context);
-        symtab = Symtab.instance(context);
-        elements = ElementsService.instance(context);
-        source = Source.instance(context);
         endPosTables = new HashMap<JavaFileObject, Map<JCTree, Integer>>();
     }
     
@@ -99,33 +82,10 @@ public final class ASTService implements ASTModel {
     /**
      * Replace the current root tree.
      */
+    @SuppressWarnings("unchecked")
     public void setRoot(final RootTree tree) throws ReattributionException {
         if (tree == root)
             return;
-        
-        /* FIXME: port reattribution
-        try {
-            if (reattribute) {
-                if (env instanceof ModifiableCommandEnvironment) {
-                    Context newContext = Reattributer.reattribute(env, newRoot);
-                    if (false) // turn off attribution resetting.
-                        setContext(newContext);
-                    else
-                        model.setRoot((RootTree)newRoot);
-                }
-                else
-                    throw new UnsupportedOperationException("Unmodifiable environment context");
-            } else
-                model.setRoot((RootTree)newRoot);
-            env.getUndoList().setEndCommand(true);
-        } catch (ReattributionException e) {
-            UndoList undoList = env.getUndoList();
-            if (!undoList.atEndCommand())
-                // undo changes made by this transformer
-                undoList.undo();
-            error(e);
-        }
-         */
         
         undoList.addAndApply(new UndoEntry() {
             private final RootTree old = root;
@@ -142,77 +102,6 @@ public final class ASTService implements ASTModel {
                 return (o == tree) ? (T)old : null;
             }
         });
-    }
-
-    /*FIXME: reattribution support
-    private void setContext(final Context newContext) {
-        final Context oldContext = getContext();
-        if (newContext == oldContext)
-            return;
-        UndoEntry u = new UndoEntry() {
-            private final Context old = oldContext;
-            @Override
-            public void undo() {
-                setContextImpl(old);
-            }
-            @Override
-            public void redo() {
-                setContextImpl(newContext);
-            }
-            @Override
-            public <T> T getOld(T o) {
-                return (o == newContext) ? (T)old : null;
-            }
-        };
-	undoList.add(u); // UndoLists are shared between contexts
-	u.redo();  // actually set the context
-    }
-    
-    private void setContextImpl(Context newContext) {
-        ((ModifiableCommandEnvironment)env).setContext(newContext);
-    }
-     */
-    
-    /**
-     * Finds the defining tree for a symbol.
-     */
-    public Tree find(final Element s) {
-        if (s == null)
-            return null;
-        final JCTree[] rtn = new JCTree[1];
-        new TreeScanner<Void,Object>() {
-            boolean found = false;
-            @Override
-                    public Void scan(Tree tree, Object p) {
-                if(!found && tree != null) {
-                    found = TreeInfo.symbolFor((JCTree)tree) == s;
-                    if (found)
-                        rtn[0] = (JCTree)tree;
-                    else
-                        super.scan(tree, null);
-                }
-                return null;
-            }
-        }.scan(root, null);
-        return rtn[0];
-    }
-    
-    /**
-     * Finds the tree associated with a specified source file name.
-     */
-    public CompilationUnitTree findTopLevel(final String sourceFile) {
-        final CompilationUnitTree[] rtn = new CompilationUnitTree[1];
-        new TreeScanner<Void,Object>() {
-            @Override
-                    public Void visitCompilationUnit(CompilationUnitTree t, Object p) {
-                if (rtn[0] == null && t.getSourceFile().toUri().getPath().endsWith(sourceFile))
-                    rtn[0] = (JCCompilationUnit)t;
-                else
-                    super.visitCompilationUnit(t, p);
-                return null;
-            }
-        }.scan(root, null);
-        return rtn[0];
     }
     
     /**
@@ -321,13 +210,6 @@ public final class ASTService implements ASTModel {
 
     private static boolean isThis(Name nm) {
 	return nm==nm.table._this;
-    }
-
-    /**
-     * Returns true if this is an element for "this".
-     */
-    public boolean isThis(Element e) {
-	return e != null ? isThis(((Symbol)e).name) : false;
     }
 
     public boolean isSynthetic(Tree tree) {
@@ -545,81 +427,12 @@ public final class ASTService implements ASTModel {
 	}
 	return Position.NOPOS;
     }
-
-    // Private methods
-    
-    private Tree findChild(Tree tree, Symbol s) {
-        for (Tree child : getChildren(tree)) {
-            if (getElement(child) == s)
-                return child;
-        }
-        return null;
-    }
-    
-    /**
-     * Find a child symbol based on name and optional parameter types.
-     *
-     * @param s the parent symbol
-     * @param child the name of the child
-     * @param parameters the parameter type list, if the child is a method; 
-     *                   if it is not, then this parameter is null.
-     */
-    private Symbol findChild(Symbol s, String child, String[] parameters) {
-        com.sun.tools.javac.code.Scope scope = s.members();
-        com.sun.tools.javac.code.Scope.Entry e = scope.lookup(names.fromString(child));
-        if (e != null && parameters != null) {
-            // search for method with same parameter types
-            while (e.scope == scope) {
-                if (e.sym instanceof MethodSymbol) {
-                    MethodSymbol meth = (MethodSymbol)e.sym;
-                    if (compareParams(meth.params(), parameters))
-                        return meth;
-                }
-                e = e.next();
-            }
-            return null;
-        }
-	return e != null ? e.sym : null;
-    }
-       
-    private boolean compareParams(List<VarSymbol> p1, String[] p2) {
-        if (p1.size() != p2.length)
-            return false;
-        int i = 0;
-        for (VarSymbol var : p1) {
-            String s1 = var.type.toString();
-            String s2 = p2[i++];
-            if (!s1.equals(s2))
-                return false;
-        }
-        return true;
-    }
-    
-    public boolean isStatic(Tree tree) {
-        if (tree == null)
-            return false;
-        Symbol sym = (Symbol)getElement(tree);
-        return sym != null ? (sym.flags() & Flags.STATIC) != 0 : false;
-    }
-    
-    /**
-     * Returns how many references to instance variables or methods there are
-     * in a given tree.
-     */
-    public int getInstanceReferenceCount(Tree t) {
-        if (t == null)
-            return 0;
-        return elements.getCharacterization(getElement(t)).getThisUseCount();
-    }
     
     public void setPos(Tree tree, int newPos) {
         ((JCTree)tree).pos = newPos;
     }
-    
-    public SourceVersion sourceVersion() {
-        return Source.toSourceVersion(source);
-    }
-    
+
+    /** sets the end position table which is generated during parsing. */
     public void setEndPosTable(JavaFileObject name, Map<JCTree, Integer> table) {
         endPosTables.put(name, table);
     }
