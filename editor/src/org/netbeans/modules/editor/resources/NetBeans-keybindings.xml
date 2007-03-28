@@ -77,8 +77,8 @@
     <bind actionName="redo" key="D-Y"/>
     <bind actionName="move-selection-else-line-up" key="O-UP"/>
     <bind actionName="move-selection-else-line-down" key="O-DOWN"/>
-    <bind actionName="copy-selection-else-line-up" key="OS-UP"/>
-    <bind actionName="copy-selection-else-line-down" key="OS-DOWN"/>
+    <bind actionName="copy-selection-else-line-up" key="DO-UP"/>
+    <bind actionName="copy-selection-else-line-down" key="DO-DOWN"/>
     <!-- #47709 <bind actionName="remove-word" key="D-W"/> -->
     <bind actionName="remove-word-next" key="D-DELETE"/>
     <bind actionName="remove-word-previous" key="D-BACK_SPACE"/>
