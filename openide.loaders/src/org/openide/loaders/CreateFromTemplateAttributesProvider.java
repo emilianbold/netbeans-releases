@@ -39,7 +39,7 @@ public interface CreateFromTemplateAttributesProvider {
      * @param template the template that is being processed
      * @param target the destition folder
      * @param name the name of the object to create
-     * @return map of named objects
+     * @return map of named objects, or null
      */
-    public Map<String,? extends Object> attributesFor(DataObject template, DataFolder target, String name);
+    Map<String,?> attributesFor(DataObject template, DataFolder target, String name);
 }
