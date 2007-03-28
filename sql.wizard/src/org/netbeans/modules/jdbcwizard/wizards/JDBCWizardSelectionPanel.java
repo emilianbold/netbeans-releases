@@ -157,6 +157,9 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
     public void initDataSourceCombo() {
         providers = new DefaultComboBoxModel();
         final DatabaseConnection[] conns = ConnectionManager.getDefault().getConnections();
+        if(conns.length == 1){
+        	providers.addElement("");
+        }
         if (conns.length > 0) {
             for (int i = 0; i < conns.length; i++) {
                 providers.addElement(new ConnectionWrapper(conns[i]));
@@ -164,8 +167,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         } else {
             providers.addElement("<None>");
         }
-      //  String newDataSrc = new String(NEW_DATA_SOURCE);
-        //providers.addElement(newDataSrc);
+       
         this.datasourceComboBox.setModel(providers);
         this.datasourceComboBox.setSelectedIndex(0);
 
@@ -292,16 +294,18 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
             final ConnectionWrapper cw = (ConnectionWrapper) item;
             this.selectedConnection = cw.getDatabaseConnection();
             ConnectionManager.getDefault().showConnectionDialog(this.selectedConnection);
+            providers.removeElement("");
             this.persistModel();
-        }else{
+        }/*else{
              ConnectionManager.getDefault().showAddConnectionDialog(null);
-        }
+        }*/
         // try to find the new connection
         DatabaseConnection[] newConnections = ConnectionManager.getDefault().getConnections();
         if (newConnections.length == oldConnections.size()) {
             // no new connection, so...
             return;
         }
+        
         providers.removeElement(new String(NEW_DATA_SOURCE));
         for (int i = 0; i < newConnections.length; i++) {
             if (!oldConnections.contains(newConnections[i])) {
