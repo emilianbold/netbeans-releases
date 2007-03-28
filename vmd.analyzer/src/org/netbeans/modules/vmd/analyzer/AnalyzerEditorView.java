@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Collections;
 import java.awt.*;
 
 /**
@@ -100,6 +101,10 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
 
     public boolean canShowSideWindows () {
         return true;
+    }
+
+    public Collection<String> getTags () {
+        return Collections.emptySet ();
     }
 
     public String preferredID () {

@@ -32,6 +32,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
 import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
@@ -99,6 +102,10 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
 
     public boolean canShowSideWindows () {
         return false;
+    }
+
+    public Collection<String> getTags () {
+        return Collections.emptySet ();
     }
 
     public String preferredID() {

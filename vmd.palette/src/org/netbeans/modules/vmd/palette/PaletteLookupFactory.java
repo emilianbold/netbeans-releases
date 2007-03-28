@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.palette;
 import org.netbeans.modules.vmd.api.io.DataEditorViewLookupFactory;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
+import org.netbeans.modules.vmd.api.palette.PaletteSupport;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -31,7 +32,7 @@ import java.util.Collections;
 public class PaletteLookupFactory implements DataEditorViewLookupFactory {
 
     public Collection<? extends Object> getLookupObjects(DataObjectContext context, DataEditorView view) {
-        if (view.canShowSideWindows ()  &&  view.getKind () == DataEditorView.Kind.MODEL) {
+        if (view.canShowSideWindows ()  &&  view.getKind () == DataEditorView.Kind.MODEL  &&  ! view.getTags ().contains (PaletteSupport.VIEW_TAG_NO_PALETTE)) {
             return Collections.singleton(PaletteMap.getInstance().getPaletteControllerForProjectType(context.getProjectType()));
         } else {
             return null;

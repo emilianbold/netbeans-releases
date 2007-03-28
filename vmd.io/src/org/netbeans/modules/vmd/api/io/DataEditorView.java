@@ -23,6 +23,7 @@ import org.openide.util.HelpCtx;
 
 import javax.swing.*;
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * @author David Kaspar
@@ -38,6 +39,7 @@ public interface DataEditorView extends Serializable {
     public DataObjectContext getContext ();
     public Kind getKind ();
     public boolean canShowSideWindows ();
+    public Collection<String> getTags ();
 
     public String preferredID ();
     public String getDisplayName ();

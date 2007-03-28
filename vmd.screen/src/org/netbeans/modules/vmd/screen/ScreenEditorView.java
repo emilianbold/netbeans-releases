@@ -25,6 +25,8 @@ import org.openide.util.HelpCtx;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author David Kaspar
@@ -57,6 +59,10 @@ public class ScreenEditorView implements DataEditorView {
 
     public boolean canShowSideWindows () {
         return true;
+    }
+
+    public Collection<String> getTags () {
+        return Collections.emptySet ();
     }
 
     public String preferredID () {

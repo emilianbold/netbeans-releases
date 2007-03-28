@@ -30,6 +30,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author David Kaspar
@@ -73,6 +74,10 @@ public class RegistryEditorView implements DataEditorView, DescriptorRegistryLis
 
     public boolean canShowSideWindows () {
         return true;
+    }
+
+    public Collection<String> getTags () {
+        return Collections.emptySet ();
     }
 
     public String preferredID () {
