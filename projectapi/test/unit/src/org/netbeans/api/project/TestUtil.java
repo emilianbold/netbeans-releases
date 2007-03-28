@@ -67,19 +67,18 @@ public final class TestUtil extends ProxyLookup {
      * e.g. {@link #makeScratchDir} will not work.
      */
     public static void setLookup(Lookup l) {
-        DEFAULT.setLookups(new Lookup[] {l});
+        DEFAULT.setLookups(l);
     }
     
     /**
      * Set the global default lookup with some fixed instances including META-INF/services/*.
      */
-    public static void setLookup(Object[] instances) {
+    public static void setLookup(Object... instances) {
         ClassLoader l = TestUtil.class.getClassLoader();
-        DEFAULT.setLookups(new Lookup[] {
+        DEFAULT.setLookups(
             Lookups.fixed(instances),
             Lookups.metaInfServices(l),
-            Lookups.singleton(l),
-        });
+            Lookups.singleton(l));
     }
     
     private static boolean warned = false;
