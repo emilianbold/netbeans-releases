@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -77,15 +78,92 @@ import org.openide.util.lookup.Lookups;
 class ConfigurationsProvider
 {
     static final String ARCHIVE_ICON = "org/netbeans/modules/mobility/project/ui/resources/libraries.gif";
-    
+    static final Action[] emptyAction = new Action[] {};
     //HashMap for listeners of resources per project and per configuration
     static final WeakHashMap<FileObject,WeakHashMap<J2MEProject,WeakHashMap<String,FileChangeListener>>> lstCache = new WeakHashMap<FileObject,WeakHashMap<J2MEProject,WeakHashMap<String,FileChangeListener>>>();
     
-    static private List<Node> createPackage(final J2MEProject project,final ProjectConfiguration conf,final ClassPath path, final HashMap<FileObject,VisualClassPathItem> map, final boolean actions)
+    static private class FNode extends FilterNode
+    {
+        final private Action[] actions;
+        final private Image icon;
+        
+        FNode(Node original, Lookup lookup,Action[] act,VisualClassPathItem it) {
+            super(original,new ActionFilterChildren(original),lookup);
+            actions=act;
+            icon=((ImageIcon)it.getIcon()).getImage();
+        }
+        
+        FNode(Node original, Image it) {
+            super(original,new ActionFilterChildren(original),null);
+            actions=emptyAction;
+            icon=it;
+        }
+        
+        final Action act[]=new Action[] 
+        {
+            RemoveResourceAction.getStaticInstance(),
+            null,
+            SystemAction.get(CopyAction.class),
+        };
+
+        final Action gract[]=new Action[] 
+        {
+            SystemAction.get(CopyAction.class),
+        };
+
+        public Action[] getActions(boolean context)
+        {
+            return actions==null?act:actions;
+        }
+
+        public Image getIcon(int i) {
+            return icon;
+        }
+
+        public Image getOpenedIcon(int i) {
+            return icon;
+        }
+
+        public boolean canDestroy()
+        {
+            return false;
+        }
+
+        public boolean canRename()
+        {
+            return false;
+        }
+
+        public boolean canCut()
+        {
+            return false;
+        }
+
+        public boolean canCopy()
+        {
+            return true;
+        }
+        
+        private static class ActionFilterChildren extends FilterNode.Children {
+
+            ActionFilterChildren (Node original) {
+                super (original);
+            }
+
+            protected Node[] createNodes(Node n) {
+                return new Node[] {new FNode(n, n.getIcon(1))};                       
+            }
+    }
+
+    };
+    
+    static private List<Node> createPackage(final J2MEProject project,final ProjectConfiguration conf,final ClassPath path, 
+            final HashMap<FileObject,VisualClassPathItem> map, final boolean actions, final boolean multi)
     {
         final FileObject[] roots = path == null ? new FileObject[] {} : path.getRoots();
         final List<Node> list=new ArrayList<Node>();
-
+        
+        
         for (int i=0; i<roots.length; i++)
         {
             if (roots[i].isValid())
@@ -130,54 +208,16 @@ class ConfigurationsProvider
                         final File f=FileUtil.toFile(file);
                         final Lookup lookup=Lookups.fixed(new Object[] {project, conf, f} );
                         
-                        node=new FilterNode(node,null,lookup) 
+                        
+                        
+                        if (!multi)
                         {
-                            final Action act[]=new Action[] 
-                            {
-                                RemoveResourceAction.getStaticInstance(),
-                                null,
-                                SystemAction.get(CopyAction.class),
-                            };
+                            node=new FNode(node,lookup,null,item);
+                            node.setDisplayName(item.getDisplayName());
+                        }
+                        else
+                            node=new FNode(node,lookup,emptyAction,item);
                             
-                            final Action gract[]=new Action[] 
-                            {
-                                SystemAction.get(CopyAction.class),
-                            };
-                            
-                            public Action[] getActions(boolean context)
-                            {
-                                return actions?act:gract;
-                            }
-                            
-                            public Image getIcon(int i) {
-                                return ((ImageIcon)item.getIcon()).getImage();
-                            }
-                            
-                            public Image getOpenedIcon(int i) {
-                                return ((ImageIcon)item.getIcon()).getImage();
-                            }
-                            
-                            public boolean canDestroy()
-                            {
-                                return false;
-                            }
-                            
-                            public boolean canRename()
-                            {
-                                return false;
-                            }
-                            
-                            public boolean canCut()
-                            {
-                                return false;
-                            }
-                            
-                            public boolean canCopy()
-                            {
-                                return true;
-                            }
-                        };
-                        node.setDisplayName(item.getDisplayName());
                         node.setValue("grey",!actions);
                         node.setValue("resource","Resource");
                         list.add(node);
@@ -233,114 +273,128 @@ class ConfigurationsProvider
             for (final VisualClassPathItem item : libs)
             {
                 String raw=item.getRawText();
-                String itemPath=helper.getStandardPropertyEvaluator().evaluate(raw);
-                final File f=FileUtil.normalizeFile(new File(itemPath));
-                final FileObject fo=FileUtil.toFileObject(f);  
-                FileObject fRoot=fo;                      
-                assert f != null;
-                if (fo==null)
+                String xPath=helper.getStandardPropertyEvaluator().evaluate(raw);               
+                StringTokenizer tokens=new StringTokenizer(xPath,File.pathSeparator);
+                Node libNode=null;
+                boolean multi=tokens.countTokens()>1;
+                boolean empty=tokens.countTokens()!=0;
+                do
                 {
-                    Object o=item.getIcon();
-                    final Lookup lookup = Lookups.fixed( new Object[] {project,conf, item, f} );
-                    final Action actions[]=gray ? new Action[] {} : new Action[] { 
-                                                                                   RemoveResourceAction.getStaticInstance(),
-                                                                                 };
-                    final Node n=new FilterNode(new ActionNode(Children.LEAF,lookup,itemPath,item.getDisplayName(),null,actions),null,lookup)
+                    String iPath=empty ? tokens.nextToken() : xPath;
+                    final File f=FileUtil.normalizeFile(new File(iPath));
+                    final FileObject fo=iPath.equals("")?null:FileUtil.toFileObject(f);  
+                    FileObject fRoot=fo;                      
+                    assert f != null;
+                    if (fo==null)
                     {
-                            public Image getIcon(int i) {
-                                return ((ImageIcon)item.getIcon()).getImage();
-                            }   
-                    };
-                    n.setValue("error",Boolean.TRUE);
-                    brokenArray.add(n);
-                    File parent=f.getParentFile();
-                    while (parent != null && !(parent.isFile() || parent.isDirectory()))
-                        parent=parent.getParentFile();
-                    fRoot=FileUtil.toFileObject(parent);
-                }
-                else 
-                {
-                    if (!FileUtil.isArchiveFile(fo))
-                        list.add(fo);
-                    else
-                        list.add(FileUtil.getArchiveRoot(fo));         
-                    map.put(fo,item);
-                }
-                
-                final FileObject root=fRoot;
-                /*
-                 * The following code sequence takes care of refreshing resources and missing resources 
-                 * each resource has a listner on an associated file onject and reacts on actions with this file
-                 * */
-                
-                //map of projects which depends on particular file
-                WeakHashMap<J2MEProject,WeakHashMap<String,FileChangeListener>> pcls=lstCache.get(root);
-                if (pcls == null)
-                {
-                    pcls = new WeakHashMap<J2MEProject,WeakHashMap<String,FileChangeListener>>();
-                    lstCache.put(root, pcls);
-                }
-                //map of configurations in a project which depeends on particular file
-                WeakHashMap<String,FileChangeListener> fcls=pcls.get(project);
-                if (fcls == null)
-                {
-                    fcls = new WeakHashMap<String,FileChangeListener>();
-                    pcls.put(project,fcls);
-                }
-                //Is there a listener for particular configuration, project and file?
-                if (fcls.get(conf.getDisplayName()) == null)
-                {
-                    FileChangeListener lst=new FileChangeListener() {
-                        public void fileFolderCreated(FileEvent fe) {
-                            if (FileUtil.toFile(fe.getFile()).getAbsolutePath().equals(f.getAbsolutePath()))
-                            {  
-                                //The file we are looking for was detected by parent directory, now we can delete
-                                //the listner for this directory
-                                if (root.isFolder())
-                                {
-                                    lstCache.remove(root);
-                                    root.removeFileChangeListener(this);
+                        final Lookup lookup = Lookups.fixed( new Object[] {project,conf, item} );
+                        final Action actions[]=gray ? new Action[] {} : new Action[] { 
+                                                                                       RemoveResourceAction.getStaticInstance(),
+                                                                                     };
+                        final Node n=new FNode(new ActionNode(Children.LEAF,lookup,iPath,item.getDisplayName(),null,actions),lookup,null,item);
+                        n.setValue("error",Boolean.TRUE);
+                        brokenArray.add(n);
+                        File parent=f.getParentFile();
+                        while (parent != null && !(parent.isFile() || parent.isDirectory()))
+                            parent=parent.getParentFile();
+                        fRoot=FileUtil.toFileObject(parent);
+                    }
+                    else 
+                    {
+                        if (!FileUtil.isArchiveFile(fo))
+                            list.add(fo);
+                        else
+                            list.add(FileUtil.getArchiveRoot(fo));         
+                        map.put(fo,item);
+                    }
+
+                    final FileObject root=fRoot;
+                    /*
+                     * The following code sequence takes care of refreshing resources and missing resources 
+                     * each resource has a listner on an associated file object and reacts on actions with this file
+                     * */
+
+                    //map of projects which depends on particular file
+                    WeakHashMap<J2MEProject,WeakHashMap<String,FileChangeListener>> pcls=lstCache.get(root);
+                    if (pcls == null)
+                    {
+                        pcls = new WeakHashMap<J2MEProject,WeakHashMap<String,FileChangeListener>>();
+                        lstCache.put(root, pcls);
+                    }
+                    //map of configurations in a project which depeends on particular file
+                    WeakHashMap<String,FileChangeListener> fcls=pcls.get(project);
+                    if (fcls == null)
+                    {
+                        fcls = new WeakHashMap<String,FileChangeListener>();
+                        pcls.put(project,fcls);
+                    }
+                    //Is there a listener for particular configuration, project and file?
+                    if (fcls.get(conf.getDisplayName()) == null)
+                    {
+                        FileChangeListener lst=new FileChangeListener() {
+                            public void fileFolderCreated(FileEvent fe) {
+                                if (FileUtil.toFile(fe.getFile()).getAbsolutePath().equals(f.getAbsolutePath()))
+                                {  
+                                    //The file we are looking for was detected by parent directory, now we can delete
+                                    //the listner for this directory
+                                    if (root.isFolder())
+                                    {
+                                        lstCache.remove(root);
+                                        root.removeFileChangeListener(this);
+                                    }
+                                    view.refreshNode(conf.getDisplayName());
                                 }
-                                view.refreshNode(conf.getDisplayName());
                             }
-                        }
 
-                        public void fileDataCreated(FileEvent fe) {
-                            if (FileUtil.toFile(fe.getFile()).getAbsolutePath().equals(f.getAbsolutePath()))
-                            {
-                                //The file we are looking for was detected by parent directory, now we can delete
-                                //the listner for this directory
-                                if (root.isFolder())
+                            public void fileDataCreated(FileEvent fe) {
+                                if (FileUtil.toFile(fe.getFile()).getAbsolutePath().equals(f.getAbsolutePath()))
                                 {
-                                    lstCache.remove(root);
-                                    root.removeFileChangeListener(this);
+                                    //The file we are looking for was detected by parent directory, now we can delete
+                                    //the listner for this directory
+                                    if (root.isFolder())
+                                    {
+                                        lstCache.remove(root);
+                                        root.removeFileChangeListener(this);
+                                    }
+                                    view.refreshNode(conf.getDisplayName());
                                 }
-                                view.refreshNode(conf.getDisplayName());
                             }
-                        }
 
-                        public void fileChanged(FileEvent fe) {
-                        }
-
-                        public void fileDeleted(FileEvent fe) {
-                            if (FileUtil.toFile(fe.getFile()).getAbsolutePath().equals(f.getAbsolutePath()))
-                            {
-                                view.refreshNode(conf.getDisplayName());
+                            public void fileChanged(FileEvent fe) {
                             }
-                        }
 
-                        public void fileRenamed(FileRenameEvent fe) {
-                        }
+                            public void fileDeleted(FileEvent fe) {
+                                if (FileUtil.toFile(fe.getFile()).getAbsolutePath().equals(f.getAbsolutePath()))
+                                {
+                                    view.refreshNode(conf.getDisplayName());
+                                }
+                            }
 
-                        public void fileAttributeChanged(FileAttributeEvent fe) {
-                        }
-                    };
-                    root.addFileChangeListener(lst);
-                    fcls.put(conf.getDisplayName(),lst);
+                            public void fileRenamed(FileRenameEvent fe) {
+                            }
+
+                            public void fileAttributeChanged(FileAttributeEvent fe) {
+                            }
+                        };
+                        root.addFileChangeListener(lst);
+                        fcls.put(conf.getDisplayName(),lst);
+                    }
+                } while (tokens.hasMoreTokens());
+                
+                path=ClassPathSupport.createClassPath(list.toArray(new FileObject[list.size()]));        
+                if (multi==false)
+                    brokenArray.addAll(createPackage(project,conf,path,map,!gray,multi)); 
+                else
+                {
+                    final Lookup lookup = Lookups.fixed( new Object[] {project,conf, item} );
+                    Children ch=new Children.Array();
+                    ch.add(createPackage(project,conf,path,map,!gray,multi).toArray(new Node[0]));
+                    libNode=new FNode(new ActionNode(ch,lookup,xPath,item.getDisplayName(),null,null),lookup,null,item);
+                    brokenArray.add(libNode);
+
                 }
-            }
-            path=ClassPathSupport.createClassPath(list.toArray(new FileObject[list.size()]));        
-            brokenArray.addAll(createPackage(project,conf,path,map,!gray));   
+                list.clear();
+            }  
         }        
         return brokenArray;
     }

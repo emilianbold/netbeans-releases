@@ -29,7 +29,6 @@
 package org.netbeans.modules.mobility.project.ui;
 
 import java.awt.Dialog;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -364,13 +363,12 @@ class RemoveResourceAction extends NodeAction<Object>
     protected List<VisualClassPathItem> addItems(final Object[] items, final List<VisualClassPathItem> set, final Node node )
     {
         final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
-        final File        file=node.getLookup().lookup(File.class);
+        final VisualClassPathItem  file=node.getLookup().lookup(VisualClassPathItem.class);
         final PropertyEvaluator eval=project.getLookup().lookup(AntProjectHelper.class).getStandardPropertyEvaluator();
         List<VisualClassPathItem> newSet=new ArrayList<VisualClassPathItem>(set);
         
         for ( final VisualClassPathItem vcp : set ) {
-            final File item=FileUtil.normalizeFile(new File(eval.evaluate(vcp.getRawText())));
-            if (item.equals(file))
+            if (vcp.equals(file))
             {
                 newSet.remove(vcp);
                 break;
