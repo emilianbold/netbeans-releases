@@ -96,7 +96,7 @@ public class CasaWrapperModelTest extends TestCase {
 
     protected void setUp() throws Exception {
         URI uri = CasaWrapperModelTest.class.getResource(
-                "../resources/SynchronousSampleApplication/SynchronousSampleApplication.casa").toURI();
+                "resources/SynchronousSampleApplication/conf/SynchronousSampleApplication.casa").toURI();
         File casaFile = new File(uri);
         FileObject casaFileObject = FileUtil.toFileObject(casaFile);
         ModelSource modelSource = TestCatalogModel.getDefault().createModelSource(casaFileObject, true);
@@ -150,21 +150,39 @@ public class CasaWrapperModelTest extends TestCase {
         System.out.println("getBindingComponentServiceUnits");
                 
         List<CasaBindingComponentServiceUnit> bcSUs = casaWrapperModel.getBindingComponentServiceUnits();
-        assertEquals(1, bcSUs.size());
+        assertEquals(2, bcSUs.size());
         
+        // Test file binding
         CasaBindingComponentServiceUnit bcSU = bcSUs.get(0);
-        assertEquals("sun-http-binding", bcSU.getComponentName());
+        assertEquals("sun-file-binding", bcSU.getComponentName());
         
-        // Test casa port link
         List<CasaPort> casaPorts = bcSU.getPorts().getPorts();
         assertEquals(1, casaPorts.size());
         
         CasaPort casaPort = casaPorts.get(0);        
-        assertEquals("../jbiServiceUnits/SynchronousSample/SynchronousSample.wsdl#xpointer(/definitions/service[@name='service1']/port[@name='port1'])", casaPort.getLink().getHref());
+        assertEquals("../jbiasa/casa.wsdl#xpointer(/definitions/service[@name='casaService1']/port[@name='casaPort1'])", casaPort.getLink().getHref());
                
-        // Test casa port endpoint
         CasaEndpoint cEndpoint = casaPort.getConsumes().getEndpoint().get();
         CasaEndpoint pEndpoint = casaPort.getProvides().getEndpoint().get();
+        assertEquals(cEndpoint, pEndpoint);
+        assertEquals("{http://localhost/SynchronousSample/SynchronousSample}portType1", 
+                cEndpoint.getInterfaceQName().toString());
+        assertEquals("{http://whatever}casaService1", 
+                cEndpoint.getServiceQName().toString());
+        assertEquals("casaPort1", cEndpoint.getEndpointName());
+        
+         // Test file binding
+        bcSU = bcSUs.get(1);
+        assertEquals("sun-http-binding", bcSU.getComponentName());
+        
+        casaPorts = bcSU.getPorts().getPorts();
+        assertEquals(1, casaPorts.size());
+        
+        casaPort = casaPorts.get(0);        
+        assertEquals("../jbiServiceUnits/SynchronousSample/SynchronousSample.wsdl#xpointer(/definitions/service[@name='service1']/port[@name='port1'])", casaPort.getLink().getHref());
+               
+        cEndpoint = casaPort.getConsumes().getEndpoint().get();
+        pEndpoint = casaPort.getProvides().getEndpoint().get();
         assertEquals(cEndpoint, pEndpoint);
         assertEquals("{http://localhost/SynchronousSample/SynchronousSample}portType1", 
                 cEndpoint.getInterfaceQName().toString());
@@ -203,8 +221,8 @@ public class CasaWrapperModelTest extends TestCase {
     public void testExistingServiceEngineServiceUnit() {
         System.out.println("existingServiceEngineServiceUnit");
         
-        assertTrue(casaWrapperModel.existingServiceEngineServiceUnit("SynchronousSample"));
-        assertFalse(casaWrapperModel.existingServiceEngineServiceUnit("SynchronousSampleApplication-SynchronousSample"));        
+        assertTrue(casaWrapperModel.existingServiceEngineServiceUnit("SynchronousSample")); // test unit-name
+        assertFalse(casaWrapperModel.existingServiceEngineServiceUnit("SynchronousSampleApplication-SynchronousSample")); // test name    
     }
 
     /**
@@ -213,14 +231,22 @@ public class CasaWrapperModelTest extends TestCase {
     public void testGetCasaPorts() {
         System.out.println("getCasaPorts");
         
-        CasaWrapperModel instance = null;
+        List<CasaPort> casaPorts = casaWrapperModel.getCasaPorts();
+        assertEquals(2, casaPorts.size());
         
-        List<CasaPort> expResult = null;
-        List<CasaPort> result = instance.getCasaPorts();
-        assertEquals(expResult, result);
+        CasaEndpoint cEndpoint = casaPorts.get(0).getConsumes().getEndpoint().get(); 
+        assertEquals("{http://localhost/SynchronousSample/SynchronousSample}portType1", 
+                cEndpoint.getInterfaceQName().toString());
+        assertEquals("{http://whatever}casaService1", 
+                cEndpoint.getServiceQName().toString());
+        assertEquals("casaPort1", cEndpoint.getEndpointName());
         
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        cEndpoint = casaPorts.get(1).getConsumes().getEndpoint().get();          
+        assertEquals("{http://localhost/SynchronousSample/SynchronousSample}portType1", 
+                cEndpoint.getInterfaceQName().toString());
+        assertEquals("{http://localhost/SynchronousSample/SynchronousSample}service1", 
+                cEndpoint.getServiceQName().toString());
+        assertEquals("port1", cEndpoint.getEndpointName());
     }
 
     /**
@@ -229,15 +255,8 @@ public class CasaWrapperModelTest extends TestCase {
     public void testGetBindingComponentName() {
         System.out.println("getBindingComponentName");
         
-        CasaPort casaPort = null;
-        CasaWrapperModel instance = null;
-        
-        String expResult = "";
-        String result = instance.getBindingComponentName(casaPort);
-        assertEquals(expResult, result);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        CasaPort casaPort = casaWrapperModel.getCasaPorts().get(0);
+        assertEquals("sun-http-binding", casaWrapperModel.getBindingComponentName(casaPort));
     }
 
     /**
@@ -246,14 +265,9 @@ public class CasaWrapperModelTest extends TestCase {
     public void testSetEndpointName() {
         System.out.println("setEndpointName");
         
-        CasaPort casaPort = null;
-        String endpointName = "";
-        CasaWrapperModel instance = null;
-        
-        instance.setEndpointName(casaPort, endpointName);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        CasaPort casaPort = casaWrapperModel.getCasaPorts().get(0);
+        casaWrapperModel.setEndpointName(casaPort, "FOO");
+        assertEquals("FOO", casaPort.getEndpointName());
     }
 
     /**
