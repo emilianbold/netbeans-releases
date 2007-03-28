@@ -521,7 +521,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
     }
     
-    private static Color darker(Color c) {
+    public static Color darker(Color c) {
         return new Color(Math.max((int)(c.getRed() * DARKEN_FACTOR), 0), 
              Math.max((int)(c.getGreen() * DARKEN_FACTOR), 0),
              Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));

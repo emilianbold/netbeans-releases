@@ -209,7 +209,7 @@ class RevisionNode extends AbstractNode {
 
         public TagsProperty() {
             super(COLUMN_NAME_TAGS, List.class, COLUMN_NAME_TAGS, COLUMN_NAME_TAGS);
-            if (revision != null) setValue("dispRevision", revision);  // NOI18N
+            if (revision != null) setValue("tagsRevision", revision);  // NOI18N
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -229,6 +229,7 @@ class RevisionNode extends AbstractNode {
 
         public MessageProperty() {
             super(COLUMN_NAME_MESSAGE, String.class, COLUMN_NAME_MESSAGE, COLUMN_NAME_MESSAGE);
+            if (revision != null && revision.getRevision().getMessage() != null) setValue("messageRevision", revision);  // NOI18N
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {

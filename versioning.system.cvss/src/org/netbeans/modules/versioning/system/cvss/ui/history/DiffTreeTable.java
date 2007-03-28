@@ -31,16 +31,19 @@ import org.openide.ErrorManager;
 import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 
 import javax.swing.*;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.Document;
+import javax.swing.text.BadLocationException;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.beans.PropertyVetoException;
-import java.awt.Window;
-import java.awt.Point;
-import java.awt.Cursor;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import java.awt.*;
+import java.awt.event.*;
 
 /**
  * Treetable to show results of Search History action.
@@ -71,16 +74,21 @@ class DiffTreeTable extends TreeTableView implements MouseListener, MouseMotionL
     }
 
     private SearchHistoryPanel.DispRevision getRevisionWithTagsAt(Point p) {
+        SearchHistoryPanel.DispRevision drev = getRevisionWithPropertyAt(p, "tagsRevision");
+        if (drev != null && drev.getBranches() != null && drev.getBranches().size() + drev.getTags().size() > 1) {
+            return drev;
+        }
+        return null;
+    }
+
+    private SearchHistoryPanel.DispRevision getRevisionWithPropertyAt(Point p, String property) {
         int row = treeTable.rowAtPoint(p);
         int column = treeTable.columnAtPoint(p);
         if (row == -1 || column == -1) return null;
         Object o = treeTable.getValueAt(row, column);
         if (o instanceof Node.Property) {
             Node.Property tags = (Node.Property) o;
-            SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) tags.getValue("dispRevision");  // NOI18N
-            if (drev != null && drev.getBranches() != null && drev.getBranches().size() + drev.getTags().size() > 1) {
-                return drev;
-            }
+            return (SearchHistoryPanel.DispRevision) tags.getValue(property);
         }
         return null;
     }
@@ -95,13 +103,52 @@ class DiffTreeTable extends TreeTableView implements MouseListener, MouseMotionL
             p.y += 10;
             SummaryView.showAllTags(w, p, drev);
         }
+        drev = getRevisionWithPropertyAt(p, "messageRevision"); // NOI18N
+        if (drev != null) {
+            Window w = SwingUtilities.windowForComponent(treeTable);
+            SwingUtilities.convertPointToScreen(p, treeTable);
+            if ((p.x -= 150) < 0) p.x = 10;
+            p.y += treeTable.getRowHeight() * 3 / 2;
+            showMessage(w, p, drev);
+        }
+    }
+
+    private void showMessage(Window w, Point p, SearchHistoryPanel.DispRevision drev) {
+        final JTextPane tp = new JTextPane();
+        tp.setBackground(SummaryView.darker(UIManager.getColor("List.background"))); // NOI18N
+        tp.setBorder(BorderFactory.createEmptyBorder(6, 8, 0, 0));
+        tp.setEditable(false);
+
+        Style headerStyle = tp.addStyle("headerStyle", null); // NOI18N
+        StyleConstants.setBold(headerStyle, true);
+            
+        Document doc = tp.getDocument();
+        try {
+            doc.insertString(doc.getLength(), NbBundle.getMessage(DiffTreeTable.class, "CTL_MessageWindow_Title") + "\n\n", headerStyle);  // NOI18N
+            doc.insertString(doc.getLength(), drev.getRevision().getMessage() + "\n", null); // NOI18N
+        } catch (BadLocationException e) {
+            Logger.getLogger(DiffTreeTable.class.getName()).log(Level.WARNING, "Internal error creating commit message popup", e); // NOI18N
+        }
+            
+        Dimension dim = tp.getPreferredSize();
+        tp.setPreferredSize(new Dimension(dim.width * 7 / 6, dim.height));
+        final JScrollPane jsp = new JScrollPane(tp);
+        jsp.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
+
+        TooltipWindow ttw = new TooltipWindow(w, jsp);
+        ttw.addComponentListener(new ComponentAdapter() {
+            public void componentShown(ComponentEvent e) {
+                tp.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
+            }
+        });
+        ttw.show(p);
     }
 
     public void mouseDragged(MouseEvent e) {
     }
 
     public void mouseMoved(MouseEvent e) {
-        if (getRevisionWithTagsAt(e.getPoint()) != null) {
+        if (getRevisionWithTagsAt(e.getPoint()) != null || getRevisionWithPropertyAt(e.getPoint(), "messageRevision") != null) { // NOI18N
             treeTable.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         } else {
             treeTable.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
