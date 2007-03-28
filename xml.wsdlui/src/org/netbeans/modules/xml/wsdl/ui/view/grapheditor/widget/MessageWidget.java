@@ -101,7 +101,7 @@ public class MessageWidget extends AbstractWidget<Message>
     
     public MessageWidget(Scene scene, Message message, Lookup lookup) {
         super(scene, message, lookup);
-
+        setMinimumSize(new Dimension(WidgetConstants.MESSAGE_MINIMUM_WIDTH, 0));
         partHitPointWidget = new PartHitPointWidget(scene);
         
         boolean expanded = ExpanderWidget.isExpanded(this, EXPANDED_DEFAULT);

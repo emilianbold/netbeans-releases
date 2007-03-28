@@ -30,29 +30,52 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.GradientFillBord
  * Defines constants to be used throughout the widget classes.
  *
  * @author Nathan Fiedler
+ * @author Shivanand Kini
  */
 public interface WidgetConstants {
+    /** The minimum width for message widget */
+    public int MESSAGE_MINIMUM_WIDTH = 600;
     /** The minimum widget for the top-level widgets (e.g. collaborations). */
-    public int MINIMUM_WIDTH = 600;
+    public int PARTNERLLINKTYPE_MINIMUM_WIDTH = 700;
+    
+    /** Minimum width for partnerlinktypes and messages header*/
+    public int HEADER_MINIMUM_WIDTH = 900;
     
     public Color HIT_POINT_BORDER = new Color(0xE68B2C);
 
+    /** Color for fault arrows*/
     public Color FAULT_ARROW_COLOR = Color.RED;
     
+    /** Color for input/output arrows*/
     public Color INPUT_OUTPUT_ARROW_COLOR = new Color(0x3244A0);
 
+    /** Color for selections in partner view*/
     public Color SELECTION_COLOR = new Color(0xff6600);
 
-    public Color GRADIENT_TOP_COLOR = new Color(0xADCFEF);
+    /** Starting color for gradient in headers*/
+    public Color GRADIENT_TOP_COLOR = Color.WHITE;
+    /** Ending color for gradient in headers*/
+    public Color GRADIENT_BOTTOM_COLOR = new Color(0xADCFEF);
     
-    public Color GRADIENT_BOTTOM_COLOR = Color.WHITE;
-    
+    /** Color for showing disabled widgets*/
     public Color DISABLED_GRAY = new Color(0xDDDDDD);
     
+    /** Border for message and partnerlinktype widgets*/
     public Border OUTER_BORDER = BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK);
     
+    /** Header gradient border*/
     public org.netbeans.api.visual.border.Border GRADIENT_BLUE_WHITE_BORDER = new GradientFillBorder(0, 0, 4, 8,
             null, WidgetConstants.GRADIENT_TOP_COLOR, WidgetConstants.GRADIENT_BOTTOM_COLOR);
+    
+    /** Gap between header and content */
+    public int GAP_BETWEEN_HEADER_AND_CONTENT = 15;
+    
+    /** Gap between child widgets in content*/
+    public int GAP_BETWEEN_CHILD_WIDGETS = 8;
+    
+    /** Empty border for header widgets */
+    public org.netbeans.api.visual.border.Border HEADER_BORDER = org.netbeans.api.visual.border.BorderFactory.createEmptyBorder(5, 0);
+    
 
     
     

@@ -41,6 +41,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
@@ -71,12 +72,11 @@ import org.openide.windows.TopComponent;
  * Container for the message widgets.
  */
 public class MessagesWidget extends Widget implements
-        ActionListener, ExpandableWidget, DnDHandler, PopupMenuProvider {
+        ActionListener, DnDHandler, PopupMenuProvider {
 
     private WSDLModel model;
     private Widget headerLabel;
     private Widget headerWidget;
-    private ExpanderWidget expanderWidget;
     private ButtonWidget addMessageButton;
     private Widget buttons;
 
@@ -93,10 +93,10 @@ public class MessagesWidget extends Widget implements
         super(scene);
         this.model = model;
 
-        setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, 8));
+        setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.CENTER, WidgetConstants.GAP_BETWEEN_HEADER_AND_CONTENT));
         setOpaque(true);
-        setBorder(MAIN_BORDER);
-
+        setBorder(new EmptyBorder(20, 20, 20, 20));
+        
         stubWidget = new StubWidget(scene, NbBundle.getMessage(
                 MessagesWidget.class, 
                 "LBL_MessagesWidget_ThereAreNoMessages"));
@@ -106,19 +106,16 @@ public class MessagesWidget extends Widget implements
                 "LBL_MessagesWidget_AddMessage")); // NOI18N
         addMessageButton.setActionListener(this);
         
-        boolean expanded = ExpanderWidget.isExpanded(this, true);
-        expanderWidget = new ExpanderWidget(scene, this, expanded);
-
         buttons = new Widget(scene);
         buttons.setLayout(LayoutFactory.createHorizontalLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
         buttons.addChild(addMessageButton);
-        buttons.addChild(expanderWidget);
         
-        headerWidget = new HeaderWidget(scene, expanderWidget);
+        headerWidget = new Widget(scene);
         headerWidget.setMinimumSize(new Dimension(
-                WidgetConstants.MINIMUM_WIDTH, 0));
+                WidgetConstants.HEADER_MINIMUM_WIDTH, 0));
         headerWidget.setLayout(new LeftRightLayout(32));
+        headerWidget.setBorder(WidgetConstants.HEADER_BORDER);
         addChild(headerWidget);
         headerWidget.addChild(buttons);
         
@@ -126,10 +123,8 @@ public class MessagesWidget extends Widget implements
 
         contentWidget = new Widget(scene);
         contentWidget.setLayout(LayoutFactory.createVerticalLayout(
-                SerialAlignment.JUSTIFY, 8));
-        if (expanded) {
-            addChild(contentWidget);
-        }
+                SerialAlignment.JUSTIFY, WidgetConstants.GAP_BETWEEN_CHILD_WIDGETS));
+        addChild(contentWidget);
 
         getActions().addAction(((PartnerScene) scene).getDnDAction());
         getActions().addAction(ActionFactory.createPopupMenuAction(this));
@@ -201,17 +196,6 @@ public class MessagesWidget extends Widget implements
             }
         }
     }
-    
-    public void collapseWidget(ExpanderWidget expander) {
-        if (contentWidget.getParentWidget() != null)
-            removeChild(contentWidget);
-    }
-
-    public void expandWidget(ExpanderWidget expander) {
-        if (contentWidget.getParentWidget() == null)
-            addChild(contentWidget);
-    }
-    
     
     public void dragExit() {
         hideHitPoint();
@@ -315,7 +299,6 @@ public class MessagesWidget extends Widget implements
     }
     
     public void expandForDragAndDrop() {
-        expanderWidget.setExpanded(true);
     }
 
     

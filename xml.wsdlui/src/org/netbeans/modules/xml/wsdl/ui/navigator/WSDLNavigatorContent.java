@@ -157,13 +157,13 @@ public class WSDLNavigatorContent extends JPanel
     public void navigate(DataObject dobj) {
         WSDLModel model = null;
         try {
-            WSDLModelCookie modelCookie =
-                    (WSDLModelCookie) dobj.getCookie(WSDLModelCookie.class);
-            assert modelCookie != null;
-            model = modelCookie.getModel();
-            if (model != null) {
-                model.removePropertyChangeListener(this);
-                model.addPropertyChangeListener(this);
+            WSDLModelCookie modelCookie = dobj.getCookie(WSDLModelCookie.class);
+            if (modelCookie != null) {
+                model = modelCookie.getModel();
+                if (model != null) {
+                    model.removePropertyChangeListener(this);
+                    model.addPropertyChangeListener(this);
+                }
             }
         } catch (IOException ioe) {
             // Show a blank page if there is an error.

@@ -87,7 +87,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
         mHeaderWidget.setBorder(WidgetConstants.GRADIENT_BLUE_WHITE_BORDER);
         mHeaderWidget.addChild(mLabelWidget);
         
-        
+        setMinimumSize(new Dimension(WidgetConstants.PARTNERLLINKTYPE_MINIMUM_WIDTH, 0));
         mHeaderWidget.addChild(actionsWidget);
         mHeaderWidget.setOpaque(true);
         

@@ -40,8 +40,11 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.xml.namespace.QName;
 
 import org.netbeans.api.visual.action.ActionFactory;
@@ -79,17 +82,15 @@ import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 public class CollaborationsWidget extends Widget
-        implements ExpandableWidget, DnDHandler, PopupMenuProvider {
+        implements DnDHandler, PopupMenuProvider {
 
     private WSDLModel mModel;
     private Widget mCollaborationContentWidget;
     private Image IMAGE = Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/grapheditor/palette/resources/partnerlinkTypesFolder.png");
     public static final Border MAIN_BORDER = new FilledBorder(1, 1, 8, 8, new Color(0x888888), Color.WHITE);
-    private static final int GAP = 10;
     private ImageLabelWidget mLabelWidget;
     private Widget mHeaderWidget;
     private ButtonWidget createButtonWidget;
-    private ExpanderWidget expanderWidget;
     private PartnerLinkTypeHitPointWidget partnerLinkTypeHitPoint; 
     private Object draggedObject = null;
     private int partnerLinkTypesHitPointIndex = -1;
@@ -106,26 +107,22 @@ public class CollaborationsWidget extends Widget
                 "LBL_CollaborationsWidget_ThereAreNoPartnerLinkTypes"));
 
         setOpaque(true);
-        setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, 8));
-        setBorder(MAIN_BORDER);
+        setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.CENTER, WidgetConstants.GAP_BETWEEN_HEADER_AND_CONTENT));
+        setBorder(new EmptyBorder(20, 20, 40, 20));
         
-        boolean expanded = ExpanderWidget.isExpanded(this, true);
-        expanderWidget = new ExpanderWidget(scene, this, expanded);
-        
-        mHeaderWidget = new HeaderWidget(scene, expanderWidget);
+        mHeaderWidget = new Widget(scene);
         mHeaderWidget.setMinimumSize(new Dimension(
-                WidgetConstants.MINIMUM_WIDTH, 0));
+                WidgetConstants.HEADER_MINIMUM_WIDTH, 0));
         mHeaderWidget.setLayout(new LeftRightLayout(32));
+        mHeaderWidget.setBorder(WidgetConstants.HEADER_BORDER);
         addChild(mHeaderWidget);
         
         mHeaderWidget.addChild(createActionWidget(scene));
         
         mCollaborationContentWidget = new Widget(scene);
-        if (expanded) {
-            addChild(mCollaborationContentWidget);
-        }
+        addChild(mCollaborationContentWidget);
         mCollaborationContentWidget.setLayout(LayoutFactory.createVerticalLayout(
-                SerialAlignment.JUSTIFY, GAP));
+                SerialAlignment.JUSTIFY, WidgetConstants.GAP_BETWEEN_CHILD_WIDGETS));
         getActions().addAction(((PartnerScene) scene).getDnDAction());
         getActions().addAction(ActionFactory.createPopupMenuAction(this));
         createContent();
@@ -209,8 +206,6 @@ public class CollaborationsWidget extends Widget
         });
         actionWidget.addChild(addButtonWidget);
 
-        // Expand button.
-        actionWidget.addChild(expanderWidget);
         return actionWidget;
     }
 
@@ -221,16 +216,6 @@ public class CollaborationsWidget extends Widget
         result.setAlignment(LabelWidget.Alignment.LEFT);
         result.setVerticalAlignment(LabelWidget.VerticalAlignment.CENTER);
         return result;
-    }
-
-    public void collapseWidget(ExpanderWidget expander) {
-        if (mCollaborationContentWidget.getParentWidget() != null)
-            removeChild(mCollaborationContentWidget);
-    }
-
-    public void expandWidget(ExpanderWidget expander) {
-        if (mCollaborationContentWidget.getParentWidget() == null) 
-            addChild(mCollaborationContentWidget);
     }
 
     public Object hashKey() {
@@ -347,7 +332,6 @@ public class CollaborationsWidget extends Widget
     }
 
     public void expandForDragAndDrop() {
-        expanderWidget.setExpanded(true);
     }
 
     public boolean isCollapsed() {

@@ -23,12 +23,15 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.Collections;
 import java.util.List;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -39,15 +42,17 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+
+import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
-import org.netbeans.api.visual.widget.LayerWidget;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.visual.border.EmptyBorder;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.CollaborationsWidget;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.PartnerScene;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.MessagesWidget;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.PartnerScene;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.WidgetConstants;
 import org.netbeans.modules.xml.xam.Component;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -59,11 +64,11 @@ import org.openide.util.Utilities;
  * @author radval
  * @author Nathan Fiedler
  */
-public class GraphView extends JPanel  {
+public class GraphView extends JPanel {
+    
+
     /** Manages the state of the widgets and corresponding objects. */
     private PartnerScene scene;
-    /** Layer containing the visible widgets. */
-    private Widget mMainLayer;
     /** The component model. */
     private WSDLModel mModel;
     /** Layer for drag and drop actions. */
@@ -76,6 +81,10 @@ public class GraphView extends JPanel  {
     private MessagesWidget messagesWidget;
     /** That which contains the collaborations and messages widgets. */
     private Widget contentWidget;
+    
+    private Widget middleWidget;
+    
+    private JScrollPane panel;
 
     /**
      * Creates a new instance of GraphView.
@@ -85,46 +94,43 @@ public class GraphView extends JPanel  {
         this.mModel = model;
 
         scene = new PartnerScene(mModel);
-        JComponent sceneView = scene.createView();
         scene.setBackground(Color.WHITE);
+        scene.setLayout(LayoutFactory.createFillLayout());
         zoomer = new ZoomManager(scene);
 
+        JComponent sceneView = scene.createView();
         // dirty hack to fix issue 93508
         if (sceneView instanceof MouseWheelListener) {
             sceneView.removeMouseWheelListener((MouseWheelListener) sceneView);
         }        
+        panel = new JScrollPane(sceneView);
+        panel.getVerticalScrollBar().setUnitIncrement(16);
+        panel.getHorizontalScrollBar().setUnitIncrement(16);
+        panel.setBorder(null);
+        add(panel, BorderLayout.CENTER);
         
         collaborationsWidget = scene.getCollaborationsWidget();
         messagesWidget = scene.getMessagesWidget();
         // Note that the arrangement of collaborationsWidget and
         // messagesWidget is also controlled by the View actions below.
         contentWidget = new Widget(scene);
-        contentWidget.setBorder(new EmptyBorder(24, 24, 24, 24, false));
-        contentWidget.setLayout(LayoutFactory.createVerticalLayout(
-                SerialAlignment.JUSTIFY, 16));
+        contentWidget.setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.CENTER, 0));
         contentWidget.addChild(collaborationsWidget);
-        Widget lineWidget = new Widget(scene);
-        lineWidget.setMinimumSize(new Dimension(0, 3));
-        lineWidget.setBackground(Color.LIGHT_GRAY);
-        lineWidget.setOpaque(true);
-        contentWidget.addChild(lineWidget);
+        
+        middleWidget = new LineWidget(scene, 5);
+        middleWidget.setMinimumSize(new Dimension(WidgetConstants.HEADER_MINIMUM_WIDTH, 5));
+        middleWidget.setForeground(Color.LIGHT_GRAY);
+        middleWidget.setOpaque(true);
+        contentWidget.addChild(middleWidget);
         contentWidget.addChild(messagesWidget);
 
-        mMainLayer = new LayerWidget(scene);
-        mMainLayer.addChild(contentWidget);
-        mMainLayer.setPreferredLocation(new Point(0, 0));
-        mMainLayer.setBackground(Color.WHITE);
-
+        scene.addChild(contentWidget);
+        
         mDragLayer = scene.getDragOverLayer();
 
-        scene.addChild(mMainLayer);
         scene.addChild(mDragLayer);
+        
 
-        JScrollPane panel = new JScrollPane(sceneView);
-        panel.getVerticalScrollBar().setUnitIncrement(16);
-        panel.getHorizontalScrollBar().setUnitIncrement(16);
-        panel.setBorder(null);
-        add(panel, BorderLayout.CENTER);
     }
 
     /**
@@ -185,7 +191,7 @@ public class GraphView extends JPanel  {
      * @return  true if collaborations is showing, false otherwise.
      */
     public boolean isCollaborationsShowing() {
-        return collaborationsWidget.getParentWidget() != null;
+        return collaborationsWidget.isVisible();
     }
 
     /**
@@ -194,7 +200,7 @@ public class GraphView extends JPanel  {
      * @return  true if messages is showing, false otherwise.
      */
     public boolean isMessagesShowing() {
-        return messagesWidget.getParentWidget() != null;
+        return messagesWidget.isVisible();
     }
 
     @Override
@@ -217,21 +223,12 @@ public class GraphView extends JPanel  {
      * @param  visible  true to make visible, false to hide.
      */
     public void setCollaborationsVisible(boolean visible) {
-        if (visible) {
-            assert !isCollaborationsShowing() : "collaborations already showing!";
-            // Ensure that collaborations appears before messages.
-            List<Widget> children = contentWidget.getChildren();
-            int index = children.indexOf(messagesWidget);
-            if (index < 0) {
-                index = 0;
-            }
-            contentWidget.addChild(index, collaborationsWidget);
-        } else {
-            assert isCollaborationsShowing() : "collaborations already hidden!";
-            contentWidget.removeChild(collaborationsWidget);
-        }
+        collaborationsWidget.setVisible(visible);
+        middleWidget.setVisible(visible && messagesWidget.isVisible());
         scene.validate();
     }
+    
+
 
     /**
      * Change the visibility of the messages container widget.
@@ -239,14 +236,8 @@ public class GraphView extends JPanel  {
      * @param  visible  true to make visible, false to hide.
      */
     public void setMessagesVisible(boolean visible) {
-        if (visible) {
-            assert !isMessagesShowing() : "messages already showing!";
-            // Messages should come after collaborations.
-            contentWidget.addChild(messagesWidget);
-        } else {
-            assert isMessagesShowing() : "messages already hidden!";
-            contentWidget.removeChild(messagesWidget);
-        }
+        middleWidget.setVisible(visible && collaborationsWidget.isVisible());
+        messagesWidget.setVisible(visible);
         scene.validate();
     }
 
@@ -327,6 +318,85 @@ public class GraphView extends JPanel  {
 
         public void run() {
             setMessagesVisible(!isMessagesShowing());
+        }
+    }
+    
+    public class PartnerViewContentLayout implements Layout {
+        Layout layout;
+        
+        public PartnerViewContentLayout() {
+            this(0);
+        }
+        
+        public PartnerViewContentLayout(int gap) {
+            layout =  LayoutFactory.createVerticalLayout(
+                    SerialAlignment.JUSTIFY, gap);
+        }
+
+        public void justify(Widget widget) {
+            layout.justify(widget);
+            List<Widget> children = widget.getChildren();
+            
+            int size = children.size();
+            if (size > 0) {
+                Widget lastWidget = children.get(size - 1);
+                Rectangle parentBounds  = widget.getClientArea();
+              
+                if (getHeight() > parentBounds.height) {
+                    int newHeight = getHeight() - parentBounds.height;
+                    Rectangle rectangle = lastWidget.getBounds();
+                    rectangle.height += newHeight;
+                    lastWidget.resolveBounds (lastWidget.getLocation(), rectangle);
+                }
+            }
+        }
+
+        public void layout(Widget widget) {
+            layout.layout(widget);
+            List<Widget> children = widget.getChildren();
+            int size = children.size();
+            if (size > 0) {
+                Widget lastWidget = children.get(size - 1);
+                
+                Point location = lastWidget.getLocation();
+                Rectangle rect = lastWidget.getBounds();
+                int endOfLastWidget = location.y + rect.height;
+                int diffInHeight = 0;
+                if ((diffInHeight = getHeight() - endOfLastWidget) > 0) {
+                    rect.height += diffInHeight;
+                    lastWidget.resolveBounds (location, rect);
+                }
+            }
+            
+        }
+
+        public boolean requiresJustification(Widget widget) {
+            return true;
+        }
+
+    }
+    
+    
+    public class LineWidget extends Widget {
+        int height = 0;
+        public LineWidget(Scene scene, int height) {
+            super(scene);
+            this.height = height;
+        }
+        
+        @Override
+        protected void paintWidget() {
+            super.paintWidget();
+            Rectangle r = getScene().getBounds();
+            Rectangle clientArea = getClientArea();
+            if (r != null) {
+                Graphics2D g = getGraphics();
+                Color oldColor = g.getColor();
+                g.setColor(getForeground());
+                Point p = convertSceneToLocal(new Point());
+                g.fillRect(p.x, clientArea.height - height, r.width, height);
+                g.setColor(oldColor);
+            }
         }
     }
 }

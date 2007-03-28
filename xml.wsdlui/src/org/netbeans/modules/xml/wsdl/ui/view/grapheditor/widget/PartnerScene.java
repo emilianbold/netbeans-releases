@@ -32,6 +32,8 @@ import javax.swing.JLabel;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
+import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -45,7 +47,7 @@ import org.netbeans.modules.xml.xam.ComponentListener;
  *
  * @author anjeleevich
  */
-public class PartnerScene extends ObjectScene implements ComponentListener {
+public class PartnerScene extends ObjectScene implements ComponentListener, DnDHandler {
     private ButtonAction buttonAction;
     private WidgetAction selectAction;
     private DnDAction dndAction;
@@ -255,5 +257,39 @@ public class PartnerScene extends ObjectScene implements ComponentListener {
                         invertSelection);
             }
         }
+    }
+
+    public void dragExit() {
+        collaborationsWidget.dragExit();
+        messagesWidget.dragExit();
+    }
+
+    public boolean dragOver(Point scenePoint, WidgetDropTargetDragEvent event) {
+        boolean collaborationsHit = collaborationsWidget != null && collaborationsWidget.isVisible() && 
+            collaborationsWidget.isHitAt(collaborationsWidget.convertSceneToLocal(new Point(100, scenePoint.y)));
+        
+        if (collaborationsHit) {
+            return collaborationsWidget.dragOver(scenePoint, event);
+        }
+        return messagesWidget.dragOver(scenePoint, event);
+        
+    }
+
+    public boolean drop(Point scenePoint, WidgetDropTargetDropEvent event) {
+        boolean collaborationsHit = collaborationsWidget != null && collaborationsWidget.isVisible() && 
+        collaborationsWidget.isHitAt(collaborationsWidget.convertSceneToLocal(new Point(100, scenePoint.y)));
+    
+        if (collaborationsHit) {
+            return collaborationsWidget.drop(scenePoint, event);
+        }
+        return messagesWidget.drop(scenePoint, event);
+    }
+
+    public void expandForDragAndDrop() {
+        
+    }
+
+    public boolean isCollapsed() {
+        return false;
     }
 }
