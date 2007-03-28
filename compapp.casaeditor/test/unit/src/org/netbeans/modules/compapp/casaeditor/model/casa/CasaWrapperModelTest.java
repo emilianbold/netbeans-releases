@@ -102,6 +102,12 @@ public class CasaWrapperModelTest extends TestCase {
         ModelSource modelSource = TestCatalogModel.getDefault().createModelSource(casaFileObject, true);
         casaWrapperModel = new CasaWrapperModel(modelSource);
         
+        URI casaWSDLUri = CasaWrapperModelTest.class.getResource(
+                "resources/SynchronousSampleApplication/jbiasa/casa.wsdl").toURI();
+        File casaWSDLFile = new File(casaWSDLUri);
+        FileObject casaWSDLFileObject = FileUtil.toFileObject(casaWSDLFile);
+        ModelSource casaWSDLModelSource = TestCatalogModel.getDefault().createModelSource(casaWSDLFileObject, true);
+        
         componentListener = new TestComponentListener();
         propertyListener = new PropertyListener();
         casaWrapperModel.addComponentListener(componentListener);
@@ -256,6 +262,9 @@ public class CasaWrapperModelTest extends TestCase {
         System.out.println("getBindingComponentName");
         
         CasaPort casaPort = casaWrapperModel.getCasaPorts().get(0);
+        assertEquals("sun-file-binding", casaWrapperModel.getBindingComponentName(casaPort));
+        
+        casaPort = casaWrapperModel.getCasaPorts().get(1);
         assertEquals("sun-http-binding", casaWrapperModel.getBindingComponentName(casaPort));
     }
 
@@ -265,7 +274,13 @@ public class CasaWrapperModelTest extends TestCase {
     public void testSetEndpointName() {
         System.out.println("setEndpointName");
         
+        // file binding
         CasaPort casaPort = casaWrapperModel.getCasaPorts().get(0);
+        casaWrapperModel.setEndpointName(casaPort, "FOO");
+        assertEquals("FOO", casaPort.getEndpointName());
+        
+        // http binding
+        casaPort = casaWrapperModel.getCasaPorts().get(1);
         casaWrapperModel.setEndpointName(casaPort, "FOO");
         assertEquals("FOO", casaPort.getEndpointName());
     }
@@ -409,22 +424,6 @@ public class CasaWrapperModelTest extends TestCase {
     }
 
     /**
-     * Test of getDefaultBindingComponents method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
-     */
-    public void testGetDefaultBindingComponents() {
-        System.out.println("getDefaultBindingComponents");
-        
-        CasaWrapperModel instance = null;
-        
-        Map<String, String> expResult = null;
-        Map<String, String> result = instance.getDefaultBindingComponents();
-        assertEquals(expResult, result);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
      * Test of getCasaConnectionList method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
     public void testGetCasaConnectionList() {
@@ -483,14 +482,13 @@ public class CasaWrapperModelTest extends TestCase {
     public void testAddCasaPort() {
         System.out.println("addCasaPort");
         
-        String componentType = "";
         String componentName = "";
         int x = 0;
         int y = 0;
         CasaWrapperModel instance = null;
         
         CasaPort expResult = null;
-        CasaPort result = instance.addCasaPort(componentType, componentName, x, y);
+        CasaPort result = instance.addCasaPort(componentName, x, y);
         assertEquals(expResult, result);
         
         // TODO review the generated test code and remove the default call to fail.

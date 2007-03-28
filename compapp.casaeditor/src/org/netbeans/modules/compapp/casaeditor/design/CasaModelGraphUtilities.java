@@ -260,10 +260,11 @@ public class CasaModelGraphUtilities {
             return false;
         }
         // String bindingType = model.getDefaultBindingComponents().get(bcCompName);
-        String bindingType = casaPort.getBindingType();
-        if (bindingType == null) {
-            bindingType = model.getDefaultBindingComponents().get(bcCompName);
-        }
+//        String bindingType = casaPort.getBindingType();
+//        if (bindingType == null) {
+//            bindingType = model.getDefaultBindingComponents().get(bcCompName);
+//        }
+        String bindingType = model.getBindingType(casaPort);
         if (bindingType == null) {
             ErrorManager.getDefault().notify(new UnsupportedOperationException(
                     NbBundle.getMessage(CasaModelGraphUtilities.class, "Error_Invalid_Binding_Component") + bcCompName));
