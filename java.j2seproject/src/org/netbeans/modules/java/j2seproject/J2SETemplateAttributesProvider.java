@@ -20,7 +20,6 @@
 package org.netbeans.modules.java.j2seproject;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -39,35 +38,22 @@ import org.openide.loaders.DataObject;
  *
  * @author Jan Pokorsky
  */
-public final class J2SETemplateAttributesProvider implements CreateFromTemplateAttributesProvider {
+final class J2SETemplateAttributesProvider implements CreateFromTemplateAttributesProvider {
     
     private final AntProjectHelper helper;
     
-    public J2SETemplateAttributesProvider(AntProjectHelper helper) {
+    J2SETemplateAttributesProvider(AntProjectHelper helper) {
         this.helper = helper;
     }
 
-    public Map<String, ? extends Object> attributesFor(
-            DataObject template, DataFolder target, String name) {
-        
+    public Map<String,?> attributesFor(DataObject template, DataFolder target, String name) {
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        return addLicense(null, props);
-    }
-    
-    private static Map<String, Object> addLicense(Map<String, Object> attrs, EditableProperties props) {
         String license = props.getProperty("project.license"); // NOI18N
         if (license == null) {
             return null;
         } else {
-            license = license.trim().toLowerCase();
+            return Collections.singletonMap("project", Collections.singletonMap("license", license)); // NOI18N
         }
-        
-        if (attrs == null) {
-            // a cache might be introduced if needed here
-            attrs = new HashMap<String, Object>();
-        }
-        attrs.put("project", // NOI18N
-                Collections.<String, String>singletonMap("license", license)); // NOI18N
-        return attrs;
     }
+
 }
