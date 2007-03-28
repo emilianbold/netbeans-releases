@@ -1,8 +1,9 @@
 defaultpkg.RenameEnum.java
 --------------------
-Rename file RenameEnum.java
 Change class name
-null
+Rename file RenameEnum.java
+--------------------
+File was deleted
 
 
 defaultpkg.RenameEnumDep.java
@@ -11,5 +12,27 @@ Update reference to RenameEnum
 Update reference to RenameEnum
 Update reference to RenameEnum
 Update reference to RenameEnum
+--------------------
+  2   
+  3   public class RenameEnumDep {
+  4       
+  5 -     RenameEnum field = RenameEnum.A;
+    +     NewEnumName field = NewEnumName.A;
+  6 -     public void method(RenameEnum param) {
+    +     public void method(NewEnumName param) {
+  7 -         RenameEnum localVar;
+    +         NewEnumName localVar;
+  8       }
+  9       
+ 10   }
+
+
+defaultpkg.NewEnumName
+--------------------
+package defaultpkg;
+
+public enum NewEnumName {
+    A,B,C;    
+}
 
 

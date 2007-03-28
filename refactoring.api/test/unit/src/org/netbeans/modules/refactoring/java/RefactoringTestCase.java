@@ -47,7 +47,7 @@ public abstract class RefactoringTestCase extends LogTestCase{
         
         void setParameters();
     }
-    
+       
     /**
      * Map of files involved in refactoring. Files are stored as Strings as FQN + extension.
      */
@@ -69,10 +69,10 @@ public abstract class RefactoringTestCase extends LogTestCase{
         FileObject fo = element.getParentFile();
         String relPath = getRelativeFileName(fo);
         if(!refactoredFiles.keySet().contains(relPath)) { //new file
-            try {
+            try {                
                 File fBackUp = new File(getWorkDir(),getRelativeFileName(fo));
                 File oFile = FileUtil.toFile(fo);
-                copyFile(oFile, fBackUp);
+                if(!oFile.isDirectory()) copyFile(oFile, fBackUp);
             } catch (IOException ioe) {
                 fail(ioe.getMessage());
             }
@@ -92,9 +92,11 @@ public abstract class RefactoringTestCase extends LogTestCase{
             ref("--------------------");
             try {
                 File actualFile = new File(classPathWorkDir,fqn2FilePath(fileName));
-                File backupedFile = new File(getWorkDir(),fileName);
-                log("Original file:");
-                log(backupedFile);                                
+                File backupedFile = new File(getWorkDir(),fileName);                                                
+                if(backupedFile.exists()) {
+                    log("Original file:");
+                    log(backupedFile);
+                }                                
                 if(!actualFile.exists()) {
                     ref("File was deleted");
                 } else {

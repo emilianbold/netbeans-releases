@@ -1,6 +1,28 @@
 defaultpkg.RenameAnnot.java
 --------------------
-Rename file RenameAnnot.java
 Change class name
+Rename file RenameAnnot.java
+--------------------
+File was deleted
+
+
+defaultpkg.NewAnnotName
+--------------------
+package defaultpkg;
+
+/**
+ * @author 
+ */
+public @interface NewAnnotName {
+    //comments
+    String text() default "n/a";
+    /** javadoc */
+    String[] texts();
+    int number();
+    
+}
+
+Missing reference updates
+
 
 
