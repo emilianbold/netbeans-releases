@@ -35,9 +35,9 @@ public class SyncUpdateTest extends NbTestCase {
         assertEquals("newafaa", rule.getFromViewId());
     }
     
-    public boolean propertyChangeCalled = false; 
+    public boolean propertyChangeCalled = false;
     public void testSyncNotWellFormedElement() throws Exception {
-        
+        propertyChangeCalled = false;
         List<NavigationRule> navRules;
         
         JSFConfigModel model = Util.loadRegistryModel("faces-config-05.xml");
@@ -52,7 +52,7 @@ public class SyncUpdateTest extends NbTestCase {
             Util.setDocumentContentTo(model,"faces-config-notwellformed.xml");
         } catch (IOException ioe ){
             assertEquals("java.io.IOException: Invalid token '<' found in document: Please use the text editor to resolve the issues...", ioe.toString());
-//            System.out.println(ioe);
+            //            System.out.println(ioe);
         }
         
         //An Exception Should be thrown
@@ -72,4 +72,28 @@ public class SyncUpdateTest extends NbTestCase {
         
         assertTrue(propertyChangeCalled);
     }
+    
+    public void testSyncRemoveRule() throws Exception {
+        
+        propertyChangeCalled = false;
+        
+        /* Load a file that has a simple rule*/
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-03.xml");
+        
+         model.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent arg0) {
+                propertyChangeCalled = true;
+            }
+        });       
+
+        try {
+            Util.setDocumentContentTo(model,"faces-config-empty.xml");
+        } catch (IOException ioe ){
+            ioe.printStackTrace();
+            assertTrue(false);
+        }
+        
+        assertTrue(propertyChangeCalled);
+    }
+    
 }
