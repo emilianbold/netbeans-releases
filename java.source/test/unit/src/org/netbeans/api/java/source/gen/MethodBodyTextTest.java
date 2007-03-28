@@ -18,20 +18,21 @@
  */
 package org.netbeans.api.java.source.gen;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Collections;
+import java.io.*;
+import java.util.*;
+
+import com.sun.source.tree.*;
+
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import com.sun.source.tree.*;
-import java.io.File;
-import org.netbeans.api.java.source.*;
-import static org.netbeans.api.java.source.JavaSource.*;
-import org.netbeans.junit.NbTestSuite;
+
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+
+import org.netbeans.api.java.source.*;
+import static org.netbeans.api.java.source.JavaSource.*;
+
+import org.netbeans.junit.NbTestSuite;
 
 /**
  * Tests indentation of newly generated body text in method.
@@ -54,6 +55,8 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new MethodBodyTextTest("testModifyBodyText"));
         suite.addTest(new MethodBodyTextTest("testReplaceConstrBody"));
         suite.addTest(new MethodBodyTextTest("testReplaceMethod"));
+        suite.addTest(new MethodBodyTextTest("testReplaceMethodBody1"));
+        suite.addTest(new MethodBodyTextTest("testReplaceMethodBody2"));
         return suite;
     }
 
@@ -345,7 +348,123 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void testReplaceMethodBody1() throws Exception {
+        System.err.println("testReplaceMethod");
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public Object method() {\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public Object method() {\n" +
+            "return new Integer(5);\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree meth = (MethodTree) clazz.getMembers().get(1);
+                String bodyText = "{return new Integer(5);}";
+                MethodTree newMeth = make.Method(
+                        meth.getModifiers(),
+                        meth.getName(),
+                        meth.getReturnType(),
+                        meth.getTypeParameters(),
+                        meth.getParameters(),
+                        meth.getThrows(),
+                        bodyText,
+                        (ExpressionTree) meth.getDefaultValue()
+                );
+                workingCopy.rewrite(meth.getBody(), newMeth.getBody());
+            }
 
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testReplaceMethodBody2() throws Exception {
+        System.err.println("testReplaceMethod");
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public float method() {\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public float method() {\n" +
+            "return 0.0F;\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree meth = (MethodTree) clazz.getMembers().get(1);
+                String bodyText = "{return 0.0f;}";
+                MethodTree newMeth = make.Method(
+                        meth.getModifiers(),
+                        meth.getName(),
+                        meth.getReturnType(),
+                        meth.getTypeParameters(),
+                        meth.getParameters(),
+                        meth.getThrows(),
+                        bodyText,
+                        (ExpressionTree) meth.getDefaultValue()
+                );
+                workingCopy.rewrite(meth.getBody(), newMeth.getBody());
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getSourcePckg() {
         return "org/netbeans/test/codegen/indent/";
     }
