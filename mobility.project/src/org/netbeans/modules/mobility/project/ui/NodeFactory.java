@@ -101,7 +101,7 @@ final class NodeFactory
         {
             for ( Node n : ns)
             {
-                nodeMap.put(n.getName(),n);
+                nodeMap.put(n.getName()+n.getDisplayName(),n);
             }
             this.setKeys(nodeMap.keySet());
             return true;
@@ -111,7 +111,7 @@ final class NodeFactory
         {
             for ( Node n : ns )
             {
-                nodeMap.remove(n.getName());
+                nodeMap.remove(n.getName()+n.getDisplayName());
             }
             this.setKeys(nodeMap.keySet());
             return true;

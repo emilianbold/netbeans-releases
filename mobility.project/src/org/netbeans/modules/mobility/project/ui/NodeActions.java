@@ -363,12 +363,12 @@ class RemoveResourceAction extends NodeAction<Object>
     protected List<VisualClassPathItem> addItems(final Object[] items, final List<VisualClassPathItem> set, final Node node )
     {
         final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
-        final VisualClassPathItem  file=node.getLookup().lookup(VisualClassPathItem.class);
+        final VisualClassPathItem  item=node.getLookup().lookup(VisualClassPathItem.class);
         final PropertyEvaluator eval=project.getLookup().lookup(AntProjectHelper.class).getStandardPropertyEvaluator();
         List<VisualClassPathItem> newSet=new ArrayList<VisualClassPathItem>(set);
         
         for ( final VisualClassPathItem vcp : set ) {
-            if (vcp.equals(file))
+            if (vcp.equals(item))
             {
                 newSet.remove(vcp);
                 break;

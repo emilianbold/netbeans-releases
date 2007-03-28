@@ -206,7 +206,7 @@ class ConfigurationsProvider
                     if (item != null)
                     {   
                         final File f=FileUtil.toFile(file);
-                        final Lookup lookup=Lookups.fixed(new Object[] {project, conf, f} );
+                        final Lookup lookup=Lookups.fixed(new Object[] {project, conf, item} );
                         
                         
                         
@@ -276,13 +276,15 @@ class ConfigurationsProvider
                 String xPath=helper.getStandardPropertyEvaluator().evaluate(raw);               
                 StringTokenizer tokens=new StringTokenizer(xPath,File.pathSeparator);
                 Node libNode=null;
-                boolean multi=tokens.countTokens()>1;
-                boolean empty=tokens.countTokens()!=0;
+                final boolean multi=tokens.countTokens()>1;
+                final boolean empty=tokens.countTokens()!=0;
+                FileObject fo=null;
+                
                 do
                 {
                     String iPath=empty ? tokens.nextToken() : xPath;
                     final File f=FileUtil.normalizeFile(new File(iPath));
-                    final FileObject fo=iPath.equals("")?null:FileUtil.toFileObject(f);  
+                    fo=iPath.equals("")?null:FileUtil.toFileObject(f);  
                     FileObject fRoot=fo;                      
                     assert f != null;
                     if (fo==null)
@@ -382,17 +384,18 @@ class ConfigurationsProvider
                 } while (tokens.hasMoreTokens());
                 
                 path=ClassPathSupport.createClassPath(list.toArray(new FileObject[list.size()]));        
-                if (multi==false)
-                    brokenArray.addAll(createPackage(project,conf,path,map,!gray,multi)); 
-                else
-                {
-                    final Lookup lookup = Lookups.fixed( new Object[] {project,conf, item} );
-                    Children ch=new Children.Array();
-                    ch.add(createPackage(project,conf,path,map,!gray,multi).toArray(new Node[0]));
-                    libNode=new FNode(new ActionNode(ch,lookup,xPath,item.getDisplayName(),null,null),lookup,null,item);
-                    brokenArray.add(libNode);
+                if (fo != null)
+                    if (multi==false)
+                        brokenArray.addAll(createPackage(project,conf,path,map,!gray,multi)); 
+                    else
+                    {
+                        final Lookup lookup = Lookups.fixed( new Object[] {project,conf, item} );
+                        Children ch=new Children.Array();
+                        ch.add(createPackage(project,conf,path,map,!gray,multi).toArray(new Node[0]));
+                        libNode=new FNode(new ActionNode(ch,lookup,xPath,item.getDisplayName(),null,null),lookup,null,item);
+                        brokenArray.add(libNode);
 
-                }
+                    }
                 list.clear();
             }  
         }        
