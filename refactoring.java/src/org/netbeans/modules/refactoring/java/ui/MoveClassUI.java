@@ -22,8 +22,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Collections;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -37,6 +40,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
     
@@ -53,14 +57,15 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
     }
     
     public MoveClassUI (DataObject javaObject) {
-        this(javaObject, null, null);
+        this(javaObject, null, null, Collections.<TreePathHandle>emptyList());
     }
     
-    public MoveClassUI (DataObject javaObject, FileObject targetFolder, PasteType pasteType) {
+    public MoveClassUI (DataObject javaObject, FileObject targetFolder, PasteType pasteType, Collection<TreePathHandle> handles) {
         this.disable = targetFolder != null ;
         this.targetFolder = targetFolder;
         this.javaObject = javaObject;
         this.pasteType = pasteType;
+        this.refactoring = new MoveRefactoring(new ProxyLookup(Lookups.fixed(handles.toArray(new Object[handles.size()])),Lookups.fixed(handles.toArray(new Object[handles.size()]))));
     }
     
     public String getName() {
@@ -127,9 +132,6 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
     }
     
     public AbstractRefactoring getRefactoring() {
-        if (refactoring == null) {
-            refactoring = new MoveRefactoring(Lookups.singleton(javaObject.getPrimaryFile()));
-        }
         return refactoring;
     }
     

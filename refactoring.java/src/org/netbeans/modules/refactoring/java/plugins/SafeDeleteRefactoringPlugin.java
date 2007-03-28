@@ -257,7 +257,9 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                         co.toPhase(Phase.ELEMENTS_RESOLVED);
                         CompilationUnitTree cut = co.getCompilationUnit();
                         for (Tree t: cut.getTypeDecls()) {
-                            grips.add(TreePathHandle.create(TreePath.getPath(cut, t), co));
+                            TreePathHandle handle = TreePathHandle.create(TreePath.getPath(cut, t), co);
+                            if (!containsHandle(handle, co))
+                                grips.add(handle);
                         }
                         controllers.add(co.getClasspathInfo());
                     }
@@ -293,6 +295,15 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                 return problemFromUsage;
         }
         return null;
+    }
+    
+    private boolean containsHandle(TreePathHandle handle, CompilationInfo info) {
+        for (TreePathHandle current : refactoring.getRefactoringSource().lookupAll(TreePathHandle.class)) {
+            if (current.resolveElement(info).equals(handle.resolveElement(info))) {
+                return true;
+            };
+        }
+        return false;
     }
     
     private WhereUsedQuery createQuery(TreePathHandle tph) {

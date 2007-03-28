@@ -24,8 +24,11 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -86,7 +89,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     }
                     if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
                         FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
-                        return new RenameRefactoringUI(f==null?info.getFileObject():f);
+                        return new RenameRefactoringUI(f==null?info.getFileObject():f, selectedElement, info);
                     } else {
                         return new RenameRefactoringUI(selectedElement, info);
                     }
@@ -95,19 +98,19 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         } else {
             new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
-                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     String newName = getName(dictionary);
                     if (newName!=null) {
                         if (pkg[0]!= null)
                             return new RenameRefactoringUI(pkg[0], newName);
                         else
-                            return new RenameRefactoringUI(selectedElements[0], newName);
+                            return new RenameRefactoringUI(selectedElements[0], newName, handles.iterator().next(), cinfo.get());
                     }
                     else 
                         if (pkg[0]!= null)
                             return new RenameRefactoringUI(pkg[0]);
                         else
-                            return new RenameRefactoringUI(selectedElements[0]);
+                            return new RenameRefactoringUI(selectedElements[0], handles.iterator().next(), cinfo.get());
                 }
             }.run();
         }
@@ -159,7 +162,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 //        } else {
             new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
-                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handle) {
                     return new CopyClassRefactoringUI(selectedElements[0], getTarget(dictionary), getPaste(dictionary));
                 }
             }.run();
@@ -266,7 +269,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
                     if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
-                        return new SafeDeleteUI(new FileObject[]{info.getFileObject()});
+                        return new SafeDeleteUI(new FileObject[]{info.getFileObject()}, Collections.singleton(selectedElement));
                     } else {
                         return new SafeDeleteUI(new TreePathHandle[]{selectedElement}, info);
                     }
@@ -275,8 +278,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         } else {
             new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
-                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
-                    return new SafeDeleteUI(selectedElements);
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
+                    return new SafeDeleteUI(selectedElements, handles);
                 }
                 
             }.run();
@@ -402,12 +405,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         } else {
             new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
-                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     PasteType paste = getPaste(dictionary);
                     FileObject tar=getTarget(dictionary);
                     if (selectedElements.length == 1) {
                         try {
-                            return new MoveClassUI(DataObject.find(selectedElements[0]), tar, paste);
+                            return new MoveClassUI(DataObject.find(selectedElements[0]), tar, paste, handles);
                         } catch (DataObjectNotFoundException ex) {
                             throw (RuntimeException) new RuntimeException().initCause(ex);
                         }
@@ -517,6 +520,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         private Collection<? extends Node> nodes;
         private RefactoringUI ui;
         public NonRecursiveFolder pkg[];
+        public WeakReference<CompilationInfo> cinfo;
         
         public NodeToFileObject(Collection<? extends Node> nodes) {
             this.nodes = nodes;
@@ -526,17 +530,41 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             FileObject[] fobs = new FileObject[nodes.size()];
             pkg = new NonRecursiveFolder[fobs.length];
             int i = 0;
+            final Collection<TreePathHandle> handles = new ArrayList<TreePathHandle>();
             for (Node node:nodes) {
                 DataObject dob = (DataObject) node.getCookie(DataObject.class);
                 if (dob!=null) {
                     fobs[i] = dob.getPrimaryFile();
+                    RetoucheUtils.isJavaFile(fobs[i]);
+                    JavaSource source = JavaSource.forFileObject(fobs[i]);
+                    assert source != null;
+                    try {
+                        source.runUserActionTask(new CancellableTask<CompilationController>() {
+                            public void cancel() {
+                            }
+                            
+                            public void run(CompilationController info) throws Exception {
+                                info.toPhase(Phase.ELEMENTS_RESOLVED);
+                                CompilationUnitTree unit = info.getCompilationUnit();
+                                TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit, unit.getTypeDecls().get(0)),info);
+                                handles.add(representedObject);
+                                cinfo=new WeakReference<CompilationInfo>(info);
+                            }
+                            
+                        }, false);
+                    } catch (IllegalArgumentException ex) {
+                        ex.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                    
                     pkg[i++] = node.getLookup().lookup(NonRecursiveFolder.class);
                 }
             }
-            UI.openRefactoringUI(createRefactoringUI(fobs));
+            UI.openRefactoringUI(createRefactoringUI(fobs, handles));
         }
 
-        protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement);
+        protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement, Collection<TreePathHandle> handles);
     }    
     
     static boolean isFromEditor(EditorCookie ec) {

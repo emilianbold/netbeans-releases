@@ -125,10 +125,11 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         //this(jmiObject, (FileObject) null, true);
     }
     
-    public RenameRefactoringUI(FileObject file) {
-        this.refactoring = new RenameRefactoring(Lookups.singleton(file));
+    public RenameRefactoringUI(FileObject file, TreePathHandle handle, CompilationInfo info) {
+        this.refactoring = new RenameRefactoring(Lookups.fixed(file, handle));
         oldName = file.getName();
         dispOldName = oldName;
+        refactoring.getContext().add(info);
         //this(jmiObject, (FileObject) null, true);
     }
 
@@ -145,12 +146,13 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 //        return new MoveClassRefactoring(folder, packageRename);
 //    }
 
-    RenameRefactoringUI(FileObject jmiObject, String newName) {
-        this.refactoring = new RenameRefactoring(Lookups.singleton(jmiObject));
+    RenameRefactoringUI(FileObject jmiObject, String newName, TreePathHandle handle, CompilationInfo info) {
+        this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject, handle));
         //this.jmiObject = jmiObject;
         oldName = newName;
         //[FIXME] this should be oldName of refactored object
         this.dispOldName = newName;
+        refactoring.getContext().add(info);
         fromListener = true;
     }
     

@@ -60,7 +60,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         } else {
             new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
-                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     throw new UnsupportedOperationException("Not supported yet!");
                     //return new ExtractInterfaceRefactoringUI(selectedElements[0],(CompilationInfo) null);
                 }
@@ -106,7 +106,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         } else {
             new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
-                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     throw new UnsupportedOperationException("Not supported yet!");
                     //return new ExtractInterfaceRefactoringUI(selectedElements[0],(CompilationInfo) null);
                 }
@@ -152,7 +152,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         } else {
             new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
-                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     throw new UnsupportedOperationException("Not supported yet!");
                     //return new ExtractInterfaceRefactoringUI(selectedElements[0],(CompilationInfo) null);
                 }

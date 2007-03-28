@@ -21,6 +21,7 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -34,6 +35,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * A CustomRefactoringUI subclass that represents Safe Delete
@@ -54,9 +56,9 @@ public class SafeDeleteUI implements RefactoringUI{
      * @param selectedElements An array of selected Elements that need to be 
      * safely deleted
      */
-    public SafeDeleteUI(FileObject[] selectedElements) {
+    public SafeDeleteUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
         this.elementsToDelete = selectedElements;
-        refactoring = new SafeDeleteRefactoring(Lookups.fixed(elementsToDelete));
+        refactoring = new SafeDeleteRefactoring(new ProxyLookup(Lookups.fixed(elementsToDelete), Lookups.fixed(handles.toArray(new Object[handles.size()]))));
     }
 
     /**
