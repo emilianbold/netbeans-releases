@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -47,6 +48,7 @@ import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.editor.guards.SimpleSection;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
@@ -863,7 +865,8 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         
         if (guardedProvider != null) {
             guardedEditor.doc = doc;
-            Reader reader = guardedProvider.createGuardedReader(stream, null);
+            Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+            Reader reader = guardedProvider.createGuardedReader(stream, c.name());
             try {
                 kit.read(reader, doc, 0);
             } finally {
@@ -877,7 +880,8 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     @Override
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
         if (guardedProvider != null) {
-            Writer writer = guardedProvider.createGuardedWriter(stream, null);
+            Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+            Writer writer = guardedProvider.createGuardedWriter(stream, c.name());
             try {
                 kit.write(writer, doc, 0, doc.getLength());
             } finally {
