@@ -104,6 +104,7 @@ public class OperationGeneratorHelper {
         
         WSDLComponentFactory factory = wsdlModel.getFactory();
         Definitions definitions = wsdlModel.getDefinitions();
+        Types types = definitions.getTypes();
         int counter = 0;
         //create message for each schema element
         String messageNameBase = operationName;
@@ -113,59 +114,74 @@ public class OperationGeneratorHelper {
         
         try {
             wsdlModel.startTransaction();
-            //for(int i = 0; i < inputParms.length; i++){
-            //assume one parameter for now
-
-            Types types = wsdlModel.getDefinitions().getTypes();
-            Collection<Schema> schemas = types.getSchemas();
+            
+            //TODO: Need to determine if it is request-response or one-way
+            RequestResponseOperation operation = factory.createRequestResponseOperation();
+            operation.setName(operationName);
+            
             SchemaModel schemaModel = null;
-            for (Schema s:schemas) {
-                schemaModel = s.getModel();
-                System.out.println("schemaModel = "+schemaModel+":"+s.getTargetNamespace());
-                break;
-            }
-            Schema schema = schemaModel.getSchema();
+            Schema schema = null;
             
-            GlobalElement paramElement = null;
             
-            if (parameterTypes.size()>0) {
-                ReferenceableSchemaComponent parameterType = parameterTypes.get(0).getParamType();
+            Message inputMessage=null;
+            for(ParamModel param : parameterTypes){
+                GlobalElement paramElement = null;
+                ReferenceableSchemaComponent parameterType = param.getParamType();
+                schemaModel = parameterType.getModel();
+                schema = schemaModel.getSchema();
                 if (parameterType instanceof GlobalType) {
                     paramElement = schemaModel.getFactory().createGlobalElement();
-                    paramElement.setName(operationName+"_param");
-                    NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)parameterType, GlobalType.class);
-                    paramElement.setType(typeRef);
-                    schema.addElement(paramElement);
+                    
+                    this.addParameterToType((GlobalType)parameterType, paramElement, types, operationName);
+                    
+                    //paramElement.setName(operationName+"_param");
+                    //NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)parameterType, GlobalType.class);
+                    //paramElement.setType(typeRef);
+                    //schemaModel.startTransaction();
+                    //schema.addElement(paramElement);
+                    //schemaModel.endTransaction();
                 } else if (parameterType instanceof GlobalElement) {
                     paramElement=(GlobalElement)parameterType;
                 }
+                
+                
+                if (paramElement!=null) {
+                    if(inputMessage == null){
+                        inputMessage = factory.createMessage();
+                        inputMessage.setName(messageName);
+                        definitions.addMessage(inputMessage);
+                    }
+                    Part part = factory.createPart();
+                    part.setName(partName);
+                    NamedComponentReference<GlobalElement> ref = part.createSchemaReference(paramElement, GlobalElement.class);
+                    part.setElement(ref);
+                    inputMessage.addPart(part);
+                }
+            }
+            
+            if (inputMessage!=null) {
+                Input input = factory.createInput();
+                NamedComponentReference<Message> inputRef = input.createReferenceTo(inputMessage, Message.class);
+                input.setName(operationName);
+                input.setMessage(inputRef);
+                operation.setInput(input);
             }
             
             GlobalElement returnElement = null;
-            if (returnType instanceof GlobalType) {
-                returnElement = schemaModel.getFactory().createGlobalElement();
-                returnElement.setName(operationName+"_return");
-                NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)returnType, GlobalType.class);
-                returnElement.setType(typeRef);
-                schema.addElement(returnElement);
-            } else if (returnType instanceof GlobalElement) {
-                returnElement=(GlobalElement)returnType;
+            if(returnType != null){
+                schemaModel = returnType.getModel();
+                schema = schemaModel.getSchema();
+                if (returnType instanceof GlobalType) {
+                    returnElement = schemaModel.getFactory().createGlobalElement();
+                    returnElement.setName(operationName+"_return");
+                    NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)returnType, GlobalType.class);
+                    returnElement.setType(typeRef);
+                    schema.addElement(returnElement);
+                } else if (returnType instanceof GlobalElement) {
+                    returnElement=(GlobalElement)returnType;
+                }
             }
-
-            Message inputMessage=null;
-            if (paramElement!=null) {
-                inputMessage = factory.createMessage();
-                inputMessage.setName(messageName);
-
-                Part part = factory.createPart();
-                part.setName(partName);
-                NamedComponentReference<GlobalElement> ref = part.createSchemaReference(paramElement, GlobalElement.class);
-                part.setElement(ref);
-                inputMessage.addPart(part);
-                definitions.addMessage(inputMessage);
-            }
-
-
+            
             Message outputMessage=null;
             if (returnElement!=null) {
                 outputMessage = factory.createMessage();
@@ -177,19 +193,7 @@ public class OperationGeneratorHelper {
                 outputMessage.addPart(outpart);
                 definitions.addMessage(outputMessage);
             }
-
-            //TODO: Need to determine if it is request-response or one-way
-            RequestResponseOperation operation = factory.createRequestResponseOperation();
-            operation.setName(operationName);
-
-            if (inputMessage!=null) {
-                Input input = factory.createInput();
-                NamedComponentReference<Message> inputRef = input.createReferenceTo(inputMessage, Message.class);
-                input.setName(operationName);
-                input.setMessage(inputRef);
-                operation.setInput(input);
-            }
-
+            
             if (outputMessage!=null) {
                 Output output = factory.createOutput();
                 NamedComponentReference<Message> outputRef = output.createReferenceTo(outputMessage, Message.class);
@@ -197,7 +201,7 @@ public class OperationGeneratorHelper {
                 output.setMessage(outputRef);
                 operation.setOutput(output);
             }
-
+            
             Collection<PortType> portTypes = definitions.getPortTypes();
             PortType portType = null;
             for(PortType p : portTypes){
@@ -210,9 +214,11 @@ public class OperationGeneratorHelper {
                 portType.addOperation(operation);
             } else{
                 //TODO: what will we do if portType is not found?
+                return null;
             }
-
+            
             //Add binding section for operation, if there is a binding section
+            //Assume SOAP binding only
             Collection<Binding> bindings = definitions.getBindings();
             Binding binding = null;
             if(portType != null && bindings.size() > 0){
@@ -234,7 +240,7 @@ public class OperationGeneratorHelper {
                         Style style = soapBinding.getStyle();
                         BindingOperation bOp = factory.createBindingOperation();
                         bOp.setName(operation.getName());
-
+                        
                         SOAPOperation soapOperation = factory.createSOAPOperation();
                         soapOperation.setSoapAction("");  //TODO: have user set this in UI?
                         //if style is not specified at the SOAP binding level, specify it
@@ -272,7 +278,7 @@ public class OperationGeneratorHelper {
                     }else{
                         return null; //Not SOAP binding, we cannot do anything
                     }
-
+                    
                 }
             }
             return operation;
@@ -280,6 +286,22 @@ public class OperationGeneratorHelper {
             wsdlModel.endTransaction();
         }
     }
+    
+    private void addParameterToType(GlobalType parameterType, GlobalElement paramElement, Types types, String operationName){
+        //TODO: Need to know what schema the new type was imported from
+        //For now, just get the first schema in the types section
+        Collection<Schema> schemas = types.getSchemas();
+        if(schemas.size() > 0){
+            Schema schema = schemas.iterator().next();
+            paramElement.setName(operationName+"_param");
+            NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)parameterType, GlobalType.class);
+            paramElement.setType(typeRef);
+            schema.addElement(paramElement);
+        } else{
+            //TODO: create a new schema and add parameter type to it
+        }
+    }
+    
     /** call wsimport to generate java artifacts
      * generate WsdlModel to find information about the new operation
      * add new menthod to implementation class

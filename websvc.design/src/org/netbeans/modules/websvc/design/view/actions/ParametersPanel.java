@@ -309,7 +309,13 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
               int index = parameters.size();
               parameters.add(parameter);
               if (schemaTypes.size()>0) {
-                 setValueAt(schemaTypes.get(0).getName(), index, 1);
+                 ReferenceableSchemaComponent ref = schemaTypes.get(0); 
+                 String value = ref.getName();
+                 //TODO: need a better way to detect primitive types
+                 if(ref instanceof GlobalType){
+                     value = Utils.getDisplayName(ref);
+                 }
+                 setValueAt(value, index, 1);
               }
               fireTableRowsInserted(index, index);
               return index;
@@ -362,6 +368,7 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 for (ReferenceableSchemaComponent schemaType: schemaTypes) {
                     if (aValue!=null && Utils.getDisplayName(schemaType).equals(aValue)) {
                         changedParameter.setParamType(schemaType);
+                        break;
                     }
                 }
                 changedParameter.setParamName(parameter.getParamName());
