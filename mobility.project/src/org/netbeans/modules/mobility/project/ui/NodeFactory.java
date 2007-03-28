@@ -458,16 +458,19 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                 }
                 if (DND_TYPE.equals(flavor.getSubType ())) {
                     Node node=NodeTransfer.node(tr,NodeTransfer.DND_COPY_OR_MOVE);
-                    J2MEProject project=node.getLookup().lookup(J2MEProject.class);
-                    if (project != null)
+                    if (node !=null)
                     {
-                        HashSet<Node> set=map.get(project);
-                        if (set == null)
+                        J2MEProject project=node.getLookup().lookup(J2MEProject.class);
+                        if (project != null)
                         {
-                            set = new HashSet<Node>();
-                            map.put(project,set);
+                            HashSet<Node> set=map.get(project);
+                            if (set == null)
+                            {
+                                set = new HashSet<Node>();
+                                map.put(project,set);
+                            }
+                            set.add(node);
                         }
-                        set.add(node);
                     }
                     if (map.size() != 0)
                         return pType;
