@@ -96,6 +96,15 @@ public class ProfilesModelHelper {
      * Creates a new instance of ProfilesModelHelper
      */
     public ProfilesModelHelper() { }
+
+    public static boolean isSSLProfile(String s) {
+        if (ComboConstants.PROF_MSGAUTHSSL.equals(s) || 
+            ComboConstants.PROF_SAMLSSL.equals(s) ||
+            ComboConstants.PROF_TRANSPORT.equals(s)) {
+            return true;
+        }
+        return false;
+    }
     
     /** 
      * Returns security profile for Binding or BindingOperation

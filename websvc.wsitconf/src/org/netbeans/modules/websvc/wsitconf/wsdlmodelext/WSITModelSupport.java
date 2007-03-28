@@ -27,6 +27,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.undo.UndoManager;
 import javax.xml.namespace.QName;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -47,6 +49,7 @@ import org.netbeans.modules.websvc.wsitconf.util.UndoManagerHolder;
 import org.netbeans.modules.websvc.wsitconf.WSITEditor;
 import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
 import org.netbeans.modules.websvc.wsitconf.util.SourceUtils;
+import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -61,7 +64,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -84,6 +86,8 @@ public class WSITModelSupport {
     public static final String MAIN_CONFIG_EXTENSION = "xml";                   //NOI18N
     public static final String CONFIG_WSDL_EXTENSION = "xml";                   //NOI18N
 
+    private static final Logger logger = Logger.getLogger(WSITModelSupport.class.getName());
+    
     /** Creates a new instance of WSITModelSupport */
     public WSITModelSupport() {
     }
@@ -108,11 +112,11 @@ public class WSITModelSupport {
                 } else {
                     model = getModelForServiceFromWsdl(jaxWsModel, service);
                 }
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.getMessage());
+            } catch (IOException e) {
+                logger.log(Level.INFO, null, e);
             }            
         } else { //neither a client nor a service, get out of here
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Unable to identify node type: " + node); //NOI18N
+            logger.log(Level.INFO, "Unable to identify node type: " + node);
         }
         
         if ((model != null) && (umHolder != null) && (umHolder.getUndoManager() == null)) {
@@ -251,11 +255,6 @@ public class WSITModelSupport {
         }
     }
 
-    private static FileObject getFOForModel(WSDLModel model) {
-        ModelSource ms = model.getModelSource();
-        return Utilities.getFileObject(ms);
-    }
-    
     /** Creates new empty main client configuration file
      *
      */
@@ -547,7 +546,7 @@ public class WSITModelSupport {
     }    
     
     public static void fillImportedBindings(final WSDLModel model, Collection<Binding> bindings, HashSet<FileObject> traversedModels) {
-        FileObject modelFO = getFOForModel(model);
+        FileObject modelFO = Util.getFOForModel(model);
         // avoid neverending recursion for recursive imports
         if (traversedModels.contains(modelFO)) {
             return;

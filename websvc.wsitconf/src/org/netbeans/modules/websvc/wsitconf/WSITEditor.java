@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.websvc.wsitconf;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -41,7 +43,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.*;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -51,6 +52,8 @@ import org.openide.util.NbBundle;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
@@ -59,6 +62,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObjectNotFoundException;
 
 /**
@@ -67,6 +71,8 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class WSITEditor implements WSEditor, UndoManagerHolder {
 
+    private static final Logger logger = Logger.getLogger(WSITEditor.class.getName());
+    
     private UndoManager undoManager;
     private Collection<FileObject> createdFiles = new LinkedList();
             
@@ -91,24 +97,66 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         //is it a service node?
         Service service = (Service)node.getLookup().lookup(Service.class);
         
-        Project p = null;
+        final Project p;
         if (jaxWsModel != null) {
             p = FileOwnerQuery.getOwner(jaxWsModel.getJaxWsFile());
+        } else {
+            p = null;
         }
-        
+                
         boolean wsitSupported = false;
         if (client != null){ //its a client
             if (p != null) {
-                JAXWSClientSupport wscs = JAXWSClientSupport.getJaxWsClientSupport(p.getProjectDirectory());
+                final JAXWSClientSupport wscs = JAXWSClientSupport.getJaxWsClientSupport(p.getProjectDirectory());
                 if (wscs != null) {
+                    PropertyChangeListener jaxWsClientListener = new PropertyChangeListener() {
+                        public void propertyChange(PropertyChangeEvent arg0) {
+                            if (arg0 != null) {
+                                Object newV = arg0.getNewValue();
+                                Object oldV = arg0.getOldValue();
+                                if ((oldV != null) && (newV == null)) {  //being removed
+                                    if (oldV instanceof Client) {
+                                        Client c = (Client)oldV;
+                                        
+                                    }
+                                }
+                            }
+//                            JaxWsModel jaxWsModel = (JaxWsModel)p.getLookup().lookup(JaxWsModel.class);
+//                            String implClass = s.getImplementationClass();
+//                            String configWsdlName = WSITModelSupport.CONFIG_WSDL_EXTENSION + implClass;
+//                            if ((implClass != null) && (implClass.length() > 0)) {
+//                                try {
+//                                    if (wscs.getWsdlFolder(false) != null) {
+//                                        FileObject wsdlFO = wscs.getWsdlFolder(
+//                                                false).getParent().getFileObject(configWsdlName, WSITModelSupport.CONFIG_WSDL_EXTENSION);
+//                                        if ((wsdlFO != null) && (wsdlFO.isValid())) {   //NOI18N
+//                                            FileLock lock = null;
+//                                            try {
+//                                                lock = wsdlFO.lock();
+//                                                wsdlFO.delete(lock);
+//                                            } finally {
+//                                                if (lock != null) {
+//                                                    lock.releaseLock();
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                } catch (IOException e) {
+//                                    // burn
+//                                }
+//                            }
+                        }
+                    };
+                    jaxWsModel.addPropertyChangeListener(jaxWsClientListener);
+
                     wsitSupported = Util.isWsitSupported(p);
                     if (wsitSupported) {
                         try {
                             clientWsdlModel = WSITModelSupport.getModel(node, jaxWsModel, this, true, createdFiles);
                             wsdlModel = WSITModelSupport.getServiceModelForClient(wscs, client);
                             return new ClientTopComponent(client, jaxWsModel, clientWsdlModel, wsdlModel, node);
-                        } catch(Exception e){
-                            ErrorManager.getDefault().notify(e);
+                        } catch (Exception e) {
+                            logger.log(Level.SEVERE, null, e);
                         }
                     } else {
                         return new ErrorTopComponent(NbBundle.getMessage(WSITEditor.class, "TXT_WSIT_NotDetected", getServerName(p)));
@@ -117,15 +165,49 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
             }
         } else {
             if (p != null) {
-                JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(p.getProjectDirectory());
+                final JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(p.getProjectDirectory());
                 if (wss != null) {
+                    JaxWsModel.ServiceListener jaxWsServiceListener = new JaxWsModel.ServiceListener() {
+                        public void serviceAdded(String name, String implementationClass) {}
+                        public void serviceRemoved(String name) {
+                            if (!wss.isFromWSDL(name)) {
+                                JaxWsModel jaxWsModel = (JaxWsModel)p.getLookup().lookup(JaxWsModel.class);
+                                Service s = jaxWsModel.findServiceByName(name);
+                                String implClass = s.getImplementationClass();
+                                String configWsdlName = WSITModelSupport.CONFIG_WSDL_SERVICE_PREFIX + implClass;
+                                if ((implClass != null) && (implClass.length() > 0)) {
+                                    try {
+                                        if (wss.getWsdlFolder(false) != null) {
+                                            FileObject wsdlFO = wss.getWsdlFolder(
+                                                    false).getParent().getFileObject(configWsdlName, WSITModelSupport.CONFIG_WSDL_EXTENSION);
+                                            if ((wsdlFO != null) && (wsdlFO.isValid())) {   //NOI18N
+                                                FileLock lock = null;
+                                                try {
+                                                    lock = wsdlFO.lock();
+                                                    wsdlFO.delete(lock);
+                                                } finally {
+                                                    if (lock != null) {
+                                                        lock.releaseLock();
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } catch (IOException e) {
+                                        // burn
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    jaxWsModel.addServiceListener(jaxWsServiceListener);
+                    
                     wsitSupported = Util.isWsitSupported(p);
                     if (wsitSupported) {
                         try {
                             wsdlModel = WSITModelSupport.getModel(node, jaxWsModel, this, true, createdFiles);
                             return new ServiceTopComponent(service, jaxWsModel, wsdlModel, node, getUndoManager());
                         } catch(Exception e){
-                            ErrorManager.getDefault().notify(e);
+                            logger.log(Level.SEVERE, null, e);
                         }
                     } else {
                         return new ErrorTopComponent(NbBundle.getMessage(WSITEditor.class, "TXT_WSIT_NotDetected", getServerName(p)));
@@ -143,7 +225,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
             if (model != null) {
                 FileObject wsdlFO = Utilities.getFileObject(model.getModelSource());
                 if (wsdlFO == null) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot find fileobject in lookup for: " + model.getModelSource()); //NOI18N
+                    logger.log(Level.INFO, "Cannot find fileobject in lookup for: " + model.getModelSource());
                 }
                 DataObject wsdlDO = DataObject.find(wsdlFO);
                 if ((wsdlDO != null) && (wsdlDO.isModified())) {
@@ -155,7 +237,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                 }
             }
         } catch (Exception e){
-            ErrorManager.getDefault().notify(e);
+            logger.log(Level.SEVERE, null, e);
         }
     }
 
@@ -189,8 +271,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                                     mainModel.endTransaction();
                                     FileObject mainFO = Utilities.getFileObject(mainModel.getModelSource());
                                     if (mainFO == null) {
-                                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
-                                                "Cannot find fileobject in lookup for: " + model.getModelSource()); //NOI18N
+                                        logger.log(Level.INFO, "Cannot find fileobject in lookup for: " + model.getModelSource());
                                     }
                                     try {
                                         DataObject mainDO = DataObject.find(mainFO);
@@ -205,7 +286,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                                         // ignore - just don't do anything
                                     }
                                 } catch (CatalogModelException ex) {
-                                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.getMessage());
+                                    logger.log(Level.SEVERE, null, ex);
                                 }
                             }
                         }
@@ -231,20 +312,20 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                     }
                 }
             } catch (Exception e){
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.getMessage());
+                logger.log(Level.INFO, null, e);
             }
             FileObject fo = org.netbeans.modules.xml.retriever.catalog.Utilities.getFileObject(model.getModelSource());
             DataObject dO = null;
             try {
                 dO = DataObject.find(fo);
             } catch (DataObjectNotFoundException ex) {
-                ErrorManager.getDefault().notify(ex);
+                logger.log(Level.SEVERE, null, ex);
             }
             if (dO != null) {
                 try {
                     model.sync();
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    logger.log(Level.SEVERE, null, ex);
                 }
                 dO.setModified(false);
             }
@@ -260,7 +341,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                             dO.delete();
                         }
                     } catch (IOException ex) {
-                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.getMessage()); //NOI18N
+                        logger.log(Level.SEVERE, null, ex);
                     }
                 }
             }

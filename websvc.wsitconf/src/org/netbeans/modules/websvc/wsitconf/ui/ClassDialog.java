@@ -146,7 +146,7 @@ public class ClassDialog {
                         NotifyDescriptor.Message notifyDescr =
                                 new NotifyDescriptor.Message(errMsg,
                                 NotifyDescriptor.ERROR_MESSAGE );
-                        DialogDisplayer.getDefault().notify(notifyDescr);
+                        DialogDisplayer.getDefault().notifyLater(notifyDescr);
                         SelectClassDialogDesc.this.setClosingOptions(closingOptionsWithoutOK);
                     } else {
                         // Everything was fine so allow OK

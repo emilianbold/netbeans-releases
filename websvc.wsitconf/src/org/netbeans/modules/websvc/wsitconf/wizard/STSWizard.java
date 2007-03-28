@@ -32,6 +32,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -45,7 +47,6 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
-import org.openide.ErrorManager;
 
 import org.openide.WizardDescriptor;
 
@@ -65,6 +66,8 @@ import org.xml.sax.SAXException;
 public class STSWizard implements TemplateWizard.Iterator {
     
     private Project project;
+
+    private static final Logger logger = Logger.getLogger(STSWizard.class.getName());
     
     private WsdlModeler wsdlModeler;
     private WsdlModel wsdlModel;
@@ -93,9 +96,9 @@ public class STSWizard implements TemplateWizard.Iterator {
             schemaos = new FileOutputStream(schema);
             FileUtil.copy(schemaIS, schemaos);
         } catch (FileNotFoundException ex) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.getMessage());
+            logger.log(Level.INFO, null, ex);
         } catch (IOException ex) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.getMessage());
+            logger.log(Level.INFO, null, ex);
         } finally {
             if (schemaos != null) schemaos.close();
         }
@@ -108,9 +111,9 @@ public class STSWizard implements TemplateWizard.Iterator {
             wsdlos = new FileOutputStream(folder);
             FileUtil.copy(wsdlIS, wsdlos);
         } catch (FileNotFoundException ex) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.getMessage());
+            logger.log(Level.INFO, null, ex);
         } catch (IOException ex) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.getMessage());
+            logger.log(Level.INFO, null, ex);
         } finally {
             if (wsdlos != null) wsdlos.close();
         }

@@ -32,9 +32,10 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import java.awt.*;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -45,6 +46,8 @@ public class ServiceTopComponent extends TopComponent {
     static final long serialVersionUID=6021472310161712674L;
     private boolean initialized = false;
 
+    private static final Logger logger = Logger.getLogger(ServiceTopComponent.class.getName());
+    
     private WSDLModel wsdlModel;
     private UndoManager undoManager;
     private Node node;
@@ -83,7 +86,7 @@ public class ServiceTopComponent extends TopComponent {
         initAccessibility();
         ToolBarDesignEditor tb = new ToolBarDesignEditor();
         if (wsdlModel == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(" WSDL Model not ready"));
+            logger.log(Level.INFO, "WSDL Model not ready"); //NOI18N
             return;
         }
         ModelSource ms = wsdlModel.getModelSource();

@@ -19,6 +19,8 @@
 package org.netbeans.modules.websvc.wsitconf.api;
 
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -34,7 +36,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelp
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
 /**
@@ -42,6 +43,8 @@ import org.openide.nodes.Node;
  * @author Martin Grebac
  */
 public final class WSITConfigProvider extends Object {
+
+    private static final Logger logger = Logger.getLogger(WSITEditor.class.getName());
 
     private static WSITConfigProvider instance;
   
@@ -110,7 +113,7 @@ public final class WSITConfigProvider extends Object {
                         }
                     }
                 } catch(Exception e) {
-                    ErrorManager.getDefault().notify(e);
+                    logger.log(Level.SEVERE, null, e);
                 }
             }
         }
@@ -138,7 +141,7 @@ public final class WSITConfigProvider extends Object {
                         return true;
                     }
                 } catch(Exception e) {
-                    ErrorManager.getDefault().notify(e);
+                    logger.log(Level.SEVERE, null, e);
                 }
             }
         }

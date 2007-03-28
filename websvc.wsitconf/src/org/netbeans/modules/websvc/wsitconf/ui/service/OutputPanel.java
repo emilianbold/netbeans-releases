@@ -35,6 +35,7 @@ import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 
 import javax.swing.*;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.openide.util.NbBundle;
@@ -121,8 +122,13 @@ public class OutputPanel extends SectionInnerPanel {
         boolean bSecurityEnabled = SecurityPolicyModelHelper.isSecurityEnabled(binding);
         boolean oSecurityEnabled = SecurityPolicyModelHelper.isSecurityEnabled(operation);
         
+        String profile = null;
+        if (bSecurityEnabled) {
+             profile = ProfilesModelHelper.getSecurityProfile(binding);
+        }
+
         boolean securityEnabled = bSecurityEnabled || oSecurityEnabled;
-        targetsButton.setEnabled(securityEnabled);
+        targetsButton.setEnabled(securityEnabled && !ProfilesModelHelper.isSSLProfile(profile));
     }
     
     /** This method is called from within the constructor to

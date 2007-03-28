@@ -29,9 +29,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.Model;
 
-import java.io.IOException;
-import org.openide.ErrorManager;
-
 /**
  *
  * @author Martin Grebac

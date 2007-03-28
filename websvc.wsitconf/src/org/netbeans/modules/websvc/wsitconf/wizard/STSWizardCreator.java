@@ -25,7 +25,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.ParameterizedTypeTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
@@ -34,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -60,7 +61,6 @@ import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsitconf.util.GenerationUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -83,6 +83,8 @@ public class STSWizardCreator {
 
     public boolean jwsdpSupported, wsitSupported, jsr109Supported, jsr109oldSupported;
 
+    private static final Logger logger = Logger.getLogger(STSWizardCreator.class.getName());
+    
     public STSWizardCreator(Project project, WizardDescriptor wiz) {
         this.project = project;
         this.wiz = wiz;
@@ -108,11 +110,11 @@ public class STSWizardCreator {
                     handle.finish();
                     String message = e.getLocalizedMessage();
                     if(message != null) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        logger.log(Level.INFO, null, e);
                         NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notify(nd);
+                        DialogDisplayer.getDefault().notifyLater(nd);
                     } else {
-                        ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                        logger.log(Level.INFO, null, e);
                     }
                 }
             }
@@ -172,7 +174,7 @@ public class STSWizardCreator {
                         handle.finish();
                     } catch (Exception ex) {
                         handle.finish();
-                        ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                        logger.log(Level.SEVERE, null, ex);
                     }
                 }
             });

@@ -23,8 +23,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
 /**
@@ -37,7 +38,7 @@ public class SecurityCheckerRegistry {
     
     private List<SecurityChecker> checkers = (List<SecurityChecker>) Collections.synchronizedList(new LinkedList<SecurityChecker>());
     
-    private static ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.websvc.wsitconf.spi");   // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.websvc.wsitconf.spi");
     
     /**
      * Creates a new instance of SecurityCheckerRegistry
@@ -59,8 +60,8 @@ public class SecurityCheckerRegistry {
      */
     public void register(SecurityChecker checker) {
         if (checker != null) {
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log(ErrorManager.INFORMATIONAL, "registerChecker: " + checker + ", dName: " + checker.getDisplayName());    //NOI18N
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "registerChecker: " + checker + ", dName: " + checker.getDisplayName());    //NOI18N
             }
             checkers.add(checker);
         }
@@ -71,8 +72,8 @@ public class SecurityCheckerRegistry {
      */
     public void unregister(SecurityChecker checker) {
         if (checker != null) {
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log(ErrorManager.INFORMATIONAL, "unregisterChecker: " + checker + ", dName: " + checker.getDisplayName());    //NOI18N
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "unregisterChecker: " + checker + ", dName: " + checker.getDisplayName());    //NOI18N
             }
             checkers.remove(checker);
         }
@@ -91,12 +92,10 @@ public class SecurityCheckerRegistry {
                     try {
                         secEnabled = sc.isSecurityEnabled(node, jaxWsModel);
                     } catch (Exception e) { // this is required to not break if any of the checkers breaks
-                        if (err.isLoggable(ErrorManager.EXCEPTION)) {
-                            err.log(ErrorManager.EXCEPTION, "Exception from SecurityChecker: " + e.toString()); //NOI18N
-                        }
+                        logger.log(Level.SEVERE, "Exception from SecurityChecker: ", e); //NOI18N
                     } finally {
-                        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                            err.log(ErrorManager.INFORMATIONAL, "securityEnabled: " + secEnabled + ", " + sc +                 //NOI18N
+                        if (logger.isLoggable(Level.FINE)) {
+                            logger.log(Level.FINE, "securityEnabled: " + secEnabled + ", " + sc +                 //NOI18N
                                     ", dName: " + sc.getDisplayName() + ", node: " + node + ", jaxwsmodel: " + jaxWsModel);    //NOI18N
                         }
                     }

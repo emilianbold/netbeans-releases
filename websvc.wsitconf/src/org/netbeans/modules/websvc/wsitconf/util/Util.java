@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.websvc.wsitconf.util;
 
+import java.util.logging.Level;
+
+import java.util.logging.Logger;
 import java.awt.Component;
 import java.util.Arrays;
 import javax.swing.JLabel;
@@ -54,22 +57,22 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-//import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
@@ -79,8 +82,7 @@ public class Util {
         WEB, EJB, CLIENT, UNKNOWN
     };
     
-    private static final ErrorManager err =
-            ErrorManager.getDefault().getInstance("org.netbeans.modules.websvc.wsitconf");   // NOI18N
+    private static final Logger logger = Logger.getLogger(Util.class.getName());
 
     /*
      * Changes the text of a JLabel in component from oldLabel to newLabel
@@ -189,10 +191,8 @@ public class Util {
             if (sourceRoot != null) {
                 result.add(sourceRoot);
             } else {
-                int severity = ErrorManager.INFORMATIONAL;
-                if (ErrorManager.getDefault().isNotifiable(severity)) {
-                    ErrorManager.getDefault().notify(severity, new IllegalStateException(
-                       "No FileObject found for the following URL: " + urls[i])); //NOI18N
+                if (logger.isLoggable(Level.INFO)) {
+                    logger.log(Level.INFO, "No FileObject found for the following URL: " + urls[i]); //NOI18N
                 }
             }
         }
@@ -235,24 +235,24 @@ public class Util {
         return false;
     }
 
-//    public static void addProblemsToEnd(Problem[] where, Problem what) {
-//        where[0] = addProblemsToEnd(where[0], what);
-//    }
-//    
-//    public static Problem addProblemsToEnd(Problem where, Problem what) {
-//        if (where == null) {
-//            return what;
-//        }
-//        if (what != null) {
-//            Problem tail = where;
-//
-//            while (tail.getNext() != null) {
-//                tail = tail.getNext();
-//            }
-//            tail.setNext(what);
-//        }
-//        return where;
-//    }
+    public static void addProblemsToEnd(Problem[] where, Problem what) {
+        where[0] = addProblemsToEnd(where[0], what);
+    }
+    
+    public static Problem addProblemsToEnd(Problem where, Problem what) {
+        if (where == null) {
+            return what;
+        }
+        if (what != null) {
+            Problem tail = where;
+
+            while (tail.getNext() != null) {
+                tail = tail.getNext();
+            }
+            tail.setNext(what);
+        }
+        return where;
+    }
 
     /** Finds all WS projects affected by the change of FileObject 'fo' */
     public static Collection/*WebServicesSupport*/ getRelevantWSModules(FileObject fo) {
@@ -316,7 +316,7 @@ public class Util {
             wsmodules.add(websvc);
         }
         
-        err.log("Affected ws modules: " + wsmodules);
+        logger.log(Level.FINE, "Affected ws modules: " + wsmodules);
         return wsmodules;
     }
 
@@ -334,13 +334,13 @@ public class Util {
             keyStore.load(iStream, password);
             return keyStore.aliases();
         } catch (FileNotFoundException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); 
+            logger.log(Level.INFO, null, ex);
         } catch (KeyStoreException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); 
+            logger.log(Level.INFO, null, ex);
         } catch (NoSuchAlgorithmException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); 
+            logger.log(Level.INFO, null, ex);
         } catch (CertificateException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); 
+            logger.log(Level.INFO, null, ex);
         }
         return null;
     }
@@ -491,5 +491,11 @@ public class Util {
         
         return binding.getBindingOperations();
     }
-    
+
+    public static FileObject getFOForModel(WSDLModel model) {
+        if (model == null) return null;
+        ModelSource ms = model.getModelSource();
+        return Utilities.getFileObject(ms);
+    }
+        
 }

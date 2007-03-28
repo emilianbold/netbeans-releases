@@ -767,8 +767,6 @@ public class SecurityPolicyModelHelper {
                 topLevel = p;
             }
            
-            encryptedParts = PolicyModelHelper.createElement(topLevel, SecurityPolicyQName.ENCRYPTEDPARTS.getQName(), EncryptedParts.class, false);
-            signedParts = PolicyModelHelper.createElement(topLevel, SecurityPolicyQName.SIGNEDPARTS.getQName(), SignedParts.class, false);
 
             for (Vector v : targetModel) {
                 TargetElement te = (TargetElement) v.get(TargetElement.DATA);
@@ -778,10 +776,16 @@ public class SecurityPolicyModelHelper {
                 
                 if (te instanceof MessageHeader) {    
                     if (encrypt) {
+                        if (encryptedParts == null) {
+                            encryptedParts = PolicyModelHelper.createElement(topLevel, SecurityPolicyQName.ENCRYPTEDPARTS.getQName(), EncryptedParts.class, false);
+                        }
                         addHeaderElementForListItem(te.toString(), encryptedParts, wcf);
                     }
                     if (sign) {
-                        addHeaderElementForListItem(te.toString(), signedParts, wcf);
+                        if (signedParts == null) {
+                            signedParts = PolicyModelHelper.createElement(topLevel, SecurityPolicyQName.SIGNEDPARTS.getQName(), SignedParts.class, false);
+                        }
+                        addHeaderElementForListItem(te.toString(), signedParts, wcf);                        
                     }
                 } else if (te instanceof MessageElement) {
                     
@@ -805,9 +809,15 @@ public class SecurityPolicyModelHelper {
                     }
                 } else if (te instanceof MessageBody) {
                     if (encrypt) {
+                        if (encryptedParts == null) {
+                            encryptedParts = PolicyModelHelper.createElement(topLevel, SecurityPolicyQName.ENCRYPTEDPARTS.getQName(), EncryptedParts.class, false);
+                        }
                         addBody(encryptedParts, wcf);
                     }
                     if (sign) {
+                        if (signedParts == null) {
+                            signedParts = PolicyModelHelper.createElement(topLevel, SecurityPolicyQName.SIGNEDPARTS.getQName(), SignedParts.class, false);
+                        }
                         addBody(signedParts, wcf);
                     }
                 }

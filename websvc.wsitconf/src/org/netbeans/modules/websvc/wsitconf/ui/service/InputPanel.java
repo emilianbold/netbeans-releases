@@ -224,7 +224,7 @@ public class InputPanel extends SectionInnerPanel {
         tokenCombo.setEnabled(securityEnabled && genericProfile && !secConversation && !bindingScopeTokenPresent);
         tokenComboLabel.setEnabled(securityEnabled && genericProfile && !secConversation && !bindingScopeTokenPresent);
 //        configButton.setEnabled(securityEnabled && genericProfile);
-        targetsButton.setEnabled(securityEnabled);
+        targetsButton.setEnabled(securityEnabled && !ProfilesModelHelper.isSSLProfile(profile));
         boolean tokenSelected = !ComboConstants.NONE.equals((String)tokenCombo.getSelectedItem());
         signedChBox.setEnabled(securityEnabled && tokenSelected && genericProfile && !secConversation && !bindingScopeTokenPresent);
         endorsingChBox.setEnabled(securityEnabled && tokenSelected && genericProfile && !secConversation && !bindingScopeTokenPresent);
