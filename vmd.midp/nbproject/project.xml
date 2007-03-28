@@ -42,6 +42,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.api.mobility</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.visual</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -67,6 +75,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.java.platform</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.9</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.java.project</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -87,6 +104,31 @@
                     <code-name-base>org.netbeans.modules.mobility.licensing</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.mobility.cldcplatform</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.mobility.project</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.2.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.project.ant</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -300,6 +342,7 @@
                 <package>org.netbeans.modules.vmd.midp.palette</package>
                 <package>org.netbeans.modules.vmd.midp.palette.wizard</package>
                 <package>org.netbeans.modules.vmd.midp.producers</package>
+                <package>org.netbeans.modules.vmd.midp.project</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.date</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.element</package>
@@ -309,6 +352,8 @@
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.usercode</package>
                 <package>org.netbeans.modules.vmd.midp.screen</package>
                 <package>org.netbeans.modules.vmd.midp.screen.display</package>
+                <package>org.netbeans.modules.vmd.midp.screen.display.property</package>
+                <package>org.netbeans.modules.vmd.midp.serialization</package>
             </public-packages>
         </data>
     </configuration>
