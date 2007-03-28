@@ -24,6 +24,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.util.RequestProcessor;
 
 
@@ -32,9 +36,26 @@ import org.openide.util.RequestProcessor;
  * @author Jan Jancura
  */
 public class Utils {
+    
+    private static Logger logger = Logger.getLogger ("org.netbeans.modules.languages");
+    
+    public static void notify (String message) {
+        logger.log (Level.WARNING, message);
+    }
+    
+    public static void message (String message) {
+        DialogDisplayer.getDefault ().notify (new Message (message));
+    }
+    
+    public static void notify (Exception exception) {
+        logger.log (Level.WARNING, null, exception);
+    }
+    
+    public static void notify (String message, Exception exception) {
+        logger.log (Level.WARNING, message, exception);
+    }
 
     private static Map<String,WeakReference> collections;
-    
     
     public static void startTest (String name, Collection c) {
         if (collections == null) {

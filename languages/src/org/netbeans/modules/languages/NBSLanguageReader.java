@@ -57,7 +57,7 @@ public class NBSLanguageReader {
     ) throws ParseException, IOException {
         BufferedReader reader = null;
         try {
-            return readLanguage (fo.toString (), fo.getInputStream (), mimeType);
+            return readLanguage (fo.getPath (), fo.getInputStream (), mimeType);
         } finally {
             if (reader != null)
                 reader.close ();
@@ -68,7 +68,7 @@ public class NBSLanguageReader {
         String      fileName, 
         InputStream inputStream,
         String      mimeType
-    ) throws ParseException, IOException {
+    ) throws IOException, ParseException {
         BufferedReader reader = null;
         try {
             InputStreamReader r = new InputStreamReader (inputStream);
@@ -87,32 +87,27 @@ public class NBSLanguageReader {
     }
     
     public static Language readLanguage (
-        String      fo, 
+        String      fileName, 
         String      s, 
         String      mimeType
-    ) {
-        CharInput input = new StringInput (s, fo.toString ());
-        try {
-            Language language = new Language (mimeType);
-            Language nbsLanguage = NBSLanguage.getNBSLanguage ();
-            TokenInput tokenInput = TokenInputUtils.create (
-                mimeType,
-                nbsLanguage.getParser (), 
-                input, 
-                Collections.EMPTY_SET
-            );
-            ASTNode node = nbsLanguage.getAnalyser ().read (tokenInput, false);
-            if (node == null) 
-                System.out.println("Can not parse " + fo);
-            else
-            if (node.getChildren ().isEmpty ())
-                System.out.println("Can not parse " + fo + " " + node.getNT ());
-            readBody (node, language);
-            return language;
-        } catch (ParseException ex) {
-            ErrorManager.getDefault ().notify (ex);
-            return new Language (mimeType);
-        }
+    ) throws ParseException {
+        CharInput input = new StringInput (s, fileName);
+        Language language = new Language (mimeType);
+        Language nbsLanguage = NBSLanguage.getNBSLanguage ();
+        TokenInput tokenInput = TokenInputUtils.create (
+            mimeType,
+            nbsLanguage.getParser (), 
+            input, 
+            Collections.EMPTY_SET
+        );
+        ASTNode node = nbsLanguage.getAnalyser ().read (tokenInput, false);
+        if (node == null) 
+            System.out.println("Can not parse " + fileName);
+        else
+        if (node.getChildren ().isEmpty ())
+            System.out.println("Can not parse " + fileName + " " + node.getNT ());
+        readBody (node, language);
+        return language;
     }
     
     private static void readBody (
@@ -184,9 +179,7 @@ public class NBSLanguageReader {
     private static void readGrammarRule (
         ASTNode node, 
         Language language
-    ) throws ParseException {
-//        String nt = node.getTokenTypeIdentifier ("identifier");
-//        ASTNode rightSide = node.getNode ("rightSide");
+    ) {
         language.addRule (node);
     }
     

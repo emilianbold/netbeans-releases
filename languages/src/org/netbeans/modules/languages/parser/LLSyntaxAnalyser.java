@@ -61,11 +61,7 @@ public class LLSyntaxAnalyser {
     
     
     private LLSyntaxAnalyser (Language language) {
-        this.rules = language.getRules ();
-        this.skip = new HashSet<String> (language.getSkipTokenTypes ());
-        this.skip.add ("error");
         this.language = language;
-        initTracing ();
     }
     
     
@@ -79,23 +75,34 @@ public class LLSyntaxAnalyser {
         return rules;
     }
     
-    public static LLSyntaxAnalyser create (Language language) {
-        return new LLSyntaxAnalyser (language);
+    public static LLSyntaxAnalyser create (Language language) throws ParseException {
+        LLSyntaxAnalyser a = new LLSyntaxAnalyser (language);
+        a.rules = language.getRules ();
+        a.skip = new HashSet<String> (language.getSkipTokenTypes ());
+        a.skip.add ("error");
+        a.initTracing ();
+        a.first = Petra.first2 (a.rules);
+        boolean hasConflicts = AnalyserAnalyser.printConflicts (a.first, null);
+        if (hasConflicts)
+            AnalyserAnalyser.printRules (a.rules, null);
+        if (a.printFirst)
+            AnalyserAnalyser.printF (a.first, null);
+        AnalyserAnalyser.printUndefinedNTs (a.rules, null);
+        return a;
+    }
+    
+    public static LLSyntaxAnalyser createEmpty (Language language) {
+        LLSyntaxAnalyser a = new LLSyntaxAnalyser (language);
+        a.rules = Collections.<Rule>emptyList ();
+        a.skip = new HashSet<String> (language.getSkipTokenTypes ());
+        a.first = Collections.<String,Map>emptyMap ();
+        return a;
     }
     
     public ASTNode read (TokenInput input, boolean skipErrors) throws ParseException {
         cancel = false;
         if (rules.isEmpty () || input.eof ())
             return readNoGrammar (input, skipErrors);
-        if (first == null) {
-            first = Petra.first2 (rules);
-            boolean hasConflicts = AnalyserAnalyser.printConflicts (first, null);
-            if (hasConflicts)
-                AnalyserAnalyser.printRules (rules, null);
-            if (printFirst)
-                AnalyserAnalyser.printF (first, null);
-            AnalyserAnalyser.printUndefinedNTs (rules, null);
-        }
         return read2 (input, skipErrors);
     }
     

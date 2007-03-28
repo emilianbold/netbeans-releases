@@ -39,41 +39,41 @@ import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.T;
  */
 public class AnalyserAnalyser {
     
-    public static void printRules (List rules, PrintWriter writer) {
+    public static void printRules (List<Rule> rules, PrintWriter writer) {
         if (writer == null)
             System.out.println ("Rules:");
         else 
             writer.println ("Rules:");
-        List l = new ArrayList ();
-        Map m = new HashMap ();
-        Map mm = new HashMap ();
+        List<String> l = new ArrayList<String> ();
+        Map<String,List> m = new HashMap<String,List> ();
+        Map<String,List> mm = new HashMap<String,List> ();
         int i = 0;
-        Iterator it = rules.iterator ();
+        Iterator<Rule> it = rules.iterator ();
         while (it.hasNext ()) {
-            Rule r = (Rule) it.next ();
+            Rule r = it.next ();
             if (!m.containsKey (r.getNT ()))
                 l.add (r.getNT ());
-            List ll = (List) m.get (r.getNT ());
+            List ll = m.get (r.getNT ());
             if (ll == null) {
                 ll = new ArrayList ();
                 m.put (r.getNT (), ll);
                 mm.put (r.getNT (), new ArrayList ());
             }
             ll.add (r);
-            ((List) mm.get (r.getNT ())).add (new Integer (i++));
+            mm.get (r.getNT ()).add (new Integer (i++));
         }
         Collections.sort (l);
-        it = l.iterator ();
+        Iterator<String> it2 = l.iterator ();
         while (it.hasNext ()) {
-            String nt = (String) it.next ();
-            List ll = (List) m.get (nt);
-            Iterator it2 = ll.iterator ();
-            Iterator it3 = ((List) mm.get (nt)).iterator ();
-            while (it2.hasNext ())
+            String nt = it2.next ();
+            List ll = m.get (nt);
+            Iterator it3 = ll.iterator ();
+            Iterator it4 = mm.get (nt).iterator ();
+            while (it3.hasNext ())
                 if (writer == null)
-                    System.out.println ("  " + it2.next () + " (" + it3.next () + ")");
+                    System.out.println ("  " + it3.next () + " (" + it4.next () + ")");
                 else
-                    writer.println ("  " + it2.next () + " (" + it3.next () + ")");
+                    writer.println ("  " + it3.next () + " (" + it4.next () + ")");
         }
         if (writer == null)
             System.out.println ("");
@@ -81,15 +81,15 @@ public class AnalyserAnalyser {
             writer.println ("");
     }
     
-    public static void printUndefinedNTs (List rules, PrintWriter writer) {
+    public static void printUndefinedNTs (List<Rule> rules, PrintWriter writer) {
         Set f = new HashSet ();
-        Iterator it = rules.iterator ();
+        Iterator<Rule> it = rules.iterator ();
         while (it.hasNext ())
-            f.add (((Rule) it.next ()).getNT ());
+            f.add (it.next ().getNT ());
         Set result = new HashSet ();
         it = rules.iterator ();
         while (it.hasNext ()) {
-            Rule r = (Rule) it.next ();
+            Rule r = it.next ();
             Iterator it2 = r.getRight ().iterator ();
             while (it2.hasNext ()) {
                 Object e = it2.next ();

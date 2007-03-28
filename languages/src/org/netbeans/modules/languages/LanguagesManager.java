@@ -19,14 +19,11 @@
 
 package org.netbeans.modules.languages;
 
-import java.io.IOException;
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.modules.languages.Utils;
 import org.netbeans.modules.languages.features.ActionCreator;
-import org.netbeans.api.languages.ParseException;
-import java.io.OutputStream;
-import java.util.HashSet;
 import org.netbeans.modules.languages.parser.LanguageDefinitionNotFoundException;
-import org.netbeans.api.languages.ParseException;
-import org.openide.ErrorManager;
+import org.netbeans.modules.languages.features.ColorsManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -36,17 +33,17 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-import org.netbeans.modules.languages.features.ColorsManager;
+import java.io.OutputStream;
+import java.util.HashSet;
 
 
 /**
@@ -83,31 +80,30 @@ public class LanguagesManager {
     private Map<String,Object> mimeTypeToLanguage = new HashMap<String,Object> ();
     
     public synchronized Language getLanguage (String mimeType) 
-    throws ParseException {
+    throws LanguageDefinitionNotFoundException {
         if (!mimeTypeToLanguage.containsKey (mimeType)) {
             mimeTypeToLanguage.put (mimeType, new ParseException ("Already parisng " + mimeType));
+            FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
+            FileObject fo = fs.findResource ("Editors/" + mimeType + "/language.nbs");
+            if (fo == null) 
+                throw new LanguageDefinitionNotFoundException 
+                    ("Language definition for " + mimeType + " not found.");
+            addListener (fo);
+            Language l = null;
             try {
-                FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-                FileObject fo = fs.findResource ("Editors/" + mimeType + "/language.nbs");
-                if (fo == null) 
-                    throw new LanguageDefinitionNotFoundException 
-                        ("Language definition for " + mimeType + " not found.");
-                addListener (fo);
-                Language l = NBSLanguageReader.readLanguage (fo, mimeType);
-                initLanguage (l);
-                //l.print ();
-                mimeTypeToLanguage.put (mimeType, l);
+                l = NBSLanguageReader.readLanguage (fo, mimeType);
             } catch (ParseException ex) {
-                mimeTypeToLanguage.put (mimeType, ex);
-                throw ex;
-            } catch (Exception ex) {
-                ParseException pe = new ParseException (ex);
-                mimeTypeToLanguage.put (mimeType, pe);
-                throw pe;
+                l = new Language (mimeType);
+                Utils.message ("Editors/" + mimeType + "/language.nbs: " + ex.getMessage ());
+            } catch (IOException ex) {
+                l = new Language (mimeType);
+                Utils.message ("Editors/" + mimeType + "/language.nbs: " + ex.getMessage ());
             }
+            l.getAnalyser ();
+            initLanguage (l);
+            //l.print ();
+            mimeTypeToLanguage.put (mimeType, l);
         }
-        if (mimeTypeToLanguage.get (mimeType) instanceof ParseException)
-            throw (ParseException) mimeTypeToLanguage.get (mimeType);
         return (Language) mimeTypeToLanguage.get (mimeType);
     }
     
@@ -175,7 +171,7 @@ public class LanguagesManager {
                                 is.close();
                             }
                         } catch (IOException ex) {
-                            ErrorManager.getDefault ().notify (ex);
+                            Utils.notify (ex);
                         }
                     }
                 });
@@ -212,7 +208,7 @@ public class LanguagesManager {
                 FileUtil.createData (root, "ToolTips/org-netbeans-modules-languages-features-ToolTipAnnotation.instance");
 
             } catch (IOException ex) {
-                ErrorManager.getDefault ().notify (ex);
+                Utils.notify (ex);
             }
         
         // init coloring

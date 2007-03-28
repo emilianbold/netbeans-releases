@@ -50,6 +50,7 @@ public class BraceCompletionDeleteAction extends ExtDeleteCharAction {
         try {
             String mimeType = (String) doc.getProperty ("mimeType");
             TokenHierarchy th = TokenHierarchy.get (doc);
+            if (th == null) return;
             TokenSequence ts = th.tokenSequence ();
             while (true) {
                 ts.move (caret.getDot ());

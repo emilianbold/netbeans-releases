@@ -66,6 +66,7 @@ public class ToolTipAnnotation extends Annotation {
                     lp.getLine ().getLineNumber ()
                 ) + lp.getColumn ();
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
+            if (tokenHierarchy == null) return null;
             TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
             tokenSequence.move (offset);
             if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) return null;

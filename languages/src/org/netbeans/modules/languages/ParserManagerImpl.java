@@ -19,10 +19,12 @@
 package org.netbeans.modules.languages;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -65,7 +67,7 @@ public class ParserManagerImpl extends ParserManager {
     private ParseException          exception = null;
     private State                   state = State.NOT_PARSED;
     private List<ParserManagerListener> listeners = new ArrayList<ParserManagerListener> ();
-    private List<ASTEvaluator>      evaluators = new ArrayList<ASTEvaluator> ();
+    private List<ASTEvaluator>      evaluators = new CopyOnWriteArrayList<ASTEvaluator> ();
     private static RequestProcessor rp = new RequestProcessor ("Parser");
     
     
@@ -277,6 +279,8 @@ public class ParserManagerImpl extends ParserManager {
             if (doc instanceof NbEditorDocument)
                 ((NbEditorDocument) doc).readLock ();
             TokenHierarchy th = TokenHierarchy.get (doc);
+            if (th == null) 
+                return TokenInputUtils.create (Collections.<ASTToken>emptyList ());
             TokenSequence ts = th.tokenSequence ();
             return TokenInputUtils.create (getTokens (ts));
         } finally {

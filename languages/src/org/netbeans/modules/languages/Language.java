@@ -19,19 +19,47 @@
 
 package org.netbeans.modules.languages;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.List;
+import java.util.logging.Logger;
+
 import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.api.languages.TokenInput;
+import org.netbeans.api.languages.TokenInput;
+import org.netbeans.modules.languages.Language.TokenType;
 import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.modules.languages.parser.*;
-import java.awt.*;
-import java.util.*;
-import java.util.List;
+import org.netbeans.modules.languages.Utils;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.Rule;
+import org.netbeans.modules.languages.parser.LanguageDefinitionNotFoundException;
+import org.netbeans.modules.languages.parser.Parser;
+import org.netbeans.modules.languages.parser.Pattern;
+import org.netbeans.modules.languages.parser.Petra;
+import org.netbeans.modules.languages.parser.StringInput;
+import org.netbeans.modules.languages.parser.TokenInputUtils;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -119,8 +147,14 @@ public class Language {
         if (analyser != null) return analyser;
         synchronized (this) {
             if (analyser != null) return analyser;
-            analyser = LLSyntaxAnalyser.create (this);
-            return analyser;
+            try {
+                analyser = LLSyntaxAnalyser.create (this);
+                return analyser;
+            } catch (ParseException ex) {
+                Utils.message ("Editors/" + mimeType + "/language.nbs: " + ex.getMessage ());
+                analyser = LLSyntaxAnalyser.createEmpty (this);
+                return analyser;
+            }
         }
     }
     
@@ -157,7 +191,7 @@ public class Language {
                     try {
                         clazz = cl.loadClass (clsName);
                     } catch (ClassNotFoundException ex) {
-                        ErrorManager.getDefault ().notify (ex);
+                        Utils.notify (ex);
                     }
                     if (clazz != null) {
                         bundle = NbBundle.getBundle(clazz);
@@ -276,8 +310,8 @@ public class Language {
             importAllFeatures (language);
             importedLangauges.addAll (language.importedLangauges);
             tokenImports.putAll (language.tokenImports);
-        } catch (ParseException ex) {
-            ErrorManager.getDefault ().notify (ex);
+        } catch (LanguageDefinitionNotFoundException ex) {
+            Utils.notify ("Editors/" + mimeType + "/language.nbs:", ex);
         }
     }
 
@@ -534,8 +568,25 @@ public class Language {
 //        }
 //        return m;
 //    }
+
+    public ASTNode parse (InputStream is, String sourceName) throws IOException, ParseException {
+        BufferedReader br = new BufferedReader (new InputStreamReader (is));
+        StringBuilder sb = new StringBuilder ();
+        String ln = br.readLine ();
+        while (ln != null) {
+            sb.append (ln).append ('\n');
+            ln = br.readLine ();
+        }
+        TokenInput ti = TokenInputUtils.create (
+            getMimeType (),
+            getParser (), 
+            new StringInput (sb.toString (), sourceName),
+            getSkipTokenTypes ()
+        );
+        return getAnalyser ().read (ti, true);
+    }
     
-    void print () {
+    void print () throws ParseException {
         System.out.println("\nPrint " + mimeType);
         System.out.println("Tokens:");
         Iterator<TokenType> it = getTokenTypes ().iterator ();

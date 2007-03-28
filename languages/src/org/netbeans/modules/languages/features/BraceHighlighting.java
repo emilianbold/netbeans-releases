@@ -53,6 +53,7 @@ public class BraceHighlighting extends ExtSyntaxSupport {
         try {
             BaseDocument doc = getDocument ();
             TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.<BaseDocument>get (doc);
+            if (tokenHierarchy == null) return super.findMatchingBlock(offset, simpleSearch);
             TokenSequence tokens = tokenHierarchy.tokenSequence();
             tokens.move(offset);
             tokens.moveNext ();

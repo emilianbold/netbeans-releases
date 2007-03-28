@@ -98,16 +98,11 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
     
     // other methods ...........................................................
     
-    private Language language;
-    
     private Language getLanguage () {
-        if (language == null)
-            try {
-                language = LanguagesManager.getDefault ().getLanguage (mimeType);
-            } catch (ParseException ex) {
-                language = new Language (mimeType);
-            }
-        
-        return language;
+        try {
+            return LanguagesManager.getDefault ().getLanguage (mimeType);
+        } catch (ParseException ex) {
+            return new Language (mimeType);
+        }
     }
 }

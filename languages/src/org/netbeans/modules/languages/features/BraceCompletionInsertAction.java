@@ -51,6 +51,10 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
         try {
             String mimeType = (String) doc.getProperty ("mimeType");
             TokenHierarchy th = TokenHierarchy.get (doc);
+            if (th == null) {
+                super.insertString (doc, dotPos, caret, str, overwrite);
+                return;
+            }
             TokenSequence ts = th.tokenSequence ();
             while (true) {
                 ts.move (caret.getDot ());
