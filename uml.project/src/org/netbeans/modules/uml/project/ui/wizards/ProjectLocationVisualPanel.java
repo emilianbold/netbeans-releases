@@ -242,11 +242,30 @@ public class ProjectLocationVisualPanel extends SettingsPanel
         }
         
         File projLoc = destFolder;
+        boolean readonly = true;
         
         while (projLoc != null && !projLoc.exists())
             projLoc = projLoc.getParentFile();
         
-        if (projLoc == null || !projLoc.canWrite())
+        // workaround for File.canWrite() 99009
+        if (projLoc != null)
+        {
+            try
+            {
+                File temp = File.createTempFile("temp", "", projLoc);
+                if (temp.exists())
+                {
+                    readonly = false;
+                    temp.delete();
+                }
+            }
+            catch (IOException e)
+            {
+                // nothing special to be handled
+            }
+        }
+        
+        if (readonly)
         {
             wizardDescriptor.putProperty(
                 NewUMLProjectWizardIterator.PROP_WIZARD_ERROR_MESSAGE,
