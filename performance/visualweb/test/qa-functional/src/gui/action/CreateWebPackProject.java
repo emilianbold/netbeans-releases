@@ -38,7 +38,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     
     private String category, project, project_name, project_type;
     
-    private int index;
+
     
     /**
      * Creates a new instance of CreateWebPackProject
@@ -65,7 +65,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
         category = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "Templates/Project/Web"); // Web
         project = "Web Application";
         project_type="JSFWebProject";
-        index=1;
+        
         doMeasurement();
     }
     
@@ -90,7 +90,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
         waitNoEvent(1000);
         wizard_location.txtProjectLocation().setText(directory);
         
-        project_name = project_type + "_" + (index++);
+        project_name = project_type + "_" + System.currentTimeMillis();
         log("================= Project name="+project_name+"}");
         wizard_location.txtProjectName().setText("");
         waitNoEvent(1000);
