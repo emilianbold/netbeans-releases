@@ -26,6 +26,7 @@ import javax.swing.text.StyledDocument;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter;
 
 /**
  * @author David Kaspar
@@ -90,7 +91,12 @@ public class ClassCode {
             section.getWriter().write(" // write pre-init user code here\n").commit(); // NOI18N
             
             section.switchToGuarded();
+            Collection<? extends CodeClassInitHeaderFooterPresenter> headersFooters = getComponent().getPresenters(CodeClassInitHeaderFooterPresenter.class);
+            for (CodeClassInitHeaderFooterPresenter header : headersFooters)
+                header.generateClassInitializationHeader(section);
             InitCodeGenerator.generateInitializationCode(section, getComponent());
+            for (CodeClassInitHeaderFooterPresenter footer : headersFooters)
+                footer.generateClassInitializationFooter(section);
             section.getWriter().commit();
             
             section.switchToEditable(getComponent().getComponentID() + "-postInit");
