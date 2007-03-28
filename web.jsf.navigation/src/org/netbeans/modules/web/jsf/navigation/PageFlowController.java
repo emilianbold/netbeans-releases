@@ -78,7 +78,7 @@ public class PageFlowController {
         FileObject configFile = context.getFacesConfigFile();
         configModel = ConfigurationUtils.getConfigModel(configFile,true);
         Project project = FileOwnerQuery.getOwner(configFile);
-        FileObject webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
+        webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
         webFiles = getAllProjectRelevantFilesObjects();
         
         setupGraph();
