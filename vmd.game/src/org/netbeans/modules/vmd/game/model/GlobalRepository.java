@@ -138,6 +138,7 @@ public class GlobalRepository implements PropertyChangeListener {
 	private void addTiledLayer(TiledLayer layer) {
 		this.tiledLayers.add(layer);
 		this.layers.put(layer.getName(), layer);
+		layer.addPropertyChangeListener(this);
 		Collections.sort(this.tiledLayers, new Layer.NameComparator());
 		int index = this.tiledLayers.indexOf(layer);
 		this.fireTiledLayerAdded(layer, index);
@@ -155,6 +156,7 @@ public class GlobalRepository implements PropertyChangeListener {
 	private void addSprite(Sprite layer) {
 		this.sprites.add(layer);
 		this.layers.put(layer.getName(), layer);
+		layer.addPropertyChangeListener(this);
 		Collections.sort(this.sprites, new Layer.NameComparator());
 		int index = this.sprites.indexOf(layer);
 		this.fireSpriteAdded(layer, index);
