@@ -61,7 +61,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     /**
      * Creates instance of property editor for integer type
-     * 
+     *
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createIntegerInstance() {
@@ -70,7 +70,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     /**
      * Creates instance of property editor for long type
-     * 
+     *
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createLongInstance() {
@@ -95,7 +95,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     /**
      * Creates instance of property editor for byte type
-     * 
+     *
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createByteInstance() {
@@ -120,7 +120,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     /**
      * Creates instance of property editor for short type
-     * 
+     *
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createShortInstance() {
@@ -145,7 +145,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     /**
      * Creates instance of property editor for float type
-     * 
+     *
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createFloatInstance() {
@@ -178,7 +178,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     /**
      * Creates instance of property editor for double type
-     * 
+     *
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createDoubleInstance() {
@@ -211,7 +211,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     /**
      * Creates instance of property editor for char type
-     * 
+     *
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createCharInstance() {
@@ -256,9 +256,9 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return result
      */
     protected boolean isTextCorrect(String text) {
-        return Pattern.matches("[\\d\\-]+", text);// || // NOI18N
-               // hexadecimal support
-//               Pattern.matches("-?0x[d\\abcdefABCDEF]+", text); // NOI18N
+        return Pattern.matches("[\\d\\-]+", text) || // NOI18N
+                // hexadecimal support
+                isHexFormat(text); // NOI18N
     }
     
     /**
@@ -269,10 +269,11 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return result text
      */
     protected String prepareText(String text) {
-         // hex
-//        if (text.matches("-?0x[d\\abcdefABCDEF]+")) { // NOI18N
-//            return text.replaceAll("[^0-9\\-0xabcdefABCDEF]+", ""); // NOI18N
-//        }
+        // hex
+        if (isHexFormat(text)) { // NOI18N
+            text = text.replaceAll("[^0-9\\-0xabcdefABCDEF]+", ""); // NOI18N
+            return text.replace("0x", ""); // NOI18N
+        }
         return text.replaceAll("[^0-9\\-]+", ""); // NOI18N
     }
     
@@ -286,17 +287,6 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     }
     
     /**
-     * Removes all incorrect characters for for given property editor.
-     * For example for integer property editor removes all chars except [\d\-]+ regex
-     *
-     * @param text to be checked
-     * @return result text
-     */
-    protected Number parseNumber(String text) {
-        return Integer.parseInt(text); // NOI18N
-    }
-    
-    /**
      * Saves text as a proper property value
      *
      * @param text to be parsed and saved
@@ -305,17 +295,26 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
         if (text.length() > 0) {
             int intValue = 0;
             try {
-                text = prepareText(text);
-                intValue = Integer.parseInt(text);
+                if (isHexFormat(text)) { // NOI18N
+                    text = prepareText(text);
+                    intValue = Integer.parseInt(text, 16);
+                } else {
+                    text = prepareText(text);
+                    intValue = Integer.parseInt(text);
+                }
             } catch (NumberFormatException e) {
             }
             super.setValue(MidpTypes.createIntegerValue(intValue));
         }
     }
     
+    private boolean isHexFormat(String text) {
+        return text.matches("-?0x[\\d\\abcdefABCDEF]+"); //NOI18N
+    }
+    
     /**
      * Returns component to represent custom editor in propertyEditorUserCode
-     * 
+     *
      * @return component
      */
     public JComponent getComponent() {
@@ -324,7 +323,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     /**
      * Returns radio button for propertyEditorUserCode
-     * 
+     *
      * @return radioButton
      */
     public JRadioButton getRadioButton() {
@@ -333,7 +332,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     /**
      * Determines whether radioButton should be selected by default in the propertyEditorUserCode
-     * 
+     *
      * @return isSelected
      */
     public boolean isInitiallySelected() {
@@ -342,7 +341,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     /**
      * Determines whether custom component resizable vertically in the propertyEditorUserCode
-     * 
+     *
      * @return isResizable
      */
     public boolean isVerticallyResizable() {
@@ -361,8 +360,8 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     /**
      * Sets propertyValue from text
-     * 
-     * @param text 
+     *
+     * @param text
      * @see java.beans.PropertyEditor#setAsText
      */
     public void setText(String text) {
@@ -371,7 +370,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     /**
      * Returns text for additional operations with propertyValue, not used here
-     * 
+     *
      * @return null
      */
     public String getText() {
@@ -380,8 +379,8 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     /**
      * Sets initial propertyValue before displaying customPropertyEditor
-     * 
-     * @param value 
+     *
+     * @param value
      */
     public void setPropertyValue(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {

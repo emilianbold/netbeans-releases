@@ -22,7 +22,6 @@ package org.netbeans.modules.vmd.midpnb.screen.display;
 import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
@@ -186,7 +185,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         panel.repaint();
     }
     
-     // TODO compute 14 from fontSize
+    // TODO compute 14 from fontSize
     private Dimension calculatePrefferedSize() {
         final Dimension oldSize = panel.getPreferredSize();
         if (!hasModel) {

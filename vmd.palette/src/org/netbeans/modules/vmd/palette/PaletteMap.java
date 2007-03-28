@@ -81,6 +81,10 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
     }
     
     private void updatePalette(DesignDocument document) {
+        if (document == null) {
+            return;
+        }
+        
         String oldProjectID;
         synchronized (this) {
             oldProjectID = activeProjectID;
