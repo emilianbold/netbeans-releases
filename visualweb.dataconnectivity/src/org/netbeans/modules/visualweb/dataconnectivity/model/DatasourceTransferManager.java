@@ -126,31 +126,13 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             // Logic to reuse the datasource exist in the project. No necessary to create new data source
             ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(designBean); 
             
-            DesignTimeDataSourceHelper dsHelper = null;
-            try { 
-                dsHelper = new DesignTimeDataSourceHelper();
-            } catch (NamingException ne) {
-                // XXX Swallow exception for now - clean up later
-            }
-            
-            // If Datasource exists in the project use its name       
-            try { 
-                DesignTimeDataSource dtDs = dsHelper.getDataSource(dataSourceInfo.getName());
-            } catch (NamingException ne) {
-                // XXX Swallow exception for now - clean up later
-            }
-            
             // Add the data sources to the project
-            try {
-                projectDataSourceManager.addDataSource(dataSourceInfo);
-                dsHelper.addDataSource( dsName, driverClassName, url, null,  username, password);
-            } catch (NamingException ne) {
-                // XXX Swallow exception for now - clean up later
-            }
+            projectDataSourceManager.addDataSource(dataSourceInfo);
                         
             // no need to do this once the switch is made to use NetBeans connections
             addJdbcDriver(jdbcDriver);
                         
+            // create the rowset 
             setDataSourceInfo(dataSourceInfo);
             return super.beansCreatedSetup(designBeans);
         }
