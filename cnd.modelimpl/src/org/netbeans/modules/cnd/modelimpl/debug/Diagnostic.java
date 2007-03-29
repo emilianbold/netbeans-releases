@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -53,46 +53,46 @@ public class Diagnostic {
     private static int STATISTICS_LEVEL=Integer.getInteger("cnd.modelimpl.stat.level", 0).intValue(); // NOI18N
     
     private static DiagnosticUnresolved diagnosticUnresolved = null;
-
+    
     public static class StopWatch {
-	
-	private long time;
-	private long lastStart;
-	private boolean running;
-	
-	public StopWatch() {
-	    this(true);
-	}
-	
-	public StopWatch(boolean start) {
-	    time = 0;
-	    if( start ) {
-		start();
-	    }
-	}
-	
-	public void start() {
-	    running = true;
-	    lastStart = System.currentTimeMillis();
-	}
-	
-	public void stop() {
-	    running = false;
-	    time += System.currentTimeMillis() - lastStart;
-	}
-	
-	public void stopAndReport(String text) {
-	    stop();
-	    report(text);
-	}
-	
-	public void report(String text) {
-	    System.err.println(' ' + text + ' ' + time + " ms");
-	}
-	
-	public boolean isRunning() {
-	    return running;
-	}
+        
+        private long time;
+        private long lastStart;
+        private boolean running;
+        
+        public StopWatch() {
+            this(true);
+        }
+        
+        public StopWatch(boolean start) {
+            time = 0;
+            if( start ) {
+                start();
+            }
+        }
+        
+        public void start() {
+            running = true;
+            lastStart = System.currentTimeMillis();
+        }
+        
+        public void stop() {
+            running = false;
+            time += System.currentTimeMillis() - lastStart;
+        }
+        
+        public void stopAndReport(String text) {
+            stop();
+            report(text);
+        }
+        
+        public void report(String text) {
+            System.err.println(' ' + text + ' ' + time + " ms");
+        }
+        
+        public boolean isRunning() {
+            return running;
+        }
     }
     
     public static int getStatisticsLevel() {
@@ -157,23 +157,50 @@ public class Diagnostic {
             }
         }
     }
-
+    
+    public static void printlnStack(String message, int depth) {
+        StringBuilder buf = new StringBuilder(message);
+        buf.append('\n');
+        StringWriter wr = new StringWriter();
+        new Exception(message).printStackTrace(new PrintWriter(wr));
+        BufferedReader br = new  BufferedReader(new StringReader(wr.getBuffer().toString()));
+        try {
+            br.readLine(); br.readLine();
+            int i = 0;
+            for( String s = br.readLine(); s != null; s = br.readLine() ) {
+                if (i == 0){
+                    buf.append("  in thread "+Thread.currentThread().getName());
+                    buf.append('\n');
+                }
+                buf.append(s);
+                buf.append('\n');
+                if (i > depth -1){
+                    break;
+                }
+                i++;
+            }
+        } catch( IOException e ) {
+            e.printStackTrace(System.err);
+        }
+        System.out.println(buf.toString());
+    }
+    
     public static void traceThreads(String message) {
-	if( TraceFlags.DEBUG ) {
-	    trace(message);
-	    trace("Threads are:"); // NOI18N
-	    int cnt = Thread.activeCount();
-	    Thread[] threads = new Thread[cnt];
-	    Thread.enumerate(threads);
-	    for (int i = 0; i < cnt; i++) {
-		String s = threads[i].getName() + " " + threads[i].getPriority(); // NOI18N
-		if (threads[i] == Thread.currentThread()) {
-		    s += " (current)"; // NOI18N
-		}
-		trace(s);
-	    }
-	    trace("");
-	}
+        if( TraceFlags.DEBUG ) {
+            trace(message);
+            trace("Threads are:"); // NOI18N
+            int cnt = Thread.activeCount();
+            Thread[] threads = new Thread[cnt];
+            Thread.enumerate(threads);
+            for (int i = 0; i < cnt; i++) {
+                String s = threads[i].getName() + " " + threads[i].getPriority(); // NOI18N
+                if (threads[i] == Thread.currentThread()) {
+                    s += " (current)"; // NOI18N
+                }
+                trace(s);
+            }
+            trace("");
+        }
     }
     
     /// handle problems
@@ -206,11 +233,11 @@ public class Diagnostic {
             getDiagnosticUnresolved().onUnresolved(nameTokens, file, offset);
         }
     }
-
+    
     public static void dumpUnresolvedStatistics(String dumpFile, boolean append) throws FileNotFoundException {
         getDiagnosticUnresolved().dumpStatictics(dumpFile, append);
     }
-
+    
     private static  DiagnosticUnresolved getDiagnosticUnresolved() {
         if( diagnosticUnresolved == null ) {
             diagnosticUnresolved = new DiagnosticUnresolved(STATISTICS_LEVEL);
@@ -240,7 +267,7 @@ public class Diagnostic {
     public static void onRecurseInclude(String resolvedIncludePath, String absBaseFilePath) {
         curFileHandler.handleInclude(null, absBaseFilePath, resolvedIncludePath, true);
     }
-
+    
     /**
      * Collection of file statistics
      *
@@ -274,7 +301,7 @@ public class Diagnostic {
             handleError(otherProblems, new ExceptionWrapper(e, source), false);
         }
         
-        public void handleInclude(String include, String absBaseFilePath, 
+        public void handleInclude(String include, String absBaseFilePath,
                 String resolvedIncludePath, boolean recursion) {
             // if resolvedIncludePath is valid => include path resolving was OK
             String key = (resolvedIncludePath == null) ? include : resolvedIncludePath;
@@ -285,7 +312,7 @@ public class Diagnostic {
                 includes.put(key, info);
             }
             info.add(absBaseFilePath, recursion);
-        }       
+        }
         
         public void dispose() {
             this.handledFile = null;
@@ -301,11 +328,11 @@ public class Diagnostic {
         private boolean hasStatistics() {
             if (Diagnostic.getStatisticsLevel() == 1) {
                 // for the first level need to inform only about real problems
-                return hasLexerProblems() || 
-                        hasParserProblems() || 
+                return hasLexerProblems() ||
+                        hasParserProblems() ||
                         hasOtherProblems() ||
                         hasIncludeProblems();
-
+                
             }
             // for other levels need detailed statistics
             return true;
@@ -353,15 +380,15 @@ public class Diagnostic {
                             trace(dumpFile, "[LAST ERROR] "+lastError); // NOI18N
                         } else {
                             trace(dumpFile, "[ERROR] " + lastError); // NOI18N
-                        }                        
+                        }
                     }
                     unindent();
-                }     
+                }
                 if (hasOtherProblems()) {
                     trace(dumpFile, "****** All unclassified errors ******"); // NOI18N
                     indent();
                     dumpExceptions(dumpFile, otherProblems);
-                    unindent();                    
+                    unindent();
                 }
                 if (hasLexerProblems()) {
                     trace(dumpFile, "****** All Lexer errors ******"); // NOI18N
@@ -374,12 +401,12 @@ public class Diagnostic {
                     indent();
                     dumpExceptions(dumpFile, parserProblems);
                     unindent();
-                }              
+                }
                 if ((Diagnostic.getStatisticsLevel() > 1) || hasIncludeProblems()) {
                     trace(dumpFile, "****** Inclusions ******"); // NOI18N
                     indent();
                     dumpIncludes(dumpFile, includes);
-                    unindent();                    
+                    unindent();
                 }
                 trace(dumpFile, "*** End of statistics for " + handledFile + '\n'); // NOI18N
             }
@@ -404,7 +431,7 @@ public class Diagnostic {
             }
         }
         
-        private void dumpExceptions(PrintStream dumpFile, 
+        private void dumpExceptions(PrintStream dumpFile,
                 Map/*<ExceptionWrapper, ExceptionWrapper>*/ errors) {
             // sort errors
             List values = new ArrayList(errors.keySet());
@@ -414,7 +441,7 @@ public class Diagnostic {
                 trace(dumpFile, elem);
             }
         }
-
+        
         private void dumpIncludes(PrintStream dumpFile, Map includes) {
             List values = new ArrayList(includes.values());
             // sort to have failed first
@@ -423,7 +450,7 @@ public class Diagnostic {
                 IncludeInfo elem = (IncludeInfo) it.next();
                 if ((Diagnostic.getStatisticsLevel() == 1) && !elem.hasErrors()) {
                     // includes are sorted to have failed in the head of list
-                    // don't need to trace not failed inclusions 
+                    // don't need to trace not failed inclusions
                     // for the first level of statistics
                     break;
                 }
@@ -432,7 +459,7 @@ public class Diagnostic {
         }
         
         private static class IncludeInfo {
-            /** 
+            /**
              * absolute path of included file, if include string was correctly resolved
              * otherwise the inclusion string ("myIncl.h" or <sys/types.h>)
              */
@@ -466,19 +493,19 @@ public class Diagnostic {
                     // then counter has priority
                     if (i1.counter != i2.counter) {
                         return (i1.counter > i2.counter) ? -1 : 1;
-                    } 
+                    }
                     // then name of include
                     return i1.include.compareTo(i2.include);
                 }
-                            
+                
                 public boolean equals(Object obj) {
                     return super.equals(obj);
                 }
                 
                 public int hashCode() {
                     return 11; // any dummy value
-                }                   
-            }; 
+                }
+            };
             
             IncludeInfo(String include, boolean failedInclusion) {
                 this.include = include;
@@ -488,13 +515,13 @@ public class Diagnostic {
             void add(String absBaseFilePath, boolean recursion) {
                 counter++;
                 Integer fileCounter = includedFrom.containsKey(absBaseFilePath) ?
-                    (Integer)includedFrom.get(absBaseFilePath) : new Integer(0);          
+                    (Integer)includedFrom.get(absBaseFilePath) : new Integer(0);
                 includedFrom.put(absBaseFilePath, new Integer(fileCounter.intValue() + 1));
                 if (recursion) {
                     recursionFrom.add(absBaseFilePath);
                 }
             }
-
+            
             public boolean equals(Object obj) {
                 if (this == obj) {
                     return true;
@@ -508,13 +535,13 @@ public class Diagnostic {
                 retValue &= this.include.equals(other.include);
                 return retValue;
             }
-
+            
             public int hashCode() {
                 // hash code by code of include file
                 int retValue = include.hashCode() + 17*(isFailedInclude()?0:1);
                 return retValue;
             }
-
+            
             public String toString() {
                 StringBuilder retValue = new StringBuilder();
                 
@@ -534,17 +561,17 @@ public class Diagnostic {
                         String from;
                         if (hasRecursionInclude()) {
                             assert (recursionFrom.size() > 0);
-                            assert (recursionFrom.iterator().hasNext());   
-                            from = (String) recursionFrom.iterator().next();                            
+                            assert (recursionFrom.iterator().hasNext());
+                            from = (String) recursionFrom.iterator().next();
                             retValue.append(" [RECURSION] "); // NOI18N
                         } else {
                             assert (includedFrom.size() > 0);
-                            assert (includedFrom.keySet().iterator().hasNext());   
+                            assert (includedFrom.keySet().iterator().hasNext());
                             from = (String) includedFrom.keySet().iterator().next();
                             retValue.append(" where [").append(includedFrom.get(from)).append("] time(s) "); // NOI18N
                         }
                         retValue.append("from ").append(from); // NOI18N
-                    }                   
+                    }
                 } else {
                     // sort "from" files
                     List files = new ArrayList(this.includedFrom.keySet());
@@ -562,8 +589,8 @@ public class Diagnostic {
                     }
                 }
                 return retValue.toString();
-            }           
-
+            }
+            
             public boolean isFailedInclude() {
                 return failedInclusion;
             }
@@ -578,7 +605,7 @@ public class Diagnostic {
         }
         
         private static class ExceptionWrapper {
-
+            
             private static final int CKHECKED_STACK_DEPTH = 15;
             // the first recognition exception of the same types
             private Exception e;
@@ -610,11 +637,11 @@ public class Diagnostic {
                 public boolean equals(Object obj) {
                     return super.equals(obj);
                 }
-
+                
                 public int hashCode() {
                     return 7; // any dummy value
-                }                
-            };  
+                }
+            };
             
             ExceptionWrapper(Exception e, String source) {
                 this.e = e;
@@ -668,7 +695,7 @@ public class Diagnostic {
                 retValue.append("===> [").append(counter).append("] similar "); // NOI18N
                 retValue.append(getSourceName()).append(" error(s) with the first :\n"); // NOI18N
                 retValue.append(indentBuffer.toString()).append(e.toString());
-                if (getStatisticsLevel() > 2) {  
+                if (getStatisticsLevel() > 2) {
                     String indent = indentBuffer.toString() + indentBuffer.toString() + indentBuffer.toString();
                     StackTraceElement[] stack = e.getStackTrace();
                     for (int i = 0; i < stack.length; i++) {
@@ -710,11 +737,11 @@ public class Diagnostic {
                 assert (elem2 != null);
                 return elem1.equals(elem2);
             }
-
+            
             public void add(Exception e) {
                 counter++;
                 errorMessages.add(e.toString());
-            }                      
+            }
         }
         
         private static class LexerExceptionWrapper extends ExceptionWrapper {

@@ -60,10 +60,6 @@ import  org.netbeans.modules.cnd.api.model.*;
         return showLibs;
     }
     
-    public boolean isLibProject(CsmProject project){
-        return !CsmModelAccessor.getModel().projects().contains(project);
-    }
-    
     public void openProject(CsmProject project){
         if( root == null ) { // paranoya
             root = createRoot();

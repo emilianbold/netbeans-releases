@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.WeakList;
+import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.Installer;
 
 import java.util.*;
@@ -338,9 +339,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     protected ProjectBase getLibrary(String includePath) {
         ProjectBase library = null;
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmProject> uid = libraries.get(includePath);
-            if( uid == null ) {
-                synchronized( this ) {
+            CsmUID<CsmProject> uid;
+            synchronized (lock) {
+                uid = libraries.get(includePath);
+                if( uid == null ) {
                     uid = libraries.get(includePath);
                     if( uid == null ) {
                         library = new LibProjectImpl(this, includePath);
@@ -354,9 +356,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                 assert library != null || uid == null  : "null object for UID " + uid;
             }
         } else {
-            library = (ProjectBase) librariesOLD.get(includePath);
-            if( library == null ) {
-                synchronized( this ) {
+            synchronized (lock) {
+                library = (ProjectBase) librariesOLD.get(includePath);
+                if( library == null ) {
                     library = librariesOLD.get(includePath);
                     if( library == null ) {
                         library = new LibProjectImpl(this, includePath);
@@ -569,30 +571,33 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         }
     }
 
-    private Object closeLibLock = new String("Close Libraries Lock");
     private void closeLibraries() {
-        synchronized (closeLibLock) {
-            if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.closeLibraries: cleaning libs");
-            if (TraceFlags.USE_REPOSITORY) {
-                Set<CsmUID<CsmProject>> libs = new HashSet<CsmUID<CsmProject>>(libraries.values());
-                for (Iterator<CsmUID<CsmProject>> it = libs.iterator(); it.hasNext();) {
-                    CsmUID<CsmProject> uid = it.next();
-                    assert uid != null;
-                    ProjectBase lib = (ProjectBase) UIDCsmConverter.UIDtoProject(uid);
-                    assert lib != null : "Null project for UID " + uid;
-                    disposeProject(lib);
-                }
-                // update repository before clearing
-                RepositoryUtils.remove(libraries.values());
+        if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.closeLibraries: cleaning libs");
+        if (TraceFlags.USE_REPOSITORY) {
+            Set<CsmUID<CsmProject>> libUIDs;
+            synchronized (lock) {
+                libUIDs = new HashSet<CsmUID<CsmProject>>(libraries.values());
                 libraries.clear();
-            } else {
-                Set<ProjectBase> libs = new HashSet<ProjectBase>(librariesOLD.values());
-                for (Iterator<ProjectBase> it = libs.iterator(); it.hasNext();) {
-                    ProjectBase lib = it.next();
-                    assert lib != null;
-                    disposeProject(lib);
-                }
-                librariesOLD.clear();            
+            }
+            for (Iterator<CsmUID<CsmProject>> it = libUIDs.iterator(); it.hasNext();) {
+                CsmUID<CsmProject> uid = it.next();
+                assert uid != null;
+                ProjectBase lib = (ProjectBase) UIDCsmConverter.UIDtoProject(uid);
+                assert lib != null : "Null project for UID " + uid;
+                disposeProject(lib);
+            }
+            // update repository before clearing
+            RepositoryUtils.remove(libUIDs);
+        } else {
+            Set<ProjectBase> libs;
+            synchronized (lock) {
+                libs = new HashSet<ProjectBase>(librariesOLD.values());
+                librariesOLD.clear();
+            }
+            for (Iterator<ProjectBase> it = libs.iterator(); it.hasNext();) {
+                ProjectBase lib = it.next();
+                assert lib != null;
+                disposeProject(lib);
             }
         }
     }
@@ -652,6 +657,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         if (TraceFlags.USE_REPOSITORY) {
             UIDManager.instance().dispose();
         }
+        APTIncludeUtils.dispose();
     }
     
     private Object lock = new Object();

@@ -22,9 +22,11 @@ package test.sfs;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.cnd.repository.testbench.sfs.BaseTest;
+import org.netbeans.modules.cnd.repository.testbench.sfs.TestIndexSize;
 import org.netbeans.modules.cnd.repository.testbench.sfs.TestLongHashMap;
 import org.netbeans.modules.cnd.repository.testbench.sfs.TestDataInputOutput;
 import org.netbeans.modules.cnd.repository.testbench.sfs.TestSingleFileStorage;
+import org.netbeans.modules.cnd.repository.testbench.sfs.ThreadingStress;
 
 /**
  * Main for org.netbeans.modules.cnd.repository.sfs package testing
@@ -48,6 +50,12 @@ public class TestMain {
 	    }
 	    else if( "-m".equals(args[i]) ) { // NOI18N
 		test = new TestLongHashMap();
+	    }
+	    else if( "-t".equals(args[i]) ) { // NOI18N
+		test = new ThreadingStress();
+	    }
+	    else if( "-i".equals(args[i]) ) { // NOI18N
+		test = new TestIndexSize();
 	    }
 	    else if( "-w".equals(args[i]) ) { // NOI18N
 		wait = true;

@@ -105,8 +105,10 @@ public class CCSettingsDefaults extends ExtSettingsDefaults {
 	ccAbbrevMap.put("eif", "#endif"); //NOI18N
 	ccAbbrevMap.put("pra", "#pragma "); //NOI18N
 
+        ccAbbrevMap.put("br", "break"); // NOI18N
 	ccAbbrevMap.put("ca", "case "); //NOI18N
-	ccAbbrevMap.put("de", "default"); //NOI18N
+        ccAbbrevMap.put("cn", "continue"); // NOI18N
+        ccAbbrevMap.put("df", "default:"); // NOI18N
 	ccAbbrevMap.put("dou", "double "); //NOI18N
 	ccAbbrevMap.put("en", "enum "); //NOI18N
 	ccAbbrevMap.put("fl", "float "); //NOI18N
@@ -115,7 +117,9 @@ public class CCSettingsDefaults extends ExtSettingsDefaults {
 	ccAbbrevMap.put("ife", "if (|) {\n} else {\n}\n"); //NOI18N
 	ccAbbrevMap.put("iff", "if (|) {\n}\n"); //NOI18N
 	ccAbbrevMap.put("lo", "long "); //NOI18N
+        ccAbbrevMap.put("re", "return "); // NOI18N        
 	ccAbbrevMap.put("sh", "short "); //NOI18N
+        ccAbbrevMap.put("st", "static "); // NOI18N
 	ccAbbrevMap.put("stu", "struct "); //NOI18N
 	ccAbbrevMap.put("sw", "switch "); //NOI18N
 	ccAbbrevMap.put("ty", "typedef "); //NOI18N
@@ -129,6 +133,9 @@ public class CCSettingsDefaults extends ExtSettingsDefaults {
             ccAbbrevMap.put("cl", "class "); //NOI18N
             ccAbbrevMap.put("co", "const "); //NOI18N
             ccAbbrevMap.put("fa", "false"); //NOI18N
+            ccAbbrevMap.put("pr", "private:"); // NOI18N
+            ccAbbrevMap.put("pe", "protected:"); // NOI18N
+            ccAbbrevMap.put("pu", "public:"); // NOI18N                        
             ccAbbrevMap.put("tr", "true"); //NOI18N
             ccAbbrevMap.put("wc", "wchar_t "); //NOI18N
         }

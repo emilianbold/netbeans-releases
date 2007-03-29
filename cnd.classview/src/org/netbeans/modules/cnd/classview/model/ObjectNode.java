@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.cnd.classview.model;
+import java.util.Collection;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.classview.PersistentKey;
@@ -25,6 +26,7 @@ import org.openide.nodes.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.classview.actions.GoToDeclarationAction;
+import org.netbeans.modules.cnd.classview.actions.MoreDeclarations;
 
 /**
  * @author Vladimir Kvasihn
@@ -40,7 +42,7 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
         super(children);
         setObject(declaration);
     }
-
+    
     /** Implements AbstractCsmNode.getData() */
     public CsmObject getCsmObject() {
         return getObject();
@@ -69,6 +71,16 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
     public Action[] getActions(boolean context) {
         Action action = createOpenAction();
         if (action != null){
+            CsmOffsetableDeclaration decl = getObject();
+            String name = decl.getUniqueName();
+            CsmProject project = decl.getContainingFile().getProject();
+            if (project != null){
+                Collection<CsmOffsetableDeclaration> arr = project.findDeclarations(name);
+                if (arr.size() > 1){
+                    Action more = new MoreDeclarations(arr);
+                    return new Action[] { action, more };
+                }
+            }
             return new Action[] { action };
         }
         return new Action[0];

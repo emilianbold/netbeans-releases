@@ -101,9 +101,14 @@ public final class ProjectImpl extends ProjectBase {
         if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName()); // NOI18N
         FileImpl file = (FileImpl) getFile(buf.getFile());
         if( file == null ) {
-            file = new FileImpl(buf, this); // don't enqueue here!
-            putFile(buf.getFile(), file);
-        } else {
+            synchronized( getFilesLock() ) {
+                file = (FileImpl) getFile(buf.getFile());
+                if( file == null ) {
+                    putFile(buf.getFile(), new FileImpl(buf, this));
+                }
+            }
+        }
+        if (file != null) {
             file.setBuffer(buf); // don't enqueue here!
             synchronized( editedFiles ) {
                 editedFiles.add(file);                

@@ -160,12 +160,13 @@ public class DwarfSource implements SourceFileProperties{
             } else {
                 int i = fileName.indexOf(CYG_DRIVE_WIN);
                 if (i > 0) {
-                    //replace C:\cygdrive\c\<something> prefix with <something>:\ prefix:
-                    fileName = fileName.substring(0,i)+fileName.substring(i+CYG_DRIVE_UNIX.length()+1);
-                    fileName = fileName.replace('\\', '/');
+                    //replace D:\cygdrive\c\<something> prefix with <something>:\ prefix:
                     if (cygwinPath == null) {
                         cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + CYGWIN_PATH; // NOI18N
                     }
+                    fileName = fileName.substring(i+CYG_DRIVE_UNIX.length());
+                    fileName = "" + Character.toUpperCase(fileName.charAt(0)) + ':' + fileName.substring(1); // NOI18N
+                    fileName = fileName.replace('\\', '/');
                 }
             }
         }

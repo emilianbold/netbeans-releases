@@ -49,7 +49,7 @@ ExtSyntaxSupport.VariableMapTokenProcessor {
     // CsmCompletionExpression constants
     private static final int VARIABLE = CsmCompletionExpression.VARIABLE;
     private static final int DOT = CsmCompletionExpression.DOT;
-    private static final int DOT_OPEN = CsmCompletionExpression.DOT_OPEN;
+    private static final int DOT_OPEN = CsmCompletionExpression.DOT_OPEN;    
     private static final int ARROW = CsmCompletionExpression.ARROW;
     private static final int ARROW_OPEN = CsmCompletionExpression.ARROW_OPEN;
     private static final int SCOPE = CsmCompletionExpression.SCOPE;
@@ -499,6 +499,7 @@ ExtSyntaxSupport.VariableMapTokenProcessor {
                 break;
 
             case CCTokenContext.DOT_ID:
+            case CCTokenContext.DOTMBR_ID:    
                 if (parenDepth <= 1) { // no parens or in method declaration parms
                     switch (state) {
                         case INIT: // dot in initial state -> do nothing
@@ -543,6 +544,7 @@ ExtSyntaxSupport.VariableMapTokenProcessor {
                 break;
                 
             case CCTokenContext.ARROW_ID:
+            case CCTokenContext.ARROWMBR_ID:    
                 if (parenDepth <= 1) { // no parens or in method declaration parms
                     switch (state) {
                         case INIT: // arrow in initial state -> do nothing

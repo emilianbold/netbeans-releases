@@ -28,6 +28,7 @@ import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Settings for the C/C++/Fortran. The compile/build options stored
@@ -44,27 +45,180 @@ public class CppSettings extends SystemOption {
     public static final int DEFAULT_PARSING_DELAY = 2000;
     private static final boolean DEFAULT_FORTRAN_ENABLED = false;   // disable Fortran by default
 
-    // Option labels
+    // Properties
     public static final String PROP_PARSING_DELAY = "parsingDelay"; //NOI18N
     public static final String PROP_REPLACEABLE_STRINGS_TABLE = "replaceableStringsTable"; //NOI18N
     public static final String PROP_FREE_FORMAT_FORTRAN = "freeFormatFortran"; // NOI18N
     public static final String PROP_FORTRAN_ENABLED = "fortranEnabled"; // NOI18N
+    public static final String PROP_MAKE_NAME = "makeName"; // NOI18N
+    public static final String PROP_MAKE_PATH = "makePath"; // NOI18N
+    public static final String PROP_GDB_NAME = "gdbName"; // NOI18N
+    public static final String PROP_GDB_PATH = "gdbPath"; // NOI18N
+    public static final String PROP_COMPILER_SET_NAME = "compilerSetName"; // NOI18N
+    public static final String PROP_COMPILER_SET_DIRECTORIES = "compilerSetDirectories"; // NOI18N
+    public static final String PROP_C_COMPILER_NAME = "cCompilerName"; // NOI18N
+    public static final String PROP_CPP_COMPILER_NAME = "cppCompilerName"; // NOI18N
+    public static final String PROP_FORTRAN_COMPILER_NAME = "fortranCompilerName"; // NOI18N
     
     /** The resource bundle for the form editor */
     public static ResourceBundle bundle;
 
 
-    /**
-     *  Initialize each property.
-     */
+    /** Initialize each property */
     protected void initialize() {
 	super.initialize();
     }
 
-
     /** Return the signleton cppSettings */
     public static CppSettings getDefault() {
 	return (CppSettings) findObject(CppSettings.class, true);
+    }
+    
+    public String getCompilerSetName() {
+        String name = (String) getProperty(PROP_COMPILER_SET_NAME);
+        if (name == null) {
+            return "";
+        } else {
+            return name;
+        }
+    }
+    
+    public void setCompilerSetName(String name) {
+        String n = getCompilerSetName();
+        if (n == null || !n.equals(name)) {
+            putProperty(PROP_COMPILER_SET_NAME, name, true);
+        }
+    }
+    
+    public String getCompilerSetDirectories() {
+        return (String) getProperty(PROP_COMPILER_SET_DIRECTORIES);
+    }
+    
+    public void setCompilerSetDirectories(String name) {
+        String n = getCompilerSetDirectories();
+        if (n == null || !n.equals(name)) {
+            putProperty(PROP_COMPILER_SET_DIRECTORIES, name, true);
+        }
+    }
+    
+    public String getMakeName() {
+        String name = (String) getProperty(PROP_MAKE_NAME);
+        if (name == null) {
+            return "make"; // NOI18N
+        } else {
+            return name;
+        }
+    }
+    
+    public void setMakeName(String name) {
+        String n = getMakeName();
+        if (!n.equals(name)) {
+            putProperty(PROP_MAKE_NAME, name, true);
+        }
+    }
+    
+    public String getMakePath() {
+        String path = (String) getProperty(PROP_MAKE_PATH);
+        if (path == null) {
+            if (Utilities.isWindows()) {
+                return "C:\\Cygwin\\bin\\make.exe"; // NOI18N
+            } else {
+                return "/usr/bin/make"; // NOI18N
+            }
+        } else {
+            return path;
+        }
+    }
+    
+    public void setMakePath(String path) {
+        String p = getMakePath();
+        if (!p.equals(path)) {
+            putProperty(PROP_MAKE_PATH, path, true);
+        }
+    }
+    
+    public String getGdbName() {
+        String name = (String) getProperty(PROP_GDB_NAME);
+        if (name == null) {
+            return "gdb"; // NOI18N
+        } else {
+            return name;
+        }
+    }
+    
+    public void setGdbName(String name) {
+        String n = getGdbName();
+        if (!n.equals(name)) {
+            putProperty(PROP_GDB_NAME, name, true);
+        }
+    }
+    
+    public String getGdbPath() {
+        String path = (String) getProperty(PROP_GDB_PATH);
+        if (path == null) {
+            if (Utilities.isWindows()) {
+                return "C:\\Cygwin\\bin\\gdb.exe"; // NOI18N
+            } else {
+                return "/usr/bin/gdb"; // NOI18N
+            }
+        } else {
+            return path;
+        }
+    }
+    
+    public void setGdbPath(String path) {
+        String p = getGdbPath();
+        if (!p.equals(path)) {
+            putProperty(PROP_GDB_PATH, path, true);
+        }
+    }
+    
+    public String getCCompilerName() {
+        String name = (String) getProperty(PROP_C_COMPILER_NAME);
+        if (name == null) {
+            return "gcc"; // NOI18N
+        } else {
+            return name;
+        }
+    }
+    
+    public void setCCompilerName(String name) {
+        String n = getCCompilerName();
+        if (!n.equals(name)) {
+            putProperty(PROP_C_COMPILER_NAME, name, true);
+        }
+    }
+    
+    public String getCppCompilerName() {
+        String name = (String) getProperty(PROP_CPP_COMPILER_NAME);
+        if (name == null) {
+            return "g++"; // NOI18N
+        } else {
+            return name;
+        }
+    }
+    
+    public void setCppCompilerName(String name) {
+        String n = getCppCompilerName();
+        if (!n.equals(name)) {
+            putProperty(PROP_CPP_COMPILER_NAME, name, true);
+        }
+    }
+    
+    public String getFortranCompilerName() {
+        String name = (String) getProperty(PROP_FORTRAN_COMPILER_NAME);
+        if (name == null) {
+            return "g77"; // NOI18N
+        } else {
+            return name;
+        }
+    }
+    
+    public void setFortranCompilerName(String name) {
+        String n = getFortranCompilerName();
+        if (!n.equals(name)) {
+            putProperty(PROP_FORTRAN_COMPILER_NAME, name, true);
+        }
     }
 
     /**
@@ -110,7 +264,7 @@ public class CppSettings extends SystemOption {
     public String getReplaceableStringsTable() {
         String table = (String)getProperty(PROP_REPLACEABLE_STRINGS_TABLE);
         if (table == null) {
-            return "USER="+System.getProperty("user.name"); // NOI18N
+            return "USER=" + System.getProperty("user.name"); // NOI18N
         } else {
             return table;
         }
@@ -123,8 +277,7 @@ public class CppSettings extends SystemOption {
      */
     public Properties getReplaceableStringsProps() {
         Properties props = new Properties();
-        // PENDING: don't use StringBufferInputStream, it does not encode characters
-        // well.
+        
         try {
             props.load(new ByteArrayInputStream(getReplaceableStringsTable().getBytes()));
         }

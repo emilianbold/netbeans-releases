@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -71,7 +72,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
     private Folder externalFileItems = null;
     private Folder rootFolder = null;
     private HashMap projectItems = null;
-    private Vector projectItemsChangeListeners = null;
+    private Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
     private NativeProject nativeProject = null;
     public static String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
@@ -81,7 +82,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         this.baseDir = baseDir;
         rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
         projectItems = new HashMap();
-        projectItemsChangeListeners = new Vector();
         setModified(true);
     }
     
@@ -171,11 +171,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         }
     }
     
-    public Vector getProjectItemsChangeListeners() {
+    public Set<ChangeListener> getProjectItemsChangeListeners() {
         return projectItemsChangeListeners;
     }
     
-    public void setProjectItemsChangeListeners(Vector projectItemsChangeListeners) {
+    public void setProjectItemsChangeListeners(Set<ChangeListener> projectItemsChangeListeners) {
         this.projectItemsChangeListeners = projectItemsChangeListeners;
     }
     

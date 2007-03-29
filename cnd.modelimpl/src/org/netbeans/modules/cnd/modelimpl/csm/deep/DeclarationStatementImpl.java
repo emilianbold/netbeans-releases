@@ -55,6 +55,10 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         return declarators;
     }
     
+    public String toString() {
+        return "" + getKind() + ' ' + getOffsetString() + '[' + declarators + ']'; // NOI18N
+    }
+    
     private void render() {
         AstRenderer renderer = new DSRenderer();
         renderer.render(getAst(), null, null);

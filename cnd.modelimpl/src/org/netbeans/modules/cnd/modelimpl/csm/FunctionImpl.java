@@ -51,7 +51,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     private String signature;
     
     // only one of scopeRef/scopeAccessor must be used (based on USE_REPOSITORY)
-    private final CsmScope scopeRef;
+    private /*final*/ CsmScope scopeRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmScope> scopeUID;
 
     private final String[] rawName;
@@ -68,7 +68,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
         // set scope, do it in constructor to have final fields
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (this.scopeUID != null || scope == null);
             this.scopeRef = null;
@@ -189,10 +189,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     
     public String[] getRawName() {
         return rawName;
-    }
-    
-    public String toString() {
-        return "" + getKind() + ' ' + name /*+ " rawName=" + Utils.toString(getRawName())*/; // NOI18N
     }
     
     public String getUniqueNameWithoutPrefix() {
@@ -355,6 +351,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     public void dispose() {
+        super.dispose();
+        onDispose();
         CsmScope scope = _getScope();
         if( scope instanceof MutableDeclarationsContainer ) {
             ((MutableDeclarationsContainer) scope).removeDeclaration(this);
@@ -362,6 +360,14 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this.unregisterInProject();
         _disposeParameters();
     }
+    
+    private void onDispose() {
+        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+            // restore container from it's UID
+            this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);
+            assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
+        }
+    } 
     
     private static boolean initConst(AST node) {
         boolean ret = false;
@@ -390,13 +396,14 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
 
     private CsmScope _getScope() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
-            CsmScope out = UIDCsmConverter.UIDtoScope(this.scopeUID);
-            assert (out != null || this.scopeUID == null) : "null object for UID " + scopeUID;
-            return out;
-        } else {
-            return scopeRef;
+        CsmScope scope = this.scopeRef;
+        if (scope == null) {
+            if (TraceFlags.USE_REPOSITORY) {
+                scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
+                assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
+            }
         }
+        return scope;        
     }
 
     private List _getParameters() {
@@ -434,19 +441,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         factory.writeUIDCollection(this.parameters, output, false);
         PersistentUtils.writeStrings(this.rawName, output);
         output.writeBoolean(this._const);
-        
-        // prepared uid to write
-        CsmUID<CsmScope> writeScopeUID;
-        if (TraceFlags.USE_UID_TO_CONTAINER) {
-            writeScopeUID = this.scopeUID;
-        } else {
-            // save reference
-            assert !CHECK_SCOPE || this.scopeRef != null;
-            writeScopeUID = UIDCsmConverter.scopeToUID(this.scopeRef);
-        }        
+       
         // not null UID
-        assert !CHECK_SCOPE || writeScopeUID != null;
-        UIDObjectFactory.getDefaultFactory().writeUID(writeScopeUID, output);    
+        assert !CHECK_SCOPE || this.scopeUID != null;
+        UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);    
         
         PersistentUtils.writeUTF(this.signature, output);
     }
@@ -461,21 +459,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this.rawName = PersistentUtils.readStrings(input, TextCache.getManager());
         this._const = input.readBoolean();
         
-        CsmUID<CsmScope> readScopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // not null UID
-        assert !CHECK_SCOPE || readScopeUID != null;
-        if (TraceFlags.USE_UID_TO_CONTAINER) {
-            this.scopeUID = readScopeUID;
-            
-            this.scopeRef = null;
-        } else {
-            // restore reference
-            this.scopeRef = UIDCsmConverter.UIDtoScope(readScopeUID);
-            assert this.scopeRef != null || readScopeUID == null : "no object for UID " + readScopeUID;
-            
-            this.scopeUID = null;
-        } 
-        
+        assert !CHECK_SCOPE || this.scopeUID != null;
+        this.scopeRef = null;
+
         assert TraceFlags.USE_REPOSITORY;
         parametersOLD = null;
         

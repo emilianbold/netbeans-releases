@@ -321,8 +321,8 @@ public final class CsmProjectContentResolver {
     
     /////////////////////////////////////////////////////////////////////////////////////////
     
-    public List getFunctionVariables(CsmContext context, String strPrefix, boolean match) {
-        List res = CsmContextUtilities.findFunctionLocalVariables(context, strPrefix, match, isCaseSensitive());
+    public List<CsmDeclaration> findFunctionLocalDeclarations(CsmContext context, String strPrefix, boolean match) {
+        List<CsmDeclaration> res = CsmContextUtilities.findFunctionLocalDeclarations(context, strPrefix, match, isCaseSensitive());
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -497,7 +497,13 @@ public final class CsmProjectContentResolver {
     
     private List/*<CsmMember>*/ getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kinds[], String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses) {
         assert (clazz != null);
-        CsmVisibility minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration);
+        CsmVisibility minVisibility;
+        if (contextDeclaration == null && staticOnly) {
+            // we are in global context and are interested in all static members
+            minVisibility = CsmInheritanceUtilities.MAX_VISIBILITY;
+        } else {
+            minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration);
+        }
         
         int inheritanceLevel = NO_INHERITANCE;
         CsmClass contextClass = CsmBaseUtilities.getContextClass(contextDeclaration);

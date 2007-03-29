@@ -85,7 +85,8 @@ public class CCTokenContext extends TokenContext {
     public static final int PLUS_EQ_ID = RSSHIFT_EQ_ID + 1; // +=
     public static final int MINUS_EQ_ID = PLUS_EQ_ID + 1; // -=
     public static final int ARROW_ID = MINUS_EQ_ID + 1; // ->
-    public static final int MUL_EQ_ID = ARROW_ID + 1;  // *=
+    public static final int ARROWMBR_ID = ARROW_ID + 1;  // ->*
+    public static final int MUL_EQ_ID = ARROWMBR_ID + 1;  // *=
     public static final int DIV_EQ_ID = MUL_EQ_ID + 1;    // /=
     public static final int AND_EQ_ID = DIV_EQ_ID + 1;    // &=
     public static final int OR_EQ_ID = AND_EQ_ID + 1;     // |=
@@ -93,7 +94,8 @@ public class CCTokenContext extends TokenContext {
     public static final int MOD_EQ_ID = XOR_EQ_ID + 1;    // %=
     public static final int NOT_EQ_ID = MOD_EQ_ID + 1;    // !=
     public static final int DOT_ID = NOT_EQ_ID + 1;       // .
-    public static final int COMMA_ID = DOT_ID + 1;        // ,
+    public static final int DOTMBR_ID = DOT_ID + 1;       // .*
+    public static final int COMMA_ID = DOTMBR_ID + 1;        // ,
     public static final int COLON_ID = COMMA_ID + 1;      // :
     public static final int SCOPE_ID = COLON_ID + 1;      // ::
     public static final int SEMICOLON_ID = SCOPE_ID + 1;  // ;
@@ -383,6 +385,9 @@ public class CCTokenContext extends TokenContext {
     public static final BaseImageTokenID ARROW
     = new BaseImageTokenID("arrow", ARROW_ID, OPERATORS, "->");  // NOI18N
 
+    public static final BaseImageTokenID ARROWMBR
+    = new BaseImageTokenID("arrow-member", ARROWMBR_ID, OPERATORS, "->*");  // NOI18N
+    
     public static final BaseImageTokenID MUL_EQ
     = new BaseImageTokenID("mul-eq", MUL_EQ_ID, OPERATORS, "*=");  // NOI18N
 
@@ -407,6 +412,9 @@ public class CCTokenContext extends TokenContext {
     public static final BaseImageTokenID DOT
     = new BaseImageTokenID("dot", DOT_ID, OPERATORS, ".");  // NOI18N
     
+    public static final BaseImageTokenID DOTMBR
+    = new BaseImageTokenID("dot-member", DOTMBR_ID, OPERATORS, ".*");  // NOI18N
+
     public static final BaseImageTokenID COMMA
     = new BaseImageTokenID("comma", COMMA_ID, OPERATORS, ",");  // NOI18N
 
@@ -736,11 +744,11 @@ public class CCTokenContext extends TokenContext {
     public static final BaseTokenID INVALID_BACKSLASH
     = new BaseTokenID("invalid-backslash", INVALID_BACKSLASH_ID, ERRORS);  // NOI18N
 
-    public static final BaseTokenID INVALID_SYS_INCLUDE
-    = new BaseTokenID("invalid-sys-include", INCOMPLETE_SYS_INCLUDE_ID, ERRORS); // NOI18N
+    public static final BaseTokenID INCOMPLETE_SYS_INCLUDE
+    = new BaseTokenID("incomplete-sys-include", INCOMPLETE_SYS_INCLUDE_ID, ERRORS); // NOI18N
 
-    public static final BaseTokenID INVALID_USR_INCLUDE
-    = new BaseTokenID("invalid-user-include", INCOMPLETE_USR_INCLUDE_ID, ERRORS); // NOI18N
+    public static final BaseTokenID INCOMPLETE_USR_INCLUDE
+    = new BaseTokenID("incomplete-user-include", INCOMPLETE_USR_INCLUDE_ID, ERRORS); // NOI18N
     
     // Context instance declaration
     public static final CCTokenContext context = new CCTokenContext();

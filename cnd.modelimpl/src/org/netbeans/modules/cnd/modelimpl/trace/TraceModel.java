@@ -180,6 +180,7 @@ public class TraceModel {
 	private boolean stopBeforeAll = false;
 	private boolean stopAfterAll = false;
 	private boolean printTokens = false;
+        private boolean dumpModelAfterCleaningCache = false; // --clean4dump
 	
 	private List quoteIncludePaths = new ArrayList();
 	private List systemIncludePaths = new ArrayList();
@@ -364,7 +365,9 @@ public class TraceModel {
 			doCleanRepository = true;
 		} else if ( "folding".equals(flag)) { // NOI18N
 			testFolding = true;
-		}
+		} else if ( "clean4dump".equals(flag)) {
+                        dumpModelAfterCleaningCache = true;
+                }
 	}
 	
 	private void addFile(List files, File file) {
@@ -634,17 +637,30 @@ public class TraceModel {
                     }
                 }
                 
+                if (dumpModelAfterCleaningCache) {
+			anyKey("Press any key to clean repository:"); // NOI18N
+                        RepositoryAccessor.getRepository().debugClear();
+                        System.gc();System.gc();System.gc();System.gc();System.gc();
+                        anyKey("Press any key to dump model:"); // NOI18N
+                        if (!dumpFileOnly) {
+                                tracer.dumpModel(getProject());
+                        }                        
+                }
 		if (stopAfterAll) {
-                    System.gc();
-			System.out.println("Press any key to finish:"); // NOI18N
-			try {
-                                System.in.read();
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
+                        System.gc();
+			anyKey("Press any key to finish:"); // NOI18N
 		}
 	}
 	
+        private void anyKey(String message) {
+            System.err.println(message);
+            try {
+                    System.in.read();
+            } catch (IOException ex) {
+                    ex.printStackTrace();
+            }            
+        }
+        
 	private void showMemoryUsage(long memUsed) {
 		long newMemUsed = usedMemory();
 		long memDelta = newMemUsed - memUsed;

@@ -22,7 +22,6 @@ package org.netbeans.modules.cnd.repository.testbench.sfs;
 import java.io.File;
 import java.util.*;
 import org.netbeans.modules.cnd.repository.sfs.ChunkInfo;
-import org.netbeans.modules.cnd.repository.sfs.ChunkInfoFactory;
 import org.netbeans.modules.cnd.repository.util.LongHashMap;
 
 /**
@@ -48,11 +47,10 @@ public class TestLongHashMap extends BaseTest {
 	    map = new LongHashMap<K>();
 	    lastReference = reference;
 	    lastMap = map;
-	    
-	    lastChunkMap = new HashMap<K, ChunkInfo>();
-	    for( Map.Entry<K, Long> e : reference.entrySet() ) {
-		lastChunkMap.put(e.getKey(), ChunkInfoFactory.instance().createChunkInfo(e.getValue(), 0));
-	    }
+//	    lastChunkMap = new HashMap<K, ChunkInfo>();
+//	    for( Map.Entry<K, Long> e : reference.entrySet() ) {
+//		lastChunkMap.put(e.getKey(), ChunkInfoFactory.instance().createChunkInfo(e.getValue(), 0));
+//	    }
 	}
 	
 	public void test() {
@@ -122,7 +120,7 @@ public class TestLongHashMap extends BaseTest {
 	Map<String, Long> reference = new HashMap<String, Long>();
 	reference.put("One", 1L);
 	reference.put("Two", 2L);
-	new Unit(reference).test();
+	new Unit<String>(reference).test();
     }
     
     private void test_files(List<String> args) {
@@ -139,8 +137,8 @@ public class TestLongHashMap extends BaseTest {
 	    collectFiles(path, reference_s, reference_f);
 	}
 	
-	new Unit(reference_s).test();
-	new Unit(reference_f).test();
+	new Unit<String>(reference_s).test();
+	new Unit<File>(reference_f).test();
     }
     
     private void collectFiles(String path, Map<String, Long> reference_s, Map<File, Long> reference_f) {

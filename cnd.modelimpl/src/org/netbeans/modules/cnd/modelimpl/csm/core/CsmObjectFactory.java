@@ -169,7 +169,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
         } else if (object instanceof MacroImpl) {
             aHandler = MACRO_IMPL;
         } else {
-            throw new IllegalArgumentException("instance of unknown class" + object.getClass().getName());  //NOI18N
+            throw new IllegalArgumentException("instance of unknown class " + object.getClass().getName());  //NOI18N
         }
         return aHandler;
     }

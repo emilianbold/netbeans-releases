@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.modelimpl.platform;
 
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
@@ -512,27 +513,44 @@ public class ModelSupport implements PropertyChangeListener {
     
     private class FileChangeListener implements ChangeListener {
         
-        private Map/*<DataObject, BufAndProj>*/ buffers = new HashMap/*<DataObject, BufAndProj>*/();
-        
+        private Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<DataObject, Collection<BufAndProj>>();
+	
+	private Collection<BufAndProj> getBufNP(DataObject dao) {
+	    Collection<BufAndProj> bufNPcoll = buffers.get(dao);
+	    return (bufNPcoll == null) ? Collections.EMPTY_LIST : bufNPcoll;
+	}
+	
+	private void addBufNP(DataObject dao, BufAndProj bufNP) {
+	    Collection<BufAndProj> bufNPcoll = buffers.get(dao);
+	    if( bufNPcoll == null ) {
+		bufNPcoll = new ArrayList<BufAndProj>();
+		buffers.put(dao, bufNPcoll);
+	    }
+	    bufNPcoll.add(bufNP);
+	}
+	
         // TODO: need to change implementation when ataObject will contain correct cookie
         private void editStart(DataObject curObj) {
+	    
+	    NativeFileItemSet set = (NativeFileItemSet) curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
+	    
+	    if( set != null && ! set.isEmpty() ) {
+		
+		EditorCookie editor = (EditorCookie) curObj.getCookie(EditorCookie.class);
+		Document doc = editor != null ? editor.getDocument() : null;
+		FileObject primaryFile = curObj.getPrimaryFile();
+		File file = FileUtil.toFile(primaryFile);
+		final FileBufferDoc buffer = new FileBufferDoc(file, doc);
+		
+		for( NativeFileItem nativeFile : set ) {
+		    ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
+		    addBufNP(curObj, new BufAndProj(buffer, csmProject, nativeFile));
+		    csmProject.onFileEditStart(buffer, nativeFile);
+		}
+	    }
+	    
             FileObject primaryFile = curObj.getPrimaryFile();
             Project platformProject = FileOwnerQuery.getOwner(primaryFile);
-            if( model != null && platformProject != null ) {
-                NativeProject nativeProject = (NativeProject)platformProject.getLookup().lookup(NativeProject.class);
-                final ProjectBase csmProject = (ProjectBase) model.getProject(nativeProject);
-                if( csmProject != null && nativeProject != null) {
-                    File file = FileUtil.toFile(primaryFile);
-                    NativeFileItem nativeFile = nativeProject.findFileItem(file);
-                    if(nativeFile != null ) {
-                        EditorCookie editor = (EditorCookie) curObj.getCookie(EditorCookie.class);
-                        Document doc = editor != null ? editor.getDocument() : null;
-                        final FileBufferDoc buffer = new FileBufferDoc(file, doc);
-                        buffers.put(curObj, new BufAndProj(buffer, csmProject, nativeFile));
-                        csmProject.onFileEditStart(buffer, nativeFile);
-                    }
-                }
-            }
         }
         
 //        private void editEnd(DataObject curObj) {
@@ -584,11 +602,12 @@ public class ModelSupport implements PropertyChangeListener {
                 for( Iterator iter = buffers.keySet().iterator(); iter.hasNext(); ) {
                     DataObject dao = (DataObject) iter.next();
                     if( ! contains(objs, dao) ) {
-                        final BufAndProj bufNP = (BufAndProj) buffers.get(dao);
-                        if( bufNP != null ) {
-                            // removing old doc buffer and creating new one
-                            bufNP.project.onFileEditEnd( getFileBuffer(bufNP.buffer.getFile()), bufNP.nativeFile );
-                        }
+			for( BufAndProj bufNP : getBufNP(dao) ) {
+			    if( bufNP != null ) {
+				// removing old doc buffer and creating new one
+				bufNP.project.onFileEditEnd( getFileBuffer(bufNP.buffer.getFile()), bufNP.nativeFile );
+			    }
+			}
                         toDelete.add(dao);
                     }
                 }

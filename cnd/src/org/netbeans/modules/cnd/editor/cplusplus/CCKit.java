@@ -32,9 +32,9 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
+import org.netbeans.editor.TokenItem;
 
 import org.openide.awt.Mnemonics;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -46,21 +46,17 @@ import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.Completion;
-import org.netbeans.editor.ext.CompletionJavaDoc;
-import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
-import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorKit.NbGenerateGoToPopupAction;
 
 import org.netbeans.modules.cnd.MIMENames;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.CompletionProvider;
+import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.GotoDeclarationProvider;
 
@@ -77,30 +73,6 @@ public class CCKit extends NbEditorKit {
 //        System.err.println("CCKit.getHelpCts: Using JavaKit help ID");
 //        return new HelpCtx("org.netbeans.modules.editor.java.JavaKit");
 //    }
-
-    public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
-	CompletionProvider cc = (CompletionProvider) Lookup.getDefault().lookup(CompletionProvider.class);
-	CompletionJavaDoc doc = null;
-	if (cc != null) {
-	    doc = cc.createCompletionJavaDoc(extEditorUI);
-	}
-        if (doc == null) {
-            doc = super.createCompletionJavaDoc(extEditorUI);
-        }        
-	return doc;
-    } 
-   
-    public Completion createCompletion(ExtEditorUI extEditorUI) {
-	CompletionProvider cc = (CompletionProvider) Lookup.getDefault().lookup(CompletionProvider.class);
-	Completion compl = null;
-	if (cc != null) {
-	    compl = cc.createCompletion(extEditorUI);
-	}
-        if (compl == null) {
-            compl = super.createCompletion(extEditorUI);
-        }
-        return compl;
-    } 
     
     public Document createDefaultDocument() {
         BaseDocument doc = new NbEditorDocument(this.getClass());
@@ -125,7 +97,7 @@ public class CCKit extends NbEditorKit {
 	    sup = ss.createSyntaxSupport(doc);
 	}
         if (sup == null) {
-            sup = super.createSyntaxSupport(doc);
+            sup = new CCSyntaxSupport(doc);
         }
 	return sup;        
     }
@@ -343,116 +315,6 @@ public class CCKit extends NbEditorKit {
 
     
     public static class CCDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
-
-        /** Check and possibly popup, hide or refresh the completion */
-	protected void checkCompletion(JTextComponent target, String typedText) {
-	    Completion completion = ExtUtilities.getCompletion(target);
-	    if (completion != null && typedText.length() > 0) {
-		if (!completion.isPaneVisible()) { // pane not visible yet
-		    if (completion.isAutoPopupEnabled()) {
-			boolean pop = false;
-			switch (typedText.charAt(0)) {
-			case ' ':
-                        {
-			    int dotPos = target.getCaret().getDot();
-			    BaseDocument doc = (BaseDocument)target.getDocument();
-		
-			    if (dotPos >= 2) { // last char before inserted space
-				int pos = Math.max(dotPos - 5, 0);
-				try {
-				    String txtBeforeSpace = doc.getText(pos, dotPos - pos);
-				    if (txtBeforeSpace.endsWith("new ")) { // NOI18N
-					//XXX  && !Character.isCCIdentifierPart(txtBeforeSpace.charAt(0))) {
-					pop = true;
-				    } else if (txtBeforeSpace.endsWith(", ")) { // NOI18N
-                                        // commented out due to IZ#76210
-//					pop = true; 
-				    }
-				} catch (BadLocationException e) {
-				}
-			    }
-                        }
-			    break;
-			case '>':
-                        {
-			    int dotPos = target.getCaret().getDot();
-			    BaseDocument doc = (BaseDocument)target.getDocument();
-		
-			    if (dotPos >= 2) { // last char before inserted space
-				int pos = Math.max(dotPos - 2, 0);
-				try {
-				    String txtBeforeSpace = doc.getText(pos, dotPos - pos);
-				    if (txtBeforeSpace.endsWith("->")) { // NOI18N
-					pop = true;
-				    }
-				} catch (BadLocationException e) {
-				}
-			    }
-                        }
-                        case ':':
-                        {
-			    int dotPos = target.getCaret().getDot();
-			    BaseDocument doc = (BaseDocument)target.getDocument();
-		
-			    if (dotPos >= 2) { // last char before inserted space
-				int pos = Math.max(dotPos - 2, 0);
-				try {
-				    String txtBeforeSpace = doc.getText(pos, dotPos - pos);
-				    if (txtBeforeSpace.endsWith("::")) { // NOI18N
-					pop = true;
-				    }
-				} catch (BadLocationException e) {
-				}
-			    }
-                        }                        
-			    break;		
-			case '.':
-                        {
-			    int dotPos = target.getCaret().getDot();
-			    BaseDocument doc = (BaseDocument)target.getDocument();
-		
-			    if (dotPos >= 2) { // last char before inserted space
-				int pos = Math.max(dotPos - 2, 0);
-				try {
-				    String txtBeforeSpace = doc.getText(pos, dotPos - pos);
-				    if (!txtBeforeSpace.endsWith("..")) { // NOI18N
-					pop = true;
-				    }
-				} catch (BadLocationException e) {
-				}
-			    }
-                        }                             
-			    break;
-                        case ',':
-                            // commented out due to IZ#76210
-//			    pop = true;
-			    break;
-		
-			}
-	      
-			if (pop) {
-			    completion.popup(true);
-			} else {
-			    completion.cancelRequest();
-			}
-		    }
-	    
-		} else { // the pane is already visible
-		    switch (typedText.charAt(0)) {
-		    case '=':
-		    case '{':
-		    case ';':
-                    case ')':
-			completion.setPaneVisible(false);
-			break;
-	      
-		    default:
-			completion.refresh(true);
-			break;
-		    }
-		}
-	    }
-	}
       
 	protected void checkIndentHotChars(JTextComponent target, String typedText) {
 	    boolean reindent = false;
@@ -529,14 +391,34 @@ public class CCKit extends NbEditorKit {
                         String insString = "}"; // NOI18N
                         // XXX: vv159170 simplest hack
                         // insert "};" for "{" when in "enum", "class", "struct" and union completion
-                        int stLine = Utilities.getRowFirstNonWhite(doc, dotPos);
-                        if (stLine != -1 && stLine < dotPos) {
-                            String text = doc.getText(stLine, dotPos - stLine);
-                            if (DEBUG) System.out.println("current text " + text); // NOI18N
-                            String regexp=".*\\b(class|union|struct|enum)\\b.*";//NOI18N
-                            if (text != null && text.matches(regexp)) {
-                                insString = "};"; // NOI18N
-                            }
+                        CCSyntaxSupport sup = (CCSyntaxSupport)Utilities.getSyntaxSupport(target);
+                        TokenItem item = sup.getTokenChain(dotPos - 1, dotPos);
+                        while (item != null && item.getTokenID() == CCTokenContext.WHITESPACE) {
+                            item = item.getPrevious();
+                        }
+                        if (item == null || item.getTokenID() != CCTokenContext.LBRACE) {
+                            return Boolean.FALSE;
+                        }
+                        int lBracePos = item.getOffset();
+                        int lastSepOffset = sup.getLastCommandSeparator(lBracePos - 1);                        
+                        if (lastSepOffset != -1 && lastSepOffset < dotPos) {
+                            TokenItem keyword = sup.getTokenChain(lastSepOffset, lBracePos);
+                            while (keyword != null && keyword.getOffset() < lBracePos) {
+                                if (keyword.getTokenID() == CCTokenContext.CLASS ||
+                                        keyword.getTokenID() == CCTokenContext.UNION ||
+                                        keyword.getTokenID() == CCTokenContext.STRUCT ||
+                                        keyword.getTokenID() == CCTokenContext.ENUM) {
+                                    insString = "};"; // NOI18N
+                                    break;
+                                }
+                                keyword = keyword.getNext();
+                            } 
+//                            String text = doc.getText(lastSepOffset, dotPos - lastSepOffset);
+//                            if (DEBUG) System.out.println("current text " + text); // NOI18N
+//                            String regexp=".*\\b(class|union|struct|enum)\\b.*";//NOI18N
+//                            if (text != null && text.matches(regexp)) {
+//                                insString = "};"; // NOI18N
+//                            }
                         }
                         doc.insertString(end, insString, null); // NOI18N
                         doc.getFormatter().indentNewLine(doc, end);                        

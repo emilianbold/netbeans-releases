@@ -62,7 +62,7 @@ public class PersistentUtils {
             output.writeInt(FILE_BUFFER_FILE);
             ((FileBufferFile)buffer).write(output);
         } else {
-            throw new IllegalArgumentException("instance of unknown FileBuffer" + buffer);  //NOI18N
+            throw new IllegalArgumentException("instance of unknown FileBuffer " + buffer);  //NOI18N
         }        
     }
     
@@ -129,7 +129,7 @@ public class PersistentUtils {
                 output.writeInt(EXPRESSION_BASE);
                 ((ExpressionBase)expr).write(output);            
             } else {
-                throw new IllegalArgumentException("instance of unknown CsmExpression" + expr);  //NOI18N
+                throw new IllegalArgumentException("instance of unknown CsmExpression " + expr);  //NOI18N
             }
         }
     }
@@ -228,7 +228,7 @@ public class PersistentUtils {
             stream.writeInt(TYPE_IMPL);
             ((TypeImpl)type).write(stream);
         } else {
-            throw new IllegalArgumentException("instance of unknown class" + type.getClass().getName());  //NOI18N
+            throw new IllegalArgumentException("instance of unknown class " + type.getClass().getName());  //NOI18N
         }       
     }
     
@@ -240,7 +240,7 @@ public class PersistentUtils {
         if (inheritance instanceof InheritanceImpl) {
             ((InheritanceImpl)inheritance).write(output);            
         } else {
-            throw new IllegalArgumentException("instance of unknown CsmInheritance" + inheritance);  //NOI18N
+            throw new IllegalArgumentException("instance of unknown CsmInheritance " + inheritance);  //NOI18N
         }
     }
     
@@ -285,7 +285,7 @@ public class PersistentUtils {
         } else if (visibility == CsmVisibility.NONE) {
             handler = VISIBILITY_NONE;
         } else {
-            throw new IllegalArgumentException("instance of unknown visibility" + visibility);  //NOI18N
+            throw new IllegalArgumentException("instance of unknown visibility " + visibility);  //NOI18N
         }
         output.writeInt(handler);
     }

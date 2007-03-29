@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.apt.impl.structure;
 import antlr.Token;
 import java.io.Serializable;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
@@ -55,8 +56,8 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
         if (APTUtils.isID(token)) {
             if (macroName != null) {
                 // init macro name only once
-                APTUtils.LOG.log(Level.SEVERE, "line {1}: extra tokens after {2} at end of {0} directive", // NOI18N
-                        new Object[] {getToken().getText().trim(), getToken().getLine(), macroName.getText()} );
+                APTUtils.LOG.log(Level.SEVERE, "line {0}: extra tokens after {1} at end of {2} directive", // NOI18N
+                        new Object[] {getToken().getLine(), macroName.getText(), getToken().getText().trim()} );
             } else {
                 this.macroName = token;
             }
@@ -64,6 +65,15 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
         // eat all till END_PREPROC_DIRECTIVE     
         if (APTUtils.isEndDirectiveToken(token.getType())) {
             endOffset = ((APTToken)token).getOffset();
+            if (macroName == null) {
+                if (DebugUtils.STANDALONE) {
+                    System.err.printf("line %d: no macro name given in %s directive\n", // NOI18N
+                        getToken().getLine(), getToken().getText().trim());
+                } else {                
+                    APTUtils.LOG.log(Level.SEVERE, "line {0}: no macro name given in {1} directive ", // NOI18N
+                            new Object[] {getToken().getLine(), getToken().getText().trim()} );                
+                }
+            }
             return false;
         } else {
             return true;
@@ -76,7 +86,8 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
     
     public String getText() {
         assert (getToken() != null) : "must have valid preproc directive"; // NOI18N
-        assert (getMacroName() != null) : "must have valid macro"; // NOI18N
+        // macro name could be null for incorrect constructions
+        // assert (getMacroName() != null) : "must have valid macro"; // NOI18N
         String retValue = super.getText();
         if (getMacroName() != null) {
             retValue += " MACRO{" + getMacroName() + "}"; // NOI18N

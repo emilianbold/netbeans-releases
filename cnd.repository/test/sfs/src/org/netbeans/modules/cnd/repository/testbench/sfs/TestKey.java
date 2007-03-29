@@ -8,6 +8,8 @@ class TestKey implements Key {
     
     private String key;
     
+    
+    
     public TestKey(String key) {
 	this.key = key;
     }
@@ -42,4 +44,13 @@ class TestKey implements Key {
 	}
 	return false;
     }    
+
+    public String toString() {
+	return key;
+    }
+
+    public String getUnit() {
+	return "Test";
+    }
+    
 }

@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd.api.utils;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 import org.openide.util.Utilities;
 
@@ -32,7 +31,7 @@ import org.openide.util.Utilities;
  */
 public final class Path {
     
-    private static ArrayList list = new ArrayList();
+    private static ArrayList<String> list = new ArrayList();
     
     static {
         String path = System.getenv("PATH"); // NOI18N
@@ -59,11 +58,20 @@ public final class Path {
     }
     
     /**
+     * Replace the current path with this new one. We should validate but currently aren't.
+     * 
+     * @param newPath A list of directories to use as a replacement path
+     */
+    public static void setPath(ArrayList newPath) {
+        list = newPath;
+    }
+    
+    /**
      * Read the PATH from the environment and make an array from it.
      * 
      * @return A list of all path directories
      */
-    public static ArrayList getPathAsList() {
+    public static ArrayList getPath() {
         return list;
     }
     
@@ -74,23 +82,13 @@ public final class Path {
      * @return Path as a string (with OS specific directory separators)
      */
     public static String getPathAsString() {
-        Iterator<String> iter = list.iterator();
         StringBuffer buf = new StringBuffer();
         
-        while (iter.hasNext()) {
+        for (String dir : list) {
             buf.append(File.separatorChar);
-            buf.append(iter.next());
+            buf.append(dir);
         }
         return buf.toString();
-    }
-    
-    /**
-     * Replace the current path with this new one. We should validate but currently aren't.
-     * 
-     * @param newPath A list of directories to use as a replacement path
-     */
-    public static void setPath(ArrayList newPath) {
-        list = newPath;
     }
     
     /**

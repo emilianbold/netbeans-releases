@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.classview.model.ProjectNode;
@@ -49,7 +50,7 @@ public class ProjectsKeyArray extends Children.Keys {
         List<java.util.Map.Entry<CsmProject,SortedName>> list =
                 new ArrayList<java.util.Map.Entry<CsmProject,SortedName>>(myProjects.entrySet());
         Collections.sort(list, COMARATOR);
-        List<CsmProject> res = new ArrayList<CsmProject>();
+        final List<CsmProject> res = new ArrayList<CsmProject>();
         for(java.util.Map.Entry<CsmProject,SortedName> entry :list){
             CsmProject key = entry.getKey();
             res.add(key);
@@ -186,11 +187,10 @@ public class ProjectsKeyArray extends Children.Keys {
     
     protected void removeNotify() {
         super.removeNotify();
-//        if (myProjects != null){
-//            for(CsmProject p : myProjects){
-//                ChildrenUpdater.getInstance().unregister(p);
-//            }
-//        }
+        if (myProjects != null) {
+            myProjects.clear();
+            resetKeys();
+        }
         myProjects = null;
     }
     

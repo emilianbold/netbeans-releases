@@ -20,8 +20,8 @@
 package org.netbeans.modules.cnd.classview;
 
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 
 /**
  *
@@ -30,9 +30,9 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 public interface UpdatebleHost {
     boolean newNamespsce(CsmNamespace ns);
     boolean removeNamespsce(CsmNamespace ns);
-    boolean newDeclaration(CsmDeclaration decl);
-    boolean removeDeclaration(CsmDeclaration decl);
-    boolean changeDeclaration(CsmDeclaration oldDecl,CsmDeclaration newDecl);
-    boolean reset(CsmDeclaration decl, List<CsmDeclaration> recursive);
+    boolean newDeclaration(CsmOffsetableDeclaration decl);
+    boolean removeDeclaration(CsmOffsetableDeclaration decl);
+    boolean changeDeclaration(CsmOffsetableDeclaration oldDecl,CsmOffsetableDeclaration newDecl);
+    boolean reset(CsmOffsetableDeclaration decl, List<CsmOffsetableDeclaration> recursive);
     void flush();
 }

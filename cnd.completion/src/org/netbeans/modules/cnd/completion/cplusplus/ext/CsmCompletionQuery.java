@@ -148,9 +148,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             TokenID lastValidTokenID = tp.getLastValidTokenID();
             if (lastValidTokenID != null) {
                 switch (lastValidTokenID.getNumericID()) {
-                case CCTokenContext.MUL_ID:
-                    errState = true;
-                    break;
+//                case CCTokenContext.MUL_ID:
+//                    errState = true;
+//                    break;
                 case CCTokenContext.BLOCK_COMMENT_ID:
                     if (tp.getLastValidTokenText() == null
                             || !tp.getLastValidTokenText().endsWith("*/") // NOI18N
@@ -170,6 +170,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 sup.refreshClassInfo();
 
                 CsmCompletionExpression exp = tp.getResultExp();
+//                System.err.println("expression " + exp);
                 ret = getResult(component, sup, openingSource, offset, exp, sort);
             }
         } catch (BadLocationException e) {
@@ -559,10 +560,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             boolean lastDot = false; // dot at the end of the whole expression?
             boolean ok = true;
 
-            if (exp.getExpID() == CsmCompletionExpression.CPPINCLUDE) { // #include statement
-                exp = exp.getParameterCount() == 2 ? exp.getParameter(1) : exp.getParameter(0);
-                return false;
-            }
+//            if (exp.getExpID() == CsmCompletionExpression.CPPINCLUDE) { // #include statement
+//                exp = exp.getParameterCount() == 2 ? exp.getParameter(1) : exp.getParameter(0);
+//                return false;
+//            }
 
             switch (exp.getExpID()) {
             case CsmCompletionExpression.DOT_OPEN: // Dot expression with the dot at the end

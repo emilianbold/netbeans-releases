@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.classview;
 
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
@@ -27,6 +28,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -69,14 +71,22 @@ public final class PersistentKey {
         if (object instanceof CsmNamespace){
             CsmNamespace ns = (CsmNamespace) object;
             String uniq = ns.getQualifiedName();
-            return new PersistentKey(NameCache.getString(uniq), ns.getProject(), NAMESPACE);
+            CsmProject project = ns.getProject();
+            if (project != null) {
+                return new PersistentKey(NameCache.getString(uniq), project, NAMESPACE);
+            }
         } else if (object instanceof CsmEnumerator){
             // special hack.
-        } else if (object instanceof CsmDeclaration){
-            CsmDeclaration decl = (CsmDeclaration) object;
+        } else if (object instanceof CsmOffsetableDeclaration){
+            CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) object;
             String name = decl.getName();
             String uniq = decl.getUniqueName();
-            CsmProject project = findProject(decl);
+            CsmScope scope = decl.getScope();
+            if ((scope instanceof CsmCompoundClassifier) && name.length() > 0) {
+                CsmCompoundClassifier cls = (CsmCompoundClassifier) scope;
+                name = cls.getName();
+            }
+            CsmProject project = decl.getContainingFile().getProject();
             if (name.length() > 0 && uniq.indexOf("::::") < 0 && project != null){ // NOI18N
                 return new PersistentKey(NameCache.getString(uniq), project, DECLARATION);
             } else {
@@ -104,27 +114,6 @@ public final class PersistentKey {
                 return project.findDeclaration((String)key);
             case PROJECT:
                 return project;
-        }
-        return null;
-    }
-    
-    private static CsmProject findProject(CsmDeclaration decl){
-        CsmScope scope = decl.getScope();
-        if (CsmKindUtilities.isClass(scope)){
-            CsmClass cls = (CsmClass)scope;
-            return cls.getContainingNamespace().getProject();
-        } else if(CsmKindUtilities.isEnum(scope)){
-            CsmEnum cls = (CsmEnum)scope;
-            return cls.getContainingNamespace().getProject();
-        } else if (CsmKindUtilities.isNamespace(scope)){
-            CsmNamespace cls = (CsmNamespace)scope;
-            return cls.getProject();
-        } else if (CsmKindUtilities.isNamespaceDefinition(scope)){
-            CsmNamespaceDefinition cls = (CsmNamespaceDefinition)scope;
-            return cls.getNamespace().getProject();
-        } else if (CsmKindUtilities.isFile(scope)){
-            CsmFile cls = (CsmFile)scope;
-            return cls.getProject();
         }
         return null;
     }
@@ -162,7 +151,7 @@ public final class PersistentKey {
         }
         return 0;
     }
-
+    
     public String toString() {
         switch(kind){
             case PROXY:

@@ -96,6 +96,11 @@ public class APTIncludeUtils {
         return resolveFilePath(it, file);
     }  
     
+    public static void dispose() {
+        mapRef.clear();
+        mapFoldersRef.clear();
+    }
+    
     private static String resolveFilePath(Iterator it, String file) {
         if (APTTraceFlags.APT_ABSOLUTE_INCLUDES) {
             File absFile = new File(file);
@@ -113,17 +118,20 @@ public class APTIncludeUtils {
         return null;
     }
     
-    private static synchronized boolean exists(File file) {
+    private static boolean exists(File file) {
         if( APTTraceFlags.OPTIMIZE_INCLUDE_SEARCH ) {
             //calls++;
             String path = file.getAbsolutePath();
-            Map/*<File, Boolean>*/ files = getFilesMap();
-            Boolean exists = (Boolean) files.get(path);
-            if( exists == null ) {
-                exists = Boolean.valueOf(file.exists());
-                files.put(FilePathCache.getString(path), exists);
-            } else {
-                //hits ++;
+            Boolean exists;
+            synchronized (mapRef) {
+                Map/*<File, Boolean>*/ files = getFilesMap();
+                exists = (Boolean) files.get(path);
+                if( exists == null ) {
+                    exists = Boolean.valueOf(file.exists());
+                    files.put(FilePathCache.getString(path), exists);
+                } else {
+                    //hits ++;
+                }
             }
             return exists.booleanValue();
         } else {
@@ -131,17 +139,20 @@ public class APTIncludeUtils {
         }
     }
     
-    private static synchronized boolean isDirectory(File file) {
+    private static boolean isDirectory(File file) {
         if( APTTraceFlags.OPTIMIZE_INCLUDE_SEARCH ) {
             //calls++;
             String path = file.getAbsolutePath();
-            Map/*<File, Boolean>*/ dirs = getFoldersMap();
-            Boolean exists = (Boolean) dirs.get(path);
-            if( exists == null ) {
-                exists = Boolean.valueOf(file.isDirectory());
-                dirs.put(FilePathCache.getString(path), exists);
-            } else {
-                //hits ++;
+            Boolean exists;
+            synchronized (mapFoldersRef) {
+                Map/*<File, Boolean>*/ dirs = getFoldersMap();                
+                exists = (Boolean) dirs.get(path);
+                if( exists == null ) {
+                    exists = Boolean.valueOf(file.isDirectory());
+                    dirs.put(FilePathCache.getString(path), exists);
+                } else {
+                    //hits ++;
+                }
             }
             return exists.booleanValue();
         } else {
@@ -155,7 +166,7 @@ public class APTIncludeUtils {
 //    private static int calls = 0;
 //    private static int hits = 0;
 
-    private static synchronized Map/*<File, Boolean>*/ getFilesMap() {
+    private static Map/*<File, Boolean>*/ getFilesMap() {
         Map/*<File, Boolean>*/ map = (Map/*<File, Boolean>*/) mapRef.get();
         if( map == null ) {
             map = new HashMap/*<File, Boolean>*/();
@@ -164,7 +175,7 @@ public class APTIncludeUtils {
         return map;
     }
     
-    private static synchronized Map/*<File, Boolean>*/ getFoldersMap() {
+    private static Map/*<File, Boolean>*/ getFoldersMap() {
         Map/*<File, Boolean>*/ map = (Map/*<File, Boolean>*/) mapFoldersRef.get();
         if( map == null ) {
             map = new HashMap/*<File, Boolean>*/();

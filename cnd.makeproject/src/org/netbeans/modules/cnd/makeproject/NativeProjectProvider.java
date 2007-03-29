@@ -170,6 +170,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         while (iter.hasNext()) {
             NativeFileItem nativeFileIetm = (NativeFileItem)iter.next();
             ItemConfiguration itemConfiguration = ((Item)nativeFileIetm).getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(((Item)nativeFileIetm).getPath()));
+            if (itemConfiguration == null)
+                continue;
             if ((!itemConfiguration.isCompilerToolConfiguration() && !hlist.isRegistered(((Item)nativeFileIetm).getPath())) || itemConfiguration.getExcluded().getValue())
                 continue; // IZ 87407
             actualList.add(nativeFileIetm);

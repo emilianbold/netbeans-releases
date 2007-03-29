@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -43,9 +42,9 @@ public class ChangeEventImpl extends CsmChangeEvent {
     protected Set<CsmFile> removedFiles;
     protected Set<CsmFile> changedFiles;
     
-    protected Set<CsmDeclaration> newDeclarations;
-    protected Set<CsmDeclaration> removedDeclarations;
-    protected Map<CsmDeclaration,CsmDeclaration> changedDeclarations;
+    protected Set<CsmOffsetableDeclaration> newDeclarations;
+    protected Set<CsmOffsetableDeclaration> removedDeclarations;
+    protected Map<CsmOffsetableDeclaration,CsmOffsetableDeclaration> changedDeclarations;
     
     protected Set<CsmProject>   changedProjects;
     
@@ -77,23 +76,23 @@ public class ChangeEventImpl extends CsmChangeEvent {
 	return changedFiles;
     }
     
-    public Collection<CsmDeclaration> getNewDeclarations() {
+    public Collection<CsmOffsetableDeclaration> getNewDeclarations() {
 	if( newDeclarations == null ) {
-	    newDeclarations = new HashSet<CsmDeclaration>();
+	    newDeclarations = new HashSet<CsmOffsetableDeclaration>();
 	}
 	return newDeclarations;
     }
     
-    public Collection<CsmDeclaration> getRemovedDeclarations() { 
+    public Collection<CsmOffsetableDeclaration> getRemovedDeclarations() { 
 	if( removedDeclarations == null ) { 
-	    removedDeclarations = new HashSet<CsmDeclaration>(); 
+	    removedDeclarations = new HashSet<CsmOffsetableDeclaration>(); 
 	} 
 	return removedDeclarations; 
     }
     
-    public Map<CsmDeclaration,CsmDeclaration> getChangedDeclarations() { 
+    public Map<CsmOffsetableDeclaration,CsmOffsetableDeclaration> getChangedDeclarations() { 
 	if( changedDeclarations == null ) { 
-	    changedDeclarations = new HashMap<CsmDeclaration,CsmDeclaration>(); 
+	    changedDeclarations = new HashMap<CsmOffsetableDeclaration,CsmOffsetableDeclaration>(); 
 	} 
 	return changedDeclarations; 
     }

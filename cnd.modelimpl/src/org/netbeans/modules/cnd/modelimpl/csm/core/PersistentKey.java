@@ -27,6 +27,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -40,9 +41,7 @@ public final class PersistentKey {
     private static final boolean USE_REPOSITORY = Boolean.getBoolean("cnd.modelimpl.use.repository"); // NOI18N
     private static final byte PROXY = 0;
     private static final byte UID = 1;
-    private static final byte NAMESPACE = 2;
-    private static final byte DECLARATION = 3;
-    private static final byte PROJECT = 4;
+    private static final byte DECLARATION = 2;
     
     private Object key;
     private CsmProject project;
@@ -64,30 +63,19 @@ public final class PersistentKey {
         kind = type;
     }
     
-    public static PersistentKey createKey(CsmIdentifiable object){
-        if (object instanceof CsmNamespace){
-            CsmNamespace ns = (CsmNamespace) object;
-            String name = ns.getName();
-            return new PersistentKey(ns.getQualifiedName(), ns.getProject(), NAMESPACE);
-        } else if (object instanceof CsmEnumerator){
-            // special hack.
-        } else if (object instanceof CsmDeclaration){
-            CsmDeclaration decl = (CsmDeclaration) object;
-            String name = decl.getName();
-            String uniq = decl.getUniqueName();
-            CsmProject project = findProject(decl);
-            if (name.length() > 0 && uniq.indexOf("::::") < 0 && project != null){ // NOI18N
-                return new PersistentKey(uniq, project, DECLARATION);
-            } else {
-                //System.out.println("Skip "+uniq);
-            }
-        } else if (object instanceof CsmProject){
-            return new PersistentKey(null, (CsmProject)object, PROJECT);
+    public static PersistentKey createKey(CsmOffsetableDeclaration decl){
+        String name = decl.getName();
+        String uniq = decl.getUniqueName();
+        CsmProject project = decl.getContainingFile().getProject();
+        if (name.length() > 0 && uniq.indexOf("::::") < 0 && project != null){ // NOI18N
+            return new PersistentKey(uniq, project, DECLARATION);
+        } else {
+            //System.out.println("Skip "+uniq);
         }
         if (USE_REPOSITORY){
-            return new PersistentKey(object.getUID());
+            return new PersistentKey(decl.getUID());
         } else {
-            return new PersistentKey(object);
+            return new PersistentKey(decl);
         }
     }
     
@@ -97,33 +85,8 @@ public final class PersistentKey {
                 return (CsmIdentifiable) ((CsmUID)key).getObject();
             case PROXY:
                 return (CsmIdentifiable) key;
-            case NAMESPACE:
-                return project.findNamespace((String)key);
             case DECLARATION:
                 return project.findDeclaration((String)key);
-            case PROJECT:
-                return project;
-        }
-        return null;
-    }
-    
-    private static CsmProject findProject(CsmDeclaration decl){
-        CsmScope scope = decl.getScope();
-        if (CsmKindUtilities.isClass(scope)){
-            CsmClass cls = (CsmClass)scope;
-            return cls.getContainingNamespace().getProject();
-        } else if(CsmKindUtilities.isEnum(scope)){
-            CsmEnum cls = (CsmEnum)scope;
-            return cls.getContainingNamespace().getProject();
-        } else if (CsmKindUtilities.isNamespace(scope)){
-            CsmNamespace cls = (CsmNamespace)scope;
-            return cls.getProject();
-        } else if (CsmKindUtilities.isNamespaceDefinition(scope)){
-            CsmNamespaceDefinition cls = (CsmNamespaceDefinition)scope;
-            return cls.getNamespace().getProject();
-        } else if (CsmKindUtilities.isFile(scope)){
-            CsmFile cls = (CsmFile)scope;
-            return cls.getProject();
         }
         return null;
     }
@@ -138,11 +101,8 @@ public final class PersistentKey {
                 case PROXY:
                 case UID:
                     return key.equals(what.key);
-                case NAMESPACE:
                 case DECLARATION:
                     return project == what.project && key.equals(what.key);
-                case PROJECT:
-                    return project == what.project;
             }
         }
         return super.equals(object);
@@ -153,12 +113,9 @@ public final class PersistentKey {
             case PROXY:
             case UID:
                 return key.hashCode();
-            case NAMESPACE:
             case DECLARATION:
                 return project.hashCode() ^ key.hashCode();
-            case PROJECT:
-                return project.hashCode();
         }
-        return 0;
+        return super.hashCode();
     }
 }

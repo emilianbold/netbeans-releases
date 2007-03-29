@@ -26,15 +26,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
@@ -113,7 +115,7 @@ public class ChildrenUpdater {
                 }
             }
         }
-        for(CsmDeclaration decl : e.getNewDeclarations()){
+        for(CsmOffsetableDeclaration decl : e.getNewDeclarations()){
             UpdatebleHost keys = findHost(project, decl);
             if (keys != null){
                 if (keys.newDeclaration(decl)){
@@ -121,7 +123,7 @@ public class ChildrenUpdater {
                 }
             }
         }
-        for(CsmDeclaration decl : e.getRemovedDeclarations()){
+        for(CsmOffsetableDeclaration decl : e.getRemovedDeclarations()){
             UpdatebleHost keys = findHost(project, decl);
             if (keys != null){
                 if (keys.removeDeclaration(decl)){
@@ -129,10 +131,10 @@ public class ChildrenUpdater {
                 }
             }
         }
-        List<CsmDeclaration> recursive = new ArrayList<CsmDeclaration>();
-        List<Map.Entry<CsmDeclaration,CsmDeclaration>> change =
-                new ArrayList<Map.Entry<CsmDeclaration,CsmDeclaration>>(packChangedDeclarations(e.getChangedDeclarations()));
-        for(Map.Entry<CsmDeclaration,CsmDeclaration>  decl : change){
+        List<CsmOffsetableDeclaration> recursive = new ArrayList<CsmOffsetableDeclaration>();
+        List<Map.Entry<CsmOffsetableDeclaration,CsmOffsetableDeclaration>> change =
+                new ArrayList<Map.Entry<CsmOffsetableDeclaration,CsmOffsetableDeclaration>>(packChangedDeclarations(e.getChangedDeclarations()));
+        for(Map.Entry<CsmOffsetableDeclaration,CsmOffsetableDeclaration>  decl : change){
             UpdatebleHost keys = findHost(project, decl.getKey());
             if (keys != null){
                 if (keys.changeDeclaration(decl.getKey(),decl.getValue())){
@@ -147,9 +149,9 @@ public class ChildrenUpdater {
             }
         }
         while(recursive.size()>0){
-            List<CsmDeclaration> list = new ArrayList<CsmDeclaration>(recursive);
+            List<CsmOffsetableDeclaration> list = new ArrayList<CsmOffsetableDeclaration>(recursive);
             recursive.clear();
-            for(CsmDeclaration decl : list){
+            for(CsmOffsetableDeclaration decl : list){
                 UpdatebleHost keys = findNode(project, decl);
                 if (keys != null){
                     if (keys.reset(decl,recursive)){
@@ -165,10 +167,10 @@ public class ChildrenUpdater {
         }
     }
     
-    private Collection<Map.Entry<CsmDeclaration,CsmDeclaration>> packChangedDeclarations(Map<CsmDeclaration,CsmDeclaration> changed){
-        Map<PersistentKey,Map.Entry<CsmDeclaration,CsmDeclaration>> packed =
-                new HashMap<PersistentKey,Map.Entry<CsmDeclaration,CsmDeclaration>>();
-        for(Map.Entry<CsmDeclaration,CsmDeclaration>  decl : changed.entrySet()){
+    private Collection<Map.Entry<CsmOffsetableDeclaration,CsmOffsetableDeclaration>> packChangedDeclarations(Map<CsmOffsetableDeclaration,CsmOffsetableDeclaration> changed){
+        Map<PersistentKey,Map.Entry<CsmOffsetableDeclaration,CsmOffsetableDeclaration>> packed =
+                new HashMap<PersistentKey,Map.Entry<CsmOffsetableDeclaration,CsmOffsetableDeclaration>>();
+        for(Map.Entry<CsmOffsetableDeclaration,CsmOffsetableDeclaration>  decl : changed.entrySet()){
             packed.put(PersistentKey.createKey(decl.getKey()),decl);
         }
         return packed.values();
@@ -189,7 +191,7 @@ public class ChildrenUpdater {
         return null;
     }
     
-    private UpdatebleHost findNode(CsmProject project, CsmDeclaration decl){
+    private UpdatebleHost findNode(CsmProject project, CsmOffsetableDeclaration decl){
         if (!project.isValid()){
             return null;
         }
@@ -213,11 +215,23 @@ public class ChildrenUpdater {
                     return hosts.get(PersistentKey.createKey(cls));
                 }
             }
+        } else if(CsmKindUtilities.isTypedef(decl)){
+            CsmTypedef def = (CsmTypedef)decl;
+            CsmClassifier classifier = def.getType().getClassifier();
+            if (classifier instanceof CsmCompoundClassifier) {
+                CsmCompoundClassifier cls = (CsmCompoundClassifier)classifier;
+                if (cls.isValid() && cls.getName().length()==0) {
+                    CsmFile file = cls.getContainingFile();
+                    if (file != null && file.isValid()) {
+                        return hosts.get(PersistentKey.createKey(def));
+                    }
+                }
+            }
         }
         return null;
     }
     
-    private UpdatebleHost findHost(CsmProject project, CsmDeclaration decl){
+    private UpdatebleHost findHost(CsmProject project, CsmOffsetableDeclaration decl){
         if (!project.isValid()){
             return null;
         }

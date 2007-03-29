@@ -7,6 +7,5 @@
      be made there too -->                            
 <bindings>
     <bind actionName="comment" key="DS-T"/>
-    <bind actionName="uncomment" key="DS-D"/>
-    <bind actionName="goto-declaration" key="O-G"/>    
+    <bind actionName="uncomment" key="DS-D"/> 
 </bindings>

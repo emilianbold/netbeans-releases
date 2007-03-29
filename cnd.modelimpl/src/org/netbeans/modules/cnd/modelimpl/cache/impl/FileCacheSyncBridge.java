@@ -350,7 +350,7 @@ final class FileCacheSyncBridge {
     
     private void _setFile(FileImpl file) {
         this.absPath = file.getAbsolutePath();
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.fileUID = UIDCsmConverter.fileToUID(file);
         } else {
             this.fileImplOLD = file;
@@ -358,7 +358,7 @@ final class FileCacheSyncBridge {
     }
     
     private FileImpl _getFile() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             FileImpl file = (FileImpl) UIDCsmConverter.UIDtoFile(fileUID);
             assert (file != null);
             return file;

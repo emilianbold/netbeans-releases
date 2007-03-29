@@ -250,7 +250,9 @@ public class DiscoveryProjectGenerator {
     
     private void setupFile(FileConfiguration config, Item item) {
         Set<String> set = new HashSet<String>();
-        reConsolidate(set, config);
+        if ("file".equals(level)){ // NOI18N
+            reConsolidate(set, config);
+        }
         Vector vector = new Vector(set);
         StringBuilder buf = new StringBuilder();
         for(Map.Entry<String,String> entry : config.getUserMacros(false).entrySet()){

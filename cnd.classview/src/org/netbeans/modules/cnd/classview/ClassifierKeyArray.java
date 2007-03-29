@@ -23,12 +23,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.ClassNode;
 import org.netbeans.modules.cnd.classview.model.EnumNode;
@@ -47,6 +49,10 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
     public ClassifierKeyArray(ChildrenUpdater childrenUpdater, CsmCompoundClassifier classifier){
         super(childrenUpdater, classifier.getContainingNamespace().getProject(),PersistentKey.createKey(classifier));
     }
+
+    public ClassifierKeyArray(ChildrenUpdater childrenUpdater, CsmTypedef typedef, CsmCompoundClassifier classifier){
+        super(childrenUpdater, classifier.getContainingNamespace().getProject(), PersistentKey.createKey(typedef));
+    }
     
     public boolean newNamespsce(CsmNamespace ns) {
         return false;
@@ -56,7 +62,7 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
         return false;
     }
     
-    protected boolean canCreateNode(CsmDeclaration d) {
+    protected boolean canCreateNode(CsmOffsetableDeclaration d) {
         return true;
     }
     
@@ -88,11 +94,17 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
     }
     
     private CsmCompoundClassifier getClassifier(){
-        return (CsmCompoundClassifier) getHostId().getObject();
+        CsmIdentifiable object = getHostId().getObject();
+        if (object instanceof CsmCompoundClassifier) {
+            return (CsmCompoundClassifier)object;
+        } else{
+            CsmTypedef def = (CsmTypedef) object;
+            return (CsmCompoundClassifier)def.getType().getClassifier();
+        }
     }
     
-    protected CsmDeclaration findDeclaration(PersistentKey declId){
-        CsmDeclaration res = (CsmDeclaration) declId.getObject();
+    protected CsmOffsetableDeclaration findDeclaration(PersistentKey declId){
+        CsmOffsetableDeclaration res = (CsmOffsetableDeclaration) declId.getObject();
         return res;
     }
     
@@ -104,7 +116,7 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
         ChildrenUpdater updater = getUpdater();
         Node node = null;
         if (updater != null) {
-            CsmDeclaration member = findDeclaration(key);
+            CsmOffsetableDeclaration member = findDeclaration(key);
             if (member != null){
                 if( CsmKindUtilities.isClass(member) ) {
                     node = new ClassNode((CsmClass) member,

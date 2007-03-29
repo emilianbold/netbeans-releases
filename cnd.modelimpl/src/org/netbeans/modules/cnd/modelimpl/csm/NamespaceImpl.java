@@ -40,14 +40,14 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * @author Vladimir Kvashin
  */
 public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer,
-        Persistent, SelfPersistent {
+        Persistent, SelfPersistent, Disposable {
     
     // only one of project/projectUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
-    private final ProjectBase projectRef;
+    private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
     
     // only one of parent/parentUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
-    private final CsmNamespace parentRef;
+    private /*final*/ CsmNamespace parentRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmNamespace> parentUID;
     
     private final String name;
@@ -75,7 +75,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.parentRef = null;
         this.global = true;
         assert project != null;
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.projectUID = UIDCsmConverter.projectToUID(project);
             assert this.projectUID != null;
             
@@ -94,7 +94,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.name = name;
         this.global = false;
         assert project != null;
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.projectUID = UIDCsmConverter.projectToUID(project);
             assert this.projectUID != null;
             
@@ -113,7 +113,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
 //        // getGlobalNamespace() and getTopLevelNamespaces()
 //        this.parent = (parent == null || parent.isGlobal()) ? null : parent;
         assert !CHECK_PARENT || parent != null;
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.parentUID = UIDCsmConverter.namespaceToUID(parent);
             assert parentUID != null || parent == null;
             
@@ -135,6 +135,27 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     protected void notifyCreation() {
         assert !isGlobal();
         Notificator.instance().registerNewNamespace(this);
+    }
+    
+    public void dispose() {
+        onDispose();
+        notifyRemove();
+    }    
+    
+    private void onDispose() {
+        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+            // restore container from it's UID
+            this.projectRef = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
+            assert this.projectRef != null || this.projectUID == null : "no object for UID " + this.projectUID;
+            // restore container from it's UID
+            this.parentRef = UIDCsmConverter.UIDtoNamespace(this.parentUID);
+            assert this.parentRef != null || this.parentUID == null : "no object for UID " + this.parentUID;
+        }
+    }
+    
+    protected void notifyRemove() {
+        assert !isGlobal();
+        Notificator.instance().registerRemovedNamespace(this);
     }
     
     private static final String UNNAMED_PREFIX = "<unnamed>";  // NOI18N
@@ -338,8 +359,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmOffsetableDeclaration> uid = declarations.remove(declaration.getUniqueName());
-            // clean repository
-            RepositoryUtils.remove(uid);
+            // do not clean repository, it must be done from physical container of declaration
+            if (false) RepositoryUtils.remove(uid);
             // update repository
             RepositoryUtils.put(this);
         } else {
@@ -375,8 +396,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         boolean remove = false;
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmNamespaceDefinition> uid = nsDefinitions.remove(getSortKey(def));
-            // update repository
-            RepositoryUtils.remove(uid);
+            // does not remove unregistered declaration from repository, it's responsibility of physical container
+            if (false) RepositoryUtils.remove(uid);
+            // update repository about itself
             RepositoryUtils.put(this);
             remove =  (nsDefinitions.size() == 0);
         } else {
@@ -389,7 +411,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
                 parent.removeNestedNamespace(this);
             }
             _getProject().unregisterNamesace(this);
-            Notificator.instance().registerRemoveNamespace(this);
+            dispose();            
         }
     }
     
@@ -423,23 +445,25 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     private ProjectBase _getProject() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
-            ProjectBase prj = (ProjectBase)UIDCsmConverter.UIDtoProject(projectUID);
-            assert (prj != null || projectUID == null) : "empty project for UID " + projectUID;
-            return prj;
-        } else {
-            return this.projectRef;
+        ProjectBase prj = this.projectRef;
+        if (prj == null) {
+            if (TraceFlags.USE_REPOSITORY) {
+                prj = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
+                assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+            }
         }
+        return prj;
     }
     
     private CsmNamespace _getParentNamespace() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
-            CsmNamespace ns = UIDCsmConverter.UIDtoNamespace(parentUID);
-            assert (ns != null || parentUID == null) : "null object for UID " + parentUID;
-            return ns;
-        } else {
-            return parentRef;
+        CsmNamespace ns = this.parentRef;
+        if (ns == null) {
+            if (TraceFlags.USE_REPOSITORY) {
+                ns = UIDCsmConverter.UIDtoNamespace(this.parentUID);
+                assert (ns != null || this.parentUID == null) : "null object for UID " + this.parentUID;   
+            }
         }
+        return ns;
     }
     
     public String toString() {
@@ -457,26 +481,13 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     public void write(DataOutput output) throws IOException {
         output.writeBoolean(this.global);
         
-        UIDObjectFactory theFactory = UIDObjectFactory.getDefaultFactory();
-        // prepared uid to write
-        CsmUID<CsmProject> writeProjectUID;
-        CsmUID<CsmNamespace> writeParentUID;
-        if (TraceFlags.USE_UID_TO_CONTAINER) {
-            writeProjectUID = this.projectUID;
-            writeParentUID = this.parentUID;
-        } else {
-            // save reference
-            assert this.projectRef != null;
-            writeProjectUID = UIDCsmConverter.projectToUID(this.projectRef);
-            assert !CHECK_PARENT || this.parentRef != null || isGlobal();
-            writeParentUID = UIDCsmConverter.namespaceToUID(this.parentRef);        
-        }        
+        UIDObjectFactory theFactory = UIDObjectFactory.getDefaultFactory();      
         // not null UID
-        assert writeProjectUID != null;
-        theFactory.writeUID(writeProjectUID, output);
+        assert this.projectUID != null;
+        theFactory.writeUID(this.projectUID, output);
         // can be null for global ns
-        assert !CHECK_PARENT || writeParentUID != null || isGlobal();
-        theFactory.writeUID(writeParentUID, output);
+        assert !CHECK_PARENT || this.parentUID != null || isGlobal();
+        theFactory.writeUID(this.parentUID, output);
         
         assert this.name != null;
         output.writeUTF(this.name);
@@ -492,28 +503,14 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         
         UIDObjectFactory theFactory = UIDObjectFactory.getDefaultFactory();
         
-        CsmUID<CsmProject> readProjectUID = theFactory.readUID(input);
-        CsmUID<CsmNamespace> readParentUID = theFactory.readUID(input);
+        this.projectUID = theFactory.readUID(input);
+        this.parentUID = theFactory.readUID(input);
         // not null UID
-        assert readProjectUID != null;
-        assert !CHECK_PARENT || readParentUID != null || this.global;
-        if (TraceFlags.USE_UID_TO_CONTAINER) {
-            this.projectUID = readProjectUID;
-            this.parentUID = readParentUID;
-            
-            this.projectRef = null;
-            this.parentRef = null;
-        } else {
-            // restore reference
-            this.projectRef = (ProjectBase) UIDCsmConverter.UIDtoProject(readProjectUID);
-            assert this.projectRef != null || readProjectUID == null : "no object for UID " + readProjectUID;
-            // restore reference
-            this.parentRef = UIDCsmConverter.UIDtoNamespace(readParentUID);
-            assert this.parentRef != null || readParentUID == null : "no object for UID " + readParentUID;
-            
-            this.projectUID = null;
-            this.parentUID = null;
-        }        
+        assert this.projectUID != null;
+        assert !CHECK_PARENT || this.parentUID != null || this.global;
+        this.projectRef = null;
+        this.parentRef = null;
+       
 
         this.name = TextCache.getString(input.readUTF());
         assert this.name != null;

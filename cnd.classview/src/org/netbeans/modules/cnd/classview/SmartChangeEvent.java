@@ -22,11 +22,11 @@ package org.netbeans.modules.cnd.classview;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -100,19 +100,19 @@ public class SmartChangeEvent {
                 storage.addRemovedNamespaces(ns);
             }
         }
-        for (CsmDeclaration decl : e.getNewDeclarations()){
+        for (CsmOffsetableDeclaration decl : e.getNewDeclarations()){
             Storage storage = getStorage(decl);
             if (storage != null){
                 storage.addNewDeclaration(decl);
             }
         }
-        for (CsmDeclaration decl : e.getRemovedDeclarations()){
+        for (CsmOffsetableDeclaration decl : e.getRemovedDeclarations()){
             Storage storage = getStorage(decl);
             if (storage != null){
                 storage.addRemovedDeclarations(decl);
             }
         }
-        for (Map.Entry<CsmDeclaration,CsmDeclaration> decl : e.getChangedDeclarations().entrySet()){
+        for (Map.Entry<CsmOffsetableDeclaration,CsmOffsetableDeclaration> decl : e.getChangedDeclarations().entrySet()){
             Storage storage = getStorage(decl.getValue());
             if (storage != null){
                 storage.addChangedDeclarations(decl.getKey(),decl.getValue());
@@ -133,7 +133,7 @@ public class SmartChangeEvent {
         return null;
     }
     
-    private Storage getStorage(CsmDeclaration decl){
+    private Storage getStorage(CsmOffsetableDeclaration decl){
         CsmProject project = findProject(decl);
         if (project != null && project.isValid()){
             Storage storage = changedProjects.get(project);
@@ -146,7 +146,7 @@ public class SmartChangeEvent {
         return null;
     }
     
-    private static CsmProject findProject(CsmDeclaration decl){
+    private static CsmProject findProject(CsmOffsetableDeclaration decl){
         CsmScope scope = decl.getScope();
         if (CsmKindUtilities.isClass(scope)){
             CsmClass cls = (CsmClass)scope;
@@ -191,35 +191,35 @@ public class SmartChangeEvent {
         private CsmProject changedProject;
         private Set<CsmNamespace>  newNamespaces = new HashSet<CsmNamespace>();
         private Set<CsmNamespace>  removedNamespaces = new HashSet<CsmNamespace>();
-        private Set<CsmDeclaration> newDeclarations = new HashSet<CsmDeclaration>();
-        private Set<CsmDeclaration> removedDeclarations = new HashSet<CsmDeclaration>();
-        private Map<CsmDeclaration,CsmDeclaration> changedDeclarations = new HashMap<CsmDeclaration,CsmDeclaration>();
+        private Set<CsmOffsetableDeclaration> newDeclarations = new HashSet<CsmOffsetableDeclaration>();
+        private Set<CsmOffsetableDeclaration> removedDeclarations = new HashSet<CsmOffsetableDeclaration>();
+        private Map<CsmOffsetableDeclaration,CsmOffsetableDeclaration> changedDeclarations = new HashMap<CsmOffsetableDeclaration,CsmOffsetableDeclaration>();
         
         public Storage(CsmProject project){
             changedProject = project;
         }
         
-        public Collection<CsmDeclaration> getNewDeclarations() {
+        public Collection<CsmOffsetableDeclaration> getNewDeclarations() {
             return newDeclarations;
         }
         
-        private void addNewDeclaration(CsmDeclaration declaration) {
+        private void addNewDeclaration(CsmOffsetableDeclaration declaration) {
             newDeclarations.add(declaration);
         }
         
-        public Collection<CsmDeclaration> getRemovedDeclarations() {
+        public Collection<CsmOffsetableDeclaration> getRemovedDeclarations() {
             return removedDeclarations;
         }
         
-        private void addRemovedDeclarations(CsmDeclaration declaration) {
+        private void addRemovedDeclarations(CsmOffsetableDeclaration declaration) {
             removedDeclarations.add(declaration);
         }
         
-        public Map<CsmDeclaration,CsmDeclaration> getChangedDeclarations() {
+        public Map<CsmOffsetableDeclaration,CsmOffsetableDeclaration> getChangedDeclarations() {
             return changedDeclarations;
         }
         
-        private void addChangedDeclarations(CsmDeclaration oldDecl, CsmDeclaration newDecl) {
+        private void addChangedDeclarations(CsmOffsetableDeclaration oldDecl, CsmOffsetableDeclaration newDecl) {
             changedDeclarations.put(oldDecl, newDecl);
         }
         

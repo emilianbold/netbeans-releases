@@ -101,9 +101,15 @@ public class TestSingleFileStorage extends BaseTest {
     }
     
     private void simpleTest2() throws IOException {
-	String key = "TestObject1"; // NOI18N
-	testWriteAndReadImmediately(new TestObject(key, "1", "22", "333")); // NOI18N
-	testWriteAndReadImmediately(new TestObject(key, "aaa", "bb", "c")); // NOI18N
+	TestObject obj1 = new TestObject("TestObject2a", "1", "22", "333");
+	testWriteAndReadImmediately(obj1); // NOI18N
+	TestObject obj2 = new TestObject("TestObject2b", "aaa", "bb", "c");
+	testWriteAndReadImmediately(obj2); // NOI18N
+	sfs.dump(System.out);
+	sfs.compact();
+	sfs.dump(System.out);
+	testRead(obj1);
+	testRead(obj2);
     }
     
     private void filesTest(List<String> args) throws IOException {
@@ -113,7 +119,7 @@ public class TestSingleFileStorage extends BaseTest {
 	}
 	
 	System.out.printf("Creating test objects...\n"); // NOI18N
-	Collection<TestObject> objects = createTestObjects(args);
+	Collection<TestObject> objects = new TestObjectCreator().createTestObjects(args);
 	System.out.printf("\t%d objects created\n", objects.size()); // NOI18N
 	
 	long t;
@@ -124,12 +130,7 @@ public class TestSingleFileStorage extends BaseTest {
 	System.out.printf("Done putting. Object count: %d  File size: %d   Time: %d seconds\n", // NOI18N
 		sfs.getObjectsCount(), sfs.getFileSize(), (System.currentTimeMillis()-t)/1000);
 	
-	for( int i = 1; i <= 3; i++ ) {
-	    System.out.printf("\nReading objects once (take %d)\n", i); // NOI18N
-	    t = System.currentTimeMillis();
-	    filesTestR(objects);
-	    System.out.printf("Reading took %d seconds\n", (System.currentTimeMillis()-t)/1000); // NOI18N
-	}
+	readCycle(objects);
 
 	System.out.printf("\nPutting objects again into storage, twice each!\n"); // NOI18N
 	t = System.currentTimeMillis();
@@ -137,13 +138,13 @@ public class TestSingleFileStorage extends BaseTest {
 	System.out.printf("Done putting. Object count: %d  File size: %d   Time: %d seconds\n", // NOI18N
 		sfs.getObjectsCount(), sfs.getFileSize(), (System.currentTimeMillis()-t)/1000);
 	
-	for( int i = 1; i <= 3; i++ ) {
-	    System.out.printf("\nReading objects once (take %d)\n", i); // NOI18N
-	    t = System.currentTimeMillis();
-	    filesTestR(objects);
-	    System.out.printf("Reading took %d seconds\n", (System.currentTimeMillis()-t)/1000); // NOI18N
-	}
+	readCycle(objects);
 	
+	System.out.printf("Compacting (size %d)...\n", sfs.getFileSize());
+	sfs.compact();
+	System.out.printf("\tCompacting (size %d) done\n", sfs.getFileSize());
+	
+	readCycle(objects);
 	
 //	System.out.printf("\nReading objects randomly\n");
 //	t = System.currentTimeMillis();
@@ -152,6 +153,14 @@ public class TestSingleFileStorage extends BaseTest {
 	
     }
     
+    private void readCycle(Collection<TestObject> objects) throws IOException {
+	for( int i = 1; i <= 3; i++ ) {
+	    System.out.printf("\nReading objects once (take %d)\n", i); // NOI18N
+	    long t = System.currentTimeMillis();
+	    filesTestR(objects);
+	    System.out.printf("Reading took %d seconds\n", (System.currentTimeMillis()-t)/1000); // NOI18N
+	}
+    }
     
     // unused
     private void filesTestWRimmediate(Collection<TestObject> objects) throws IOException {
@@ -183,30 +192,7 @@ public class TestSingleFileStorage extends BaseTest {
 	}
     }
     
-    private Collection<TestObject> createTestObjects(List<String> args) {
-	Collection<TestObject> objects = new ArrayList<TestObject>();
-	for( String path : args ) {
-	    createTestObjects(new File(path), objects);
-	}
-	return objects;
-    }
-    
-    private void createTestObjects(File file, Collection<TestObject> objects) {
-	if( file.exists() ) {
-	    TestObject  obj = new TestObject(file.getAbsolutePath());
-	    obj.lData = file.length();
-	    objects.add(obj);
-	    if( file.isDirectory() ) {
-		obj.sData = file.list();
-		 File[] children = file.listFiles();
-		 if( children != null ) {
-		     for (int i = 0; i < children.length; i++) {
-			 createTestObjects(children[i], objects);
-		     }
-		 }
-	    }
-	}
-    }
+
     
     private void testGet(TestObject orig) throws IOException {
 	TestObject read = get(orig.getKey());
@@ -230,6 +216,9 @@ public class TestSingleFileStorage extends BaseTest {
 	    System.err.printf("Wrote: %s\n", orig.toString());
 	    System.err.printf("Read:  %s\n", read.toString());
 	    errCnt++;
+	    if( stopOnError ) {
+		System.exit(100);
+	    }
 	}
     }
 

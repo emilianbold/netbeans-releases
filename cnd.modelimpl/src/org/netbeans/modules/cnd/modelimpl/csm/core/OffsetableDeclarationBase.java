@@ -83,5 +83,8 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     protected OffsetableDeclarationBase(DataInput input) throws IOException {
         super(input);
     }    
-    
+
+    public String toString() {
+        return "" + getKind() + ' ' + getName()  + getOffsetString(); // NOI18N
+    }    
 }

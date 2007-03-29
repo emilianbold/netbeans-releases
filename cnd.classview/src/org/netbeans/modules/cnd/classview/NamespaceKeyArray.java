@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -32,6 +34,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
@@ -68,6 +71,10 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
             }
         }
     }
+
+    protected boolean isGlobalNamespace() {
+        return isRootNamespase;
+    }
     
     protected void addNotify() {
         super.addNotify();
@@ -86,16 +93,18 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
             if (decl != null) {
                 for( Iterator/*<CsmDeclaration>*/ iter = decl.iterator(); iter.hasNext(); ) {
                     CsmDeclaration d = (CsmDeclaration) iter.next();
-                    if (d.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION){
+                    if (d != null && d.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION){
                         CsmFunctionDefinition def = (CsmFunctionDefinition) d;
                         CsmFunction func = def.getDeclaration();
                         if (func != null){
                             d = func;
                         }
                     }
-                    if (canCreateNode(d)){
-                        PersistentKey key = PersistentKey.createKey(d);
-                        res.put(key, getSortedName(d));
+                    if (CsmKindUtilities.isOffsetable(d)) {
+                        if (canCreateNode((CsmOffsetableDeclaration) d)){
+                            PersistentKey key = PersistentKey.createKey(d);
+                            res.put(key, getSortedName((CsmOffsetableDeclaration) d));
+                        }
                     }
                 }
             }
@@ -106,7 +115,7 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
         return res;
     }
     
-    protected boolean canCreateNode(CsmDeclaration d) {
+    protected boolean canCreateNode(CsmOffsetableDeclaration d) {
         if (d.getName().length() > 0) {
             if( CsmKindUtilities.isClass(d) ) {
                 CsmClass cls = (CsmClass) d;
@@ -135,7 +144,7 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
         return false;
     }
     
-    private ObjectNode createNode(CsmDeclaration d) {
+    private ObjectNode createNode(CsmOffsetableDeclaration d) {
         ChildrenUpdater updater = getUpdater();
         if (updater != null) {
             // TODO: shouldn't be empty, if everything was resolved!
@@ -174,7 +183,14 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
                                 new ClassifierKeyArray(updater, en));
                     }
                 } else if( d.getKind() == CsmDeclaration.Kind.TYPEDEF ) {
-                    return new TypedefNode((CsmTypedef) d);
+                    CsmTypedef def = (CsmTypedef) d;
+                    CsmClassifier cls = def.getType().getClassifier();
+                    if (cls != null && cls.getName().length()==0 &&
+                            (cls instanceof CsmCompoundClassifier)) {
+                        return new TypedefNode(def,new ClassifierKeyArray(updater, def, (CsmCompoundClassifier) cls));
+                    } else {
+                        return new TypedefNode(def);
+                    }
                 }
             }
         }
@@ -185,8 +201,8 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
         return (CsmNamespace)getHostId().getObject();
     }
     
-    protected CsmDeclaration findDeclaration(PersistentKey declId){
-        return (CsmDeclaration) declId.getObject();
+    protected CsmOffsetableDeclaration findDeclaration(PersistentKey declId){
+        return (CsmOffsetableDeclaration) declId.getObject();
     }
     
     private CsmNamespace findNamespace(PersistentKey nsId){
@@ -205,7 +221,7 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
             } else if (o instanceof CsmProject){ // NOI18N
                 node = CVUtil.createLoadingNode();
             } else {
-                CsmDeclaration decl = (CsmDeclaration) o;
+                CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) o;
                 if (decl != null && canCreateNode(decl)){
                     node = createNode(decl);
                 }

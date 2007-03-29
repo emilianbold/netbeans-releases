@@ -33,6 +33,11 @@ public class TypedefNode extends ObjectNode {
 	super(typedef, Children.LEAF);
         init(typedef);
     }
+
+    public TypedefNode(CsmTypedef typedef, Children.Array key) {
+	super(typedef, key);
+        init(typedef);
+    }
     
     private void init(CsmTypedef typedef){
         String shortName = typedef.getName();

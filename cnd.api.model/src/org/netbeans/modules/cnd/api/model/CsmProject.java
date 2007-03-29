@@ -58,6 +58,11 @@ public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQ
     CsmDeclaration findDeclaration(String uniqueName);
     
     /**
+     * Finds declarations by its nuique name
+     */
+    Collection<CsmOffsetableDeclaration> findDeclarations(String uniqueName);
+
+    /**
      * Finds file by its absolute path
      */
     CsmFile findFile(String absolutePath);
@@ -65,12 +70,12 @@ public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQ
     /**
      * Gets the collection of source project files.
      */
-    Collection/*<CsmFile>*/ getSourceFiles();
+    Collection<CsmFile> getSourceFiles();
     
     /**
      * Gets the collection of heaher project files.
      */
-    Collection/*<CsmFile>*/ getHeaderFiles();
+    Collection<CsmFile> getHeaderFiles();
     
     /**
      * Gets the collection of libraries of the project.
@@ -80,7 +85,7 @@ public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQ
      * one include directory, so there would be as many libraries as include 
      * path components)
      */
-    Collection/*<CsmProject>*/ getLibraries();
+    Collection<CsmProject> getLibraries();
     
     /**
      * Returns true if this project is valid, otherwise false.

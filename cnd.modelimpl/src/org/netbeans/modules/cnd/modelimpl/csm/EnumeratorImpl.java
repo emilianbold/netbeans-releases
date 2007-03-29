@@ -40,7 +40,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     private final String name;
     
     // only one of enumerationRef/enumerationUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)    
-    private final CsmEnum enumerationRef;    
+    private /*final*/ CsmEnum enumerationRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmEnum> enumerationUID;
 
     public EnumeratorImpl(AST ast, EnumImpl enumeration) {
@@ -48,7 +48,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         this.name = ast.getText();
         
         // set parent enum, do it in constructor to have final fields
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.enumerationUID = UIDCsmConverter.declarationToUID((CsmEnum)enumeration);
             this.enumerationRef = null;
         } else {
@@ -84,15 +84,28 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     }
 
     private CsmEnum _getEnumeration() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
-            CsmEnum enumaration = UIDCsmConverter.UIDtoDeclaration(enumerationUID);
-            assert (enumaration != null || enumerationUID == null) : "null object for UID " + enumerationUID;
-            return enumaration;             
-        } else {
-            return enumerationRef;
+        CsmEnum enumeration = this.enumerationRef;
+        if (enumeration == null) {
+            if (TraceFlags.USE_REPOSITORY) {
+                enumeration = UIDCsmConverter.UIDtoDeclaration(this.enumerationUID);
+                assert (enumeration != null || this.enumerationUID == null) : "null object for UID " + this.enumerationUID;
+            }
         }
-    }
+        return enumeration;
+    }    
+
+    protected void dispose() {
+        super.dispose();
+        onDispose();
+    } 
     
+    private void onDispose() {
+        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+            // restore container from it's UID
+            this.enumerationRef = UIDCsmConverter.UIDtoDeclaration(this.enumerationUID);
+            assert this.enumerationRef != null || this.enumerationUID == null : "no object for UID " + this.enumerationUID;
+        }
+    }    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 
@@ -100,37 +113,20 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         super.write(output);
         assert this.name != null;
         output.writeUTF(this.name);
-        CsmUID<CsmEnum> writeEnumerationUID;
-        if (TraceFlags.USE_UID_TO_CONTAINER) {
-            writeEnumerationUID = this.enumerationUID;
-        } else {
-            // save reference
-            assert this.enumerationRef != null;
-            writeEnumerationUID = UIDCsmConverter.declarationToUID(this.enumerationRef);
-        }        
+    
         // not null UID
-        assert writeEnumerationUID != null;
-        UIDObjectFactory.getDefaultFactory().writeUID(writeEnumerationUID, output);
+        assert this.enumerationUID != null;
+        UIDObjectFactory.getDefaultFactory().writeUID(this.enumerationUID, output);
     }
     
     public EnumeratorImpl(DataInput input) throws IOException {
         super(input);
         this.name = TextCache.getString(input.readUTF());
         assert this.name != null;
-        CsmUID<CsmEnum> readEnumerationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        this.enumerationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // not null UID
-        assert readEnumerationUID != null;
-        if (TraceFlags.USE_UID_TO_CONTAINER) {
-            this.enumerationUID = readEnumerationUID;
-            
-            this.enumerationRef = null;
-        } else {
-            // restore reference
-            this.enumerationRef = UIDCsmConverter.UIDtoDeclaration(readEnumerationUID);
-            assert this.enumerationRef != null || readEnumerationUID == null : "no object for UID " + readEnumerationUID;
-            
-            this.enumerationUID = null;
-        }
+        assert this.enumerationUID != null;
+        this.enumerationRef = null;
         
         assert TraceFlags.USE_REPOSITORY;
     }

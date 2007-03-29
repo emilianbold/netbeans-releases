@@ -77,7 +77,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     }
     
     private CsmNamespace _getReferencedNamespace() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             CsmNamespace referencedNamespace = UIDCsmConverter.UIDtoNamespace(referencedNamespaceUID);
             // can be null if namespace was removed 
             return referencedNamespace;
@@ -87,7 +87,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     }    
 
     private void _setReferencedNamespace(CsmNamespace referencedNamespace) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
             assert this.referencedNamespaceUID != null || referencedNamespace == null;
         } else {
@@ -113,10 +113,6 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     
     public String[] getRawName() {
         return rawName;
-    }
-    
-    public String toString() {
-        return "" + getKind() + ' ' + name /*+ " rawName=" + Utils.toString(getRawName())*/; // NOI18N
     }
     
     public CsmScope getScope() {

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
+import java.io.File;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;

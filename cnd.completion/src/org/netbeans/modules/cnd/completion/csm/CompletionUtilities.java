@@ -32,12 +32,13 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.ext.Completion;
 import org.netbeans.editor.ext.CompletionQuery;
+import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletion;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 
@@ -96,8 +97,14 @@ public class CompletionUtilities {
         return out;
     }
 
+    
+    public static Completion getCompletion(JTextComponent target) {
+        ExtEditorUI extEditorUI = ExtUtilities.getExtEditorUI(target);
+        return (extEditorUI != null) ? new NbCsmCompletion(extEditorUI) : null;
+    }  
+    
     public static CsmObject findItemAtCaretPos(JTextComponent target, int dotPos){
-        Completion completion = ExtUtilities.getCompletion(target);
+        Completion completion = getCompletion(target);
         if (completion != null) {
             if (completion.isPaneVisible()) { // completion pane visible
                 CsmObject item = getAssociatedObject(completion.getSelectedValue());

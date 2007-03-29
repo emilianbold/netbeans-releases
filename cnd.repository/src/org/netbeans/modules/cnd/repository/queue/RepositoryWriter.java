@@ -19,13 +19,14 @@
 
 package org.netbeans.modules.cnd.repository.queue;
 
+import java.io.IOException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
- * Implements
  * @author Vladimir Kvashin
  */
 public interface RepositoryWriter {
-    public void write(Key key, Persistent object);
+    public void write(Key key, Persistent object) throws IOException;
+    public void maintenance(long timeout) throws IOException;
 }

@@ -30,11 +30,13 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -58,7 +60,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         this.myID = id;
         childrenUpdater.register(project,id,this);
     }
-
+    
     protected ChildrenUpdater getUpdater(){
         return childrenUpdater;
     }
@@ -72,7 +74,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
             setKeys(new Object[0]);
         }
     }
-
+    
     private synchronized void resetKeys(){
         List<java.util.Map.Entry<PersistentKey,SortedName>> list =
                 new ArrayList<java.util.Map.Entry<PersistentKey,SortedName>>();
@@ -80,7 +82,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
             list.addAll(myKeys.entrySet());
         }
         Collections.sort(list, COMARATOR);
-        List<PersistentKey> res = new ArrayList<PersistentKey>();
+        final List<PersistentKey> res = new ArrayList<PersistentKey>();
         for(java.util.Map.Entry<PersistentKey,SortedName> entry :list){
             PersistentKey key = entry.getKey();
             res.add(key);
@@ -89,15 +91,19 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
     }
     
     abstract protected java.util.Map<PersistentKey,SortedName> getMembers();
-    abstract protected CsmDeclaration findDeclaration(PersistentKey key);
-    abstract protected boolean canCreateNode(CsmDeclaration d);
+    abstract protected CsmOffsetableDeclaration findDeclaration(PersistentKey key);
+    abstract protected boolean canCreateNode(CsmOffsetableDeclaration d);
     abstract protected Node createNode(PersistentKey key);
+    
+    protected boolean isGlobalNamespace() {
+        return false;
+    }
     
     protected SortedName getSortedName(CsmNamespace ns){
         return new SortedName(0,CVUtil.getNamesapceDisplayName(ns),0);
     }
     
-    protected SortedName getSortedName(CsmDeclaration d){
+    protected SortedName getSortedName(CsmOffsetableDeclaration d){
         if( CsmKindUtilities.isClass(d) ) {
             return new SortedName(1,d.getName(),0);
         } else if( d.getKind() == CsmDeclaration.Kind.ENUM ) {
@@ -143,7 +149,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         return true;
     }
     
-    public boolean newDeclaration(CsmDeclaration decl) {
+    public boolean newDeclaration(CsmOffsetableDeclaration decl) {
         if (!isInited){
             return false;
         }
@@ -165,7 +171,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         return true;
     }
     
-    public boolean removeDeclaration(CsmDeclaration decl) {
+    public boolean removeDeclaration(CsmOffsetableDeclaration decl) {
         if (!isInited){
             return false;
         }
@@ -177,7 +183,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         return true;
     }
     
-    public boolean changeDeclaration(CsmDeclaration oldDecl,CsmDeclaration newDecl) {
+    public boolean changeDeclaration(CsmOffsetableDeclaration oldDecl,CsmOffsetableDeclaration newDecl) {
         if (!isInited){
             return false;
         }
@@ -209,7 +215,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         }
     }
     
-    public boolean reset(CsmDeclaration decl, List<CsmDeclaration> recursive){
+    public boolean reset(CsmOffsetableDeclaration decl, List<CsmOffsetableDeclaration> recursive){
         myID = PersistentKey.createKey(decl);
         if (!isInited){
             return false;
@@ -237,7 +243,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
             if (myKeys.containsKey(key)){
                 // update
                 myKeys.put(key,members.get(key));
-                CsmDeclaration what = findDeclaration(key);
+                CsmOffsetableDeclaration what = findDeclaration(key);
                 if (what == null) {
                     // remove non-existent element
                     myKeys.remove(key);
@@ -289,12 +295,24 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
     }
     
     protected void addNotify() {
-        isInited = true;
-        myKeys = getMembers();
+        if (isGlobalNamespace()) {
+            myKeys = new HashMap<PersistentKey,SortedName>();
+            myKeys.put(PersistentKey.createKey(getProject()), new SortedName(0,"",0)); // NOI18N
+        } else {
+            myKeys = getMembers();
+        }
         myChanges = new HashMap<PersistentKey,ChangeListener>();
         isInited = true;
         resetKeys();
         super.addNotify();
+        if (isGlobalNamespace()) {
+            RequestProcessor.getDefault().post(new Runnable(){
+                public void run() {
+                    myKeys = getMembers();
+                    resetKeys();
+                }
+            });
+        }
     }
     
     protected void removeNotify() {
@@ -303,11 +321,12 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         myKeys.clear();
         myChanges.clear();
         childrenUpdater.unregister(myProject, myID);
+        resetKeys();
         if (traceEvents) {
             System.out.println("Remove key "+myID.toString()); // NOI18N
         }
     }
-
+    
     protected void destroyNodes(Node[] node) {
         for (Node n : node){
             Children children = n.getChildren();

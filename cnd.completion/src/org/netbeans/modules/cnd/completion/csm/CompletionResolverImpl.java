@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.cnd.completion.csm;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -28,6 +29,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -183,6 +185,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         
         if (needLocalVars(context, offset)) {
+            fileLocalEnumerators = contResolver.getFileLocalEnumerators(context, strPrefix, match);            
             CsmFunctionDefinition funDef = CsmContextUtilities.getFunctionDefinition(context);
             if (funDef != null) {
                 boolean staticContext = CsmBaseUtilities.isStaticContext(funDef);
@@ -190,7 +193,24 @@ public class CompletionResolverImpl implements CompletionResolver {
                 
                 // function variables
                 if (needFunctionVars(context, offset)) {
-                    localVars = contResolver.getFunctionVariables(context, strPrefix, match);
+                    List<CsmDeclaration> decls = contResolver.findFunctionLocalDeclarations(context, strPrefix, match);
+                    // separate local classes/structs/enums/unions and variables
+                    localVars = new ArrayList<CsmDeclaration>(decls.size());
+                    for (CsmDeclaration elem : decls) {
+                        if (CsmKindUtilities.isVariable(elem)) {
+                            localVars.add(elem);
+                        } if (needClasses(context, offset) && CsmKindUtilities.isClassifier(elem)) {
+                            if (classesEnumsTypedefs == null) {
+                                classesEnumsTypedefs = new ArrayList<CsmDeclaration>();
+                            }
+                            classesEnumsTypedefs.add(elem);
+                        } if (CsmKindUtilities.isEnumerator(elem)) {
+                            if (fileLocalEnumerators == null) {
+                                fileLocalEnumerators = new ArrayList<CsmDeclaration>();
+                            }
+                            fileLocalEnumerators.add(elem);
+                        }
+                    }                   
                 }
                 
                 // file local variables
@@ -210,7 +230,6 @@ public class CompletionResolverImpl implements CompletionResolver {
                     classMethods = contResolver.getMethods(clazz, funDef, strPrefix, staticContext, match, true);
                 }
             }
-            fileLocalEnumerators = contResolver.getFileLocalEnumerators(context, strPrefix, match);
         } else if (needClassMethods(context, offset)) {
             CsmFunctionDefinition funDef = CsmContextUtilities.getFunctionDefinition(context);
             if (funDef == null || !CsmContextUtilities.isInFunctionBody(context, offset)) {

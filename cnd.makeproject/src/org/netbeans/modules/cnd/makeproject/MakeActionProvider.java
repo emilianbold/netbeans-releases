@@ -75,6 +75,7 @@ public class MakeActionProvider implements ActionProvider {
     // Commands available from Make project
     public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
     public static final String COMMAND_DEBUG_LOAD_ONLY = "debug.load.only"; // NOI18N
+    public static final String COMMAND_CUSTOM_ACTION = "custom.action"; // NOI18N
     private static final String[] supportedActions = {
         COMMAND_BUILD,
         COMMAND_CLEAN,
@@ -91,8 +92,7 @@ public class MakeActionProvider implements ActionProvider {
         COMMAND_COPY,
         COMMAND_MOVE,
         COMMAND_RENAME,
-        
-        
+        COMMAND_CUSTOM_ACTION,       
     };
     
     // Project
@@ -121,6 +121,7 @@ public class MakeActionProvider implements ActionProvider {
         commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
         commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
         commands.put(COMMAND_COMPILE_SINGLE, new String[] {"save", "compile-single"}); // NOI18N
+        commands.put(COMMAND_CUSTOM_ACTION, new String[] {"save", "build", "custom-action"}); // NOI18N
         commandsNoBuild = new HashMap();
         commandsNoBuild.put(COMMAND_BUILD, new String[] {"save", "build"}); // NOI18N
         commandsNoBuild.put(COMMAND_CLEAN, new String[] {"save", "clean"}); // NOI18N
@@ -129,6 +130,7 @@ public class MakeActionProvider implements ActionProvider {
         commandsNoBuild.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
         commandsNoBuild.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
         commandsNoBuild.put(COMMAND_DEBUG_LOAD_ONLY, new String[] {"debug-load-only"}); // NOI18N
+        commandsNoBuild.put(COMMAND_CUSTOM_ACTION, new String[] {"save", "custom-action"}); // NOI18N
         
         this.antProjectHelper = antProjectHelper;
         this.project = project;
@@ -281,6 +283,8 @@ public class MakeActionProvider implements ActionProvider {
                 actionEvent = ProjectActionEvent.DEBUG_STEPINTO;
             else if (targetName.equals("debug-load-only")) // NOI18N
                 actionEvent = ProjectActionEvent.DEBUG_LOAD_ONLY;
+            else if (targetName.equals("custom-action")) // NOI18N
+                actionEvent = ProjectActionEvent.CUSTOM_ACTION;
             else {
                 // All others
                 actionEvent = ProjectActionEvent.RUN;
@@ -500,6 +504,26 @@ public class MakeActionProvider implements ActionProvider {
                                 true);
                         actionEvents.add(projectActionEvent);
                 }
+            } else if (targetName.equals("custom-action")) { // NOI18N
+                        String exe = ""; // NOI18N
+                        if (conf.isMakefileConfiguration()) {
+                            exe = conf.getMakefileConfiguration().getOutput().getValue();
+                        }
+                        else if (conf.isApplicationConfiguration()) {
+                            exe = conf.getLinkerConfiguration().getOutputValue();
+                        }
+                        // Always absolute
+                        if (exe.length() > 0)
+                            exe = IpeUtils.toAbsolutePath(conf.getBaseDir(), exe);
+                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                                project,
+                                actionEvent,
+                                projectName + " (" + targetName + ")", // NOI18N
+                                exe,
+                                conf,
+                                null,
+                                true);
+                        actionEvents.add(projectActionEvent);
             }
         }
     }
@@ -511,7 +535,11 @@ public class MakeActionProvider implements ActionProvider {
         String[] targetNames = new String[0];
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             targetNames = (String[])commands.get(command);
-        } else if (command.equals(COMMAND_RUN) || command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_STEP_INTO)|| command.equals(COMMAND_DEBUG_LOAD_ONLY)) {
+        } else if (command.equals(COMMAND_RUN) ||
+                command.equals(COMMAND_DEBUG) ||
+                command.equals(COMMAND_DEBUG_STEP_INTO) ||
+                command.equals(COMMAND_DEBUG_LOAD_ONLY) ||
+                command.equals(COMMAND_CUSTOM_ACTION)) {
             ConfigurationDescriptor pd = getProjectDescriptor();
             MakeConfiguration conf = (MakeConfiguration)pd.getConfs().getActive();
             RunProfile profile = (RunProfile) conf.getAuxObject(RunProfile.PROFILE_ID);

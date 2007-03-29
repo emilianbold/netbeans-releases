@@ -33,10 +33,8 @@ public class CppSettingsBeanInfo extends SimpleBeanInfo {
 
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor bdesc = new BeanDescriptor(CppSettings.class);
-        bdesc.setDisplayName(CppSettings.getString(
-				    "OPTION_CPP_SETTINGS_NAME"));   //NOI18N
-        bdesc.setShortDescription(CppSettings.getString(
-				    "HINT_CPP_SETTINGS_NAME"));	    //NOI18N
+        bdesc.setDisplayName(CppSettings.getString("OPTION_CPP_SETTINGS_NAME")); // NOI18N
+        bdesc.setShortDescription(CppSettings.getString("HINT_CPP_SETTINGS_NAME")); // NOI18N
         return bdesc;
     }
 
@@ -54,7 +52,16 @@ public class CppSettingsBeanInfo extends SimpleBeanInfo {
 		new PropertyDescriptor(CppSettings.PROP_REPLACEABLE_STRINGS_TABLE, CppSettings.class),
 		new PropertyDescriptor(CppSettings.PROP_FREE_FORMAT_FORTRAN, CppSettings.class),
 		new PropertyDescriptor(CppSettings.PROP_PARSING_DELAY, CppSettings.class),
-		new PropertyDescriptor(CppSettings.PROP_FORTRAN_ENABLED, CppSettings.class)
+		new PropertyDescriptor(CppSettings.PROP_FORTRAN_ENABLED, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_MAKE_NAME, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_MAKE_PATH, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_GDB_NAME, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_GDB_PATH, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_COMPILER_SET_NAME, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_COMPILER_SET_DIRECTORIES, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_C_COMPILER_NAME, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_CPP_COMPILER_NAME, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_FORTRAN_COMPILER_NAME, CppSettings.class),
 	    };
 
 	    desc[i].setDisplayName(CppSettings.getString( "PROP_REPLACEABLE_STRINGS"));	    //NOI18N
@@ -63,14 +70,22 @@ public class CppSettingsBeanInfo extends SimpleBeanInfo {
  	    desc[i++].setShortDescription(CppSettings.getString( "HINT_FREE_FORMAT_FORTRAN"));	    //NOI18N
 	    desc[i].setDisplayName(CppSettings.getString( "PROP_AUTO_PARSING_DELAY"));	    //NOI18N
  	    desc[i++].setShortDescription(CppSettings.getString( "HINT_AUTO_PARSING_DELAY"));	    //NOI18N
-	    desc[i].setDisplayName(CppSettings.getString("PROP_FORTRAN_ENABLED")); //NOI18N
- 	    desc[i++].setShortDescription(CppSettings.getString("HINT_FORTRAN_ENABLED")); //NOI18N
+// 	    desc[i++].setHidden(true); // PROP_FORTRAN_ENABLED
+//            desc[i++].setHidden(true); // PROP_MAKE_NAME
+//            desc[i++].setHidden(true); // PROP_MAKE_PATH
+//            desc[i++].setHidden(true); // PROP_GDB_NAME
+//            desc[i++].setHidden(true); // PROP_GDB_PATH
+//            desc[i++].setHidden(true); // PROP_COMPILER_SET_NAME
+//            desc[i++].setHidden(true); // PROP_COMPILER_SET_DIRECTORIES
+//            desc[i++].setHidden(true); // PROP_C_COMPILER_NAME
+//            desc[i++].setHidden(true); // PROP_CPP_COMPILER_NAME
+//            desc[i++].setHidden(true); // PROP_FORTRAN_COMPILER_NAME
 	} catch (IntrospectionException ex) {
 	    throw new InternalError();
 	}
 	return desc;
     }
-
+    
     /*
      *  There currently are no icons for CCF. This is just a place holder.
      */

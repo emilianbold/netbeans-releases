@@ -20,11 +20,14 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -94,5 +97,29 @@ public class Utils {
             v.add(t.nextToken());
         }
         return (String[]) v.toArray(new String[v.size()]);
-    }    
+    }   
+    
+    public static void disposeAll(Collection<? extends CsmObject> coll) {
+        for (CsmObject elem : coll) {
+            if( elem  instanceof Disposable ) {
+                Disposable decl = (Disposable) elem;
+                if (TraceFlags.TRACE_DISPOSE) {
+                    if (TraceFlags.USE_REPOSITORY) {                        
+                        System.err.println("disposing with UID " + ((CsmIdentifiable)elem).getUID());
+                    } else {
+                        System.err.println("disposing " + elem);
+                    }
+                }
+                decl.dispose();
+            } else {
+                if (TraceFlags.TRACE_DISPOSE) {
+                    if (TraceFlags.USE_REPOSITORY) {
+                        System.err.println("non disposable with UID " + ((CsmIdentifiable)elem).getUID());
+                    } else {
+                        System.err.println("non disposable " + elem);
+                    }
+                }
+            }            
+        }
+    }
 }

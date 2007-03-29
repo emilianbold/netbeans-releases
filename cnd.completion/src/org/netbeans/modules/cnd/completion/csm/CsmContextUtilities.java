@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.completion.csm;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -30,7 +29,6 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -64,24 +62,32 @@ public class CsmContextUtilities {
         return resolver.getGlobalVariables("", false);
     }
     
-    public static List/*<CsmDeclaration*/ findLocalDeclarations(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+    public static List<CsmDeclaration> findLocalDeclarations(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         return findLocalDeclarations(context, strPrefix, match, caseSensitive, true/*include file locals*/, false/*include function locals*/);
     }
 
-    public static List/*<CsmDeclaration*/ findFileLocalVariables(CsmContext context) {
+    public static List<CsmDeclaration> findFileLocalVariables(CsmContext context) {
         return findFileLocalVariables(context, "", false, false);
     }
 
-    public static List/*<CsmDeclaration*/ findFileLocalVariables(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+    public static List<CsmDeclaration> findFileLocalVariables(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         return findLocalDeclarations(context, strPrefix, match, caseSensitive, true/*include file locals*/, false/*exclude function locals*/);
     }
     
-    public static List/*<CsmDeclaration*/ findFunctionLocalVariables(CsmContext context) {
-        return findFunctionLocalVariables(context, "", false, false);
+    public static List<CsmDeclaration> findFunctionLocalVariables(CsmContext context) {
+        List<CsmDeclaration> decls = findFunctionLocalDeclarations(context, "", false, false);
+        List<CsmDeclaration> out = new ArrayList<CsmDeclaration>(decls.size());
+        for (CsmDeclaration elem : decls) {
+            if (CsmKindUtilities.isVariable(elem)) {
+                out.add(elem);
+            }
+        }
+        return out;        
     }
 
-    public static List/*<CsmDeclaration*/ findFunctionLocalVariables(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
-        return findLocalDeclarations(context, strPrefix, match, caseSensitive, false/*do not include file locals*/, true/*include function locals*/);
+    public static List<CsmDeclaration> findFunctionLocalDeclarations(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+        List<CsmDeclaration> decls = findLocalDeclarations(context, strPrefix, match, caseSensitive, false/*do not include file locals*/, true/*include function locals*/);
+        return decls;
     }
 
     private static final int FILE_LOCAL_MACROS = 0;
@@ -89,28 +95,28 @@ public class CsmContextUtilities {
     private static final int FILE_LIB_LOCAL_MACROS = 2;
     private static final int PROJECT_MACROS = 3;
     private static final int LIB_MACROS = 4;
-    public static List/*<CsmMacro*/ findFileLocalMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+    public static List<CsmMacro> findFileLocalMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         return findMacros(context, strPrefix, match, caseSensitive, FILE_LOCAL_MACROS);
     }
 
-    public static List/*<CsmMacro*/ findFileIncludedProjectMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+    public static List<CsmMacro> findFileIncludedProjectMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         return findMacros(context, strPrefix, match, caseSensitive, FILE_PROJECT_LOCAL_MACROS);
     }
 
-    public static List/*<CsmMacro*/ findFileIncludedLibMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+    public static List<CsmMacro> findFileIncludedLibMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         return findMacros(context, strPrefix, match, caseSensitive, FILE_LIB_LOCAL_MACROS);
     }
 
-    public static List/*<CsmMacro*/ findProjectMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+    public static List<CsmMacro> findProjectMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         return findMacros(context, strPrefix, match, caseSensitive, PROJECT_MACROS);
     }
 
-    public static List/*<CsmMacro*/ findLibMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+    public static List<CsmMacro> findLibMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         return findMacros(context, strPrefix, match, caseSensitive, LIB_MACROS);
     }
 
 
-    protected static List/*<CsmMacro*/ findMacros(CsmContext context, String strPrefix, 
+    private static List<CsmMacro> findMacros(CsmContext context, String strPrefix, 
             boolean match, boolean caseSensitive, int kind) {
         List res = new ArrayList();
         for (Iterator itContext = context.iterator(); itContext.hasNext();) {
@@ -208,8 +214,8 @@ public class CsmContextUtilities {
         }
     }
 
-    protected static List/*<CsmDeclaration*/ findLocalDeclarations(CsmContext context, String strPrefix, boolean match, boolean caseSensitive, boolean includeFileLocal, boolean includeFunctionVars) {
-        List res = new ArrayList();
+    protected static List<CsmDeclaration> findLocalDeclarations(CsmContext context, String strPrefix, boolean match, boolean caseSensitive, boolean includeFileLocal, boolean includeFunctionVars) {
+        List<CsmDeclaration> res = new ArrayList<CsmDeclaration>();
         boolean incAny = includeFileLocal || includeFunctionVars;
         assert (incAny) : "at least one must be true";
         boolean incAll = includeFileLocal && includeFunctionVars;
@@ -244,13 +250,13 @@ public class CsmContextUtilities {
         return res;
     }
 
-    private static List/*<CsmDeclaration>*/ addEntryDeclarations(CsmContext.CsmContextEntry entry, List/*<CsmDeclaration>*/ decls, CsmContext fullContext,
+    private static List<CsmDeclaration> addEntryDeclarations(CsmContext.CsmContextEntry entry, List<CsmDeclaration> decls, CsmContext fullContext,
                                                                 String strPrefix, boolean match, boolean caseSensitive) {
-        List/*<CsmDeclaration>*/ newList = findEntryDeclarations(entry, fullContext, strPrefix, match, caseSensitive);
+        List<CsmDeclaration> newList = findEntryDeclarations(entry, fullContext, strPrefix, match, caseSensitive);
         return mergeDeclarations(decls, newList);
     }
     
-    private static List/*<CsmDeclaration>*/ findEntryDeclarations(CsmContext.CsmContextEntry entry, CsmContext fullContext,
+    private static List<CsmDeclaration> findEntryDeclarations(CsmContext.CsmContextEntry entry, CsmContext fullContext,
                                                                 String strPrefix, boolean match, boolean caseSensitive) {
         assert (entry != null) : "can't work on null entries";
         CsmScope scope = entry.getScope();
@@ -261,14 +267,14 @@ public class CsmContextUtilities {
             if (canBreak(offsetInScope, scpElem, fullContext)) {
                 break;
             }
-            List/*<CsmDeclaration>*/ declList = extractDeclarations(scpElem, strPrefix, match, caseSensitive);
+            List<CsmDeclaration> declList = extractDeclarations(scpElem, strPrefix, match, caseSensitive);
             resList.addAll(declList);
         }
         return resList;
     }
 
-    public static List/*<CsmDeclaration*/ findFileLocalEnumerators(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
-        List res = new ArrayList();
+    public static List<CsmDeclaration> findFileLocalEnumerators(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+        List<CsmDeclaration> res = new ArrayList<CsmDeclaration>();
         for (Iterator itContext = context.iterator(); itContext.hasNext();) {
             CsmContext.CsmContextEntry entry = (CsmContext.CsmContextEntry) itContext.next();
             CsmScope scope = entry.getScope();
@@ -392,8 +398,15 @@ public class CsmContextUtilities {
         } else if (CsmKindUtilities.isStatement(scpElem)) {
             CsmStatement.Kind kind = ((CsmStatement)scpElem).getKind();
             if (kind == CsmStatement.Kind.DECLARATION) {
-                List/*<CsmObject>*/ listByName = CsmSortUtilities.filterList(((CsmDeclarationStatement)scpElem).getDeclarators(), strPrefix, match, caseSensitive);
+                List<CsmDeclaration> decls = ((CsmDeclarationStatement)scpElem).getDeclarators();
+                List/*<CsmObject>*/ listByName = CsmSortUtilities.filterList(decls, strPrefix, match, caseSensitive);
                 list.addAll(listByName);
+                for (CsmDeclaration elem : decls) {
+                    if (CsmKindUtilities.isEnum(elem)) {
+                        listByName = CsmSortUtilities.filterList(((CsmEnum)elem).getEnumerators(), strPrefix, match, caseSensitive);
+                        list.addAll(listByName);
+                    }
+                }
             }
         }
         return list;

@@ -66,7 +66,7 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
         };
         librariesTextField.getDocument().addDocumentListener(documentListener);
     }
-    
+
     private void update(DocumentEvent e) {
         wizard.stateChanged(null);
     }
@@ -93,6 +93,7 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
 
         instructionPanel.setLayout(new java.awt.GridBagLayout());
 
+        instructionsTextArea.setBackground(instructionPanel.getBackground());
         instructionsTextArea.setEditable(false);
         instructionsTextArea.setLineWrap(true);
         instructionsTextArea.setWrapStyleWord(true);
@@ -117,6 +118,12 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
         add(instructionPanel, gridBagConstraints);
 
         discoveryPanel.setLayout(new java.awt.GridBagLayout());
+
+        configurationComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                configurationComboBoxItemStateChanged(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -176,6 +183,14 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
         add(discoveryPanel, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
+
+    private void configurationComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_configurationComboBoxItemStateChanged
+        Object item = evt.getItem();
+        if (item instanceof ConfigutationItem) {
+            ConfigutationItem conf = (ConfigutationItem)item;
+            instructionsTextArea.setText(getString("SimpleInstructionText_"+conf.getID())); // NOI18N
+        }
+    }//GEN-LAST:event_configurationComboBoxItemStateChanged
     
     private void additionalLibrariesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_additionalLibrariesButtonActionPerformed
         StringTokenizer tokenizer = new StringTokenizer(librariesTextField.getText(), ";"); // NOI18N

@@ -39,11 +39,11 @@ public abstract class CsmChangeEvent extends EventObject {
 
     public abstract Collection<CsmFile> getChangedFiles();
 
-    public abstract Collection<CsmDeclaration> getNewDeclarations();
+    public abstract Collection<CsmOffsetableDeclaration> getNewDeclarations();
     
-    public abstract Collection<CsmDeclaration> getRemovedDeclarations();
+    public abstract Collection<CsmOffsetableDeclaration> getRemovedDeclarations();
     
-    public abstract Map<CsmDeclaration,CsmDeclaration> getChangedDeclarations();
+    public abstract Map<CsmOffsetableDeclaration,CsmOffsetableDeclaration> getChangedDeclarations();
     
     public abstract Collection<CsmProject> getChangedProjects();
     

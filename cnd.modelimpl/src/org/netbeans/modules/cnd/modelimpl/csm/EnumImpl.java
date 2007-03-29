@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -46,26 +46,65 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
     }
     
     public EnumImpl(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
-        super(AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, containingClass, ast);
+        super(findName(ast), namespace, file, containingClass, ast);
         if (TraceFlags.USE_REPOSITORY) {
             RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         }
-        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
-            if( token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
-                for( AST t = token.getFirstChild(); t != null; t = t.getNextSibling() ) {
-                    if( t.getType() == CPPTokenTypes.ID ) {
-                        EnumeratorImpl ei = new EnumeratorImpl(t, this);
-                    }
+        initEnumeratorList(ast);
+        register();
+    }
+    
+    private static String findName(AST ast){
+        String name = AstUtil.findId(ast, CPPTokenTypes.RCURLY);
+        if (name == null || name.length()==0){
+            AST token = ast.getNextSibling();
+            if( token != null) {
+                if (token.getType() == CPPTokenTypes.ID) {
+                    //typedef enum C { a2, b2, c2 } D;
+                    name = token.getText();
                 }
             }
         }
-        register();
+        return name;
     }
-
+    
+    private void initEnumeratorList(AST ast){
+        //enum A { a, b, c };
+        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+            if( token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
+                addList(token);
+                return;
+            }
+        }
+        AST token = ast.getNextSibling();
+        if( token != null) {
+            //typedef enum { a1, b1, c1 } B;
+            if (token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
+                addList(token);
+                return;
+            } else if (token.getType() == CPPTokenTypes.ID) {
+                token = token.getNextSibling();
+                //typedef enum C { a2, b2, c2 } D;
+                if( token != null && token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
+                    addList(token);
+                    return;
+                }
+            }
+        }
+    }
+    
+    private void addList(AST token){
+        for( AST t = token.getFirstChild(); t != null; t = t.getNextSibling() ) {
+            if( t.getType() == CPPTokenTypes.ID ) {
+                EnumeratorImpl ei = new EnumeratorImpl(t, this);
+            }
+        }
+    }
+    
     public List getEnumerators() {
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(enumerators);
-            return out;            
+            return out;
         } else {
             return enumeratorsOLD;
         }
@@ -77,12 +116,12 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
             enumerators.add(uid);
         } else {
             if(enumeratorsOLD == Collections.EMPTY_LIST) {
-               enumeratorsOLD = new ArrayList();
+                enumeratorsOLD = new ArrayList();
             }
             enumeratorsOLD.add(enumerator);
         }
     }
-
+    
     public List getScopeElements() {
         return getEnumerators();
     }
@@ -94,26 +133,28 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
     public void dispose() {
         _clearEnumerators();
         super.dispose();
-    }    
+    }
     
     private void _clearEnumerators() {
+        List<CsmEnumerator> enumers = getEnumerators();
+        Utils.disposeAll(enumers);
         if (TraceFlags.USE_REPOSITORY) {
             RepositoryUtils.remove(enumerators);
         } else {
             enumeratorsOLD.clear();
-        }        
+        }
     }
     
-    ////////////////////////////////////////////////////////////////////////////
-    // impl of SelfPersistent
-
+////////////////////////////////////////////////////////////////////////////
+// impl of SelfPersistent
+    
     public void write(DataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(this.enumerators, output, false);
     }
-
+    
     public EnumImpl(DataInput input) throws IOException {
         super(input);
         UIDObjectFactory.getDefaultFactory().readUIDCollection(this.enumerators, input);
-    }    
+    }
 }

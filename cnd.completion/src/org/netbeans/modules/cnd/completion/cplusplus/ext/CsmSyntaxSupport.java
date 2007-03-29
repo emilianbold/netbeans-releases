@@ -42,13 +42,13 @@ import org.netbeans.editor.Analyzer;
 import org.netbeans.editor.StringMap;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.ExtSyntaxSupport.DeclarationTokenProcessor;
 import org.netbeans.editor.ext.ExtSyntaxSupport.VariableMapTokenProcessor;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
+import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 
 /**
 * Support methods for csm based syntax analyzes
@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 * implemented after JavaSyntaxSupport
 */
 
-abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
+abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     // Internal java declaration token processor states
     static final int INIT = 0;
@@ -82,11 +82,13 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
                 CCTokenContext.LINE_COMMENT,
                 CCTokenContext.BLOCK_COMMENT,
                 CCTokenContext.CHAR_LITERAL,
-                CCTokenContext.STRING_LITERAL
+                CCTokenContext.STRING_LITERAL,
+                CCTokenContext.USR_INCLUDE,
+                CCTokenContext.SYS_INCLUDE
             };
 
     private static final char[] COMMAND_SEPARATOR_CHARS = new char[] {
-                ';', '{', '}'
+                ';', '{', '}', '#'
             };
 
     private CsmIncludeProcessor javaImport;
@@ -130,10 +132,10 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
     /** Return the position of the last command separator before
     * the given position.
     */
-    public int getLastCommandSeparator(int pos)
-    throws BadLocationException {
+    public int getLastCommandSeparator(final int pos) throws BadLocationException {
         if (pos == 0)
             return 0;
+        final int posLine = Utilities.getLineOffset(getDocument(), pos);
         TextBatchProcessor tbp = new TextBatchProcessor() {
                                      public int processTextBatch(BaseDocument doc, int startPos, int endPos,
                                                                  boolean lastBatch) {
@@ -152,10 +154,18 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
                                                          return getLastCommandSeparator(prev);
                                                      }
                                                  }
+                                             } else if (separatorID.getCategory() == CCTokenContext.CPP) {
+                                                 // found preprocessor directive, skip till the end of it
+                                                 int separatorLine = Utilities.getLineOffset(getDocument(), lastSeparatorOffset);
+                                                 assert (separatorLine <= posLine);
+                                                 if (separatorLine != posLine) {
+                                                     lastSeparatorOffset = Utilities.getRowEnd(getDocument(), lastSeparatorOffset);
+                                                 }
                                              }
                                              if (separatorID.getNumericID() != CCTokenContext.LBRACE_ID &&
                                                  separatorID.getNumericID() != CCTokenContext.RBRACE_ID &&
-                                                 separatorID.getNumericID() != CCTokenContext.SEMICOLON_ID){
+                                                 separatorID.getNumericID() != CCTokenContext.SEMICOLON_ID &&
+                                                 separatorID.getCategory() != CCTokenContext.CPP){
                                                      lastSeparatorOffset = processTextBatch(doc, lastSeparatorOffset, 0, lastBatch);
                                              }
                                              return lastSeparatorOffset;
@@ -308,86 +318,86 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
     }
     
     /** Checks, whether caret is inside method */
-    private boolean insideMethod(JTextComponent textComp, int startPos){
-        try{
-            int level = 0;
-            BaseDocument doc = (BaseDocument)textComp.getDocument();
-            for(int i = startPos-1; i>0; i--){
-                char ch = doc.getChars(i, 1)[0];
-                if (ch == ';') return false;
-                if (ch == ')') level++;
-                if (ch == '('){
-                    if (level == 0){
-                        return true;
-                    }else{
-                        level--;
-                    }
-                }
-            }
-            return false;
-        } catch (BadLocationException e) {
-            return false;
-        }
-    }
+//    private boolean insideMethod(JTextComponent textComp, int startPos){
+//        try{
+//            int level = 0;
+//            BaseDocument doc = (BaseDocument)textComp.getDocument();
+//            for(int i = startPos-1; i>0; i--){
+//                char ch = doc.getChars(i, 1)[0];
+//                if (ch == ';') return false;
+//                if (ch == ')') level++;
+//                if (ch == '('){
+//                    if (level == 0){
+//                        return true;
+//                    }else{
+//                        level--;
+//                    }
+//                }
+//            }
+//            return false;
+//        } catch (BadLocationException e) {
+//            return false;
+//        }
+//    }
 
     /** Check and possibly popup, hide or refresh the completion */
-    public int checkCompletion(JTextComponent target, String typedText, boolean visible ) {
-        if (!visible) { // pane not visible yet
-            int dotPos = target.getCaret().getDot();                            
-            switch (typedText.charAt(0)) {
-                case ' ':
-                    BaseDocument doc = (BaseDocument)target.getDocument();
-                    
-                    if (dotPos >= 2) { // last char before inserted space
-                        int pos = Math.max(dotPos - 8, 0);
-                        try {
-                            String txtBeforeSpace = doc.getText(pos, dotPos - pos);
-                            
-                            if ( txtBeforeSpace.endsWith("import ") // NOI18N
-                                && !Character.isJavaIdentifierPart(txtBeforeSpace.charAt(0))) {
-                                return ExtSyntaxSupport.COMPLETION_POPUP;
-                            }
-                            
-                            if (txtBeforeSpace.endsWith(", ")) { // NOI18N
-                                // autoPopup completion only if caret is inside method
-                                if (insideMethod(target, dotPos)) return ExtSyntaxSupport.COMPLETION_POPUP;
-                            }
-                        } catch (BadLocationException e) {
-                        }
-                    }
-                    break;
-
-                case '.':
-                    return ExtSyntaxSupport.COMPLETION_POPUP;
-                case ',':
-                    // autoPopup completion only if caret is inside method
-                    if (insideMethod(target, dotPos)) return ExtSyntaxSupport.COMPLETION_POPUP;
-                default:
-                    if (Character.isJavaIdentifierStart(typedText.charAt(0))) {
-                        if (dotPos >= 5) { // last char before inserted space
-                            try {
-                                String maybeNew = target.getDocument().getText(dotPos - 5, 4);
-                                if (maybeNew.equals("new ")){ // NOI18N
-                                    return ExtSyntaxSupport.COMPLETION_POPUP;
-                                }
-                            } catch (BadLocationException e) {
-                            }
-                        }
-                    }
-                }
-                return ExtSyntaxSupport.COMPLETION_CANCEL;
-                
-        } else { // the pane is already visible
-            switch (typedText.charAt(0)) {
-                case '=':
-                case '{':
-                case ';':
-                    return ExtSyntaxSupport.COMPLETION_HIDE;
-                default:
-                    return ExtSyntaxSupport.COMPLETION_POST_REFRESH;
-            }
-        }
-    }
+//    public int checkCompletion(JTextComponent target, String typedText, boolean visible ) {
+//        if (!visible) { // pane not visible yet
+//            int dotPos = target.getCaret().getDot();                            
+//            switch (typedText.charAt(0)) {
+//                case ' ':
+//                    BaseDocument doc = (BaseDocument)target.getDocument();
+//                    
+//                    if (dotPos >= 2) { // last char before inserted space
+//                        int pos = Math.max(dotPos - 8, 0);
+//                        try {
+//                            String txtBeforeSpace = doc.getText(pos, dotPos - pos);
+//                            
+//                            if ( txtBeforeSpace.endsWith("import ") // NOI18N
+//                                && !Character.isJavaIdentifierPart(txtBeforeSpace.charAt(0))) {
+//                                return ExtSyntaxSupport.COMPLETION_POPUP;
+//                            }
+//                            
+//                            if (txtBeforeSpace.endsWith(", ")) { // NOI18N
+//                                // autoPopup completion only if caret is inside method
+//                                if (insideMethod(target, dotPos)) return ExtSyntaxSupport.COMPLETION_POPUP;
+//                            }
+//                        } catch (BadLocationException e) {
+//                        }
+//                    }
+//                    break;
+//
+//                case '.':
+//                    return ExtSyntaxSupport.COMPLETION_POPUP;
+//                case ',':
+//                    // autoPopup completion only if caret is inside method
+//                    if (insideMethod(target, dotPos)) return ExtSyntaxSupport.COMPLETION_POPUP;
+//                default:
+//                    if (Character.isJavaIdentifierStart(typedText.charAt(0))) {
+//                        if (dotPos >= 5) { // last char before inserted space
+//                            try {
+//                                String maybeNew = target.getDocument().getText(dotPos - 5, 4);
+//                                if (maybeNew.equals("new ")){ // NOI18N
+//                                    return ExtSyntaxSupport.COMPLETION_POPUP;
+//                                }
+//                            } catch (BadLocationException e) {
+//                            }
+//                        }
+//                    }
+//                }
+//                return ExtSyntaxSupport.COMPLETION_CANCEL;
+//                
+//        } else { // the pane is already visible
+//            switch (typedText.charAt(0)) {
+//                case '=':
+//                case '{':
+//                case ';':
+//                    return ExtSyntaxSupport.COMPLETION_HIDE;
+//                default:
+//                    return ExtSyntaxSupport.COMPLETION_POST_REFRESH;
+//            }
+//        }
+//    }
     
     public boolean isAssignable(CsmType from, CsmType to) {
         CsmClassifier fromCls = from.getClassifier();
@@ -678,6 +688,7 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
                     break;
 
                 case CCTokenContext.DOT_ID:
+                case CCTokenContext.DOTMBR_ID:    
                     switch (state) {
                         case AFTER_TYPE: // allowed only inside type
                             state = AFTER_DOT;
@@ -695,6 +706,7 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
                     break;
 
                 case CCTokenContext.ARROW_ID:
+                case CCTokenContext.ARROWMBR_ID: 
                     switch (state) {
                         case AFTER_TYPE: // allowed only inside type
                             state = AFTER_ARROW;
@@ -1124,4 +1136,60 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
         }
         return completionDisabled;
     }        
+
+    public boolean needShowCompletionOnText(JTextComponent target, String typedText) throws BadLocationException {
+        boolean showCompletion = false;      
+        char typedChar = typedText.charAt(0);
+        if (typedChar == ' ' || typedChar == '>' || typedChar == ':' || typedChar == '.' || typedChar == '*') {
+            
+            int dotPos = target.getCaret().getDot();
+            BaseDocument doc = (BaseDocument)target.getDocument();
+            TokenItem item = getTokenChain(dotPos - 1, dotPos);
+            TokenItem prev = null;
+            if (typedChar == ' ' || typedChar == '.') { // init prev for space and dot
+                try {
+                    prev = item == null ? null : item.getPrevious();
+                } catch (IllegalStateException ex) {
+                    prev = null;
+                }
+            }
+            switch (typedChar) {
+                case ' ': // completion after "new" keyword
+                    if (prev != null && prev.getTokenID() == CCTokenContext.NEW) {
+                        showCompletion = true;
+                    }
+                    break;
+                case '>': // completion after arrow
+                    if (item != null && item.getTokenID() == CCTokenContext.ARROW) {
+                        showCompletion = true;
+                    }
+                    break;
+                case '.': // completion after dot
+                    showCompletion = true;
+                    // hide completion in inlclude strings
+                    if (item != null && (
+                            item.getTokenID().getCategory() == CCTokenContext.ERRORS ||
+                            item.getTokenID() == CCTokenContext.USR_INCLUDE ||
+                            item.getTokenID() == CCTokenContext.SYS_INCLUDE)) {
+                        showCompletion = false;
+                    } else if (prev != null && prev.getTokenID() == CCTokenContext.DOT) {
+                        showCompletion = false;
+                    }
+                    break;
+                case '*': // completion after star
+                    if (item != null && 
+                            (item.getTokenID() == CCTokenContext.ARROWMBR ||
+                             item.getTokenID() == CCTokenContext.DOTMBR)) {
+                        showCompletion = true;
+                    }
+                    break;                    
+                case ':': // completion after scope
+                    if (item != null && item.getTokenID() == CCTokenContext.SCOPE) {
+                        showCompletion = true;
+                    }
+                    break;
+            }
+        }      
+        return showCompletion;
+    }
 }

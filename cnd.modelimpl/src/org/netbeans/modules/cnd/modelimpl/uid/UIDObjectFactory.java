@@ -82,7 +82,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             aCollection = sync ? copySyncCollection(aCollection) : aCollection;
             int collSize = aCollection.size();
             aStream.writeInt(collSize);
-
+            
             for (CsmUID uid : aCollection) {
                 assert uid != null;
                 writeUID(uid, aStream);
@@ -122,7 +122,33 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             writeUID(anUID, aStream);
         }
         
-    }    
+    }
+    
+    public void writeStringToArrayUIDMap(Map <String, Object> aMap, DataOutput aStream, boolean sync) throws IOException {
+        assert aMap != null;
+        assert aStream != null;
+        aMap = sync ? copySyncMap(aMap) : aMap;
+        int collSize = aMap.size();
+        aStream.writeInt(collSize);
+        
+        for (Map.Entry<String, Object> anEntry : aMap.entrySet()) {
+            String key = anEntry.getKey();
+            assert key != null;
+            aStream.writeUTF(key);
+            Object o = anEntry.getValue();
+            if (o instanceof CsmUID){
+                aStream.writeInt(1);
+                writeUID((CsmUID)o, aStream);
+            } else {
+                CsmUID[] arr = (CsmUID[])o;
+                aStream.writeInt(arr.length);
+                for(CsmUID uid:arr){
+                    assert uid != null;
+                    writeUID(uid, aStream);
+                }
+            }
+        }
+    }
     
     private static Collection copySyncCollection(Collection col) {
         Collection out;
@@ -153,6 +179,33 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             CsmUID uid = readUID(aStream);
             assert uid != null;
             aMap.put(key, uid);
+        }
+    }
+    
+    public void readStringToArrayUIDMap(Map <String, Object> aMap, DataInput aStream, APTStringManager manager) throws IOException {
+        assert aMap != null;
+        assert aStream != null;
+        
+        int collSize = aStream.readInt();
+        
+        for (int i = 0; i < collSize; ++i) {
+            String key = aStream.readUTF();
+            key = manager == null ? key : manager.getString(key);
+            assert key != null;
+            int arrSize = aStream.readInt();
+            if (arrSize == 1){
+                CsmUID uid = readUID(aStream);
+                assert uid != null;
+                aMap.put(key, uid);
+            } else {
+                CsmUID[] uids = new CsmUID[arrSize];
+                for(int k = 0; k < arrSize; k++){
+                    CsmUID uid = readUID(aStream);
+                    assert uid != null;
+                    uids[k] = uid;
+                }
+                aMap.put(key, uids);
+            }
         }
     }
     
@@ -234,11 +287,11 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 break;
                 
             case UID_BUILT_IN_UID:
-                {
-                    anUID = BuiltinTypes.readUID(aStream);
-                    share = false;
-                }
-                break;
+            {
+                anUID = BuiltinTypes.readUID(aStream);
+                share = false;
+            }
+            break;
             default:
                 throw new IllegalArgumentException("The UID is an instance of unknow class"); //NOI18N
         }
@@ -268,9 +321,9 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     private static final int UID_INCLUDE_UID            = UID_MACRO_UID + 1;
     private static final int UID_UNNAMED_OFFSETABLE_DECLARATION_UID = UID_INCLUDE_UID + 1;
     private static final int UID_DECLARATION_UID        = UID_UNNAMED_OFFSETABLE_DECLARATION_UID + 1;
-    private static final int UID_BUILT_IN_UID           = UID_DECLARATION_UID + 1; 
+    private static final int UID_BUILT_IN_UID           = UID_DECLARATION_UID + 1;
     
-    // index to be used in another factory (but only in one) 
-    // to start own indeces from the next after LAST_INDEX    
+    // index to be used in another factory (but only in one)
+    // to start own indeces from the next after LAST_INDEX
     public static final int LAST_INDEX                  = UID_BUILT_IN_UID;
 }

@@ -19,10 +19,16 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.filesystems.FileObject;
 
@@ -51,51 +57,25 @@ public class ProjectSupport {
 	return projectFile.lastModified();
     }
 
-
-    /**
-     * Returns all open Projects that can build the executable specified by 'executablePath'.
-     */
-    /*
-    public static Project[] findOpenProjects(String executablePath) {
-	Vector found = new Vector();
-	Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
-	for (int i = 0; i < openProjects.length; i++) {
-	    MakeArtifactProvider map = (MakeArtifactProvider)openProjects[i].getLookup().lookup(MakeArtifactProvider.class);
-	    if (map == null)
-		continue;
-	    for (int j = 0; j < map.getBuildArtifacts().length; j++) {
-		MakeArtifact makeArtifact =  map.getBuildArtifacts()[j];
-		if (!makeArtifact.getType().equals(MakeArtifact.APP))
-		    break;
-		String path = map.getBuildArtifacts()[j].getArtifactApp();
-		if (path != null && path.equals(executablePath)) {
-		    found.add(openProjects[i]);
-		    break;
-		}
-	    }
-	}
-	return (Project[]) found.toArray(new Project[found.size()]);
+    public static void executeCustomAction(Project project, CustomProjectActionHandler customProjectActionHandler) {
+        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        if (pdp == null)
+            return;
+        MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+        MakeConfiguration conf = (MakeConfiguration)projectDescriptor.getConfs().getActive();
+        
+        MakeActionProvider ap = (MakeActionProvider)project.getLookup().lookup(MakeActionProvider.class );
+        if (ap == null)
+            return;
+        
+        ProjectInformation info = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class );
+        String projectName = info.getDisplayName();
+        
+        ArrayList actionEvents = new ArrayList();
+        ap.addAction(actionEvents, projectName, projectDescriptor, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null);
+	ActionEvent ae = new ActionEvent((ProjectActionEvent[])actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]), 0, null);
+        DefaultProjectActionHandler defaultProjectActionHandler = new DefaultProjectActionHandler();
+        defaultProjectActionHandler.setCustomActionHandlerProvider(customProjectActionHandler);
+        defaultProjectActionHandler.actionPerformed(ae);
     }
-    */
-
-    /**
-     * 
-     */
-    /*
-    public static boolean canBuildExecutable(Project project, String executablePath) {
-	    MakeArtifactProvider map = (MakeArtifactProvider)project.getLookup().lookup(MakeArtifactProvider.class);
-	    if (map == null)
-		return false;
-	    for (int j = 0; j < map.getBuildArtifacts().length; j++) {
-		MakeArtifact makeArtifact =  map.getBuildArtifacts()[j];
-		if (!makeArtifact.getType().equals(MakeArtifact.APP))
-		    return false;
-		String path = map.getBuildArtifacts()[j].getArtifactApp();
-		if (path != null && path.equals(executablePath)) {
-		    return true;
-		}
-	    }
-	return false;
-    }
-    */
 }

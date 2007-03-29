@@ -392,7 +392,7 @@ public class LongHashMap<K>
 	 * LongHashMap.  Returns null if the LongHashMap contains no mapping
 	 * for this key.
 	 */
-    Entry<K> getEntry(Object key) {
+    public Entry<K> getEntry(Object key) {
         Object k = maskNull(key);
         int hash = hash(k.hashCode());
         int i = indexFor(hash, table.length);
@@ -530,7 +530,7 @@ public class LongHashMap<K>
  
     public long remove(Object key) {
         Entry<K> e = removeEntryForKey(key);
-        return (e == null ? null : e.value);
+        return (e == null ? NO_VALUE : e.value);
     }
 
     /**
@@ -640,7 +640,7 @@ public class LongHashMap<K>
 	return false;
     }
 
-    static class Entry<K> /*implements Map.Entry<K>*/ {
+    public static class Entry<K> /*implements Map.Entry<K>*/ {
         final K key;
         long value;
         final int hash;

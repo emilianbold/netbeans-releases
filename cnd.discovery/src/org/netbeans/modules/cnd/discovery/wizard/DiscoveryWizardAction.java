@@ -105,7 +105,7 @@ public final class DiscoveryWizardAction extends NodeAction {
             if (new File(output).isAbsolute()) {
                 return output;
             }
-            String base = project.getProjectDirectory().getPath();
+            String base = getProjectDirectoryPath(project);
             output = FileUtil.normalizeFile(new File(base+'/'+output)).getAbsolutePath();
             return output;
         }
@@ -113,14 +113,18 @@ public final class DiscoveryWizardAction extends NodeAction {
     }
     
     
-    private String findSourceRoot(Project project) {
-        String base = null;
+    private String getProjectDirectoryPath(Project project) {
+        String base = project.getProjectDirectory().getPath();
         if (Utilities.isWindows()){
-            base = project.getProjectDirectory().getPath();
             base = base.replace('\\', '/');
         } else {
             base = File.separator+project.getProjectDirectory().getPath();
-        }
+	}
+	return base;
+    }
+    
+    private String findSourceRoot(Project project) {
+        String base = getProjectDirectoryPath(project);
         ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         if (pdp!=null){
             MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();

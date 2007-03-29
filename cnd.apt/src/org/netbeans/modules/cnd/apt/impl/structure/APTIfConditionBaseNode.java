@@ -24,6 +24,8 @@ import antlr.TokenStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
@@ -61,7 +63,7 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
         if (condition != null) {
             condStr = APTUtils.toString(getCondition());
         } else {
-            assert(false):"is it ok to have #if/#elif without condition?"; // NOI18N
+            assert(true):"is it ok to have #if/#elif without condition?"; // NOI18N
             condStr = "<no condition>"; // NOI18N
         }
         return text + " CONDITION{" + condStr + "}"; // NOI18N
@@ -79,6 +81,15 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
         // eat all till END_PREPROC_DIRECTIVE
         if (APTUtils.isEndDirectiveToken(ttype)) {
             endOffset = ((APTToken)token).getOffset();
+            if (condition == null) {
+                if (DebugUtils.STANDALONE) {
+                    System.err.printf("line %d: %s with no expression\n", // NOI18N
+                        getToken().getLine(), getToken().getText().trim());
+                } else {
+                    APTUtils.LOG.log(Level.SEVERE, "line {0}: {1} with no expression", // NOI18N
+                            new Object[] {getToken().getLine(), getToken().getText().trim()} );                
+                }
+            }
             return false;
         } else if (!APTUtils.isCommentToken(ttype)) {
             if (condition == null) {

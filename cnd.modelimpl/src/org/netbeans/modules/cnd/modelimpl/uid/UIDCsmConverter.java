@@ -108,14 +108,14 @@ public class UIDCsmConverter {
         List<T> out = new ArrayList<T>(uids.size());
         for (CsmUID<T> uid : uids) {
             assert uid != null;
-            T decl = UIDCsmConverter.UIDToIdentifiable(uid);
-            assert decl != null;
+            T decl = UIDCsmConverter.UIDtoIdentifiable(uid);
+            assert decl != null : "no object for UID " + uid;
             out.add(decl);
         }
         return out;
     }
     
-    public static <T extends CsmIdentifiable> T UIDToIdentifiable(CsmUID<T> uid) {
+    public static <T extends CsmIdentifiable> T UIDtoIdentifiable(CsmUID<T> uid) {
         return uid == null ? null : uid.getObject();
     }
     

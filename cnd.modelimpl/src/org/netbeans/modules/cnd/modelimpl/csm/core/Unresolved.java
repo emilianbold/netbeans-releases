@@ -44,9 +44,9 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * 
  * @author Vladimir Kvasihn
  */
-public class Unresolved {
+public final class Unresolved implements Disposable {
     
-    public static class UnresolvedClass extends ClassEnumBase<CsmClass> implements CsmClass {
+    public static final class UnresolvedClass extends ClassEnumBase<CsmClass> implements CsmClass {
         public UnresolvedClass(String name, NamespaceImpl namespace, CsmFile file) {
             super(name, namespace, file, null, null);
             register();
@@ -94,7 +94,7 @@ public class Unresolved {
         }
     }
     
-    private static class UnresolvedNamespace extends NamespaceImpl {
+    private final static class UnresolvedNamespace extends NamespaceImpl {
         private UnresolvedNamespace(ProjectBase project) {
             super(project, null, "$unresolved$","$unresolved$");
         }
@@ -104,13 +104,13 @@ public class Unresolved {
         }
     }
     
-    public static class UnresolvedFile implements CsmFile, Persistent, SelfPersistent  {
+    public final static class UnresolvedFile implements CsmFile, Persistent, SelfPersistent, Disposable  {
         // only one of projectRef/projectUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
-        private final ProjectBase projectRef;
+        private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
         private final CsmUID<CsmProject> projectUID;
     
         private UnresolvedFile(ProjectBase project) {
-            if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+            if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
                 this.projectUID = UIDCsmConverter.projectToUID(project);
                 this.projectRef = null;
             } else {
@@ -118,6 +118,19 @@ public class Unresolved {
                 this.projectUID = null;
             }            
         }
+        
+        public void dispose() {
+            onDispose();
+        }
+
+        private void onDispose() {
+            if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+                // restore container from it's UID
+                this.projectRef = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
+                assert (this.projectRef != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+            }
+        } 
+        
         public String getText(int start, int end) {
             return "";
         }
@@ -165,43 +178,24 @@ public class Unresolved {
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
 
-        public void write(DataOutput output) throws IOException {
-            // prepared uid to write
-            CsmUID<CsmProject> writeUID;
-            if (TraceFlags.USE_UID_TO_CONTAINER) {
-                writeUID = this.projectUID;
-            } else {
-                // save reference
-                assert this.projectRef != null;
-                writeUID = UIDCsmConverter.projectToUID(this.projectRef);
-            }        
+        public void write(DataOutput output) throws IOException {      
             // not null UID
-            assert writeUID != null;
-            UIDObjectFactory.getDefaultFactory().writeUID(writeUID, output);
+            assert this.projectUID != null;
+            UIDObjectFactory.getDefaultFactory().writeUID(this.projectUID, output);
         }  
 
         public UnresolvedFile(DataInput input) throws IOException {
             // read from input
-            CsmUID<CsmProject> readUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+            this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
             // not null UID
-            assert readUID != null;
-            if (TraceFlags.USE_UID_TO_CONTAINER) {
-                this.projectUID = readUID;
-
-                this.projectRef = null;
-            } else {
-                // restore reference
-                this.projectRef = (ProjectBase) UIDCsmConverter.UIDtoProject(readUID);
-                assert this.projectRef != null || readUID == null : "no object for UID " + readUID;
-
-                this.projectUID = null;
-            }
+            assert this.projectUID != null;
+            this.projectRef = null;
             assert TraceFlags.USE_REPOSITORY;
         }          
     };
     
     // only one of projectRef/projectUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
-    private final ProjectBase projectRef;
+    private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
     
     // doesn't need Repository Keys
@@ -212,7 +206,7 @@ public class Unresolved {
     private Map<String, Reference<CsmClass>> dummiesForUnresolved = new HashMap<String, Reference<CsmClass>>();
     
     public Unresolved(ProjectBase project) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.projectUID = UIDCsmConverter.projectToUID(project);
             this.projectRef = null;
         } else {
@@ -232,16 +226,30 @@ public class Unresolved {
         }
     }
     
+    public void dispose() {
+        onDispose();
+    }
+    
+    private void onDispose() {
+        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+            // restore container from it's UID
+            this.projectRef = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
+            assert (this.projectRef != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+        }
+    }    
+    
     private ProjectBase _getProject() {       
         return _getProject(this.projectUID, this.projectRef);
     }
     
     private static ProjectBase _getProject(CsmUID<CsmProject> projectUID, ProjectBase project) {
         ProjectBase prj = project;
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
-            assert projectUID != null;
-            prj = (ProjectBase)UIDCsmConverter.UIDtoProject(projectUID);
-        }        
+        if (prj == null) {
+            if (TraceFlags.USE_REPOSITORY) {
+                assert projectUID != null;
+                prj = (ProjectBase)UIDCsmConverter.UIDtoProject(projectUID);
+            }        
+        }
         return prj;
     }
     

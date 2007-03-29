@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.repository.queue;
 
+import java.io.IOException;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -46,8 +47,19 @@ public class RepositoryWritingThread implements Runnable {
 		if( entry == null ) {
 		    if( RepositoryThreadManager.proceed() ) {
 			if( Stats.sleepOnEmptyWriteQueue > 0 ) {
-			    if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.sleepOnEmptyWriteQueue); // NOI18N
-			    Thread.currentThread().sleep(Stats.sleepOnEmptyWriteQueue);
+			    if( Stats.compactOnEmptyWriteQueue ) {
+				if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.sleepOnEmptyWriteQueue); // NOI18N
+				long time = System.currentTimeMillis();
+				writer.maintenance(Stats.sleepOnEmptyWriteQueue);
+				time = System.currentTimeMillis() - time;
+				if( time < Stats.sleepOnEmptyWriteQueue ) {
+				    Thread.currentThread().sleep(Stats.sleepOnEmptyWriteQueue - time);
+				}
+			    }
+			    else {
+				if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.sleepOnEmptyWriteQueue); // NOI18N
+				Thread.currentThread().sleep(Stats.sleepOnEmptyWriteQueue);
+			    }
 			}
 			if( Stats.queueTrace ) System.err.printf("%s: waiting...\n", getName()); // NOI18N
 			queue.waitReady();
@@ -63,8 +75,10 @@ public class RepositoryWritingThread implements Runnable {
 	    } catch( InterruptedException e ) {
 		if( Stats.queueTrace ) System.err.printf("%s: interrupted\n", getName()); // NOI18N
 		break;
-//	    } catch( Exception e ) {
-//		e.printStackTrace(System.err);
+	    } catch( IOException e ) {
+		e.printStackTrace(System.err);
+	    } catch( Exception e ) {
+		e.printStackTrace(System.err);
 	    }
 	}
 	

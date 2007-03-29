@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.cnd.repository.testbench;
 
+import org.netbeans.modules.cnd.repository.spi.Key;
+
 /**
  *
  * @author Sergey Grinev
@@ -34,12 +36,15 @@ public class Stats {
     public static int debugGotFromHardCache = 0;
     public static int nullDataTriggered = 0;
     
+    public static final boolean monitorRemovedKeys = getBoolean("cnd.repository.monitor.removed.keys", false); //NOI18N
+    
     public static final boolean isDebug = getBoolean("cnd.repository.use.dev", false); //NOI18N
     public static final boolean verbosePut = getBoolean("cnd.repository.verbose.put", false); //NOI18N
     public static final boolean validatePut = getBoolean("cnd.repository.validate.put", false); //NOI18N
     public static final boolean validateKeys = getBoolean("cnd.repository.validate.keys", false); //NOI18N
     public static final boolean rememberKeys = getBoolean("cnd.repository.remember.keys", false); //NOI18N
-    public static final boolean useNullWorkaround = getBoolean("cnd.repository.workaround.nulldata", true); //NOI18N
+    public static final boolean useNullWorkaround = getBoolean("cnd.repository.workaround.nulldata", false); //NOI18N
+    public static final boolean deleteCacheFiles = getBoolean("cnd.repository.delete.cache.files", true); //NOI18N
     
     public static final boolean useHardCache = getBoolean("cnd.repository.use.hardcache", false); //NOI18N
     public static final boolean useHardRefRepository = getBoolean("cnd.repository.hardrefs", false); //NOI18N
@@ -50,12 +55,34 @@ public class Stats {
     public static final boolean writeToASingleFile = getBoolean("cnd.repository.1file", true); //NOI18N
 
     public static final int fileStatisticsLevel = getInteger("cnd.repository.file.stat", 0); //NOI18N
+    public static final int fileStatisticsRanges = getInteger("cnd.repository.file.stat.ranges", 10); //NOI18N
+    
     public static final boolean dumoFileOnExit = getBoolean("cnd.repository.dump.on.exit", false); //NOI18N
     public static final int sleepOnEmptyWriteQueue = getInteger("cnd.repository.write.queue.sleep", 1000); //NOI18N
+    public static final boolean compactOnEmptyWriteQueue = getBoolean("cnd.repository.compact", false); //NOI18N
     
     public static final int fileRWAccess = getInteger("cnd.repository.rw", 0); //NOI18N
     public static final int bufSize = getInteger("cnd.repository.bufsize", -1); //NOI18N
+    public static final boolean useCompactIndex = getBoolean("cnd.repository.compact.index", true);
+    
+    public static final String traceKeyName = System.getProperty("cnd.repository.trace.key");
+    public static final boolean traceKey = (traceKeyName != null);
+    
+    public static final boolean traceCompacting = getBoolean("cnd.repository.trace.compacting", false);
             
+    public static final boolean isTraceKey(Key key) {
+	if( traceKey ) {
+	    if( key != null ) {
+		for (int i = 0; i < key.getDepth(); i++) {
+		    if( traceKeyName.equals(key.getAt(i)) ) {
+			return true;
+		    }
+		}
+	    }
+	}
+	return false;
+    }
+    
     public static boolean getBoolean(String name, boolean result) {
         String text = System.getProperty(name);
         if( text != null ) {

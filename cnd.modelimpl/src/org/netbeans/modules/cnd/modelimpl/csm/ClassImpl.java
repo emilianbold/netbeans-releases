@@ -281,8 +281,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }    
     
     private void _clearMembers() {
+        List<CsmMember> members2dispose = getMembers();
+        Utils.disposeAll(members2dispose);
         if (TraceFlags.USE_REPOSITORY) {
-            RepositoryUtils.remove(members);
+            RepositoryUtils.remove(this.members);
         } else {
             membersOLD.clear();
         }        
@@ -370,6 +372,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                 throw new IllegalArgumentException("illegal handler " + kindHandler); // NOI18N
         }       
         return kind;
-    }
+    }  
 }
 

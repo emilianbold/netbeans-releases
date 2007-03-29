@@ -29,7 +29,9 @@ import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
@@ -42,9 +44,10 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 public class DefaultProjectActionHandler implements ActionListener {
-    private CustomProjectActionHandlerProvider customBuildActionHandlerProvider = null;
-    private CustomProjectActionHandlerProvider customRunActionHandlerProvider = null;
-    private CustomProjectActionHandlerProvider customDebugActionHandlerProvider = null;
+    private static CustomProjectActionHandlerProvider customBuildActionHandlerProvider = null;
+    private static CustomProjectActionHandlerProvider customRunActionHandlerProvider = null;
+    private static CustomProjectActionHandlerProvider customDebugActionHandlerProvider = null;
+    private CustomProjectActionHandler customActionHandler = null;
     
     private static DefaultProjectActionHandler instance = null;
     
@@ -64,6 +67,10 @@ public class DefaultProjectActionHandler implements ActionListener {
     
     public void setCustomDebugActionHandlerProvider(CustomProjectActionHandlerProvider customDebugActionHandlerProvider) {
         this.customDebugActionHandlerProvider = customDebugActionHandlerProvider;
+    }
+    
+    public void setCustomActionHandlerProvider(CustomProjectActionHandler customActionHandlerProvider) {
+        this.customActionHandler = customActionHandlerProvider;
     }
     
     public void actionPerformed(ActionEvent actionEvent) {
@@ -152,7 +159,8 @@ public class DefaultProjectActionHandler implements ActionListener {
             if (pae.getID() == ProjectActionEvent.RUN ||
                     pae.getID() == ProjectActionEvent.DEBUG ||
                     pae.getID() == ProjectActionEvent.DEBUG_LOAD_ONLY ||
-                    pae.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
+                    pae.getID() == ProjectActionEvent.DEBUG_STEPINTO ||
+                    pae.getID() == ProjectActionEvent.CUSTOM_ACTION) {
                 if (!checkExecutable(pae))
                     return;
             }
@@ -234,6 +242,8 @@ public class DefaultProjectActionHandler implements ActionListener {
                     projectExecutor.execute(getTab());
                 } catch (java.io.IOException ioe) {
                 }
+            } else if (pae.getID() == ProjectActionEvent.CUSTOM_ACTION) {
+                customActionHandler.execute(pae, getTab());
             } else if (pae.getID() == ProjectActionEvent.DEBUG ||
                     pae.getID() == ProjectActionEvent.DEBUG_STEPINTO ||
                     pae.getID() == ProjectActionEvent.DEBUG_LOAD_ONLY) {
@@ -278,13 +288,18 @@ public class DefaultProjectActionHandler implements ActionListener {
                     panel.setDialogDescriptor(descriptor);
                     DialogDisplayer.getDefault().notify(descriptor);
                     if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                        // Set executable in configuration
                         MakeConfiguration makeConfiguration = (MakeConfiguration)pae.getConfiguration();
                         executable = panel.getExecutable();
                         executable = FilePathAdaptor.naturalize(executable);
                         executable = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), executable);
                         executable = FilePathAdaptor.normalize(executable);
                         makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
-                        
+                        // Mark the project 'modified'
+                        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class );
+                        if (pdp != null)
+                            pdp.getConfigurationDescriptor().setModified();
+                        // Set executable in pae
                         if (pae.getID() == ProjectActionEvent.RUN) {
                             executable = FilePathAdaptor.naturalize(executable);
                             pae.setExecutable(executable);

@@ -143,7 +143,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     }
     
     public CsmClass _getAncestorCache() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             CsmClass ancestorCache = UIDCsmConverter.UIDtoDeclaration(resolvedAncestorClassCacheUID);
             // can be null if cached one was removed 
             return ancestorCache;            
@@ -153,7 +153,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     }
 
     public void _setAncestorCache(CsmClass ancestorCache) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             resolvedAncestorClassCacheUID = UIDCsmConverter.declarationToUID(ancestorCache);
             assert (resolvedAncestorClassCacheUID != null || ancestorCache == null);
         } else {
@@ -163,7 +163,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     
 
     private CsmClassifier _getClassifierCache() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             CsmClassifier classifierCache = UIDCsmConverter.UIDtoDeclaration(classifierCacheUID);
             // can be null if cached one was removed 
             return classifierCache;            
@@ -173,7 +173,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     }
 
     private void _setClassifierCache(CsmClassifier classifierCache) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             classifierCacheUID = UIDCsmConverter.declarationToUID(classifierCache);
             assert (classifierCacheUID != null || classifierCacheUID == null);
         } else {

@@ -191,11 +191,21 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     public void dispose() {
+        super.dispose();
+        onDispose();
         if( _getScope() instanceof MutableDeclarationsContainer ) {
             ((MutableDeclarationsContainer) _getScope()).removeDeclaration(this);
         }
         unregisterInProject();
     }
+    
+    private void onDispose() {
+        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+            // restore container from it's UID
+            this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);
+            assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
+        }
+    }    
     
     public CsmVariableDefinition getDefinition() {
         String uname = CsmDeclaration.Kind.VARIABLE_DEFINITION.toString() + UNIQUE_NAME_SEPARATOR + getQualifiedName();
@@ -204,17 +214,18 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     private CsmScope _getScope() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
-            CsmScope scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-            assert (scope != null || scopeUID == null) : "null object for UID " + scopeUID;
-            return scope;
-        } else {
-            return scopeRef;
+        CsmScope scope = this.scopeRef;
+        if (scope == null) {
+            if (TraceFlags.USE_REPOSITORY) {
+                scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
+                assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
+            }
         }
+        return scope;
     }
     
     private void _setScope(CsmScope scope) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (scopeUID != null || scope == null);
         } else {
@@ -231,20 +242,11 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         output.writeUTF(this.name);
         output.writeBoolean(this._static);
         output.writeBoolean(this._extern);
-        UIDObjectFactory.getDefaultFactory().writeUID(scopeUID, output);
         PersistentUtils.writeExpression(initExpr, output);
         PersistentUtils.writeType(type, output);
-        
-        // prepared uid to write
-        CsmUID<CsmScope> writeScopeUID;
-        if (TraceFlags.USE_UID_TO_CONTAINER) {
-            writeScopeUID = this.scopeUID;
-        } else {
-            // save reference
-            writeScopeUID = UIDCsmConverter.scopeToUID(this.scopeRef);
-        }        
+             
         // could be null UID (i.e. parameter)
-        UIDObjectFactory.getDefaultFactory().writeUID(writeScopeUID, output);        
+        UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);        
     }  
     
     public VariableImpl(DataInput input) throws IOException {
@@ -256,22 +258,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this.initExpr = (ExpressionBase) PersistentUtils.readExpression(input);
         this.type = PersistentUtils.readType(input);
 
-        CsmUID<CsmScope> readScopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // could be null UID (i.e. parameter)
-        if (TraceFlags.USE_UID_TO_CONTAINER) {
-            this.scopeUID = readScopeUID;
-            
-            this.scopeRef = null;
-        } else {
-            // restore reference
-            this.scopeRef = UIDCsmConverter.UIDtoScope(readScopeUID);
-            assert this.scopeRef != null || readScopeUID == null : "no object for UID " + readScopeUID;
-            
-            this.scopeUID = null;
-        }        
+        this.scopeRef = null;
     }     
-
-    public String toString() {
-        return "" + getKind() + ' ' + name /*+ " rawName=" + Utils.toString(getRawName())*/; // NOI18N
-    }
 }

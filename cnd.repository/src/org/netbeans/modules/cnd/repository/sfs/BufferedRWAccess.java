@@ -89,6 +89,7 @@ public class BufferedRWAccess implements FileRWAccess {
     }
     
     public int write(PersistentFactory factory, Persistent object, long offset) throws IOException {
+	channel.position(offset);
 	ByteBufferOutputStream bos = new ByteBufferOutputStream(getWriteBuffer());
 	DataOutput out = new DataOutputStream(bos);
 	factory.write(out, object);
@@ -123,11 +124,13 @@ public class BufferedRWAccess implements FileRWAccess {
     
     public void truncate(long size) throws IOException {
 	channel.truncate(size);
+	channel.position(size);
     }
     
     public void move(long offset, int size, long newOffset) throws IOException {
 	ByteBuffer buffer = getReadBuffer(size);
 	channel.read(buffer, offset);
+	buffer.flip();
 	channel.write(buffer, newOffset);
     }
     

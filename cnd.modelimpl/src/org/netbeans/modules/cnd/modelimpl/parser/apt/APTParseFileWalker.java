@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.modelimpl.parser.apt;
 import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ParserThreadManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.SimpleOffsetableImpl;
+import org.openide.filesystems.FileUtil;
 
 /**
  * implementation of walker used when parse files/collect macromap
@@ -53,7 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.SimpleOffsetableImpl;
 public class APTParseFileWalker extends APTWalker {
     private APTPreprocState preprocState;
     private String startPath;
-    private FileImpl file;  
+    private FileImpl file;
     private int mode;
     private boolean createMacroAndIncludes;
     
@@ -64,8 +66,8 @@ public class APTParseFileWalker extends APTWalker {
         this.preprocState = preprocState;
         this.mode = ProjectBase.GATHERING_MACROS;
         this.createMacroAndIncludes = false;
-    }        
-
+    }
+    
     public void addMacroAndIncludes(boolean create) {
         this.createMacroAndIncludes = create;
     }
@@ -74,7 +76,7 @@ public class APTParseFileWalker extends APTWalker {
         return this.createMacroAndIncludes;
     }
     
-  
+    
     public TokenStream getFilteredTokenStream(APTLanguageFilter lang) {
         return lang.getFilteredStream(getTokenStream());
     }
@@ -88,7 +90,7 @@ public class APTParseFileWalker extends APTWalker {
         // remove comments
         ts = new APTCommentsFilter(ts);
         // expand macros
-        ts = new APTParserMacroExpandedStream(ts, preprocState.getMacroMap());         
+        ts = new APTParserMacroExpandedStream(ts, preprocState.getMacroMap());
         return ts;
     }
     
@@ -106,18 +108,22 @@ public class APTParseFileWalker extends APTWalker {
                         System.err.println("FAILED INCLUDE: from " + file.getName() + " for:\n\t" + apt);// NOI18N
                     }
                 } else {
-                    APTUtils.LOG.log(Level.WARNING, 
+                    APTUtils.LOG.log(Level.WARNING,
                             "failed resolving path from {0} for {1}", // NOI18N
                             new Object[] { startPath, apt });
+                }
+            } else {
+                if (resolvedPath.indexOf("..")>0){
+                    resolvedPath = FileUtil.normalizeFile(new File(resolvedPath)).getAbsolutePath();
                 }
             }
             include(resolvedPath, (APTInclude)apt);
         }
     }
-
+    
     protected void onIncludeNext(APT apt) {
         if (getIncludeHandler() != null) {
-            APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);           
+            APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
             String resolvedPath = resolver.resolveIncludeNext((APTIncludeNext)apt, getMacroMap());
             if (resolvedPath == null) {
                 if (ParserThreadManager.instance().isStandalone()) {
@@ -125,16 +131,20 @@ public class APTParseFileWalker extends APTWalker {
                         System.err.println("FAILED INCLUDE: from " + file.getName() + " for:\n\t" + apt);// NOI18N
                     }
                 } else {
-                    APTUtils.LOG.log(Level.WARNING, 
+                    APTUtils.LOG.log(Level.WARNING,
                             "failed resolving path from {0} for {1}", // NOI18N
                             new Object[] { startPath, apt });
                 }
+            } else {
+                if (resolvedPath.indexOf("..")>0){
+                    resolvedPath = FileUtil.normalizeFile(new File(resolvedPath)).getAbsolutePath();
+                }
             }
-	    // TODO: reflect include next in API and add implementation here
+            // TODO: reflect include next in API and add implementation here
             include(resolvedPath, (APTInclude) apt);
         }
     }
-
+    
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;
         getMacroMap().define(define.getName(), define.getParams(), define.getBody());
@@ -176,39 +186,39 @@ public class APTParseFileWalker extends APTWalker {
         
         return new MacroImpl(define.getName().getText(), params, body/*sb.toString()*/, file, pos);
     }
-
+    
     protected void onUndef(APT apt) {
         APTUndefine undef = (APTUndefine)apt;
         getMacroMap().undef(undef.getName());
     }
-
+    
     protected boolean onIf(APT apt) {
         return eval(apt);
     }
-
+    
     protected boolean onIfdef(APT apt) {
         return eval(apt);
     }
-
+    
     protected boolean onIfndef(APT apt) {
         return eval(apt);
     }
-
+    
     protected boolean onElif(APT apt, boolean wasInPrevBranch) {
         return !wasInPrevBranch && eval(apt);
     }
-
+    
     protected boolean onElse(APT apt, boolean wasInPrevBranch) {
         return !wasInPrevBranch;
     }
-
+    
     protected void onEndif(APT apt, boolean wasInBranch) {
     }
-
+    
 //    protected Token onToken(Token token) {
 //        return token;
 //    }
-       
+    
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
     
@@ -222,7 +232,7 @@ public class APTParseFileWalker extends APTWalker {
         }
         return res;
     }
-
+    
     private void include(String path, APTInclude apt) {
         FileImpl included = null;
         boolean removedFile = false;
@@ -247,47 +257,46 @@ public class APTParseFileWalker extends APTWalker {
             file.addInclude(createInclude(apt, included));
         }
     }
-
+    
     protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, APTPreprocState preprocState, int mode, APTInclude apt) throws IOException {
         try {
             return inclFileOwner.onFileIncluded(inclPath, preprocState, mode);
         } catch (NullPointerException ex) {
             APTUtils.LOG.log(Level.SEVERE, "file without project!!!", ex);// NOI18N
         } finally {
-            getIncludeHandler().popInclude(); 
-        }    
+            getIncludeHandler().popInclude();
+        }
         return null;
     }
     
-    private IncludeImpl createInclude(final APTInclude apt, final FileImpl included) {  
+    private IncludeImpl createInclude(final APTInclude apt, final FileImpl included) {
         SimpleOffsetableImpl inclPos = getOffsetable((APTToken)apt.getToken());
         setEndPosition(inclPos, (APTToken)getLastToken(apt.getInclude()));
         IncludeImpl incImpl = new IncludeImpl(apt.getFileName(getMacroMap()), apt.isSystem(getMacroMap()), included, file, inclPos);
         return incImpl;
     }
-
+    
     private SimpleOffsetableImpl getOffsetable(APTToken token) {
-	return new SimpleOffsetableImpl(token.getLine(), token.getColumn(), token.getOffset());
+        return new SimpleOffsetableImpl(token.getLine(), token.getColumn(), token.getOffset());
     }
     
     private void setEndPosition(SimpleOffsetableImpl offsetable, APTToken token) {
-	if( token != null && !APTUtils.isEOF(token)) {
-	    offsetable.setEndPosition(token.getEndLine(), token.getEndColumn(), token.getEndOffset());
-	}
+        if( token != null && !APTUtils.isEOF(token)) {
+            offsetable.setEndPosition(token.getEndLine(), token.getEndColumn(), token.getEndOffset());
+        }
     }
     
     private APTToken getLastToken(TokenStream ts) {
-	try {
-	    Token last = ts.nextToken();
-	    for( Token curr = null; ! APTUtils.isEOF(curr = ts.nextToken()); ) {
-		last = curr;
-	    }
-	    return (APTToken)last;
-	}
-	catch( TokenStreamException e ) {
-	    e.printStackTrace(System.err);
-	    return null;
-	}
+        try {
+            Token last = ts.nextToken();
+            for( Token curr = null; ! APTUtils.isEOF(curr = ts.nextToken()); ) {
+                last = curr;
+            }
+            return (APTToken)last;
+        } catch( TokenStreamException e ) {
+            e.printStackTrace(System.err);
+            return null;
+        }
     }
     
 }

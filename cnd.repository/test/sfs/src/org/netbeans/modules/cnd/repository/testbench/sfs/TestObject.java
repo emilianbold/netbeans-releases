@@ -114,8 +114,10 @@ public class TestObject implements Persistent {
 
     public int hashCode() {
 	int hash = iData + (int) lData + key.hashCode();
-	for (int i = 0; i < sData.length; i++) {
-	    hash += sData.hashCode();
+	if( sData != null ) {
+	    for (int i = 0; i < sData.length; i++) {
+		hash += sData.hashCode();
+	    }
 	}
 	return hash;
     }

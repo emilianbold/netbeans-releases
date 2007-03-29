@@ -29,6 +29,7 @@ import java.util.Vector;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.openide.filesystems.FileObject;
@@ -44,7 +45,7 @@ public class Folder {
     private String displayName;
     private final Folder parent;
     private Vector items = null; // Folder or Item
-    private Vector changeListenerList = null;
+    private Set<ChangeListener> changeListenerList = new HashSet<ChangeListener>();
     private final boolean projectFiles;
     private String id = null;
     
@@ -55,7 +56,6 @@ public class Folder {
         this.displayName = displayName;
         this.projectFiles = projectFiles;
         this.items = new Vector();
-        this.changeListenerList = new Vector();
     }
     
     public int size() {
@@ -271,7 +271,8 @@ public class Folder {
     public boolean removeItemAction(Item item) {
         ArrayList list = new ArrayList(1);
         list.add(item);
-        ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesRemoved(list);
+        if (isProjectFiles())
+            ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesRemoved(list);
         return removeItem(item);
     }
     
@@ -604,7 +605,7 @@ public class Folder {
         configurationDescriptor.setModified();
     }
     
-    class MyNativeFileItemSet extends HashSet implements NativeFileItemSet {
+    class MyNativeFileItemSet extends HashSet<NativeFileItem> implements NativeFileItemSet {
     }
     
     /** Look up i18n strings here */

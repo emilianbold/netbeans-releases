@@ -44,8 +44,10 @@ public class CsmCompletionExpression {
     /** Special value for unary operators */
     public static final int UNARY_OPERATOR = 3;
     /** Dot between method calls 'a().b()' or 'a().b.c.d(e, f)' */
+    /** Dot and dereference between members 'member.*member' */
     public static final int DOT = 4;
     /** Dot between method calls and dot at the end 'a().b().' or 'a().b.c.d(e, f).' */
+    /** Dot and dereference at the end 'member.*' */
     public static final int DOT_OPEN = 5;
     /** Opened array 'a[0' or 'a.b.c[d.e' */
     public static final int ARRAY_OPEN = 6;
@@ -118,25 +120,39 @@ public class CsmCompletionExpression {
     public static final int CASE = 24;
 
     /** Arrow between method calls 'a()->b()' or 'a().b.c->d(e, f)' */
+    /** arrow and dereference between members 'member->*member' */
     public static final int ARROW = 25;
-    /** Arrow between method calls and dot at the end 'a().b()->' or 'a().b.c.d(e, f)->' */
+    /** Arrow at the end 'a().b()->' or 'a().b.c.d(e, f)->' */
+    /** arrow and dereference at the end 'member->*' */
     public static final int ARROW_OPEN = 26;
 
     /** Arrow between method calls 'NS::b()' or 'NS::CLASS::member' */
     public static final int SCOPE = 27;
     /** Arrow between method calls and dot at the end 'NS::' or 'NS::CLASS::' */
-    public static final int SCOPE_OPEN = 28;
+    public static final int SCOPE_OPEN = 28;  
     
-    /** Last used id of the expression ids. */
-    private static final int LAST_ID = SCOPE_OPEN;
+    /** "const" as type prefix in the 'const A*'*/
+    public static final int TYPE_PREFIX = 29;
+    
+    /** "const" as type postfix in the 'char* const'*/
+    public static final int TYPE_POSTFIX = 30;
+    
+    /** "*" or "&" at type postfix in the 'char*' or 'int &'*/
+    public static final int TYPE_REFERENCE = 31;
+    
+    /** dereference "*" or address-of "&" operators in the '*value' or '&value'*/
+    public static final int MEMBER_POINTER = 32;
 
-    private static final int javaTokenIDsLength
+    /** Last used id of the expression ids. */
+    private static final int LAST_ID = MEMBER_POINTER;
+
+    private static final int cppTokenIDsLength
         = CCTokenContext.context.getTokenIDs().length;
 
     /** Array that holds the precedence of the operator
     * and whether it's right associative or not.
     */
-    private static final int[] OP = new int[javaTokenIDsLength + LAST_ID + 1];
+    private static final int[] OP = new int[cppTokenIDsLength + LAST_ID + 1];
 
     /** Is the operator right associative? */
     private static final int RIGHT_ASSOCIATIVE = 32;
@@ -156,8 +172,8 @@ public class CsmCompletionExpression {
         OP[CCTokenContext.OR_ID] = 6;
         OP[CCTokenContext.XOR_ID] = 7;
         OP[CCTokenContext.MOD_ID] = 13;
-        OP[CCTokenContext.NOT_ID] = 14;
-        OP[CCTokenContext.NEG_ID] = 14;
+        OP[CCTokenContext.NOT_ID] = 15;
+        OP[CCTokenContext.NEG_ID] = 15;
 
         OP[CCTokenContext.EQ_EQ_ID] = 9;
         OP[CCTokenContext.LT_EQ_ID] = 10;
@@ -175,48 +191,54 @@ public class CsmCompletionExpression {
         OP[CCTokenContext.MOD_EQ_ID] = 2 | RIGHT_ASSOCIATIVE;
         OP[CCTokenContext.NOT_EQ_ID] = 9;
 
-        OP[CCTokenContext.DOT_ID] = 15;
-        OP[CCTokenContext.ARROW_ID] = 15;
-        OP[CCTokenContext.SCOPE_ID] = 15;
+        OP[CCTokenContext.DOT_ID] = 16;
+        OP[CCTokenContext.DOTMBR_ID] = 14;
+        OP[CCTokenContext.ARROW_ID] = 16;
+        OP[CCTokenContext.ARROWMBR_ID] = 14;
+        OP[CCTokenContext.SCOPE_ID] = 18;
         OP[CCTokenContext.COLON_ID] = 3 | RIGHT_ASSOCIATIVE;
         OP[CCTokenContext.QUESTION_ID] = 3 | RIGHT_ASSOCIATIVE;
-        OP[CCTokenContext.LBRACKET_ID] = 15;
+        OP[CCTokenContext.LBRACKET_ID] = 16;
         OP[CCTokenContext.RBRACKET_ID] = 0; // stop
-        OP[CCTokenContext.PLUS_PLUS_ID] = 15;
-        OP[CCTokenContext.MINUS_MINUS_ID] = 15;
+        OP[CCTokenContext.PLUS_PLUS_ID] = 16;
+        OP[CCTokenContext.MINUS_MINUS_ID] = 16;
         OP[CCTokenContext.AND_AND_ID] = 5;
         OP[CCTokenContext.OR_OR_ID] = 4;
 
         OP[CCTokenContext.COMMA_ID] = 0; // stop
         OP[CCTokenContext.SEMICOLON_ID] = 0; // not-recognized
-        OP[CCTokenContext.LPAREN_ID] = 16;
+        OP[CCTokenContext.LPAREN_ID] = 17;
         OP[CCTokenContext.RPAREN_ID] = 0; // not-recognized
         OP[CCTokenContext.LBRACE_ID] = 0; // not-recognized
         OP[CCTokenContext.RBRACE_ID] = 0; // not-recognized
 
-        OP[javaTokenIDsLength + INVALID] = 0;
-        OP[javaTokenIDsLength + CONSTANT] = 1;
-        OP[javaTokenIDsLength + VARIABLE] = 1;
-        OP[javaTokenIDsLength + UNARY_OPERATOR] = 15;
-        OP[javaTokenIDsLength + DOT] = 1;
-        OP[javaTokenIDsLength + DOT_OPEN] = 0; // stop
-        OP[javaTokenIDsLength + ARROW] = 1;
-        OP[javaTokenIDsLength + ARROW_OPEN] = 0; // stop
-        OP[javaTokenIDsLength + SCOPE] = 1;
-        OP[javaTokenIDsLength + SCOPE_OPEN] = 0; // stop
-        OP[javaTokenIDsLength + ARRAY_OPEN] = 0; // stop
-        OP[javaTokenIDsLength + ARRAY] = 1;
-        OP[javaTokenIDsLength + PARENTHESIS_OPEN] = 0; // stop
-        OP[javaTokenIDsLength + PARENTHESIS] = 1;
-        OP[javaTokenIDsLength + METHOD_OPEN] = 0; // stop
-        OP[javaTokenIDsLength + METHOD] = 1;
-        OP[javaTokenIDsLength + CONSTRUCTOR] = 1;
-        OP[javaTokenIDsLength + CONVERSION] = 1;
-        OP[javaTokenIDsLength + TYPE] = 0; // stop
-        OP[javaTokenIDsLength + NEW] = 0; // stop
-        OP[javaTokenIDsLength + INSTANCEOF] = 10;
-        OP[javaTokenIDsLength + CPPINCLUDE] = 0; // stop
+        OP[cppTokenIDsLength + INVALID] = 0;
+        OP[cppTokenIDsLength + CONSTANT] = 1;
+        OP[cppTokenIDsLength + VARIABLE] = 1;
+        OP[cppTokenIDsLength + UNARY_OPERATOR] = 15;
+        OP[cppTokenIDsLength + DOT] = 1;
+        OP[cppTokenIDsLength + DOT_OPEN] = 0; // stop
+        OP[cppTokenIDsLength + ARROW] = 1;
+        OP[cppTokenIDsLength + ARROW_OPEN] = 0; // stop
+        OP[cppTokenIDsLength + SCOPE] = 1;
+        OP[cppTokenIDsLength + SCOPE_OPEN] = 0; // stop
+        OP[cppTokenIDsLength + ARRAY_OPEN] = 0; // stop
+        OP[cppTokenIDsLength + ARRAY] = 1;
+        OP[cppTokenIDsLength + PARENTHESIS_OPEN] = 0; // stop
+        OP[cppTokenIDsLength + PARENTHESIS] = 1;
+        OP[cppTokenIDsLength + METHOD_OPEN] = 0; // stop
+        OP[cppTokenIDsLength + METHOD] = 1;
+        OP[cppTokenIDsLength + CONSTRUCTOR] = 1;
+        OP[cppTokenIDsLength + CONVERSION] = 1;
+        OP[cppTokenIDsLength + TYPE] = 0; // stop
+        OP[cppTokenIDsLength + NEW] = 0; // stop
+        OP[cppTokenIDsLength + INSTANCEOF] = 10;
+        OP[cppTokenIDsLength + CPPINCLUDE] = 0; // stop
 
+        OP[cppTokenIDsLength + MEMBER_POINTER] = 15; // as unary operators ?
+        OP[cppTokenIDsLength + TYPE_REFERENCE] = 1; // need to set correct value
+        OP[cppTokenIDsLength + TYPE_POSTFIX] = 1; // need to set correct value
+        OP[cppTokenIDsLength + TYPE_PREFIX] = 1; // need to set correct value
     }
 
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
@@ -272,7 +294,7 @@ public class CsmCompletionExpression {
         } else {
             switch (tokenID.getNumericID()) {
                 case CCTokenContext.NEW_ID:
-                    id = javaTokenIDsLength + NEW;
+                    id = cppTokenIDsLength + NEW;
                     break;
 
 //                case CCTokenContext.INSTANCEOF_ID:
@@ -291,7 +313,7 @@ public class CsmCompletionExpression {
             case OPERATOR:
                 return exp.getTokenID(0).getNumericID();
         }
-        return javaTokenIDsLength + expID;
+        return cppTokenIDsLength + expID;
     }
 
     static int getOperatorPrecedence(int opID) {
@@ -308,6 +330,9 @@ public class CsmCompletionExpression {
     static boolean isValidType(CsmCompletionExpression exp) {
         switch (exp.getExpID()) {
         case ARRAY:
+        case TYPE_POSTFIX:
+        case TYPE_PREFIX:
+        case TYPE_REFERENCE:    
             if (exp.getParameterCount() == 1) {
                 return isValidType(exp.getParameter(0));
             }
@@ -487,6 +512,14 @@ public class CsmCompletionExpression {
             return "INCLUDE"; // NOI18N
         case CASE:
             return "CASE"; // NOI18N
+        case TYPE_PREFIX:
+            return "TYPE_PREFIX"; // NOI18N
+        case TYPE_POSTFIX:
+            return "TYPE_POSTFIX"; // NOI18N
+        case TYPE_REFERENCE:
+            return "TYPE_REFERENCE"; // NOI18N
+        case MEMBER_POINTER:
+            return "MEMBER_POINTER"; // NOI18N            
         default:
             return "Unknown expID " + expID; // NOI18N
         }

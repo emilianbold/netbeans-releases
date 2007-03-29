@@ -178,7 +178,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
 
     private boolean pushIncludeImpl(String path, int directiveLine) {
         if (recurseIncludes == null) {
-            assert (inclStack == null);
+            assert (inclStack == null): inclStack.toString();
             inclStack = new Stack();
             recurseIncludes = new HashMap();
         }

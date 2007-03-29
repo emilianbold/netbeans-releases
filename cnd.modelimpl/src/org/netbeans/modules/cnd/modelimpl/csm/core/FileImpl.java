@@ -71,7 +71,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private FileBuffer fileBuffer;
     
     // only one of project/projectUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)  
-    private final ProjectBase projectRef;
+    private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
 
     /** 
@@ -108,7 +108,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, APTPreprocState preprocState) {
         setBuffer(fileBuffer);
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.projectUID = UIDCsmConverter.projectToUID(project);
             this.projectRef = null;
         } else {
@@ -126,13 +126,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     private ProjectBase _getProject() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
-            ProjectBase prj = (ProjectBase)UIDCsmConverter.UIDtoProject(projectUID);
-            assert (prj != null || projectUID == null) : "empty project for UID " + projectUID;
-            return prj;
-        } else {
-            return this.projectRef;
-        }     
+        ProjectBase prj = this.projectRef;
+        if (prj == null) {
+            if (TraceFlags.USE_REPOSITORY) {
+                prj = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
+                assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+            }    
+        }
+        return prj;
     }
     
     public boolean isSourceFile(){
@@ -295,66 +296,46 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public void dispose() {
+        onDispose();
         Notificator.instance().registerRemovedFile(this);
 	disposeAll(true);
+    }
+    
+    protected void onDispose() {
+        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+            // restore container from it's UID
+            this.projectRef = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
+            assert (this.projectRef != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+        }
     }
     
     private void disposeAll(boolean clearNonDisposable) {
         //NB: we're copying declarations, because dispose can invoke this.removeDeclaration
         //for( Iterator iter = declarations.values().iterator(); iter.hasNext(); ) {
         if (TraceFlags.USE_REPOSITORY) {
-            List<CsmUID<CsmOffsetableDeclaration>> uids;
+            Collection<CsmUID<CsmOffsetableDeclaration>> uids;
             synchronized (declarations) {
-                uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values());
-                declarations.clear();
+                uids = declarations.values();
+                declarations = Collections.synchronizedSortedMap(new TreeMap<String, CsmUID<CsmOffsetableDeclaration>>());
                 if (clearNonDisposable) {
                     _clearIncludes();
                     _clearMacros();
                 }
             }       
             List<CsmOffsetableDeclaration> arr = UIDCsmConverter.UIDsToDeclarations(uids);
-            for (int i = 0; i < arr.size(); i++) {
-                //Object o = iter.next();
-                if (TraceFlags.TRACE_DISPOSE) {
-                    System.err.println("remove from file: " + arr.get(i));
-                }
-                if( arr.get(i)  instanceof Disposable ) {
-                    Disposable decl = ((Disposable) arr.get(i));
-                    if (TraceFlags.TRACE_DISPOSE) {
-                        System.err.println("disposing from file with UID " + arr.get(i).getUID());
-                    }
-                    decl.dispose();
-                } else {
-                    if (TraceFlags.TRACE_DISPOSE) {
-                        System.err.println("non disposable decl with UID " + arr.get(i).getUID());
-                    }
-                }
-            }            
+            Utils.disposeAll(arr);          
             RepositoryUtils.remove(uids);
         } else {
-            Object[] arr;
+            Collection<CsmOffsetableDeclaration> arr;
             synchronized (declarationsOLD) {
-                arr = declarationsOLD.values().toArray();
-                declarationsOLD.clear();
+                arr = declarationsOLD.values();
+                declarationsOLD = Collections.synchronizedSortedMap(new TreeMap/*<String, CsmOffsetableDeclaration>*/());
                 if (clearNonDisposable) {
                     _clearIncludes();
                     _clearMacros();
                 }
             }
-            for (int i = 0; i < arr.length; i++) {
-                //Object o = iter.next();
-                if( arr[i]  instanceof Disposable ) {
-                    Disposable decl = ((Disposable) arr[i]);
-                    if (TraceFlags.TRACE_DISPOSE) {
-                        System.err.println("disposing from file " + decl);
-                    }
-                    decl.dispose();
-                } else {
-                    if (TraceFlags.TRACE_DISPOSE) {
-                        System.err.println("non disposable declaration " + arr[i]);
-                    }
-                }
-            }
+            Utils.disposeAll(arr);
         }
 
     }
@@ -901,19 +882,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         factory.writeUIDCollection(this.macros, output, true);
         factory.writeUIDCollection(this.fakeRegistrationUIDs, output, false);
         output.writeInt(state);
-
-        // prepared uid to write
-        CsmUID<CsmProject> writeProjectUID;
-        if (TraceFlags.USE_UID_TO_CONTAINER) {
-            writeProjectUID = this.projectUID;
-        } else {
-            // save reference
-            assert this.projectRef != null;
-            writeProjectUID = UIDCsmConverter.projectToUID(this.projectRef);
-        }        
+        
         // not null UID
-        assert writeProjectUID != null;
-        UIDObjectFactory.getDefaultFactory().writeUID(writeProjectUID, output);
+        assert this.projectUID != null;
+        UIDObjectFactory.getDefaultFactory().writeUID(this.projectUID, output);
     }
     
     public FileImpl(DataInput input) throws IOException {
@@ -926,20 +898,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         factory.readUIDCollection(this.fakeRegistrationUIDs, input);
         state = input.readInt();
 
-        CsmUID<CsmProject> readProjectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // not null UID
-        assert readProjectUID != null;
-        if (TraceFlags.USE_UID_TO_CONTAINER) {
-            this.projectUID = readProjectUID;
-            
-            this.projectRef = null;
-        } else {
-            // restore reference
-            this.projectRef = (ProjectBase) UIDCsmConverter.UIDtoProject(readProjectUID);
-            assert this.projectRef != null || readProjectUID == null : "no object for UID " + readProjectUID;
-            
-            this.projectUID = null;
-        }
+        assert this.projectUID != null;
+        this.projectRef = null;
         
         assert fileBuffer != null;
         assert fileBuffer.isFileBased();

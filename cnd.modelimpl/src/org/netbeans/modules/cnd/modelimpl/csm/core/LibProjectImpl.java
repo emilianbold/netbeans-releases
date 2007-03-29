@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocState;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
@@ -56,6 +57,7 @@ public final class LibProjectImpl extends ProjectBase {
         FileImpl impl = (FileImpl) getFile(srcFile);
         if( impl == null ) {
             synchronized( getFilesLock() ) {
+                impl = (FileImpl) getFile(srcFile);
                 if( impl == null ) {
                     impl = new FileImpl(ModelSupport.instance().getFileBuffer(srcFile), this, fileType, preprocState);
                     putFile(srcFile, impl);
@@ -71,7 +73,7 @@ public final class LibProjectImpl extends ProjectBase {
     }
     
     /** override parent to avoid inifinite recursion */
-    public Collection/*<CsmProject>*/ getLibraries() {
+    public Collection<CsmProject> getLibraries() {
         return Collections.EMPTY_SET;
     }
     

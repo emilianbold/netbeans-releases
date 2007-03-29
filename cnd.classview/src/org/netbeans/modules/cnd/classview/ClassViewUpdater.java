@@ -71,7 +71,7 @@ public class ClassViewUpdater extends Thread {
     
     private ClassViewModel model;
     private BlockingQueue queue;
-    private boolean isStoped = false;
+    private volatile boolean isStoped = false;
     
     public ClassViewUpdater(ClassViewModel model) {
         super("Class View Updater");
@@ -81,19 +81,7 @@ public class ClassViewUpdater extends Thread {
     
     public void setStop(){
         isStoped = true;
-    }
-    
-    private boolean isSkiped(SmartChangeEvent e){
-        if (model.isShowLibs()){
-            return false;
-        }
-        if (e.getChangedProjects().size()==1){
-            CsmProject project = (CsmProject)e.getChangedProjects().keySet().iterator().next();
-            if (model.isLibProject(project)){
-                return true;
-            }
-        }
-        return false;
+        queue.add(null);
     }
     
     /**
@@ -129,8 +117,8 @@ public class ClassViewUpdater extends Thread {
                     return;
                 }
                 SmartChangeEvent compose = queue.get();
-                if (isSkiped(compose)){
-                    continue;
+                if (isStoped) {
+                    return;
                 }
                 if (queue.isEmpty()) {
                     Thread.sleep(MINIMAL_DELAY);
@@ -145,10 +133,8 @@ public class ClassViewUpdater extends Thread {
                             return;
                         }
                         SmartChangeEvent e = queue.peek();
-                        if (!isSkiped(e)){
-                            if (!compose.addChangeEvent(e)){
-                                break;
-                            }
+                        if (!compose.addChangeEvent(e)){
+                            break;
                         }
                         queue.get();
                         if (queue.isEmpty() && compose.getCount() < MAXIMAL_BATCH_SIZE && doWait < MAXIMAL_BATCH_TIME) {
@@ -192,6 +178,8 @@ public class ClassViewUpdater extends Thread {
     
     public void scheduleUpdate(CsmChangeEvent e) {
         //model.update(e);
-        queue.add(new SmartChangeEvent(e));
+        if (queue != null) {
+            queue.add(new SmartChangeEvent(e));
+        }
     }
 }

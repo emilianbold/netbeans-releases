@@ -69,6 +69,7 @@ public class CCSyntax extends Syntax {
     private static final int ISI_USR_START_INCLUDE = 41; // inside "filename" include directive at first '"'
     private static final int ISI_USR_INCLUDE = 42; // inside "filename" include directive
     private static final int ISA_COLON = 43; // after ':'
+    private static final int ISA_ARROW = 44; // after '->'
     
     protected static final String IS_CPLUSPLUS = "C++"; // NOI18N
     protected static final String IS_C = "C"; // NOI18N
@@ -258,7 +259,7 @@ public class CCSyntax extends Syntax {
                 case '\n':
                     state = INIT;
                     supposedTokenID = CCTokenContext.STRING_LITERAL;
-//!!!                    return CCTokenContext.INCOMPLETE_STRING_LITERAL;
+// was commented in java                    return CCTokenContext.INCOMPLETE_STRING_LITERAL;
                     return supposedTokenID;
                 case '"':
                     offset++;
@@ -287,7 +288,7 @@ public class CCSyntax extends Syntax {
                 case '\n':
                     state = INIT;
                     supposedTokenID = CCTokenContext.CHAR_LITERAL;
-// !!!                    return CCTokenContext.INCOMPLETE_CHAR_LITERAL;
+// was commented in java                    return CCTokenContext.INCOMPLETE_CHAR_LITERAL;
                     return supposedTokenID;
                 case '\'':
                     offset++;
@@ -349,8 +350,8 @@ public class CCSyntax extends Syntax {
                     if (Character.isJavaIdentifierStart(actChar)) {
                         state = ISI_IDENTIFIER;
                         break;
-                    } else {                    
-                        offset++;
+                    } else {     
+                        // does not consume actChar, as it is part of next token
                         state = INIT;
                     }
                 }
@@ -359,17 +360,20 @@ public class CCSyntax extends Syntax {
             case ISI_SYS_INCLUDE:
                 switch (actChar) {
                     case '>':
+                    // consume actChar, as it is part of token
                     offset++;
                     state = INIT;
+                    supposedTokenID = CCTokenContext.SYS_INCLUDE;
                     // check non-empty included file #include <>
                     return ((offset - tokenOffset) <= 2) ? 
-                            CCTokenContext.INVALID_SYS_INCLUDE :
+                            CCTokenContext.INCOMPLETE_SYS_INCLUDE :
                             CCTokenContext.SYS_INCLUDE;
                     case '\n':
                     // new line without closed '"'
-                    offset++;
-                    state = INIT;                        
-                    return CCTokenContext.INVALID_SYS_INCLUDE;
+                    // does not consume actChar, as it is part of next token
+                    state = INIT;     
+                    supposedTokenID = CCTokenContext.SYS_INCLUDE;
+                    return CCTokenContext.INCOMPLETE_SYS_INCLUDE;
                     default:
                 }
                 break;
@@ -377,8 +381,9 @@ public class CCSyntax extends Syntax {
             case ISI_USR_START_INCLUDE:
                 switch (actChar) {
                     case '"':
-                    offset++;
+                    // does not consume actChar, as it is done at the end of main while loop
                     state = ISI_USR_INCLUDE;
+                    break;
                     default:
                 }
                 break;  
@@ -386,16 +391,19 @@ public class CCSyntax extends Syntax {
             case ISI_USR_INCLUDE:
                 switch (actChar) {
                     case '"':
+                    // consume actChar, as it is part of token
                     offset++;
                     state = INIT;
+                    supposedTokenID = CCTokenContext.USR_INCLUDE;
                     // check non-empty included file #include ""
                     return ((offset - tokenOffset) <= 2) ? 
-                        CCTokenContext.INVALID_USR_INCLUDE : 
+                        CCTokenContext.INCOMPLETE_USR_INCLUDE : 
                         CCTokenContext.USR_INCLUDE;
                     case '\n':
-                    offset++;
-                    state = INIT;                        
-                    return CCTokenContext.INVALID_USR_INCLUDE;                    
+                    // does not consume actChar, as it is part of next token    
+                    state = INIT;   
+                    supposedTokenID = CCTokenContext.USR_INCLUDE;
+                    return CCTokenContext.INCOMPLETE_USR_INCLUDE;                    
                     default:
                 }
                 break;
@@ -588,13 +596,25 @@ public class CCSyntax extends Syntax {
                     offset++;
                     return CCTokenContext.MINUS_EQ;
                 case '>':
-                    offset++;
-                    return CCTokenContext.ARROW;
+                    state = ISA_ARROW;
+                    break;
                 default:
                     state = INIT;
                     return CCTokenContext.MINUS;
                 }
+                break;
 
+            case ISA_ARROW:
+                switch (actChar) {
+                    case '*':
+                        state = INIT;
+                        offset++;
+                        return CCTokenContext.ARROWMBR;
+                    default:
+                        state = INIT;
+                        return CCTokenContext.ARROW;
+                }
+                    
             case ISA_COMMA:
                 state = INIT;
                 return CCTokenContext.COMMA;
@@ -848,7 +868,10 @@ public class CCSyntax extends Syntax {
             case ISA_DOT:
                 if (Character.isDigit(actChar)) {
                     state = ISI_DOUBLE;
-
+                } else if (actChar == '*') {
+                    state = INIT;
+                    offset++;
+                    return CCTokenContext.DOTMBR;
                 } else { // only single dot
                     state = INIT;
                     return CCTokenContext.DOT;
@@ -946,6 +969,9 @@ public class CCSyntax extends Syntax {
             case ISA_MINUS:
                 state = INIT;
                 return CCTokenContext.MINUS;
+            case ISA_ARROW:
+                state = INIT;
+                return CCTokenContext.ARROW;                
             case ISA_COMMA:
                 state = INIT;
                 return CCTokenContext.COMMA;
