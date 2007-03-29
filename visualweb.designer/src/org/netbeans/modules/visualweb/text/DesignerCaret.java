@@ -1540,6 +1540,19 @@ import org.w3c.dom.Node;
                 setDot(pos);
             }
         }
+        
+        public void componentsMoved(DomDocumentEvent evt) {
+            // XXX #91531 User didn't want to have this kind of autoscroll behavior.
+//            final Rectangle rect = boundingBox;
+//            // #6331237 NPE.
+//            if(rect != null) {
+//                SwingUtilities.invokeLater(new Runnable() {
+//                    public void run() {
+//                        editor.scrollRectToVisible(rect);
+//                    }
+//                });
+//            }
+        }
         // DomDocumentListener <<<
         //////////////////////////
     }

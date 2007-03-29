@@ -1404,6 +1404,12 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         }
     }
     
+    private void fireComponentsMoved(DomDocumentEvent evt) {
+        for (DomDocumentListener l : getDomDocumentListeners()) {
+            l.componentsMoved(evt);
+        }
+    }
+    
     private final EventListenerList listenerList = new EventListenerList();
     
     public void addDomDocumentListener(DomDocumentListener l) {
@@ -1826,6 +1832,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //		}
 //	    });
 //	}
+        fireComponentsMoved(new DefaultDomDocumentEvent(this, null));
     }
 
     // XXX Copy aldo in designer/../GridHandler.
