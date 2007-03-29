@@ -560,12 +560,12 @@ public enum SettingsType {
                 files.put(profileId, pair);
             }
             pair.add(new Object [] { profileHome, file, moduleFiles });
-//            
-//            if (LOG.isLoggable(Level.INFO)) {
-//                Utils.logOnce(LOG, Level.INFO, "Keybinding profiles " + //NOI18N
-//                    "should reside in '" + KEYBINDINGS.getId() + "' subfolder, " + //NOI18N
-//                    "see #90403 for details. Offending file '" + file.getPath() + "'", null); //NOI18N
-//            }
+            
+            if (LOG.isLoggable(Level.INFO)) {
+                Utils.logOnce(LOG, Level.INFO, "Keybinding profiles " + //NOI18N
+                    "should reside in '" + KEYBINDINGS.getId() + "' subfolder, " + //NOI18N
+                    "see #90403 for details. Offending file '" + file.getPath() + "'", null); //NOI18N
+            }
         }
 
     } // End of KeybindingsLocator class

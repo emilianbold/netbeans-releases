@@ -38,6 +38,14 @@ Microsystems, Inc. All Rights Reserved.
                     </folder>
                 </folder>
                     
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-keybindings.xml" url="DefaultKeyBindings.xml"/> 
+                        </folder>
+                    </folder>
+                </folder>
+                
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-web-core-syntax-JspUpToDateStatusProviderFactory.instance"/>
                 </folder>
@@ -55,7 +63,6 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Settings.settings" url="../settings/JSPOptions.settings"/>
                 <folder name="Defaults">
                     <file name="abbreviations.xml" url="DefaultAbbrevs.xml"/>
-                    <file name="keybindings.xml" url="DefaultKeyBindings.xml"/> 
                 </folder>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JSPKit"/>

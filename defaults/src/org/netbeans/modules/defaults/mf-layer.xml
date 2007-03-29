@@ -892,33 +892,20 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
         
-        <folder name="text">
-            <folder name="base">
-                <!-- 
-                    This is workaround for default keybinding profile which is 
-                    stored straight under the mime-type folder instead of using
-                    'NetBeans' subfolder.
-                -->
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-            
-                <folder name="Eclipse">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                    <folder name="Defaults">
-                        <file name="keybindings.xml" url="Eclipse-keybindings.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
-                <folder name="Emacs">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                    <folder name="Defaults">
-                        <file name="keybindings.xml" url="Emacs-keybindings.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                        </file>
-                    </folder>
+        <folder name="Keybindings">
+            <folder name="Eclipse">
+                <folder name="Defaults">
+                    <file name="org-netbeans-modules-defaults-keybindings.xml" url="Eclipse-keybindings.xml"/>
                 </folder>
             </folder>
+            <folder name="Emacs">
+                <folder name="Defaults">
+                    <file name="org-netbeans-modules-defaults-keybindings.xml" url="Emacs-keybindings.xml"/>
+                </folder>
+            </folder>
+        </folder>
 
+        <folder name="text">
             <folder name="css">
                 <folder name="FontsColors">
                     <folder name="CityLights">
