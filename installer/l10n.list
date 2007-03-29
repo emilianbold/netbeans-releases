@@ -6,4 +6,4 @@ installer/mobility/src/org/netbeans/installer/cluster/Bundle.properties
 installer/profiler/src/org/netbeans/installer/cluster/Bundle.properties
 installer/cdc/src/org/netbeans/installer/cluster/Bundle.properties
 installer/cdc/src/org/netbeans/installer/Bundle.properties
-
+installer/cnd/src/org/netbeans/installer/cluster/Bundle.properties
