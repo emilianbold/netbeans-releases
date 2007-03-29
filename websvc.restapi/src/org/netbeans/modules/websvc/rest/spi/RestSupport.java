@@ -179,19 +179,13 @@ public abstract class RestSupport {
         if (project == null) {
             return;
         }
+
+        if (! needsSwdpLibrary(project)) {
+            return;
+        }
         
-        // check if swdp is already part of classpath
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sgs.length < 1) {
-            return;
-        }
         FileObject sourceRoot = sgs[0].getRootFolder();
-        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
-        FileObject restClass = classPath.findResource("com/sun/ws/rest/api/UriTemplate.class"); // NOI18N
-        if (restClass != null) {
-            return;
-        }
-        
         ProjectClassPathExtender pce = project.getLookup().lookup(ProjectClassPathExtender.class);
         ProjectClassPathModifierImplementation pcm = project.getLookup().lookup(ProjectClassPathModifierImplementation.class);
         if (pcm != null) {
@@ -213,6 +207,24 @@ public abstract class RestSupport {
     public boolean hasSwdpLibrary() {
         String v = helper.getStandardPropertyEvaluator().getProperty(PROP_SWDP_CLASSPATH);
         return v != null;
+    }
+
+    /**
+     * A quick check if swdp is already part of classpath.
+     */
+    public static boolean needsSwdpLibrary(Project restEnableProject) {
+        // check if swdp is already part of classpath
+        SourceGroup[] sgs = ProjectUtils.getSources(restEnableProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs.length < 1) {
+            return false;
+        }
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
+        FileObject restClass = classPath.findResource("com/sun/ws/rest/api/UriTemplate.class"); // NOI18N
+        if (restClass != null) {
+            return false;
+        }
+        return true;
     }
     
     protected void setProjectProperty(String name, String value) {
