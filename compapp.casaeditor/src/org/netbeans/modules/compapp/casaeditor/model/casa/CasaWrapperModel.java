@@ -474,10 +474,10 @@ public class CasaWrapperModel extends CasaModelImpl {
         PortType portType = casaWrapperModel.getPortType(interfaceQName); //casaWrapperModel.getCasaPortType(casaPort);
         System.out.println("Got WSDLEndpoint Action.. Pt: " + portType);
         
-        String wsdlLocation = casaWrapperModel.getWSDLLocation(casaPort);
-        if (wsdlLocation.equals("../jbiasa/casa.wsdl")) { // NOI18N
-            wsdlLocation = null;    // no need to import itself
-        }
+        String wsdlLocation = casaWrapperModel.getWSDLLocation(interfaceQName);
+//        if (wsdlLocation.equals("../jbiasa/casa.wsdl")) { // NOI18N
+//            wsdlLocation = null;    // no need to import itself
+//        }
         System.out.println("Got WSDL location: " + wsdlLocation);
         
         ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
@@ -967,6 +967,24 @@ public class CasaWrapperModel extends CasaModelImpl {
 //            }
 //        }
 //        return null;
+    }
+    
+    private String getWSDLLocation(final QName interfaceQName) {
+        CasaPortTypes casaPortTypes = getRootComponent().getPortTypes();
+        for (CasaLink link : casaPortTypes.getLinks()) {
+            String href = link.getHref();
+            try {
+                PortType pt = (PortType) this.getWSDLComponentFromXLinkHref(href);
+                System.out.println("Got PortType: " + pt.getName());
+                if (interfaceQName.getNamespaceURI().equals( pt.getModel().getDefinitions().getTargetNamespace()) &&
+                        interfaceQName.getLocalPart().equals(pt.getName())) {
+                    return href.substring(0, href.indexOf("#xpointer")); // NOI18N
+                }
+            } catch (Exception ex) {
+                System.out.println("Failed to fetch WSDL location: " + href);
+            }
+        }
+        return null;
     }
     
     /**
