@@ -50,7 +50,7 @@ public class CatalogWriteModelImpl extends CatalogModelImpl implements CatalogWr
     
     PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
-    private static Logger logger = Utilities.getLogger();
+    private static Logger logger = Logger.getLogger(CatalogWriteModelImpl.class.getName());
     
     private DocumentModel.State currentStateOfCatalog;
     

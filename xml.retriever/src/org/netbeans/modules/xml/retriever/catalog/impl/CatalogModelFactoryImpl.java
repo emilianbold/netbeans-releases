@@ -45,7 +45,7 @@ import org.w3c.dom.ls.LSResourceResolver;
  * @author girix
  */
 public class CatalogModelFactoryImpl extends CatalogWriteModelFactory{
-    private static Logger logger = Utilities.getLogger();
+    private static Logger logger = Logger.getLogger(CatalogModelFactoryImpl.class.getName());
     
     
     private static WeakHashMap <Project, CatalogWriteModel> projcat = new WeakHashMap<Project, CatalogWriteModel>();

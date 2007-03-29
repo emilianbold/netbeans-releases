@@ -86,7 +86,7 @@ import org.xml.sax.InputSource;
  */
 public class Utilities {
     public static final String NO_NAME_SPACE = "NO_NAME_SPACE"; //NOI18N
-    private static final Logger logger = getLogger();
+    private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     
     public static URL appendURL(URL prefixURL, String suffixStr){
         String str = prefixURL.toString();
@@ -234,28 +234,7 @@ public class Utilities {
         //add prefix to slaveStr
         return pathPrefix + slaveResult.toString();
     }
-    
-    /**
-     * Convenience method that returns a logger for this module.
-     * Returned logger object must be used in the implementation for debuggin purpose
-     * Client code can get this logger and set the level by calling logger.setLevel(level);
-     * By default, this logger does not have any Handlers and it has default Level set.
-     * Feel free to set handlers and level for this object.
-     * To route messages to IDE log/console window, use the following code snip
-     * <pre>
-     *  Logger logger = DepResolverFactoryImpl.getDefaultNSRLogger();
-     * logger.setLevel(Level.<your Level>);
-     * StreamHandler sh = new StreamHandler(System.out, new SimpleFormatter());
-     * sh.setLevel(logger.getLevel());
-     * logger.addHandler(sh);
-     * </pre>
-     *
-     * @return Logger
-     */
-    public static Logger getLogger(){
-        return Logger.getLogger(Utilities.class.getName());
-    }
-    
+        
     public static List<FileObject> getFilesOfNSInProj(Project prj, DocumentTypesEnum docType, String nameSpace, List<String> sourceGroupTypeList){
         List<FileObject> result = new ArrayList<FileObject>();
         Map<FileObject, String> fobj2nsMap = getFiles2NSMappingInProj(prj, docType, sourceGroupTypeList);

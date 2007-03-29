@@ -76,7 +76,7 @@ public class CatalogFileWrapperDOMImpl  implements EntityResolver, CatalogFileWr
     private Element catalog = null;
     private boolean isItMyOwnEvent = false;
     public static javax.swing.text.Document backendCatalogSwingDocument = null;
-    private static final Logger logger = Utilities.getLogger();
+    private static final Logger logger = Logger.getLogger(CatalogFileWrapperDOMImpl.class.getName());
     
     private DocumentModel.State currentStateOfCatalog = null;
     

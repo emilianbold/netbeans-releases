@@ -79,7 +79,7 @@ import org.xml.sax.SAXException;
  */
 public class CatalogModelImpl implements CatalogModel {
     protected FileObject catalogFileObject = null;
-    private static Logger logger = Utilities.getLogger();
+    private static Logger logger = Logger.getLogger(CatalogModelImpl.class.getName());
     /** Creates a new instance of CatalogModelImpl */
     public CatalogModelImpl(Project myProject) throws IOException{
         assert(myProject != null);

@@ -64,7 +64,7 @@ public class CatalogModelTest extends TestCase {
     
     public void testDepResolver() throws URISyntaxException, CatalogModelException, IOException {
         
-        Logger logger = Utilities.getLogger();
+        Logger logger = Logger.getLogger(CatalogModelTest.class.getName());
         logger.setLevel(Level.ALL);
         StreamHandler sh = new MyHandler(System.out, new SimpleFormatter());
         sh.setLevel(logger.getLevel());
