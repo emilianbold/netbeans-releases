@@ -36,11 +36,14 @@ import org.netbeans.editor.*;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.editor.completion.CompletionImpl;
 import org.netbeans.modules.editor.completion.CompletionResultSetImpl;
+import org.netbeans.modules.editor.java.JavaCompletionItem;
+import org.netbeans.modules.editor.java.JavaCompletionItemProxy;
 import org.netbeans.modules.editor.java.JavaCompletionProvider;
 import org.netbeans.modules.editor.java.LazyTypeCompletionItem;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
+import org.netbeans.spi.editor.completion.LazyCompletionItem;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileUtil;
@@ -111,10 +114,10 @@ public class CompletionTest extends java.lang.Object {
         public ResultReadyResolver(CompletionResultSetImpl crs) {
             this.crs = crs;
         }
-
+        
         public Object getValue() {
             return crs.isFinished();
-        }                
+        }
     }
     
     private void completionQuery(PrintWriter  out,
@@ -126,19 +129,19 @@ public class CompletionTest extends java.lang.Object {
         BaseDocument doc = Utilities.getDocument(editor);
         SyntaxSupport support = doc.getSyntaxSupport();
         
-        CompletionImpl completion = CompletionImpl.get();            
+        CompletionImpl completion = CompletionImpl.get();
         String mimeType = (String) doc.getProperty("mimeType");
         Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
         Collection<? extends CompletionProvider> col = lookup.lookupAll(CompletionProvider.class);
         JavaCompletionProvider  jcp = null;
         for (Iterator<? extends CompletionProvider> it = col.iterator(); it.hasNext();) {
-            CompletionProvider completionProvider = it.next();        
+            CompletionProvider completionProvider = it.next();
             if(completionProvider instanceof JavaCompletionProvider) jcp = (JavaCompletionProvider) completionProvider;
         }
         if(jcp==null) log.println("JavaCompletionProvider not found");
-        CompletionTask task = jcp.createTask(queryType, editor);                                                        
-        CompletionResultSetImpl result =  completion.createTestResultSet(task,queryType);        
-        task.query(result.getResultSet());                
+        CompletionTask task = jcp.createTask(queryType, editor);
+        CompletionResultSetImpl result =  completion.createTestResultSet(task,queryType);
+        task.query(result.getResultSet());
         EditorTestCase.waitMaxMilisForValue(5000, new ResultReadyResolver(result), Boolean.TRUE);
         if(!result.isFinished()) log.println("Result is not finished");
         List<? extends  CompletionItem> list = result.getItems();
@@ -147,37 +150,36 @@ public class CompletionTest extends java.lang.Object {
             Arrays.sort(array, new Comparator<CompletionItem>(){
                 public int compare(CompletionItem arg0, CompletionItem arg1) {
                     Integer p1 = arg0.getSortPriority();
-                    Integer p2 = arg0.getSortPriority();
-                    if(p1.intValue()!=p2.intValue()) return p1.compareTo(p2);
-                    String a0 = arg0.getSortText().toString();
-                    String a1 = arg1.getSortText().toString();
+                    Integer p2 = arg1.getSortPriority();
+                    if(p1.intValue()!=p2.intValue()) return p1.compareTo(p2);                                        
+                    String a0 = getStringFromCharSequence(arg0.getSortText());
+                    String a1 = getStringFromCharSequence(arg1.getSortText());                    
                     return a0.compareTo(a1);
                 }
             });
         }
         for (int i = 0; i < array.length; i++) {
             CompletionItem completionItem = array[i];
-            out.println(completionItem.getSortText().toString());
-            
+             out.println(getStringFromCharSequence(completionItem.getSortText()));                                    
         }
         /*Completion completion = ExtUtilities.getCompletion(editor);
         if (completion != null) {
             CompletionQuery completionQuery = completion.getQuery();
             if (completionQuery != null) {
                 CompletionQuery.Result query = completionQuery.query(editor, editor.getCaret().getDot(), support);
-                
+         
                 if (query != null) {
                     List list = query.getData();
-                    
+         
                     if (list != null) {
-                        
+         
                         String[] texts = new String[list.size()];
                         for (int cntr = 0; cntr < list.size(); cntr++) {
                             texts[cntr] = list.get(cntr).toString();
                         };
                         if (sort)
                             Arrays.sort(texts);
-                        
+         
                         for (int cntr = 0; cntr < texts.length; cntr++) {
                             out.println(texts[cntr].toString());
                         };
@@ -199,6 +201,11 @@ public class CompletionTest extends java.lang.Object {
         }*/
     }
     
+    private String getStringFromCharSequence(CharSequence chs) {
+        int length = chs.length();
+        String text = chs.subSequence(0, length).toString();
+        return text;
+    }
     
     /**Currently, this method is supposed to be runned inside the AWT thread.
      * If this condition is not fullfilled, an IllegalStateException is
@@ -232,7 +239,7 @@ public class CompletionTest extends java.lang.Object {
             final String assign, final boolean unsorted,
             final File dataDir, final String projectName,
             final String testFileName, final int line) throws Exception {
-            test(out, log, assign, unsorted, dataDir, projectName, testFileName, line, CompletionProvider.COMPLETION_QUERY_TYPE);
+        test(out, log, assign, unsorted, dataDir, projectName, testFileName, line, CompletionProvider.COMPLETION_QUERY_TYPE);
     }
     
     public void test(final PrintWriter out, final PrintWriter log,

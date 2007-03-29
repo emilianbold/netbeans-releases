@@ -1,6 +1,6 @@
 CONST
-clone#00#()
 elements
+clone#00#()
 equals#01#(Object)
 finalize#00#()
 getClass#00#()

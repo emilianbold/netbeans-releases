@@ -5,14 +5,12 @@ CYAN
 DARK_GRAY
 GRAY
 GREEN
-HSBtoRGB#03#(float,float,float)
 LIGHT_GRAY
 MAGENTA
 OPAQUE
 ORANGE
 PINK
 RED
-RGBtoHSB#04#(int,int,int,float[])
 TRANSLUCENT
 WHITE
 YELLOW
@@ -20,11 +18,6 @@ black
 blue
 cyan
 darkGray
-decode#01#(String)
-getColor#01#(String)
-getColor#02#(String,Color)
-getColor#02#(String,int)
-getHSBColor#03#(float,float,float)
 gray
 green
 lightGray
@@ -34,3 +27,10 @@ pink
 red
 white
 yellow
+HSBtoRGB#03#(float,float,float)
+RGBtoHSB#04#(int,int,int,float[])
+decode#01#(String)
+getColor#01#(String)
+getColor#02#(String,Color)
+getColor#02#(String,int)
+getHSBColor#03#(float,float,float)
