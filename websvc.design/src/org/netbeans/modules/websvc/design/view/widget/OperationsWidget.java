@@ -127,14 +127,14 @@ public class OperationsWidget extends AbstractTitledWidget
         headerLabelWidget.setComment("("+noOfOperations+")");
     }
 
-    public void collapseWidget() {
+    protected void collapseWidget() {
         if(contentWidget.getParentWidget()!=null) {
             removeChild(contentWidget);
             repaint();
         }
     }
 
-    public void expandWidget() {
+    protected void expandWidget() {
         if(contentWidget.getParentWidget()==null) {
             addChild(contentWidget);
         }

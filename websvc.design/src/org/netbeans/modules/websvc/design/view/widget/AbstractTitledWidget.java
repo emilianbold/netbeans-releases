@@ -127,10 +127,10 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
         g.setPaint(oldPaint);
     }
     
-    public void collapseWidget() {
+    protected void collapseWidget() {
     }
     
-    public void expandWidget() {
+    protected void expandWidget() {
     }
     
     public Object hashKey() {

@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Image;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Output;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -30,7 +31,7 @@ import org.openide.util.Utilities;
 /**
  * @author Ajit Bhate
  */
-public class OutputWidget extends AbstractTitledWidget {
+public class OutputWidget extends AbstractTitledWidget implements TabWidget{
     
     private static final Color BORDER_COLOR = new Color(102,204,102);
     private static final int GAP = 16;
@@ -39,6 +40,7 @@ public class OutputWidget extends AbstractTitledWidget {
 
     private Output output;
     private transient ImageLabelWidget headerLabelWidget;
+    private transient Widget tabComponent;
 
     /** 
      * Creates a new instance of OperationWidget 
@@ -56,13 +58,31 @@ public class OutputWidget extends AbstractTitledWidget {
         getHeaderWidget().setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
         headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, output==null?
-                NbBundle.getMessage(OperationWidget.class, "LBL_OutputNone"): 
-                NbBundle.getMessage(OperationWidget.class, "LBL_Output", output.getName()), 
+                NbBundle.getMessage(OperationWidget.class, "LBL_ReturnTypeNone"): 
+                NbBundle.getMessage(OperationWidget.class, "LBL_ReturnType", output.getName()), 
                 null);
        getHeaderWidget().addChild(headerLabelWidget);
     }
 
     protected boolean isExpandable() {
         return false;
+    }
+
+    public String getTitle() {
+        return NbBundle.getMessage(OperationWidget.class, "LBL_Output");
+    }
+
+    public Image getIcon() {
+        return IMAGE;
+    }
+
+    public Widget getComponentWidget() {
+        if(tabComponent==null) {
+            tabComponent = new ImageLabelWidget(getScene(), IMAGE, output==null?
+                NbBundle.getMessage(OperationWidget.class, "LBL_ReturnTypeNone"): 
+                NbBundle.getMessage(OperationWidget.class, "LBL_ReturnType", output.getName()), 
+                null);
+        }
+        return tabComponent;
     }
 }

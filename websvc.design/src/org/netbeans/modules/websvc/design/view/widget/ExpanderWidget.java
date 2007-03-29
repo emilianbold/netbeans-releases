@@ -123,15 +123,6 @@ public class ExpanderWidget extends ButtonWidget {
     }
 
     /**
-     * Indicates if this expander is expanded or collapsed.
-     *
-     * @return  true if expanded, false if collapsed.
-     */
-    public boolean isExpanded() {
-        return expandable.isExpanded();
-    }
-
-    /**
      * Retrieve the former expanded state of the given expandable. If
      * the expandable state was not cached (or the cache has been cleaned
      * by the garbage collector), this method returns the value of the

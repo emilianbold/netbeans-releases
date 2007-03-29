@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Image;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -30,7 +31,7 @@ import org.openide.util.Utilities;
 /**
  * @author Ajit Bhate
  */
-public class FaultsWidget extends AbstractTitledWidget {
+public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
     
     private static final Color BORDER_COLOR = new Color(255,138,76);
     private static final int GAP = 16;
@@ -39,6 +40,7 @@ public class FaultsWidget extends AbstractTitledWidget {
 
     private Operation operation;
     private transient ImageLabelWidget headerLabelWidget;
+    private transient Widget tabComponent;
 
     /** 
      * Creates a new instance of OperationWidget 
@@ -65,5 +67,22 @@ public class FaultsWidget extends AbstractTitledWidget {
 
     protected boolean isExpandable() {
         return false;
+    }
+
+    public String getTitle() {
+        return NbBundle.getMessage(OperationWidget.class, "LBL_Faults");
+    }
+
+    public Image getIcon() {
+        return IMAGE;
+    }
+
+    public Widget getComponentWidget() {
+        if(tabComponent==null) {
+            tabComponent = new ImageLabelWidget(getScene(), IMAGE, 
+                NbBundle.getMessage(OperationWidget.class, "LBL_Faults"), 
+                "To be implemented");
+        }
+        return tabComponent;
     }
 }

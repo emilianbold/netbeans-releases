@@ -27,14 +27,13 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.model.Part;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
-Opeit Bhate
+ * @author Ajit Bhate
  */
-public class ParametersWidget extends AbstractTitledWidget {
+public class ParametersWidget extends AbstractTitledWidget implements TabWidget {
     
     private static final Color BORDER_COLOR = new Color(128,128,255);
     private static final int GAP = 16;
@@ -49,6 +48,8 @@ public class ParametersWidget extends AbstractTitledWidget {
 
     private transient TableModel model;
     private transient TableWidget parameterTable;
+    
+    private transient Widget tabComponent;
     
     /** 
      * Creates a new instance of OperationWidget 
@@ -71,11 +72,6 @@ public class ParametersWidget extends AbstractTitledWidget {
         Message message = null;
         if(input!=null && input.getMessage()!=null && ((message=input.getMessage().get())!=null)) {
             noOfParams = message.getParts().size();
-//            for(Part part:message.getParts()) {
-//                String parameter = (part.getElement()!=null?""+part.getElement().getQName():
-//                    part.getType()!=null?""+part.getType().getQName():"");
-//                contentWidget.addChild(new LabelWidget(getScene(),parameter));
-//            }
             model = new ParametersTableModel(input);
             parameterTable = new TableWidget(getScene(),model);
             contentWidget.addChild(parameterTable);
@@ -103,14 +99,14 @@ public class ParametersWidget extends AbstractTitledWidget {
         }
     }
 
-    public void collapseWidget() {
+    protected void collapseWidget() {
         if(contentWidget.getParentWidget()!=null) {
             removeChild(contentWidget);
             repaint();
         }
     }
 
-    public void expandWidget() {
+    protected void expandWidget() {
         if(contentWidget.getParentWidget()==null) {
             addChild(contentWidget);
         }
@@ -120,5 +116,18 @@ public class ParametersWidget extends AbstractTitledWidget {
         return input==null?null:input.getName()+"_Parameters";
     }
     
+    public String getTitle() {
+        return NbBundle.getMessage(OperationWidget.class, "LBL_Input");
+    }
 
+    public Image getIcon() {
+        return IMAGE;
+    }
+
+    public Widget getComponentWidget() {
+        if(tabComponent==null) {
+            tabComponent = new TableWidget(getScene(),model); 
+        }
+        return tabComponent;
+    }
 }

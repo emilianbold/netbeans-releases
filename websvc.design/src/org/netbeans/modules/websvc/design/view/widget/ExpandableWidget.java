@@ -45,22 +45,6 @@ public interface ExpandableWidget {
     boolean isExpanded();
 
     /**
-     * Perform whatever steps are necessary to collapse this expandable
-     * widget. This may remove child widgets, or animate the preferred
-     * bounds of the widget, using the provided expander.
-     *
-     */
-    void collapseWidget();
-
-    /**
-     * Perform whatever steps are necessary to expand this expandable
-     * widget. This may add child widgets, or animate the preferred
-     * bounds of the widget, using the provided expander.
-     *
-     */
-    void expandWidget();
-
-    /**
      * Returns the object that can be used as a hashtable key. This is
      * utilized in the ExpanderWidget for preserving the expanded state
      * of widgets in the event that they are recreated, as in the case
