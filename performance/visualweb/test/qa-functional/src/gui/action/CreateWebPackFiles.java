@@ -31,6 +31,7 @@ import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -67,7 +68,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new CreateWebPackFiles("testCreateJSPPage","Create JSP Page"));
         suite.addTest(new CreateWebPackFiles("testCreateJSPFragment","Create JSP fragment"));
-        //suite.addTest(new CreateWebPackFiles("testCreateCSSTable","Create CSS Table"));
+        suite.addTest(new CreateWebPackFiles("testCreateCSSTable","Create CSS Table"));
         return suite;
     }  
     
@@ -97,18 +98,18 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
 	doMeasurement();
     }
     
-//    public void testCreateCSSTable(){
-//        expectedTime = 1000;
-//        WAIT_AFTER_OPEN=5000;
-//	docname = "CSSTable"; //NOI18N
-//        doccategory = "XML"; //NOI18N
-//        doctype = "Cascading Style Sheet"; //NOI18N
-//	docfolder = "web" + java.io.File.separatorChar + "resources"; // NOI18N
-//	suffix = ".css";
-//        index = 1;
-//        projectfolder = VWPUtilities.WEB_PAGES+"|"+"resources"; // NOI18N
-//	doMeasurement();
-//    }
+    public void testCreateCSSTable(){
+        expectedTime = 1000;
+        WAIT_AFTER_OPEN=5000;
+	docname = "CSSTable"; //NOI18N
+        doccategory = "XML"; //NOI18N
+        doctype = "Cascading Style Sheet"; //NOI18N
+	docfolder = "web" + java.io.File.separatorChar + "resources"; // NOI18N
+	suffix = ".css";
+        index = 1;
+        projectfolder = VWPUtilities.WEB_PAGES+"|"+"resources"; // NOI18N
+	doMeasurement();
+    }
     
     public ComponentOperator open(){
         log("::open::");
@@ -133,6 +134,10 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         log("::prepare::");
 
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
+        
+        // create exactly (full match) and case sensitively comparing comparator
+        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
+        wizard.lstFileTypes().setComparator(comparator);
         
         wizard.selectCategory(doccategory);
         wizard.selectFileType(doctype);
