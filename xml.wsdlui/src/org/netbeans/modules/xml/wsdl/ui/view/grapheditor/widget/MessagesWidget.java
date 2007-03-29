@@ -100,6 +100,7 @@ public class MessagesWidget extends Widget implements
         stubWidget = new StubWidget(scene, NbBundle.getMessage(
                 MessagesWidget.class, 
                 "LBL_MessagesWidget_ThereAreNoMessages"));
+        stubWidget.setMinimumSize(new Dimension(WidgetConstants.MESSAGE_MINIMUM_WIDTH, 0));
         
         addMessageButton = new ButtonWidget(scene, NbBundle.getMessage(
                 MessagesWidget.class,
@@ -120,7 +121,8 @@ public class MessagesWidget extends Widget implements
         headerWidget.addChild(buttons);
         
         messageHitPoint = new MessageHitPointWidget(scene);
-
+        messageHitPoint.setMinimumSize(new Dimension(WidgetConstants.MESSAGE_MINIMUM_WIDTH, 25));
+        
         contentWidget = new Widget(scene);
         contentWidget.setLayout(LayoutFactory.createVerticalLayout(
                 SerialAlignment.JUSTIFY, WidgetConstants.GAP_BETWEEN_CHILD_WIDGETS));
@@ -203,8 +205,6 @@ public class MessagesWidget extends Widget implements
     
     
     public boolean dragOver(Point scenePoint, WidgetDropTargetDragEvent event) {
-        if (isCollapsed()) return false;
-        
         try {
             Transferable t = event.getTransferable();
             if (t != null) {
@@ -235,8 +235,6 @@ public class MessagesWidget extends Widget implements
     
     
     public boolean drop(Point scenePoint, WidgetDropTargetDropEvent event) {
-        if (isCollapsed()) return false;
-        
         int index = messageHitPointIndex;
         
         hideHitPoint();
@@ -295,7 +293,7 @@ public class MessagesWidget extends Widget implements
     
     
     public boolean isCollapsed() {
-        return contentWidget.isVisible();
+        return !contentWidget.isVisible();
     }
     
     public void expandForDragAndDrop() {

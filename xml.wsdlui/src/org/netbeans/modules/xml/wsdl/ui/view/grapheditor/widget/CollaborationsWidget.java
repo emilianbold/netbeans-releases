@@ -100,10 +100,11 @@ public class CollaborationsWidget extends Widget
         super(scene);
         mModel = model;
         partnerLinkTypeHitPoint = new PartnerLinkTypeHitPointWidget(scene);
+        partnerLinkTypeHitPoint.setMinimumSize(new Dimension(WidgetConstants.PARTNERLLINKTYPE_MINIMUM_WIDTH, 0));
         stubWidget = new StubWidget(scene, NbBundle.getMessage(
                 CollaborationsWidget.class, 
                 "LBL_CollaborationsWidget_ThereAreNoPartnerLinkTypes"));
-
+        stubWidget.setMinimumSize(new Dimension(WidgetConstants.PARTNERLLINKTYPE_MINIMUM_WIDTH, 0));
         setOpaque(true);
         setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.CENTER, WidgetConstants.GAP_BETWEEN_HEADER_AND_CONTENT));
         setBorder(new EmptyBorder(20, 20, 40, 20));
@@ -293,7 +294,7 @@ public class CollaborationsWidget extends Widget
         return false;
     }
 
-    public boolean drop(Point scenePoint, WidgetDropTargetDropEvent event) {
+    public boolean drop(Point scenePoint, WidgetDropTargetDropEvent event) {      
         Node node = (Node) draggedObject;
         int index = partnerLinkTypesHitPointIndex;
         hideHitPoint();
@@ -333,7 +334,7 @@ public class CollaborationsWidget extends Widget
     }
 
     public boolean isCollapsed() {
-        return mCollaborationContentWidget.isVisible();
+        return !mCollaborationContentWidget.isVisible();
     }
     
     
