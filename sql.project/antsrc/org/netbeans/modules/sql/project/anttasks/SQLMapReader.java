@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.sql.project.anttasks;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,8 +52,8 @@ public class SQLMapReader {
 	public static List parse(String sqlmapfile) throws Exception {
 
 		List etlmapEntryList = new ArrayList();
-
-		Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(sqlmapfile);
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		Document doc = factory.newDocumentBuilder().parse(sqlmapfile);
 		Element elem = doc.getDocumentElement();
 		NodeList etlmaps = elem.getElementsByTagName(SQLMapEntry.SQLMAP_TAG);
 
@@ -74,6 +75,36 @@ public class SQLMapReader {
 		return etlmapEntryList;
 
 	}
+
+	public static List parse(String sqlmapfile,String mbuildDir) throws Exception {
+
+		List etlmapEntryList = new ArrayList();
+		
+		//Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(sqlmapfile);
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		Document doc = factory.newDocumentBuilder().parse(new File(mbuildDir, sqlmapfile));
+		Element elem = doc.getDocumentElement();
+		NodeList etlmaps = elem.getElementsByTagName(SQLMapEntry.SQLMAP_TAG);
+
+		for (int i = 0; i < etlmaps.getLength(); i++) {
+			Node n = etlmaps.item(i);
+			NamedNodeMap attrMap = n.getAttributes();
+			String partnerlink = attrMap.getNamedItem(SQLMapEntry.PARTNERLINK_TAG).getNodeValue();
+			String portType = attrMap.getNamedItem(SQLMapEntry.PORTTYPE_TAG).getNodeValue();
+			String operation = attrMap.getNamedItem(SQLMapEntry.OPERATION_TAG).getNodeValue();
+			String sqlfile = attrMap.getNamedItem(SQLMapEntry.SQL_FILE_TAG).getNodeValue();
+            String wsdlfile = attrMap.getNamedItem(SQLMapEntry.WSDL_FILE_TAG).getNodeValue();
+			String type = attrMap.getNamedItem(SQLMapEntry.TYPE_TAG).getNodeValue();
+
+			SQLMapEntry e = new SQLMapEntry(partnerlink, portType, operation, sqlfile, wsdlfile, type);
+			etlmapEntryList.add(e);
+
+		}
+
+		return etlmapEntryList;
+
+	}
+
 	
 	public static void main(String[] args) {
 		try {

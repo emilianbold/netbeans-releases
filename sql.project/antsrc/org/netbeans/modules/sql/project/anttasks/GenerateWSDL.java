@@ -179,7 +179,7 @@ public class GenerateWSDL extends Task {
                                                 new File(mBuildDirectoryLocation).getCanonicalPath());
             sqlw.writeMap();
             JBIFileWriter fw = new JBIFileWriter(mBuildDirectoryLocation + "/META-INF/jbi.xml",
-                    mBuildDirectoryLocation + "/sqlmap.xml");
+                    mBuildDirectoryLocation + "/sqlmap.xml",mBuildDirectoryLocation);
             fw.writeJBI();
 
         } catch (Exception e) {

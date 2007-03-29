@@ -34,7 +34,8 @@ public class JBIFileWriter {
 	private String mJbiDescriptorFile;
 
 	private String sqlMapFile;
-
+	
+	private String mbuildDir;
 	// keyed by prefix
 	private Map prefixTable = new HashMap();
 
@@ -43,16 +44,21 @@ public class JBIFileWriter {
 
 	private FileOutputStream fos = null;
 
+	public JBIFileWriter(String mJbiDescriptorFile, String sqlMapFile, String mBuildDir) {
+		this.mJbiDescriptorFile = mJbiDescriptorFile;
+		this.sqlMapFile = sqlMapFile;
+		this.mbuildDir=mBuildDir;
+	}
+	
 	public JBIFileWriter(String mJbiDescriptorFile, String sqlMapFile) {
 		this.mJbiDescriptorFile = mJbiDescriptorFile;
 		this.sqlMapFile = sqlMapFile;
 	}
-
 	public void writeJBI() {
 
 		List sqlEntryList = null;
 		try {
-			sqlEntryList = SQLMapReader.parse(sqlMapFile);
+			sqlEntryList = SQLMapReader.parse("sqlmap.xml",mbuildDir);
 			populatePrefixAndNamespaceTable(sqlEntryList);
 			generateJBI(sqlEntryList);
 		} catch (Exception e1) {
@@ -194,7 +200,7 @@ public class JBIFileWriter {
 	}
 
 	public static void main(String[] args) {
-		JBIFileWriter fw = new JBIFileWriter("test/jbi.xml", "test/sqlmap.xml");
+		JBIFileWriter fw = new JBIFileWriter("test/jbi.xml", "test/sqlmap.xml","");
 		fw.writeJBI();
 
 	}
