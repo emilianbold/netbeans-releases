@@ -535,27 +535,28 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 DataObject dob = (DataObject) node.getCookie(DataObject.class);
                 if (dob!=null) {
                     fobs[i] = dob.getPrimaryFile();
-                    RetoucheUtils.isJavaFile(fobs[i]);
-                    JavaSource source = JavaSource.forFileObject(fobs[i]);
-                    assert source != null;
-                    try {
-                        source.runUserActionTask(new CancellableTask<CompilationController>() {
-                            public void cancel() {
-                            }
-                            
-                            public void run(CompilationController info) throws Exception {
-                                info.toPhase(Phase.ELEMENTS_RESOLVED);
-                                CompilationUnitTree unit = info.getCompilationUnit();
-                                TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit, unit.getTypeDecls().get(0)),info);
-                                handles.add(representedObject);
-                                cinfo=new WeakReference<CompilationInfo>(info);
-                            }
-                            
-                        }, false);
-                    } catch (IllegalArgumentException ex) {
-                        ex.printStackTrace();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+                    if (RetoucheUtils.isJavaFile(fobs[i])) {
+                        JavaSource source = JavaSource.forFileObject(fobs[i]);
+                        assert source != null;
+                        try {
+                            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                                public void cancel() {
+                                }
+                                
+                                public void run(CompilationController info) throws Exception {
+                                    info.toPhase(Phase.ELEMENTS_RESOLVED);
+                                    CompilationUnitTree unit = info.getCompilationUnit();
+                                    TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit, unit.getTypeDecls().get(0)),info);
+                                    handles.add(representedObject);
+                                    cinfo=new WeakReference<CompilationInfo>(info);
+                                }
+                                
+                            }, false);
+                        } catch (IllegalArgumentException ex) {
+                            ex.printStackTrace();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
                     }
                     
                     pkg[i++] = node.getLookup().lookup(NonRecursiveFolder.class);
