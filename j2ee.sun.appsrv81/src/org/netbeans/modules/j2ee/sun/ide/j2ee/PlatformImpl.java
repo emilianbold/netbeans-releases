@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,6 +83,15 @@ public class PlatformImpl extends J2eePlatformImpl {
     // wsit jars
     private static final String WEBSERVICES_RT_JAR = "lib/webservices-rt.jar"; //NOI18N
     private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N
+    
+    public static final String[] SWDP_JARS = new String[] {
+            "lib/addons/restbeans-api.jar",
+            "lib/addons/restbeans-impl.jar",
+            "lib/addons/wadl2java.jar",
+            "lib/addons/localizer.jar",
+            "lib/addons/rome-0.9.jar",
+            "lib/addons/jdom-1.0.jar"
+    };
     
     private static final String[] TRUSTSTORE_LOCATION = new String[] {
         "config/cacerts.jks"  //NOI18N
@@ -281,11 +291,32 @@ public class PlatformImpl extends J2eePlatformImpl {
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, sources);
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, javadoc);
                 libs.add(lib);
+                
+                l = getSwdpJarURLs();
+                if (l != null) {
+                    lib = lp.createLibrary();
+                    lib.setName(NbBundle.getMessage(PlatformImpl.class, "swdp")); // NOI18N
+                    lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
+                    libs.add(lib);
+                }
             } catch(IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
         libraries = (LibraryImplementation[])libs.toArray(new LibraryImplementation[libs.size()]);
+    }
+    
+    private List<URL> getSwdpJarURLs() throws MalformedURLException {
+        ArrayList<URL> ret = new ArrayList<URL>();
+        for (String jarName : SWDP_JARS) {
+            File jarFile = new File(root, jarName);
+            if (jarFile.isFile()) {
+                ret.add(fileToUrl(jarFile));
+            } else {
+                return null;
+            }
+        }
+        return ret;
     }
     
     /**
