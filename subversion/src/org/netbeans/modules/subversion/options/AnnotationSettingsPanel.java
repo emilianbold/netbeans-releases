@@ -27,6 +27,7 @@ public class AnnotationSettingsPanel extends javax.swing.JPanel {
     /** Creates new form AnnotationSettingsPanel */
     public AnnotationSettingsPanel() {
         initComponents();
+        initModel();
     }
     
     /** This method is called from within the constructor to
@@ -37,19 +38,9 @@ public class AnnotationSettingsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel3 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-
         resetButton.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.resetButton.text")); // NOI18N
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.jLabel3.text")); // NOI18N
-
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.jLabel2.text")); // NOI18N
-
-        annotationTextField.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.annotationTextField.text")); // NOI18N
-
-        labelsButton.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.labelsButton.text")); // NOI18N
+        tableLabel.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.tableLabel.text")); // NOI18N
 
         upButton.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.upButton.text")); // NOI18N
 
@@ -59,28 +50,15 @@ public class AnnotationSettingsPanel extends javax.swing.JPanel {
 
         removeButton.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.removeButton.text")); // NOI18N
 
-        jScrollPane1.setBackground(new java.awt.Color(255, 255, 255));
-
-        expresionsTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {".*/(branches|tags)/(.+?)/.*", "\\2"}
-            },
-            new String [] {
-                "Repository Url Pattern", "Folder Name"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
-        jScrollPane1.setViewportView(expresionsTable);
+        expressionsPane.setBackground(new java.awt.Color(255, 255, 255));
+        expressionsPane.setViewportView(expresionsTable);
 
         warningLabel.setForeground(new java.awt.Color(255, 0, 0));
         warningLabel.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.warningLabel.text")); // NOI18N
+
+        wizardButton.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.wizardButton.text")); // NOI18N
+
+        editButton.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.editButton.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -91,51 +69,44 @@ public class AnnotationSettingsPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)
+                            .add(expressionsPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
-                                .add(jLabel3)
-                                .add(270, 270, 270))
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(annotationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)))
+                                .add(tableLabel)
+                                .add(270, 270, 270)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(labelsButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(upButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(downButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(newButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(upButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
+                            .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
+                            .add(editButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 141, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(wizardButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 141, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(newButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
+                            .add(downButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(resetButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(warningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)))
+                        .add(warningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(tableLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel2)
-                            .add(annotationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel3)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(labelsButton)
-                        .add(27, 27, 27)
-                        .add(upButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(downButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 26, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(newButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeButton)))
+                        .add(wizardButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(editButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(removeButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 30, Short.MAX_VALUE)
+                        .add(upButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(downButton))
+                    .add(expressionsPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE))
                 .add(6, 6, 6)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(resetButton)
@@ -144,20 +115,37 @@ public class AnnotationSettingsPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     
-    
+    private void initModel() {
+        expresionsTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {"", ""}
+            },
+            new String [] {
+                org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.expresionsTable.column1.name"),
+                org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.expresionsTable.column2.name")
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });        
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JTextField annotationTextField = new javax.swing.JTextField();
     final javax.swing.JButton downButton = new javax.swing.JButton();
+    final javax.swing.JButton editButton = new javax.swing.JButton();
     final javax.swing.JTable expresionsTable = new javax.swing.JTable();
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JScrollPane jScrollPane1;
-    final javax.swing.JButton labelsButton = new javax.swing.JButton();
+    final javax.swing.JScrollPane expressionsPane = new javax.swing.JScrollPane();
     final javax.swing.JButton newButton = new javax.swing.JButton();
     final javax.swing.JButton removeButton = new javax.swing.JButton();
     final javax.swing.JButton resetButton = new javax.swing.JButton();
+    final javax.swing.JLabel tableLabel = new javax.swing.JLabel();
     final javax.swing.JButton upButton = new javax.swing.JButton();
     final javax.swing.JLabel warningLabel = new javax.swing.JLabel();
+    final javax.swing.JButton wizardButton = new javax.swing.JButton();
     // End of variables declaration//GEN-END:variables
     
 }

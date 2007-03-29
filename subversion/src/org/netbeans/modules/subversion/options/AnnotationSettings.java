@@ -26,13 +26,18 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import org.netbeans.modules.subversion.Annotator;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentListener;
+import org.netbeans.modules.subversion.ui.wizards.URLPatternWizard;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -42,35 +47,56 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class AnnotationSettings implements ActionListener, TableModelListener {
+public class AnnotationSettings implements ActionListener, TableModelListener, ListSelectionListener {
     
     private final AnnotationSettingsPanel panel; 
     private DialogDescriptor dialogDescriptor;
     private boolean valid;
     
     public AnnotationSettings() {
-        panel = new AnnotationSettingsPanel();
-                
-        String tooltip = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettingsPanel.annotationTextField.toolTipText", Annotator.LABELS);               
-        panel.annotationTextField.setToolTipText(tooltip);        
         
-        panel.labelsButton.addActionListener(this); 
+        panel = new AnnotationSettingsPanel();
+        getModel().addTableModelListener(this); 
+        getSelectionModel().addListSelectionListener(this);         
+        panel.upButton.setEnabled(false);
+        panel.downButton.setEnabled(false);            
+        panel.removeButton.setEnabled(false);                    
+        panel.editButton.setEnabled(false);                                    
+        
         panel.upButton.addActionListener(this); 
         panel.downButton.addActionListener(this); 
         panel.newButton.addActionListener(this); 
         panel.removeButton.addActionListener(this); 
+        panel.editButton.addActionListener(this); 
         panel.resetButton.addActionListener(this); 
-        
-        panel.warningLabel.setVisible(false);
-        
-        getModel().addTableModelListener(this); 
+        panel.wizardButton.addActionListener(this);     
+            
+        panel.warningLabel.setVisible(false);        
     }
- 
+
+    private void setValid(boolean valid) {
+        if(!valid) {
+            panel.warningLabel.setText(NbBundle.getMessage(AnnotationSettings.class, "MSG_MissingFolderVariable"));
+        }        
+        panel.warningLabel.setVisible(!valid);
+        panel.upButton.setVisible(valid);
+        panel.downButton.setVisible(valid);
+        panel.newButton.setVisible(valid);
+        panel.removeButton.setVisible(valid);
+        panel.editButton.setVisible(valid);
+        panel.resetButton.setVisible(valid);
+        panel.wizardButton.setVisible(valid);            
+        panel.expresionsTable.setVisible(valid);      
+        panel.expressionsPane.setVisible(valid);      
+        panel.tableLabel.setVisible(valid);      
+    }
+    
     JPanel getPanel() {
         return panel;
     }
         
-    void show() {
+    void show(boolean valid) {
+        setValid(valid);
         
         String title = NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageLabels");
         String accesibleDescription = NbBundle.getMessage(SvnOptionsController.class, "ACSD_ManageLabels");
@@ -89,12 +115,10 @@ public class AnnotationSettings implements ActionListener, TableModelListener {
     }
     
     void update() {
-        reset(SvnModuleConfig.getDefault().getAnnotationFormat(), SvnModuleConfig.getDefault().getAnnotationExpresions());
+        reset(SvnModuleConfig.getDefault().getAnnotationExpresions());
     }
 
-    void applyChanges() {
-        SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());                                     
-        
+    void applyChanges() {                                 
         TableModel model = panel.expresionsTable.getModel();
         List<AnnotationExpression> exps = new ArrayList<AnnotationExpression>(model.getRowCount());        
         for (int r = 0; r < model.getRowCount(); r++) {
@@ -109,9 +133,7 @@ public class AnnotationSettings implements ActionListener, TableModelListener {
     }    
     
     public void actionPerformed(ActionEvent evt) {
-        if (evt.getSource() == panel.labelsButton) {
-            onLabelsClick();
-        } else if (evt.getSource() == panel.upButton) {
+        if (evt.getSource() == panel.upButton) {
             onUpClick();
         } else if (evt.getSource() == panel.downButton) {
             onDownClick();
@@ -119,9 +141,13 @@ public class AnnotationSettings implements ActionListener, TableModelListener {
             onNewClick();
         } else  if (evt.getSource() == panel.removeButton) {
             onRemoveClick();
+        } else if (evt.getSource() == panel.editButton) {
+            onEditClick();
         } else if (evt.getSource() == panel.resetButton) {
             onResetClick();
-        }
+        } else if (evt.getSource() == panel.wizardButton) {
+            onWizardClick();
+        } 
     }   
     
     private void onUpClick() {
@@ -147,13 +173,22 @@ public class AnnotationSettings implements ActionListener, TableModelListener {
     }
     
     private void onNewClick() {
-         int r = getSelectionModel().getMinSelectionIndex();    
-         if(r < 0) {
-             getModel().addRow(      new String[] {"", ""});
-         } else {
-             getModel().insertRow(r, new String[] {"", ""});
-         }
+        EditAnnotationPanel editPanel = new EditAnnotationPanel();  
+        String title = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.new.title");        
+        if(showEdit(editPanel, title)) {
+            addRow(editPanel.patternTextField.getText(), 
+                   editPanel.folderTextField.getText());                        
+        }                        
     }    
+    
+    private void addRow(String pattern, String folder) {
+        int r = getSelectionModel().getMinSelectionIndex();
+        if(r < 0) {
+            getModel().addRow(      new String[] {pattern, folder});
+        } else {
+            getModel().insertRow(r, new String[] {pattern, folder});
+        }
+    }
     
     private void onRemoveClick() {        
         ListSelectionModel selectionModel = getSelectionModel();
@@ -169,13 +204,44 @@ public class AnnotationSettings implements ActionListener, TableModelListener {
             selectionModel.setSelectionInterval(r, r);    
         }
     }
+
+    private void onEditClick() {
+        ListSelectionModel selectionModel = getSelectionModel();
+        int r = selectionModel.getMinSelectionIndex();        
+        if(r < 0) return;
+
+        String pattern = (String) getModel().getValueAt(r, 0);
+        String folder  = (String) getModel().getValueAt(r, 1);      
+
+        EditAnnotationPanel editPanel = new EditAnnotationPanel();
+        if(pattern != null) editPanel.patternTextField.setText(pattern);
+        if(folder  != null) editPanel.folderTextField.setText(folder);
         
-    private void onResetClick() {
-        reset(SvnModuleConfig.getDefault().getDefaultAnnotationFormat(), SvnModuleConfig.getDefault().getDefaultAnnotationExpresions());               
+        String title = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.edit.title");        
+        if(showEdit(editPanel, title)) {
+            getModel().setValueAt(editPanel.patternTextField.getText(), r, 0);
+            getModel().setValueAt(editPanel.folderTextField.getText(),  r, 1);                        
+        }
     }
     
-    private void reset(String annotationformat, List<AnnotationExpression> exps) {
-        panel.annotationTextField.setText(annotationformat);        
+    private void onResetClick() {  
+        reset(SvnModuleConfig.getDefault().getDefaultAnnotationExpresions());               
+    }
+    
+    private void onWizardClick() {  
+        URLPatternWizard wizard = new URLPatternWizard();
+        if (!wizard.show()) return;
+        String pattern = wizard.getPattern();
+        String folder;
+        if(wizard.useName()) {
+            folder = wizard.getRepositoryFolder();
+        } else {
+            folder = "\\1";
+        }        
+        addRow(pattern, folder);    
+    } 
+    
+    private void reset(List<AnnotationExpression> exps) {  
                 
         getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         DefaultTableModel model = getModel();
@@ -190,55 +256,13 @@ public class AnnotationSettings implements ActionListener, TableModelListener {
         }        
     }
     
-    private DefaultTableModel getModel() {
+    private DefaultTableModel getModel() {              
         return (DefaultTableModel) panel.expresionsTable.getModel();
     }
 
     private ListSelectionModel getSelectionModel() {
-        return panel.expresionsTable.getSelectionModel();
-    }
-    
-    private void onLabelsClick() {
-        LabelsPanel labelsPanel = new LabelsPanel();
-        List<LabelVariable> variables = new ArrayList<LabelVariable>(Annotator.LABELS.length);
-        for (int i = 0; i < Annotator.LABELS.length; i++) {   
-            LabelVariable variable = new LabelVariable(
-                    Annotator.LABELS[i], 
-                    "{" + Annotator.LABELS[i] + "} - " + NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.label." + Annotator.LABELS[i])
-            );
-            variables.add(variable);   
-        }       
-        labelsPanel.labelsList.setListData(variables.toArray(new LabelVariable[variables.size()]));        
-        
-        String title = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.labelVariables.title");
-        String acsd = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.labelVariables.acsd");
-        
-        if(showDialog(labelsPanel, title, acsd)) {
-            
-            Object[] selection = (Object[])labelsPanel.labelsList.getSelectedValues();
-            
-            String variable = "";
-            for (int i = 0; i < selection.length; i++) {
-                variable += "{" + ((LabelVariable)selection[i]).getVariable() + "}";
-            }
-
-            String annotation = panel.annotationTextField.getText();
-
-            int pos = panel.annotationTextField.getCaretPosition();
-            if(pos < 0) pos = annotation.length();
-
-            StringBuffer sb = new StringBuffer(annotation.length() + variable.length());
-            sb.append(annotation.substring(0, pos));
-            sb.append(variable);
-            if(pos < annotation.length()) {
-                sb.append(annotation.substring(pos, annotation.length()));
-            }
-            panel.annotationTextField.setText(sb.toString());
-            panel.annotationTextField.requestFocus();
-            panel.annotationTextField.setCaretPosition(pos + variable.length());            
-            
-        }        
-    }
+        return panel.expresionsTable.getSelectionModel();        
+    }    
 
     public void tableChanged(TableModelEvent evt) {
         if (evt.getType() == TableModelEvent.UPDATE) {
@@ -254,12 +278,12 @@ public class AnnotationSettings implements ActionListener, TableModelListener {
         
         valid = true;     
         String pattern = (String) getModel().getValueAt(r, c);
-        try {
+        try {                                    
             Pattern.compile(pattern);                                                       
         } catch (Exception e) {
             valid = false;
-        }
-        
+        }       
+            
         if(valid) {
             panel.warningLabel.setVisible(false);                
         } else {
@@ -271,39 +295,45 @@ public class AnnotationSettings implements ActionListener, TableModelListener {
             dialogDescriptor.setValid(valid);
         }
     }
-    
-    private boolean showDialog(JPanel panel, String title, String accesibleDescription) {
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
-        dialogDescriptor.setModal(true);
-        dialogDescriptor.setValid(true);
-        
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-        dialog.getAccessibleContext().setAccessibleDescription(accesibleDescription);
-        dialog.setVisible(true);
-        
-        return DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue());
-    }    
 
-    
-    private class LabelVariable {
-        private String description;
-        private String variable;
-         
-        public LabelVariable(String variable, String description) {
-            this.description = description;
-            this.variable = variable;
-        }
-         
-        public String toString() {
-            return description;
-        }
-        
-        public String getDescription() {
-            return description;
-        }
-        
-        public String getVariable() {
-            return variable;
-        }
+    public void valueChanged(ListSelectionEvent evt) {
+        ListSelectionModel selectionModel = getSelectionModel();
+        int r = selectionModel.getMinSelectionIndex();        
+        panel.upButton.setEnabled(r > 0);
+        panel.downButton.setEnabled(r > -1 && r < getModel().getRowCount() - 1);            
+        panel.removeButton.setEnabled(r > -1);                    
+        panel.editButton.setEnabled(r > -1);                    
     }
+
+    private boolean showEdit(final EditAnnotationPanel editPanel, String title) {                                        
+        final DialogDescriptor dd = new DialogDescriptor(editPanel, title);
+        dd.setModal(true);        
+        dd.setValid(isValid(editPanel));
+        DocumentListener dl = new DocumentListener() {
+            public void insertUpdate(DocumentEvent arg0) {                
+                validate();
+            }
+            public void removeUpdate(DocumentEvent arg0) {
+                validate();                
+            }
+            public void changedUpdate(DocumentEvent arg0) {
+                validate();                
+            }   
+            private void validate() {
+                dd.setValid(isValid(editPanel));
+            }
+        };
+        editPanel.patternTextField.getDocument().addDocumentListener(dl);
+        editPanel.folderTextField.getDocument().addDocumentListener(dl);         
+        
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);             
+        dialog.setVisible(true);        
+        return dd.getValue() == dd.OK_OPTION;        
+    }            
+    
+    private boolean isValid(EditAnnotationPanel editPanel) {
+        return !( editPanel.patternTextField.getText().trim().equals("") ||
+                  editPanel.folderTextField.getText().trim().equals(""));
+    }
+            
 }

@@ -18,16 +18,25 @@
  */
 package org.netbeans.modules.subversion.options;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.subversion.Annotator;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -40,10 +49,9 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     private final SvnOptionsPanel panel;
     private final Repository repository;
-    private final AnnotationSettings annotationSettings;
-    
-    public SvnOptionsController() {
-        panel = new SvnOptionsPanel();
+    private final AnnotationSettings annotationSettings;            
+        
+    public SvnOptionsController() {        
         
         int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_REMOVE;
         String title = org.openide.util.NbBundle.getMessage(SvnOptionsController.class, "CTL_Repository_Location");
@@ -51,29 +59,33 @@ public final class SvnOptionsController extends OptionsPanelController implement
         
         annotationSettings = new AnnotationSettings();
         
+        panel = new SvnOptionsPanel();
         panel.browseButton.addActionListener(this);
         panel.manageConnSettingsButton.addActionListener(this);
         panel.manageLabelsButton.addActionListener(this);
         
+        String tooltip = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettingsPanel.annotationTextField.toolTipText", Annotator.LABELS);               
+        panel.annotationTextField.setToolTipText(tooltip);                
+        panel.addButton.addActionListener(this);         
     }
     
     public void update() {
         
         panel.executablePathTextField.setText(SvnModuleConfig.getDefault().getExecutableBinaryPath());
-        
+        panel.annotationTextField.setText(SvnModuleConfig.getDefault().getDefaultAnnotationFormat());                   
+                      
         annotationSettings.update();
         repository.refreshUrlHistory();
         
     }
     
     public void applyChanges() {
-        
+                                 
         // executable
-        SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());
-        // XXX only if value changed?
-        // Subversion.setupSvnClientFactory(); this won't work anyway because the svnclientadapter doesn't allow more setups per client!
+        SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());                
+        SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());            
         
-        // labels
+        // {folder} variable setting
         annotationSettings.applyChanges();
         Subversion.getInstance().getAnnotator().refresh();
         Subversion.getInstance().refreshAllAnnotations();
@@ -117,6 +129,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
             onManageConnClick();
         } else if(evt.getSource() == panel.manageLabelsButton) {
             onManageLabelsClick();
+        } else if (evt.getSource() == panel.addButton) {
+            onAddClick();
         }
     }
     
@@ -159,7 +173,89 @@ public final class SvnOptionsController extends OptionsPanelController implement
         }
     }
     
-    private void onManageLabelsClick() {
-        annotationSettings.show();                
+    private void onManageLabelsClick() {     
+        String labelFormat = panel.annotationTextField.getText().replaceAll(" ", "");        
+        annotationSettings.show(labelFormat != null && labelFormat.indexOf("{folder}") > -1);                
     }            
+    private class LabelVariable {
+        private String description;
+        private String variable;
+         
+        public LabelVariable(String variable, String description) {
+            this.description = description;
+            this.variable = variable;
+        }
+         
+        public String toString() {
+            return description;
+        }
+        
+        public String getDescription() {
+            return description;
+        }
+        
+        public String getVariable() {
+            return variable;
+        }
+    }
+    
+    private void onAddClick() {
+        LabelsPanel labelsPanel = new LabelsPanel();
+        List<LabelVariable> variables = new ArrayList<LabelVariable>(Annotator.LABELS.length);
+        for (int i = 0; i < Annotator.LABELS.length; i++) {   
+            LabelVariable variable = new LabelVariable(
+                    Annotator.LABELS[i], 
+                    "{" + Annotator.LABELS[i] + "} - " + NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.label." + Annotator.LABELS[i])
+            );
+            variables.add(variable);   
+        }       
+        labelsPanel.labelsList.setListData(variables.toArray(new LabelVariable[variables.size()]));                
+                
+        String title = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.labelVariables.title");
+        String acsd = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.labelVariables.acsd");
+
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(labelsPanel, title);
+        dialogDescriptor.setModal(true);
+        dialogDescriptor.setValid(true);
+        
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(acsd);
+        
+        labelsPanel.labelsList.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if(e.getClickCount() == 2) {
+                    dialog.setVisible(false);
+                }
+            }        
+        });                 
+        
+        dialog.setVisible(true);
+        
+        if(DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue())) {
+            
+            Object[] selection = (Object[])labelsPanel.labelsList.getSelectedValues();
+            
+            String variable = "";
+            for (int i = 0; i < selection.length; i++) {
+                variable += "{" + ((LabelVariable)selection[i]).getVariable() + "}";
+            }
+
+            String annotation = panel.annotationTextField.getText();
+
+            int pos = panel.annotationTextField.getCaretPosition();
+            if(pos < 0) pos = annotation.length();
+
+            StringBuffer sb = new StringBuffer(annotation.length() + variable.length());
+            sb.append(annotation.substring(0, pos));
+            sb.append(variable);
+            if(pos < annotation.length()) {
+                sb.append(annotation.substring(pos, annotation.length()));
+            }
+            panel.annotationTextField.setText(sb.toString());
+            panel.annotationTextField.requestFocus();
+            panel.annotationTextField.setCaretPosition(pos + variable.length());            
+            
+        }        
+    }        
+    
 }
