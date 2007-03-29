@@ -38,7 +38,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
-import org.netbeans.modules.xml.retriever.RetrieverImpl;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -76,7 +75,7 @@ public class WSUtils {
     public static FileObject retrieveResource(FileObject targetFolder, URI source)
             throws java.net.UnknownHostException, java.net.URISyntaxException, IOException{
         try {
-            Retriever retriever = new RetrieverImpl();
+            Retriever retriever = Retriever.getDefault();
             FileObject result = retriever.retrieveResource(targetFolder, source);
             if (result==null) {
                 Map map = retriever.getRetrievedResourceExceptionMap();

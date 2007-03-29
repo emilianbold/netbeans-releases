@@ -25,6 +25,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.Map;
+import org.netbeans.modules.xml.retriever.RetrieveEntry;
+import org.netbeans.modules.xml.retriever.impl.RetrieverImpl;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -35,8 +37,8 @@ import org.openide.filesystems.FileObject;
  *  org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel
  * To get the impl instance use  org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory
  */
-public abstract class Retriever {
-    
+public abstract class Retriever {    
+
     /**
      * Retrieves an XML resource given the resource's URI. Call getRetrievedResourceExceptionMap() to
      * get exception messages that occured dring retrieve process.

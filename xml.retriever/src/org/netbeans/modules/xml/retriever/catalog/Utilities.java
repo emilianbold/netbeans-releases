@@ -58,7 +58,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.retriever.Retriever;
-import org.netbeans.modules.xml.retriever.RetrieverImpl;
+import org.netbeans.modules.xml.retriever.impl.RetrieverImpl;
 import org.netbeans.modules.xml.retriever.XMLCatalogProvider;
 import org.netbeans.modules.xml.retriever.catalog.impl.*;
 import org.netbeans.modules.xml.retriever.catalog.impl.XAMCatalogWriteModelImpl;
@@ -692,8 +692,7 @@ public class Utilities {
         );
         
         return new ModelSource(proxyLookup, editable);
-    }
-    
+    }    
     
     /**
      * This method could be overridden by the Unit testcase to return a special
@@ -741,20 +740,10 @@ public class Utilities {
         return new ModelSource(myLookup, editable);
     }*/
     
-    
-    
-    
     public static CatalogModel createCatalogModel(FileObject fo) throws CatalogModelException{
         return new CatalogModelFactoryImpl().getCatalogModel(fo);
     }
-    
-    public static void printMemoryUsage(String str){
-        long init = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getInit();
-        long cur = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
-        long max = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
-        System.out.printf("%s:\n@@@@@@MEMORY: %d/%d/%d\n",str, (init/(1024*1024)), (cur/(1024*1024)), (max/(1024*1024)));
-    }
-    
+        
     public static final String DEFAULT_PRIVATE_CATALOG_URI_STR = "private/cache/retriever/catalog.xml";
     public static final String DEFAULT_PRIVATE_CAHCE_URI_STR = "private/cache/retriever";
     
@@ -829,6 +818,7 @@ public class Utilities {
             //get public catalog
             URI publicCatURI = catProv.getProjectWideCatalog();
             if(publicCatURI != null){
+
                 URI pubcatURI = prjrt.toURI().resolve(publicCatURI);
                 if(pubcatURI != null){
 

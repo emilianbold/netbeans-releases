@@ -38,6 +38,12 @@ import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.xml.retriever.impl.DocumentParserFactory;
+import org.netbeans.modules.xml.retriever.impl.DocumentTypeParser;
+import org.netbeans.modules.xml.retriever.IConstants;
+import org.netbeans.modules.xml.retriever.RetrieveEntry;
+import org.netbeans.modules.xml.retriever.impl.RetrieverTask;
+import org.netbeans.modules.xml.retriever.impl.URLResourceRetriever;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
@@ -65,7 +71,7 @@ public class RetrieverEngine implements Runnable{
     
     boolean startNewThread = true;
     
-    protected boolean showErrorPopup = true;
+    private boolean showErrorPopup = true;
     
     public RetrieverEngine(File fixedSaveRootFolder){
         this.fixedSaveRootFolder = fixedSaveRootFolder;
@@ -76,6 +82,14 @@ public class RetrieverEngine implements Runnable{
         this.fixedSaveRootFolder = fixedSaveRootFolder;
         this.currentSaveRootFile = fixedSaveRootFolder;
         this.startNewThread = startNewThread;
+    }
+    
+    public boolean canShowErrorPopup() {
+        return showErrorPopup;
+    }
+    
+    public void setShowErrorPopup(boolean show) {
+        this.showErrorPopup = show;
     }
     
     public void addResourceToRetrieve(RetrieveEntry rent) {
@@ -217,7 +231,8 @@ public class RetrieverEngine implements Runnable{
     
     int currentPushCount = 0;
     int previousPushCount = 0;
-    void pushDownRoot(int pushCount) {
+    
+    public void pushDownRoot(int pushCount) {
         File newTmpRoot = new File(currentSaveRootFile.getParent()+File.separator+System.currentTimeMillis());
         File leafFolder = newTmpRoot;
         leafFolder.mkdirs();
@@ -249,7 +264,7 @@ public class RetrieverEngine implements Runnable{
         currentPushCount += pushCount;
     }
     
-    File getNewFileForOld(File oldFile, int pushCount) {
+    public File getNewFileForOld(File oldFile, int pushCount) {
         File newRoot = currentSaveRootFile;
         for(int i = pushCount;i >= 1; i--)
             newRoot = new File(newRoot.toString()+File.separator+getCorrectFolderName(previousPushCount+i));
@@ -402,7 +417,13 @@ public class RetrieverEngine implements Runnable{
         }
         opt.flush();
     }
+    
     List<RetrieveEntry> retrievedList = new ArrayList<RetrieveEntry>();
+    
+    public List<RetrieveEntry> getRetrievedList() {
+        return retrievedList;
+    }
+    
     private void updateDownloadedInfo(RetrieveEntry rent) {
         retrievedList.add(rent);
         OutputWriter opt = getOPOut();
