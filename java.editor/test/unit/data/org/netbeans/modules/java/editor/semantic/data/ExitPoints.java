@@ -98,4 +98,7 @@ public class ExitPoints {
         
     }
     
+    private java.util.List<String> testListString() {
+        return null;
+    }
 }
