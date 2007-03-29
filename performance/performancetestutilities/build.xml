@@ -68,6 +68,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
         <pathelement location="${editor/plain.dir}/modules/org-netbeans-modules-editor-plain.jar"/>
         
+        <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
+        
         <pathelement location="${java.dir}/modules/org-netbeans-modules-java.jar"/>
         
         <pathelement location="${web/jspsyntax.dir}/modules/org-netbeans-modules-web-core-syntax.jar"/>

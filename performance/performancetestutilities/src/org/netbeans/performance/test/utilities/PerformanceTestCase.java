@@ -21,8 +21,11 @@ package org.netbeans.performance.test.utilities;
 
 import java.awt.Component;
 import java.awt.Window;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.netbeans.jellytools.JellyTestCase;
 
@@ -152,6 +155,11 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
     /** Use order just for indentify first and next run, not specific run order */
     public boolean useTwoOrderTypes = true;
+    
+    /** Set of references to traced object that ought to be GCed after tests runs
+     * and their informational messages.
+     */
+    private static Map<Reference<Object>, String> tracedRefs = new HashMap<Reference<Object>, String>();
 
     /**
      * Creates a new instance of PerformanceTestCase
@@ -565,6 +573,33 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         data.add(d);
     }
 
+    /** Registers an object to be tracked and later verified in 
+     * @link #testGC
+     * @param message informantion message associated with object
+     * @param object traced object
+     */
+    protected void reportReference( String message, Object object ) {
+        tracedRefs.put(new WeakReference<Object>(object), message);
+    }
+    
+    /** Generic test case checking if all objects registered with 
+     * @link #reportReference can be garbage collected.
+     * 
+     * Set of traced objects is cleared after this test.
+     * It is supposed that this method will be added to a suite
+     * typically at the end.
+     */
+    public void testGC() throws Exception {
+        try {
+            for (Map.Entry<Reference<Object>, String> entry: tracedRefs.entrySet()) {
+                assertGC(entry.getValue(), entry.getKey());
+            }
+        }
+        finally {
+            tracedRefs.clear();
+        }
+    }
+    
     /**
      * Turn's off blinking of the caret in the editor.
      * A method generally useful for any UI Responsiveness tests which measure actions
