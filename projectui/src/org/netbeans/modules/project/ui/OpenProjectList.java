@@ -480,7 +480,7 @@ public final class OpenProjectList {
         pchSupport.firePropertyChange( PROPERTY_MAIN_PROJECT, null, null );
     }
     
-    public synchronized List/*<Project>*/ getRecentProjects() {
+    public synchronized List<Project> getRecentProjects() {
         return recentProjects.getProjects();
     }
     
@@ -488,7 +488,7 @@ public final class OpenProjectList {
         return recentProjects.isEmpty();
     }
     
-    public synchronized List/*<UnloadedProjectInformation>*/ getRecentProjectsInformation() {
+    public synchronized List<UnloadedProjectInformation> getRecentProjectsInformation() {
         return recentProjects.getRecentProjectsInfo();
     }
     
@@ -990,7 +990,7 @@ public final class OpenProjectList {
             return -1;
         }
         
-        private List/*<UnloadedProjectInformation>*/ getRecentProjectsInfo() {
+        private List<UnloadedProjectInformation> getRecentProjectsInfo() {
             return recentProjectsInfos;
         }
         

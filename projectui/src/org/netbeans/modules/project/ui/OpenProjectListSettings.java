@@ -105,7 +105,7 @@ public class OpenProjectListSettings {
         byte[] val = pref.getByteArray(key + "." + count, null);
         List<ExtIcon> toRet = new ArrayList<ExtIcon>();
         while (val != null) {
-            toRet.add(new ExtIcon(val));
+            toRet.add(val.length > 0 ? new ExtIcon(val) : new ExtIcon());
             count = count + 1;
             val = pref.getByteArray(key + "." + count, null);
         }
@@ -121,7 +121,11 @@ public class OpenProjectListSettings {
         Iterator<ExtIcon> it = list.iterator();
         while (val != null || it.hasNext()) {
             if (it.hasNext()) {
-                pref.putByteArray(key, it.next().getBytes());
+                byte[] data = it.next().getBytes();
+                if (data == null) {
+                    data = new byte[0];
+                }
+                pref.putByteArray(key, data);
             } else {
                 pref.remove(key);
             }

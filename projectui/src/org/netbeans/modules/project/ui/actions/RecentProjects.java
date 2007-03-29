@@ -114,7 +114,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     private void fillSubMenu(JMenu menu) {
         menu.removeAll();
         
-        List projects = OpenProjectList.getDefault().getRecentProjects();
+        List<Project> projects = OpenProjectList.getDefault().getRecentProjects();
         if ( projects.isEmpty() ) {
             menu.setEnabled( false );
             return;
@@ -125,8 +125,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                         
         // Fill menu with items
         
-        for ( Iterator it = projects.iterator(); it.hasNext(); ) {
-            Project p = (Project)it.next();
+        for (Project p : projects) {
             FileObject prjDir = p.getProjectDirectory();
             try { 
                 URL prjDirURL = prjDir.getURL();

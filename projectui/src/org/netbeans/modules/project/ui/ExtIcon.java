@@ -58,15 +58,18 @@ public class ExtIcon  {
     }
         
     public void setIcon(Icon icn) {
-        image = Utilities.icon2Image(icn);
+        image = icn != null ? Utilities.icon2Image(icn) : null;
     }
     
     public Icon getIcon() {
-        return new ImageIcon(image);
+        return image != null ? new ImageIcon(image) : null;
     }
     
     
     public byte[] getBytes() throws IOException {
+        if (image == null) {
+            return null;
+        }
         PixelGrabber pg = new PixelGrabber(image, 0, 0, 16, 16, false);
         try {
             pg.grabPixels();

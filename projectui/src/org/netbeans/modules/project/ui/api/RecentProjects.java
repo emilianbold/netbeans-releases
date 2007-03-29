@@ -74,7 +74,7 @@ public final class RecentProjects {
      * to make sure the project exists and is valid.
      * @return list of project information about recently opened projects
      */
-    public List/*<UnloadedProjectInformation>*/ getRecentProjectInformation() {
+    public List<UnloadedProjectInformation> getRecentProjectInformation() {
         return OpenProjectList.getDefault().getRecentProjectsInformation();
     }
     
