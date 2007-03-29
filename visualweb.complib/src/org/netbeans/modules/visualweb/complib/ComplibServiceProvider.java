@@ -609,7 +609,7 @@ public class ComplibServiceProvider implements ComplibService {
                     .getJavadocPath());
             List<URL> sourcePath = fileListToUrlList(prjCompLib.getSourcePath());
             libDef = JsfProjectUtils.createComponentLibrary(libName, libName,
-                    localizingBundle, LibraryDefinition.LIBRARY_DOMAIN_PROJECT,
+                    localizingBundle,
                     rtPath, sourcePath, javadocPath, dtPath);
         }
 
@@ -667,8 +667,7 @@ public class ComplibServiceProvider implements ComplibService {
                         JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
             }
 
-            JsfProjectUtils.removeLibrary(libName,
-                    LibraryDefinition.LIBRARY_DOMAIN_PROJECT);
+            JsfProjectUtils.removeLibrary(libName);
 
             // Cleanup bundle
             LibraryLocalizationBundle.remove(libName);
@@ -1764,7 +1763,7 @@ public class ComplibServiceProvider implements ComplibService {
                 .getJavadocPath());
         List<URL> sourcePath = fileListToUrlList(sharedComplib.getSourcePath());
         libDef = JsfProjectUtils.createComponentLibrary(libName, libName,
-                localizingBundle, LibraryDefinition.LIBRARY_DOMAIN_PROJECT,
+                localizingBundle,
                 rtPath, sourcePath, javadocPath, dtPath);
 
         // If needed, create new compile-time Library Ref
@@ -1823,8 +1822,7 @@ public class ComplibServiceProvider implements ComplibService {
                         JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
             }
 
-            JsfProjectUtils.removeLibrary(libName,
-                    LibraryDefinition.LIBRARY_DOMAIN_PROJECT);
+            JsfProjectUtils.removeLibrary(libName);
 
             // Cleanup bundle
             LibraryLocalizationBundle.remove(libName);
