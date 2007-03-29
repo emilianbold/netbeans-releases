@@ -187,7 +187,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         compareFoldHierarchyDump();
     
         //07 collapse One-line Constructor Fold
-        //    public testJavaFolds() {} //One-line Const|ructor Fold
+        //    public testJavaFolds() { } //One-line Const|ructor Fold
         collapseFoldAtCaretPosition(editor, 29, 47);
         compareFoldHierarchyDump();
     
@@ -222,73 +222,73 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         compareFoldHierarchyDump();
     
         //14 multi folds on one line. Collapsing middle method
-        //    public void firstMethod(){}  public void secondM|ethod(){} public void thirdMethod(){}
+        //    public void firstMethod(){ }  public void secondM|ethod(){ } public void thirdMethod(){ }
         collapseFoldAtCaretPosition(editor, 50, 53);
         compareFoldHierarchyDump();
     
         //15 multi folds on one line. Expanding middle method
-        //    public void firstMethod(){}  public void secondM|ethod()[...] public void thirdMethod(){}
+        //    public void firstMethod(){ }  public void secondM|ethod()[...] public void thirdMethod(){ }
         expandFoldAtCaretPosition(editor, 50, 53);
         compareFoldHierarchyDump();
     
         //16 multi folds on one line. Collapsing middle method
-        //    public void firstMethod(){} | public void secondMethod(){} public void thirdMethod(){}
+        //    public void firstMethod(){ } | public void secondMethod(){ } public void thirdMethod(){ }
         collapseFoldAtCaretPosition(editor, 50, 33);
         compareFoldHierarchyDump();
     
         //17 multi folds on one line. Expandinging middle method
-        //    public void firstMethod(){} | public void secondMethod()[...] public void thirdMethod(){}
+        //    public void firstMethod(){ } | public void secondMethod()[...] public void thirdMethod(){ }
         expandFoldAtCaretPosition(editor, 50, 33);
         compareFoldHierarchyDump();
     
         //18 multi folds on one line. Collapsing middle method
-        //    public void firstMethod(){}  public void secondMethod(){}| public void thirdMethod(){}
-        collapseFoldAtCaretPosition(editor, 50, 62);
+        //    public void firstMethod(){ }  public void secondMethod(){ } |public void thirdMethod(){ }
+        collapseFoldAtCaretPosition(editor, 50, 65);
         compareFoldHierarchyDump();
     
         //19 multi folds on one line. Expandinging middle method
-        //    public void firstMethod(){}  public void secondMethod()[...]| public void thirdMethod(){}
-        expandFoldAtCaretPosition(editor, 50, 62);
+        //    public void firstMethod(){ }  public void secondMethod()[...] |public void thirdMethod(){ }
+        expandFoldAtCaretPosition(editor, 50, 65);
         compareFoldHierarchyDump();
     
         //20 multi folds on one line. Collapsing first method
-        //    public void firstMethod(){|}  public void secondMethod(){} public void thirdMethod(){}
+        //    public void firstMethod(){|}  public void secondMethod(){ } public void thirdMethod(){ }
         collapseFoldAtCaretPosition(editor, 50, 31);
         compareFoldHierarchyDump();
     
         //21 multi folds on one line. Expanding first method
-        //    public void firstMethod()[...]|  public void secondMethod(){} public void thirdMethod(){}
-        expandFoldAtCaretPosition(editor, 50, 32);
+        //    public void firstMethod()[...]|  public void secondMethod(){ } public void thirdMethod(){ }
+        expandFoldAtCaretPosition(editor, 50, 33);
         compareFoldHierarchyDump();
 
         //22 multi folds on one line. Collapsing first method
-        //    public void firstMethod(){}|  public void secondMethod(){} public void thirdMethod(){}
-        collapseFoldAtCaretPosition(editor, 50, 32);
+        //    public void firstMethod(){ }|  public void secondMethod(){ } public void thirdMethod(){ }
+        collapseFoldAtCaretPosition(editor, 50, 33);
         compareFoldHierarchyDump();
 
         //23 multi folds on one line. Expanding first method
-        //|   public void firstMethod()[...]  public void secondMethod(){} public void thirdMethod(){}
+        //|   public void firstMethod()[...]  public void secondMethod(){ } public void thirdMethod(){ }
         expandFoldAtCaretPosition(editor, 50, 1);
         compareFoldHierarchyDump();
 
         //24 multi folds on one line. Collapsing third method
-        //    public void firstMethod(){}  public void secondMethod(){} |public void thirdMethod(){}
-        collapseFoldAtCaretPosition(editor, 50, 63);
+        //    public void firstMethod(){ }  public void secondMethod(){ } |public void thirdMethod(){ }
+        collapseFoldAtCaretPosition(editor, 50, 64);
         compareFoldHierarchyDump();
 
         //25 multi folds on one line. Expanding third method
-        //   public void firstMethod(){}  public void secondMethod(){} |public void thirdMethod()[...]
-        expandFoldAtCaretPosition(editor, 50, 63);
+        //   public void firstMethod(){ }  public void secondMethod(){ } |public void thirdMethod()[...]
+        expandFoldAtCaretPosition(editor, 50, 64);
         compareFoldHierarchyDump();
 
         //26 multi folds on one line. Collapsing third method
-        //    public void firstMethod(){}  public void secondMethod(){} public void thirdMethod(){}|
-        collapseFoldAtCaretPosition(editor, 50, 90);
+        //    public void firstMethod(){ }  public void secondMethod(){ } public void thirdMethod(){ }|
+        collapseFoldAtCaretPosition(editor, 50, 92);
         compareFoldHierarchyDump();
 
         //27 multi folds on one line. Expanding third method
-        //   public void firstMethod(){}  public void secondMethod(){} public void thirdMethod()[...]|
-        expandFoldAtCaretPosition(editor, 50, 90);
+        //   public void firstMethod(){ }  public void secondMethod(){ } public void thirdMethod()[...]|
+        expandFoldAtCaretPosition(editor, 50, 92);
         compareFoldHierarchyDump();
 
         //28 collapse One-line InnerClass Javadoc Fold
@@ -297,7 +297,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         compareFoldHierarchyDump();
     
         //29 collapse One-line InnerClass Fold
-        //|  public static class InnerClassOne{}
+        //|  public static class InnerClassOne{ }
         collapseFoldAtCaretPosition(editor, 53, 1);
         compareFoldHierarchyDump();
     
@@ -340,7 +340,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         compareFoldHierarchyDump();
     
         //37 collapse One-line InnerClass Constructor Fold
-        //            public InnerClassThree() {}| //One-line InnerClass Constructor Fold
+        //            public InnerClassThree() { }| //One-line InnerClass Constructor Fold
         collapseFoldAtCaretPosition(editor, 71, 36);
         compareFoldHierarchyDump();
 
@@ -360,7 +360,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         compareFoldHierarchyDump();
 
         //41 collapse One-line InnerClass Method Fold
-        //        public void methodOne(){}| // One-line InnerClass Method Fold
+        //        public void methodOne(){ }| // One-line InnerClass Method Fold
         collapseFoldAtCaretPosition(editor, 83, 34);
         compareFoldHierarchyDump();
 
@@ -385,37 +385,37 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         compareFoldHierarchyDump();
 
         //46 collapse first method
-        //|            public void firstMethod(){}  public void secondMethod(){} public void thirdMethod(){}
+        //|            public void firstMethod(){ }  public void secondMethod(){ } public void thirdMethod(){ }
         collapseFoldAtCaretPosition(editor, 92, 1);
         compareFoldHierarchyDump();
 
         //47 expand first method
-        //|            public void firstMethod()[...]  public void secondMethod(){} public void thirdMethod(){}
+        //|            public void firstMethod()[...]  public void secondMethod(){ } public void thirdMethod(){ }
         expandFoldAtCaretPosition(editor, 92, 1);
         compareFoldHierarchyDump();
 
         //48 collapse second method
-        //            public void firstMethod(){} | public void secondMethod(){} public void thirdMethod(){}
-        collapseFoldAtCaretPosition(editor, 92, 37);
+        //            public void firstMethod(){ } | public void secondMethod(){ } public void thirdMethod(){ }
+        collapseFoldAtCaretPosition(editor, 92, 38);
         compareFoldHierarchyDump();
 
         //49 expand second method
-        //            public void firstMethod(){} | public void secondMethod()[...] public void thirdMethod(){}
-        expandFoldAtCaretPosition(editor, 92, 37);
+        //            public void firstMethod(){ } | public void secondMethod()[...] public void thirdMethod(){ }
+        expandFoldAtCaretPosition(editor, 92, 38);
         compareFoldHierarchyDump();
     
         //51 collapse third method
-        //            public void firstMethod(){}  public void secondMethod(){} public void thirdMe|thod(){}
+        //            public void firstMethod(){ }  public void secondMethod(){ } public void thirdMe|thod(){ }
         collapseFoldAtCaretPosition(editor, 92, 86);
         compareFoldHierarchyDump();
 
         //51 expand second method
-        //            public void firstMethod(){}  public void secondMethod(){} public void thirdMe|thod()[...]
+        //            public void firstMethod(){ }  public void secondMethod(){ } public void thirdMe|thod()[...]
         expandFoldAtCaretPosition(editor, 92, 86);
         compareFoldHierarchyDump();
     
         //52 collapse all three methods
-        //            public void firstMethod(){|}  public void second|Method(){} public void thirdMethod(){}|
+        //            public void firstMethod(){|}  public void second|Method(){ } public void thirdMethod(){ }|
         collapseFoldAtCaretPosition(editor, 92, 35);
         collapseFoldAtCaretPosition(editor, 92, 56);
         collapseFoldAtCaretPosition(editor, 92, 94);
@@ -437,7 +437,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         compareFoldHierarchyDump();
         
         //55 multi line methods
-        //            public vo|id firstMethod(){}  public void secondMethod(){|} public void thirdMethod(){}|
+        //            public vo|id firstMethod(){ }  public void secondMethod(){|} public void thirdMethod(){ }|
         collapseFoldAtCaretPosition(editor, 136, 22);
         collapseFoldAtCaretPosition(editor, 136, 69);
         collapseFoldAtCaretPosition(editor, 136, 98);

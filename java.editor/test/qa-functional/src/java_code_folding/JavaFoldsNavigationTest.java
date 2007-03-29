@@ -20,22 +20,9 @@
 package java_code_folding;
 
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.Hashtable;
 import javax.swing.KeyStroke;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.JTextComponent;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
-import lib.EditorTestCase;
-import code_folding.CodeFoldingTest;
-import org.netbeans.api.editor.fold.Fold;
-import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 
@@ -117,7 +104,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
     public void testJavaFoldsNavigation(){
         openDefaultProject();
         openDefaultSampleFile();
-        try {
+        try {            
             editor = getDefaultSampleEditorOperator();
             JTextComponentOperator txtCompOper = new JTextComponentOperator(editor);
             JTextComponent target = (JTextComponent)txtCompOper.getSource();

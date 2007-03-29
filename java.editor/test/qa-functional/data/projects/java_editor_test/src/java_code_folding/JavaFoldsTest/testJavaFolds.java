@@ -26,7 +26,7 @@ public class testJavaFolds {
     JApplet applet;
     
     /** One-line Constructor Javadoc Fold */
-    public testJavaFolds() {} //One-line Constructor Fold
+    public testJavaFolds() { } //One-line Constructor Fold
     
     /** 
      *  Multi-line Constructor Javadoc Fold
@@ -38,7 +38,7 @@ public class testJavaFolds {
     
     
     /** One-line Method Javadoc Fold */
-    public void methodOne(){} // One-line Method Fold
+    public void methodOne(){ } // One-line Method Fold
     
     /**
      *  Multi-line Method Javadoc Fold 
@@ -47,10 +47,10 @@ public class testJavaFolds {
         System.out.println(""); //NOI18N
     } 
  
-    public void firstMethod(){}  public void secondMethod(){} public void thirdMethod(){}
+    public void firstMethod(){ } public void secondMethod(){ } public void thirdMethod(){ }
     
     /** One-line InnerClass Javadoc Fold */
-    public static class InnerClassOne{}
+    public static class InnerClassOne{ }
     
     /** 
      *  Multi-line InnerClass Javadoc Fold 
@@ -68,7 +68,7 @@ public class testJavaFolds {
         JApplet applet;
 
         /** One-line InnerClass Constructor Javadoc Fold */
-        public InnerClassThree() {} //One-line InnerClass Constructor Fold
+        public InnerClassThree() { } //One-line InnerClass Constructor Fold
 
         /** 
          *  Multi-line InnerClass Constructor Javadoc Fold
@@ -80,7 +80,7 @@ public class testJavaFolds {
 
 
         /** One-line InnerClass Method Javadoc Fold */
-        public void methodOne(){} // One-line InnerClass Method Fold
+        public void methodOne(){ } // One-line InnerClass Method Fold
 
         /** 
          *  Multi-line InnerClass Method Javadoc Fold 
@@ -89,7 +89,7 @@ public class testJavaFolds {
             System.out.println(""); //NOI18N
         } 
         
-        public void firstMethod(){}  public void secondMethod(){} public void thirdMethod(){}
+        public void firstMethod(){ }  public void secondMethod(){ } public void thirdMethod(){ }
     }
 
     public static class InnerClassFour{
@@ -97,7 +97,7 @@ public class testJavaFolds {
         }
         
         /** One-line InnerClassInInnerClass Javadoc Fold */
-        public static class InnerClassInInnerClassOne{} //One-line InnerClassInInnerClass Fold
+        public static class InnerClassInInnerClassOne{ } //One-line InnerClassInInnerClass Fold
         
         /**
          *   Multi-line InnerClassInInnerClass Javadoc Fold
@@ -113,7 +113,7 @@ public class testJavaFolds {
             JApplet applet;
             
             /** One-line InnerClassInInnerClass Constructor Javadoc Fold */
-            public InnerClassInInnerClassTwo() {} //One-line InnerClassInInnerClassTwo Constructor Fold
+            public InnerClassInInnerClassTwo() { } //One-line InnerClassInInnerClassTwo Constructor Fold
 
             /** 
              *  Multi-line InnerClassInInnerClassTwo Constructor Javadoc Fold
@@ -124,7 +124,7 @@ public class testJavaFolds {
             }
             
             /** One-line InnerClassInInnerClass Method Javadoc Fold */
-            public void methodOne(){} // One-line InnerClassInInnerClass Method Fold
+            public void methodOne(){ } // One-line InnerClassInInnerClass Method Fold
 
             /** 
              *  Multi-line InnerClassInInnerClass Method Javadoc Fold 
@@ -133,7 +133,7 @@ public class testJavaFolds {
                 System.out.println(""); //NOI18N
             } 
             
-            public void firstMethod(){}  public void secondMethod(){} public void thirdMethod(){}
+            public void firstMethod(){ }  public void secondMethod(){ } public void thirdMethod(){ }
             
         } 
        
