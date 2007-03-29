@@ -1466,7 +1466,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
     /** Transfer the given element such that it's parented at the given position */
 //    private boolean reparent(DesignBean bean, Element element, Position pos, WebForm webform) {
 //    private boolean reparentComponent(Element componentRootElement, /*Element element,*/ Position pos, WebForm webform) {
-    public boolean reparentComponent(Element componentRootElement, /*Element element,*/ DomPosition pos /*, WebForm webform*/) {
+    private boolean reparentComponent(Element componentRootElement, /*Element element,*/ DomPosition pos /*, WebForm webform*/) {
 //        if (pos == Position.NONE) {
         if (pos == DomPosition.NONE) {
             return false;
