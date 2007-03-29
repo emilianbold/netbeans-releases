@@ -38,6 +38,7 @@ import org.w3c.dom.Element;
 public final class CssUtilities {
 
     // XXX Copied form CssBox.
+    // XXX Copy also in designer/jsf/../DomDocumentImpl.
     // FIXME This is very suspicious, and should be revisited.
     public static final int AUTO = Integer.MAX_VALUE - 1;
 
@@ -177,7 +178,10 @@ public final class CssUtilities {
 
     
     /** XXX Copy also in insync/FacesDnDSupport.
-     * XXX Provides the auto value as <code>AUTO</code>, revise that, it looks very dangerous. */
+     * XXX Copy also in designer/jsf/../DomDocumentImpl
+     * XXX Provides the auto value as <code>AUTO</code>, revise that, it looks very dangerous.
+     * TODO At least move into designer/cssengine.
+     */
     public static int getCssLength(Element element, int property) {
 //        Value val = getValue(element, property);
         CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(element, property);

@@ -23,6 +23,7 @@ import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.api.designer.Designer;
+import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
 import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
@@ -96,5 +97,9 @@ public final class JsfSupportUtilities {
     
     public static boolean isWebFormFileObject(FileObject fileObject) {
         return fileObject != null && FacesModel.getInstance(fileObject) != null;
+    }
+    
+    public static void updateLocalStyleValuesForElement(Element e, StyleData[] setStyleData, StyleData[] removeStyleData) {
+        Util.updateLocalStyleValuesForElement(e, setStyleData, removeStyleData);
     }
 }

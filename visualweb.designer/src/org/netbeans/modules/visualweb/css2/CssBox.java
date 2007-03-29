@@ -58,6 +58,7 @@ import java.util.WeakHashMap;
 import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
@@ -89,7 +90,7 @@ import org.netbeans.modules.visualweb.designer.html.HtmlTag;
  * @todo Split computeHorizontalLength up in subportions
  * @author Tor Norbye
  */
-public class CssBox {
+public class CssBox implements Box {
     /** Grid size for design-time borders. XXX we really should make this dynamic to match the user's chosen grid size! */
     private static final int MINIMUM_BEAN_SIZE = 24;
 
@@ -4327,6 +4328,23 @@ public class CssBox {
 
             value = remaining;
         }
+    }
+
+    public Element getComponentRootElement() {
+        return getElementForComponentRootCssBox(this);
+    }
+
+    public Box[] getChildren() {
+        List<Box> boxes = new ArrayList<Box>();
+        for (int i = 0, n = getBoxCount(); i < n; i++) {
+            CssBox box = getBox(i);
+            boxes.add(box);
+        }
+        return boxes.toArray(new Box[boxes.size()]);
+    }
+
+    public boolean isPositioned() {
+        return getBoxType().isPositioned();
     }
     
     

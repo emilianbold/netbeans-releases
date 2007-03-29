@@ -20,9 +20,12 @@
 package org.netbeans.modules.visualweb.designer.jsf.text;
 
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.EventListenerList;
+import org.netbeans.modules.visualweb.api.designer.Designer;
+import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocumentEvent;
@@ -33,6 +36,7 @@ import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.B
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomRange;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
+import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
@@ -1578,6 +1582,453 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         fireComponentMoved(new DefaultDomDocumentEvent(this, null));
 
         return success;
+    }
+
+    // XXX Moved from designer/../GridHandler
+    // TODO 1) Refactor, there should be listener on the designer, informing about user actions.
+    // TODO 2) This is very messy, simplify, devide to more methods.
+    public void moveComponents(Box[] boxes, Point[] offsetPoints, DomPosition pos) {
+        // Locate a grid layout parent
+//        Document doc = editor.getDocument();
+//        WebForm webform = doc.getWebForm();
+//        WebForm webform = editor.getWebForm();
+        
+//        int numMoved = beans.size();
+//        int numMoved = boxes.size();
+        int numMoved = boxes.length;
+        
+//        Rectangle boundingBox = null;
+
+        String description;
+        if (numMoved > 1) {
+//            description = NbBundle.getMessage(GridHandler.class, "MoveComponents");
+            description = NbBundle.getMessage(DomDocumentImpl.class, "LBL_MoveComponents");
+        } else {
+            description = NbBundle.getMessage(DomDocumentImpl.class, "LBL_MoveComponent");
+        }
+//        UndoEvent undoEvent = webform.getModel().writeLock(description);
+//        HtmlDomProvider.WriteLock writeLock = webform.writeLock(description);
+        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(description);
+        try {
+//            String description;
+//
+//            if (numMoved > 1) {
+//                description = NbBundle.getMessage(GridHandler.class, "MoveComponents");
+//            } else {
+//                description = NbBundle.getMessage(GridHandler.class, "MoveComponent");
+//            }
+//
+//            doc.writeLock(description);
+
+            // Move the components
+            for (int i = 0; i < numMoved; i++) {
+//                MarkupDesignBean bean = beans.get(i);
+//                Rectangle offset = offsetRectangles.get(i);
+//                CssBox box = boxes.get(i);
+//                CssBox box = boxes[i];
+                Box box = boxes[i];
+//                Rectangle offset = offsetRectangles[i];
+                Point offset = offsetPoints[i];
+                
+//                Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
+                Element componentRootElement = box.getComponentRootElement();
+                        
+//                Element e = box.getElement();
+//
+//                if (e == null) {
+//                    e = bean.getElement();
+//                }
+
+//                int x = newX + offset.x;
+//                int y = newY + offset.y;
+//
+//                if (!snapDisabled) {
+//                    x = snapX(x, box.getPositionedBy());
+//                    y = snapY(y, box.getPositionedBy());
+//                }
+                
+                int x = offset.x;
+                int y = offset.y;
+
+//                CssBox parentBox = box.getParent();
+                 Box parentBox = box.getParent();
+
+//                if (boundingBox == null) {
+//                    boundingBox = new Rectangle(x, y, box.getWidth(), box.getHeight());
+//                } else {
+//                    boundingBox.add(x, y);
+//                    boundingBox.add(x + box.getWidth(), y + box.getHeight());
+//                }
+
+                try {
+                    boolean moveSucceeded = true;
+
+//                    if ((pos != null) && (pos != Position.NONE)) {
+                    if ((pos != null) && (pos != DomPosition.NONE)) {
+                        // TODO: better batch handling here
+//                        moveSucceeded = doc.reparent(bean, e, pos);
+//                        moveSucceeded = reparentComponent(componentRootElement, /*e,*/ pos, webform);
+//                        moveSucceeded = webForm.getDomDocument().reparentComponent(componentRootElement, /*e,*/ pos);
+                        moveSucceeded = reparentComponent(componentRootElement, /*e,*/ pos);
+                    } else if (!isAbsolutelyPositioned(componentRootElement)) {
+                        // Looks like we've moved a flow position element
+                        // out to grid
+//                        CssBox pb = null;
+                        Element parent = null;
+//                        Element element = box.getDesignBean().getElement();
+                        // XXX Possible NPE?
+//                        Element element = CssBox.getMarkupDesignBeanForCssBox(box).getElement();
+//                        Element boxComponentRootElement = CssBox.getElementForComponentRootCssBox(box);
+                        Element boxComponentRootElement = componentRootElement;
+                        // XXX Get rid of using source elements in the designer.
+                        Element element = MarkupService.getSourceElementForElement(boxComponentRootElement);
+
+                        if ((element.getParentNode() != null) &&
+                                (element.getParentNode().getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) &&
+                                element.getParentNode().getNodeName().equals(HtmlTag.FSUBVIEW.name)) {
+//                            pb = parentBox;
+                            parent = (Element)element.getParentNode();
+//                        } else if ((parentBox != null) && (parentBox.getDesignBean() != null)) {
+//                            MarkupDesignBean parentBean = parentBox.getDesignBean();
+                        } else {
+//                            MarkupDesignBean parentMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(parentBox);
+//                            Element parentComponentRootElement = CssBox.getElementForComponentRootCssBox(parentBox);
+                            Element parentComponentRootElement = parentBox == null ? null : parentBox.getComponentRootElement();
+                            if (parentComponentRootElement != null) {
+                                Element parentElement = MarkupService.getSourceElementForElement(parentComponentRootElement);
+
+                                if ((parentElement != null) &&
+                                        (parentElement.getTagName().equals(HtmlTag.FORM.name))) {
+//                                    pb = parentBox;
+//                                    parent = parentBox.getSourceElement();
+                                    parent = parentElement;
+                                }
+                            }
+                        }
+
+                        Designer[] designers = JsfForm.findDesigners(jsfForm);
+                        Designer designer = designers.length == 0 ? null : designers[0];
+//                        if (pb == null) {
+                        if (parent == null) {
+//                            CssBox currentBox = webform.getMapper().findBox(x, y);
+//                            CssBox currentBox = ModelViewMapper.findBox(webform.getPane().getPageBox(), x, y);
+                            Box currentBox = designer == null ? null : designer.findBox(x, y);
+                            if (currentBox != null) {
+
+//                                for (int j = 0, m = currentBox.getBoxCount(); j < m; j++) {
+//                                    HtmlTag tag = currentBox.getBox(j).getTag();
+                                for (Box child : currentBox.getChildren()) {
+                                    HtmlTag tag = child.getTag();
+
+                                    if (tag == HtmlTag.FORM) {
+    //                                    pb = currentBox.getBox(j);
+                                        parent = currentBox.getSourceElement();
+
+                                        break;
+                                    }
+                                }
+
+    //                            if (pb == null) {
+    //                                pb = currentBox;
+    //                            }
+                                if (parent == null) {
+                                    parent = currentBox.getSourceElement();
+                                }
+                            }
+                        }
+
+//                        if (parent == null) {
+//                            parent = pb.getSourceElement();
+//                        }
+
+                        if (element.getParentNode() != parent) {
+                            moveSucceeded =
+//                                doc.reparent(bean, e, new Position(parent, 0, Bias.FORWARD));
+//                                reparentComponent(componentRootElement, /*e,*/ new Position(parent, 0, Bias.FORWARD), webform);
+//                                reparentComponent(componentRootElement, /*e,*/ Position.create(parent, 0, Bias.FORWARD), webform);
+//                                reparentComponent(componentRootElement, /*e,*/ webForm.createDomPosition(parent, 0, Bias.FORWARD), webform);
+//                                webForm.getDomDocument().reparentComponent(componentRootElement, /*e,*/ webForm.createDomPosition(parent, 0, Bias.FORWARD));
+                                    reparentComponent(componentRootElement, /*e,*/ createDomPosition(parent, 0, Bias.FORWARD));
+                        }
+
+//                        parentBox = pb;
+//                        CssBox pb = webForm.findCssBoxForElement(parent);
+                        Box pb = designer.findBoxForSourceElement(parent);
+                        if (pb != null) {
+                            parentBox = pb;
+                        }
+                    }
+
+                    // prevent multiple updates for the same element -
+                    // only need a single refresh especially when just changing
+                    // from one grid position to another
+//                    webform.getDomSynchronizer().setUpdatesSuspended(bean, true);
+//                    webform.setUpdatesSuspended(componentRootElement, true);
+                    jsfForm.setUpdatesSuspended(componentRootElement, true);
+
+                    List<StyleData> set = new ArrayList<StyleData>(3);
+                    List<StyleData> remove = new ArrayList<StyleData>(3);
+
+//                    if ((pos != null) && (pos != Position.NONE)) {
+                    if ((pos != null) && (pos != DomPosition.NONE)) {
+                        if (moveSucceeded) {
+                            remove.add(new StyleData(XhtmlCss.POSITION_INDEX));
+                            remove.add(new StyleData(XhtmlCss.LEFT_INDEX));
+                            remove.add(new StyleData(XhtmlCss.TOP_INDEX));
+                        } else {
+                            java.awt.Toolkit.getDefaultToolkit().beep();
+                        }
+                    } else if (moveSucceeded) {
+                        // Translate coordinates from absolute/viewport
+                        // to absolute coordinates relative to the target
+                        // grid container
+                        set.add(new StyleData(XhtmlCss.POSITION_INDEX,
+//                                CssConstants.CSS_ABSOLUTE_VALUE));
+                                CssProvider.getValueService().getAbsoluteValue()));
+                        set.add(getHorizontalCssSetting(x, box.getWidth(), box, parentBox, componentRootElement));
+                        set.add(getVerticalCssSetting(y, box.getHeight(), box, parentBox, componentRootElement));
+                    }
+
+//                    XhtmlCssEngine engine = webform.getMarkup().getCssEngine();
+// <removing design bean manipulation in engine>
+//                    engine.updateLocalStyleValues((RaveElement)e, set, remove);
+// ====
+//                    Util.updateLocalStyleValuesForElement(e,
+//                            (StyleData[])set.toArray(new StyleData[set.size()]),
+//                            (StyleData[])remove.toArray(new StyleData[remove.size()]));
+//                    WebForm.getHtmlDomProviderService().updateLocalStyleValuesForElement(componentRootElement,
+//                            set.toArray(new StyleData[set.size()]),
+//                            remove.toArray(new StyleData[remove.size()]));
+                    JsfSupportUtilities.updateLocalStyleValuesForElement(componentRootElement,
+                            set.toArray(new StyleData[set.size()]),
+                            remove.toArray(new StyleData[remove.size()]));
+// </removing design bean manipulation in engine>
+                } finally {
+//                    webform.getDomSynchronizer().setUpdatesSuspended(bean, false);
+//                    webform.setUpdatesSuspended(componentRootElement, false);
+                    jsfForm.setUpdatesSuspended(componentRootElement, false);
+                }
+            }
+        } finally {
+//            doc.writeUnlock();
+//            webform.getModel().writeUnlock(undoEvent);
+//            webform.writeUnlock(writeLock);
+            jsfForm.writeUnlock(writeLock);
+        }
+
+        // XXX #91531 User didn't want to have this kind of autoscroll behavior.
+//        final Rectangle rect = boundingBox;
+//	// #6331237 NPE.
+//	if(rect != null) {
+//	    SwingUtilities.invokeLater(new Runnable() {
+//		public void run() {
+//		    editor.scrollRectToVisible(rect);
+//		}
+//	    });
+//	}
+    }
+
+    // XXX Copy aldo in designer/../GridHandler.
+    /** Report whether the given element is absolutely positioned */
+    private boolean isAbsolutelyPositioned(Element element) {
+        boolean absolute;
+//        Value val = CssLookup.getValue(element, XhtmlCss.POSITION_INDEX);
+        CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(element, XhtmlCss.POSITION_INDEX);
+
+//        if ((val == CssValueConstants.ABSOLUTE_VALUE) || (val == CssValueConstants.FIXED_VALUE)) {
+        if (CssProvider.getValueService().isAbsoluteValue(cssValue)
+        || CssProvider.getValueService().isFixedValue(cssValue)) {
+            absolute = true;
+        } else {
+            absolute = false;
+        }
+
+        return absolute;
+    }
+
+    /**
+     * Given a target position (referring to the border top left corner) for
+     * a box, update its horizontal CSS position properties (left/right) to
+     * make the box appear at the target position.
+     * This not only converts the coordinates to the margin edge (since the
+     * CSS properties are relative to it), but also ensures that if a component
+     * is for example only constrained on the right, the "right" property is
+     * updated rather than "left".
+     */
+//    private StyleData getHorizontalCssSetting(int x, int newWidth, CssBox box, CssBox parentBox, Element e) {
+    private StyleData getHorizontalCssSetting(int x, int newWidth, Box box, Box parentBox, Element e) {
+//        int left = CssLookup.getLength(e, XhtmlCss.LEFT_INDEX);
+//        int right = CssLookup.getLength(e, XhtmlCss.RIGHT_INDEX);
+//        int left = CssUtilities.getCssLength(e, XhtmlCss.LEFT_INDEX);
+//        int right = CssUtilities.getCssLength(e, XhtmlCss.RIGHT_INDEX);
+        int left = getCssLength(e, XhtmlCss.LEFT_INDEX);
+        int right = getCssLength(e, XhtmlCss.RIGHT_INDEX);
+
+//        if ((left == CssBox.AUTO) && (right != CssBox.AUTO)) {
+        if ((left == AUTO) && (right != AUTO)) {
+//            int rx = right - (x - box.getX()) - (width - box.getWidth());
+//            Point p = translateCoordinates(parentBox, rx, 0);
+//            rx = p.x;
+//
+//            // The CSS "right" property is relative to the Margin edge
+//            rx += box.getRightMargin();
+            int rx = translateRight(right, x, newWidth, box, parentBox);
+
+            return new StyleData(XhtmlCss.RIGHT_INDEX, Integer.toString(rx) + "px"); // NOI18N
+        } else {
+//            Point p = translateCoordinates(parentBox, x, 0);
+//            x = p.x;
+//
+//            // The CSS "left" property is relative to the Margin edge
+//            x -= box.getLeftMargin();
+            int rx = translateLeft(x, box, parentBox);
+
+//            return new StyleData(XhtmlCss.LEFT_INDEX, Integer.toString(x) + "px"); // NOI18N
+            return new StyleData(XhtmlCss.LEFT_INDEX, Integer.toString(rx) + "px"); // NOI18N
+        }
+    }
+
+    // XXX Copy also in designer/../GridHandler.
+//    private int translateRight(int right, int x, int newWidth, CssBox box, CssBox parentBox) {
+    private int translateRight(int right, int x, int newWidth, Box box, Box parentBox) {
+        int rx = right - (x - box.getX()) - (newWidth - box.getWidth());
+        Point p = translateCoordinates(parentBox, rx, 0);
+        rx = p.x;
+
+        // The CSS "right" property is relative to the Margin edge
+        rx += box.getRightMargin();
+        return rx;
+    }
+    
+    // XXX Copy also in designer/../GridHandler
+//    private int translateLeft(int x, CssBox box, CssBox parentBox) {
+    private int translateLeft(int x, Box box, Box parentBox) {
+        Point p = translateCoordinates(parentBox, x, 0);
+        x = p.x;
+
+        // The CSS "left" property is relative to the Margin edge
+        x -= box.getLeftMargin();
+        return x;
+    }
+
+    // XXX Copy also in designer/../GridHandler.
+    /** Same as setHorizontalCssPosition, but for the vertical dimension with
+     * CSS top/bottom properties */
+//    private StyleData getVerticalCssSetting(int y, int newHeight, CssBox box, CssBox parentBox, Element e) {
+    private StyleData getVerticalCssSetting(int y, int newHeight, Box box, Box parentBox, Element e) {
+//        int top = CssLookup.getLength(e, XhtmlCss.TOP_INDEX);
+//        int bottom = CssLookup.getLength(e, XhtmlCss.BOTTOM_INDEX);
+//        int top = CssUtilities.getCssLength(e, XhtmlCss.TOP_INDEX);
+//        int bottom = CssUtilities.getCssLength(e, XhtmlCss.BOTTOM_INDEX);
+        int top = getCssLength(e, XhtmlCss.TOP_INDEX);
+        int bottom = getCssLength(e, XhtmlCss.BOTTOM_INDEX);
+
+//        if ((top == CssBox.AUTO) && (bottom != CssBox.AUTO)) {
+        if ((top == AUTO) && (bottom != AUTO)) {
+//            int ry = bottom - (y - box.getY()) - (height - box.getHeight());
+//            Point p = translateCoordinates(parentBox, 0, ry);
+//            ry = p.y;
+//
+//            // The CSS "bottom" property is relative to the Margin edge
+//            ry += box.getEffectiveTopMargin();
+            int ry = translateBottom(bottom, y, newHeight, box, parentBox);
+
+            return new StyleData(XhtmlCss.BOTTOM_INDEX, Integer.toString(ry) + "px"); // NOI18N
+        } else {
+//            Point p = translateCoordinates(parentBox, 0, y);
+//            y = p.y;
+//
+//            // The CSS "top" property is relative to the Margin edge
+//            y -= box.getEffectiveTopMargin();
+            int ry = translateTop(y, box, parentBox);
+
+//            return new StyleData(XhtmlCss.TOP_INDEX, Integer.toString(y) + "px"); // NOI18N
+            return new StyleData(XhtmlCss.TOP_INDEX, Integer.toString(ry) + "px"); // NOI18N
+        }
+    }
+    
+    // XXX Copy also in designer/../GridHandler.
+//    private int translateBottom(int bottom, int y, int newHeight, CssBox box, CssBox parentBox) {
+    private int translateBottom(int bottom, int y, int newHeight, Box box, Box parentBox) {
+        int ry = bottom - (y - box.getY()) - (newHeight - box.getHeight());
+        Point p = translateCoordinates(parentBox, 0, ry);
+        ry = p.y;
+
+        // The CSS "bottom" property is relative to the Margin edge
+        ry += box.getEffectiveTopMargin();
+        return ry;
+    }
+    
+    // XXX Copy also in designer/../GridHandler.
+//    private int translateTop(int y, CssBox box, CssBox parentBox) {
+    private int translateTop(int y, Box box, Box parentBox) {
+        Point p = translateCoordinates(parentBox, 0, y);
+        y = p.y;
+
+        // The CSS "top" property is relative to the Margin edge
+        y -= box.getEffectiveTopMargin();
+        return y;
+    }
+    
+    // XXX Copy aldo in designer/../CssUtilities.
+    // FIXME This is very suspicious, and should be revisited.
+    public static final int AUTO = Integer.MAX_VALUE - 1;
+    
+    /** XXX Copy also in insync/FacesDnDSupport.
+     * XXX Copy also in designer/../CssUtilities
+     * XXX Provides the auto value as <code>AUTO</code>, revise that, it looks very dangerous.
+     * TODO At least move into designer/cssengine.
+     */
+    private static int getCssLength(Element element, int property) {
+//        Value val = getValue(element, property);
+        CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(element, property);
+        
+        // XXX #6460007 Possible NPE.
+        if (cssValue == null) {
+            // XXX What value to return?
+            return 0;
+        }
+        
+//        if (val == CssValueConstants.AUTO_VALUE) {
+        if (CssProvider.getValueService().isAutoValue(cssValue)) {
+            return AUTO;
+        }
+        
+//        return (int)val.getFloatValue();
+        return (int)cssValue.getFloatValue();
+    }
+
+    // XXX Copy also in designer/../GridHandler.
+    /** Given absolute coordinates x,y in the viewport, compute
+     * the CSS coordinates to assign to a box if it's parented by
+     * the given parentBox such that the coordinates will result
+     * in a box showing up at the absolute coordinates.
+     * That was a really convoluted explanation, so to be specific:
+     * If you have an absolutely positioned <div> at 100, 100,
+     * and you drag a button into it such that it's its child,
+     * and you drag it to screen coordinate 75, 150, then, in order
+     * for the button to be rendered at 75, 150 and be a child of
+     * the div its top/left coordinates must be -25, 50.
+     */
+//    private Point translateCoordinates(CssBox parentBox, int x, int y) {
+    private Point translateCoordinates(Box parentBox, int x, int y) {
+        while (parentBox != null) {
+//            if (parentBox.getBoxType().isPositioned()) {
+            if (parentBox.isPositioned()) {
+                x -= parentBox.getAbsoluteX();
+                y -= parentBox.getAbsoluteY();
+
+                return new Point(x, y);
+            }
+
+            if (parentBox.getPositionedBy() != null) {
+                parentBox = parentBox.getPositionedBy();
+            } else {
+                parentBox = parentBox.getParent();
+            }
+        }
+
+        return new Point(x, y);
     }
 
 }

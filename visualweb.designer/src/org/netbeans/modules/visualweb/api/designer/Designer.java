@@ -23,12 +23,13 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 import org.w3c.dom.Element;
 
 /**
- * Interface representing the designer.
+ * Interface representing the designer component.
  *
  * @author Peter Zavadsky
  */
@@ -70,4 +71,41 @@ public interface Designer {
     public void snapToGrid();
 
     public boolean isInlineEditing();
+
+    // >>> Boxes stuff
+    /** Representing the individual box. Providing accessors (getters) only! */
+    public interface Box {
+        public Element getComponentRootElement();
+        public Box getParent();
+        public Box[] getChildren();
+        
+        // XXX Get rid of this.
+        public HtmlTag getTag();
+        // XXX Get rid of this.
+        public Element getSourceElement();
+        
+        public int getWidth();
+        public int getHeight();
+        
+        public int getX();
+        public int getY();
+        
+        public int getAbsoluteX();
+        public int getAbsoluteY();
+        
+        public int getRightMargin();
+        public int getLeftMargin();
+        
+        public int getEffectiveTopMargin();
+        
+        // XXX Get rid of.
+        public boolean isPositioned();
+        // XXX Very suspicious.
+        public Box getPositionedBy();
+    } // End of Box.
+    
+    public Box findBox(int x, int y);
+    // XXX Get rid of.
+    public Box findBoxForSourceElement(Element sourceElement);
+    // <<< Boxes stuff
 }

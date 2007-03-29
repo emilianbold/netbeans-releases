@@ -2734,4 +2734,13 @@ public class WebForm implements Designer {
             webForm.refreshModel(true);
         }
     } // End of ErrorPanelCallbackImpl.
+
+    public Box findBox(int x, int y) {
+        return ModelViewMapper.findBox(getPane().getPageBox(), x, y);
+    }
+
+    public Box findBoxForSourceElement(Element sourceElement) {
+        return findCssBoxForElement(sourceElement);
+    }
+    
 }

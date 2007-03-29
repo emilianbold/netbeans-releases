@@ -197,7 +197,7 @@ public class JsfForm {
         return createDesigner(jsfForm);
     }
 
-    private static Designer[] findDesigners(JsfForm jsfForm) {
+    public /*private*/ static Designer[] findDesigners(JsfForm jsfForm) {
         Set<Designer> designerSet;
         synchronized (jsfForm2designerSet) {
             designerSet = jsfForm2designerSet.get(jsfForm);
@@ -1179,6 +1179,10 @@ public class JsfForm {
     
     DataObject getJspDataObject() {
         return htmlDomProvider.getJspDataObject();
+    }
+    
+    public void setUpdatesSuspended(Element componentRootElement, boolean suspend) {
+        htmlDomProvider.setUpdatesSuspended(componentRootElement, suspend);
     }
     
 //    public boolean canDropDesignBeansAtNode(DesignBean[] designBeans, Node node) {
