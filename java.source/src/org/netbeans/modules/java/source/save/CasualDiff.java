@@ -1127,14 +1127,17 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected void diffTypeIdent(JCPrimitiveTypeTree oldT, JCPrimitiveTypeTree newT) {
-        if (oldT.typetag != newT.typetag)
-            append(Diff.modify(oldT, getOldPos(oldT), newT));
+    protected int diffTypeIdent(JCPrimitiveTypeTree oldT, JCPrimitiveTypeTree newT, int[] bounds) {
+        if (oldT.typetag != newT.typetag) {
+            printer.print(newT);
+        } else {
+            copyTo(bounds[0], bounds[1]);
+        }
+        return bounds[1];
     }
 
     protected int diffTypeArray(JCArrayTypeTree oldT, JCArrayTypeTree newT, int[] bounds) {
         int localPointer = bounds[0];
-        copyTo(localPointer, bounds[0]);
         int[] elemtypeBounds = getBounds(oldT.elemtype);
         localPointer = diffTree(oldT.elemtype, newT.elemtype, elemtypeBounds);
         copyTo(localPointer, bounds[1]);
@@ -2366,7 +2369,7 @@ public class CasualDiff {
               retVal = diffLiteral((JCLiteral)oldT, (JCLiteral)newT, elementBounds);
               break;
           case JCTree.TYPEIDENT:
-              diffTypeIdent((JCPrimitiveTypeTree)oldT, (JCPrimitiveTypeTree)newT);
+              retVal = diffTypeIdent((JCPrimitiveTypeTree)oldT, (JCPrimitiveTypeTree)newT, elementBounds);
               break;
           case JCTree.TYPEARRAY:
               retVal = diffTypeArray((JCArrayTypeTree)oldT, (JCArrayTypeTree)newT, elementBounds);
