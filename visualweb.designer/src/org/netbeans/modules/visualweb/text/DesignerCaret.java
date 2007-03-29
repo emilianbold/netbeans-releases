@@ -1553,6 +1553,10 @@ import org.w3c.dom.Node;
 //                });
 //            }
         }
+        
+        public void componentMovedTo(DomDocumentEvent evt) {
+            // XXX For not nothing here.
+        }
         // DomDocumentListener <<<
         //////////////////////////
     }

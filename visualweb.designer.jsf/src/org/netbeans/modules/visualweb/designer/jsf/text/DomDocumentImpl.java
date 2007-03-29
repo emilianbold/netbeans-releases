@@ -1410,6 +1410,13 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         }
     }
     
+    private void fireComponentMovedTo(DomDocumentEvent evt) {
+        for (DomDocumentListener l : getDomDocumentListeners()) {
+            l.componentMovedTo(evt);
+        }
+    }
+    
+    
     private final EventListenerList listenerList = new EventListenerList();
     
     public void addDomDocumentListener(DomDocumentListener l) {
@@ -2038,4 +2045,51 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         return new Point(x, y);
     }
 
+    public void moveComponentTo(Box box, int x, int y) {
+        Element componentRootElement = box.getComponentRootElement();
+        // We should already have a locked buffer with a user visible
+        // undo event when this methhod is called
+        // XXX Not here.
+//        assert webform.getModel().isWriteLocked();
+//        if (!webform.isWriteLocked()) {
+        if (!jsfForm.isWriteLocked()) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("This method has to be called under write lock! It is not.")); // NOI18N
+        }
+
+        // prevent multiple updates for the same element - only need a single refresh
+        try {
+//            webform.getDomSynchronizer().setUpdatesSuspended(bean, true);
+//            webform.setUpdatesSuspended(componentRootElement, true);
+            jsfForm.setUpdatesSuspended(componentRootElement, true);
+
+//            CssBox parentBox = box.getParent();
+            Box parentBox = box.getParent();
+            
+            List<StyleData> set = new ArrayList<StyleData>(3);
+//            set.add(new StyleData(XhtmlCss.POSITION_INDEX, CssConstants.CSS_ABSOLUTE_VALUE));
+            set.add(new StyleData(XhtmlCss.POSITION_INDEX, CssProvider.getValueService().getAbsoluteValue()));
+            set.add(getHorizontalCssSetting(x, box.getWidth(), box, parentBox, componentRootElement));
+            set.add(getVerticalCssSetting(y, box.getHeight(), box, parentBox, componentRootElement));
+
+//            XhtmlCssEngine engine = webform.getMarkup().getCssEngine();
+// <removing design bean manipulation in engine>
+//            engine.updateLocalStyleValues((RaveElement)e, set, null);
+// ====
+//            Util.updateLocalStyleValuesForElement(e,
+//                    (StyleData[])set.toArray(new StyleData[set.size()]), null);
+//            WebForm.getHtmlDomProviderService().updateLocalStyleValuesForElement(componentRootElement,
+//                    set.toArray(new StyleData[set.size()]), null);
+            JsfSupportUtilities.updateLocalStyleValuesForElement(componentRootElement,
+                    set.toArray(new StyleData[set.size()]), null);
+// </removing design bean manipulation in engine>
+        } finally {
+//            webform.getDomSynchronizer().setUpdatesSuspended(bean, false);
+//            webform.setUpdatesSuspended(componentRootElement, false);
+            jsfForm.setUpdatesSuspended(componentRootElement, false);
+        }
+        
+        fireComponentMovedTo(new DefaultDomDocumentEvent(this, null));
+    }
+    
 }

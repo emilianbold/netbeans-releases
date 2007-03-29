@@ -1185,6 +1185,10 @@ public class JsfForm {
         htmlDomProvider.setUpdatesSuspended(componentRootElement, suspend);
     }
     
+    public boolean isWriteLocked() {
+        return getFacesModel().isWriteLocked();
+    }
+    
 //    public boolean canDropDesignBeansAtNode(DesignBean[] designBeans, Node node) {
 //        DesignBean parent = null;
 //        while (node != null) {
