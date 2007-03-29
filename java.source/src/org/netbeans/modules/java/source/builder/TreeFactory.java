@@ -333,6 +333,8 @@ public class TreeFactory implements TreeMakerInt {
         try {
             if (value instanceof Boolean)  // workaround for javac issue 6504896
                 return make.Literal(TypeTags.BOOLEAN, value == Boolean.FALSE ? 0 : 1);
+            if (value instanceof Character) // looks like world championship in workarounds here ;-)
+                return make.Literal(TypeTags.CHAR, Integer.valueOf((Character) value));
             // workaround for making NULL_LITERAL kind.
             if (value == null) {
                 return make.Literal(TypeTags.BOT, value);

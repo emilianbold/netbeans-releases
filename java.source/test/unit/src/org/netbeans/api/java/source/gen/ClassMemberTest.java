@@ -1031,7 +1031,8 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "public class Test {\n" +
             "    \n" +
             "    public char newlyCreatedMethod() {\n" +
-            "        char returnValue = taragui();\n" + 
+            "        char returnValue = taragui();\n" +
+            "        char expectedValue = 'c';\n" + 
             "    }\n" +
             "    \n" +
             "    public char taragui() {\n" +
@@ -1064,6 +1065,12 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                         make.Type(konecny.getReturnType()),
                         mit);
                 BlockTree block = make.Block(Collections.<StatementTree>singletonList(stmt), false);
+                stmt = make.Variable(
+                        make.Modifiers(Collections.<Modifier>emptySet()),
+                        "expectedValue",
+                        make.Type(konecny.getReturnType()),
+                        make.Literal(('c')));
+                block = make.addBlockStatement(block, stmt);
                 MethodTree njuMethod = (MethodTree) classTree.getMembers().get(1);
                 njuMethod = make.Method(
                         njuMethod.getModifiers(),
