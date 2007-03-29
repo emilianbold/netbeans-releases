@@ -2688,6 +2688,10 @@ public class CasualDiff {
             return;
         } else if (from > to || from < 0 || to < 0) {
             throw new IllegalArgumentException("Illegal values: from = " + from + "; to = " + to + ".");
+        } else if (to > origText.length()) {
+            // #99333, #97801: Debug message for the issues.
+            System.err.println("-----\n" + origText + "-----\n");
+            throw new IllegalArgumentException("Copying to " + to + " is greater then its size (" + origText.length() + ").");
         }
         loc.print(origText.substring(from, to));
     }
