@@ -31,8 +31,8 @@ import java.util.Collection;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.mobility.cldcplatform.PlatformConvertor;
 import org.netbeans.modules.mobility.project.J2MEProjectUtils;
+import org.netbeans.modules.mobility.project.UserConfigurationTemplatesProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -216,7 +216,7 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, A
             if (s.length() == 0 || s.equals(oldName)) {
                 String name = jComboTemplate.getSelectedIndex()==0 ? "" : (String)jComboTemplate.getSelectedItem();
                 if (name == null) return;
-                if (name.toLowerCase().endsWith(PlatformConvertor.CFG_TEMPLATE_SUFFIX.toLowerCase())) name = name.substring(0, name.length() - PlatformConvertor.CFG_TEMPLATE_SUFFIX.length());
+                if (name.toLowerCase().endsWith(UserConfigurationTemplatesProvider.CFG_TEMPLATE_SUFFIX.toLowerCase())) name = name.substring(0, name.length() - UserConfigurationTemplatesProvider.CFG_TEMPLATE_SUFFIX.length());
                 jTextFieldName.setText(name);
                 oldName = jTextFieldName.getText();
             }
@@ -226,8 +226,7 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, A
     private void deleteTemplate() {
         final String name = (String)jComboTemplate.getSelectedItem();
         if (NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NbBundle.getMessage(NewConfigurationPanel.class, "LBL_NewConfigPanel_ConfirmDelete", name), NbBundle.getMessage(NewConfigurationPanel.class, "TITLE_NewConfigPanel_ConfirmDelete"), NotifyDescriptor.YES_NO_OPTION)))) { //NOI18N
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(PlatformConvertor.CFG_TEMPLATES_PATH+'/'+name+'.'+PlatformConvertor.CFG_EXT);
-            if (fo == null) fo = Repository.getDefault().getDefaultFileSystem().findResource(PlatformConvertor.CFG_TEMPLATES_PATH+'/'+name+'.'+PlatformConvertor.GCFG_EXT);
+            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(UserConfigurationTemplatesProvider.CFG_TEMPLATES_PATH+'/'+name+'.'+UserConfigurationTemplatesProvider.CFG_EXT);
             if (fo != null) try {
                 fo.delete();
             } catch (IOException ioe) {

@@ -43,7 +43,6 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.spi.project.ProjectConfiguration;
-import org.netbeans.modules.mobility.cldcplatform.PlatformConvertor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -60,6 +59,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.util.Utilities;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
+import org.netbeans.modules.mobility.project.UserConfigurationTemplatesProvider;
 
 
 /** Handles adding, removing, editing and ordering of configs.
@@ -162,8 +162,7 @@ public final class VisualConfigSupport {
     
     public static void createFromTemplate(final J2MEProjectProperties properties, final String cfg, final String template) {
         if (template == null) return;
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(PlatformConvertor.CFG_TEMPLATES_PATH+'/'+template+'.'+PlatformConvertor.CFG_EXT);
-        if (fo == null) fo = Repository.getDefault().getDefaultFileSystem().findResource(PlatformConvertor.CFG_TEMPLATES_PATH+'/'+template+'.'+PlatformConvertor.GCFG_EXT);
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(UserConfigurationTemplatesProvider.CFG_TEMPLATES_PATH+'/'+template+'.'+UserConfigurationTemplatesProvider.CFG_EXT);
         InputStream in = null;
         if (fo != null) try {
             final Properties props = new Properties();
@@ -360,7 +359,7 @@ public final class VisualConfigSupport {
         SAVE_OPTION.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VisualConfigSupport.class, "ACSD_VCS_SaveBtn")); //NOI18N
         for (Object o : cfgs) {
             ProjectConfiguration cfg = (ProjectConfiguration)o;
-            final SaveConfigurationPanel scp = new SaveConfigurationPanel(cfg.getDisplayName() + PlatformConvertor.CFG_TEMPLATE_SUFFIX, allNames, SAVE_OPTION);
+            final SaveConfigurationPanel scp = new SaveConfigurationPanel(cfg.getDisplayName() + UserConfigurationTemplatesProvider.CFG_TEMPLATE_SUFFIX, allNames, SAVE_OPTION);
             final DialogDescriptor dd = new DialogDescriptor(scp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_SaveConfiguration", cfg.getDisplayName()), true, new Object[] {SAVE_OPTION, NotifyDescriptor.CANCEL_OPTION}, SAVE_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(SaveConfigurationPanel.class), null); //NOI18N
             Object ret = DialogDisplayer.getDefault().notify(dd);
             if (SAVE_OPTION.equals(ret)) {
@@ -375,12 +374,12 @@ public final class VisualConfigSupport {
                 return o1.getName().compareTo(o2.getName());
             }
         });
-        final FileObject dir = Repository.getDefault().getDefaultFileSystem().findResource(PlatformConvertor.CFG_TEMPLATES_PATH);
+        final FileObject dir = Repository.getDefault().getDefaultFileSystem().findResource(UserConfigurationTemplatesProvider.CFG_TEMPLATES_PATH);
         if (dir != null) {
             final Enumeration en = dir.getData(false);
             while (en.hasMoreElements()) {
                 final FileObject fo = (FileObject)en.nextElement();
-                if ((PlatformConvertor.CFG_EXT.equals(fo.getExt()) || PlatformConvertor.GCFG_EXT.equals(fo.getExt())) && Utilities.isJavaIdentifier(fo.getName())) a.add(fo);
+                if (UserConfigurationTemplatesProvider.CFG_EXT.equals(fo.getExt()) && Utilities.isJavaIdentifier(fo.getName())) a.add(fo);
             }
         }
         return a.toArray(new FileObject[a.size()]);
@@ -393,7 +392,7 @@ public final class VisualConfigSupport {
                     FileLock lock = null;
                     OutputStream out = null;
                     try {
-                        final FileObject fo = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), PlatformConvertor.CFG_TEMPLATES_PATH+'/'+tmpName+'.'+PlatformConvertor.CFG_EXT);
+                        final FileObject fo = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), UserConfigurationTemplatesProvider.CFG_TEMPLATES_PATH+'/'+tmpName+'.'+UserConfigurationTemplatesProvider.CFG_EXT);
                         lock = fo.lock();
                         out = fo.getOutputStream(lock);
                         extractConfigurationTemplate(cfgName, tmpName).store(out, null);

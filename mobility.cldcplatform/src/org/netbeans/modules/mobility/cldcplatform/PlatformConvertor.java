@@ -28,7 +28,6 @@ import org.openide.cookies.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
@@ -53,11 +52,6 @@ import org.openide.util.MutexException;
  */
 public class PlatformConvertor implements Environment.Provider, InstanceCookie.Of,
         PropertyChangeListener, Runnable, InstanceContent.Convertor {
-    
-    public static final String CFG_TEMPLATE_SUFFIX = NbBundle.getMessage(PlatformConvertor.class, "LBL_Cfg_TemplateSuffix"); //NOI18N
-    public static final String GCFG_EXT = "gcfg"; //NOI18N
-    public static final String CFG_EXT = "cfg"; //NOI18N
-    public static final String CFG_TEMPLATES_PATH = "Templates/J2MEProjectConfigurations"; //NOI18N
     
     private PlatformConvertor() {
         //to avoid instantiation
@@ -108,25 +102,6 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 } catch (MutexException e) {
                     ErrorManager.getDefault().notify(e);
                 }
-//                // delete all related project configuration templates
-//                final J2MEPlatform p = refPlatform.get();
-//                if (p != null) {
-//                    final J2MEPlatform.Device d[] = p.getDevices();
-//                    for (int i=0; i<d.length; i++) {
-//                        final String fileName = toJavaIdentifier(d[i].getName()) + CFG_TEMPLATE_SUFFIX;
-//                        final FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(CFG_TEMPLATES_PATH+'/'+fileName+'.'+GCFG_EXT);
-//                        if (fo != null)
-//                            try {
-//                                final Properties props = new Properties();
-//                                final InputStream is = fo.getInputStream();
-//                                props.load(is);
-//                                is.close();
-//                                if (p.getName().equals(props.getProperty("configs."+fileName+".platform.active"))) fo.delete(); //NOI18N
-//                            } catch (IOException ex) {
-//                                ErrorManager.getDefault().notify(ex);
-//                            }
-//                    }
-//                }
             }
         });
         cookies = new InstanceContent();
@@ -171,7 +146,6 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             refPlatform = new WeakReference<J2MEPlatform>(inst);
             
             updateBuildProperties(inst);
-//            createConfigurationTemplates(inst);
             return inst;
         }
     }
@@ -594,44 +568,6 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             list.add(st.nextToken().trim());
         return list.toArray(new String[list.size()]);
     }
-    
-//    static void createConfigurationTemplates(final J2MEPlatform platform) {
-//        RequestProcessor.getDefault().post(new Runnable() {
-//            public void run() {
-//                final J2MEPlatform.Device dev[] = platform.getDevices();
-//                for (int i=0; i<dev.length; i++)
-//                    createConfigurationTemplate(platform, dev[i]);
-//            }
-//        });
-//    }
-//    
-//    protected static void createConfigurationTemplate(final J2MEPlatform platform, final J2MEPlatform.Device device) {
-//        final String fileName = toJavaIdentifier(device.getName()) + CFG_TEMPLATE_SUFFIX;
-//        if (Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(CFG_TEMPLATES_PATH+'/'+fileName+'.'+CFG_EXT) != null) return;
-//        if (Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(CFG_TEMPLATES_PATH+'/'+fileName+'.'+GCFG_EXT) != null) return;
-//        FileLock lock = null;
-//        OutputStream out = null;
-//        try {
-//            FileObject fo;
-//            synchronized (PlatformConvertor.class) {
-//                fo = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), CFG_TEMPLATES_PATH+'/'+fileName+'.'+GCFG_EXT);
-//            }
-//            lock = fo.lock();
-//            out = fo.getOutputStream(lock);
-//            Properties p = new Properties();
-//            p.putAll(extractPlatformProperties("configs." + fileName + ".", platform, device, null, null));
-//            p.store(out, null); //NOI18N
-//        } catch (FileAlreadyLockedException fale) {
-//            //bug #6292738
-//            //ignore - probabaly duplicite file names derived from the device list of the installed platform
-//        } catch (Exception e) {
-//            ErrorManager.getDefault().notify(e);
-//        } finally {
-//            if (out != null) try {out.close();} catch (IOException ioe) {}
-//            if (lock != null) lock.releaseLock();
-//        }
-//        
-//    }
     
     protected static String toJavaIdentifier(final String s) {
         final StringBuffer sb = new StringBuffer();

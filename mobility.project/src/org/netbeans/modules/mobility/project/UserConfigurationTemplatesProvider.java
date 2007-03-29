@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.netbeans.modules.mobility.cldcplatform.PlatformConvertor;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory;
@@ -41,7 +40,11 @@ import org.openide.util.NbBundle;
  */
 public class UserConfigurationTemplatesProvider implements ProjectConfigurationFactory, ProjectConfigurationFactory.CategoryDescriptor {
         
-    static final String PRIVATE_PREFIX = "private."; //NOI18N
+    public static final String PRIVATE_PREFIX = "private."; //NOI18N
+    public static final String CFG_TEMPLATE_SUFFIX = NbBundle.getMessage(J2MEProjectProperties.class, "LBL_Cfg_TemplateSuffix"); //NOI18N
+    public static final String CFG_EXT = "cfg"; //NOI18N
+    public static final String CFG_TEMPLATES_PATH = "Templates/J2MEProjectConfigurations"; //NOI18N
+    
 
     /** Creates a new instance of UserConfigurationTemplatesProvider */
     public UserConfigurationTemplatesProvider() {
@@ -57,14 +60,14 @@ public class UserConfigurationTemplatesProvider implements ProjectConfigurationF
 
     public List<Descriptor> getChildren() {
         ArrayList<Descriptor> a = new ArrayList();
-        FileObject root = Repository.getDefault().getDefaultFileSystem().findResource(PlatformConvertor.CFG_TEMPLATES_PATH);
+        FileObject root = Repository.getDefault().getDefaultFileSystem().findResource(CFG_TEMPLATES_PATH);
         if (root != null) {
             for (final FileObject fo : root.getChildren()) {
-                if (PlatformConvertor.CFG_EXT.equals(fo.getExt())) {
+                if (CFG_EXT.equals(fo.getExt())) {
                     a.add(new ConfigurationTemplateDescriptor() {
                         Map<String, String> pcp, pgp, pp;
                         String name = fo.getName();
-                        {if (name.toLowerCase().endsWith(PlatformConvertor.CFG_TEMPLATE_SUFFIX.toLowerCase())) name = name.substring(0, name.length() - PlatformConvertor.CFG_TEMPLATE_SUFFIX.length());}
+                        {if (name.toLowerCase().endsWith(CFG_TEMPLATE_SUFFIX.toLowerCase())) name = name.substring(0, name.length() - CFG_TEMPLATE_SUFFIX.length());}
                         public String getCfgName() {
                             return name;
                         }

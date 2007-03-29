@@ -34,9 +34,7 @@ import java.util.TreeSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
-import org.netbeans.modules.mobility.cldcplatform.PlatformConvertor;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
-import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -68,7 +66,7 @@ public class GlobalAbilitiesCache {
         OpenProjects.getDefault().addPropertyChangeListener(l);
         l.propertyChange(null);
         try {
-            FileObject fo = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), PlatformConvertor.CFG_TEMPLATES_PATH);
+            FileObject fo = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), UserConfigurationTemplatesProvider.CFG_TEMPLATES_PATH);
             fo.addFileChangeListener(l);
             FileObject ch[] = fo.getChildren();
             for (int i=0; i<ch.length; i++) l.loadAbilities(ch[i]);
@@ -109,7 +107,7 @@ public class GlobalAbilitiesCache {
         }
         
         public void loadAbilities(final FileObject fo) {
-            if (fo == null || !fo.isData() || !(fo.getExt().equals(PlatformConvertor.CFG_EXT) || fo.getExt().equals(PlatformConvertor.GCFG_EXT))) return; //NOI28N
+            if (fo == null || !fo.isData() || !(fo.getExt().equals(UserConfigurationTemplatesProvider.CFG_EXT))) return; //NOI28N
             try {
                 final Properties p = new Properties();
                 p.load(fo.getInputStream());

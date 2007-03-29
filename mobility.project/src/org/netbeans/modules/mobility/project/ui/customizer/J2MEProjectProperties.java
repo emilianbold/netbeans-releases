@@ -72,7 +72,7 @@ public class J2MEProjectProperties implements ProjectProperties {
     public static final String CONFIG_PREFIX = "configs."; //NOI18N
     
     private static final String LIBS="${libs.";
-    
+
     // Info about the property destination
     private final Set<PropertyDescriptor> PROPERTY_DESCRIPTORS = new HashSet<PropertyDescriptor>();
     
