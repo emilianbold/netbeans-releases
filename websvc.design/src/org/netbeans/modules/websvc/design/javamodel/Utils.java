@@ -198,8 +198,9 @@ public class Utils {
         if (returnType.getKind() == TypeKind.DECLARED) {
             TypeElement element = (TypeElement)((DeclaredType)returnType).asElement();
             methodModel.setReturnType(element.getQualifiedName().toString());
+        } else { // for primitive types
+            methodModel.setReturnType(methodEl.getReturnType().toString());
         }
-        //methodModel.setReturnType(methodEl.getReturnType().as);
         
         // populate params
         List<? extends VariableElement> paramElements = methodEl.getParameters();
@@ -218,6 +219,8 @@ public class Utils {
         if (type.getKind() == TypeKind.DECLARED) {
             TypeElement element = (TypeElement)((DeclaredType)type).asElement();
             paramModel.setParamType(element.getQualifiedName().toString());
+        } else { // for primitive type
+            paramModel.setParamType(paramEl.asType().toString());
         }
         TypeElement paramAnotationEl = controller.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
         List<? extends AnnotationMirror> methodAnnotations = paramEl.getAnnotationMirrors();
