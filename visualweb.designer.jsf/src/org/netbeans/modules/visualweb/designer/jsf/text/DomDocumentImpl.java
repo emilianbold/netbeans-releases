@@ -1600,7 +1600,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
     // XXX Moved from designer/../GridHandler
     // TODO 1) Refactor, there should be listener on the designer, informing about user actions.
     // TODO 2) This is very messy, simplify, devide to more methods.
-    public void moveComponents(Box[] boxes, Point[] offsetPoints, DomPosition pos) {
+    public void moveComponents(Designer designer, Box[] boxes, Point[] offsetPoints, DomPosition pos, int newX, int newY, boolean snapEnabled) {
         // Locate a grid layout parent
 //        Document doc = editor.getDocument();
 //        WebForm webform = doc.getWebForm();
@@ -1660,8 +1660,13 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //                    y = snapY(y, box.getPositionedBy());
 //                }
                 
-                int x = offset.x;
-                int y = offset.y;
+                int x = newX + offset.x;
+                int y = newY + offset.y;
+                
+                if (snapEnabled) {
+                    x = designer.snapX(x, box.getPositionedBy());
+                    y = designer.snapY(y, box.getPositionedBy());
+                }
 
 //                CssBox parentBox = box.getParent();
                  Box parentBox = box.getParent();
@@ -1719,13 +1724,14 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
                             }
                         }
 
-                        Designer[] designers = JsfForm.findDesigners(jsfForm);
-                        Designer designer = designers.length == 0 ? null : designers[0];
+//                        Designer[] designers = JsfForm.findDesigners(jsfForm);
+//                        Designer designer = designers.length == 0 ? null : designers[0];
+                        
 //                        if (pb == null) {
                         if (parent == null) {
 //                            CssBox currentBox = webform.getMapper().findBox(x, y);
 //                            CssBox currentBox = ModelViewMapper.findBox(webform.getPane().getPageBox(), x, y);
-                            Box currentBox = designer == null ? null : designer.findBox(x, y);
+                            Box currentBox = designer.findBox(x, y);
                             if (currentBox != null) {
 
 //                                for (int j = 0, m = currentBox.getBoxCount(); j < m; j++) {

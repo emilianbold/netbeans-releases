@@ -2742,5 +2742,13 @@ public class WebForm implements Designer {
     public Box findBoxForSourceElement(Element sourceElement) {
         return findCssBoxForElement(sourceElement);
     }
+
+    public int snapX(int x, Box positionedBy) {
+        return getGridHandler().snapX(x, positionedBy);
+    }
+
+    public int snapY(int y, Box positionedBy) {
+        return getGridHandler().snapY(y, positionedBy);
+    }
     
 }

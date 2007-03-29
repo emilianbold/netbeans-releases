@@ -107,5 +107,8 @@ public interface Designer {
     public Box findBox(int x, int y);
     // XXX Get rid of.
     public Box findBoxForSourceElement(Element sourceElement);
+    
+    public int snapX(int x, Box positionedBy);
+    public int snapY(int y, Box positionedBy);
     // <<< Boxes stuff
 }
