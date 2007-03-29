@@ -123,7 +123,7 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
      */
     protected boolean asynchronous() {
         if (warnedAsynchronousActions.add(getClass())) {
-            Logger.getAnonymousLogger().warning(
+            Logger.getLogger(CallableSystemAction.class.getName()).warning(
                 "Warning - " + getClass().getName() +
                 " should override CallableSystemAction.asynchronous() to return false"
             );

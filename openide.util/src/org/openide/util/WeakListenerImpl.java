@@ -51,6 +51,9 @@ import javax.swing.event.DocumentListener;
  * @author Jaroslav Tulach
  */
 abstract class WeakListenerImpl implements java.util.EventListener {
+
+    private static final Logger LOG = Logger.getLogger(WeakListenerImpl.class.getName());
+
     /** weak reference to listener */
     private ListenerReference ref;
 
@@ -537,7 +540,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
                 remove = getRemoveMethod(methodClass, methodName, types[0]);
 
                 if (remove == null) {
-                    Logger.getAnonymousLogger().warning(
+                    LOG.warning(
                         "Can't remove " + ref.listenerClass.getName() + //NOI18N
                         " using method " + methodName + //NOI18N
                         " from " + src
@@ -558,10 +561,10 @@ abstract class WeakListenerImpl implements java.util.EventListener {
             try {
                 remove.invoke(src, params);
             } catch (Exception ex) { // from invoke(), should not happen
-                Logger.getAnonymousLogger().warning(
+                LOG.warning(
                     "Problem encountered while calling " + methodClass + "." + methodName + "(...) on " + src
                 ); // NOI18N
-                Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
+                LOG.log(Level.WARNING, null, ex);
             }
         }
 

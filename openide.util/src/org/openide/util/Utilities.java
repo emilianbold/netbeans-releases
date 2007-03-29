@@ -93,6 +93,9 @@ import org.openide.util.actions.Presenter;
 * @author Jan Palka, Ian Formanek, Jaroslav Tulach
 */
 public final class Utilities {
+
+    private static final Logger LOG = Logger.getLogger(Utilities.class.getName());
+
     /** Operating system is Windows NT. */
     public static final int OS_WINNT = 1 << 0;
 
@@ -1938,7 +1941,7 @@ widthcheck:  {
                     bounds.height -= (bounds.y + Integer.parseInt(st.nextToken()));
                     bounds.width -= (bounds.x + Integer.parseInt(st.nextToken()));
                 } catch (NumberFormatException ex) {
-                    Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
+                    LOG.log(Level.WARNING, null, ex);
                 }
             }
 
@@ -1961,7 +1964,7 @@ widthcheck:  {
             bounds.height -= (insets.top + insets.bottom);
             bounds.width -= (insets.left + insets.right);
         } catch (Exception ex) {
-            Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
+            LOG.log(Level.WARNING, null, ex);
         }
 
         return bounds;
@@ -2429,7 +2432,7 @@ widthcheck:  {
         try {
             en = current.getResources("META-INF/netbeans/translate.names");
         } catch (IOException ex) {
-            Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
+            LOG.log(Level.WARNING, null, ex);
             en = null;
         }
 
@@ -2492,8 +2495,8 @@ widthcheck:  {
                 loadTranslationFile(re, reader, list);
                 reader.close();
             } catch (IOException ex) {
-                Logger.getAnonymousLogger().log(Level.WARNING, "Problematic file: " + u);
-                Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
+                LOG.log(Level.WARNING, "Problematic file: " + u);
+                LOG.log(Level.WARNING, null, ex);
             }
         }
 

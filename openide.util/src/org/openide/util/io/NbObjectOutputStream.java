@@ -172,7 +172,7 @@ public class NbObjectOutputStream extends ObjectOutputStream {
                 b.append("]"); // NOI18N
             }
 
-            Logger.getAnonymousLogger().warning(b.toString());
+            Logger.getLogger(NbObjectOutputStream.class.getName()).warning(b.toString());
         }
     }
 
