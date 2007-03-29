@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.help.HelpSet;
 import javax.help.HelpSetException;
 import javax.help.JHelp;
@@ -341,7 +342,13 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             });
             return;
         }
-        Installer.log.fine("showing help: " + ctx2);
+        LogRecord r = new LogRecord(Level.FINE, "LOG_SHOWING_HELP"); // NOI18N
+        r.setParameters(new Object[] { ctx2.getHelpID() } );
+        r.setResourceBundleName("org.netbeans.modules.javahelp.Bundle"); // NOI18N
+        r.setResourceBundle(NbBundle.getBundle(JavaHelp.class)); // NOI18N
+        r.setLoggerName(Installer.UI.getName());
+        Installer.log.log(r);
+        Installer.UI.log(r);
         final HelpSet[] hs_ = new HelpSet[1];
         Runnable run = new Runnable() {
             public void run() {

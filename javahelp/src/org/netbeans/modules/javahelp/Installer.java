@@ -33,6 +33,7 @@ import org.openide.modules.ModuleInstall;
 public class Installer extends ModuleInstall {
 
     public static final Logger log = Logger.getLogger("org.netbeans.modules.javahelp"); // NOI18N
+    public static final Logger UI = Logger.getLogger("org.netbeans.ui.javahelp"); // NOI18N
 
     public void restored() {
         log.fine("restored module");
