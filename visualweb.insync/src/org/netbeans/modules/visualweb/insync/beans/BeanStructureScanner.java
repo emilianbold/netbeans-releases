@@ -166,7 +166,7 @@ public class BeanStructureScanner {
     }
 
    protected Method ensureMethod(Object location, MethodInfo mi) {
-       Method method = beansUnit.getThisClass().getPublicMethod(mi.getName(), null);
+       Method method = beansUnit.getThisClass().getMethod(mi.getName(), null);
        if(method != null) {
            return method;
        }
