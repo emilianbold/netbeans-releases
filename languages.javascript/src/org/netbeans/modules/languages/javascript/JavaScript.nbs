@@ -381,19 +381,26 @@ MARK:error: {
 }
 
 COMPLETION:js_identifier: {
-    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
+    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems;
 }
 
 COMPLETION:js_keyword: {
-    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
+    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems;
 }
 
 COMPLETION:js_whitespace: {
-    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
+    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems;
+    doNotUsePrefix:"true";
 }
 
 COMPLETION:js_operator: {
-    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
+    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems;
+    doNotUsePrefix:"true";
+}
+
+COMPLETION:js_separator: {
+    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems;
+    doNotUsePrefix:"true";
 }
 
 STORE:VariableDeclaration: {

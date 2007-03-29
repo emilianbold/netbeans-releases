@@ -117,31 +117,36 @@ public class CompletionProviderImpl implements CompletionProvider {
             //S ystem.out.println("CodeCompletion: refresh " + resultSet);
             if (resultSet == null) return;
 
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
-            TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
-            int offset = component.getCaret ().getDot ();
-            tokenSequence.move (offset - 1);
-            if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
-                resultSet.finish ();
-                return;
-            }
-            Token token = tokenSequence.token ();
-            String start = token.text ().toString ();
-            start = start.substring (0, offset - tokenSequence.offset ()).trim ();
-            if (start.equals ("."))
-                start = "";// [HACK]
-            if (ignoreCase) start = start.toLowerCase ();
+            try {
+                TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
+                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
+                int offset = component.getCaret ().getDot ();
+                tokenSequence.move (offset - 1);
+                if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
+                    resultSet.finish ();
+                    return;
+                }
+                String mimeType = tokenSequence.language ().mimeType ();
+                Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
+                Token token = tokenSequence.token ();
+                String tokenType = token.id ().name ();
+                Feature feature = language.getFeature (Language.COMPLETION, tokenType);
+                String start = feature != null && "true".equals(feature.getValue("doNotUsePrefix")) ? "" :
+                    token.text().toString ().substring (0, offset - tokenSequence.offset ()).trim ();
+                if (ignoreCase) start = start.toLowerCase ();
 
-            Iterator<CompletionItem> it = items.iterator ();
-            while (it.hasNext ()) {
-                CompletionItem item = it.next ();
-                CharSequence chs = item.getInsertPrefix ();
-                String s = chs instanceof String ? (String) chs : chs.toString ();
-                if (s.startsWith (start))
-                    resultSet.addItem (item);
+                Iterator<CompletionItem> it = items.iterator ();
+                while (it.hasNext ()) {
+                    CompletionItem item = it.next ();
+                    CharSequence chs = item.getInsertPrefix ();
+                    String s = chs instanceof String ? (String) chs : chs.toString ();
+                    if (s.startsWith (start))
+                        resultSet.addItem (item);
+                }
+                resultSet.finish ();
+                //compute (resultSet);
+            } catch (ParseException e) {
             }
-            resultSet.finish ();
-            //compute (resultSet);
         }
 
         public void cancel () {
@@ -178,19 +183,15 @@ public class CompletionProviderImpl implements CompletionProvider {
                     // [HACK] borders should be represented by some tokens!!!
                     return;
                 }
-                start = start.substring (0, offset - tokenSequence.offset ()).trim ();
-                if (start.equals ("."))
-                    start = "";// [HACK]
                 String tokenType = token.id ().name ();
+                feature = language.getFeature (Language.COMPLETION, tokenType);
+                start = feature != null && "true".equals(feature.getValue("doNotUsePrefix")) ? "" : 
+                    start.substring (0, offset - tokenSequence.offset ()).trim ();
                 ignoreCase = false;
                 Feature f = language.getFeature ("PROPERTIES");
                 if (f != null)
                     ignoreCase = f.getBoolean ("ignoreCase", false);
                 if (ignoreCase) start = start.toLowerCase ();
-                feature = language.getFeature (
-                    Language.COMPLETION, 
-                    tokenType
-                );
             } catch (ParseException ex) {
             }
             if (feature == null)
@@ -236,11 +237,15 @@ public class CompletionProviderImpl implements CompletionProvider {
                 // add tokens for language borders...
                 return;
             }
-            String start = token.getIdentifier ().substring (
-                0, offset - token.getOffset ()
-            ).trim ();
-            if (start.equals ("."))
-                start = "";// [HACK]
+            Language lang = null;
+            try {
+                lang = LanguagesManager.getDefault ().getLanguage (token.getMimeType());
+            } catch (ParseException e) {
+            }
+            String tokenType = token.getType();
+            Feature f = lang.getFeature (Language.COMPLETION, tokenType);
+            String start = f != null && "true".equals(f.getValue("doNotUsePrefix")) ? "" : 
+                token.getIdentifier ().substring (0, offset - token.getOffset ()).trim ();
             
             //S ystem.out.println("CodeCompletion: (syntax) start=" + start + ": stoken=" + token);
             
