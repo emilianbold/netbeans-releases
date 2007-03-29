@@ -31,13 +31,14 @@ import java.util.Map;
 import java.util.Set;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
-import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.model.XpathEvent;
-import javax.enterprise.deploy.model.XpathListener;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.gen.EnterpriseBeans;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Jboss;
 import org.netbeans.modules.j2ee.jboss4.config.gen.MessageDriven;
@@ -49,7 +50,9 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -58,7 +61,7 @@ import org.openide.util.NbBundle;
  * @author sherold, lkotouc
  */
 public class EjbDeploymentConfiguration extends JBDeploymentConfiguration 
-        implements PropertyChangeListener, XpathListener {
+implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {
     
     private static final String SESSION_RESOURCE_REF = "/ejb-jar/enterprise-beans/session/resource-ref"; // NOI18N
     private static final String ENTITY_RESOURCE_REF = "/ejb-jar/enterprise-beans/entity/resource-ref"; //NOI1*N
@@ -94,27 +97,10 @@ public class EjbDeploymentConfiguration extends JBDeploymentConfiguration
     /**
      * Creates a new instance of EjbDeploymentConfiguration 
      */
-    public EjbDeploymentConfiguration(DeployableObject deployableObject) {
-        super(deployableObject);
-        if (deployableObject != null && deployableObject.getDDBeanRoot() != null &&
-            "3.0".equals(deployableObject.getDDBeanRoot().getDDBeanRootVersion())) { // NOI81N
-            isEJB3 = true;
-        }
-        else {
-            isEJB3 = false;
-        }
-    }
-    
-    /**
-     * EjbDeploymentConfiguration initialization. This method should be called before
-     * this class is being used.
-     * 
-     * @param file jboss.xml file.
-     * @param resourceDir   directory containing definition for enterprise resources.
-     */
-    public void init(File file, File resourceDir) {
-        super.init(resourceDir);
-        this.jbossFile = file;
+    public EjbDeploymentConfiguration(J2eeModule j2eeModule) {
+        super(j2eeModule);
+        isEJB3 = ("3.0".equals(j2eeModule.getModuleVersion())); // NOI81N
+        this.jbossFile = j2eeModule.getDeploymentConfigurationFile("META-INF/jboss.xml"); // NOI18N;
         getJboss();
         if (deploymentDescriptorDO == null) {
             try {
@@ -124,23 +110,39 @@ public class EjbDeploymentConfiguration extends JBDeploymentConfiguration
                 ErrorManager.getDefault().notify(donfe);
             }
         }
-        
-        if (deplObj != null && deplObj.getDDBeanRoot() != null ) {
-            //listen on the resource-ref element
-            DDBeanRoot root = deplObj.getDDBeanRoot();
-            root.addXpathListener(SESSION_RESOURCE_REF, this);
-            root.addXpathListener(ENTITY_RESOURCE_REF, this);
-            root.addXpathListener(SESSION_EJB_REF, this);
-            root.addXpathListener(ENTITY_EJB_REF, this);
-            root.addXpathListener(MSGDRV_RESOURCE_REF, this);
-            root.addXpathListener(MSGDRV_EJB_REF, this);
-            root.addXpathListener(MSGDRV, this);
-            root.addXpathListener(MSGDRV_MSG_DEST, this);
-            root.addXpathListener(SESSION_MSG_DEST_REF, this);
-            root.addXpathListener(ENTITY_MSG_DEST_REF, this);
-            root.addXpathListener(MSGDRV_MSG_DEST_REF, this);
+        EjbJar ejbJar = (EjbJar) j2eeModule.getDeploymentDescriptor(J2eeModule.EJBJAR_XML);
+        if (ejbJar != null) {
+            ejbJar.addPropertyChangeListener(this);
         }
     }
+    
+    public Lookup getLookup() {
+        return Lookups.fixed(this);
+    }
+    
+    public void dispose() {
+        EjbJar ejbJar = (EjbJar) j2eeModule.getDeploymentDescriptor(J2eeModule.EJBJAR_XML);
+        if (ejbJar != null) {
+            ejbJar.removePropertyChangeListener(this);
+        }
+    }
+
+    public boolean supportsCreateDatasource() {
+        return true;
+    }
+        
+//        //listen on the resource-ref element
+//        deplObj.getDDBeanRoot().addXpathListener(SESSION_RESOURCE_REF, this);
+//        deplObj.getDDBeanRoot().addXpathListener(ENTITY_RESOURCE_REF, this);
+//        deplObj.getDDBeanRoot().addXpathListener(SESSION_EJB_REF, this);
+//        deplObj.getDDBeanRoot().addXpathListener(ENTITY_EJB_REF, this);
+//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_RESOURCE_REF, this);
+//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_EJB_REF, this);
+//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV, this);
+//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_MSG_DEST, this);
+//        deplObj.getDDBeanRoot().addXpathListener(SESSION_MSG_DEST_REF, this);
+//        deplObj.getDDBeanRoot().addXpathListener(ENTITY_MSG_DEST_REF, this);
+//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_MSG_DEST_REF, this);
        
     /**
      * Return jboss graph. If it was not created yet, load it from the file
@@ -175,189 +177,212 @@ public class EjbDeploymentConfiguration extends JBDeploymentConfiguration
     /**
      * Listen to jboss.xml document changes.
      */
-    public synchronized void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(PropertyChangeEvent evt) {
+        Object newValue = evt.getNewValue();
         if (evt.getPropertyName() == DataObject.PROP_MODIFIED &&
             evt.getNewValue() == Boolean.FALSE) {
-            
-            if (evt.getSource() == deploymentDescriptorDO) // dataobject has been modified, jboss graph is out of sync
-                jboss = null;
-            else
+            if (evt.getSource() == deploymentDescriptorDO) { // dataobject has been modified, jboss graph is out of sync
+                synchronized (this) {
+                    jboss = null;
+                }
+            } else {
                 super.propertyChange(evt);
+            }
+
+//        } else if (evt.getOldValue() == null) {
+//            if (newValue instanceof org.netbeans.modules.j2ee.dd.api.common.ResourceRef) {
+//                //a new resource reference added
+//                org.netbeans.modules.j2ee.dd.api.common.ResourceRef resourceRef = (org.netbeans.modules.j2ee.dd.api.common.ResourceRef) newValue;
+//                try {
+//                    String resType = resourceRef.getResType();
+//                    if ("javax.sql.DataSource".equals(resType)) { // NOI18N
+//                        addResReference(resourceRef.getResRefName());
+//                    } else if ("javax.mail.Session".equals(resType)) { // NOI18N
+//                        addMailReference(resourceRef.getResRefName());
+//                    } else if ("javax.jms.ConnectionFactory".equals(resType)) { // NOI18N
+//                        addConnectionFactoryReference(resourceRef.getResRefName());
+//                    }
+//                } catch (ConfigurationException ce) {
+//                    ErrorManager.getDefault().notify(ce);
+//                }
+//            }
         }
     }
    
-    public void fireXpathEvent(XpathEvent xpe) {
-        
-        if (!xpe.isAddEvent())
-            return;
-        
-        DDBean eventDDBean = xpe.getBean();
-        if (SESSION_RESOURCE_REF.equals(eventDDBean.getXpath()) ||
-            ENTITY_RESOURCE_REF.equals(eventDDBean.getXpath()) ||
-            MSGDRV_RESOURCE_REF.equals(eventDDBean.getXpath())) 
-        {
-            String[] desc = eventDDBean.getText("description"); // NOI18N
-            String[] name = eventDDBean.getText("res-ref-name"); // NOI18N
-            String[] type = eventDDBean.getText("res-type");     // NOI18N
-            if (name.length > 0 && type.length > 0) {
-                try {
-                    //we don't know which bean contains the created resource-ref,
-                    //thus we must find all beans containing the same resource-ref
-                    //as the one just created
-                    BEAN_TYPE beanType = (SESSION_RESOURCE_REF.equals(eventDDBean.getXpath()) ? 
-                                          BEAN_TYPE.SESSION : (ENTITY_RESOURCE_REF.equals(eventDDBean.getXpath()) ? 
-                                          BEAN_TYPE.ENTITY : BEAN_TYPE.MSGDRV));
-
-                    if (beanType != BEAN_TYPE.MSGDRV) { //sessions and entities
-                        Set beanNames = null;
-                        if (desc.length > 0  && "javax.sql.DataSource".equals(type[0])) { // NOI18N
-                            beanNames = getRelevantBeansDataRef(desc[0], name[0], eventDDBean.getRoot(), beanType);
-                            addResReference(desc[0], name[0], beanNames, beanType);
-                        }
-                        else
-                        if ("javax.mail.Session".equals(type[0])) { // NOI18N
-                            beanNames = getRelevantBeansMailRef(name[0], eventDDBean.getRoot(), beanType);
-                            addMailReference(name[0], beanNames, beanType);
-                        }
-                        else
-                        if ("javax.jms.ConnectionFactory".equals(type[0])) { // NOI18N
-                            beanNames = getRelevantBeansConnectionFactoryRef(name[0], eventDDBean.getRoot(), beanType);
-                            addConnectionFactoryReference(name[0], beanNames, beanType);
-                        }
-                    }
-                    else { // message-driven beans
-                        Map beans = null;
-                        if (desc.length > 0  && "javax.sql.DataSource".equals(type[0])) { // NOI18N
-                            beans = getRelevantMsgDrvBeansDataRef(desc[0], name[0], eventDDBean.getRoot());
-                            addMsgDrvResReference(desc[0], name[0], beans);
-                        }
-                        if ("javax.mail.Session".equals(type[0])) { // NOI18N
-                            beans = getRelevantMsgDrvBeansMailRef(name[0], eventDDBean.getRoot());
-                            addMsgDrvMailReference(name[0], beans);
-                        }
-                        else
-                        if ("javax.jms.ConnectionFactory".equals(type[0])) { // NOI18N
-                            beans = getRelevantMsgDrvBeansConnectionFactoryRef(name[0], eventDDBean.getRoot());
-                            addMsgDrvConnectionFactoryReference(name[0], beans);
-                        }
-                    }
-
-                } catch (ConfigurationException ce) {
-                    ErrorManager.getDefault().notify(ce);
-                }
-            }
-        }
-        else if (SESSION_EJB_REF.equals(eventDDBean.getXpath()) ||
-                 ENTITY_EJB_REF.equals(eventDDBean.getXpath()) ||
-                 MSGDRV_EJB_REF.equals(eventDDBean.getXpath())) 
-        {
-            String[] name = eventDDBean.getText("ejb-ref-name"); // NOI18N
-            String[] type = eventDDBean.getText("ejb-ref-type"); // NOI18N
-            if (name.length > 0 && type.length > 0 
-                    && ("Session".equals(type[0]) || "Entity".equals(type[0]))) { // NOI18N
-                try {
-                    //we don't know which bean contains the created ejb-ref,
-                    //thus we must find all beans containing the same ejb-ref
-                    //as the one just created
-                    BEAN_TYPE beanType = (SESSION_EJB_REF.equals(eventDDBean.getXpath()) ? 
-                                          BEAN_TYPE.SESSION : (ENTITY_EJB_REF.equals(eventDDBean.getXpath()) ? 
-                                          BEAN_TYPE.ENTITY : BEAN_TYPE.MSGDRV));
-
-                    if (beanType != BEAN_TYPE.MSGDRV) { //sessions and entities
-                        Set beanNames = getRelevantBeansEjbRef(name[0], eventDDBean.getRoot(), beanType);
-                        addEjbReference(name[0], beanNames, beanType);
-                    }
-                    else { // message-driven beans
-                        Map beans = getRelevantMsgDrvBeansEjbRef(name[0], eventDDBean.getRoot());
-                        addMsgDrvEjbReference(name[0], beans);
-                    }
-
-                } catch (ConfigurationException ce) {
-                    ErrorManager.getDefault().notify(ce);
-                }
-            }
-        }
-        else if (MSGDRV.equals(eventDDBean.getXpath())) {
-            if (isEJB3) { // do not generate MDB destination reference for EJB3 modules (issue #82452)
-                return;
-            }
-            
-            String[] name = eventDDBean.getText("ejb-name"); // NOI18N
-            String[] type = eventDDBean.getText("message-destination-type"); // NOI18N
-            String[] dest = eventDDBean.getText("message-destination-link"); // NOI18N
-            
-            if (name.length == 0)
-                return;
-            
-            if (dest.length == 0) {
-                tempEjbName = name[0];
-            } else {
-                try {
-                    addMDB(name[0], dest[0]);
-                } catch (ConfigurationException ce) {
-                    ErrorManager.getDefault().notify(ce);
-                }
-            }
-        }
-        else if (MSGDRV_MSG_DEST.equals(eventDDBean.getXpath())) { //is fired right after the MSGDRV Xpath event, too
-            if (isEJB3) { // do not generate MDB destination reference for EJB3 modules (issue #82452)
-                return;
-            }
-
-            if (tempEjbName == null) // MSGDRV was not fired before
-                return;
-            
-            try {
-                String dest = xpe.getBean().getText();
-                addMDB(tempEjbName, dest);
-            } catch (ConfigurationException ce) {
-                ErrorManager.getDefault().notify(ce);
-            } finally {
-                tempEjbName = null;
-            }
-        }
-        
-        else if (SESSION_MSG_DEST_REF.equals(eventDDBean.getXpath()) ||
-                 ENTITY_MSG_DEST_REF.equals(eventDDBean.getXpath()) ||
-                 MSGDRV_MSG_DEST_REF.equals(eventDDBean.getXpath()))
-        {
-            String[] name = eventDDBean.getText("message-destination-ref-name"); // NOI18N
-            String[] type = eventDDBean.getText("message-destination-type"); // NOI18N
-            
-            if (name.length > 0) {
-                
-                String destPrefix = "";
-                if (type.length > 0) {
-                    if (type[0].equals("javax.jms.Queue")) // NOI18N
-                        destPrefix = JBOSS4_MSG_QUEUE_JNDI_PREFIX;
-                    else
-                    if (type[0].equals("javax.jms.Topic")) // NOI18N
-                        destPrefix = JBOSS4_MSG_TOPIC_JNDI_PREFIX;
-                }
-                
-                try {
-                    //we don't know which bean contains the created resource-ref,
-                    //thus we must find all beans containing the same resource-ref
-                    //as the one just created
-                    BEAN_TYPE beanType = (SESSION_MSG_DEST_REF.equals(eventDDBean.getXpath()) ? 
-                                          BEAN_TYPE.SESSION : (ENTITY_MSG_DEST_REF.equals(eventDDBean.getXpath()) ? 
-                                          BEAN_TYPE.ENTITY : BEAN_TYPE.MSGDRV));
-
-                    if (beanType != BEAN_TYPE.MSGDRV) { //sessions and entities
-                        Set beanNames = getRelevantBeansMsgDestRef(name[0], eventDDBean.getRoot(), beanType);
-                        addMsgDestReference(name[0], destPrefix, beanNames, beanType);
-                    }
-                    else { // message-driven beans
-                        Map beans = getRelevantMsgDrvBeansMsgDestRef(name[0], eventDDBean.getRoot());
-                        addMsgDrvMsgDestReference(name[0], destPrefix, beans);
-                    }
-                
-                } catch (ConfigurationException ce) {
-                    ErrorManager.getDefault().notify(ce);
-                }
-            }
-        }
-    }
+// TODO: rewrite this when resouces support api is ready
+    
+//    public void fireXpathEvent(XpathEvent xpe) {
+//        
+//        if (!xpe.isAddEvent())
+//            return;
+//        
+//        DDBean eventDDBean = xpe.getBean();
+//        if (SESSION_RESOURCE_REF.equals(eventDDBean.getXpath()) ||
+//            ENTITY_RESOURCE_REF.equals(eventDDBean.getXpath()) ||
+//            MSGDRV_RESOURCE_REF.equals(eventDDBean.getXpath())) 
+//        {
+//            String[] desc = eventDDBean.getText("description"); // NOI18N
+//            String[] name = eventDDBean.getText("res-ref-name"); // NOI18N
+//            String[] type = eventDDBean.getText("res-type");     // NOI18N
+//            if (name.length > 0 && type.length > 0) {
+//                try {
+//                    //we don't know which bean contains the created resource-ref,
+//                    //thus we must find all beans containing the same resource-ref
+//                    //as the one just created
+//                    BEAN_TYPE beanType = (SESSION_RESOURCE_REF.equals(eventDDBean.getXpath()) ? 
+//                                          BEAN_TYPE.SESSION : (ENTITY_RESOURCE_REF.equals(eventDDBean.getXpath()) ? 
+//                                          BEAN_TYPE.ENTITY : BEAN_TYPE.MSGDRV));
+//
+//                    if (beanType != BEAN_TYPE.MSGDRV) { //sessions and entities
+//                        Set beanNames = null;
+//                        if (desc.length > 0  && "javax.sql.DataSource".equals(type[0])) { // NOI18N
+//                            beanNames = getRelevantBeansDataRef(desc[0], name[0], eventDDBean.getRoot(), beanType);
+//                            addResReference(desc[0], name[0], beanNames, beanType);
+//                        }
+//                        else
+//                        if ("javax.mail.Session".equals(type[0])) { // NOI18N
+//                            beanNames = getRelevantBeansMailRef(name[0], eventDDBean.getRoot(), beanType);
+//                            addMailReference(name[0], beanNames, beanType);
+//                        }
+//                        else
+//                        if ("javax.jms.ConnectionFactory".equals(type[0])) { // NOI18N
+//                            beanNames = getRelevantBeansConnectionFactoryRef(name[0], eventDDBean.getRoot(), beanType);
+//                            addConnectionFactoryReference(name[0], beanNames, beanType);
+//                        }
+//                    }
+//                    else { // message-driven beans
+//                        Map beans = null;
+//                        if (desc.length > 0  && "javax.sql.DataSource".equals(type[0])) { // NOI18N
+//                            beans = getRelevantMsgDrvBeansDataRef(desc[0], name[0], eventDDBean.getRoot());
+//                            addMsgDrvResReference(desc[0], name[0], beans);
+//                        }
+//                        if ("javax.mail.Session".equals(type[0])) { // NOI18N
+//                            beans = getRelevantMsgDrvBeansMailRef(name[0], eventDDBean.getRoot());
+//                            addMsgDrvMailReference(name[0], beans);
+//                        }
+//                        else
+//                        if ("javax.jms.ConnectionFactory".equals(type[0])) { // NOI18N
+//                            beans = getRelevantMsgDrvBeansConnectionFactoryRef(name[0], eventDDBean.getRoot());
+//                            addMsgDrvConnectionFactoryReference(name[0], beans);
+//                        }
+//                    }
+//
+//                } catch (ConfigurationException ce) {
+//                    ErrorManager.getDefault().notify(ce);
+//                }
+//            }
+//        }
+//        else if (SESSION_EJB_REF.equals(eventDDBean.getXpath()) ||
+//                 ENTITY_EJB_REF.equals(eventDDBean.getXpath()) ||
+//                 MSGDRV_EJB_REF.equals(eventDDBean.getXpath())) 
+//        {
+//            String[] name = eventDDBean.getText("ejb-ref-name"); // NOI18N
+//            String[] type = eventDDBean.getText("ejb-ref-type"); // NOI18N
+//            if (name.length > 0 && type.length > 0 
+//                    && ("Session".equals(type[0]) || "Entity".equals(type[0]))) { // NOI18N
+//                try {
+//                    //we don't know which bean contains the created ejb-ref,
+//                    //thus we must find all beans containing the same ejb-ref
+//                    //as the one just created
+//                    BEAN_TYPE beanType = (SESSION_EJB_REF.equals(eventDDBean.getXpath()) ? 
+//                                          BEAN_TYPE.SESSION : (ENTITY_EJB_REF.equals(eventDDBean.getXpath()) ? 
+//                                          BEAN_TYPE.ENTITY : BEAN_TYPE.MSGDRV));
+//
+//                    if (beanType != BEAN_TYPE.MSGDRV) { //sessions and entities
+//                        Set beanNames = getRelevantBeansEjbRef(name[0], eventDDBean.getRoot(), beanType);
+//                        addEjbReference(name[0], beanNames, beanType);
+//                    }
+//                    else { // message-driven beans
+//                        Map beans = getRelevantMsgDrvBeansEjbRef(name[0], eventDDBean.getRoot());
+//                        addMsgDrvEjbReference(name[0], beans);
+//                    }
+//
+//                } catch (ConfigurationException ce) {
+//                    ErrorManager.getDefault().notify(ce);
+//                }
+//            }
+//        }
+//        else if (MSGDRV.equals(eventDDBean.getXpath())) {
+//            if (isEJB3) { // do not generate MDB destination reference for EJB3 modules (issue #82452)
+//                return;
+//            }
+//            
+//            String[] name = eventDDBean.getText("ejb-name"); // NOI18N
+//            String[] type = eventDDBean.getText("message-destination-type"); // NOI18N
+//            String[] dest = eventDDBean.getText("message-destination-link"); // NOI18N
+//            
+//            if (name.length == 0)
+//                return;
+//            
+//            if (dest.length == 0) {
+//                tempEjbName = name[0];
+//            } else {
+//                try {
+//                    addMDB(name[0], dest[0]);
+//                } catch (ConfigurationException ce) {
+//                    ErrorManager.getDefault().notify(ce);
+//                }
+//            }
+//        }
+//        else if (MSGDRV_MSG_DEST.equals(eventDDBean.getXpath())) { //is fired right after the MSGDRV Xpath event, too
+//            if (isEJB3) { // do not generate MDB destination reference for EJB3 modules (issue #82452)
+//                return;
+//            }
+//
+//            if (tempEjbName == null) // MSGDRV was not fired before
+//                return;
+//            
+//            try {
+//                String dest = xpe.getBean().getText();
+//                addMDB(tempEjbName, dest);
+//            } catch (ConfigurationException ce) {
+//                ErrorManager.getDefault().notify(ce);
+//            } finally {
+//                tempEjbName = null;
+//            }
+//        }
+//        
+//        else if (SESSION_MSG_DEST_REF.equals(eventDDBean.getXpath()) ||
+//                 ENTITY_MSG_DEST_REF.equals(eventDDBean.getXpath()) ||
+//                 MSGDRV_MSG_DEST_REF.equals(eventDDBean.getXpath()))
+//        {
+//            String[] name = eventDDBean.getText("message-destination-ref-name"); // NOI18N
+//            String[] type = eventDDBean.getText("message-destination-type"); // NOI18N
+//            
+//            if (name.length > 0) {
+//                
+//                String destPrefix = "";
+//                if (type.length > 0) {
+//                    if (type[0].equals("javax.jms.Queue")) // NOI18N
+//                        destPrefix = JBOSS4_MSG_QUEUE_JNDI_PREFIX;
+//                    else
+//                    if (type[0].equals("javax.jms.Topic")) // NOI18N
+//                        destPrefix = JBOSS4_MSG_TOPIC_JNDI_PREFIX;
+//                }
+//                
+//                try {
+//                    //we don't know which bean contains the created resource-ref,
+//                    //thus we must find all beans containing the same resource-ref
+//                    //as the one just created
+//                    BEAN_TYPE beanType = (SESSION_MSG_DEST_REF.equals(eventDDBean.getXpath()) ? 
+//                                          BEAN_TYPE.SESSION : (ENTITY_MSG_DEST_REF.equals(eventDDBean.getXpath()) ? 
+//                                          BEAN_TYPE.ENTITY : BEAN_TYPE.MSGDRV));
+//
+//                    if (beanType != BEAN_TYPE.MSGDRV) { //sessions and entities
+//                        Set beanNames = getRelevantBeansMsgDestRef(name[0], eventDDBean.getRoot(), beanType);
+//                        addMsgDestReference(name[0], destPrefix, beanNames, beanType);
+//                    }
+//                    else { // message-driven beans
+//                        Map beans = getRelevantMsgDrvBeansMsgDestRef(name[0], eventDDBean.getRoot());
+//                        addMsgDrvMsgDestReference(name[0], destPrefix, beans);
+//                    }
+//                
+//                } catch (ConfigurationException ce) {
+//                    ErrorManager.getDefault().notify(ce);
+//                }
+//            }
+//        }
+//    }
     
     /**
      * Searches for the beans of the give type referring to the given data source. 
@@ -942,8 +967,8 @@ public class EjbDeploymentConfiguration extends JBDeploymentConfiguration
                 if (oldJboss == null) {
                     // neither the old graph is parseable, there is not much we can do here
                     // TODO: should we notify the user?
-                    throw new ConfigurationException(
-                            NbBundle.getMessage(JBDeploymentConfiguration.class, "MSG_jbossXmlCannotParse", "jboss.xml")); // NOI18N
+                    String msg = NbBundle.getMessage(JBDeploymentConfiguration.class, "MSG_jbossXmlCannotParse", jbossFile.getAbsolutePath());
+                    throw new ConfigurationException(msg);
                 }
                 // current editor content is not parseable, ask whether to override or not
                 NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(
@@ -966,27 +991,33 @@ public class EjbDeploymentConfiguration extends JBDeploymentConfiguration
             replaceDocument(doc, newJboss);
             if (!modified) {
                 SaveCookie cookie = (SaveCookie)deploymentDescriptorDO.getCookie(SaveCookie.class);
-                cookie.save();
+                if (cookie != null) {
+                    cookie.save();
+                }
             }
-            jboss = newJboss;
+            synchronized (this) {
+                jboss = newJboss;
+            }
         } catch (BadLocationException ble) {
-            throw (ConfigurationException)(new ConfigurationException().initCause(ble));
+            // this should not occur, just log it if it happens
+            ErrorManager.getDefault().notify(ble);
         } catch (IOException ioe) {
-            throw (ConfigurationException)(new ConfigurationException().initCause(ioe));
+            String msg = NbBundle.getMessage(EjbDeploymentConfiguration.class, "MSG_CannotUpdateFile", jbossFile.getAbsolutePath());
+            throw new ConfigurationException(msg, ioe);
         }
     }
-    
-    // JSR-88 methods ---------------------------------------------------------
     
     public void save(OutputStream os) throws ConfigurationException {
         Jboss jboss = getJboss();
         if (jboss == null) {
-            throw new ConfigurationException("Cannot read configuration, it is probably in an inconsistent state."); // NOI18N
+            String msg = NbBundle.getMessage(EjbDeploymentConfiguration.class, "MSG_cannotSaveNotParseableConfFile", jbossFile.getAbsolutePath());
+            throw new ConfigurationException(msg);
         }
         try {
             jboss.write(os);
         } catch (IOException ioe) {
-            throw new ConfigurationException(ioe.getLocalizedMessage());
+            String msg = NbBundle.getMessage(EjbDeploymentConfiguration.class, "MSG_CannotUpdateFile", jbossFile.getAbsolutePath());
+            throw new ConfigurationException(msg, ioe);
         }
     }
     
@@ -998,5 +1029,4 @@ public class EjbDeploymentConfiguration extends JBDeploymentConfiguration
     private Jboss generateJboss() {
         return new Jboss();
     }
-    
 }

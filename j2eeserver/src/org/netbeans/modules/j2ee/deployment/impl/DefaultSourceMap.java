@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -62,17 +62,17 @@ public class DefaultSourceMap extends SourceFileMap {
     }
     
     public File getEnterpriseResourceDir() {
-        return provider.getEnterpriseResourceDirectory();
+        return provider.getJ2eeModule().getResourceDirectory();
     }
     
     public File[] getEnterpriseResourceDirs() {
         ArrayList result = new ArrayList();
-        result.add(provider.getEnterpriseResourceDirectory());
-        if (provider instanceof J2eeAppProvider) {
-            J2eeAppProvider jap = (J2eeAppProvider) provider;
+        result.add(provider.getJ2eeModule().getResourceDirectory());
+        if (provider instanceof J2eeApplicationProvider) {
+            J2eeApplicationProvider jap = (J2eeApplicationProvider) provider;
             J2eeModuleProvider[] children = jap.getChildModuleProviders();
             for (int i=0; i<children.length; i++) {
-                result.add(children[i].getEnterpriseResourceDirectory());
+                result.add(children[i].getJ2eeModule().getResourceDirectory());
             }
         }
         return (File[]) result.toArray(new File[result.size()]);

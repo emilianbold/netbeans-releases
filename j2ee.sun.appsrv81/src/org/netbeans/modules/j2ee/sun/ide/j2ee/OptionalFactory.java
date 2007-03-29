@@ -24,17 +24,17 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.AntDeploymentProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
 import org.openide.WizardDescriptor;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.modules.j2ee.deployment.plugins.api.DatasourceManager;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory;
-import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
-import org.netbeans.modules.j2ee.deployment.plugins.api.IncrementalDeployment;
-import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
-import org.netbeans.modules.j2ee.deployment.plugins.api.TargetModuleIDResolver;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDatasourceManager;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.jsps.FindJSPServletImpl;

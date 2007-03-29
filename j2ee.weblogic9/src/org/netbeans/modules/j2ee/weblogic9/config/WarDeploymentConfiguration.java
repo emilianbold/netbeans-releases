@@ -26,10 +26,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;
 import org.netbeans.modules.schema2beans.AttrProp;
 import org.netbeans.modules.schema2beans.BaseBean;
@@ -42,7 +45,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Web module deployment configuration handles creation and updating of the 
@@ -50,77 +55,45 @@ import org.openide.util.NbBundle;
  *
  * @author sherold
  */
-public class WarDeploymentConfiguration extends WLDeploymentConfiguration 
-        implements PropertyChangeListener {
+public class WarDeploymentConfiguration implements ModuleConfiguration, 
+        ContextRootConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {
     
-    private File file;
+    private final File file;
+    private final J2eeModule j2eeModule;
+    private final DataObject dataObject;
     private WeblogicWebApp webLogicWebApp;
     
     /**
      * Creates a new instance of WarDeploymentConfiguration 
      */
-    public WarDeploymentConfiguration(DeployableObject deployableObject) {
-        super(deployableObject);
-    }
-    
-    /**
-     * WarDeploymentConfiguration initialization. This method should be called before
-     * this class is being used.
-     * 
-     * @param file weblogic.xml file.
-     */
-    public void init(File file) {
-        this.file = file;
+    public WarDeploymentConfiguration(J2eeModule j2eeModule) {
+        this.j2eeModule = j2eeModule;
+        file = j2eeModule.getDeploymentConfigurationFile("WEB-INF/weblogic.xml"); // NOI18N
         getWeblogicWebApp();
-        if (dataObject == null) {
-            try {
-                dataObject = dataObject.find(FileUtil.toFileObject(file));
-                dataObject.addPropertyChangeListener(this);
-            } catch(DataObjectNotFoundException donfe) {
-                ErrorManager.getDefault().notify(donfe);
-            }
+        DataObject dataObject = null;
+        try {
+            dataObject = DataObject.find(FileUtil.toFileObject(file));
+            dataObject.addPropertyChangeListener(this);
+        } catch(DataObjectNotFoundException donfe) {
+            ErrorManager.getDefault().notify(donfe);
         }
+        this.dataObject = dataObject;
     }
     
-    /**
-     * Return context path.
-     * 
-     * @return context path or null, if the file is not parseable.
-     */
-    public String getContextPath() throws ConfigurationException {
-        WeblogicWebApp webLogicWebApp = getWeblogicWebApp();
-        if (webLogicWebApp == null) { // graph not parseable
-            throw new ConfigurationException("weblogic.xml is not parseable, cannot read the context path value."); // NOI18N
-        }
-        return webLogicWebApp.getContextRoot(0);
+
+    public Lookup getLookup() {
+        return Lookups.fixed(this);
     }
     
-    /**
-     * Set context path.
-     */
-    public void setContextPath(String contextPath) throws ConfigurationException {
-        // TODO: this contextPath fix code will be removed, as soon as it will 
-        // be moved to the web project
-        if (!isCorrectCP(contextPath)) {
-            String ctxRoot = contextPath;
-            java.util.StringTokenizer tok = new java.util.StringTokenizer(contextPath,"/"); //NOI18N
-            StringBuffer buf = new StringBuffer(); //NOI18N
-            while (tok.hasMoreTokens()) {
-                buf.append("/"+tok.nextToken()); //NOI18N
-            }
-            ctxRoot = buf.toString();
-            NotifyDescriptor desc = new NotifyDescriptor.Message(
-                    NbBundle.getMessage (WarDeploymentConfiguration.class, "MSG_invalidCP", contextPath),
-                    NotifyDescriptor.Message.INFORMATION_MESSAGE);
-            DialogDisplayer.getDefault().notify(desc);
-            contextPath = ctxRoot;
+
+    public J2eeModule getJ2eeModule() {
+        return j2eeModule;
+    }
+
+    public void dispose() {
+        if (dataObject != null) {
+            dataObject.removePropertyChangeListener(this);
         }
-        final String newContextPath = contextPath;
-        modifyWeblogicWebApp(new WeblogicWebAppModifier() {
-            public void modify(WeblogicWebApp webLogicWebApp) {
-                webLogicWebApp.setContextRoot(new String [] {newContextPath});
-            }
-        });
     }
     
     /**
@@ -155,7 +128,7 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
                 } else {
                     // create weblogic.xml if it does not exist yet
                     webLogicWebApp = genereateWeblogicWebApp();
-                    writefile(file, webLogicWebApp);
+                    ConfigUtil.writefile(file, webLogicWebApp);
                 }
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ce);
@@ -164,17 +137,17 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         return webLogicWebApp;
     }
     
-    // JSR-88 methods ---------------------------------------------------------
-    
     public void save(OutputStream os) throws ConfigurationException {
         WeblogicWebApp webLogicWebApp = getWeblogicWebApp();
         if (webLogicWebApp == null) {
-            throw new ConfigurationException("Cannot read configuration, it is probably in an inconsistent state."); // NOI18N
+            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_cannotSaveNotParseableConfFile", file.getPath());
+            throw new ConfigurationException(msg);
         }
         try {
             webLogicWebApp.write(os);
         } catch (IOException ioe) {
-            throw new ConfigurationException(ioe.getLocalizedMessage());
+            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotUpdateFile", file.getPath());
+            throw new ConfigurationException(msg, ioe);
         }
     }
     
@@ -207,7 +180,8 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
                 if (oldWeblogicWebApp == null) {
                     // neither the old graph is parseable, there is not much we can do here
                     // TODO: should we notify the user?
-                    throw new ConfigurationException("Configuration data are not parseable cannot perform changes."); // NOI18N
+                    String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_configFileCannotParse", file.getPath());
+                    throw new ConfigurationException(msg);
                 }
                 // current editor content is not parseable, ask whether to override or not
                 NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(
@@ -236,9 +210,11 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
             }
             webLogicWebApp = newWeblogicWebApp;
         } catch (BadLocationException ble) {
-            throw (ConfigurationException)(new ConfigurationException().initCause(ble));
+            // this should not occur, just log it if it happens
+            ErrorManager.getDefault().notify(ble);
         } catch (IOException ioe) {
-            throw (ConfigurationException)(new ConfigurationException().initCause(ioe));
+            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotUpdateFile", file.getPath());
+            throw new ConfigurationException(msg, ioe);
         }
     }
     
@@ -285,6 +261,40 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         else if (contextPath.endsWith("/")) correct=false; //NOI18N
         else if (contextPath.indexOf("//")>=0) correct=false; //NOI18N
         return correct;
+    }
+    
+    public String getContextRoot() throws ConfigurationException {
+        WeblogicWebApp webLogicWebApp = getWeblogicWebApp();
+        if (webLogicWebApp == null) { // graph not parseable
+            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotReadContextRoot", file.getPath());
+            throw new ConfigurationException(msg);
+        }
+        return webLogicWebApp.getContextRoot(0);
+    }
+
+    public void setContextRoot(String contextRoot) throws ConfigurationException {
+        // TODO: this contextPath fix code will be removed, as soon as it will 
+        // be moved to the web project
+        if (!isCorrectCP(contextRoot)) {
+            String ctxRoot = contextRoot;
+            java.util.StringTokenizer tok = new java.util.StringTokenizer(contextRoot,"/"); //NOI18N
+            StringBuffer buf = new StringBuffer(); //NOI18N
+            while (tok.hasMoreTokens()) {
+                buf.append("/"+tok.nextToken()); //NOI18N
+            }
+            ctxRoot = buf.toString();
+            NotifyDescriptor desc = new NotifyDescriptor.Message(
+                    NbBundle.getMessage (WarDeploymentConfiguration.class, "MSG_invalidCP", contextRoot),
+                    NotifyDescriptor.Message.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(desc);
+            contextRoot = ctxRoot;
+        }
+        final String newContextPath = contextRoot;
+        modifyWeblogicWebApp(new WeblogicWebAppModifier() {
+            public void modify(WeblogicWebApp webLogicWebApp) {
+                webLogicWebApp.setContextRoot(new String [] {newContextPath});
+            }
+        });
     }
     
     

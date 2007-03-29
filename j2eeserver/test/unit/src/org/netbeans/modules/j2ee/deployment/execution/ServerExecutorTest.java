@@ -19,8 +19,8 @@
 
 package org.netbeans.modules.j2ee.deployment.execution;
 
-import junit.framework.*;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.tests.j2eeserver.devmodule.*;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -63,22 +63,7 @@ public class ServerExecutorTest extends NbTestCase {
         }
     }
         
-    public static DeployTarget getDeploymentTarget(ServerString targetServer) {
-        if (dt != null) {
-            dt.setServer(targetServer);
-            return dt;
-        }
-        
-        try {
-            FileObject testJar = FileUtil.createData(getWorkFileSystem().getRoot(),"test.jar");
-            dt = new DeployTarget(new TestJ2eeModule(J2eeModule.EJB, testJar), targetServer);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return dt;
-    }
-    
-    public static class DeployTarget implements DeploymentTarget {
+   public static class DeployTarget implements DeploymentTarget {
         J2eeModule j2eeMod;
         ServerString target;
         
@@ -153,7 +138,7 @@ public class ServerExecutorTest extends NbTestCase {
             return null;
         }
         
-        public org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider getDeploymentConfigurationProvider() {
+        public org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider getModuleConfigurationProvider() {
             return null;
         }
         

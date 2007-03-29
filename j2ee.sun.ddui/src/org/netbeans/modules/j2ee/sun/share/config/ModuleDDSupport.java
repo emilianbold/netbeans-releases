@@ -46,6 +46,7 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.*;
 import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.shared.*;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 
 import org.openide.*;
 import org.openide.nodes.*;
@@ -106,23 +107,30 @@ public class ModuleDDSupport implements PropertyChangeListener {
         return (ModuleType) provider.getJ2eeModule().getModuleType();
     }
     
-    private BaseBean getDeploymentDescriptor(String ddLoc) {
-        return provider.getJ2eeModule().getDeploymentDescriptor(ddLoc);
+    private RootInterface getDeploymentDescriptor(String ddLoc) {
+        // what do I do here?
+        RootInterface retVal = null;
+        //try {
+            retVal = provider.getJ2eeModule().getDeploymentDescriptor(ddLoc);
+//        } catch (Throwable t) {
+//            t.printStackTrace();
+//        }
+        return retVal;
     }
     
     private DDRoot createRoot(String ddLoc) {
-        BaseBean bean = getDeploymentDescriptor(ddLoc);
+        RootInterface bean = getDeploymentDescriptor(ddLoc);
         if (bean == null) { // no support for that descriptor
             return null;
         }
-        while(!bean.isRoot()) {
-            bean = bean.parent();
-        }
+//        while(!bean.isRoot()) {
+//            bean = bean.parent();
+//        }
         DDRoot root = new DDRoot(new DDNodeBean(null,bean,this));
         rootMap.put(ddLoc,root);
         beanMap.put(bean,root);
 
-        PropertyChangeListener weakListener = WeakListeners.propertyChange(this,root.proxy.bean);
+        PropertyChangeListener weakListener = WeakListeners.propertyChange(this,root.proxy.rooti);
         listenerMap.put(bean, weakListener);
         bean.addPropertyChangeListener(weakListener);
         
@@ -289,8 +297,8 @@ public class ModuleDDSupport implements PropertyChangeListener {
         for (Iterator i = rootMap.values().iterator(); i.hasNext();) {
             DDRoot root = (DDRoot)i.next();
             
-            PropertyChangeListener weakListener = (PropertyChangeListener) listenerMap.get(root.proxy.bean);
-            root.proxy.bean.removePropertyChangeListener(weakListener);
+            PropertyChangeListener weakListener = (PropertyChangeListener) listenerMap.get(root.proxy.rooti);
+            root.proxy.rooti.removePropertyChangeListener(weakListener);
             
             // !PW Is this a good idea to add this here?  What are the repercussions?
             ConfigBeanStorage cbs = (ConfigBeanStorage) configMap.get(root);
@@ -369,7 +377,54 @@ public class ModuleDDSupport implements PropertyChangeListener {
                 base = new DDProxy(parent.proxy,bean,bean.dtdName(),this);
             }
              **/
-            if (bean.parent() != null) {
+            if (!bean.isRoot()) {
+                ret = new StandardDDImpl(new DDNodeBean(bean,this));
+                beanMap.put(bean,ret);
+            }
+        }
+        return ret;
+    }
+
+    StandardDDImpl getBean(RootInterface bean) {
+        //     System.out.println("Getting bean for " + bean);
+        //     System.out.println(bean.fullName());
+        //     System.out.println(bean.dtdName());
+        if (bean == null) {
+            return null;
+        }
+        
+        if (beanMap == null) {
+            return null;
+        }
+        
+        StandardDDImpl ret = (StandardDDImpl) beanMap.get(bean);
+        
+        if (ret == null) {
+            /*
+            DDCommon base;
+            //            System.out.println("Creating new bean");
+            BaseBean bb = bean;
+            while(!bb.isRoot()) {
+                bb = bb.parent();
+                if (bb== null) {
+                    // We are in an unattached tree, we have expressed no prior
+                    // interest in this Xpath so we just toss it.
+                    // See: addTemporaryBean in this object
+                    return null;
+                }
+
+            }
+            if(bb == root.proxy.bean) base = new DDNodeBean(bean,this);
+            else { // must build proxy tree
+                if (bean.isRoot()) {
+                    // PENDING This probably means that there is an error, can it legaly happen?
+                    throw new IllegalStateException("Found a bean rooted in a tree not previously registered with Module Deployment Support. Bean = : " + bean + "@" +  Integer.toHexString(bean.hashCode())); //NO I18N
+                }
+                StandardDDImpl parent = getBean(bean.parent());
+                base = new DDProxy(parent.proxy,bean,bean.dtdName(),this);
+            }
+             **/
+            if (bean.getValue("parent") != null) {
                 ret = new StandardDDImpl(new DDNodeBean(bean,this));
                 beanMap.put(bean,ret);
             }
@@ -418,43 +473,44 @@ public class ModuleDDSupport implements PropertyChangeListener {
     }
 
     StandardDDImpl getBean(String name) {
-        return getBean(name,getDDBeanRoot().proxy.bean);
+        return getBean(name,getDDBeanRoot().proxy.rooti);
     }
 
-    StandardDDImpl getBean(String name,BaseBean rootBean) {
-        Bean parent = GraphManager.getPropertyParent(rootBean, name);
-        if (parent == null) {
+    StandardDDImpl getBean(String name,RootInterface rootBean) {
+        // FIXME
+        Bean parent = null; // GraphManager.getPropertyParent(rootBean, name);
+        //if (parent == null) {
             return getDDBeanRoot();
-        }
-        String shortName = GraphManager.getPropertyName(name);
-        int index = GraphManager.getPropertyIndex(rootBean, name);
-        //        System.out.println(name);
-        //        System.out.println(index);
-
-        BaseProperty prop = parent.getProperty(shortName);
-
-        if(index < 0 && prop.isIndexed()) {
-            index = 0;
-        }
-
-        StandardDDImpl ret;
-        if(prop.isBean()) {
-            if(prop.isIndexed()) {
-                ret = getBean((BaseBean) parent.getValue(shortName,index));
-            } else {
-                ret = getBean((BaseBean) parent.getValue(shortName));
-            }
-        }
-        else {
-            if(prop.isIndexed()) {
-                ret = getBean(prop,index);
-            } else {
-                ret = getBean(prop);
-            }
-        }
-        //        System.out.println(ret.proxy.bean.fullName());
-        //        System.out.println(((Object)ret.proxy.bean).toString());
-        return ret;
+        //}
+//        String shortName = GraphManager.getPropertyName(name);
+//        int index = GraphManager.getPropertyIndex(rootBean, name);
+//        //        System.out.println(name);
+//        //        System.out.println(index);
+//
+//        BaseProperty prop = parent.getProperty(shortName);
+//
+//        if(index < 0 && prop.isIndexed()) {
+//            index = 0;
+//        }
+//
+//        StandardDDImpl ret;
+//        if(prop.isBean()) {
+//            if(prop.isIndexed()) {
+//                ret = getBean((BaseBean) parent.getValue(shortName,index));
+//            } else {
+//                ret = getBean((BaseBean) parent.getValue(shortName));
+//            }
+//        }
+//        else {
+//            if(prop.isIndexed()) {
+//                ret = getBean(prop,index);
+//            } else {
+//                ret = getBean(prop);
+//            }
+//        }
+//        //        System.out.println(ret.proxy.bean.fullName());
+//        //        System.out.println(((Object)ret.proxy.bean).toString());
+//        return ret;
     }
 
     void addXpathListener(DDCommon bean, String xpath, XpathListener listen) {
@@ -568,13 +624,14 @@ public class ModuleDDSupport implements PropertyChangeListener {
                     boolean rootInCache = false;
                     for (Iterator ddRoots=rootMap.values().iterator(); ddRoots.hasNext();) {
                         DDRoot ddroot = (DDRoot) ddRoots.next();
-                        if (ddroot.proxy != null && ddroot.proxy.bean == root) {
+                        if (ddroot.proxy != null && ddroot.proxy.rooti == root) {
                             rootInCache = true;
                             break;
                         }
                     }
                     if (rootInCache) {
-                        eventBean = getBean(name, root);
+                        //FIXME
+                        //eventBean = getBean(name, root);
                     }
                 } 
                 if (eventBean == null) {
@@ -794,5 +851,9 @@ public class ModuleDDSupport implements PropertyChangeListener {
     
     public J2eeModuleProvider getProvider() {
         return provider;
+    }
+
+    RootInterface getRootInterface() {
+        return null;
     }
 }

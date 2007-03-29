@@ -31,10 +31,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
-import org.netbeans.modules.j2ee.deployment.plugins.api.DatasourceManager;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Datasources;
 import org.netbeans.modules.j2ee.jboss4.config.gen.LocalTxDatasource;
@@ -65,7 +65,7 @@ public final class JBossDatasourceManager implements DatasourceManager {
         serverDir = FileUtil.toFileObject(new File(serverDirPath));
     }
     
-    public Set<Datasource> getDatasources() {
+    public Set<Datasource> getDatasources() throws ConfigurationException {
         
         Set<Datasource> datasources = new HashSet<Datasource>();
         
@@ -87,9 +87,9 @@ public final class JBossDatasourceManager implements DatasourceManager {
             return datasources;
 
         for (Iterator it = confs.iterator(); it.hasNext();) {
+            FileObject dsFO = (FileObject)it.next();
+            File dsFile = FileUtil.toFile(dsFO);
             try {
-                FileObject dsFO = (FileObject)it.next();
-                File dsFile = FileUtil.toFile(dsFO);
                 Datasources ds = Datasources.createGraph(dsFile);
                 LocalTxDatasource ltxds[] = ds.getLocalTxDatasource();
                 for (int i = 0; i < ltxds.length; i++) {
@@ -103,9 +103,11 @@ public final class JBossDatasourceManager implements DatasourceManager {
                     }
                 }
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                String msg = NbBundle.getMessage(JBossDatasourceManager.class, "MSG_CannotReadDatasources", dsFile.getAbsolutePath());
+                throw new ConfigurationException(msg, ioe);
             } catch (RuntimeException re) {
-                // -ds.xml is not parseable, do nothing
+                String msg = NbBundle.getMessage(JBossDatasourceManager.class, "MSG_NotParseableDatasources", dsFile.getAbsolutePath());
+                throw new ConfigurationException(msg ,re);
             }
         }
         

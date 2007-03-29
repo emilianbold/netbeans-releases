@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
@@ -86,7 +87,7 @@ public class DatasourceHelper {
      *
      * @since 1.11
      */
-    public static Datasource findDatasource(J2eeModuleProvider provider, String jndiName) {
+    public static Datasource findDatasource(J2eeModuleProvider provider, String jndiName) throws ConfigurationException {
         if (provider == null) {
             throw new NullPointerException("The provider parameter cannot be null."); // NOI18N
         }

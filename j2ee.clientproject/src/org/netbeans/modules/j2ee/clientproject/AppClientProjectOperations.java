@@ -107,7 +107,7 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
             files.add(testRoots[cntr]);
         }
         
-        File resourceDir = project.getCarModule().getEnterpriseResourceDirectory();
+        File resourceDir = project.getCarModule().getResourceDirectory();
         if (resourceDir != null) {
             FileObject resourceFO = FileUtil.toFileObject(resourceDir);
             if (resourceFO != null)

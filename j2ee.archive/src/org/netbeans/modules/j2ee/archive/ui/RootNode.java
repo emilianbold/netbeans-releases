@@ -211,7 +211,7 @@ public class RootNode extends org.openide.nodes.AbstractNode {
         }
         
         protected Node[] createNodes(Object key) {
-            Node n = null;
+            Node n;
             if (key == KEY_DOC_BASE) {
                 n = new ConfigFilesNode(getFolder((String)project.getArchiveProjectProperties().get(ArchiveProjectProperties.PROXY_PROJECT_DIR)));
             }  else if (key == KEY_SETUP_DIR) {

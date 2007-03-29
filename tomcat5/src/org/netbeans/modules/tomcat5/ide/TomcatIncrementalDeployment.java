@@ -20,18 +20,25 @@
 package org.netbeans.modules.tomcat5.ide;
 
 import java.io.File;
-
-import org.netbeans.modules.j2ee.deployment.plugins.api.IncrementalDeployment;
-import javax.enterprise.deploy.spi.*;
-import javax.enterprise.deploy.model.*;
-import javax.enterprise.deploy.shared.*;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
+import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.TomcatManagerImpl;
+import org.netbeans.modules.tomcat5.TomcatModule;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
-
-import org.netbeans.modules.tomcat5.*;
 
 /**
  *
@@ -46,8 +53,8 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
         this.tm = (TomcatManager) dm;
     }
     
-    public boolean canFileDeploy (Target target, DeployableObject deployable) {
-        return deployable.getType ().equals (javax.enterprise.deploy.shared.ModuleType.WAR);
+    public boolean canFileDeploy (Target target, J2eeModule j2eeModule) {
+        return j2eeModule.getModuleType().equals (javax.enterprise.deploy.shared.ModuleType.WAR);
         
     }
     
@@ -61,8 +68,8 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
         return f;*/
     }
     
-    public File getDirectoryForNewApplication (Target target, DeployableObject module, DeploymentConfiguration configuration) {
-        if (module.getType ().equals (ModuleType.WAR)) {
+    public File getDirectoryForNewApplication (Target target, J2eeModule module, ModuleConfiguration configuration) {
+        if (module.getModuleType().equals (ModuleType.WAR)) {
             return null;
             /*if (configuration instanceof WebappConfiguration) {
                 String moduleFolder = tm.getCatalinaBaseDir ().getAbsolutePath ()
@@ -72,14 +79,14 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
                 return f;
             }*/
         }
-        throw new IllegalArgumentException ("ModuleType:" + module == null ? null : module.getType () + " Configuration:"+configuration); //NOI18N
+        throw new IllegalArgumentException ("ModuleType:" + module == null ? null : module.getModuleType() + " Configuration:"+configuration); //NOI18N
     }
     
-    public java.io.File getDirectoryForNewModule (java.io.File appDir, String uri, javax.enterprise.deploy.model.DeployableObject module, javax.enterprise.deploy.spi.DeploymentConfiguration configuration) {
+    public java.io.File getDirectoryForNewModule (java.io.File appDir, String uri, J2eeModule module, ModuleConfiguration configuration) {
         throw new UnsupportedOperationException ();
     }
     
-    public ProgressObject incrementalDeploy (final TargetModuleID module, org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor changes) {
+    public ProgressObject incrementalDeploy (final TargetModuleID module, AppChangeDescriptor changes) {
         if (changes.descriptorChanged () || changes.serverDescriptorChanged () || changes.classesChanged ()) {
             TomcatManagerImpl tmi = new TomcatManagerImpl (tm);
             if (changes.serverDescriptorChanged ()) {
@@ -109,7 +116,7 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
         }
     }
     
-    public ProgressObject initialDeploy (Target target, javax.enterprise.deploy.model.DeployableObject app, DeploymentConfiguration configuration, File dir) {
+    public ProgressObject initialDeploy (Target target, J2eeModule app, ModuleConfiguration configuration, File dir) {
         TomcatManagerImpl tmi = new TomcatManagerImpl (tm);
         File contextXml = new File (dir.getAbsolutePath () + "/META-INF/context.xml"); //NOI18N
         tmi.initialDeploy (target, contextXml, dir);

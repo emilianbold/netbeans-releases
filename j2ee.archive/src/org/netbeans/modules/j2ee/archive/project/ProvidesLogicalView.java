@@ -20,7 +20,6 @@
 
 package org.netbeans.modules.j2ee.archive.project;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.archive.ui.RootNode;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 

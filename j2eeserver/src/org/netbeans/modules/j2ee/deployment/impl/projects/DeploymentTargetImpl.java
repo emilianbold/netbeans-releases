@@ -31,6 +31,7 @@ import org.openide.filesystems.FileUtil;
 import java.util.*;
 import java.io.*;
 import org.netbeans.modules.j2ee.deployment.config.*;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.openide.util.NbBundle;
 
 /** 
@@ -69,15 +70,15 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         J2eeModule clientModule = null;
         String url = null;
         
-        if (moduleProvider instanceof J2eeAppProvider) {
-            J2eeAppProvider ear = (J2eeAppProvider) moduleProvider;
+        if (moduleProvider instanceof J2eeApplicationProvider) {
+            J2eeApplicationProvider ear = (J2eeApplicationProvider) moduleProvider;
             J2eeModuleProvider clientProvider = getChildModuleProvider(ear, clientName);
             if (clientProvider != null)
                 clientModule = clientProvider.getJ2eeModule();
             else {
                 //findWebUrl(null) will take care to find a first weburl it sees, but just to be sure...
-                J2eeModuleContainer jmc = (J2eeModuleContainer) ear.getJ2eeModule();
-                J2eeModule[] modules = jmc.getModules(null);
+                J2eeApplication jmc = (J2eeApplication) ear.getJ2eeModule();
+                J2eeModule[] modules = jmc.getModules();
                 for (int i=0; i<modules.length; i++) {
                     if (J2eeModule.WAR.equals(modules[i].getModuleType())) {
                         clientModule = modules[i];
@@ -104,8 +105,8 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         if (uri == null)
             return null;
         J2eeModuleProvider child = null;
-        if (jmp instanceof J2eeAppProvider) {
-            J2eeAppProvider jap = (J2eeAppProvider) jmp;
+        if (jmp instanceof J2eeApplicationProvider) {
+            J2eeApplicationProvider jap = (J2eeApplicationProvider) jmp;
             child = jap.getChildModuleProvider(uri);
             if (child == null) {
                 String root = "/" ; // NOI18N
@@ -236,7 +237,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         }
     }
     
-    public DeploymentConfigurationProvider getDeploymentConfigurationProvider() {
+    public ModuleConfigurationProvider getModuleConfigurationProvider() {
         return getConfigSupportImpl ();
     }
     

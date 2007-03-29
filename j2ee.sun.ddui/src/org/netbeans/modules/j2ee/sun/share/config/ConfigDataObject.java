@@ -74,7 +74,7 @@ import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
+//import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
 import org.netbeans.modules.j2ee.sun.share.config.ui.*;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 
@@ -165,7 +165,9 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         if(config == null) {
             // Request deployment configuration for SJSAS from j2eeserver module
             FileObject configFO = FileUtil.toFileObject(configKey);
-            ConfigurationSupport.requestCreateConfiguration(configFO, SERVER_ID); // NOI18N
+            
+            // DDBeam removal
+            //ConfigurationSupport.requestCreateConfiguration(configFO, SERVER_ID); // NOI18N
             config = SunONEDeploymentConfiguration.getConfiguration(configKey);
             if(config == null) {
                 // If config is still null here, there is some kind of initialization
@@ -198,18 +200,20 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
             return secondaries;
         }
         secondaries = new HashSet();
-        String [] paths = this.getProvider().getConfigSupport().getDeploymentConfigurationFileNames();
-        for (int i=0; i<paths.length; i++) {
-            File path = new File(paths[i]);
-            FileObject fo = getProvider().findDeploymentConfigurationFile(path.getName());
-            if (fo == null) {
-                continue;
-            }
+        //String [] paths = this.getProvider().getConfigSupport().getDeploymentConfigurationFileNames();
+        //for (int i=0; i<paths.length; i++) {
+            //File path = new File(paths[i]);
+            //FileObject fo = getProvider().findDeploymentConfigurationFile(path.getName());
+            FileObject fos[] = getProvider().getConfigurationFiles();
+            if (fos != null) {
+            for (int i = 0; i < fos.length; i++) {
+                
             try {
-                SecondaryConfigDataObject second = (SecondaryConfigDataObject) DataObject.find(fo);
+                SecondaryConfigDataObject second = (SecondaryConfigDataObject) DataObject.find(fos[i]);
                 secondaries.add(second);
             } catch (Exception ex) {
                 continue;
+            }
             }
         }
         return secondaries;

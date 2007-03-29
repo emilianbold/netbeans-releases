@@ -32,7 +32,7 @@ import org.openide.util.actions.SystemAction;
 public class ModuleNode extends ConfigFilesNode  {
     
 
-    final transient private String name;
+    final private String name;
     
     public ModuleNode(DataFolder configFolder,String nodeName) {
         super(configFolder);

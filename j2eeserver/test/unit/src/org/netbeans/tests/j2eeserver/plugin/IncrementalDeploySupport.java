@@ -23,12 +23,14 @@ import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.status.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.tests.j2eeserver.plugin.jsr88.*;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 
 /**
  *
@@ -95,19 +97,19 @@ public class IncrementalDeploySupport extends IncrementalDeployment {
         return null;//dm.incrementalDeploy(module, changes);
     }
     
-    public boolean canFileDeploy (Target target, DeployableObject deployable) {
+    public boolean canFileDeploy (Target target, J2eeModule deployable) {
         return true;
     }    
     
-    public File getDirectoryForNewApplication (Target target, DeployableObject app, DeploymentConfiguration configuration) {
+    public File getDirectoryForNewApplication (Target target, J2eeModule app, ModuleConfiguration configuration) {
         return null;
     }
     
-    public File getDirectoryForNewModule (File appDir, String uri, DeployableObject module, DeploymentConfiguration configuration) {
+    public File getDirectoryForNewModule (File appDir, String uri, J2eeModule module, ModuleConfiguration configuration) {
         return null;
     }
     
-    public ProgressObject initialDeploy (Target target, DeployableObject app, DeploymentConfiguration configuration, File dir) {
+    public ProgressObject initialDeploy (Target target, J2eeModule app, ModuleConfiguration configuration, File dir) {
         return null;
     }
     

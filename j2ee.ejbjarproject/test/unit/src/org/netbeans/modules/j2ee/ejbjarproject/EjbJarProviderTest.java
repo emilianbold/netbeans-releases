@@ -69,11 +69,9 @@ public class EjbJarProviderTest extends TestBase {
         // ensure deployment descriptor files and beans are returned
         
         J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        assertEquals(ejbJarXmlFO, provider.findDeploymentConfigurationFile(EJBJAR_XML));
-        assertEquals(FileUtil.toFile(metaInfFO.getFileObject(EJBJAR_XML)), provider.getDeploymentConfigurationFile(EJBJAR_XML));
+        J2eeModule j2eeModule = provider.getJ2eeModule();
         
-        J2eeModule j2eeModule = (J2eeModule)project.getLookup().lookup(J2eeModule.class);
-        assertNotNull(j2eeModule.getDeploymentDescriptor(J2eeModule.EJBJAR_XML));
+        assertEquals(ejbJarXmlFO, FileUtil.toFileObject(provider.getJ2eeModule().getDeploymentConfigurationFile(EJBJAR_XML)));
         assertNotNull(j2eeModule.getDeploymentDescriptor(J2eeModule.EJBSERVICES_XML));
         
         EjbJarImplementation ejbJar = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);
@@ -99,11 +97,9 @@ public class EjbJarProviderTest extends TestBase {
         // ensure meta.inf-related files are silently returned as null
         
         J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        assertNull(provider.findDeploymentConfigurationFile(EJBJAR_XML));
-        assertNotNull(provider.getDeploymentConfigurationFile(EJBJAR_XML));
-        
-        J2eeModule j2eeModule = (J2eeModule)project.getLookup().lookup(J2eeModule.class);
-        assertNull(j2eeModule.getDeploymentDescriptor(J2eeModule.EJBJAR_XML));
+        J2eeModule j2eeModule = provider.getJ2eeModule();
+        assertNotNull(j2eeModule.getDeploymentConfigurationFile(EJBJAR_XML));
+        assertNull(FileUtil.toFileObject(j2eeModule.getDeploymentConfigurationFile(EJBJAR_XML)));
         assertNull(j2eeModule.getDeploymentDescriptor(J2eeModule.EJBSERVICES_XML));
         
         EjbJarImplementation ejbJar = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);

@@ -18,15 +18,21 @@
  */
 
 package org.netbeans.modules.j2ee.jboss4.config;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.gen.JbossApp;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -35,7 +41,8 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  * @author sherold
  */
-public class EarDeploymentConfiguration extends JBDeploymentConfiguration {
+public class EarDeploymentConfiguration extends JBDeploymentConfiguration 
+implements ModuleConfiguration, DeploymentPlanConfiguration {
     
     private File jbossAppFile;
     private JbossApp jbossApp;
@@ -43,18 +50,9 @@ public class EarDeploymentConfiguration extends JBDeploymentConfiguration {
     /**
      * Creates a new instance of EarDeploymentConfiguration 
      */
-    public EarDeploymentConfiguration(DeployableObject deployableObject) {
-        super(deployableObject);
-    }
-    
-    /**
-     * EarDeploymentConfiguration initialization. This method should be called before
-     * this class is being used.
-     * 
-     * @param file jboss-app.xml file.
-     */
-    public void init(File file) {
-        this.jbossAppFile = file;
+    public EarDeploymentConfiguration(J2eeModule j2eeModule) {
+        super(j2eeModule);
+        jbossAppFile = j2eeModule.getDeploymentConfigurationFile("META-INF/jboss-app.xml"); // NOI18N
         getJbossApp();
         if (deploymentDescriptorDO == null) {
             try {
@@ -63,6 +61,13 @@ public class EarDeploymentConfiguration extends JBDeploymentConfiguration {
                 ErrorManager.getDefault().notify(donfe);
             }
         }
+    }
+    
+    public void dispose() {
+    }
+    
+    public Lookup getLookup() {
+        return Lookups.fixed(this);
     }
        
     /**
@@ -95,17 +100,17 @@ public class EarDeploymentConfiguration extends JBDeploymentConfiguration {
         return jbossApp;
     }
     
-    // JSR-88 methods ---------------------------------------------------------
-    
     public void save(OutputStream os) throws ConfigurationException {
         JbossApp jbossApp = getJbossApp();
         if (jbossApp == null) {
-            throw new ConfigurationException("Cannot read configuration, it is probably in an inconsistent state."); // NOI18N
+            String msg = NbBundle.getMessage(EarDeploymentConfiguration.class, "MSG_cannotSaveNotParseableConfFile", jbossAppFile.getAbsolutePath());
+            throw new ConfigurationException(msg);
         }
         try {
             jbossApp.write(os);
         } catch (IOException ioe) {
-            throw new ConfigurationException(ioe.getLocalizedMessage());
+            String msg = NbBundle.getMessage(EarDeploymentConfiguration.class, "MSG_CannotUpdateFile", jbossAppFile.getAbsolutePath());
+            throw new ConfigurationException(msg, ioe);
         }
     }
     
@@ -116,5 +121,9 @@ public class EarDeploymentConfiguration extends JBDeploymentConfiguration {
      */
     private JbossApp genereatejbossApp() {
         return new JbossApp();
+    }
+
+    public boolean supportsCreateDatasource() {
+        return false;
     }
 }

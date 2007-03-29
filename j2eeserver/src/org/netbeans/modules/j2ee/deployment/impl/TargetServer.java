@@ -23,26 +23,29 @@ package org.netbeans.modules.j2ee.deployment.impl;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
 import org.openide.filesystems.FileUtil;
 
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.status.*;
 import javax.enterprise.deploy.spi.exceptions.*;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
-import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
 import java.util.*;
 import java.io.*;
-import javax.enterprise.deploy.model.DeployableObject;
+import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 
 /**
  * Encapsulates a set of ServerTarget(s), provides a wrapper for deployment
@@ -102,13 +105,17 @@ public class TargetServer {
         
         J2eeModuleProvider.ConfigSupport configSupport = dtarget.getConfigSupport();
         if (J2eeModule.WAR.equals(dtarget.getModule().getModuleType())) {
-            contextRoot = configSupport.getWebContextRoot();
+            try {
+                contextRoot = configSupport.getWebContextRoot();
+            } catch (ConfigurationException e) {
+                contextRoot = null;
+            }
         }
         
         processLastTargetModules();
     }
     
-    private boolean canFileDeploy(Target[] targetz, DeployableObject deployable) {
+    private boolean canFileDeploy(Target[] targetz, J2eeModule deployable) {
         if (targetz == null || targetz.length != 1) {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, NbBundle.getMessage(
             TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
@@ -121,7 +128,7 @@ public class TargetServer {
         return true;
     }
     
-    private boolean canFileDeploy(TargetModule[] targetModules, DeployableObject deployable) {
+    private boolean canFileDeploy(TargetModule[] targetModules, J2eeModule deployable) {
         if (targetModules == null || targetModules.length != 1) {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, NbBundle.getMessage(
             TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
@@ -158,8 +165,8 @@ public class TargetServer {
     
     private boolean checkServiceImplementations() {
         String missing = null;
-        if (instance.getServer().getConfigurationSupport() == null) {
-            missing = ConfigurationSupport.class.getName();
+        if (instance.getServer().getModuleConfigurationFactory() == null) {
+            missing = ModuleConfigurationFactory.class.getName();
         }
         
         if (missing != null) {
@@ -456,10 +463,10 @@ public class TargetServer {
         }
         
         File plan = null;
-        DeployableObject deployable = null;
-        DeploymentConfigurationProvider dcp = dtarget.getDeploymentConfigurationProvider();
-        if (dcp != null)
-            deployable = dcp.getDeployableObject(null);    
+        J2eeModule deployable = null;
+        ModuleConfigurationProvider mcp = dtarget.getModuleConfigurationProvider();
+        if (mcp != null)
+            deployable = mcp.getJ2eeModule(null);
         boolean hasDirectory = (dtarget.getModule().getContentDirectory() != null);
 
         // undeploy if necessary
@@ -476,7 +483,7 @@ public class TargetServer {
             Target[] targetz = (Target[]) distributeTargets.toArray(new Target[distributeTargets.size()]);
 
             if (incremental != null && hasDirectory && canFileDeploy(targetz, deployable)) {
-                DeploymentConfiguration cfg = dtarget.getDeploymentConfigurationProvider().getDeploymentConfiguration();
+                ModuleConfiguration cfg = dtarget.getModuleConfigurationProvider().getModuleConfiguration();
                 File dir = initialDistribute(targetz[0], ui);
                 po = incremental.initialDeploy(targetz[0], deployable, cfg, dir);
                 trackDeployProgressObject(ui, po, false);
@@ -575,7 +582,7 @@ public class TargetServer {
      * @return true if the progress object completed successfully, false otherwise.
      *         This is a workaround for issue 82428.
      */
-    private boolean trackProgressObject(ProgressUI ui, final ProgressObject po, long timeout) {
+    private static boolean trackProgressObject(ProgressUI ui, final ProgressObject po, long timeout) {
         final AtomicBoolean completed = new AtomicBoolean();
         ui.setProgressObject(po);
         try {

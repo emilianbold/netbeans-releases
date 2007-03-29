@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.sun.share.config;
 
 import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.schema2beans.*;
@@ -34,22 +35,23 @@ abstract public class DDCommon implements DDBean {
 
     StandardDDImpl container;
     DDCommon parent = null;
-    final BaseBean bean;
+    //final BaseBean bean;
     final String xpath;
     final String dtdname;
     final ModuleDDSupport support;
     final Set configBeans = new HashSet();
     final Set childBeans = new HashSet();
+    RootInterface rooti;
     
     // must know about its STandardDDImpl to pass to ConfigBeanStorage
     DDCommon(DDCommon copy) {
-        this(copy.parent,copy.bean,copy.support,copy.xpath);
+        this(copy.parent,copy.rooti,copy.support,copy.xpath);
         configBeans.addAll(copy.configBeans);
     }
     
     DDCommon(DDCommon parent, BaseBean bean, ModuleDDSupport support, String dtdname) {
         this.parent = parent;
-        this.bean = bean;
+        //this.bean = bean;
         this.dtdname = dtdname;
         this.xpath = ((parent == null) ? "" : parent.xpath) + "/" + dtdname; // NOI18N
         this.support = support;
@@ -57,6 +59,19 @@ abstract public class DDCommon implements DDBean {
             parent.addChild(this);
         }
     }
+    
+    DDCommon(DDCommon parent, RootInterface rooti, ModuleDDSupport support, String dtdname) {
+        this.parent = parent;
+        this.rooti = rooti;
+        //this.bean = null;
+        this.dtdname = dtdname;
+        this.xpath = ((parent == null) ? "" : parent.xpath) + "/" + dtdname; // NOI18N
+        this.support = support;
+        if(parent != null) {
+            parent.addChild(this);
+        }        
+    }
+    
     
     void addChild(DDCommon bean) {
         childBeans.add(bean);
@@ -72,7 +87,7 @@ abstract public class DDCommon implements DDBean {
     DDCommon findChild(BaseBean bean) {
         for(Iterator i = childBeans.iterator();i.hasNext(); ) {
             DDCommon child = (DDCommon) i.next();
-            if(child.bean == bean) {
+            if(child.rooti == rooti) {
                 return child;
             }
         }
@@ -88,7 +103,7 @@ abstract public class DDCommon implements DDBean {
         while(root.parent != null) {
             root = root.parent;
         }
-        return (DDRoot) support.getBean(root.bean);
+        return (DDRoot) support.getBean(root.rooti);
     }
     
     final public DDBean[] getChildBean(String xpath) {
@@ -98,7 +113,9 @@ abstract public class DDCommon implements DDBean {
     public String getText() {
         Writer w = new StringWriter();
         try {
-            bean.writeNode(w);
+            w.write("FIXME");
+            //bean.writeNode(w);
+            //rooti.write(new java.io.)
         } catch (Exception e) {
         }
         return w.toString();
@@ -150,7 +167,8 @@ abstract public class DDCommon implements DDBean {
         
         if(isProxy()) {
             // find all children manually
-            BeanProp prop = bean.beanProp(fragment);
+            // FIXME
+            BeanProp prop = null; //bean.beanProp(fragment);
             if(prop != null) {
                 String remainder = index < 0 ? "" : xpath.substring(index); // NOI18N
                 if(prop.isIndexed()) {
@@ -167,21 +185,22 @@ abstract public class DDCommon implements DDBean {
                 }
             }
         } else if(addCurrent) {
-            DDParser parser = new DDParser(bean,xpath);
-            
-            while(parser.hasNext()) {
-                Object current = parser.next();
-                DDParser.DDLocation location = parser.getLocation();
-                if(location.isNode()) {
-                    BaseBean currentBean = (BaseBean) current;
-                    ret.add(support.getBean(currentBean));
-                }
-                else {
-                    ret.add(support.getBean(
-                    location.getRoot().getProperty(location.getName()),
-                    location.getIndex()));
-                }
-            }
+//            DDParser parser = new DDParser(bean,xpath);
+//            DDParser parser = new DDParser(rooti,xpath);
+//            
+//            while(parser.hasNext()) {
+//                Object current = parser.next();
+//                DDParser.DDLocation location = parser.getLocation();
+//                if(location.isNode()) {
+//                    BaseBean currentBean = (BaseBean) current;
+//                    ret.add(support.getBean(currentBean));
+//                }
+//                else {
+//                    ret.add(support.getBean(
+//                    location.getRoot().getProperty(location.getName()),
+//                    location.getIndex()));
+//                }
+//            }
         }
         
         if(index < 0) return ret;
@@ -212,14 +231,14 @@ abstract public class DDCommon implements DDBean {
     }
     
     public int hashCode() {
-        return bean.hashCode();
+        return rooti.hashCode();
     }
     
     /* Must be overridden in subclasses, and super.equals(o) must be
        part of the computation. */
     public boolean equals(Object o) {
         if(o instanceof DDCommon)
-            return ((DDCommon)o).bean == bean;
+            return ((DDCommon)o).rooti == rooti;
         return false;
     }
     

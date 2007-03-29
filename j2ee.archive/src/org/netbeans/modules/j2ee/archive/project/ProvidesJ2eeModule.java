@@ -20,16 +20,19 @@
 
 package org.netbeans.modules.j2ee.archive.project;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -44,7 +47,7 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
     private J2eeModule innerModule;
     
     private AntProjectHelper helper;
-        
+    
     private ArchiveProject project;
     
     ProvidesJ2eeModule(AntProjectHelper helper, ArchiveProject proj) {
@@ -55,7 +58,7 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
     
     public void setInner(J2eeModuleProvider inner) {
         this.inner = inner;
-        innerModule = new InnerModule(inner.getJ2eeModule());
+        innerModule = J2eeModuleFactory.createJ2eeModule(new InnerModule(inner.getJ2eeModule()));
     }
     
     public J2eeModule getJ2eeModule() {
@@ -71,19 +74,16 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
         return retVal;
     }
     
+    static private final String CONF="conf";
+    
     public File getDeploymentConfigurationFile(final String name) {
-        File retVal = null;
-        if (null != inner) {
-            retVal = inner.getDeploymentConfigurationFile(name);
-        }
-        if (null == retVal) {
-           final String dir = (String)project.getArchiveProjectProperties().
-                   get(ArchiveProjectProperties.PROXY_PROJECT_DIR);
-           final File proxyProjectDir = 
-                   FileUtil.toFile(helper.getProjectDirectory().getFileObject(dir));
-           retVal = new File(proxyProjectDir, 
-                   SRC_LIT + File.separator + "conf" + File.separator + name);  // NOI18N
-        }
+        File retVal;
+        final String dir = (String)project.getArchiveProjectProperties().
+                get(ArchiveProjectProperties.PROXY_PROJECT_DIR);
+        final File proxyProjectDir =
+                FileUtil.toFile(helper.getProjectDirectory().getFileObject(dir));
+        retVal = new File(proxyProjectDir,
+                SRC_LIT + File.separator + CONF + File.separator + name);  // NOI18N
         return retVal;
     }
     
@@ -94,44 +94,40 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
         String dir = (String)project.getArchiveProjectProperties().
                 get(ArchiveProjectProperties.PROXY_PROJECT_DIR);
         
-        if (null != inner) {
-            retVal = inner.findDeploymentConfigurationFile(name);
-        } else {
-            try {
-                FileObject parent;
-                if ("sun-application.xml".equals(name)) {                       // NOI18N
-                    retVal = helper.getProjectDirectory().getFileObject(dir).
-                            getFileObject(SRC_LIT).getFileObject("conf").       // NOI18N
-                            getFileObject(name);
-                    if (retVal == null) {
-                        parent = helper.getProjectDirectory().getFileObject(dir).
-                                getFileObject(SRC_LIT).getFileObject("conf");   // NOI18N
-                        retVal = makeDescriptorFromTemplate(parent,name);
-                    }
+        try {
+            FileObject parent;
+            if ("sun-application.xml".equals(name)) {                       // NOI18N
+                retVal = helper.getProjectDirectory().getFileObject(dir).
+                        getFileObject(SRC_LIT).getFileObject(CONF).       // NOI18N
+                        getFileObject(name);
+                if (retVal == null) {
+                    parent = helper.getProjectDirectory().getFileObject(dir).
+                            getFileObject(SRC_LIT).getFileObject(CONF);   // NOI18N
+                    retVal = makeDescriptorFromTemplate(parent,name);
                 }
-                if ("sun-ra.xml".equals(name)) {                                // NOI18N
-                    retVal = helper.getProjectDirectory().getFileObject(dir).
-                            getFileObject(SRC_LIT).getFileObject("conf").       // NOI18N
-                            getFileObject(name);
-                    if (null == retVal) {
-                        retVal = helper.getProjectDirectory().getFileObject(dir).
-                            getFileObject(SRC_LIT).getFileObject(name);
-                    }
-                    if (retVal == null) {
-                        parent = helper.getProjectDirectory().getFileObject(dir).
-                            getFileObject(SRC_LIT);
-                        retVal = makeDescriptorFromTemplate(parent,name);
-                    }
-                }
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
             }
+            if ("sun-ra.xml".equals(name)) {                                // NOI18N
+                retVal = helper.getProjectDirectory().getFileObject(dir).
+                        getFileObject(SRC_LIT).getFileObject(CONF).       // NOI18N
+                        getFileObject(name);
+                if (null == retVal) {
+                    retVal = helper.getProjectDirectory().getFileObject(dir).
+                            getFileObject(SRC_LIT).getFileObject(name);
+                }
+                if (retVal == null) {
+                    parent = helper.getProjectDirectory().getFileObject(dir).
+                            getFileObject(SRC_LIT);
+                    retVal = makeDescriptorFromTemplate(parent,name);
+                }
+            }
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
         }
         return retVal;
     }
     
     private FileObject makeDescriptorFromTemplate(/*final String dir, */ final FileObject parent, final String name) throws IOException {
-        FileObject retVal = null;
+        FileObject retVal;
         final InputStream is = ProvidesJ2eeModule.class.getResourceAsStream("template-"+name); // NOI18N;
         try {
             FileSystem fs = parent.getFileSystem();
@@ -255,7 +251,7 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
         innerModule = j2eeModule;
     }
     
-    private class InnerModule implements J2eeModule {
+    private class InnerModule implements J2eeModuleImplementation {
         
         private J2eeModule inner;
         
@@ -275,10 +271,6 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
             return inner.getUrl();
         }
         
-        public void setUrl(String url) {
-            inner.setUrl(url);
-        }
-        
         public FileObject getArchive() throws IOException {
             return getFileObject("dist.archive");           // NOI18N
         }
@@ -292,16 +284,24 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
             return null;
         }
         
-        public BaseBean getDeploymentDescriptor(String location) {
+        public RootInterface getDeploymentDescriptor(String location) {
             return inner.getDeploymentDescriptor(location);
         }
         
-        public void addVersionListener(J2eeModule.VersionListener listener) {
-            inner.addVersionListener(listener);
+        public File getResourceDirectory() {
+            return inner.getResourceDirectory();
         }
         
-        public void removeVersionListener(J2eeModule.VersionListener listener) {
-            inner.removeVersionListener(listener);
+        public File getDeploymentConfigurationFile(String name) {
+            return inner.getDeploymentConfigurationFile(name);
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            inner.addPropertyChangeListener(listener);
+        }
+        
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            inner.removePropertyChangeListener(listener);
         }
         
     }

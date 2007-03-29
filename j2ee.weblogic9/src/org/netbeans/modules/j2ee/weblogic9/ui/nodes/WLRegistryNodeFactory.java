@@ -18,9 +18,10 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import org.openide.util.*;
-import org.openide.nodes.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * Factory that creates nodes that will appear in the server registry.

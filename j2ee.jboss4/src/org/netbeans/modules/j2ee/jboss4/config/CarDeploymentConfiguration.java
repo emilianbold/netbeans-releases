@@ -25,14 +25,14 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import javax.enterprise.deploy.model.DDBean;
-import javax.enterprise.deploy.model.DDBeanRoot;
-import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.model.XpathEvent;
-import javax.enterprise.deploy.model.XpathListener;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.j2ee.dd.api.client.AppClient;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.gen.EjbRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.JbossClient;
 import org.netbeans.modules.j2ee.jboss4.config.gen.ResourceRef;
@@ -45,38 +45,24 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author jungi
  */
 public class CarDeploymentConfiguration extends JBDeploymentConfiguration
-        implements PropertyChangeListener, XpathListener {
-    
-    private static final String EJB_REF = "/application-client/ejb-ref"; // NOI18N
-    private static final String SERVICE_REF = "/application-client/service-ref"; // NOI18N
-    private static final String RESOURCE_REF = "/application-client/resource-ref"; // NOI18N
-    private static final String DISPLAY_NAME = "/application-client/display-name"; // NOI18N
+implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {
     
     private File jbossClientFile;
     private JbossClient jbossClient;
     
     /** Creates a new instance of CarDeploymentConfiguration */
-    public CarDeploymentConfiguration(DeployableObject deployableObject) {
-        super(deployableObject);
-    }
-    
-    /**
-     * CarDeploymentConfiguration initialization. This method should be called before
-     * this class is being used.
-     * 
-     * @param file jboss-client.xml file.
-     * @param resourceDir   directory containing definition for enterprise resources.
-     */
-    public void init(File file, File resourceDir) {
-        super.init(resourceDir);
-        this.jbossClientFile = file;
+    public CarDeploymentConfiguration(J2eeModule j2eeModule) {
+        super(j2eeModule);
+        jbossClientFile = j2eeModule.getDeploymentConfigurationFile("META-INF/jboss-client.xml"); // NOI18N
         getJbossClient();
         if (deploymentDescriptorDO == null) {
             try {
@@ -86,15 +72,22 @@ public class CarDeploymentConfiguration extends JBDeploymentConfiguration
                 ErrorManager.getDefault().notify(donfe);
             }
         }
-        
-        if (deplObj != null && deplObj.getDDBeanRoot() != null ) {
-            //listen on the resource-ref element
-            DDBeanRoot root = deplObj.getDDBeanRoot();
-            root.addXpathListener(DISPLAY_NAME, this);
-            root.addXpathListener(RESOURCE_REF, this);
-            root.addXpathListener(EJB_REF, this);
-            root.addXpathListener(SERVICE_REF, this);
+        AppClient appClient = (AppClient) j2eeModule.getDeploymentDescriptor(J2eeModule.CLIENT_XML);
+        if (appClient != null) {
+            appClient.addPropertyChangeListener(this);
         }
+    }
+    
+
+    public void dispose() {
+        AppClient appClient = (AppClient) j2eeModule.getDeploymentDescriptor(J2eeModule.CLIENT_XML);
+        if (appClient != null) {
+            appClient.removePropertyChangeListener(this);
+        }
+    }
+    
+    public Lookup getLookup() {
+        return Lookups.fixed(this);
     }
     
     /**
@@ -130,81 +123,67 @@ public class CarDeploymentConfiguration extends JBDeploymentConfiguration
     /**
      * Listen to jboss-web.xml document changes.
      */
-    public synchronized void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName() == DataObject.PROP_MODIFIED &&
-                evt.getNewValue() == Boolean.FALSE) {
-
-            if (evt.getSource() == deploymentDescriptorDO) // dataobject has been modified, jbossWeb graph is out of sync
-                jbossClient = null;
-            else
+    public void propertyChange(PropertyChangeEvent evt) {
+        Object newValue = evt.getNewValue();
+        if (evt.getPropertyName() == DataObject.PROP_MODIFIED && evt.getNewValue() == Boolean.FALSE) {
+            if (evt.getSource() == deploymentDescriptorDO) { // dataobject has been modified, jbossWeb graph is out of sync
+                synchronized (this) {
+                    jbossClient = null;   
+                }
+            } else {
                 super.propertyChange(evt);
-        }
-    }
-   
-    public void fireXpathEvent(XpathEvent xpe) {
-        if (!xpe.isAddEvent())
-            return;
-
-        DDBean eventDDBean = xpe.getBean();
-        if (DISPLAY_NAME.equals(eventDDBean.getXpath())) {
-            String name = eventDDBean.getText();
-            try {
-                setJndiName(name);
-            } catch (ConfigurationException ce) {
-                ErrorManager.getDefault().notify(ce);
             }
-        } else if (RESOURCE_REF.equals(eventDDBean.getXpath())) { //a new resource reference added
-            String[] desc = eventDDBean.getText("description"); // NOI18N
-            String[] name = eventDDBean.getText("res-ref-name"); // NOI18N
-            String[] type = eventDDBean.getText("res-type");     // NOI18N
-            if (name.length > 0 && type.length > 0) {
+        } else if (evt.getOldValue() == null) {
+            // TODO do we also want to check changes in the application client display name?
+            if (newValue instanceof org.netbeans.modules.j2ee.dd.api.common.ResourceRef) {
+                //a new resource reference added
+                org.netbeans.modules.j2ee.dd.api.common.ResourceRef resourceRef = (org.netbeans.modules.j2ee.dd.api.common.ResourceRef) newValue;
                 try {
-                    if (desc.length > 0  && "javax.sql.DataSource".equals(type[0])) // NOI18N
-                        addResReference(desc[0], name[0]);
-                    else
-                    if ("javax.mail.Session".equals(type[0])) // NOI18N
-                        addMailReference(name[0]);
-                    if ("javax.jms.ConnectionFactory".equals(type[0])) // NOI18N
-                        addConnectionFactoryReference(name[0]);
+                    String resType = resourceRef.getResType();
+                    if ("javax.sql.DataSource".equals(resType)) { // NOI18N
+                        addResReference(resourceRef.getResRefName());
+                    } else if ("javax.mail.Session".equals(resType)) { // NOI18N
+                        addMailReference(resourceRef.getResRefName());
+                    } else if ("javax.jms.ConnectionFactory".equals(resType)) { // NOI18N
+                        addConnectionFactoryReference(resourceRef.getResRefName());
+                    }
                 } catch (ConfigurationException ce) {
                     ErrorManager.getDefault().notify(ce);
                 }
-            }
-        } else if (EJB_REF.equals(eventDDBean.getXpath())) { // a new ejb reference added
-            String[] name = eventDDBean.getText("ejb-ref-name"); // NOI18N
-            String[] type = eventDDBean.getText("ejb-ref-type"); // NOI18N
-            if (name.length > 0 && type.length > 0 
-                    && ("Session".equals(type[0]) || "Entity".equals(type[0]))) { // NOI18N
+            } else if (newValue instanceof org.netbeans.modules.j2ee.dd.api.common.EjbRef) {
+                // a new ejb reference added
+                org.netbeans.modules.j2ee.dd.api.common.EjbRef ejbRef = (org.netbeans.modules.j2ee.dd.api.common.EjbRef) newValue;
                 try {
-                    addEjbReference(name[0]);
+                    String ejbRefType = ejbRef.getEjbRefType();
+                    if ("Session".equals(ejbRefType) || "Entity".equals(ejbRefType)) { // NOI18N
+                        addEjbReference(ejbRef.getEjbRefName());
+                    }
                 } catch (ConfigurationException ce) {
                     ErrorManager.getDefault().notify(ce);
                 }
-            }
-        } else if (SERVICE_REF.equals(eventDDBean.getXpath())) { //a new message destination reference added
-            String[] name = eventDDBean.getText("service-ref-name"); // NOI18N
-            if (name.length > 0) {
+            } else if (newValue instanceof org.netbeans.modules.j2ee.dd.api.common.ServiceRef) {
+                // a new message destination reference added
+                org.netbeans.modules.j2ee.dd.api.common.ServiceRef serviceRef = (org.netbeans.modules.j2ee.dd.api.common.ServiceRef) newValue;
                 try {
-                    addServiceReference(name[0]);
+                    addServiceReference(serviceRef.getServiceRefName());
                 } catch (ConfigurationException ce) {
                     ErrorManager.getDefault().notify(ce);
                 }
             }
         }
-        
     }
-
-    // JSR-88 methods ---------------------------------------------------------
     
     public void save(OutputStream os) throws ConfigurationException {
         JbossClient jbossClientDD = getJbossClient();
         if (jbossClientDD == null) {
-            throw new ConfigurationException("Cannot read configuration, it is probably in an inconsistent state."); // NOI18N
+            String msg = NbBundle.getMessage(CarDeploymentConfiguration.class, "MSG_cannotSaveNotParseableConfFile", jbossClientFile.getAbsolutePath());
+            throw new ConfigurationException(msg);
         }
         try {
             jbossClientDD.write(os);
         } catch (IOException ioe) {
-            throw new ConfigurationException(ioe.getLocalizedMessage());
+            String msg = NbBundle.getMessage(CarDeploymentConfiguration.class, "MSG_CannotUpdateFile", jbossClientFile.getAbsolutePath());
+            throw new ConfigurationException(msg, ioe);
         }
     }
     
@@ -222,10 +201,9 @@ public class CarDeploymentConfiguration extends JBDeploymentConfiguration
     /**
      * Add a new resource reference.
      * 
-     * @param desc description
      * @param name resource reference name
      */
-    private void addResReference(final String desc, final String name) throws ConfigurationException {
+    private void addResReference(final String name) throws ConfigurationException {
         modifyJbossClient(new JbossClientModifier() {
             public void modify(JbossClient modifiedJbossClient) {
 
@@ -399,7 +377,8 @@ public class CarDeploymentConfiguration extends JBDeploymentConfiguration
                 if (oldJbossClient == null) {
                     // neither the old graph is parseable, there is not much we can do here
                     // TODO: should we notify the user?
-                    throw new ConfigurationException("Configuration data are not parseable cannot perform changes."); // NOI18N
+                    String msg = NbBundle.getMessage(CarDeploymentConfiguration.class, "MSG_jbossXmlCannotParse", jbossClientFile.getAbsolutePath());
+                    throw new ConfigurationException(msg);
                 }
                 // current editor content is not parseable, ask whether to override or not
                 NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(
@@ -422,14 +401,24 @@ public class CarDeploymentConfiguration extends JBDeploymentConfiguration
             replaceDocument(doc, newJbossClient);
             if (!modified) {
                 SaveCookie cookie = (SaveCookie)deploymentDescriptorDO.getCookie(SaveCookie.class);
-                cookie.save();
+                if (cookie != null) {
+                    cookie.save();
+                }
             }
-            jbossClient = newJbossClient;
+            synchronized (this) {
+                jbossClient = newJbossClient;
+            }
         } catch (BadLocationException ble) {
-            throw (ConfigurationException)(new ConfigurationException().initCause(ble));
+            // this should not occur, just log it if it happens
+            ErrorManager.getDefault().notify(ble);
         } catch (IOException ioe) {
-            throw (ConfigurationException)(new ConfigurationException().initCause(ioe));
+            String msg = NbBundle.getMessage(CarDeploymentConfiguration.class, "MSG_CannotUpdateFile", jbossClientFile.getAbsolutePath());
+            throw new ConfigurationException(msg, ioe);
         }
+    }
+
+    public boolean supportsCreateDatasource() {
+        return true;
     }
     
     // private helper interface -----------------------------------------------

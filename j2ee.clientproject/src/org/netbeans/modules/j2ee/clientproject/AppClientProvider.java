@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.clientproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -41,11 +42,14 @@ import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectPro
 //import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 //import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
 import org.netbeans.modules.schema2beans.BaseBean;
@@ -66,13 +70,15 @@ import org.openide.util.WeakListeners;
  * @author jungi
  */
 public final class AppClientProvider extends J2eeModuleProvider
-        implements CarImplementation, J2eeModule, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
+        implements CarImplementation, J2eeModuleImplementation, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
     
     public static final String FILE_DD = "application-client.xml";//NOI18N
     
     private final AppClientProject project;
     private final AntProjectHelper helper;
-    private Set<J2eeModule.VersionListener> versionListeners;
+    
+    private PropertyChangeSupport propertyChangeSupport;
+    private J2eeModule j2eeModule;
     
     private long notificationTimeout = 0; // used to suppress repeating the same messages
     
@@ -117,7 +123,7 @@ public final class AppClientProvider extends J2eeModuleProvider
         return getFile(AppClientProjectProperties.META_INF);
     }
     
-    public File getEnterpriseResourceDirectory() {
+    public File getResourceDirectory() {
         return getFile(AppClientProjectProperties.RESOURCE_DIR);
     }
     
@@ -158,8 +164,11 @@ public final class AppClientProvider extends J2eeModuleProvider
         return null;
     }
     
-    public J2eeModule getJ2eeModule() {
-        return this;
+    public synchronized J2eeModule getJ2eeModule () {
+        if (j2eeModule == null) {
+            j2eeModule = J2eeModuleFactory.createJ2eeModule(this);
+        }
+        return j2eeModule;
     }
     
     public ModuleChangeReporter getModuleChangeReporter() {
@@ -199,19 +208,10 @@ public final class AppClientProvider extends J2eeModuleProvider
         return getFile(AppClientProjectProperties.BUILD_CLASSES_DIR);
     }
     
-    public BaseBean getDeploymentDescriptor(String location) {
+    public RootInterface getDeploymentDescriptor(String location) {
         if (J2eeModule.CLIENT_XML.equals(location)){
-            AppClient appClient = Utils.getAppClient(project);
-            if (appClient != null) {
-                //PENDING find a better way to get the BB from WApp and remove the HACK from DDProvider!!
-                return DDProvider.getDefault().getBaseBean(appClient);
-            }
-        }/* else if(J2eeModule.EJBSERVICES_XML.equals(location)){
-            Webservices webServices = getWebservices();
-            if(webServices != null){
-                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getBaseBean(webServices);
-            }
-        }*/
+            return Utils.getAppClient(project);
+        }
         return null;
     }
     /*
@@ -259,35 +259,11 @@ public final class AppClientProvider extends J2eeModuleProvider
         return (ac == null) ? AppClient.VERSION_1_4 /* fallback */ : ac.getVersion().toString();
     }
     
-    private Set<J2eeModule.VersionListener> versionListeners() {
-        if (versionListeners == null) {
-            versionListeners = new HashSet<J2eeModule.VersionListener>();
-            AppClient appClient = Utils.getAppClient(project);
-            if (appClient != null) {
-                PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, this, appClient);
-                appClient.addPropertyChangeListener(l);
-            }
-        }
-        return versionListeners;
-    }
-    
-    public void addVersionListener(J2eeModule.VersionListener vl) {
-        versionListeners().add(vl);
-    }
-    
-    public void removeVersionListener(J2eeModule.VersionListener vl) {
-        if (versionListeners != null) {
-            versionListeners.remove(vl);
-        }
-    }
-    
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(AppClient.PROPERTY_VERSION)) {
-            for (J2eeModule.VersionListener vl : versionListeners) {
-                String oldVersion = (String) evt.getOldValue();
-                String newVersion = (String) evt.getNewValue();
-                vl.versionChanged(oldVersion, newVersion);
-            }
+            String oldVersion = (String) evt.getOldValue();
+            String newVersion = (String) evt.getNewValue();
+            getPropertyChangeSupport().firePropertyChange(J2eeModule.PROP_MODULE_VERSION, oldVersion, newVersion);
         } else if (evt.getPropertyName().equals(AppClientProjectProperties.J2EE_SERVER_INSTANCE)) {
             Deployment d = Deployment.getDefault();
             String oldServerID = evt.getOldValue() == null ? null : d.getServerID((String) evt.getOldValue());
@@ -296,8 +272,8 @@ public final class AppClientProvider extends J2eeModuleProvider
         }  else if (AppClientProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
             String oldValue = (String)evt.getOldValue();
             String newValue = (String)evt.getNewValue();
-            firePropertyChange(
-                    PROP_ENTERPRISE_RESOURCE_DIRECTORY,
+            getPropertyChangeSupport().firePropertyChange(
+                    J2eeModule.PROP_RESOURCE_DIRECTORY, 
                     oldValue == null ? null : new File(oldValue),
                     newValue == null ? null : new File(newValue));
         }
@@ -382,6 +358,33 @@ public final class AppClientProvider extends J2eeModuleProvider
             // be conservative -- don't know anything about the project
             // so consider it open
             return true;
+        }
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        getPropertyChangeSupport().addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        synchronized (this) {
+            if (propertyChangeSupport == null) {
+                return;
+            }
+        }
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+    
+    private PropertyChangeSupport getPropertyChangeSupport() {
+        AppClient appClient = Utils.getAppClient(project);
+        synchronized (this) {
+            if (propertyChangeSupport == null) {
+                propertyChangeSupport = new PropertyChangeSupport(this);
+                if (appClient != null) {
+                    PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, this, appClient);
+                    appClient.addPropertyChangeListener(l);
+                }
+            }
+            return propertyChangeSupport;
         }
     }
     

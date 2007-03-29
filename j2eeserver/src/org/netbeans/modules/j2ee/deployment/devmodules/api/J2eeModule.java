@@ -13,23 +13,35 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
+import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
+import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.schema2beans.BaseBean;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.openide.filesystems.FileObject;
 import java.util.Iterator;
 
-/** Abstraction of J2EE module. Provides access to basic properties
+/** 
+ * Abstraction of J2EE module. Provides access to basic server-neutral properties 
  * of the modules: J2EE version, module type, deployment descriptor.
- *
+ * <p>
+ * It is not possible to instantiate this class directly. Implementators have to
+ * implement the {@link J2eeModuleImplementation} first and then use the
+ * {@link J2eeModuleFactory} to create a J2eeModule instance.
+ * 
  * @author  Pavel Buzek
  */
-public interface J2eeModule {
+public class J2eeModule {
 
     /** MIME type for ContentDescriptor of build targets that have J2eeModule in lookup.
      * This can be used to search implementations of targets providing J2eeModule 
@@ -74,26 +86,63 @@ public interface J2eeModule {
     public static final String CONNECTOR_XML = "META-INF/ra.xml";
     public static final String CLIENT_XML = "META-INF/application-client.xml";
     
-    /** Returns module specification version */
-    public String getModuleVersion();
     
-    /** Returns module type */
-    public Object getModuleType();
-    
-    /** Returns the location of the module within the application archive. */
-    public abstract String getUrl ();
-    
-    /** Sets the location of the modules within the application archive.
-     * For example, a web module could be at "/wbmodule1.war" within the ear
-     * file. For standalone module the URL cannot be set to a different value
-     * then "/"
+    /**
+     * Enterprise resorce directory property
      */
-    public void setUrl (String url);
+    public static final String PROP_RESOURCE_DIRECTORY = "resourceDir"; // NOI18N
+    
+    /**
+     * Module version property
+     */
+    public static final String PROP_MODULE_VERSION = "moduleVersion"; // NOI18N
+    
+    private J2eeModuleProvider j2eeModuleProvider;
+
+    public interface RootedEntry {
+        FileObject getFileObject ();
+        String getRelativePath ();
+    }
+    
+    private final J2eeModuleImplementation impl;
+    
+    J2eeModule(J2eeModuleImplementation impl) {
+        this.impl = impl;
+    }
+
+    /** 
+     * Returns module specification version.
+     *
+     * @return module specification version.
+     */
+    public String getModuleVersion() {
+        return impl.getModuleVersion();
+    }
+    
+    /** 
+     * Returns module type.
+     * 
+     * @return module type.
+     */
+    public Object getModuleType() {
+        return impl.getModuleType();
+    }
+    
+    /** 
+     * Returns the location of the module within the application archive.
+     * 
+     * @return location of the module within the application archive.
+     */
+    public String getUrl() {
+        return impl.getUrl();
+    }
     
     /** Returns the archive file for the module of null if the archive file 
      * does not exist (for example, has not been compiled yet). 
      */
-    public FileObject getArchive () throws java.io.IOException;
+    public FileObject getArchive() throws java.io.IOException {
+        return impl.getArchive();
+    }
     
     /** Returns the contents of the archive, in copyable form.
      *  Used for incremental deployment.
@@ -102,7 +151,9 @@ public interface J2eeModule {
      *  j2ee application, the result should not contain module archives.
      *  @return Iterator through {@link RootedEntry}s
      */
-    public Iterator getArchiveContents() throws java.io.IOException;
+    public Iterator getArchiveContents() throws java.io.IOException {
+        return impl.getArchiveContents();
+    }
 
     /** This call is used in in-place deployment. 
      *  Returns the directory staging the contents of the archive
@@ -111,7 +162,9 @@ public interface J2eeModule {
      *  @return FileObject for the content directory, return null if the 
      *     module doesn't have a build directory, like an binary archive project
      */
-    public FileObject getContentDirectory() throws java.io.IOException;
+    public FileObject getContentDirectory() throws java.io.IOException {
+        return impl.getContentDirectory();
+    }
     
     /** Returns a live bean representing the final deployment descriptor
      * that will be used for deploment of the module. This can be
@@ -123,24 +176,74 @@ public interface J2eeModule {
      * Location must be prefixed by /META-INF or /WEB-INF as appropriate.
      * @return a live bean representing the final DD
      */
-    public BaseBean getDeploymentDescriptor(String location);
-
-    public interface RootedEntry {
-        FileObject getFileObject ();
-        String getRelativePath ();
+    public RootInterface getDeploymentDescriptor(String location) {
+        return impl.getDeploymentDescriptor(location);
     }
     
-    /** Add module change listener.
-     * @param listener on version change
+    /**
+     * Returns the module resource directory or null if the module has no resource
+     * directory.
+     * 
+     * @return the module resource directory or null if the module has no resource
+     *         directory.
      */
-    public void addVersionListener(VersionListener listener);
+    public File getResourceDirectory() {
+        return impl.getResourceDirectory();
+    }
     
-    /** Remove module version change listener.
-     * @param listener on version change
+    /**
+     * Returns source deployment configuration file path for the given deployment 
+     * configuration file name.
+     *
+     * @param name file name of the deployment configuration file, WEB-INF/sun-web.xml
+     *        for example.
+     * 
+     * @return absolute path to the deployment configuration file, or null if the
+     *         specified file name is not known to this J2eeModule.
      */
-    public void removeVersionListener(VersionListener listener);
+    public File getDeploymentConfigurationFile(String name) {
+        return impl.getDeploymentConfigurationFile(name);
+    }
     
-    public interface VersionListener {
-        void versionChanged(String oldVersion, String newVersion);
+    /**
+     * Add a PropertyChangeListener to the listener list.
+     * 
+     * @param listener PropertyChangeListener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        impl.addPropertyChangeListener(listener);   
+    }
+    
+    /**
+     * Remove a PropertyChangeListener from the listener list.
+     * 
+     * @param listener PropertyChangeListener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        impl.removePropertyChangeListener(listener);
+    }
+    
+    synchronized J2eeModuleProvider getJ2eeModuleProvider() {
+        return j2eeModuleProvider;
+    }
+    
+    synchronized void setJ2eeModuleProvider(J2eeModuleProvider j2eeModuleProvider) {
+        this.j2eeModuleProvider = j2eeModuleProvider;
+    }
+    
+    static {
+        J2eeModuleAccessor.DEFAULT = new J2eeModuleAccessor() {
+            public J2eeModule createJ2eeModule(J2eeModuleImplementation impl) {
+                return new J2eeModule(impl);
+            }
+            
+            public J2eeModuleProvider getJ2eeModuleProvider(J2eeModule j2eeModule) {
+               return j2eeModule.getJ2eeModuleProvider(); 
+            }
+            
+            public void setJ2eeModuleProvider(J2eeModule j2eeModule, J2eeModuleProvider j2eeModuleProvider) {
+                j2eeModule.setJ2eeModuleProvider(j2eeModuleProvider);
+            }
+        };
     }
 }

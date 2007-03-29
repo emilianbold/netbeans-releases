@@ -38,7 +38,7 @@ public class DDProxy extends DDCommon implements PropertyChangeListener {
     }
     
     void cancelProxy() {
-        bean.removePropertyChangeListener(this);
+        rooti.removePropertyChangeListener(this);
     }
     
     public void propertyChange(PropertyChangeEvent event) {
@@ -52,7 +52,7 @@ public class DDProxy extends DDCommon implements PropertyChangeListener {
 //        System.out.println("Name " + name);
 //        System.out.println("Source " + support.getBean((BaseBean)event.getSource()));
         
-        support.processEvent(oldValue,newValue,support.getBean(name,bean).proxy,event);
+        support.processEvent(oldValue,newValue,support.getBean(name,rooti).proxy,event);
     }
     
 }

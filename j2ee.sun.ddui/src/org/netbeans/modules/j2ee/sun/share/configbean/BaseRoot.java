@@ -23,6 +23,7 @@ import javax.enterprise.deploy.spi.DConfigBeanRoot;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
 import org.netbeans.modules.j2ee.sun.share.config.DDRoot;
 import org.openide.ErrorManager;
@@ -37,6 +38,7 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 
 	private SunONEDeploymentConfiguration dc;
 	private DDBean uri;
+    private Object uriObj;
 	private DDBean displayNameDD;
 
 	public SunONEDeploymentConfiguration getConfig() {
@@ -63,6 +65,14 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 		findRefDCB(dDBeanRoot);
 	}
 	
+    void init(J2eeModule mod, SunONEDeploymentConfiguration sunONEDeploymentConfiguration, Object uriObj) {
+		super.init(mod, null);
+		this.dc = dc;
+		this.uriObj = uriObj;
+		
+		// initialize reference if we can
+//		findRefDCB(mod);
+    }
     /** Retrieve a DConfigBeanRoot bound to a secondary descriptor file, e.g. 
      *  webservices.xml.  This method is overloaded in EjbJarRoot and WebAppRoot
      *  to handle creating the WebServices DConfigBeanRoot.  No other secondary
@@ -245,6 +255,7 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 	 *  Persistence support helper objects
 	 */
     protected abstract ConfigParser getParser();
+
     
 /* !PW not currently used.  I didn't like the additional runtime issues that
  *     using introspection added to the code.

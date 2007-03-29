@@ -721,7 +721,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 
     public EJBInfoHelper getEJBInfoHelper(SunCmpMappings beanGraph) {
         if (ejbInfoHelper == null) {
-            sourceFileMap = SourceFileMap.findSourceMap(getConfig().getDeployableObject());
+            sourceFileMap = SourceFileMap.findSourceMap(getConfig().getJ2eeModule()); //getDeployableObject());
             ejbInfoHelper = new EJBDevelopmentInfoHelper(beanGraph, sourceFileMap);
         }
         
@@ -750,7 +750,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
         getMappingContext(beanGraph, infoHelper);
 
         MappingConverter mappingConverter = new MappingConverter(
-            infoHelper, SourceFileMap.findSourceMap(getConfig().getDeployableObject()));
+            infoHelper, SourceFileMap.findSourceMap(getConfig().getJ2eeModule())); // getDeployableObject()));
         Collection newMCEs = null;
 
         try {
@@ -782,7 +782,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
             if (mappingContext.getModel().getMappingClass(
                     myConversionHelper.getMappedClassName(beanName)) == null) {
                 MappingConverter mappingConverter = new MappingConverter(
-                    infoHelper, SourceFileMap.findSourceMap(getConfig().getDeployableObject()));
+                    infoHelper, SourceFileMap.findSourceMap(getConfig().getJ2eeModule())); //getDeployableObject()));
                 MappingClassElement newMCE = null;
                 try {
                     newMCE = mappingConverter.toMappingClass(beanName);

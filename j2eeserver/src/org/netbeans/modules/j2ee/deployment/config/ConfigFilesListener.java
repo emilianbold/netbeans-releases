@@ -52,7 +52,7 @@ public class ConfigFilesListener extends AbstractFilesListener {
                 continue;
             
             for (int j = 0; j < paths.length; j++) {
-                File f = provider.getDeploymentConfigurationFile(paths[j]);
+                File f = provider.getJ2eeModule().getDeploymentConfigurationFile(paths[j]);
                 if (f != null)
                     result.add(f);
             }

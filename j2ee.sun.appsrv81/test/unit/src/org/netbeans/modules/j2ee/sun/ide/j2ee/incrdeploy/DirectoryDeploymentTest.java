@@ -37,7 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.io.File;
 import junit.framework.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.openide.util.RequestProcessor;

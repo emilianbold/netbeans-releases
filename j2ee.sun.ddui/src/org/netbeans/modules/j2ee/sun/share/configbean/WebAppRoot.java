@@ -32,6 +32,7 @@ import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.spi.DConfigBean;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
 import org.xml.sax.SAXException;
 
@@ -127,6 +128,18 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		
 		loadFromPlanFile(parent);
 	}
+    
+    protected  void init(J2eeModule mod, SunONEDeploymentConfiguration parent, Object ddbExtra) {
+		super.init(mod, parent, ddbExtra);
+		
+		sessionConfigBean = new SessionConfigSubBean();
+		sessionConfigBean.init(this);
+		
+		cacheBean = new WebAppCache();
+		cacheBean.init(this);
+		
+		loadFromPlanFile(parent);
+    }
 	
 	/** -----------------------------------------------------------------------
 	 *  Validation implementation
@@ -232,6 +245,21 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		}
 		
 		return servletVersion;
+//        J2eeModule mod = getModule();
+//        
+//        String versionString = mod.getModuleVersion();
+////		if(versionString == null) {
+////			// If the above doesn't get us what we want.
+////			versionString = ddbRoot.getModuleDTDVersion();
+////		}
+//		
+//		J2EEBaseVersion servletVersion = ServletVersion.getServletVersion(versionString);
+//		if(servletVersion == null) {
+//			// Default to Servlet 2.4 if we can't find out what version this is.
+//			servletVersion = ServletVersion.SERVLET_2_4;
+//		}
+//		
+//		return servletVersion;
 	}
 	
     /** Generate a DOCTYPE string for the specified version (which may be different

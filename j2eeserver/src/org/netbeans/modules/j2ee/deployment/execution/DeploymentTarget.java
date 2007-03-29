@@ -46,7 +46,7 @@ public interface DeploymentTarget {
     
     public void setTargetModules(TargetModule[] targetModules);
     
-    public DeploymentConfigurationProvider getDeploymentConfigurationProvider();
+    public ModuleConfigurationProvider getModuleConfigurationProvider();
     
     public J2eeModuleProvider.ConfigSupport getConfigSupport();
     

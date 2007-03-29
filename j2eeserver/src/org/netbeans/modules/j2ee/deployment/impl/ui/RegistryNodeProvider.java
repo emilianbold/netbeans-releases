@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -28,6 +27,7 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
 
 
 /*

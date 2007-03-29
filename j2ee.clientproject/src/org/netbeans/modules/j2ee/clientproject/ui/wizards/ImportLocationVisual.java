@@ -47,9 +47,10 @@ import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -898,9 +899,10 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
         earProjects = new ArrayList<Project>();
         for (int i = 0; i < allProjects.length; i++) {
-            J2eeModuleContainer container = (J2eeModuleContainer) allProjects[i].getLookup().lookup(J2eeModuleContainer.class);
+            J2eeApplicationProvider j2eeAppProvider = allProjects[i].getLookup().lookup(J2eeApplicationProvider.class);
+            J2eeApplication j2eeApplication = (J2eeApplication) j2eeAppProvider.getJ2eeModule();
             ProjectInformation projectInfo = ProjectUtils.getInformation(allProjects[i]);
-            if (container != null) {
+            if (j2eeApplication != null) {
                 earProjects.add(projectInfo.getProject());
                 addToAppComboBox.addItem(projectInfo.getDisplayName());
             }

@@ -202,8 +202,8 @@ public class UpdateHelper {
     public synchronized boolean isCurrent () {
         /*
         if (this.isCurrent == null) {
-            if ((this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true) != null) || 
-                (this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true) != null)) {
+            if ((this.cfg.getConfigurationFragment(DATA,"http://www.netbeans.org/ns/j2se-project/1",true) != null) || 
+                (this.cfg.getConfigurationFragment(DATA,"http://www.netbeans.org/ns/j2se-project/2",true) != null)) {
                 this.isCurrent = Boolean.FALSE;
             } else {
                 this.isCurrent = Boolean.TRUE;
@@ -236,11 +236,13 @@ public class UpdateHelper {
             return canUpdate;
         }
     }
+    
+    private static final String DATA="data";
 
     private void saveUpdate () throws IOException {
         this.helper.putPrimaryConfigurationData(getUpdatedSharedConfigurationData(),true);
-        this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true); //NOI18N
-        this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true); //NOI18N
+        this.cfg.removeConfigurationFragment(DATA,"http://www.netbeans.org/ns/j2se-project/1",true); //NOI18N
+        this.cfg.removeConfigurationFragment(DATA,"http://www.netbeans.org/ns/j2se-project/2",true); //NOI18N
         ProjectManager.getDefault().saveProject (this.project);
 //        synchronized(this) {
 //            this.isCurrent = Boolean.TRUE;
@@ -249,10 +251,10 @@ public class UpdateHelper {
 
     private synchronized Element getUpdatedSharedConfigurationData () {
         if (cachedElement == null) {
-            Element  oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true);    //NOI18N
+            Element  oldRoot = this.cfg.getConfigurationFragment(DATA,"http://www.netbeans.org/ns/j2se-project/1",true);    //NOI18N
             if (oldRoot != null) {
                 Document doc = oldRoot.getOwnerDocument();
-                Element newRoot = doc.createElementNS (ArchiveProjectType.PROJECT_CONFIGURATION_NS,"data"); //NOI18N
+                Element newRoot = doc.createElementNS (ArchiveProjectType.PROJECT_CONFIGURATION_NS,DATA); //NOI18N
                 copyDocument (doc, oldRoot, newRoot);
                 Element sourceRoots = doc.createElementNS(ArchiveProjectType.PROJECT_CONFIGURATION_NS,"source-roots");  //NOI18N
                 Element root = doc.createElementNS (ArchiveProjectType.PROJECT_CONFIGURATION_NS,"root");   //NOI18N
@@ -266,10 +268,10 @@ public class UpdateHelper {
                 newRoot.appendChild (testRoots);                
                 cachedElement = updateMinAntVersion (newRoot, doc);
             } else {
-                oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true);    //NOI18N
+                oldRoot = this.cfg.getConfigurationFragment(DATA,"http://www.netbeans.org/ns/j2se-project/2",true);    //NOI18N
                 if (oldRoot != null) {
                     Document doc = oldRoot.getOwnerDocument();
-                    Element newRoot = doc.createElementNS (ArchiveProjectType.PROJECT_CONFIGURATION_NS,"data"); //NOI18N
+                    Element newRoot = doc.createElementNS (ArchiveProjectType.PROJECT_CONFIGURATION_NS,DATA); //NOI18N
                     copyDocument (doc, oldRoot, newRoot);
                     cachedElement = updateMinAntVersion (newRoot, doc);
                 }

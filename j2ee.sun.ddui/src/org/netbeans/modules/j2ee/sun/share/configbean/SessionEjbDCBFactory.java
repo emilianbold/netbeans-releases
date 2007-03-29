@@ -26,6 +26,7 @@ import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.model.J2eeApplicationObject;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
 /**
  *
@@ -49,4 +50,8 @@ public class SessionEjbDCBFactory extends AbstractDCBFactory {
 
 		return retVal;
 	}
+
+    public Base createDCB(J2eeModule module, Base object) throws ConfigurationException {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -27,11 +27,11 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 import junit.framework.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory;
-import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
-import org.netbeans.modules.j2ee.deployment.plugins.api.IncrementalDeployment;
-import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
-import org.netbeans.modules.j2ee.deployment.plugins.api.TargetModuleIDResolver;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.jsps.FindJSPServletImpl;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy.DirectoryDeploymentFacade;
 

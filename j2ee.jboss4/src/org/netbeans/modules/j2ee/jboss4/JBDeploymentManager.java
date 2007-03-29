@@ -199,18 +199,7 @@ public class JBDeploymentManager implements DeploymentManager {
     }
     
     public DeploymentConfiguration createConfiguration(DeployableObject deployableObject) throws InvalidModuleException {
-        ModuleType type = deployableObject.getType();
-        if (type == ModuleType.WAR) {
-            return new WarDeploymentConfiguration(deployableObject);
-        } else if (type == ModuleType.EAR) {
-            return new EarDeploymentConfiguration(deployableObject);
-        } else if (type == ModuleType.EJB) {
-            return new EjbDeploymentConfiguration(deployableObject);
-        } else if (type == ModuleType.CAR) {
-            return new CarDeploymentConfiguration(deployableObject);
-        } else {
-            throw new InvalidModuleException("Unsupported module type: " + type.toString()); // NOI18N
-        }
+        throw new RuntimeException("This method should never be called."); // NOI18N
     }
     
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) throws UnsupportedOperationException, IllegalStateException {

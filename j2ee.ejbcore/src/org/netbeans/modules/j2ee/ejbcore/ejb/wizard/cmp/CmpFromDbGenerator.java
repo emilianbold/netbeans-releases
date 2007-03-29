@@ -44,6 +44,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.RelationshipRoleSource;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.action.CmFieldGenerator;
 import org.netbeans.modules.j2ee.ejbcore.action.FinderMethodGenerator;
@@ -187,7 +188,11 @@ public class CmpFromDbGenerator {
         if (pwm != null) {
             for (EntityClass entityClass : helper.getBeans()) {
                 if (helper.getTableSource().getType() == TableSource.Type.DATA_SOURCE) {
-                    pwm.getConfigSupport().ensureResourceDefinedForEjb(entityClass.getClassName(), "entity", helper.getTableSource().getName()); //NOI18N
+		    try {
+			pwm.getConfigSupport().ensureResourceDefinedForEjb(entityClass.getClassName(), "entity", helper.getTableSource().getName()); //NOI18N
+		    } catch (ConfigurationException e) {
+			// TODO inform the user that the problem has occured
+		    }
                 }
             }
         }

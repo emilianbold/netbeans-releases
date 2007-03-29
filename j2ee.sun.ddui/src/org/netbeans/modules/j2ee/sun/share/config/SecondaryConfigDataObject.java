@@ -22,7 +22,7 @@ package org.netbeans.modules.j2ee.sun.share.config;
 import java.util.Collections;
 import java.util.Set;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
+//import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
 
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
@@ -59,7 +59,8 @@ public class SecondaryConfigDataObject extends ConfigDataObject {
         ConfigDataObject p = getPrimaryDataObject();
         FileObject fo = p.getPrimaryFile();
         String serverId = getProvider().getServerID();
-        ConfigurationSupport.requestCreateConfiguration(fo, serverId);
+        // DDBean Removal
+        //ConfigurationSupport.requestCreateConfiguration(fo, serverId);
         return SunONEDeploymentConfiguration.getConfiguration(FileUtil.toFile(fo));
     }
     

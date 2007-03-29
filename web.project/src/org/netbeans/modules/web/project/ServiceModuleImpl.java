@@ -25,6 +25,7 @@ import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
@@ -255,17 +256,17 @@ public class ServiceModuleImpl extends ServiceModule {
     }
     
     private Webservices getWebservices() {
-        BaseBean bb = project.getWebModule().getDeploymentDescriptor(J2eeModule.WEBSERVICES_XML);
-        if (bb instanceof Webservices) {
-            return (Webservices) bb;
+        RootInterface rootInterface = project.getWebModule().getDeploymentDescriptor(J2eeModule.WEBSERVICES_XML);
+        if (rootInterface instanceof Webservices) {
+            return (Webservices) rootInterface;
         }
         return null;
     }
     
     private WebApp getWebApp() {
-        BaseBean bb = project.getWebModule().getDeploymentDescriptor(J2eeModule.WEB_XML);
-        if (bb instanceof WebApp) {
-            return (WebApp) bb;
+        RootInterface rootInterface = project.getWebModule().getDeploymentDescriptor(J2eeModule.WEB_XML);
+        if (rootInterface instanceof WebApp) {
+            return (WebApp) rootInterface;
         }
         assert false : "Failed to get WebApp";
         return null;

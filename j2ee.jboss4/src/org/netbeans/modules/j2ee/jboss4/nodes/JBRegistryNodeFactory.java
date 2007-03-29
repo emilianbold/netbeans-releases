@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;

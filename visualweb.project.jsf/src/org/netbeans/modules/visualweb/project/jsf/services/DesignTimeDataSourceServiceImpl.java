@@ -28,6 +28,7 @@
 
 package org.netbeans.modules.visualweb.project.jsf.services;
 
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
 import java.util.HashSet;
 
@@ -55,7 +56,13 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
     public boolean updateProjectDataSource(Project project, RequestedJdbcResource req) {
         J2eeModuleProvider jmp =
                 (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        Set dss = jmp.getModuleDatasources();
+        Set  dss = null;
+        try {
+            dss = jmp.getModuleDatasources();
+        } catch (ConfigurationException e) {
+            dss = new HashSet();
+            // TODO: give some feedback to the user
+        }
         boolean notFound = true;
         Iterator it = dss.iterator();
 
@@ -75,6 +82,8 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
             try {
                 jmp.createDatasource(req.getResourceName(), req.getUrl(),
                         req.getUsername(), req.getPassword(), req.getDriverClassName());
+            } catch (ConfigurationException e) {
+                // TODO: give some feedback to the user
             } catch (DatasourceAlreadyExistsException e) {
                 List dsList = e.getDatasources();
 
@@ -114,7 +123,13 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
     public Set<RequestedJdbcResource> getServerDataSources(Project p) {
         J2eeModuleProvider jmp =
                 (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
-        Set<Datasource> dss = jmp.getServerDatasources();
+        Set<Datasource> dss = null;
+        try {
+            dss = jmp.getServerDatasources();
+        } catch (ConfigurationException e) {
+            dss = new HashSet<Datasource>();
+            // TODO: give some feedback to the user
+        }
         Set<RequestedJdbcResource> reqDss = new HashSet<RequestedJdbcResource>();
         Iterator<Datasource> it = dss.iterator();
         
@@ -132,7 +147,15 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
     public Set<RequestedJdbcResource> getProjectDataSources(Project p) {
         J2eeModuleProvider jmp =
                 (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
-        Set<Datasource> dss = jmp.getModuleDatasources();
+        
+        Set<Datasource> dss = null;
+        try {
+            dss = jmp.getModuleDatasources();
+        } catch (ConfigurationException e) {
+            dss = new HashSet<Datasource>();
+            // TODO: give some feedback to the user
+        }
+        
         Set<RequestedJdbcResource> reqDss = new HashSet<RequestedJdbcResource>();
         Iterator<Datasource> it = dss.iterator();
                 

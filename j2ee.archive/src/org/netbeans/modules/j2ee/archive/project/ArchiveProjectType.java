@@ -26,9 +26,8 @@ import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 
 public class ArchiveProjectType implements AntBasedProjectType {
     
-    private static final String PROJECT_CONFIGURATION_NAME ="data";            //NOI18N
+    private static final String CONFIGURATION_NAME ="data";            //NOI18N
     public static final String PROJECT_CONFIGURATION_NS ="http://www.netbeans.org/ns/archive-project/1";                     //NOI18N
-    private static final String PRIVATE_CONFIGURATION_NAME = "data";            //NOI18N
     private static final String PRIVATE_CONFIGURATION_NS = "http://www.netbeans.org/ns/archive-project-private/1";             //NOI18N
 
     public static final String TYPE = "org.netbeans.modules.j2ee.archive.project";                        //NOI18N
@@ -46,7 +45,7 @@ public class ArchiveProjectType implements AntBasedProjectType {
     }
 
     public String getPrimaryConfigurationDataElementName(boolean shared) {
-        return shared ? PROJECT_CONFIGURATION_NAME : PRIVATE_CONFIGURATION_NAME;
+        return CONFIGURATION_NAME;
     }
     
     public String getPrimaryConfigurationDataElementNamespace(boolean shared) {

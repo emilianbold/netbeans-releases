@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
 import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
@@ -59,8 +60,16 @@ public class EjbJarJPASupport implements JPADataSourcePopulator, JPADataSourcePr
     public List<JPADataSource> getDataSources() {
         
         List<Datasource> datasources = new ArrayList<Datasource>();
-        datasources.addAll(project.getEjbModule().getModuleDatasources());
-        datasources.addAll(project.getEjbModule().getServerDatasources());
+        try {
+            datasources.addAll(project.getEjbModule().getModuleDatasources());
+        } catch (ConfigurationException e) {
+            // TODO: it would be reasonable to rethrow this exception, see #96791
+        }
+        try {
+            datasources.addAll(project.getEjbModule().getServerDatasources());
+        } catch (ConfigurationException e) {
+            // TODO: it would be reasonable to rethrow this exception, see #96791
+        }
 
         List<JPADataSource> result = new ArrayList<JPADataSource>(datasources.size());
         for(Datasource each : datasources){

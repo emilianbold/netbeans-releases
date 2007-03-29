@@ -21,12 +21,10 @@ package org.netbeans.modules.j2ee.deployment.common.api;
 
 import java.io.File;
 import javax.enterprise.deploy.model.DDBean;
-import javax.enterprise.deploy.model.DeployableObject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.config.DDCommon;
-import org.netbeans.modules.j2ee.deployment.config.DeployableObjectImpl;
-import org.netbeans.modules.j2ee.deployment.config.StandardDDImpl;
+import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -124,26 +122,10 @@ public abstract class SourceFileMap {
      *
      * @param ddbean An instance of ddbean to establish mapping context.
      */
-    public static final SourceFileMap findSourceMap(DDBean ddbean) {
-        if (ddbean instanceof DDCommon) {
-            DDCommon dd = (DDCommon) ddbean;
-            return dd.getModuleProvider().getSourceFileMap();
-        } else if (ddbean instanceof StandardDDImpl) {
-            StandardDDImpl dd = (StandardDDImpl) ddbean;
-            return dd.getModuleProvider().getSourceFileMap();
+    public static final SourceFileMap findSourceMap(J2eeModule j2eeModule) {
+        if (j2eeModule == null) {
+            throw new NullPointerException();
         }
-        return null;
-    }
-
-    /**
-     * Returns a source file map for the module, or null if none can be identified.
-     *
-     * @param ddbean An instance of ddbean to establish mapping context.
-     */
-    public static final SourceFileMap findSourceMap(DeployableObject deployable) {
-        if (deployable instanceof DeployableObjectImpl) {
-            return ((DeployableObjectImpl)deployable).getProvider().getSourceFileMap();
-        }
-        return null;
+        return J2eeModuleAccessor.DEFAULT.getJ2eeModuleProvider(j2eeModule).getSourceFileMap();
     }
 }

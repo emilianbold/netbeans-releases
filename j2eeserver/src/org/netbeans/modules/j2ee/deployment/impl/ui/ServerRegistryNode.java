@@ -25,7 +25,7 @@
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
 import java.awt.Image;
-import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.nodes.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;

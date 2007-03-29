@@ -23,8 +23,8 @@ package org.netbeans.modules.j2ee.deployment.impl;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.openide.nodes.Node;
 import javax.enterprise.deploy.spi.Target;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 
 // PENDING use environment providers, not Cookies
 // PENDING issue  --   Target <==> J2EEDomain relationship 1 to many, many to 1, 1 to 1, or many to many

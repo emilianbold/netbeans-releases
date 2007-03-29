@@ -18,12 +18,14 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.optional;
 
-import javax.enterprise.deploy.spi.*;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.j2ee.weblogic9.ui.wizard.WLInstantiatingIterator;
+import org.openide.WizardDescriptor.InstantiatingIterator;
 
-import org.openide.WizardDescriptor.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-
-import org.netbeans.modules.j2ee.weblogic9.ui.wizard.*;
 
 /**
  * An entry point to the plugin's optional functionality, such as server

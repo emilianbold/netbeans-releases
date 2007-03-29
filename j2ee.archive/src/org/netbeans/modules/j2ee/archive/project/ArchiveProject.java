@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.archive.project;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,11 +41,13 @@ import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.dd.api.application.Web;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -276,7 +279,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
                 public Object run() {
                     doRegeneration();
                     FileObject dir = helper.getProjectDirectory();
-                    FileObject subDir = null;
+                    FileObject subDir;
                     ArchiveProjectProperties app = getArchiveProjectProperties();
                     
                     String type = (String) app.get(ArchiveProjectProperties.ARCHIVE_TYPE);
@@ -318,7 +321,8 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
                             tmp.setInner(jmp);
                         } else {
                             Object mt = isEar?J2eeModule.EAR:J2eeModule.CONN;
-                            tmp.setJ2eeModule(new J2eeModuleForAddModuleAction(mt));
+                            tmp.setJ2eeModule(
+                                    J2eeModuleFactory.createJ2eeModule(new J2eeModuleForAddModuleAction(mt)));
                             tmp.setServerInstanceID((String) app.get(ArchiveProjectProperties.J2EE_SERVER_INSTANCE));
                             if (isEar) {
                                 tmp.getConfigSupport().ensureConfigurationReady();
@@ -425,7 +429,8 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
                     tmp.setInner(jmp);
                 } else {
                     Object mt = J2eeModule.CONN;
-                    tmp.setJ2eeModule(new J2eeModuleForAddModuleAction(mt));
+                    tmp.setJ2eeModule(
+                            J2eeModuleFactory.createJ2eeModule(new J2eeModuleForAddModuleAction(mt)));
                     tmp.setServerInstanceID((String) getArchiveProjectProperties().get(ArchiveProjectProperties.J2EE_SERVER_INSTANCE));
                 }
             } catch (IOException ex) {
@@ -514,11 +519,12 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
         });
     }
     
-    private class J2eeModuleForAddModuleAction implements J2eeModule {
+    private class J2eeModuleForAddModuleAction implements J2eeModuleImplementation {
         
         private Object mt = null;
         
         J2eeModuleForAddModuleAction(Object mt) {
+            //super(null);
             this.mt = mt;
         }
         
@@ -564,15 +570,14 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             return null;
         }
         
-        public BaseBean getDeploymentDescriptor(String location) {
-            BaseBean retVal = null;
+        public RootInterface getDeploymentDescriptor(String location) {
+            RootInterface retVal = null;
             if ("META-INF/application.xml".equals(location)) {
                 String dir = (String)getArchiveProjectProperties().get(ArchiveProjectProperties.PROXY_PROJECT_DIR);
                 FileObject appFile = getProjectDirectory().getFileObject(dir).getFileObject("src").getFileObject("conf").getFileObject("application.xml");
-                Application appBean;
+//                Application appBean;
                 try {
-                    appBean = org.netbeans.modules.j2ee.dd.api.application.DDProvider.getDefault().getDDRoot(appFile);
-                    retVal = org.netbeans.modules.j2ee.dd.api.application.DDProvider.getDefault().getBaseBean(appBean);
+                    retVal = org.netbeans.modules.j2ee.dd.api.application.DDProvider.getDefault().getDDRoot(appFile);
                 } catch (IOException ex) {
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "" + ex);
                 }
@@ -584,12 +589,37 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             return retVal;
         }
         
-        public void addVersionListener(J2eeModule.VersionListener listener) {
-            //throw new UnsupportedOperationException();
+        public File getResourceDirectory() {
+            return new File(FileUtil.toFile(getProjectDirectory()),ArchiveProjectProperties.SETUP_DIR_VALUE);
         }
-        
-        public void removeVersionListener(J2eeModule.VersionListener listener) {
-            //throw new UnsupportedOperationException();
+
+        public File getDeploymentConfigurationFile(String name) {
+            File retVal;
+            
+            String dir = (String)getArchiveProjectProperties().get(ArchiveProjectProperties.PROXY_PROJECT_DIR);
+            FileObject parent = getProjectDirectory().getFileObject(dir).getFileObject("src").getFileObject("conf");
+            int slashDex = name.lastIndexOf("/");
+            String fname;
+            if (-1 < slashDex) {
+                fname = name.substring(slashDex);
+            } else {
+                fname = name;
+            }
+            FileObject appFile = parent.getFileObject(fname);
+            if (null == appFile) {
+                retVal = new File(FileUtil.toFile(parent), fname); // NOI18N
+            } else {
+                retVal = FileUtil.toFile(appFile);
+            }
+            return retVal;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+                throw new UnsupportedOperationException();
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+                throw new UnsupportedOperationException();
         }
     }
     

@@ -21,8 +21,8 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
 import java.io.File;
 import java.util.WeakHashMap;
-import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory;
-import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;

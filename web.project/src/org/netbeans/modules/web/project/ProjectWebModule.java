@@ -21,6 +21,7 @@ package org.netbeans.modules.web.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -32,8 +33,12 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -51,6 +56,7 @@ import org.netbeans.modules.j2ee.dd.api.webservices.*;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.ErrorManager;
+import org.openide.util.WeakListeners;
 
 
 /** A web module implementation on top of project.
@@ -58,7 +64,7 @@ import org.openide.ErrorManager;
  * @author  Pavel Buzek
  */
 public final class ProjectWebModule extends J2eeModuleProvider 
-  implements WebModuleImplementation, J2eeModule, ModuleChangeReporter, 
+  implements WebModuleImplementation, J2eeModuleImplementation, ModuleChangeReporter, 
   EjbChangeDescriptor, PropertyChangeListener {
       
     public static final String FOLDER_WEB_INF = "WEB-INF";//NOI18N
@@ -68,10 +74,14 @@ public final class ProjectWebModule extends J2eeModuleProvider
 
     private WebProject project;
     private UpdateHelper helper;
-    private Set versionListeners = null;
     private String fakeServerInstId = null; // used to get access to properties of other servers
 
     private long notificationTimeout = 0; // used to suppress repeating the same messages
+    
+    private PropertyChangeSupport propertyChangeSupport;
+    private boolean webAppPropChangeLInitialized;
+    
+    private J2eeModule j2eeModule;
 
     ProjectWebModule (WebProject project, UpdateHelper helper) {
         this.project = project;
@@ -102,12 +112,21 @@ public final class ProjectWebModule extends J2eeModuleProvider
         if(getDeploymentDescriptor() == null) {
             return null;
         }
-        return getConfigSupport ().getWebContextRoot ();
+        try {
+            return getConfigSupport().getWebContextRoot();
+        } catch (ConfigurationException e) {
+            // TODO #95280: inform the user that the context root cannot be retrieved
+            return null;
+        }
     }
     
     public void setContextPath (String path) {
         if (getDeploymentDescriptor() != null) {
-            getConfigSupport ().setWebContextRoot (path);
+            try {
+                getConfigSupport().setWebContextRoot(path);
+            } catch (ConfigurationException e) {
+                // TODO #95280: inform the user that the context root cannot be set
+            }
         }
     }
     
@@ -185,10 +204,6 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return getWebInf(false);
     }
     
-    public File getEnterpriseResourceDirectory() {
-        return getFile(WebProjectProperties.RESOURCE_DIR);
-    }
-    
     public FileObject getWebInf (boolean silent) {
         FileObject documentBase = getDocumentBase(silent);
         if (documentBase == null) {
@@ -236,8 +251,11 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
     }
     
-    public org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule getJ2eeModule () {
-        return this;
+    public synchronized J2eeModule getJ2eeModule () {
+        if (j2eeModule == null) {
+            j2eeModule = J2eeModuleFactory.createJ2eeModule(this);
+        }
+        return j2eeModule;
     }
     
     public org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter getModuleChangeReporter () {
@@ -319,20 +337,12 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return getFile ("build.web.dir"); //NOI18N
     }
 
-    public org.netbeans.modules.schema2beans.BaseBean getDeploymentDescriptor (String location) {
+    public RootInterface getDeploymentDescriptor (String location) {
         if (J2eeModule.WEB_XML.equals(location)){
-
-            WebApp webApp = getWebApp ();
-            if (webApp != null) {
-                //PENDING find a better way to get the BB from WApp and remove the HACK from DDProvider!!
-                return DDProvider.getDefault ().getBaseBean (webApp);
-            }
+            return getWebApp ();
         }
         else if(J2eeModule.WEBSERVICES_XML.equals(location)){
-            Webservices webServices = getWebservices();
-            if(webServices != null){
-                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getBaseBean(webServices);
-            }
+            return getWebservices();
         }
         return null;
     }
@@ -393,46 +403,22 @@ public final class ProjectWebModule extends J2eeModuleProvider
             version = wapp.getVersion();
         return version;
     }
-
-    private Set versionListeners() {
-        if (versionListeners == null) {
-            versionListeners = new HashSet();
-            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = getWebApp();
-            if (webApp != null) {
-                PropertyChangeListener l = (PropertyChangeListener) org.openide.util.WeakListeners.create(PropertyChangeListener.class, this, webApp);
-                webApp.addPropertyChangeListener(l);
-            }
-        }
-        return versionListeners;
-    }
-
-    public void addVersionListener(J2eeModule.VersionListener vl) {
-        versionListeners().add(vl);
-    }
-
-    public void removeVersionListener(J2eeModule.VersionListener vl) {
-        if (versionListeners != null)
-            versionListeners.remove(vl);
-    }
     
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(org.netbeans.modules.j2ee.dd.api.web.WebApp.PROPERTY_VERSION)) {
-            for (Iterator i=versionListeners.iterator(); i.hasNext();) {
-                J2eeModule.VersionListener vl = (J2eeModule.VersionListener) i.next();
-                String oldVersion = (String) evt.getOldValue();
-                String newVersion = (String) evt.getNewValue();
-                vl.versionChanged(oldVersion, newVersion);
-            }
+            String oldVersion = (String) evt.getOldValue();
+            String newVersion = (String) evt.getNewValue();
+            getPropertyChangeSupport().firePropertyChange(J2eeModule.PROP_MODULE_VERSION, oldVersion, newVersion);
         } else if (evt.getPropertyName ().equals (WebProjectProperties.J2EE_SERVER_INSTANCE)) {
             Deployment d = Deployment.getDefault ();
             String oldServerID = evt.getOldValue () == null ? null : d.getServerID ((String) evt.getOldValue ());
             String newServerID = evt.getNewValue () == null ? null : d.getServerID ((String) evt.getNewValue ());
             fireServerChange (oldServerID, newServerID);
         }  else if (WebProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
-            String oldValue = (String)evt.getOldValue();
-            String newValue = (String)evt.getNewValue();
-            firePropertyChange(
-                    PROP_ENTERPRISE_RESOURCE_DIRECTORY, 
+            String oldValue = (String) evt.getOldValue();
+            String newValue = (String) evt.getNewValue();
+            getPropertyChangeSupport().firePropertyChange(
+                    J2eeModule.PROP_RESOURCE_DIRECTORY, 
                     oldValue == null ? null : new File(oldValue),
                     newValue == null ? null : new File(newValue));
         }
@@ -502,6 +488,40 @@ public final class ProjectWebModule extends J2eeModuleProvider
                 return true;
         }
         return false;
+    }
+
+    public File getResourceDirectory() {
+        return getFile(WebProjectProperties.RESOURCE_DIR);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        synchronized (this) {
+            if (!webAppPropChangeLInitialized) {
+                WebApp webApp = getWebApp();
+                if (webApp != null) {
+                    PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, this, webApp);
+                    webApp.addPropertyChangeListener(l);
+                }
+                webAppPropChangeLInitialized = true;
+            }
+        }
+        getPropertyChangeSupport().addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        synchronized (this) {
+            if (propertyChangeSupport == null) {
+                return;
+            }
+        }
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+    
+    private synchronized PropertyChangeSupport getPropertyChangeSupport() {
+        if (propertyChangeSupport == null) {
+            propertyChangeSupport = new PropertyChangeSupport(this);
+        }
+        return propertyChangeSupport;
     }
     
     private static class IT implements Iterator {

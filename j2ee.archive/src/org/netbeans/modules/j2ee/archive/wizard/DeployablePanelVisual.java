@@ -62,7 +62,7 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
     }
     
     private String validFreeProjectName(final File parentFolder, final String formater, final int index) {
-        String name = MessageFormat.format(formater, new Object[]{new Integer(index)});
+        String name = MessageFormat.format(formater, new Object[]{(Integer) index});
         File file = new File(parentFolder, name);
         return file.exists() ? null : name;
     }

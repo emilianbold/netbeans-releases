@@ -34,6 +34,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.web.project.Utils;
 
 import org.openide.WizardDescriptor;
@@ -50,7 +51,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.project.ui.*;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -918,9 +919,10 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
         earProjects = new ArrayList();
         for (int i = 0; i < allProjects.length; i++) {
-            J2eeModuleContainer container = (J2eeModuleContainer) allProjects[i].getLookup().lookup(J2eeModuleContainer.class);
+            J2eeApplicationProvider j2eeAppProvider = allProjects[i].getLookup().lookup(J2eeApplicationProvider.class);
+            J2eeApplication j2eeApplication = (J2eeApplication) j2eeAppProvider.getJ2eeModule();
             ProjectInformation projectInfo = ProjectUtils.getInformation(allProjects[i]);
-            if (container != null) {
+            if (j2eeApplication != null) {
                 earProjects.add(projectInfo.getProject());
                 jComboBoxEnterprise.addItem(projectInfo.getDisplayName());
             }

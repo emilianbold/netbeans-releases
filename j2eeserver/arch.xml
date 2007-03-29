@@ -135,8 +135,8 @@ some optional interfaces defined by J2EE Server Module in addition to the Deploy
 Each server plugin is required to provide J2EE platform which devmodules may use beside else for obtaining compilation classpath.
 
 <p><i>Plugins must implement
-<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/J2eePlatformImpl.html">
-J2eePlatformImpl</a> interface and register it via <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/J2eePlatformFactory.html">J2eePlatformFactory</a> whose instance must be registered in the module <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
+<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/spi/J2eePlatformImpl.html">
+J2eePlatformImpl</a> interface and register it via <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/spi/J2eePlatformFactory.html">J2eePlatformFactory</a> whose instance must be registered in the module <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
 layer file</a>. Devmodules then may access the <a href="@TOP@/org/netbeans/modules/j2ee/deployment/devmodules/api/J2eePlatform.html">J2eePlatform</a> interface via the <a href="@TOP@/org/netbeans/modules/j2ee/deployment/devmodules/api/Deployment.html">Deployment</a> utility class.
 </i></p>
 </usecase>
@@ -159,28 +159,28 @@ file (an additional config file with specified DTD).
 </p>
 
 Registration of various optional functionality is done via 
-<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/OptionalDeploymentManagerFactory.html">
+<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/spi/OptionalDeploymentManagerFactory.html">
 OptionalDeploymentManagerFactory</a>.
 
 <p>The classes and/or interfaces related to each optional functionality are:</p>
 
 <ul>
 <li><b>Server Status:</b>
-<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/StartServer.html">StartServer</a>
+<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/spi/StartServer.html">StartServer</a>
 </li>
 
 <li><b>Incremental deployment:</b>
-<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/IncrementalDeployment.html">IncrementalDeployment</a>, 
+<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/spi/IncrementalDeployment.html">IncrementalDeployment</a>, 
 <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/ModuleChangeDescriptor.html">ModuleChangeDescriptor</a>, 
 <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/AppChangeDescriptor.html">AppChangeDescriptor</a>, 
-<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/TargetModuleIDResolver.html">TargetModuleIDResolver</a>, 
+<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/spi/TargetModuleIDResolver.html">TargetModuleIDResolver</a>, 
 <a href="@TOP@/org/netbeans/modules/j2ee/deployment/common/api/EjbChangeDescriptor.html">EjbChangeDescriptor</a>, 
 <a href="@TOP@/org/netbeans/modules/j2ee/deployment/common/api/OriginalCMPMapping.html">OriginalCMPMapping</a> 
 (note that the last two classes are also used in devmodules part of API).
 </li>
 
 <li><b>Server Registry UI:</b>
-<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/RegistryNodeFactory.html">RegistryNodeFactory</a>
+<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/spi/RegistryNodeFactory.html">RegistryNodeFactory</a>
 </li>
 
 <li><b>Installation of Server Instances:</b>
@@ -190,11 +190,11 @@ OptionalDeploymentManagerFactory</a>.
 
 <li><b>Debugging:</b>
 <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/ServerDebugInfo.html">ServerDebugInfo</a>
-<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/OldJSPDebug.html">OldJSPDebug</a>
+<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/spi/OldJSPDebug.html">OldJSPDebug</a>
 </li>
 
 <li><b>JSP -&gt; Servlet mapping:</b>
-<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/FindJSPServlet.html">FindJSPServlet</a>
+<a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/spi/FindJSPServlet.html">FindJSPServlet</a>
 </li>
 
 <li><b>General Utilities:</b>
@@ -227,7 +227,7 @@ is the least stable.
 <p>
 The API package provides abstractions of 
 <a href="@TOP@/org/netbeans/modules/j2ee/deployment/devmodules/api/J2eeModule.html">J2eeModule</a> and a
-<a href="@TOP@/org/netbeans/modules/j2ee/deployment/devmodules/api/J2eeModuleContainer.html">J2EEModuleContainer</a>
+J2EEModuleContainer
 (a module that contains other modules, such as J2EE application).
 Two utility classes provide direct access to 
 <a href="@TOP@/org/netbeans/modules/j2ee/deployment/devmodules/api/Deployment.html">Deployment</a>
@@ -252,14 +252,14 @@ registry UI.
     </p>
     <p>
         Retrieval from a server is done by a server plugin. Core part of the functionality is done by 
-        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/DatasourceManager.html">DatasourceManager</a> implementation
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/spi/DatasourceManager.html">DatasourceManager</a> implementation
         which is exposed from a server plugin through 
-        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/OptionalDeploymentManagerFactory.html">OptionalDeploymentManagerFactory</a>.
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/spi/OptionalDeploymentManagerFactory.html">OptionalDeploymentManagerFactory</a>.
     </p>
     <p>
         Retrieval from a module is done with help of 
         <a href="@TOP@/org/netbeans/modules/j2ee/deployment/devmodules/spi/J2eeModuleProvider.ConfigSupport.html">ConfigSupport</a> and 
-        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/ConfigurationSupport.html">ConfigurationSupport</a> implementations.
+        ConfigurationSupport implementations.
     </p>
 </usecase>
 
@@ -272,7 +272,7 @@ registry UI.
     <p>
         Data source creation is done with help of 
         <a href="@TOP@/org/netbeans/modules/j2ee/deployment/devmodules/spi/J2eeModuleProvider.ConfigSupport.html">ConfigSupport</a> and 
-        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/ConfigurationSupport.html">ConfigurationSupport</a> implementations.
+        ConfigurationSupport implementations.
         In case of conflict with existing data source, the first conflicting data source is passed to the thrown 
         <a href="@TOP@/org/netbeans/modules/j2ee/deployment/common/api/DatasourceAlreadyExistsException.html">DatasourceAlreadyExistsException</a>.
     </p>
@@ -285,7 +285,7 @@ registry UI.
     </p>
     <p>
         Data sources stored in a module are retrived and passed to a
-        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/DatasourceManager.html">DatasourceManager</a> instance
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/spi/DatasourceManager.html">DatasourceManager</a> instance
         for deploying (registering) on the server.<br/>
         All module data sources having a conflict with some existing server data source are passed to the thrown 
         <a href="@TOP@/org/netbeans/modules/j2ee/deployment/common/api/DatasourceAlreadyExistsException.html">DatasourceAlreadyExistsException</a>.

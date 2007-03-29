@@ -26,6 +26,7 @@ import java.util.*;
 import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.*;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 
 import org.openide.*;
 import org.openide.NotifyDescriptor.Confirmation;
@@ -86,7 +87,7 @@ public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie
         this.dobjCookieChangeSupport = new PropertyChangeSupport(this);
         
         load(); // calls init(), below.
-        createVersionListeners();
+//        createVersionListeners();
     }
     
     private void init() throws ConfigurationException, InvalidModuleException, IOException {
@@ -105,7 +106,7 @@ public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie
         ModuleDDSupport mds = new ModuleDDSupport(module, config);
         moduleMap.put(ROOT,mds);
         /*if(module.getJ2eeModule().getModuleType().equals(J2eeModule.EAR)) {
-            J2eeAppProvider appProvider = (J2eeAppProvider) module;
+            J2eeApplicationProvider appProvider = (J2eeApplicationProvider) module;
             J2eeModuleContainer container = (J2eeModuleContainer) module.getJ2eeModule();
             dobj = new ApplImpl(mds,moduleMap);
             J2eeModuleProvider[] modules = appProvider.getChildModuleProviders();
@@ -139,6 +140,30 @@ public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie
         return ddNew;
     }
     
+   /** Normalizes a DDBeanRoot from j2eeserver module into the matching DDRoot
+     *  that is managed by our ModuleDDSupport.
+     */
+    public RootInterface normalizeDDBeanRoot(RootInterface ddBeanRoot) {
+        RootInterface ddNew = ddBeanRoot;
+
+        // !PW FIXME enhance this algorithm to handle multiple modules if this class does.
+        // Until then, there is only one entry in the table, under ROOT key.
+        ModuleDDSupport mds = (ModuleDDSupport) moduleMap.get(ROOT);
+        if(mds != null) {
+            //DDBeanRoot newRoot = mds.getDDBeanRoot();
+            RootInterface newRoot = mds.getRootInterface();
+            if(newRoot != ddBeanRoot && newRoot != null) {
+                ddNew = newRoot;
+
+                // Not sure if we need to handle ddbeanroot for webservices.xml, but in case
+                // someone passes that one in, it will cause this assert here.
+                //assert ddBeanRoot.getXpath().equals(ddNew.getXpath()) : "Mismatched xpaths in normalizeDDBeanRoot for " + ddBeanRoot;
+            }
+        }
+        
+        return ddNew;
+    }
+
     public DDBean normalizeEjbDDBean(DDBean ejbDDBean) {
         DDBean result = null;
         String theEjbName = Utils.getField(ejbDDBean, "ejb-name"); // NOI18N
@@ -147,7 +172,8 @@ public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie
         StandardDDImpl[] ddBeans = (StandardDDImpl[]) ddRoot.getChildBean(ejbDDBean.getXpath());
 
         for(int i = 0; i < ddBeans.length; i++) {
-            String ejbName = (String) ddBeans[i].proxy.bean.getValue("EjbName"); // NOI18N
+//            String ejbName = (String) ddBeans[i].proxy.bean.getValue("EjbName"); // NOI18N
+            String ejbName = null; // (String) ddBeans[i].proxy.rooti. // NOI18N
             if (theEjbName.equals(ejbName)) {
                 result = ddBeans[i];
                 break;
@@ -157,7 +183,7 @@ public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie
         if(result == null) {
             if (ddBeans != null) {
                 for (int i = 0; i < ddBeans.length; i++) {
-                    String msg = ddBeans[i].proxy.bean.dumpBeanNode();
+                    String msg = "FIXME normalizeEjbDDBean"; //ddBeans[i].proxy.bean.dumpBeanNode();
                     ErrorManager.getDefault().log(ErrorManager.ERROR, msg);
                 }
             }
@@ -358,8 +384,8 @@ public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie
             return null;
         }
         J2eeModuleProvider child = null;
-        if (jmp instanceof J2eeAppProvider) {
-            J2eeAppProvider jap = (J2eeAppProvider) jmp;
+        if (jmp instanceof J2eeApplicationProvider) {
+            J2eeApplicationProvider jap = (J2eeApplicationProvider) jmp;
             child = jap.getChildModuleProvider(uri);
             if (child == null) {
                 if (uri.startsWith(ROOT)) {
@@ -528,7 +554,7 @@ public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie
         init();
         
         /*if(module.getJ2eeModule().getModuleType().equals(J2eeModule.EAR)) {
-            J2eeAppProvider appProvider = (J2eeAppProvider) module;
+            J2eeApplicationProvider appProvider = (J2eeApplicationProvider) module;
             J2eeModuleProvider[] modules = appProvider.getChildModuleProviders();
             for(int i = 0; i < modules.length; i++) {
                 ModuleDeploymentSupport mds = (ModuleDeploymentSupport) moduleMap.get(modules[i].getJ2eeModule().getUrl());
@@ -539,7 +565,7 @@ public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie
         if(config instanceof SunONEDeploymentConfiguration) {
             SunONEDeploymentConfiguration s1dc = (SunONEDeploymentConfiguration) config;
             ModuleDDSupport rootSupport = (ModuleDDSupport) moduleMap.get(ROOT);
-            s1dc.readDeploymentPlanFiles(this, rootSupport.getDDBeanRoot());
+            s1dc.readDeploymentPlanFiles(this, module.getJ2eeModule());
             createDConfigBean(rootSupport);
             loaded = true;
         } else {
@@ -554,7 +580,7 @@ public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie
         // case, the configuration is still valid and necessary.
         for(Iterator i = moduleMap.values().iterator();i.hasNext();) {
             ModuleDDSupport mds = (ModuleDDSupport) i.next();
-            removeVersionListener(mds.getProvider().getJ2eeModule());
+//            removeVersionListener(mds.getProvider().getJ2eeModule());
             mds.cleanup();
         }
         moduleMap = new HashMap();
@@ -571,62 +597,86 @@ public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie
         }
         return key;
     }
-    
-    private void createVersionListener(J2eeModule mod) {
-        String key = getKey(mod);
-        J2eeModule.VersionListener listener = new ModuleVersionListener(key);
-        mod.addVersionListener(listener);
-        versionListeners.put(key, listener);
-    }
-    
-    private void removeVersionListener(J2eeModule mod) {
-        J2eeModule.VersionListener vl = (J2eeModule.VersionListener) versionListeners.remove(getKey(mod));
-        if (vl != null) {
-            mod.removeVersionListener(vl);
-        }
-    }
-    
-    private void createVersionListeners() {
-        createVersionListener(module.getJ2eeModule());
-        /*if(module.getJ2eeModule().getModuleType().equals(J2eeModule.EAR)) {
-            J2eeModuleContainer appProvider = (J2eeModuleContainer) module;
-            J2eeModule[] modules = appProvider.getModules(this);
-            for(int i = 0; i < modules.length; i++) {
-                createVersionListener(modules[i]);
-            }
-        }*/
-    }
+
+    // DDBean Removal
+//    
+//    private void createVersionListener(J2eeModule mod) {
+//        String key = getKey(mod);
+//        J2eeModule.VersionListener listener = new ModuleVersionListener(key);
+//        mod.addVersionListener(listener);
+//        versionListeners.put(key, listener);
+//    }
+//    
+//    private void removeVersionListener(J2eeModule mod) {
+//        J2eeModule.VersionListener vl = (J2eeModule.VersionListener) versionListeners.remove(getKey(mod));
+//        if (vl != null) {
+//            mod.removeVersionListener(vl);
+//        }
+//    }
+//    
+//    private void createVersionListeners() {
+//        createVersionListener(module.getJ2eeModule());
+//        /*if(module.getJ2eeModule().getModuleType().equals(J2eeModule.EAR)) {
+//            J2eeModuleContainer appProvider = (J2eeModuleContainer) module;
+//            J2eeModule[] modules = appProvider.getModules(this);
+//            for(int i = 0; i < modules.length; i++) {
+//                createVersionListener(modules[i]);
+//            }
+//        }*/
+//    }
 
     boolean saveInProgress() {
         return (saveInProgress > 0);
     }
 
-    private class ModuleVersionListener implements J2eeModule.VersionListener {
-        private String moduleUri;
-        ModuleVersionListener(String moduleUri) {
-            this.moduleUri = moduleUri;
-        }
-        public void versionChanged(String oldVersion, String newVersion) {
-            try {
-                saveOnDemand();
-                cleanup();
-                init();
-            } catch(java.util.NoSuchElementException e) {
-                String msg = NbBundle.getMessage(
-                ConfigurationStorage.class, "MSG_DescriptorError", "TBD", e.getMessage());
-                NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(nd);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            } catch(IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            } catch (Exception e2) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e2);
+    // DDBean Removal
+//
+//    private class ModuleVersionListener implements J2eeModule.VersionListener {
+//        private String moduleUri;
+//        ModuleVersionListener(String moduleUri) {
+//            this.moduleUri = moduleUri;
+//        }
+//        public void versionChanged(String oldVersion, String newVersion) {
+//            try {
+//                saveOnDemand();
+//                cleanup();
+//                init();
+//            } catch(java.util.NoSuchElementException e) {
+//                String msg = NbBundle.getMessage(
+//                ConfigurationStorage.class, "MSG_DescriptorError", "TBD", e.getMessage());
+//                NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+//                DialogDisplayer.getDefault().notify(nd);
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+//            } catch(IOException ex) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//            } catch (Exception e2) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e2);
+//            }
+//            
+//            ConfigBeanTopComponent tc = ConfigBeanTopComponent.findByConfigStorage(ConfigurationStorage.this);
+//            if (tc != null) {
+//                tc.refresh();
+//            }
+//        }
+//    }
+
+    public DDBeanRoot getDDBeanRoot(J2eeModule module) {
+        DDBeanRoot ddNew = null; //ddBeanRoot;
+
+        // !PW FIXME enhance this algorithm to handle multiple modules if this class does.
+        // Until then, there is only one entry in the table, under ROOT key.
+        ModuleDDSupport mds = (ModuleDDSupport) moduleMap.get(ROOT);
+        if(mds != null) {
+            DDBeanRoot newRoot = mds.getDDBeanRoot();
+            if(newRoot != null) {
+                ddNew = newRoot;
+
+                // Not sure if we need to handle ddbeanroot for webservices.xml, but in case
+                // someone passes that one in, it will cause this assert here.
+                //assert ddBeanRoot.getXpath().equals(ddNew.getXpath()) : "Mismatched xpaths in normalizeDDBeanRoot for " + ddBeanRoot;
             }
-            
-            ConfigBeanTopComponent tc = ConfigBeanTopComponent.findByConfigStorage(ConfigurationStorage.this);
-            if (tc != null) {
-                tc.refresh();
-            }
         }
+        
+        return ddNew;
     }
 }

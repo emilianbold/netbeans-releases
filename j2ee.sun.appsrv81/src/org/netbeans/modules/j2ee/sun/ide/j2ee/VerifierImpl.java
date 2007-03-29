@@ -43,7 +43,7 @@ import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
  *
  * @author ludo
  */
-public  class VerifierImpl extends org.netbeans.modules.j2ee.deployment.plugins.api.VerifierSupport {
+public  class VerifierImpl extends org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport {
     
     /** Creates a new instance of VerifierImpl */
     public VerifierImpl() {

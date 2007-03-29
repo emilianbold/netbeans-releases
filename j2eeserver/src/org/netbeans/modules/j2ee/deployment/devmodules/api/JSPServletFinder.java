@@ -23,12 +23,13 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
-import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
-import org.netbeans.modules.j2ee.deployment.plugins.api.OldJSPDebug;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.OldJSPDebug;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -72,7 +73,11 @@ public final class JSPServletFinder {
     
     private String getWebURL() {
         J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
-        return provider.getConfigSupport().getWebContextRoot();
+        try {
+            return provider.getConfigSupport().getWebContextRoot();
+        } catch (ConfigurationException e) {
+            return null;
+        }
     }
     
     /** Returns the FindJSPServlet class associated with this JSPServletFinder.

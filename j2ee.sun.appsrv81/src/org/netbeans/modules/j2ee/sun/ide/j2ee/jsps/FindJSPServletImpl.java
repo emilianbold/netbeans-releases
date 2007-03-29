@@ -21,7 +21,7 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee.jsps;
 
 import java.io.File;
 import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
 
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;

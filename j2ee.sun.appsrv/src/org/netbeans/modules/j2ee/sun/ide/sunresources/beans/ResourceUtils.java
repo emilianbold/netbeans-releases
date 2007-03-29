@@ -998,7 +998,9 @@ public class ResourceUtils implements WizardConstants{
         if (holdingProj != null){
             J2eeModuleProvider provider = (J2eeModuleProvider) holdingProj.getLookup().lookup(J2eeModuleProvider.class);
             if(provider != null){
-                File resourceLoc = provider.getEnterpriseResourceDirectory ();
+                File resourceLoc = null;
+                // DDBEAN REMOVAL
+                //resourceLoc = provider.getEnterpriseResourceDirectory ();
                 if(resourceLoc != null){
                     if(resourceLoc.exists ()){
                         resourceDir = FileUtil.toFileObject (resourceLoc);

@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.j2ee.sun.share.config;
 
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.schema2beans.*;
 import java.util.*;
@@ -32,6 +33,14 @@ public class DDNodeBean extends DDCommon {
 
     DDNodeBean(DDCommon parent, BaseBean bean, ModuleDDSupport support) {
         super(parent, bean, support, bean.dtdName());
+    }
+
+    DDNodeBean(RootInterface bean, ModuleDDSupport support) {
+        this(support.getBean(bean/*.parent()*/).proxy,bean,support);
+    }
+    DDNodeBean(DDCommon parent, RootInterface bean, ModuleDDSupport support) {
+        // TODO this is hardcoded and wrong!
+        super(parent, bean, support, "web-app"); //bean.dtdName());
     }
 
     DDNodeBean(DDProxy proxy) {

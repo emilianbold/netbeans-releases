@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -29,6 +30,9 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
@@ -52,6 +56,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.openide.util.WeakListeners;
 
 
 /** A ejb module implementation on top of project.
@@ -59,7 +64,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
  * @author  Pavel Buzek
  */
 public final class EjbJarProvider extends J2eeModuleProvider
-        implements EjbJarImplementation, J2eeModule, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
+        implements EjbJarImplementation, J2eeModuleImplementation, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
     
     public static final String FILE_DD = "ejb-jar.xml";//NOI18N
     
@@ -68,6 +73,9 @@ public final class EjbJarProvider extends J2eeModuleProvider
     private Set versionListeners;
     private MetadataUnit metadataUnit;
     private ClassPath metadataClassPath;
+    
+    private PropertyChangeSupport propertyChangeSupport;
+    private J2eeModule j2eeModule;
     
     private long notificationTimeout = 0; // used to suppress repeating the same messages
     
@@ -125,7 +133,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
         return getFile(EjbJarProjectProperties.META_INF);
     }
 
-    public File getEnterpriseResourceDirectory() {
+    public File getResourceDirectory() {
         return getFile(EjbJarProjectProperties.RESOURCE_DIR);
     }
 
@@ -166,8 +174,11 @@ public final class EjbJarProvider extends J2eeModuleProvider
         return null;
     }
     
-    public org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule getJ2eeModule() {
-        return this;
+    public synchronized J2eeModule getJ2eeModule () {
+        if (j2eeModule == null) {
+            j2eeModule = J2eeModuleFactory.createJ2eeModule(this);
+        }
+        return j2eeModule;
     }
     
     public org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter getModuleChangeReporter() {
@@ -207,19 +218,12 @@ public final class EjbJarProvider extends J2eeModuleProvider
         return getFile(EjbJarProjectProperties.BUILD_CLASSES_DIR);
     }
     
-    public org.netbeans.modules.schema2beans.BaseBean getDeploymentDescriptor(String location) {
+    public RootInterface getDeploymentDescriptor(String location) {
         if (J2eeModule.EJBJAR_XML.equals(location)){
-            EjbJar ejbJar = getEjbJar();
-            if (ejbJar != null) {
-                //PENDING find a better way to get the BB from WApp and remove the HACK from DDProvider!!
-                return DDProvider.getDefault().getBaseBean(ejbJar);
-            }
+            return getEjbJar();
         }
         else if(J2eeModule.EJBSERVICES_XML.equals(location)){
-            Webservices webServices = getWebservices();
-            if(webServices != null){
-                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getBaseBean(webServices);
-            }
+            return getWebservices();
         }
         return null;
     }
@@ -291,35 +295,32 @@ public final class EjbJarProvider extends J2eeModuleProvider
         }
         return versionListeners;
     }
-    
-    public void addVersionListener(J2eeModule.VersionListener vl) {
-        versionListeners().add(vl);
-    }
-    
-    public void removeVersionListener(J2eeModule.VersionListener vl) {
-        if (versionListeners != null) {
-            versionListeners.remove(vl);
-        }
-    }
+//    
+//    public void addVersionListener(J2eeModule.VersionListener vl) {
+//        versionListeners().add(vl);
+//    }
+//    
+//    public void removeVersionListener(J2eeModule.VersionListener vl) {
+//        if (versionListeners != null) {
+//            versionListeners.remove(vl);
+//        }
+//    }
     
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.PROPERTY_VERSION)) {
-            for (Iterator i=versionListeners.iterator(); i.hasNext();) {
-                J2eeModule.VersionListener vl = (J2eeModule.VersionListener) i.next();
-                String oldVersion = (String) evt.getOldValue();
-                String newVersion = (String) evt.getNewValue();
-                vl.versionChanged(oldVersion, newVersion);
-            }
+            String oldVersion = (String) evt.getOldValue();
+            String newVersion = (String) evt.getNewValue();
+            getPropertyChangeSupport().firePropertyChange(J2eeModule.PROP_MODULE_VERSION, oldVersion, newVersion);
         } else if (evt.getPropertyName ().equals (EjbJarProjectProperties.J2EE_SERVER_INSTANCE)) {
             Deployment d = Deployment.getDefault ();
             String oldServerID = evt.getOldValue () == null ? null : d.getServerID ((String) evt.getOldValue ());
             String newServerID = evt.getNewValue () == null ? null : d.getServerID ((String) evt.getNewValue ());
             fireServerChange (oldServerID, newServerID);
         }  else if (EjbJarProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
-            String oldValue = (String)evt.getOldValue();
-            String newValue = (String)evt.getNewValue();
-            firePropertyChange(
-                    PROP_ENTERPRISE_RESOURCE_DIRECTORY, 
+            String oldValue = (String) evt.getOldValue();
+            String newValue = (String) evt.getNewValue();
+            getPropertyChangeSupport().firePropertyChange(
+                    J2eeModule.PROP_RESOURCE_DIRECTORY, 
                     oldValue == null ? null : new File(oldValue),
                     newValue == null ? null : new File(newValue));
         }
@@ -427,6 +428,33 @@ public final class EjbJarProvider extends J2eeModuleProvider
                 });
             }
             return metadataClassPath;
+        }
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        getPropertyChangeSupport().addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        synchronized (this) {
+            if (propertyChangeSupport == null) {
+                return;
+            }
+        }
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+    
+    private PropertyChangeSupport getPropertyChangeSupport() {
+        EjbJar ejbJar = getEjbJar();
+        synchronized (this) {
+            if (propertyChangeSupport == null) {
+                propertyChangeSupport = new PropertyChangeSupport(this);
+                if (ejbJar != null) {
+                    PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, this, ejbJar);
+                    ejbJar.addPropertyChangeListener(l);
+                }
+            }
+            return propertyChangeSupport;
         }
     }
 

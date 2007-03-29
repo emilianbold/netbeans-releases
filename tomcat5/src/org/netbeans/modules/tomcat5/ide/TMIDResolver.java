@@ -26,13 +26,14 @@ import org.netbeans.modules.tomcat5.TomcatModule;
 import org.openide.ErrorManager;
 
 import java.util.ArrayList;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 
 /*
  * TMIDResolver.java
  *
  * @author  nn136682
  */
-public class TMIDResolver extends org.netbeans.modules.j2ee.deployment.plugins.api.TargetModuleIDResolver {
+public class TMIDResolver extends TargetModuleIDResolver {
 
     TomcatManager tm;
 

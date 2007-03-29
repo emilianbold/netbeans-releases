@@ -21,7 +21,7 @@ package org.netbeans.modules.tomcat5.jsps;
 
 import java.io.File;
 import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.tomcat5.TomcatManager;
 
 /**

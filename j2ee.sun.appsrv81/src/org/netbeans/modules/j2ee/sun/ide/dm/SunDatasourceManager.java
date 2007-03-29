@@ -13,29 +13,28 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * SunDatasourceManager.java
- *
- * Created on March 17, 2006, 1:51 PM
- *
  */
 
 package org.netbeans.modules.j2ee.sun.ide.dm;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
-import org.netbeans.modules.j2ee.deployment.plugins.api.DatasourceManager;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
+import org.netbeans.modules.j2ee.sun.share.serverresources.SunDatasource;
 
 /**
  *
  * @author Nitya Doraisamy
  */
-public class SunDatasourceManager implements DatasourceManager { 
+public class SunDatasourceManager implements DatasourceManager {
     
     private DeploymentManager dm;
     private SunDeploymentManager sunDm;
@@ -49,13 +48,13 @@ public class SunDatasourceManager implements DatasourceManager {
     }
     
     public Set getDatasources() {
-
         return this.sunDm.getResourceConfigurator().getServerDataSources();
     }
-
-    public void deployDatasources(Set datasources) throws ConfigurationException, DatasourceAlreadyExistsException {
-        /*Object[] dsources = (Object[])datasources.toArray();
-        Vector dirs = new Vector();
+    
+    public void deployDatasources(Set datasources) throws ConfigurationException,
+            DatasourceAlreadyExistsException {
+        Object[] dsources = (Object[])datasources.toArray();
+        List dirs = new ArrayList();
         for(int i=0; i<dsources.length; i++){
             SunDatasource ds = (SunDatasource)dsources[i];
             dirs.add(ds.getResourceDir());
@@ -66,7 +65,7 @@ public class SunDatasourceManager implements DatasourceManager {
             if(resourceDirs != null){
                 Utils.registerResources(resourceDirs, this.sunDm.getManagement());
             }
-        }*/
+        }
     }
     
 }

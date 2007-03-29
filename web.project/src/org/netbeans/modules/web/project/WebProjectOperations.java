@@ -85,7 +85,7 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         if (confDir != null)
             files.add(confDir);
         
-        File resourceDir = project.getWebModule().getEnterpriseResourceDirectory();
+        File resourceDir = project.getWebModule().getResourceDirectory();
         if (resourceDir != null) {
             FileObject resourceFO = FileUtil.toFileObject(resourceDir);
             if (resourceFO != null)

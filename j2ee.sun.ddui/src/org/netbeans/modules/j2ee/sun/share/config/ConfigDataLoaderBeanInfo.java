@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,12 +31,14 @@ import org.openide.util.Utilities;
 public final class ConfigDataLoaderBeanInfo extends SimpleBeanInfo {
 
     public BeanInfo[] getAdditionalBeanInfo () {
+        BeanInfo[] retVal;
         try {
-            return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
+            retVal = new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
         } catch (IntrospectionException ie) {
             ErrorManager.getDefault().notify(ie);
-            return null;
+            retVal =  new BeanInfo[]  { };
         }
+        return retVal;
     }
 
     /** @param type Desired type of the icon

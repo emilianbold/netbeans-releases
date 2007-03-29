@@ -25,6 +25,7 @@ import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.model.J2eeApplicationObject;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
 import org.netbeans.modules.schema2beans.BaseBean;
 /**
@@ -42,5 +43,9 @@ public class DCBGenericFactory extends AbstractDCBFactory { //implements DCBFact
 	protected Class getClass(DDBean ddBean, Base dcbParent) throws ConfigurationException{
 		return dcbClass;
 	}
+
+    public Base createDCB(J2eeModule module, Base object) throws ConfigurationException {
+        throw new UnsupportedOperationException();
+    }
 
 }

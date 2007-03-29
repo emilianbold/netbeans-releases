@@ -63,12 +63,8 @@ public class EarProviderTest extends NbTestCase {
         
         // ensure deployment descriptor file is returned
         J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        assertEquals(appXmlFO, provider.findDeploymentConfigurationFile(APPLICATION_XML));
-        assertEquals(FileUtil.toFile(metaInfFO.getFileObject(APPLICATION_XML)),
-                provider.getDeploymentConfigurationFile(APPLICATION_XML));
-        
-        J2eeModule j2eeModule = (J2eeModule)project.getLookup().lookup(J2eeModule.class);
-        assertNotNull(j2eeModule.getDeploymentDescriptor(J2eeModule.APP_XML));
+        File dcFile = provider.getJ2eeModule().getDeploymentConfigurationFile(APPLICATION_XML);
+        assertEquals(FileUtil.toFile(metaInfFO.getFileObject(APPLICATION_XML)), dcFile);
     }
     
 }

@@ -79,9 +79,9 @@ public class JavaEePlatformUiSupport {
     
     private static final class JavaEePlatformComboBoxModel //extends AbstractListModel implements ComboBoxModel {
             implements ListModel, ComboBoxModel {
-        private transient JavaEePlatformAdapter[] j2eePlatforms;
-        private transient String initialJ2eePlatform;
-        private transient JavaEePlatformAdapter selectedJ2eePlatform;
+        private JavaEePlatformAdapter[] j2eePlatforms;
+        private String initialJ2eePlatform;
+        private JavaEePlatformAdapter selectedJ2eePlatform;
         
         public JavaEePlatformComboBoxModel(String serverInstanceID) {
             initialJ2eePlatform = serverInstanceID;

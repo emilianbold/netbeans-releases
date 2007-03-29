@@ -198,16 +198,7 @@ public class WLDeploymentManager implements DeploymentManager {
      */
     public DeploymentConfiguration createConfiguration(
         DeployableObject deployableObject) throws InvalidModuleException {
-        ModuleType type = deployableObject.getType();
-        if (type == ModuleType.WAR) {
-            return new WarDeploymentConfiguration(deployableObject);
-        } else if (type == ModuleType.EAR) {
-            return new EarDeploymentConfiguration(deployableObject);
-        } else if (type == ModuleType.EJB) {
-            return new EjbDeploymentConfiguration(deployableObject);
-        } else {
-            throw new InvalidModuleException("Unsupported module type: " + type.toString()); // NOI18N
-        }
+        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
     
     /**

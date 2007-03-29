@@ -25,7 +25,9 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.nodes.AbstractNode;
@@ -98,8 +100,8 @@ public class AddModuleAction extends CookieAction {
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
         List<Node> moduleProjectNodes = new LinkedList<Node>();
         for (int i = 0; i < allProjects.length; i++) {
-            if (allProjects[i].getLookup().lookup(J2eeModule.class) != null &&
-                allProjects[i].getLookup().lookup(J2eeModuleContainer.class) == null) {
+            if (allProjects[i].getLookup().lookup(J2eeModuleProvider.class) != null &&
+                allProjects[i].getLookup().lookup(J2eeApplicationProvider.class) == null) {
                 LogicalViewProvider lvp =
                     (LogicalViewProvider) allProjects[i].getLookup().lookup(LogicalViewProvider.class);
                 Node mn = lvp.createLogicalView();

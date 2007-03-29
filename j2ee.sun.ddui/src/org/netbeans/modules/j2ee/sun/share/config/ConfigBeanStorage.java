@@ -13,25 +13,33 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.sun.share.config;
-import java.util.*;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-
-import javax.enterprise.deploy.model.*;
-import javax.enterprise.deploy.spi.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.Vector;
+import javax.enterprise.deploy.model.DDBean;
+import javax.enterprise.deploy.model.XpathEvent;
+import javax.enterprise.deploy.spi.DConfigBean;
+import javax.enterprise.deploy.spi.DeploymentConfiguration;
+import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
-
-import org.openide.*;
-import org.openide.nodes.*;
-
 import org.netbeans.modules.j2ee.sun.share.config.ui.ConfigBeanNode;
 import org.netbeans.modules.j2ee.sun.share.configbean.Base;
 import org.netbeans.modules.j2ee.sun.share.configbean.DConfigBeanProperties;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
+import org.openide.ErrorManager;
+import org.openide.nodes.Node;
 
 /**
  */
@@ -44,8 +52,8 @@ public class ConfigBeanStorage implements PropertyChangeListener, Comparable {
     private Map childMap = new HashMap();
     
     public ConfigBeanStorage(DConfigBean bean, ConfigBeanStorage parent, ConfigurationStorage storage) throws ConfigurationException{
-        this.bean = bean; 
-        this.parent = parent; 
+        this.bean = bean;
+        this.parent = parent;
         this.storage = storage;
         // need to ensure that the basebean events are caught?
         // synchronize new CBS and event handling
@@ -67,8 +75,8 @@ public class ConfigBeanStorage implements PropertyChangeListener, Comparable {
     }
     
     public synchronized Node getNode() {
-        //if (node == null) 
-            node = new ConfigBeanNode(this);
+        //if (node == null)
+        node = new ConfigBeanNode(this);
         return node;
     }
     
@@ -94,49 +102,67 @@ public class ConfigBeanStorage implements PropertyChangeListener, Comparable {
             try {
                 parent.bean.removeDConfigBean(bean);
                 storage.setChanged();
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            } catch (BeanNotFoundException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            } catch (RuntimeException re) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, re);
             }
         }
     }
     
     private void initChildren() throws ConfigurationException {
         String[] xpaths = bean.getXpaths();
-        if(xpaths == null) return;
-        for(int i = 0; i < xpaths.length; i++) {
-            DDBean[] beans = bean.getDDBean().getChildBean(xpaths[i]);
-            for(int j = 0; j < beans.length; j++) {
-                addChild((StandardDDImpl) beans[j]);
+        if(xpaths != null) {
+            for(int i = 0; i < xpaths.length; i++) {
+                DDBean[] beans = bean.getDDBean().getChildBean(xpaths[i]);
+                for(int j = 0; j < beans.length; j++) {
+                    addChild((StandardDDImpl) beans[j]);
+                }
             }
         }
     }
     
     void fireEvent(String relPath, XpathEvent xe) throws ConfigurationException {
         String[] xpaths = bean.getXpaths();
-        if(xpaths == null) return;
-        StandardDDImpl eventDD = (StandardDDImpl) xe.getBean();
-        StandardDDImpl[] targetDDs = null;
+        if(xpaths != null) {
+            StandardDDImpl eventDD = (StandardDDImpl) xe.getBean();
+            StandardDDImpl[] targetDDs = calculateTargetDDs(eventDD, relPath, xe, xpaths);
+            if (targetDDs != null) {
+                for (int i=0; i<targetDDs.length; i++) {
+                    if (xe.isAddEvent()) {
+                        addChild(targetDDs[i]);
+                    } else {
+                        removeChild(targetDDs[i]);
+                    }
+                }
+            }
+        }
+    }
+
+    private StandardDDImpl[] calculateTargetDDs(final StandardDDImpl eventDD, final String relPath, final XpathEvent xe, final String[] xpaths) {
+        StandardDDImpl targetDDs[] = null;
         for(int i = 0 ; i < xpaths.length; i++) {
             if(xpaths[i].equals(relPath) || xpaths[i].equals(xe.getBean().getXpath())) {
                 targetDDs = new StandardDDImpl[] { eventDD };
                 break;
             }
-        } 
+        }
         HashSet targetSet = new HashSet();
         for (int i=0; targetDDs == null && i < xpaths.length; i++) {
             // IZ 73849 - Make sure that relative path is a true xpath prefix which means
             // that if xpath[i] starts with, but is longer than the relative path, then the
             // character immediately following the prefix must be a slash.  i.e.
-            // 
+            //
             //   xpath == relpath   OR
             //   xpath == relpath + "/" + remainder of xpath
             //
-            if(xpaths[i].startsWith(relPath) && 
+            if(xpaths[i].startsWith(relPath) &&
                     (xpaths[i].length() == relPath.length() || xpaths[i].charAt(relPath.length()) == '/')) {
                 String targetPath = DDCommon.getRelativePath(xpaths[i], relPath);
                 DDBean[] dds = eventDD.getChildBean(targetPath);
-                if (dds == null)
+                if (dds == null) {
                     continue;
+                }
                 for (int j=0; j<dds.length; j++) {
                     if (!(dds[j] instanceof StandardDDImpl)) {
                         continue;
@@ -146,17 +172,9 @@ public class ConfigBeanStorage implements PropertyChangeListener, Comparable {
                 if (targetSet.size() > 0) {
                     targetDDs = (StandardDDImpl[]) targetSet.toArray(new StandardDDImpl[targetSet.size()]);
                 }
-            }            
-        }
-        if (targetDDs != null) {
-            for (int i=0; i<targetDDs.length; i++) {
-                if (xe.isAddEvent()) {
-                    addChild(targetDDs[i]);
-                } else {
-                    removeChild(targetDDs[i]);
-                }
             }
         }
+        return targetDDs;
     }
     
     public static final String RESOURCE_REF = "resource-ref"; //NOI18N
@@ -197,7 +215,7 @@ public class ConfigBeanStorage implements PropertyChangeListener, Comparable {
             }
         }
     }
-
+    
     /** Ordering for ConfigBeanStorage intances.  This is so we can use TreeSet or
      *  some other ordered set to store these objects and offer a reasonable ordering
      *  in the Configuration Editor UI.
@@ -216,7 +234,7 @@ public class ConfigBeanStorage implements PropertyChangeListener, Comparable {
             Base targetBean = (Base) target.bean;
             
             result = sourceBean.getDisplayName().compareTo(targetBean.getDisplayName());
-
+            
             if(result == 0) {
                 result = sourceBean.getIdentity().compareTo(targetBean.getIdentity());
             }
@@ -255,5 +273,5 @@ public class ConfigBeanStorage implements PropertyChangeListener, Comparable {
             l.childBeanRemoved(childBeanStorage);
         }
     }
-
+    
 }

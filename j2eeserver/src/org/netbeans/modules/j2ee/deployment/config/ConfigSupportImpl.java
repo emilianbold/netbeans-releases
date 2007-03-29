@@ -31,22 +31,28 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
+import org.netbeans.modules.j2ee.dd.api.common.ComponentInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
-import javax.enterprise.deploy.model.*;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.*;
-import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
-import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
-import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MappingConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.EjbResourceConfiguration;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -54,7 +60,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider;
+import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 
 /**
  * Each J2eeModuleProvider hold a reference to an instance of this config support.
@@ -71,7 +77,7 @@ import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationPro
 // case when provider does not associate with any server.
 
 public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport, 
-        DeploymentConfigurationProvider, PropertyChangeListener {
+        ModuleConfigurationProvider {
     
     private static final File[] EMPTY_FILE_LIST = new File[0];
     private static final String GENERIC_EXTENSION = ".dpf"; // NOI18N
@@ -81,16 +87,17 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     private Map allRelativePaths = null;
     
     private final J2eeModuleProvider provider;
-    private final ModuleDeploymentSupport mds;
-    private DeploymentConfiguration deploymentConfiguration;
+    private final J2eeModule j2eeModule;
     
     private Server server;
     private ServerInstance instance;
+    private ModuleConfiguration moduleConfiguration;
     
     /** Creates a new instance of ConfigSupportImpl */
     public ConfigSupportImpl (J2eeModuleProvider provider) {
         this.provider = provider;
-        mds = new ModuleDeploymentSupport(provider, true);
+        j2eeModule = provider.getJ2eeModule();
+        J2eeModuleAccessor.DEFAULT.setJ2eeModuleProvider(j2eeModule, provider);
         String serverInstanceId = provider.getServerInstanceID();
         if (serverInstanceId != null) {
             instance = ServerRegistry.getInstance().getServerInstance(serverInstanceId);
@@ -107,10 +114,6 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 server = ServerRegistry.getInstance().getServer(serverID);
             }
         }
-        // the module has no server set, do not listen to changes
-        if (server != null) {
-            provider.addPropertyChangeListener(this);
-        }
     }
     
     /**
@@ -125,28 +128,6 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         return null;
-    }
-    
-    /** Return an initiliazed deployment configuration */
-    public void createDeploymentConfiguration(Server server) {
-        if (server == this.server) {
-            createInitialConfiguration();
-        } else {
-            ModuleDeploymentSupport mds = new ModuleDeploymentSupport(provider, false);
-            DeployableObject dobj = mds.getDeployableObject();
-            try {
-                DeploymentConfiguration deployConf = server.getDisconnectedDeploymentManager().createConfiguration(dobj);
-                ConfigurationSupport serverConfig = server.getConfigurationSupport();
-                File[] files = getDeploymentConfigurationFiles(getProvider(), server);
-                serverConfig.initConfiguration(deployConf, files, getProvider().getEnterpriseResourceDirectory(), false);
-            } catch(InvalidModuleException ime) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ime);
-            } catch (ConfigurationException ce) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
-            } catch (DeploymentManagerCreationException dmce) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dmce);
-            }
-        }
     }
     
     /**
@@ -173,7 +154,11 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         try {
             FileObject fo = getProvider().getJ2eeModule().getContentDirectory();
             if (fo == null) {
-                fo = findPrimaryConfigurationFO();
+                String configFileName = getPrimaryConfigurationFileName();
+                File file = j2eeModule.getDeploymentConfigurationFile(configFileName);
+                if (file != null) {
+                    fo = FileUtil.toFileObject(file);
+                }
             }
             if (fo == null)
                 return null;
@@ -190,25 +175,24 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     /** dispose all created deployment configurations */
     public void dispose() {
         if (server != null) {
-            provider.removePropertyChangeListener(this);
-            ConfigurationSupport serverConfig = server.getConfigurationSupport();
-            if (deploymentConfiguration != null && serverConfig != null) {
-                serverConfig.disposeConfiguration(deploymentConfiguration);
+            ModuleConfiguration moduleConfig = null;
+            synchronized (this) {
+                moduleConfig = moduleConfiguration;
             }
-        }
-        if (mds != null) {
-            mds.cleanup();
+            if (moduleConfig != null) {
+                moduleConfig.dispose();
+            }
         }
     }
     
     // J2eeModuleProvider.ConfigSupport ---------------------------------------
     
     public boolean createInitialConfiguration() {
-        return getDeploymentConfiguration() != null;
+        return getModuleConfiguration() != null;
     }
     
     public boolean ensureConfigurationReady() {
-        return getDeploymentConfiguration() != null;
+        return getModuleConfiguration() != null;
     }
      
     /**
@@ -224,20 +208,20 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         if (server == null) {
             return null;
         }
-        DeploymentConfiguration config = getDeploymentConfiguration();
+        ModuleConfiguration config = getModuleConfiguration();
         if (config == null) {
             return null;
         }
-        ConfigurationSupport serverConfig = server.getConfigurationSupport();
-        if (serverConfig == null) {
-            return null;
-        }
+        
         try {
-            return serverConfig.getWebContextRoot(config, config.getDeployableObject());
+            ContextRootConfiguration contextRootConfiguration = config.getLookup().lookup(ContextRootConfiguration.class);
+            if (contextRootConfiguration != null) {
+                return contextRootConfiguration.getContextRoot();
+            }
         } catch (ConfigurationException ce) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
-            return null;
         }
+        return null;
     }
     
     /**
@@ -251,16 +235,15 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         if (server == null) {
             return;
         }
-        DeploymentConfiguration config = getDeploymentConfiguration();
+        ModuleConfiguration config = getModuleConfiguration();
         if (config == null) {
             return;
         }
-        ConfigurationSupport serverConfig = server.getConfigurationSupport();
-        if (serverConfig == null) {
-            return;
-        }
         try {
-            serverConfig.setWebContextRoot(config, config.getDeployableObject(), contextRoot);
+            ContextRootConfiguration contextRootConfiguration = config.getLookup().lookup(ContextRootConfiguration.class);
+            if (contextRootConfiguration != null) {
+                contextRootConfiguration.setContextRoot(contextRoot);
+            }
         } catch (ConfigurationException ce) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
         }
@@ -283,36 +266,22 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         return (String) getAllRelativePaths().get(configName);
     }
     
-    public void setCMPMappingInfo(final OriginalCMPMapping[] mappings) {
+    public void setCMPMappingInfo(final OriginalCMPMapping[] mappings) throws ConfigurationException {
         if (server == null) {
             // the module has no target server
             return;
         }
-        DeploymentConfiguration config = getDeploymentConfiguration();
-        ConfigurationSupport serverConfig = server.getConfigurationSupport();
-        serverConfig.setMappingInfo(config, mappings);
-    }
-    
-    public void ensureResourceDefinedForEjb(final String ejbname, final String ejbtype) {
-        if (ejbname == null) {
-            throw new NullPointerException("EJB name cannot be null"); // NOI18N
-        }
-        if (ejbtype == null) {
-            throw new NullPointerException("EJB type cannot be null"); // NOI18N
-        }
-        if (server == null) {
-            // the module has no target server
+        ModuleConfiguration config = getModuleConfiguration();
+        if (config == null) {
             return;
         }
-        DDBean ejbBean = findDDBean(ejbname, ejbtype);
-        if (ejbBean != null) {
-            DeploymentConfiguration config = getDeploymentConfiguration();
-            ConfigurationSupport serverConfig = server.getConfigurationSupport();
-            serverConfig.ensureResourceDefined(config, ejbBean);
+        MappingConfiguration mappingConfiguration = config.getLookup().lookup(MappingConfiguration.class);
+        if (mappingConfiguration != null) {
+            mappingConfiguration.setMappingInfo(mappings);
         }
     }
     
-    public void ensureResourceDefinedForEjb(String ejbname, String ejbtype, String jndiName) {
+    public void ensureResourceDefinedForEjb(String ejbname, String ejbtype, String jndiName) throws ConfigurationException {
         if (ejbname == null) {
             throw new NullPointerException("EJB name cannot be null"); // NOI18N
         }
@@ -326,11 +295,14 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             // the module has no target server
             return;
         }
-        DDBean ejbBean = findDDBean(ejbname, ejbtype);
+        ComponentInterface ejbBean = findDDBean(ejbname, ejbtype);
         if (ejbBean != null) {
-            DeploymentConfiguration config = getDeploymentConfiguration();
-            ConfigurationSupport serverConfig = server.getConfigurationSupport();
-            serverConfig.ensureResourceDefined(config, ejbBean, jndiName);
+            ModuleConfiguration config = getModuleConfiguration();
+            if (config == null) {
+                return;
+            }
+            EjbResourceConfiguration resourceConfiguration = config.getLookup().lookup(EjbResourceConfiguration.class);
+            resourceConfiguration.ensureResourceDefined(ejbBean, jndiName);
         }
     }
     
@@ -338,46 +310,47 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
      * @return DD bean of the specified EJB type with the specified EJB name in ejb-jar.xml 
      * or null if no such DD bean exists.
      */
-    private DDBean findDDBean(String ejbname, String ejbtype) {
+    private ComponentInterface findDDBean(String ejbname, String ejbtype) {
         if (!J2eeModule.EJB.equals(provider.getJ2eeModule().getModuleType())) {
             throw new IllegalArgumentException("Trying to get config bean for ejb on non ejb module!"); //NONI18N
         }
-        DDBean ejbBean = null;
-        DDRoot ddroot = mds.getDDBeanRoot(J2eeModule.EJBJAR_XML);
-        StandardDDImpl[] ddbeans = (StandardDDImpl[]) ddroot.getChildBean(
-                "/enterprise-beans/" + ejbtype); //NOI18N
-        for (int i=0; i<ddbeans.length; i++) {
-            String ejbName = (String) ddbeans[i].proxy.bean.getValue("EjbName"); //NOI18N
-            if (ejbname.equals(ejbName)) {
-                ejbBean = ddbeans[i];
-                break;
-            }
-        }
-        if (ejbBean == null) {
-            if (ddbeans != null) {
-                for (int i=0; i<ddbeans.length; i++) {
-                    String msg = ddbeans[i].proxy.bean.dumpBeanNode();
-                    ErrorManager.getDefault().log(ErrorManager.ERROR, msg);
-                }
-            }
-            Exception e = new Exception("Failed to lookup: "+ejbname+" type "+ejbtype);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            return null;
-        }
-        
+        ComponentInterface ejbBean = null;
+        // TODO
+//        DDRoot ddroot = mds.getDDBeanRoot(J2eeModule.EJBJAR_XML);
+//        StandardDDImpl[] ddbeans = (StandardDDImpl[]) ddroot.getChildBean(
+//                "/enterprise-beans/" + ejbtype); //NOI18N
+//        for (int i=0; i<ddbeans.length; i++) {
+//            String ejbName = (String) ddbeans[i].proxy.bean.getValue("EjbName"); //NOI18N
+//            if (ejbname.equals(ejbName)) {
+//                ejbBean = ddbeans[i];
+//                break;
+//            }
+//        }
+//        if (ejbBean == null) {
+//            if (ddbeans != null) {
+//                for (int i=0; i<ddbeans.length; i++) {
+//                    String msg = ddbeans[i].proxy.bean.dumpBeanNode();
+//                    ErrorManager.getDefault().log(ErrorManager.ERROR, msg);
+//                }
+//            }
+//            Exception e = new Exception("Failed to lookup: "+ejbname+" type "+ejbtype);
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+//            return null;
+//        }
+//        
         return ejbBean;
     }
     
-    public Set<Datasource> getDatasources() {
+    public Set<Datasource> getDatasources() throws ConfigurationException {
         
         Set<Datasource> projectDS = Collections.<Datasource>emptySet();
         
         if (server != null) {
-            ConfigurationSupport configSupport = server.getConfigurationSupport();
-            if (configSupport != null) {
-                DeploymentConfiguration config = getDeploymentConfiguration();
-                if (config != null) {
-                    projectDS = configSupport.getDatasources(config);
+            ModuleConfiguration config = getModuleConfiguration();
+            if (config != null) {
+                DatasourceConfiguration datasourceConfiguration = config.getLookup().lookup(DatasourceConfiguration.class);
+                if (datasourceConfiguration != null) {
+                    projectDS = datasourceConfiguration.getDatasources();
                 }
             }
         }
@@ -390,24 +363,26 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             // the module has no target server
             return false;
         }
-        ConfigurationSupport configSupport = server.getConfigurationSupport();
-        
-        if (configSupport == null)
-            return false;
-        
-        return configSupport.isDatasourceCreationSupported();
+        ModuleConfiguration config = getModuleConfiguration();
+        if (config != null) {
+            DatasourceConfiguration datasourceConfiguration = config.getLookup().lookup(DatasourceConfiguration.class);
+            if (datasourceConfiguration != null) {
+                return datasourceConfiguration.supportsCreateDatasource();
+            }
+        }
+        return false;
     }
     
     public Datasource createDatasource(String jndiName, String  url, String username, String password, String driver) 
     throws OperationUnsupportedException, DatasourceAlreadyExistsException {
         Datasource ds = null;
         if (server != null) {
-            ConfigurationSupport configSupport = server.getConfigurationSupport();
-            if (configSupport != null) {
-                DeploymentConfiguration config = getDeploymentConfiguration();
-                if (config != null) {
+            ModuleConfiguration config = getModuleConfiguration();
+            if (config != null) {
+                DatasourceConfiguration datasourceConfiguration = config.getLookup().lookup(DatasourceConfiguration.class);
+                if (datasourceConfiguration != null) {
                     try {
-                        ds = configSupport.createDatasource(config, jndiName, url, username, password, driver);
+                        ds = datasourceConfiguration.createDatasource(jndiName, url, username, password, driver);
                     } catch (ConfigurationException ce) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
                     }
@@ -422,42 +397,33 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     /**
      * Create and cache deployment configuration for the current server.
      */
-    public DeploymentConfiguration getDeploymentConfiguration() {
-        if (deploymentConfiguration == null) {
-            DeployableObject dobj = mds.getDeployableObject();
+    public synchronized ModuleConfiguration getModuleConfiguration() {
+        if (moduleConfiguration == null) {
             try {
-                if (instance != null) {
-                    deploymentConfiguration = instance.getDeploymentManagerForConfiguration().createConfiguration(dobj);
-                } else if (server != null) {
-                    deploymentConfiguration = server.getDisconnectedDeploymentManager().createConfiguration(dobj);
-                } else {
-                    // the module has no target server, there is nothing else to return
+                if (server == null) {
                     return null;
                 }
-                ConfigurationSupport serverConfig = server.getConfigurationSupport();
-                File[] files = getDeploymentConfigurationFiles(getProvider(), server);
-                serverConfig.initConfiguration(deploymentConfiguration, files, 
-                        getProvider().getEnterpriseResourceDirectory(), true);
-            } catch(InvalidModuleException ime) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ime);
-                return null;
+                ModuleConfigurationFactory moduleConfigurationFactory = server.getModuleConfigurationFactory();
+                moduleConfiguration = moduleConfigurationFactory.create(j2eeModule);
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
                 return null;
-            } catch (DeploymentManagerCreationException dmce) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dmce);
-                return null;
             }
         }
-        return deploymentConfiguration;
+        return moduleConfiguration;
     }
         
-    public DeployableObject getDeployableObject(String moduleUri) {
-        DeployableObject deplObj = mds.getDeployableObject();
-        if (deplObj instanceof J2eeApplicationObject) {
-            return ((J2eeApplicationObject)deplObj).getDeployableObject(moduleUri);
+    public J2eeModule getJ2eeModule(String moduleUri) {
+        if (j2eeModule instanceof J2eeApplication) {
+            for (J2eeModule childModule : ((J2eeApplication) j2eeModule).getModules()) {
+                if (childModule.getUrl().equals(moduleUri)) {
+                    return childModule;
+                }
+            }
+            // TODO child module was not found
+            return null;
         }
-        return mds.getDeployableObject();
+        return j2eeModule;
     }
     
     // private helpers --------------------------------------------------------
@@ -483,17 +449,8 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         for (int i = 0; i < fnames.length; i++) {
             File path = new File(fnames[i]);
             String fname = path.getName();
-            File file = null;
-            if (existingOnly) {
-                FileObject fo = provider.findDeploymentConfigurationFile(fname);
-                if (fo != null) {
-                    file = FileUtil.toFile(fo);
-                }
-            } else {
-                file = provider.getDeploymentConfigurationFile(fname);
-            }
-            
-            if (file != null) {
+            File file = provider.getJ2eeModule().getDeploymentConfigurationFile(fname);
+            if (file != null && (!existingOnly || file.exists())) {
                 files.add(file);
             }
         }
@@ -528,10 +485,13 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             }
             lock = plan.lock();
             out = plan.getOutputStream(lock);
-            DeploymentConfiguration conf = getDeploymentConfiguration();
+            ModuleConfiguration conf = getModuleConfiguration();
             if (conf != null) {
-                conf.save(out);
-                return FileUtil.toFile(plan);
+                DeploymentPlanConfiguration deploymentPlanConfiguration = conf.getLookup().lookup(DeploymentPlanConfiguration.class);
+                if (deploymentPlanConfiguration != null) {
+                    deploymentPlanConfiguration.save(out);
+                    return FileUtil.toFile(plan);
+                }
             }
             return null;
         } finally {
@@ -564,7 +524,8 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
 
     private FileObject findPrimaryConfigurationFO() throws IOException {
         String configFileName = getPrimaryConfigurationFileName();
-        return getProvider().findDeploymentConfigurationFile(configFileName);
+        File file = j2eeModule.getDeploymentConfigurationFile(configFileName);
+        return FileUtil.toFileObject(file);
     }   
 
     private ModuleType getModuleType() {
@@ -576,7 +537,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
     
     private static boolean hasCustomSupport(Server server, ModuleType type) {
-        if (server == null || server.getConfigurationSupport() == null) {
+        if (server == null || server.getModuleConfigurationFactory() == null) {
             return false;
         }
         return server.getDeploymentPlanFiles(type) != null;
@@ -624,17 +585,5 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             collectData(server, allRelativePaths);
         }
         return allRelativePaths;
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (J2eeModuleProvider.PROP_ENTERPRISE_RESOURCE_DIRECTORY.equals(evt.getPropertyName())) {
-            DeploymentConfiguration config = getDeploymentConfiguration();
-            ConfigurationSupport serverConfig = server.getConfigurationSupport();
-            Object newValue = evt.getNewValue();
-            if (newValue != null && !(newValue instanceof File)) {
-                throw new IllegalArgumentException("Enterprise resource directory property value is not a File"); // NIO18N
-            }
-            serverConfig.updateResourceDir(config, (File)newValue);
-        }
     }
 }

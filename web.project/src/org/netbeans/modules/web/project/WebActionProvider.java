@@ -36,7 +36,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -982,9 +982,9 @@ class WebActionProvider implements ActionProvider {
             FileObject sourceRoot = (FileObject)iter.next();
             Project project = FileOwnerQuery.getOwner(sourceRoot);
             if (project != null) {
-                Object j2eeAppProvider = project.getLookup().lookup(J2eeAppProvider.class);
-                if (j2eeAppProvider != null) { // == it is j2ee app
-                    J2eeAppProvider j2eeApp = (J2eeAppProvider)j2eeAppProvider;
+                Object j2eeApplicationProvider = project.getLookup().lookup(J2eeApplicationProvider.class);
+                if (j2eeApplicationProvider != null) { // == it is j2ee app
+                    J2eeApplicationProvider j2eeApp = (J2eeApplicationProvider) j2eeApplicationProvider;
                     J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
                     if ((j2eeModules != null) && (j2eeModules.length > 0)) { // == there are some modules in the j2ee app
                         J2eeModuleProvider affectedPrjProvider = 

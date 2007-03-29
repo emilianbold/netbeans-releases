@@ -46,6 +46,7 @@ import javax.swing.JSeparator;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -300,7 +301,11 @@ public final class DatasourceUIHelper {
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_retrievingDS");
                 actionContext.getProgress().progress(msg);
-                datasources.addAll(getDatasources(provider));
+                try {
+                    datasources.addAll(getDatasources(provider));
+                } catch (ConfigurationException e) {
+                    // TODO: provide a feedback to the user
+                }
             }
         });
         EventRequestProcessor eventRP = new EventRequestProcessor();
@@ -380,6 +385,8 @@ public final class DatasourceUIHelper {
                         }
                         ErrorManager.getDefault().annotate(daee, NbBundle.getMessage(DatasourceUIHelper.class, "ERR_DsConflict", sb.toString()));
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, daee);
+                    } catch (ConfigurationException ce) {
+                        // TODO: provide a feedback to the user
                     }
                 }
                 
@@ -394,7 +401,11 @@ public final class DatasourceUIHelper {
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_retrievingDS");
                 actionContext.getProgress().progress(msg);
-                datasources.addAll(getDatasources(provider));
+                try {
+                    datasources.addAll(getDatasources(provider));
+                } catch (ConfigurationException e) {
+                    // TODO: provide a feedback to the user
+                }
             }
 
             public boolean isEnabled() {
@@ -419,7 +430,7 @@ public final class DatasourceUIHelper {
     /**
      * Returns a sorted list of all datasources (from the module and the server)
      */
-    private static List<Datasource> getDatasources(final J2eeModuleProvider provider) {
+    private static List<Datasource> getDatasources(final J2eeModuleProvider provider) throws ConfigurationException {
         
         Set<Datasource> moduleDatasources = provider.getModuleDatasources();
         Set<Datasource> serverDatasources = provider.getServerDatasources();

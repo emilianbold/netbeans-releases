@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.sun.share.config;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -42,31 +43,19 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
  * @author Pavel Buzek
  */
 public class ConfigDataLoader extends UniFileLoader {
-
+    
     /** Generated serial version UID. */
-//    private static final long serialVersionUID = ;
-
+    //    private static final long serialVersionUID = ;
+    
     private static final String GENERIC_EXTENSION = "dpf"; //NOI18N
-    private static final String PRIMARY = "primary"; //NOI18N
-    private static final String SECONDARY = "secondary"; //NOI18N
-//    private static final String SERVER = "server"; //NOI18N
+    //    private static final String PRIMARY = "primary"; //NOI18N
+    //    private static final String SECONDARY = "secondary"; //NOI18N
+    //    private static final String SERVER = "server"; //NOI18N
     
     private static HashMap primaryByName;
     private static HashMap secondaryByName;
     
-    /** Creates loader. */
-    public ConfigDataLoader () {
-        super("org.netbeans.modules.j2ee.sun.share.config.ConfigDataObject"); // NOI18N
-        
-        initMaps();
-    }
-
-    /** Initizalized loader, i.e. its extension list. Overrides superclass method. */
-    protected void initialize () {
-        super.initialize();
-    }
-    
-    private void initMaps() {
+    static {
         primaryByName = new HashMap();
         secondaryByName = new HashMap();
         
@@ -78,11 +67,21 @@ public class ConfigDataLoader extends UniFileLoader {
         primaryByName.put("sun-application-client.xml", "META-INF/sun-application-client.xml");
     }
     
+    /** Creates loader. */
+    public ConfigDataLoader() {
+        super("org.netbeans.modules.j2ee.sun.share.config.ConfigDataObject"); // NOI18N
+    }
+    
+    /** Initizalized loader, i.e. its extension list. Overrides superclass method. */
+    protected void initialize() {
+        super.initialize();
+    }
+    
     /** Gets default display name. Overrides superclass method. */
     protected String defaultDisplayName() {
-        return NbBundle.getMessage (ConfigDataLoader.class, "LBL_LoaderName");
+        return NbBundle.getMessage(ConfigDataLoader.class, "LBL_LoaderName");
     }
-
+    
     /** Action available for sun specific deployment descriptor files.  See
      *  layer file.
      */
@@ -92,13 +91,15 @@ public class ConfigDataLoader extends UniFileLoader {
     
     /** Creates multi data object for specified primary file.
      * Implements superclass abstract method. */
-    protected MultiDataObject createMultiObject (FileObject fo)
-    throws DataObjectExistsException, IOException {
+    protected MultiDataObject createMultiObject(FileObject fo)
+            throws DataObjectExistsException, IOException {
+        MultiDataObject retVal;
         if (isPrimaryDescriptor(fo)) {
-            return new ConfigDataObject(fo, this);
+            retVal = new ConfigDataObject(fo, this);
         } else {
-            return new SecondaryConfigDataObject(fo, this);
+            retVal = new SecondaryConfigDataObject(fo, this);
         }
+        return retVal;
     }
     
     private boolean isPrimaryDescriptor(FileObject fo) {
@@ -106,58 +107,60 @@ public class ConfigDataLoader extends UniFileLoader {
         return getPrimaryByName(filename) != null;
     }
     
-    protected FileObject findPrimaryFile (FileObject fo) {
+    protected FileObject findPrimaryFile(FileObject fo) {
         // never recognize folders.
-        if (fo.isFolder()) {
-            return null;
-        }
-        
-        String ext = fo.getExt();
-        String filename = fo.getNameExt ();
-        FileObject primaryFO = null;
-        String secondaryName = null;
-        if (getPrimaryByName(filename) != null || ext.equals(GENERIC_EXTENSION)) {
-            primaryFO = fo;
-        } else if (getPrimaryBySecondaryName (filename) != null) { // check for secondary file 
-            secondaryName = filename;
-        }
-        
-        if (primaryFO == null && secondaryName == null) {
-            return null;
-        }
-        
-        Project owner = FileOwnerQuery.getOwner(fo);
-        if (owner != null) {
-            Lookup l = owner.getLookup();
-            J2eeModuleProvider projectModule = (J2eeModuleProvider) l.lookup(J2eeModuleProvider.class);
-            if (projectModule != null) {
-                if (primaryFO != null) {
-                    primaryFO = projectModule.findDeploymentConfigurationFile(filename);
-                    if (primaryFO != null) {
-                        File primary = FileUtil.toFile(primaryFO);
-                        if (primary != null && primary.equals(FileUtil.toFile(fo))) {
-                            return fo;
-                        }
-                    }
-                } else { // look for secondary FO 
-                    FileObject secondaryFO = projectModule.findDeploymentConfigurationFile(secondaryName);
-                    if(secondaryFO != null) {
-                        File secondary = FileUtil.toFile(secondaryFO);
-                        if (secondary != null && secondary.equals(FileUtil.toFile(fo))) {
-                            return fo;
+        FileObject retVal = null;
+        if (!fo.isFolder()) {
+            
+            String ext = fo.getExt();
+            String filename = fo.getNameExt();
+            FileObject primaryFO = null;
+            String secondaryName = null;
+            if (getPrimaryByName(filename) != null || ext.equals(GENERIC_EXTENSION)) {
+                primaryFO = fo;
+            } else if (getPrimaryBySecondaryName(filename) != null) { // check for secondary file
+                secondaryName = filename;
+            }
+            
+            if (primaryFO != null || secondaryName != null) {
+                
+                Project owner = FileOwnerQuery.getOwner(fo);
+                if (owner != null) {
+                    Lookup l = owner.getLookup();
+                    J2eeModuleProvider projectModule = (J2eeModuleProvider) l.lookup(J2eeModuleProvider.class);
+                    if (projectModule != null) {
+                        J2eeModule mod = projectModule.getJ2eeModule();
+                        if (primaryFO != null) {
+                            //DDBean Removal
+                            primaryFO = FileUtil.toFileObject(mod.getDeploymentConfigurationFile(filename));
+                            if (primaryFO != null) {
+                                File primary = FileUtil.toFile(primaryFO);
+                                if (primary != null && primary.equals(FileUtil.toFile(fo))) {
+                                    retVal = fo;
+                                }
+                            }
+                        } else { // look for secondary FO
+                            // DDBean Removal
+                            FileObject secondaryFO = FileUtil.toFileObject(mod.getDeploymentConfigurationFile(secondaryName));
+                            if(secondaryFO != null) {
+                                File secondary = FileUtil.toFile(secondaryFO);
+                                if (secondary != null && secondary.equals(FileUtil.toFile(fo))) {
+                                    retVal = fo;
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-        return null;
+        return retVal;
     }
     
-    private String getPrimaryByName (String name) {
+    private String getPrimaryByName(String name) {
         return (String) primaryByName.get(name);
     }
     
-    private String getPrimaryBySecondaryName (String name) {
+    private String getPrimaryBySecondaryName(String name) {
         return (String) secondaryByName.get(name);
     }
 }

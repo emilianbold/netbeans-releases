@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.sun.share.configbean;
 import javax.enterprise.deploy.spi.DConfigBean;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.model.DDBean;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
 /**
  *
@@ -29,5 +30,7 @@ import javax.enterprise.deploy.model.DDBean;
 public interface DCBFactory {
 	
 	public Base createDCB(DDBean ddBean, Base dcbParent) throws ConfigurationException;
+
+    public Base createDCB(J2eeModule module, Base object) throws ConfigurationException;
 
 }

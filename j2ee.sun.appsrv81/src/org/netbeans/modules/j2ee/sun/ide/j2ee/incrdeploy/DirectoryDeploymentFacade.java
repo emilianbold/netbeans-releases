@@ -13,36 +13,28 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * DirectoryDeploymentFacade.java
- *
- * Created on November 6, 2003, 11:25 AM
  */
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy;
+
 import java.io.File;
-
-import org.netbeans.modules.j2ee.deployment.plugins.api.IncrementalDeployment;
-
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
-import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
-
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
-import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 
 /**
@@ -52,21 +44,20 @@ import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     
     Object inner = null;
-      private File[] resourceDirs = null;
+    private File[] resourceDirs = null;
     private SunDeploymentManagerInterface dm;
-   
-
+    
+    
     /** Creates a new instance of DirectoryDeploymentFacade */
     public DirectoryDeploymentFacade(DeploymentManager dm) {
-        //System.out.println("DirectoryDeploymentFacade called");
         try {
             setDeploymentManager(dm);
             Class[] cls= new Class[1];
             cls[0]=DeploymentManager.class;
-            java.lang.reflect.Constructor ctr =null;
-	    SunDeploymentManagerInterface sdm = (SunDeploymentManagerInterface)dm;
-	    ClassLoader loader = ServerLocationManager.getNetBeansAndServerClassLoader(sdm.getPlatformRoot());
-            ctr = loader.loadClass("org.netbeans.modules.j2ee.sun.bridge.DirectoryDeployment").getConstructor(cls);
+            SunDeploymentManagerInterface sdm = (SunDeploymentManagerInterface)dm;
+            ClassLoader loader = ServerLocationManager.getNetBeansAndServerClassLoader(sdm.getPlatformRoot());
+            java.lang.reflect.Constructor ctr = 
+                    loader.loadClass("org.netbeans.modules.j2ee.sun.bridge.DirectoryDeployment").getConstructor(cls);
             Object[] o= new Object[1];
             o[0]=dm;
             
@@ -75,6 +66,7 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
             t.printStackTrace();
         }
     }
+
     /**
      * @param manager
      */
@@ -87,97 +79,112 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
             this.dm = (SunDeploymentManagerInterface) manager;
         else
             throw new IllegalArgumentException("setDeploymentManager: Invalid manager type, expecting SunDeploymentManager and got "+manager.getClass().getName());
-    }    
+    }
     
-        
+    
     
     public java.io.File getDirectoryForModule(javax.enterprise.deploy.spi.TargetModuleID module) {
-        if (null == inner){
-            return null;
+        java.io.File retVal = null;
+        if (null != inner){
+            retVal = ((IncrementalDeployment)inner).getDirectoryForModule(module);
         }
-        return ((IncrementalDeployment)inner).getDirectoryForModule(module);
+        return retVal;
     }
     
     public String getModuleUrl(javax.enterprise.deploy.spi.TargetModuleID module) {
-        if (null == inner){
-            return null;
+        String retVal = null;
+        if (null != inner){
+            retVal = ((IncrementalDeployment)inner).getModuleUrl(module);
         }
-        return ((IncrementalDeployment)inner).getModuleUrl(module);
+        return retVal;
     }
     
     public ProgressObject incrementalDeploy(TargetModuleID module, AppChangeDescriptor changes) {
-         //Register resources if any
-
-         // XXX 
-         //No way to get resourceDirs from input parameters of this method. 
-         //Initializing resourceDirs in canFileDeploy() method.
-         //Relying on the assumption that canFileDeploy() is & *will* always get
-         //called with appropriate DeployableObject before this method.
-         if((resourceDirs != null) && (dm != null)){
+        //Register resources if any
+        
+        // XXX
+        //No way to get resourceDirs from input parameters of this method.
+        //Initializing resourceDirs in canFileDeploy() method.
+        //Relying on the assumption that canFileDeploy() is & *will* always get
+        //called with appropriate DeployableObject before this method.
+        if((resourceDirs != null) && (dm != null)){
             Utils.registerResources(resourceDirs, (ServerInterface)dm.getManagement());
-         }
-            if (null!=dm){
-                ViewLogAction.viewLog(dm);
-            }
-                
-         return ((IncrementalDeployment)inner).incrementalDeploy(module, changes);
+        }
+        if (null!=dm){
+            ViewLogAction.viewLog(dm);
+        }
+        
+        return ((IncrementalDeployment)inner).incrementalDeploy(module, changes);
     }
     
     
     
-    
-    public ProgressObject initialDeploy(Target target, DeployableObject deployableObject, DeploymentConfiguration deploymentConfiguration, File file) {
-       //Register resources if any
-       File[] resourceDirs = Utils.getResourceDirs(deployableObject);
-       if((resourceDirs != null) && (dm != null)) {
-           Utils.registerResources(resourceDirs, (ServerInterface)dm.getManagement());
-       }
-       if (null != dm){
-        ViewLogAction.viewLog(dm);
-       }
-        return ((IncrementalDeployment)inner).initialDeploy(target,deployableObject,deploymentConfiguration, file);
+    public File getDirectoryForNewApplication(String deploymentName, Target target, DeploymentConfiguration configuration){
+        SunONEDeploymentConfiguration s1dc =(SunONEDeploymentConfiguration) configuration;
+        s1dc.setDeploymentModuleName(deploymentName);
+        return null;
     }
-
+    
+    public ProgressObject initialDeploy(Target target, J2eeModule app, ModuleConfiguration configuration, File dir) {
+        //Register resources if any
+        File[] resourceDirs = Utils.getResourceDirs(app);
+        if((resourceDirs != null) && (dm != null)) {
+            Utils.registerResources(resourceDirs, (ServerInterface)dm.getManagement());
+        }
+        if (null != dm){
+            ViewLogAction.viewLog(dm);
+        }
+        return ((IncrementalDeployment)inner).initialDeploy(target,app,configuration, dir);
+    }
+    
     /**
-     * Whether the deployable object could be file deployed to the specified target
+     * Whether the J2eeModule could be file deployed to the specified target
      * @param target target in question
-     * @param deployable the deployable object in question
+     * @param module the J2eeModule in question
      * @return true if it is possible to do file deployment
      */
-    public boolean canFileDeploy(Target target, DeployableObject deployableObject) {
+    public boolean canFileDeploy(Target target, J2eeModule module) {
+        boolean retVal = true;
         if (null == dm){
-            return false;
+            retVal = false;
         }
-        if (null == deployableObject){
-            return false;
-        }        
-    if (org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties.getDefault().isIncrementalDeploy()==false){
-            return false;
-    }
-
-        resourceDirs = Utils.getResourceDirs(deployableObject);
+        if (org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties.getDefault().isIncrementalDeploy()==false){
+            retVal = false;
+        }
         if (null == target){
-            return false;
+            retVal = false;
         }
-
-        //so far only WAR are supported for Directory based deployment
-        if ((deployableObject.getType() != ModuleType.WAR)){
-            return false;
+        if (null == module){
+            retVal = false;
+        } else {
+            // TODO find out why this is here..
+            resourceDirs = Utils.getResourceDirs(module);
+            
+            //so far only WAR are supported for Directory based deployment
+            if ((module.getModuleType() != ModuleType.WAR)){
+                retVal = false;
+            }
+            if (retVal) {
+                retVal = dm.isLocal();
+            }
         }
-        return dm.isLocal();
+        return retVal;
     }
     
-    public File getDirectoryForNewApplication(javax.enterprise.deploy.spi.Target target, DeployableObject deployableObject, DeploymentConfiguration deploymentConfiguration) {
-        return ((IncrementalDeployment)inner).getDirectoryForNewApplication(target,deployableObject,deploymentConfiguration);
-    }
-    public File getDirectoryForNewApplication(String deploymentName, Target target, DeploymentConfiguration configuration){
-        SunONEDeploymentConfiguration s1dc =(SunONEDeploymentConfiguration) configuration;       
-        s1dc.setDeploymentModuleName(deploymentName);
-	return null;
+    public File getDirectoryForNewApplication(Target target, J2eeModule app, ModuleConfiguration configuration) {
+        return ((IncrementalDeployment)inner).getDirectoryForNewApplication(target,app,configuration);
     }
     
-    public File getDirectoryForNewModule(File file, String str, DeployableObject deployableObject, DeploymentConfiguration deploymentConfiguration) {
-        return ((IncrementalDeployment)inner).getDirectoryForNewModule(file,str, deployableObject,deploymentConfiguration);
+    public File getDirectoryForNewApplication(String deploymentName, Target target, ModuleConfiguration configuration) {
+        return super.getDirectoryForNewApplication(deploymentName, target, configuration);
+    }
+    
+    public File getDirectoryForNewModule(File appDir, String uri, J2eeModule module, ModuleConfiguration configuration) {
+        return ((IncrementalDeployment)inner).getDirectoryForNewModule(appDir,uri, module,configuration);
+    }
+    
+    public void notifyDeployment(TargetModuleID module) {
+        super.notifyDeployment(module);
     }
     
 }

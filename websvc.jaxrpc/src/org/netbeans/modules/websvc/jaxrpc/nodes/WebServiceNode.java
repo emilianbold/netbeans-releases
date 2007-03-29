@@ -59,6 +59,7 @@ import org.netbeans.modules.websvc.jaxrpc.actions.WSRegisterCookie;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.EnterWSDLUrlPanel;
@@ -371,7 +372,11 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ja
                 
             }
             
-            contextRoot = configSupport.getWebContextRoot();
+	    try {
+		contextRoot = configSupport.getWebContextRoot();
+	    } catch (ConfigurationException e) {
+		// TODO context path could not be read, the user should be notified about it
+	    }
             if(contextRoot != null && contextRoot.startsWith("/")){
                 contextRoot = contextRoot.substring(1);
             }

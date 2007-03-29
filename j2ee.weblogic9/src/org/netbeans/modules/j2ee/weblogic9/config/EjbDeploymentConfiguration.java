@@ -22,12 +22,18 @@ package org.netbeans.modules.j2ee.weblogic9.config;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicEjbJar;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -35,34 +41,28 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  * @author sherold
  */
-public class EjbDeploymentConfiguration extends WLDeploymentConfiguration {
+public class EjbDeploymentConfiguration implements ModuleConfiguration, DeploymentPlanConfiguration {
+
+    private final File file;
+    private final J2eeModule j2eeModule;
+    private final DataObject dataObject;
     
-    private File file;
     private WeblogicEjbJar weblogicEjbJar;
         
     /**
      * Creates a new instance of EjbDeploymentConfiguration 
      */
-    public EjbDeploymentConfiguration(DeployableObject deployableObject) {
-        super(deployableObject);
-    }
-    
-    /**
-     * EjbDeploymentConfiguration initialization. This method should be called before
-     * this class is being used.
-     * 
-     * @param file weblogic-ejb-jar.xml file.
-     */
-    public void init(File file) {
-        this.file = file;
+    public EjbDeploymentConfiguration(J2eeModule j2eeModule) {
+        this.j2eeModule = j2eeModule;
+        file = j2eeModule.getDeploymentConfigurationFile("META-INF/weblogic-ejb-jar.xml"); // NOI18N
         getWeblogicEjbJar();
-        if (dataObject == null) {
-            try {
-                dataObject = dataObject.find(FileUtil.toFileObject(file));
-            } catch(DataObjectNotFoundException donfe) {
-                ErrorManager.getDefault().notify(donfe);
-            }
+        DataObject dataObject = null;
+        try {
+            dataObject = DataObject.find(FileUtil.toFileObject(file));
+        } catch(DataObjectNotFoundException donfe) {
+            ErrorManager.getDefault().notify(donfe);
         }
+        this.dataObject = dataObject;
     }
        
     /**
@@ -86,7 +86,7 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration {
                 } else {
                     // create weblogic-ejb-jar.xml if it does not exist yet
                     weblogicEjbJar = genereateWeblogicEjbJar();
-                    writefile(file, weblogicEjbJar);
+                    ConfigUtil.writefile(file, weblogicEjbJar);
                 }
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ce);
@@ -95,17 +95,29 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration {
         return weblogicEjbJar;
     }
     
-    // JSR-88 methods ---------------------------------------------------------
+    public Lookup getLookup() {
+        return Lookups.fixed(this);
+    }
+    
+
+    public J2eeModule getJ2eeModule() {
+        return j2eeModule;
+    }
+
+    public void dispose() {
+    }
     
     public void save(OutputStream os) throws ConfigurationException {
         WeblogicEjbJar weblogicEjbJar = getWeblogicEjbJar();
         if (weblogicEjbJar == null) {
-            throw new ConfigurationException("Cannot read configuration, it is probably in an inconsistent state."); // NOI18N
+            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_cannotSaveNotParseableConfFile", file.getPath());
+            throw new ConfigurationException(msg);
         }
         try {
             weblogicEjbJar.write(os);
         } catch (IOException ioe) {
-            throw new ConfigurationException(ioe.getLocalizedMessage());
+            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotUpdateFile", file.getPath());
+            throw new ConfigurationException(msg, ioe);
         }
     }
     
@@ -117,4 +129,5 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration {
     private WeblogicEjbJar genereateWeblogicEjbJar() {
         return new WeblogicEjbJar();
     }
+
 }

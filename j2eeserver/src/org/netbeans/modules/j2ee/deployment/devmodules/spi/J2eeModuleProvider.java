@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
@@ -45,8 +45,8 @@ import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsEx
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
-import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
-import org.netbeans.modules.j2ee.deployment.plugins.api.VerifierSupport;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -62,25 +62,11 @@ import java.util.List;
  */
 public abstract class J2eeModuleProvider {
     
-    private InstanceListener il;
     private ConfigSupportImpl configSupportImpl;
-    List listeners = new ArrayList();
+    final List listeners = new ArrayList();
     private ConfigFilesListener configFilesListener = null;
     
-    /**
-     * Enterprise resorce directory property
-     *
-     * @since 1.12
-     */
-    public static final String PROP_ENTERPRISE_RESOURCE_DIRECTORY = "resourceDir"; // NOI18N
-    
-    private PropertyChangeSupport supp = new PropertyChangeSupport(this);
-    
     public J2eeModuleProvider () {
-        il = new IL ();
-        ServerRegistry.getInstance ().addInstanceListener (
-            (InstanceListener) WeakListeners.create(
-                InstanceListener.class, il, ServerRegistry.getInstance ()));
     }
     
     public abstract J2eeModule getJ2eeModule ();
@@ -144,10 +130,13 @@ public abstract class J2eeModuleProvider {
      * Gets the data sources deployed on the target server instance.
      *
      * @return set of data sources
-     *
+     * 
+     * @throws ConfigurationException reports problems in retrieving data source
+     *         definitions.
+     * 
      * @since 1.15 
      */
-    public Set<Datasource> getServerDatasources() {
+    public Set<Datasource> getServerDatasources() throws ConfigurationException {
         ServerInstance si = ServerRegistry.getInstance ().getServerInstance (getServerInstanceID ());
         Set<Datasource> deployedDS = Collections.<Datasource>emptySet();
         if (si != null) {
@@ -164,10 +153,12 @@ public abstract class J2eeModuleProvider {
      * Gets the data sources saved in the module.
      *
      * @return set of data sources
-     *
+     * 
+     * @throws ConfigurationException reports problems in retrieving data source
+     *         definitions.
      * @since 1.15 
      */
-    public Set<Datasource> getModuleDatasources() {
+    public Set<Datasource> getModuleDatasources() throws ConfigurationException {
         Set<Datasource> projectDS = getConfigSupport().getDatasources();
         return projectDS;
     }
@@ -200,7 +191,7 @@ public abstract class J2eeModuleProvider {
      * @since 1.15 
      */
     public final Datasource createDatasource(String jndiName, String  url, String username, String password, String driver) 
-    throws DatasourceAlreadyExistsException {
+    throws DatasourceAlreadyExistsException, ConfigurationException {
 
         //check whether the ds is not already on the server
         Set<Datasource> deployedDS = getServerDatasources();
@@ -246,40 +237,6 @@ public abstract class J2eeModuleProvider {
     
     
     /**
-     * Register a listener which will be notified when some of the properties
-     * change.
-     * 
-     * @param l listener which should be added.
-     * @since 1.12
-     */
-    public final void addPropertyChangeListener(PropertyChangeListener l) {
-        supp.addPropertyChangeListener(l);
-    }
-    
-    /**
-     * Remove a listener registered previously.
-     *
-     * @param l listener which should be removed.
-     * @since 1.12
-     */
-    public final void removePropertyChangeListener(PropertyChangeListener l) {
-        supp.removePropertyChangeListener(l);
-    }
-    
-
-    /** 
-     * Fire PropertyChange to all registered PropertyChangeListeners.
-     *
-     * @param propName property name.
-     * @param oldValue old value.
-     * @param newValue new value.
-     * @since 1.12
-     */
-    protected final void firePropertyChange(String propName, Object oldValue, Object newValue) {
-        supp.firePropertyChange(propName, oldValue, newValue);
-    }
-    
-    /**
      * Configuration support to allow development module code to access well-known 
      * configuration propeties, such as web context root, cmp mapping info...
      * The setters and getters work with server specific data on the server returned by
@@ -298,18 +255,23 @@ public abstract class J2eeModuleProvider {
         public boolean ensureConfigurationReady();
 
         /**
-         * Save configuration.  This is mainly for wizard actions that could
-         * initiate changes in configuration.  These changes should be saved
-         * explicitly by wizard, not implicitly by plugin, in order to avoid
-         * possible side-effect.
+         * Set web module context root.
+         * 
+         * @param contextRoot web module context root. 
+         * @throws ConfigurationException reports errors in setting the web context
+         *         root.
          */
-        //public void saveConfiguration() throws IOException;
-
+        public void setWebContextRoot(String contextRoot) throws ConfigurationException;
+        
         /**
-         * Set/get web module context root.
+         * Get web module context root.
+         * 
+         * @return web module context root.
+         * 
+         * @throws ConfigurationException reports errors in setting the web context
+         *         root.
          */
-        public void setWebContextRoot(String contextRoot);
-        public String getWebContextRoot();
+        public String getWebContextRoot() throws ConfigurationException;
         
         /**
          * Return a list of file names for current server specific deployment 
@@ -326,17 +288,10 @@ public abstract class J2eeModuleProvider {
         /**
          * Push the CMP and CMR mapping info to the server configuraion.
          * This call is typically used by CMP mapping wizard.
+         * 
+         * @throws ConfigurationException reports errors in setting the CMP mapping.
          */
-        public void setCMPMappingInfo(OriginalCMPMapping[] mappings);
-        /**
-         * Ensure needed resources are automatically defined for the entity
-         * represented by given DDBean.
-         * @param ejbname the ejb name
-         * @param ejbtype dtd name for type of ejb: 'message-drive', 'entity', 'session'.
-         * @deprecated replaced with ensureResourceDefinedForEjb with JNDI name attribute
-         */
-        @Deprecated
-        public void ensureResourceDefinedForEjb(String ejbname, String ejbtype);
+        public void setCMPMappingInfo(OriginalCMPMapping[] mappings) throws ConfigurationException;
         
         /**
          * Ensure needed resources are automatically defined for the entity
@@ -344,8 +299,11 @@ public abstract class J2eeModuleProvider {
          * @param ejbName   the EJB name
          * @param ejbType   the DTD name for type of EJB: 'message-drive', 'entity', 'session'.
          * @param jndiName  the JNDI name of the resource where the EJB is stored
+         * 
+         * @throws ConfigurationException reports errors in setting the EJB resource.
          */
-        public void ensureResourceDefinedForEjb(String ejbName, String ejbType, String jndiName);
+        public void ensureResourceDefinedForEjb(String ejbName, String ejbType, String jndiName)
+        throws ConfigurationException;
         
         /**
          * Tests whether data source creation is supported.
@@ -361,9 +319,12 @@ public abstract class J2eeModuleProvider {
          *
          * @return set of data sources
          *
+         * @throws ConfigurationException reports errors in retrieving the data sources.
+         * 
          * @since 1.15 
+         * 
          */
-        public Set<Datasource> getDatasources();
+        public Set<Datasource> getDatasources() throws ConfigurationException;
         
         /**
          * Creates and saves data source in the module if it does not exist yet in the module.
@@ -375,43 +336,19 @@ public abstract class J2eeModuleProvider {
          * @param username database user
          * @param password user's password
          * @param driver fully qualified name of database driver class
+         * 
          * @return created data source
-         * @exception OperationUnsupportedException if operation is not supported
-         * @exception DatasourceAlreadyExistsException if conflicting data source is found
+         * 
+         * @throws OperationUnsupportedException if operation is not supported
+         * @throws DatasourceAlreadyExistsException if conflicting data source is found
+         * @throws ConfigurationException reports errors in creating the data source.
          *
          * @since 1.15 
          */
         public Datasource createDatasource(String jndiName, String  url, String username, String password, String driver)
-        throws OperationUnsupportedException, DatasourceAlreadyExistsException;
+        throws OperationUnsupportedException, DatasourceAlreadyExistsException, ConfigurationException;
     }
-    
-    /**
-     * Returns source deployment configuration file path for the given deployment 
-     * configuration file name. 
-     *
-     * @param name file name of the deployement configuration file.
-     * @return non-null absolute path to the deployment configuration file.
-     */
-    abstract public File getDeploymentConfigurationFile(String name);
-    
-    /**
-     * Finds source deployment configuration file object for the given deployment 
-     * configuration file name.  
-     *
-     * @param name file name of the deployement configuration file.
-     * @return FileObject of the configuration descriptor file; null if the file does not exists.
-     * 
-     */
-    abstract public FileObject findDeploymentConfigurationFile (String name);
-    
-    /**
-     * Returns directory containing definition for enterprise resources needed for
-     * the module execution; return null if not supported
-     */
-    public File getEnterpriseResourceDirectory() {
-        return null;
-    }
-    
+
     /**
      *  Returns list of root directories for source files including configuration files.
      *  Examples: file objects for src/java, src/conf.  
@@ -602,58 +539,7 @@ public abstract class J2eeModuleProvider {
             return;
         configFilesListener = new ConfigFilesListener(this, listeners);
     }
-    
-    private final class IL implements InstanceListener {
         
-        public void changeDefaultInstance (String oldInst, String newInst) {
-            ServerInstance oldServerInstance = ServerRegistry.getInstance().getServerInstance(oldInst);
-            ServerInstance newServerInstance = ServerRegistry.getInstance().getServerInstance(newInst);
-            ServerString oldInstance = oldServerInstance != null 
-                                            ? new ServerString(oldServerInstance) 
-                                            : null;
-            ServerString newInstance = newServerInstance != null 
-                                            ? new ServerString(newServerInstance) 
-                                            : null;
-            if (useDefaultServer () && newInstance != null 
-                    && (oldInstance == null || !oldInstance.getPlugin().equals(newInstance.getPlugin()))) {
-                if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
-                    String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
-                    oldCtxPath = "/"+J2eeModuleProvider.this.getDeploymentName(); //NOI18N
-                    ConfigSupportImpl oldConSupp;
-                    synchronized (J2eeModuleProvider.this) {
-                        oldConSupp = configSupportImpl;
-                        configSupportImpl = null;
-                    }
-                    if (oldConSupp != null) {
-                        oldConSupp.dispose();
-                    }
-                    getConfigSupportImpl().ensureConfigurationReady();
-                    String ctx = getConfigSupportImpl().getWebContextRoot ();
-                    if (ctx == null || ctx.equals ("")) { //NOI18N
-                        getConfigSupportImpl().setWebContextRoot(oldCtxPath);
-                    }
-                } else {
-                    ConfigSupportImpl oldConSupp;
-                    synchronized (J2eeModuleProvider.this) {
-                        oldConSupp = configSupportImpl;
-                        configSupportImpl = null;
-                    }
-                    if (oldConSupp != null) {
-                        oldConSupp.dispose();
-                    }
-                    getConfigSupportImpl().ensureConfigurationReady();
-                }
-            }
-        }
-        
-        public void instanceAdded (String instance) {
-        }
-        
-        public void instanceRemoved (String instance) {
-        }
-        
-    }
-    
     private ConfigSupportImpl getConfigSupportImpl() {
         return (ConfigSupportImpl) getConfigSupport();
     }

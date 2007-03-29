@@ -33,7 +33,8 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.spi.project.libraries.*;
 import org.netbeans.modules.j2ee.deployment.common.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 
 import org.netbeans.modules.j2ee.weblogic9.*;
 

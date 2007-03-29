@@ -44,6 +44,7 @@ import javax.enterprise.deploy.model.XpathEvent;
 import javax.enterprise.deploy.model.XpathListener;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
@@ -80,6 +81,8 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
     private DDBean dDBean;
     private Base parent;
     private String baseXpath;
+    
+    private J2eeModule module; 
 
     /** Name of descriptor element this bean represents, e.g. sun-web-app, servlet-ref, etc. */
     protected String descriptorElement;
@@ -168,6 +171,20 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
         getMessageDB().addPropertyChangeListener(validationListener);
     }
     
+    void init(J2eeModule mod, Base object) {
+        this.module = mod;
+        this.parent = parent;
+        //this.baseXpath = getXpath(mod);
+        // Build validation field list for this bean
+        // !PW We need a better way to do this.  See comment by validationFieldList
+        //     member definition.
+        updateValidationFieldList();
+
+        //dDBean.addXpathListener(dDBean.getXpath(), this);
+        getMessageDB().addPropertyChangeListener(validationListener);
+    }
+
+    
     /** Cleanup routine.  This is called just before a DConfigBean is removed
      *  from the tree (and all caches).
      */
@@ -186,7 +203,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
             parent.removeChild(this);
         }
 
-//		dDBean = null;
+		dDBean = null;
         parent = null;
     }
 
@@ -600,6 +617,10 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
      */    
     public DDBean getDDBean() {
         return this.dDBean;
+    }
+    
+    public J2eeModule getModule() {
+        return module;
     }
 
     /** Xpaths that this bean extends.  Each DConfigBean that has children will
@@ -1295,7 +1316,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
      *  the bean's DDBean "buddy".
      */
     protected String constructFileName() {
-        String ddXpath = dDBean.getXpath();
+        String ddXpath = baseXpath; // dDBean.getXpath();
         StringBuffer fname = new StringBuffer(32);
         fname.append("sun-"); // NOI18N
 

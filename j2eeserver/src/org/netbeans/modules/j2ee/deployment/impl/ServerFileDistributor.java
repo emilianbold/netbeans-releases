@@ -30,13 +30,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
-import org.netbeans.modules.j2ee.deployment.config.ConfigSupportImpl;
-import org.netbeans.modules.j2ee.deployment.config.DeployableObjectImpl;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
-import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 
 /**
  *
@@ -67,10 +64,10 @@ public class ServerFileDistributor extends ServerProgress {
         try {
             J2eeModule source = dtarget.getModule();
             rootModuleFiles = source.getArchiveContents();
-            if (source instanceof J2eeModuleContainer) {
+            if (source instanceof J2eeApplication) {
                 childModuleFiles = new HashMap();
                 childModuleMap = new HashMap();
-                J2eeModule[] childModules = ((J2eeModuleContainer)source).getModules(null);
+                J2eeModule[] childModules = ((J2eeApplication)source).getModules();
                 for (int i=0; i<childModules.length; i++) {
                     Iterator contents = childModules[i].getArchiveContents();
                     if (contents != null)

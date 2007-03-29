@@ -35,6 +35,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Method;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
@@ -219,7 +220,12 @@ public final class MessageGenerator {
         ejbJar.write(ejbModule.getDeploymentDescriptor());
         Project project = FileOwnerQuery.getOwner(pkg);
         J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        j2eeModuleProvider.getConfigSupport().ensureResourceDefinedForEjb(ejbName, "message-driven"); //NOI18N
+        try {
+	    // TODO: temporary using ejbName as the JNDI name, what should be correct?
+            j2eeModuleProvider.getConfigSupport().ensureResourceDefinedForEjb(ejbName, "message-driven", ejbName); //NOI18N
+        } catch (ConfigurationException e) {
+            // TODO: report this to the user
+        }
     }
     
     private void generateEJB30Xml() throws IOException {

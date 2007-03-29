@@ -29,6 +29,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.RegistryNodeProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.Lookup;
@@ -39,6 +40,10 @@ import org.openide.util.NbBundle;
 import java.util.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import javax.enterprise.deploy.shared.ModuleType;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport;
 
 
 public class Server implements Node.Cookie {
@@ -181,16 +186,6 @@ public class Server implements Node.Cookie {
         return dep.getContainerLimitation() == null || dep.getContainerLimitation().isEjbjarDeploy();
     }
     
-    public ConfigBeanDescriptor getConfigBeanDescriptor(String className) {
-        if(configMap == null) {
-            ConfigBean[] beans = dep.getConfigBean();
-            configMap = new HashMap();
-            for(int i = 0; i < beans.length; i++)
-                configMap.put(beans[i].getClassName(),new ConfigBeanDescriptor(beans[i]));
-        }
-        return (ConfigBeanDescriptor) configMap.get(className);
-    }
-    
     // PENDING should be cached?
     public String getHelpId(String beanClass) {
         ConfigBean[] beans = dep.getConfigBean();
@@ -242,9 +237,13 @@ public class Server implements Node.Cookie {
 //        return beanUIFactory.getUICustomization(bean);
 //    }
     
-    public ConfigurationSupport getConfigurationSupport() {
-        ConfigurationSupport cs = (ConfigurationSupport) lkp.lookup (ConfigurationSupport.class);
-        return cs;
+//    public ConfigurationSupport getConfigurationSupport() {
+//        ConfigurationSupport cs = (ConfigurationSupport) lkp.lookup (ConfigurationSupport.class);
+//        return cs;
+//    }
+    
+    public ModuleConfigurationFactory getModuleConfigurationFactory() {
+        return lkp.lookup(ModuleConfigurationFactory.class);
     }
 
     public VerifierSupport getVerifierSupport() {

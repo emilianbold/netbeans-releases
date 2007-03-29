@@ -80,6 +80,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Document;
@@ -91,9 +92,9 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
     
     private static final long serialVersionUID = 1L;
     
-    private transient int index;
-    private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor wiz;
+    private int index;
+    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor wiz;
     private static final String STEP_NAME_ONE = "LBL_CreateProjectStep";        // NOI18N
     public static final String PROJECT_DIR_PROP = "projdir";                           // NOI18N
     public static final String PROJECT_NAME_PROP = "name";                             // NOI18N
@@ -111,7 +112,10 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
     
     public static final String PROJECT_HAS_DESCRIPTOR = "has.descriptor";              //NOI18N
     
-    public DeployableWizardIterator() { wiz = null; }
+    public DeployableWizardIterator() { 
+        wiz = null;
+        panels = new WizardDescriptor.Panel[0];
+    }
     
     public static DeployableWizardIterator createIterator() {
         return new DeployableWizardIterator();
@@ -134,7 +138,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
         return instantiate(null, null);
     }
     
-    private Set/*<FileObject>*/ instantiate(String distArchive, StatusPanel sp) throws IOException {
+    private Set/*<FileObject>*/ instantiate(String distArchive, ProgressHandle ph) throws IOException {
         // test to see if we should really continue for a jar HERE...
         final File archiveFile = (File) wiz.getProperty(PROJECT_ARCHIVE_PROP);
         Object type = wiz.getProperty(PROJECT_TYPE_PROP);
@@ -237,33 +241,24 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                     // start thread to unzip the project tree
                     Runnable t = new  Runnable() {
                         public void run() {
-                            ProgressHandle ph  = ProgressHandleFactory.createHandle("DISPLAY NAME");
-                            StatusPanel sp = new StatusPanel();
-                            sp.setIndicator(ProgressHandleFactory.createProgressComponent(ph));
                             final Thread t = Thread.currentThread();
-                            final DialogDescriptor phDD = new DialogDescriptor(sp,
+                            ProgressHandle ph  = ProgressHandleFactory.createHandle(//"DISPLAY NAME",
                                     NbBundle.getMessage(DeployableWizardIterator.class,
-                                    "TITLE_PROJECT_CREATE_STATUS"), false,
-                                    new Object[] { DialogDescriptor.CANCEL_OPTION },
-                                    DialogDescriptor.CANCEL_OPTION,
-                                    DialogDescriptor.BOTTOM_ALIGN,
-                                    null,
-                                    new ActionListener() {
-                                public void actionPerformed(ActionEvent e) {
+                                    "TITLE_PROJECT_CREATE_STATUS"),     // NOI18N 
+                                    new Cancellable() {
+                                public boolean cancel() {
                                     t.interrupt();
-                                }
-                                
+                                    return true;
+                                }                                
                             });
-                            Dialog phd = DialogDisplayer.getDefault().createDialog(phDD);
-                            phd.setVisible(true);
                             ph.start();
                             boolean cleanup = false;
                             try {
                                 explodeTheProject(dir, archiveFile, ap, (String) wiz.getProperty(PROJECT_TYPE_PROP),
-                                        JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID),sp);
-                                sp.setActionDescription(
+                                        JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID),ph);
+                                ph.progress(
                                         NbBundle.getMessage(DeployableWizardIterator.class,
-                                        "MESS_OPEN_PROJECT"));
+                                        "MESS_OPEN_PROJECT"));  //NOI18N
                                 OpenProjects.getDefault().open(new Project[] {p},false);
                             } catch (java.nio.channels.ClosedByInterruptException cbie) {
                                 // I see this when i shoot the thread...
@@ -287,12 +282,12 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                                         rte);
                             } finally {
                                 if (cleanup) {
-                                    sp.setActionDescription(
+                                    ph.progress(
                                             NbBundle.getMessage(DeployableWizardIterator.class,
                                             "MESS_CLEAN_UP"));      // NOI18N
                                     try {
                                         Thread.currentThread().sleep(500);
-                                        sp.setActionDescription(
+                                        ph.progress(
                                                 NbBundle.getMessage(DeployableWizardIterator.class,
                                                 "MESS_CLEAN_UP2"));     // NOI18N
                                         dir.delete();
@@ -307,7 +302,6 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                                     }
                                 }
                                 ph.finish();
-                                phd.setVisible(false);
                                 wiz.putProperty(PROJECT_DIR_PROP,null);//NO18N
                                 wiz.putProperty(PROJECT_NAME_PROP,null);//NO18N
                                 wiz = null;
@@ -319,7 +313,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                     try {
                         explodeTheProject(dir, archiveFile, ap, (String) wiz.getProperty(PROJECT_TYPE_PROP),
                                 JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID),
-                                sp);
+                                ph);
                     } catch (SAXException saxe) {
                         IOException ioe = new IOException();
                         ioe.initCause(saxe);
@@ -371,7 +365,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));//NO18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", (Integer) i);//NO18N
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty("WizardPanel_contentData", steps);//NO18N
             }
@@ -384,7 +378,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
     
     public String name() {
         return MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/wizard/Bundle").getString("{0}_of_{1}"),//NO18N
-                new Object[] {new Integer(index + 1), new Integer(panels.length)});
+                new Object[] {(Integer)(index + 1), (Integer) panels.length});
     }
     
     public boolean hasNext() {
@@ -419,12 +413,12 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
     
     void explodeTheProject(final FileObject dir, final File sourceArchive,
             final ArchiveProject p, final String type, final String sid,
-            StatusPanel sp) throws IOException, SAXException {
+            ProgressHandle ph) throws IOException, SAXException {
         // explode the archive file
         FileObject subDir = dir.createFolder(ArchiveProjectProperties.TMP_PROJ_DIR_VALUE);
         FileObject srcArchive = FileUtil.toFileObject(sourceArchive);
         Unzipper t = new Unzipper(srcArchive, subDir, p, type,
-                sid, sp);
+                sid, ph);
         t.run();
     }
     
@@ -461,20 +455,20 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
         ArchiveProject p = null;
         
         String typeProp, sid;
-        StatusPanel sp;
+        ProgressHandle ph;
         
         Unzipper(FileObject srcArchive, FileObject subDir, ArchiveProject p,
-                String typeProp, String sid, StatusPanel sp) {
+                String typeProp, String sid, ProgressHandle ph) {
             this.srcArchive = srcArchive;
             this.subDir = subDir;
             this.p = p;
             this.typeProp = typeProp;
             this.sid = sid;
-            this.sp = sp;
+            this.ph = ph;
         }
         
         public void run() throws IOException, SAXException {
-            sp.setActionDescription(NbBundle.getMessage(DeployableWizardIterator.class,
+            ph.progress(NbBundle.getMessage(DeployableWizardIterator.class,
                     "MESS_EXPAND_ARCHIVE",srcArchive.getNameExt()));        // NOI18N
             if (ArchiveProjectProperties.PROJECT_TYPE_VALUE_EAR.equals(typeProp)) { // ep.getProperty(ArchiveProjectProperties.ARCHIVE_TYPE))) {
                 // save real application.xml to nbproject directory
@@ -574,7 +568,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                         ArchiveProjectProperties.PROJECT_TYPE_VALUE_JAR);
                 p.getAntProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                 ProjectManager.getDefault().saveProject(p);
-                AntProjectHelper h = EjbJarProjectGenerator.importProject(FileUtil.toFile(subDir),
+                EjbJarProjectGenerator.importProject(FileUtil.toFile(subDir),
                         srcArchive.getName(), new File[] {FileUtil.toFile(srcDir.getFileObject("java"))},      // NOI18N
                         new File[0],FileUtil.toFile(confDir),null,versionVal,
                         sid,false);
@@ -588,7 +582,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                         ArchiveProjectProperties.PROJECT_TYPE_VALUE_CAR);
                 p.getAntProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                 ProjectManager.getDefault().saveProject(p);
-                AntProjectHelper h = AppClientProjectGenerator.importProject(FileUtil.toFile(subDir),
+                AppClientProjectGenerator.importProject(FileUtil.toFile(subDir),
                         "tmpProjName"+count, new File[] {FileUtil.toFile(srcDir)},      // NOI18N
                         new File[0],FileUtil.toFile(confDir), null, versionVal,
                         sid,false);
@@ -605,7 +599,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
         private void determineSubarchiveTypes(FileObject rootDir) throws IOException, SAXException {
             InputStream is = DeployableWizardIterator.class.getResourceAsStream("template-application.xml");  // NOI18N
             InputSource saxIs = new InputSource(is);
-            Application app = null;
+            Application app;
             FileLock outLock = null;
             OutputStream outStream = null;
             try {
@@ -613,7 +607,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                 app = org.netbeans.modules.j2ee.dd.api.application.DDProvider.getDefault().getDDRoot(saxIs);
                 if (null != app) {
                     Enumeration files = rootDir.getData(true);
-                    Module m = null;
+                    Module m;
                     while (files.hasMoreElements()) {
                         FileObject fo = (FileObject) files.nextElement();
                         String pathInEar = PropertyUtils.relativizeFile(FileUtil.toFile(rootDir),
@@ -622,7 +616,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                             continue;
                         }
                         if (pathInEar.endsWith("war")) {        // NOI18N
-                            Web w = null;
+                            Web w;
                             m = app.newModule();
                             w = m.newWeb();
                             w.setWebUri(pathInEar);
@@ -687,7 +681,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
         }
         
         
-        private void handleWarFile(final FileObject javaDir) throws FileNotFoundException, IOException {
+        private AntProjectHelper handleWarFile(final FileObject javaDir) throws FileNotFoundException, IOException {
             FileObject webDir = subDir.createFolder("web");
             //
             unZipFile(srcArchive.getInputStream(), webDir);
@@ -713,12 +707,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
             createData.setServerInstanceID(sid); // (String) app.get(ArchiveProjectProperties.J2EE_SERVER_INSTANCE)
             createData.setBuildfile(GeneratedFilesHelper.BUILD_XML_PATH);
             createData.setJavaSourceBased(false);
-            AntProjectHelper h = WebProjectUtilities.importProject(createData);
-//            EditableProperties subEp = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-//            subEp.setProperty(SourceTypeConstants.PROJECT_SOURCES_TYPE,SourceTypeConstants.SOURCES_VALUE_CLASS); // NOI18N
-//            h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,subEp);
-//            Project subP = ProjectManager.getDefault().findProject(h.getProjectDirectory());
-//            ProjectManager.getDefault().saveProject(subP);
+            return WebProjectUtilities.importProject(createData);
         }
         
         
@@ -788,7 +777,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                     PropertyUtils.relativizeFile(FileUtil.toFile(archive.getParent().getParent()),FileUtil.toFile(root))+
                     "/tmpproj/src/java/"+pathInEar;     // NOI18N
             dwi.initialize(wizDesc);
-            dwi.instantiate(distArchive, sp);
+            dwi.instantiate(distArchive, ph);
             if (null != oldVal) {
                 ProjectChooser.setProjectsFolder(oldVal);
             }
@@ -856,5 +845,6 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
             }
             return versionVal;
         }
+        
     }
 }

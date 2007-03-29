@@ -68,12 +68,8 @@ public class AppClientProviderTest extends NbTestCase {
         
         // ensure deployment descriptor file is returned
         J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        assertEquals(appXmlFO, provider.findDeploymentConfigurationFile(APPLICATION_CLIENT_XML));
         assertEquals(FileUtil.toFile(metaInfFO.getFileObject(APPLICATION_CLIENT_XML)),
-                provider.getDeploymentConfigurationFile(APPLICATION_CLIENT_XML));
-        
-        J2eeModule j2eeModule = (J2eeModule)project.getLookup().lookup(J2eeModule.class);
-        assertNotNull(j2eeModule.getDeploymentDescriptor(J2eeModule.CLIENT_XML));
+                provider.getJ2eeModule().getDeploymentConfigurationFile(APPLICATION_CLIENT_XML));
     }
     
     public void testThatProjectWithoutDDCanBeOpened() throws Exception {
@@ -85,7 +81,7 @@ public class AppClientProviderTest extends NbTestCase {
         
         // ensure deployment descriptor file is returned
         J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        File someConfFile = provider.getDeploymentConfigurationFile("does-not-matter.xml");
+        File someConfFile = provider.getJ2eeModule().getDeploymentConfigurationFile("does-not-matter.xml");
         assertNotNull("J2eeModuleProvider.getDeploymentConfigurationFile() cannot return null", someConfFile);
         File expected = new File(prjDirF + File.separator + "src" +
                 File.separator + "conf" + File.separator + "does-not-matter.xml");

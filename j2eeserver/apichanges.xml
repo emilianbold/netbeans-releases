@@ -86,6 +86,66 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ddbeanRemoval">
+            <api name="j2eeserver"/>
+            <summary>
+                Removing dependency of configuration releated part of the J2EE Server API on JSR-88.
+		Splitting up the plugin API to API and SPI.
+            </summary>
+            <version major="1" minor="23"/>
+            <date day="11" month="3" year="2007"/>
+            <author login="sherold"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="yes"/>
+            <description>
+                <p>
+                    The initial motivation for the J2EE Server API changes is migration to Retouche, a new 
+		    NetBeans Java infrastructure. The new Java infrastructure does not supply the old deployment 
+		    descriptor model with fine-grained change notification events anymore and thus a new Merged 
+		    deployment descriptor model infrastructure was created instead.
+                </p>
+                <p>
+		    Since the architecture of the new Merged deployment descriptor model is essentially different 
+		    from the old deployment descriptor model infrastructure, the model can no longer be wrapped in 
+		    the JSR-88 DDBean wrapper, which was a basis of all the server specific deployment configuration 
+		    APIs, the deployment configuration related part of the J2EE Server API had to be redesigned.
+                </p>
+                <p>
+		    Because the redesign already introduced big incompatible changes, we took advantage of it to 
+		    fix couple of API issues, which required incompatible changes. First, the server plug-in part 
+		    of the API was split into API and SPI. So far, there was no clear distinction between API and 
+		    SPI and it was not obvious what a server plug-in writer is required to implement. Second, 
+		    throws ConfigurationException clause was added to all the server-specific configuration 
+		    related methods to inform the client about a problem which might have occurred when reading or 
+		    writing to server-specific configuration files.
+                </p>
+                <p>
+		   For further description refer to the issue.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.common.api" name="ConfigurationException"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.common.api" name="SourceFileMap"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eeApplication"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eeModule"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eeModuleContainer" link="no"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeApplicationImplementation"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeApplicationProvider"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeAppProvider" link="no"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleFactory"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleImplementation"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport" link="no"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="FileJ2eeModuleQuery"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="DatasourceManager" link="no"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="IncrementalDeployment"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="ContextRootConfiguration"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="DatasourceConfiguration"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="DeploymentPlanConfiguration"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="EjbResourceConfiguration"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="MappingConfiguration"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="ModuleConfigurationFactory"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="ModuleConfiguration"/>
+            <issue number="99217"/>
+        </change>
         <change id="settableTimeouts">
             <api name="plugins"/>
             <summary>
@@ -122,7 +182,7 @@ is the proper place.
                 </p>
             </description>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport" link="no"/>
             <issue number="82476"/>
         </change>
         <change id="serverIcons">
@@ -160,8 +220,8 @@ is the proper place.
                 </p>
             </description>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="AntDeploymentHelper"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="AntDeploymentProvider"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="OptionalDeploymentManagerFactory"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="AntDeploymentProvider" link="no"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="OptionalDeploymentManagerFactory" link="no"/>
         </change>
         <change id="j2eeSpecVersionPerModule">
             <api name="j2eeserver"/>
@@ -180,7 +240,7 @@ is the proper place.
                 </p>
             </description>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformImpl"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformImpl" link="no"/>
         </change>
         <change id="j2eePlatformTools">
             <api name="j2eeserver"/>
@@ -204,7 +264,7 @@ is the proper place.
                 </p>
             </description>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformImpl"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformImpl" link="no"/>
         </change>
         <change id="DatasourceManagementAPI">
             <api name="j2eeserver"/>
@@ -224,9 +284,9 @@ is the proper place.
             <class package="org.netbeans.modules.j2ee.deployment.common.api" name="Datasource"/>
             <class package="org.netbeans.modules.j2ee.deployment.common.api" name="DatasourceAlreadyExistsException"/>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DatasourceManager"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="OptionalDeploymentManagerFactory"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport" link="no"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DatasourceManager" link="no"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="OptionalDeploymentManagerFactory" link="no"/>
         </change>
         <change id="resourceDirUpdate">
             <api name="j2eeserver"/>
@@ -252,7 +312,7 @@ is the proper place.
                 </p>
             </description>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport" link="no" />
         </change>
         <change id="profilerSupport">
             <api name="j2eeserver"/>
@@ -337,7 +397,7 @@ is the proper place.
             <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DConfigBeanProperties" link="no"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DConfigBeanUIFactory" link="no"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DeploymentPlanSplitter" link="no"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport" link="no"/>
             <issue number="56032"/>
         </change>
         <change id="J2eeModule-UISupport">
@@ -360,7 +420,7 @@ is the proper place.
             </description>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="ServerManager"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="UISupport"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer" link="no"/>
             <issue number="55640"/>
         </change>
         <change id="J2eeModule-J2EE15-constant">
@@ -407,7 +467,7 @@ is the proper place.
                     IDE shutdown is unresponsive.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer" link="no" />
         </change>
         <change id="Deployment-addInstanceListener">
             <api name="j2eeserver"/>
@@ -462,7 +522,7 @@ is the proper place.
 		    would take effect.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer" link="no"/>
             <issue number="53721"/>
         </change>
     
@@ -503,7 +563,7 @@ is the proper place.
                     are added as optional to StartServer abstract class plugin SPI.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer" link="no"/>
             <issue number="53010"/>
         </change>
 
@@ -521,7 +581,7 @@ is the proper place.
 		</p>
 	</description>
 	<class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform"/>
-	<class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformImpl"/>
+	<class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformImpl" link="no"/>
 	<issue number="52993"/>
 	</change>
 
@@ -557,8 +617,8 @@ is the proper place.
 	<class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform"/>
 	<class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="Deployment"/>
 	<class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eeModule"/>
-	<class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformFactory"/>
-	<class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformImpl"/>
+	<class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformFactory" link="no" />
+	<class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformImpl" link="no"/>
 	<issue number="52167"/>
 	</change>
 
@@ -634,7 +694,7 @@ is the proper place.
                     See Javadoc for details.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport" link="no" />
         </change>
         <change id="Deprecating-DeploymentPlanSplitter.getDeploymentPlanFileNames">
             <api name="plugins"/>
@@ -679,7 +739,7 @@ is the proper place.
                     is removed.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport" link="no"/>
             <class package="org.netbeans.modules.j2ee.deployment.common.api" name="OriginalCMPMapping"/>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="OriginalMappingProvider" link="no"/>

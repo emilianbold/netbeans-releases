@@ -30,7 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Locale;
-import org.netbeans.modules.tomcat5.config.WebappConfiguration;
+import org.netbeans.modules.tomcat5.config.TomcatModuleConfiguration;
 import org.netbeans.modules.tomcat5.config.gen.Server;
 import org.openide.filesystems.*;
 import javax.enterprise.deploy.model.DeployableObject;
@@ -370,14 +370,7 @@ public class TomcatManager implements DeploymentManager {
     
     public DeploymentConfiguration createConfiguration (DeployableObject deplObj) 
     throws InvalidModuleException {
-        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("TomcatManager.createConfiguration "+deplObj);
-        }
-        if (!ModuleType.WAR.equals (deplObj.getType ())) {
-            throw new InvalidModuleException ("Only WAR modules are supported for TomcatManager"); // NOI18N
-        }
-        
-        return new WebappConfiguration (deplObj, tomcatVersion);
+        throw new RuntimeException("This should never be called"); // NOI18N
     }
     
     public Locale getCurrentLocale () {

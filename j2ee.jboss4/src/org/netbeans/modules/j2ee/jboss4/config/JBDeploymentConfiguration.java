@@ -30,18 +30,16 @@ import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
 import javax.enterprise.deploy.model.DDBeanRoot;
-import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.spi.DConfigBeanRoot;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Datasources;
 import org.netbeans.modules.j2ee.jboss4.config.gen.LocalTxDatasource;
 import org.netbeans.modules.schema2beans.BaseBean;
@@ -66,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Pavel Buzek, lkotouc
  */
-public abstract class JBDeploymentConfiguration implements DeploymentConfiguration {
+public abstract class JBDeploymentConfiguration implements DatasourceConfiguration {
     
     protected static final String JBOSS4_DATASOURCE_JNDI_PREFIX = "java:"; // NOI18N
     protected static final String JBOSS4_MAIL_SERVICE_JNDI_NAME = "java:Mail"; // NOI18N
@@ -79,7 +77,7 @@ public abstract class JBDeploymentConfiguration implements DeploymentConfigurati
     private static final String DS_RESOURCE_NAME = "jboss-ds.xml"; // NOI18N
     
     //JSR-88 deployable object - initialized when instance is constructed
-    protected DeployableObject deplObj;
+    protected J2eeModule j2eeModule;
     
     //cached data object for the server-specific configuration file (initialized by the subclasses)
     protected DataObject deploymentDescriptorDO;
@@ -95,17 +93,9 @@ public abstract class JBDeploymentConfiguration implements DeploymentConfigurati
     private DataObject datasourcesDO;
     
     /** Creates a new instance of JBDeploymentConfiguration */
-    public JBDeploymentConfiguration (DeployableObject deplObj) {
-        this.deplObj = deplObj;
-    }
-
-    /**
-     * Initialization of the common data used by the subclasses.
-     * 
-     * @param resourceDir   directory containing definition for enterprise resources.
-     */
-    protected void init(File resourceDir) {
-        this.resourceDir = resourceDir;
+    public JBDeploymentConfiguration (J2eeModule j2eeModule) {
+        this.j2eeModule = j2eeModule;
+        resourceDir = j2eeModule.getResourceDirectory();
         datasourcesFile = new File(resourceDir, DS_RESOURCE_NAME);
         if (datasourcesFile.exists()) {
             try {
@@ -118,33 +108,8 @@ public abstract class JBDeploymentConfiguration implements DeploymentConfigurati
             
     // JSR-88 methods ---------------------------------------------------------
     
-    public DeployableObject getDeployableObject () {
-        return deplObj;
-    }
-    
-    // JSR-88 methods empty implementation ------------------------------------
-    
-    public DConfigBeanRoot getDConfigBeanRoot (DDBeanRoot dDBeanRoot) 
-    throws ConfigurationException {
-        return null;
-    }
-    
-    public void removeDConfigBean (DConfigBeanRoot dConfigBeanRoot) 
-    throws BeanNotFoundException {
-        throw new BeanNotFoundException ("bean not found "+dConfigBeanRoot); // NOI18N
-    }
-    
-    public void restore (InputStream is) 
-    throws ConfigurationException {
-    }
-    
-    public DConfigBeanRoot restoreDConfigBean (InputStream is, DDBeanRoot dDBeanRoot) 
-    throws ConfigurationException {
-        return null;
-    }
-    
-    public void saveDConfigBean (OutputStream os, DConfigBeanRoot dConfigBeanRoot) 
-    throws ConfigurationException {
+    public J2eeModule getJ2eeModule() {
+        return j2eeModule;
     }
     
     // helper methods -------------------------------------------------
@@ -212,7 +177,7 @@ public abstract class JBDeploymentConfiguration implements DeploymentConfigurati
         abstract JBossDatasource modify(Datasources datasources) throws DatasourceAlreadyExistsException;
     }
     
-    protected Set<Datasource> getDatasources() {
+    public Set<Datasource> getDatasources() throws ConfigurationException {
         
         HashSet<Datasource> projectDS = new HashSet<Datasource>();
         Datasources dss = getDatasourcesGraph();
@@ -234,7 +199,7 @@ public abstract class JBDeploymentConfiguration implements DeploymentConfigurati
     }
     
     public JBossDatasource createDatasource(String jndiName, String  url, String username, String password, String driver) 
-    throws OperationUnsupportedException, ConfigurationException, DatasourceAlreadyExistsException
+    throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException
     {
         JBossDatasource ds = modifyDSResource(new DSResourceModifier(jndiName, url, username, password, driver) {
             JBossDatasource modify(Datasources datasources) throws DatasourceAlreadyExistsException {
@@ -411,9 +376,11 @@ public abstract class JBDeploymentConfiguration implements DeploymentConfigurati
         } catch(DataObjectNotFoundException donfe) {
             ErrorManager.getDefault().notify(donfe);
         } catch (BadLocationException ble) {
-            throw (ConfigurationException)(new ConfigurationException().initCause(ble));
+            // this should not occur, just log it if it happens
+            ErrorManager.getDefault().notify(ble);
         } catch (IOException ioe) {
-            throw (ConfigurationException)(new ConfigurationException().initCause(ioe));
+            String msg = NbBundle.getMessage(JBDeploymentConfiguration.class, "MSG_CannotUpdateFile", datasourcesFile.getAbsolutePath());
+            throw new ConfigurationException(msg, ioe);
         }
         
         return ds;

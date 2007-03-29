@@ -20,23 +20,24 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
-import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
-import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider;
 
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Iterator;
+import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
+import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.model.DeployableObject;
 import org.openide.util.NbBundle;
 import javax.enterprise.deploy.shared.CommandType;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerProgress;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
-
-import java.util.*;
-import java.io.*;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 
 /**
  *
@@ -59,11 +60,11 @@ public class InitialServerFileDistributor extends ServerProgress {
     }
     
     public File distribute() {
-        DeploymentConfigurationProvider deployment = dtarget.getDeploymentConfigurationProvider();
+        ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
         J2eeModule source = dtarget.getModule();
-        DeployableObject deployable = deployment.getDeployableObject(null);
+        J2eeModule deployable = deployment.getJ2eeModule(null);
         String name = dtarget.getDeploymentName();
-        File dir = incDeployment.getDirectoryForNewApplication (name, target, deployment.getDeploymentConfiguration ());
+        File dir = incDeployment.getDirectoryForNewApplication (name, target, deployment.getModuleConfiguration());
         try {
             if (dir == null) {
                 inPlace = true;
@@ -85,12 +86,12 @@ public class InitialServerFileDistributor extends ServerProgress {
 
             _distribute(source.getArchiveContents(), dir, null);
 
-            if (source instanceof J2eeModuleContainer) {
-                J2eeModule[] childModules = ((J2eeModuleContainer)source).getModules(null);
+            if (source instanceof J2eeApplication) {
+                J2eeModule[] childModules = ((J2eeApplication)source).getModules();
                 for (int i=0; i<childModules.length; i++) {
                     String uri = childModules[i].getUrl();
-                    DeployableObject childModule = deployment.getDeployableObject(uri);
-                    File subdir = incDeployment.getDirectoryForNewModule(dir, uri, childModule, deployment.getDeploymentConfiguration ());
+                    J2eeModule childModule = deployment.getJ2eeModule(uri);
+                    File subdir = incDeployment.getDirectoryForNewModule(dir, uri, childModule, deployment.getModuleConfiguration());
                     _distribute(childModules[i].getArchiveContents(), subdir, uri);
                 }
             }
@@ -114,10 +115,10 @@ public class InitialServerFileDistributor extends ServerProgress {
         if (inPlace)
             return;
         
-        DeploymentConfigurationProvider deployment = dtarget.getDeploymentConfigurationProvider();
+        ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
         J2eeModule source = dtarget.getModule();
-        DeployableObject deployable = deployment.getDeployableObject(null);
-        File dir = incDeployment.getDirectoryForNewApplication (target, deployable, deployment.getDeploymentConfiguration ());
+        J2eeModule deployable = deployment.getJ2eeModule(null);
+        File dir = incDeployment.getDirectoryForNewApplication (target, deployable, deployment.getModuleConfiguration());
         if (!cleanup (dir)) {
             setStatusDistributeFailed ("Failed to cleanup the data after unsucesful distribution");
         }
@@ -174,13 +175,6 @@ public class InitialServerFileDistributor extends ServerProgress {
                     }*/
                 }
             }
-            
-            // copying serverconfiguration files
-            DeploymentConfigurationProvider dcp = dtarget.getDeploymentConfigurationProvider();
-            DeploymentConfiguration config = dcp.getDeploymentConfiguration();
-
-            //Pending use childModuleUri for getDeploymentPlanFileNames
-            DeployableObject deployable = dcp.getDeployableObject(childModuleUri);
             
         } catch (Exception e) {
             String msg = NbBundle.getMessage(InitialServerFileDistributor.class, "MSG_IncrementalDeployFailed", e);

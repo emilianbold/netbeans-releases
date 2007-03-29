@@ -33,7 +33,7 @@ import java.util.Set;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
 
@@ -109,9 +109,9 @@ public class Utils {
             FileObject sourceRoot = (FileObject)iter.next();
             Project project = FileOwnerQuery.getOwner(sourceRoot);
             if (project != null) {
-                Object j2eeAppProvider = project.getLookup().lookup(J2eeAppProvider.class);
+                Object j2eeAppProvider = project.getLookup().lookup(J2eeApplicationProvider.class);
                 if (j2eeAppProvider != null) { // == it is j2ee app
-                    J2eeAppProvider j2eeApp = (J2eeAppProvider)j2eeAppProvider;
+                    J2eeApplicationProvider j2eeApp = (J2eeApplicationProvider)j2eeAppProvider;
                     J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
                     if ((j2eeModules != null) && (j2eeModules.length > 0)) { // == there are some modules in the j2ee app
                         J2eeModuleProvider affectedPrjProvider1 =

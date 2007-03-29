@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.earproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,13 +42,17 @@ import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
@@ -66,19 +71,20 @@ import org.openide.util.WeakListeners;
  * @see ProjectEar
  * @author  vince kraemer
  */
-public final class ProjectEar extends J2eeAppProvider
+public final class ProjectEar extends J2eeApplicationProvider
         implements
-        J2eeModule,
         ModuleChangeReporter,
         EjbChangeDescriptor,
         PropertyChangeListener,
         EarImplementation,
-        J2eeModuleContainer {
+        J2eeApplicationImplementation {
     
     public static final String FILE_DD        = "application.xml";//NOI18N
     
     private final EarProject project;
-    private Set<J2eeModule.VersionListener> versionListeners;
+    
+    private PropertyChangeSupport propertyChangeSupport;
+    private J2eeApplication j2eeApplication;
     
     ProjectEar (EarProject project) { // ], AntProjectHelper helper) {
         this.project = project;
@@ -106,7 +112,7 @@ public final class ProjectEar extends J2eeAppProvider
         return project.getOrCreateMetaInfDir();
     }
     
-    public File getEnterpriseResourceDirectory() {
+    public File getResourceDirectory() {
         return project.getFile(EarProjectProperties.RESOURCE_DIR);
     }
 
@@ -118,8 +124,11 @@ public final class ProjectEar extends J2eeAppProvider
         return project.getFileObject (EarProjectProperties.DIST_JAR); //NOI18N
     }
     
-    public J2eeModule getJ2eeModule () {
-        return this;
+    public synchronized J2eeModule getJ2eeModule () {
+        if (j2eeApplication == null) {
+            j2eeApplication = J2eeModuleFactory.createJ2eeApplication(this);
+        }
+        return j2eeApplication;
     }
     
     public ModuleChangeReporter getModuleChangeReporter () {
@@ -154,17 +163,12 @@ public final class ProjectEar extends J2eeAppProvider
         return project.getFileObject (EarProjectProperties.BUILD_DIR); //NOI18N
     }
 
-    public BaseBean getDeploymentDescriptor (String location) {
+    public RootInterface getDeploymentDescriptor (String location) {
         if (! J2eeModule.APP_XML.equals(location)) {
             return null;
         }
         
-        Application earApp = getApplication();
-        if (earApp != null) {
-            //PENDING find a better way to get the BB from WApp and remove the HACK from DDProvider!!
-            return DDProvider.getDefault ().getBaseBean (earApp);
-        }
-        return null;
+        return getApplication();
     }
 
     private Application getApplication () {
@@ -189,40 +193,12 @@ public final class ProjectEar extends J2eeAppProvider
         Application app = getApplication();
         return (app == null) ? Application.VERSION_5 /* fallback */ : app.getVersion().toString();
     }
-
-    private Set<J2eeModule.VersionListener> versionListeners() {
-        if (versionListeners == null) {
-            versionListeners = new HashSet<J2eeModule.VersionListener>();
-            Application app = getApplication();
-            if (app != null) {
-                PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, this, app);
-                app.addPropertyChangeListener(l);
-            }
-        }
-        return versionListeners;
-    }
-
-    public void addVersionListener(J2eeModule.VersionListener vl) {
-        try {
-            versionListeners().add(vl);
-        } catch (UnsupportedOperationException uoe) {
-            // XXX ignoring a UOE
-        }
-    }
-
-    public void removeVersionListener(J2eeModule.VersionListener vl) {
-        if (versionListeners != null) {
-            versionListeners.remove(vl);
-        }
-    }
     
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Application.PROPERTY_VERSION)) {
-            for (J2eeModule.VersionListener vl : versionListeners) {
-                String oldVersion = (String) evt.getOldValue();
-                String newVersion = (String) evt.getNewValue();
-                vl.versionChanged(oldVersion, newVersion);
-            }
+            String oldVersion = (String) evt.getOldValue();
+            String newVersion = (String) evt.getNewValue();
+            getPropertyChangeSupport().firePropertyChange(J2eeModule.PROP_MODULE_VERSION, oldVersion, newVersion);
         } else if (EarProjectProperties.J2EE_SERVER_INSTANCE.equals(evt.getPropertyName())) {
             Deployment d = Deployment.getDefault();
             String oldServerID = evt.getOldValue() == null ? null : d.getServerID((String)evt.getOldValue ());
@@ -231,8 +207,8 @@ public final class ProjectEar extends J2eeAppProvider
         } else if (EarProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
             String oldValue = (String)evt.getOldValue();
             String newValue = (String)evt.getNewValue();
-            firePropertyChange(
-                    PROP_ENTERPRISE_RESOURCE_DIRECTORY, 
+            getPropertyChangeSupport().firePropertyChange(
+                    J2eeModule.PROP_RESOURCE_DIRECTORY, 
                     oldValue == null ? null : new File(oldValue),
                     newValue == null ? null : new File(newValue));
         }
@@ -325,10 +301,7 @@ public final class ProjectEar extends J2eeAppProvider
         this.mods = mods;
     }
     
-    public J2eeModule[] getModules(ModuleListener ml) {
-        if (null != ml) {
-            addModuleListener(ml);
-        }
+    public J2eeModule[] getModules() {
         J2eeModule[] retVal = new J2eeModule[mods.size()];
         int i = 0;
         for (J2eeModuleProvider provider : mods.values()) {
@@ -448,5 +421,31 @@ public final class ProjectEar extends J2eeAppProvider
             ((EarProjectProperties)project.getProjectProperties()).addJ2eeSubprojects(new Project [] {owner});
         }
     }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        getPropertyChangeSupport().addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        synchronized (this) {
+            if (propertyChangeSupport == null) {
+                return;
+            }
+        }
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
     
+    private PropertyChangeSupport getPropertyChangeSupport() {
+        Application application = getApplication();
+        synchronized (this) {
+            if (propertyChangeSupport == null) {
+                propertyChangeSupport = new PropertyChangeSupport(this);
+                if (application != null) {
+                    PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, this, application);
+                    application.addPropertyChangeListener(l);
+                }
+            }
+            return propertyChangeSupport;
+        }
+    }
 }

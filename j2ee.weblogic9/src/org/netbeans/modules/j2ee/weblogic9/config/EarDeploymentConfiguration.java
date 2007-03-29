@@ -22,12 +22,18 @@ package org.netbeans.modules.j2ee.weblogic9.config;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicApplication;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -36,34 +42,28 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  * @author sherold
  */
-public class EarDeploymentConfiguration extends WLDeploymentConfiguration {
+public class EarDeploymentConfiguration implements ModuleConfiguration, DeploymentPlanConfiguration {
     
-    private File file;
+    private final File file;
+    private final J2eeModule j2eeModule;
+    private final DataObject dataObject;
+    
     private WeblogicApplication weblogicApplication;
         
     /**
      * Creates a new instance of EarDeploymentConfiguration 
      */
-    public EarDeploymentConfiguration(DeployableObject deployableObject) {
-        super(deployableObject);
-    }
-    
-    /**
-     * EarDeploymentConfiguration initialization. This method should be called before
-     * this class is being used.
-     * 
-     * @param file weblogic-application.xml file.
-     */
-    public void init(File file) {
-        this.file = file;
+    public EarDeploymentConfiguration(J2eeModule j2eeModule) {
+        this.j2eeModule = j2eeModule;
+        file = j2eeModule.getDeploymentConfigurationFile("META-INF/weblogic-application.xml"); // NOI18N
         getWeblogicApplication();
-        if (dataObject == null) {
-            try {
-                dataObject = dataObject.find(FileUtil.toFileObject(file));
-            } catch(DataObjectNotFoundException donfe) {
-                ErrorManager.getDefault().notify(donfe);
-            }
+        DataObject dataObject = null;
+        try {
+            dataObject = DataObject.find(FileUtil.toFileObject(file));
+        } catch(DataObjectNotFoundException donfe) {
+            ErrorManager.getDefault().notify(donfe);
         }
+        this.dataObject = dataObject;
     }
        
     /**
@@ -87,7 +87,7 @@ public class EarDeploymentConfiguration extends WLDeploymentConfiguration {
                 } else {
                     // create weblogic-application.xml if it does not exist yet
                     weblogicApplication = genereateweblogicApplication();
-                    writefile(file, weblogicApplication);
+                    ConfigUtil.writefile(file, weblogicApplication);
                 }
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ce);
@@ -96,17 +96,29 @@ public class EarDeploymentConfiguration extends WLDeploymentConfiguration {
         return weblogicApplication;
     }
     
-    // JSR-88 methods ---------------------------------------------------------
+    public Lookup getLookup() {
+        return Lookups.fixed(this);
+    }
+    
+
+    public J2eeModule getJ2eeModule() {
+        return j2eeModule;
+    }
+
+    public void dispose() {
+    }
     
     public void save(OutputStream os) throws ConfigurationException {
         WeblogicApplication weblogicApplication = getWeblogicApplication();
         if (weblogicApplication == null) {
-            throw new ConfigurationException("Cannot read configuration, it is probably in an inconsistent state."); // NOI18N
+            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_cannotSaveNotParseableConfFile", file.getPath());
+            throw new ConfigurationException(msg);
         }
         try {
             weblogicApplication.write(os);
         } catch (IOException ioe) {
-            throw new ConfigurationException(ioe.getLocalizedMessage());
+            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotUpdateFile", file.getPath());
+            throw new ConfigurationException(msg, ioe);
         }
     }
     

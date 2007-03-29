@@ -35,7 +35,7 @@ import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
  *
  * @author  ludo
  */
-public class NodeFactory implements org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory {
+public class NodeFactory implements org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory {
     
     /** Creates a new instance of NodeFactory */
     public NodeFactory() {

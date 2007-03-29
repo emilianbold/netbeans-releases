@@ -45,6 +45,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -312,7 +313,11 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
         }
         if(J2eeModule.WAR.equals(moduleType)) {
             J2eeModuleProvider.ConfigSupport configSupport = provider.getConfigSupport();
-            contextRoot = configSupport.getWebContextRoot();
+	    try {
+		contextRoot = configSupport.getWebContextRoot();
+	    } catch (ConfigurationException e) {
+		// TODO the context root value could not be read, let the user know about it
+	    }
             if(contextRoot != null && contextRoot.startsWith("/")) { //NOI18N
                 contextRoot = contextRoot.substring(1);
             }
