@@ -117,6 +117,7 @@ public class BrowseNetBeansDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel1.add(dirTextField, gridBagConstraints);
 
+        browseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/projectopener/Bundle").getString("BrowseButtonLabel").charAt(0));
         browseButton.setText(bundle.getString("BrowseButtonLabel")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

@@ -76,6 +76,8 @@ public class Utils {
     private static final String unixLauncher = "netbeans";
     private static final String macLauncher  = "netbeans";
     
+    private static final int SEARCH_DEPTH = 2;
+    
     private static Properties properties;
     
     private static boolean savedProxyUsed = false;
@@ -226,7 +228,7 @@ public class Utils {
     
     // searches also recursively to find nested projects
     private static List savedNbProjects(File dir, int depth, Set pTypes) {
-        if (depth > 2) {
+        if (depth > SEARCH_DEPTH) {
             return Collections.EMPTY_LIST;
         }
         List sProjects = new ArrayList();
@@ -317,28 +319,6 @@ public class Utils {
         }
         return ProjectType.UNKNOWN_TYPE;
     }
-    
-    /**
-     * Returns array of strings created as prefix + list item
-     * if any list item equals mainPrjName, then it's the last item of the array
-     */
-//    public static String[] prjNames2PrjPaths(List list, String prefix, String mainPrjName) {
-//        // XXX check for duplicit list items
-//        List array = new ArrayList(list.size());
-//        boolean contained = false;
-//        for (Iterator iter = list.iterator(); iter.hasNext(); ) {
-//            String s = (String) iter.next();
-//            if (mainPrjName != null && mainPrjName.equals(s)) {
-//                contained = true;
-//                continue;
-//            }
-//            array.add(prefix + s);
-//        }
-//        if (contained) {
-//            array.add(prefix + mainPrjName);
-//        }
-//        return (String[]) array.toArray(new String[array.size()]);
-//    }
     
     public static void showErrMessage(String message, String title) {
         JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);

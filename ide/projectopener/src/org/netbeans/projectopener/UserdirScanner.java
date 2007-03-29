@@ -160,11 +160,14 @@ public class UserdirScanner {
             }
         });
         List list = new ArrayList();
-        for (int i = 0; i < files.length; i++) {
-            // creating NB installation is based on userdir
-            NBInstallation nbi = new NBInstallation(files[i]);
-            if (nbi.isValid()) {
-                list.add(nbi);
+        // files might be null here, e.g. if there is no .netbeans folder
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                // creating NB installation is based on userdir
+                NBInstallation nbi = new NBInstallation(files[i]);
+                if (nbi.isValid()) {
+                    list.add(nbi);
+                }
             }
         }
         return list;
