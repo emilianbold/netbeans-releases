@@ -92,7 +92,7 @@ public class LanguagesManager {
             Language l = null;
             try {
                 l = NBSLanguageReader.readLanguage (fo, mimeType);
-                l.initializeAnalyser ();
+                l.getAnalyser ();
             } catch (ParseException ex) {
                 l = new Language (mimeType);
                 Utils.message (ex.getMessage ());

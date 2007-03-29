@@ -38,7 +38,6 @@ public class NBSTest extends TestCase {
         InputStream is = getClass ().getClassLoader ().getResourceAsStream ("org/netbeans/modules/languages/resources/NBS.nbs");
         try {
             Language l = NBSLanguageReader.readLanguage (is, "test", "test/x-nbs");
-            l.initializeAnalyser( );
             List r = l.getAnalyser ().getRules ();
 //            AnalyserAnalyser.printRules (r, null);
 //            AnalyserAnalyser.printUndefinedNTs (r, null);
@@ -57,7 +56,6 @@ public class NBSTest extends TestCase {
     public void test2 () throws ParseException, IOException {
         InputStream is = getClass ().getClassLoader ().getResourceAsStream ("org/netbeans/modules/languages/resources/NBS.nbs");
         Language l = NBSLanguageReader.readLanguage (is, "test", "test/x-nbs");
-            l.initializeAnalyser( );
 
         is = getClass ().getClassLoader ().getResourceAsStream ("org/netbeans/modules/languages/resources/NBS.nbs");
         BufferedReader br = new BufferedReader (new InputStreamReader (is));

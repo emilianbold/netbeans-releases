@@ -20,9 +20,6 @@
 package org.netbeans.modules.languages;
 
 import java.awt.Point;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,11 +27,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Position;
+import javax.swing.SwingUtilities;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor.Message;
-import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
 
@@ -50,8 +46,12 @@ public class Utils {
         logger.log (Level.WARNING, message);
     }
     
-    public static void message (String message) {
-        DialogDisplayer.getDefault ().notify (new Message (message));
+    public static void message (final String message) {
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                DialogDisplayer.getDefault ().notify (new Message (message));
+            }
+        });
     }
     
     public static void notify (Exception exception) {

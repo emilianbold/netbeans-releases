@@ -128,7 +128,7 @@ public class NBSLanguageReaderTest extends TestCase {
             "text/x-test"
         );
         try {
-            l.initializeAnalyser ();
+            l.getAnalyser ();
             assert (false);
         } catch (ParseException ex) {
             assertEquals ("cycle detected! tags [tags, tags$1, tags$2, startTag, S]", ex.getMessage ());
@@ -156,7 +156,7 @@ public class NBSLanguageReaderTest extends TestCase {
             "text/x-test"
         );
         try {
-            l.initializeAnalyser ();
+            l.getAnalyser ();
             assert (false);
         } catch (ParseException ex) {
             assertEquals ("endTag grammar rule not defined!", ex.getMessage ());
@@ -184,7 +184,7 @@ public class NBSLanguageReaderTest extends TestCase {
             "test.nbs", 
             "text/x-test"
         );
-        l.initializeAnalyser ();
+        l.getAnalyser ();
     }
 }
 

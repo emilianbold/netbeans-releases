@@ -117,10 +117,8 @@ public class NBSLanguageReader {
     private static Language nbsLanguage;
     
     private static Language getNBSLanguage () throws ParseException {
-        if (nbsLanguage == null) {
+        if (nbsLanguage == null)
             nbsLanguage = NBSLanguage.getNBSLanguage ();
-            nbsLanguage.initializeAnalyser ();
-        }
         return nbsLanguage;
     }
     

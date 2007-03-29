@@ -49,7 +49,6 @@ public class AnalyserTest extends TestCase {
         })));
         l.addRule (LLSyntaxAnalyser.Rule.create ("S", Arrays.asList (new Object[] {
         })));
-        l.initializeAnalyser ();
         LLSyntaxAnalyser a = l.getAnalyser ();
         //PetraTest.print (Petra.first (r, 5));
         TokenInput input = TokenInputUtils.create (new ASTToken[] {
@@ -161,7 +160,6 @@ public class AnalyserTest extends TestCase {
             "void a;" +
             "public ii name;"
         );
-        l.initializeAnalyser ();
         ASTNode n = l.getAnalyser ().read (
             TokenInputUtils.create (
                 "text/test",
@@ -288,7 +286,6 @@ public class AnalyserTest extends TestCase {
         CharInput input = new StringInput (
             "a if e then if e then b else b b"
         );
-        l.initializeAnalyser ();
         ASTNode n = l.getAnalyser ().read (
             TokenInputUtils.create (
                 "text/test",
@@ -329,7 +326,6 @@ public class AnalyserTest extends TestCase {
         CharInput input = new StringInput (
             "<a></a>"
         );
-        l.initializeAnalyser ();
         ASTNode n = l.getAnalyser ().read (
             TokenInputUtils.create (
                 "text/test",
@@ -366,7 +362,6 @@ public class AnalyserTest extends TestCase {
         CharInput input = new StringInput (
             "a if e then if e then b else b b"
         );
-        l.initializeAnalyser ();
         ASTNode n = l.getAnalyser ().read (
             TokenInputUtils.create (
                 "text/test",

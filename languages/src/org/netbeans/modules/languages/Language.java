@@ -91,7 +91,8 @@ public class Language {
     private List<TokenType>     tokenTypes = new ArrayList<TokenType> ();
     private Set<String>         skipTokenTypes;
     private String              mimeType;
-    private LLSyntaxAnalyser    analyser = null;
+    private ParseException      analyserException;
+    private LLSyntaxAnalyser    analyser;
     private List<ASTNode>       grammarASTNodes = new ArrayList<ASTNode> ();
     private List<Rule>          grammarRules;
     private List<Language>      importedLangauges = new ArrayList<Language> ();
@@ -138,19 +139,17 @@ public class Language {
         return !grammarASTNodes.isEmpty ();
     }
     
-    public LLSyntaxAnalyser getAnalyser () {
-        return analyser;
-    }
-    
-    public LLSyntaxAnalyser initializeAnalyser () throws ParseException {
+    public LLSyntaxAnalyser getAnalyser () throws ParseException {
+        if (analyserException != null) throw analyserException;
         if (analyser != null) return analyser;
         synchronized (this) {
+            if (analyserException != null) throw analyserException;
             if (analyser != null) return analyser;
             try {
                 analyser = LLSyntaxAnalyser.create (this);
                 return analyser;
             } catch (ParseException ex) {
-                analyser = LLSyntaxAnalyser.createEmpty (this);
+                analyserException = ex;
                 throw ex;
             }
         }

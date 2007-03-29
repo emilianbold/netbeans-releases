@@ -264,7 +264,6 @@ public class ParserManagerImpl extends ParserManager {
         String mimeType = (String) doc.getProperty ("mimeType");
         Language l = LanguagesManager.getDefault ().
             getLanguage (mimeType);
-        l.initializeAnalyser ();
         LLSyntaxAnalyser a = l.getAnalyser ();
         long start = System.currentTimeMillis ();
 
