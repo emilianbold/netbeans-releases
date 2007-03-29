@@ -40,7 +40,7 @@ public class GotoTest extends NbTestCase {
             "org.netbeans.test.junit.testresults.test";
     
     private static final String TEST_PACKAGE_PACKAGEGOTO_NAME =
-            "org.netbeans.test.junit.go.test";
+            "org.netbeans.test.junit.go";
     
     /** Creates a new instance of GotoTest */
     public GotoTest(String testName) {
@@ -143,9 +143,9 @@ public class GotoTest extends NbTestCase {
                 "see: http://www.netbeans.org/issues/show_bug.cgi?id=88599",
                 jmio.isEnabled());
         jbo.pushMenu(sf);
-        EditorOperator eot = new EditorOperator("TestSuite"); //test suite for the package
+        EditorOperator eot = new EditorOperator("GoSuite"); //test suite for the package
         assertTrue("Test suite for \"" + TEST_PACKAGE_PACKAGEGOTO_NAME +
-                 "\" (TestSuite.java) not opened!", eot.isVisible());
+                 "\" (GoSuite.java) not opened!", eot.isVisible());
         eot.close(false);
     }
     
