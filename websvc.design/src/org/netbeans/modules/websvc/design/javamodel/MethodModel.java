@@ -34,12 +34,19 @@ public class MethodModel {
     private boolean oneWay;
     
     /** Creates a new instance of MethodModel */
-    public MethodModel(String operationName) {
+    MethodModel(String operationName) {
         this.operationName=operationName;
+    }
+    /** Creates a new instance of MethodModel */
+    MethodModel() {
     }
     
     public String getOperationName() {
         return operationName;
+    }
+    
+    void setOperationName(String operationName) {
+        this.operationName=operationName;
     }
 
     public String getReturnType() {

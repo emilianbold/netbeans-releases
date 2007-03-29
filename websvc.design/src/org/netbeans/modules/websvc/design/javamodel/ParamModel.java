@@ -35,12 +35,20 @@ public class ParamModel {
     private String paramType;
     
     /** Creates a new instance of MethodModel */
-    public ParamModel(String name) {
+    ParamModel() {
+    }
+    
+    /** Creates a new instance of MethodModel */
+    ParamModel(String name) {
         this.name=name;
     }
     
     public String getName() {
         return name;
+    }
+    
+    void setName(String name) {
+        this.name=name;
     }
     
     public String getTargetNamespace() {

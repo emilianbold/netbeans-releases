@@ -36,6 +36,10 @@ import org.openide.filesystems.FileRenameEvent;
  * @author mkuchtiak
  */
 public class ServiceModel {
+    
+    public static final int STATUS_OK=0;
+    public static final int STATUS_NOT_SERVICE=1;
+    public static final int STATUS_INCORRECT_SERVICE=2;
 
     private String serviceName;
     private String portName;
@@ -43,12 +47,13 @@ public class ServiceModel {
     private String name;
     private String wsdlLocation;
     private String targetNamespace;
+    private int status = STATUS_OK;
     
     private List<MethodModel> operations;    
     
     private FileObject implementationClass;
     private FileChangeListener fcl;
-    private List<ServiceChangeListener> serviceChangeListeners 
+    private List<ServiceChangeListener> serviceChangeListeners
             = new ArrayList<ServiceChangeListener>();
     
     /** Creates a new instance of ServiceModel */
@@ -162,7 +167,20 @@ public class ServiceModel {
         operations.remove(operation);
         fireMethodRemoved(operation);
     }
+    
+    public int getStatus() {
+        return status;
+    }
 
+    public void setStatus(int status) {
+        if (this.status!=status) {
+            int oldStatus = this.status;
+            this.status = status;
+            firePropertyChanged("status", String.valueOf(oldStatus),String.valueOf(status));
+        }
+        this.status = status;
+    }
+    
     void setOperations(List<MethodModel> operations) {
         Map<String, MethodModel> op1 = new HashMap<String, MethodModel>();
         Map<String, MethodModel> op2 = new HashMap<String, MethodModel>();
@@ -263,17 +281,18 @@ public class ServiceModel {
     }
     
     private void populateModel() {
-        //TODO
+        Utils.populateModel(implementationClass, this);
     }
     
-    private void mergeModel(ServiceModel model2) {      
+    private void mergeModel(ServiceModel model2) {
+        setStatus(model2.status);
         setName(model2.name);
         setServiceName(model2.serviceName);
         setServiceName(model2.portName);
         setEndpointInterface(model2.endpointInterface);
         setWsdlLocation(model2.wsdlLocation);
         setTargetNamespace(model2.targetNamespace);
-        setOperations(model2.operations);         
+        setOperations(model2.operations);        
     }
     
     /* probably not needed
