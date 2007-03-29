@@ -71,7 +71,9 @@ import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
@@ -105,6 +107,7 @@ class WebActionProvider implements ActionProvider {
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_COMPILE,
         COMMAND_VERIFY,
+        RestSupport.COMMAND_TEST_RESTBEANS,
         COMMAND_DELETE,
         COMMAND_COPY,
         COMMAND_MOVE,
@@ -142,6 +145,7 @@ class WebActionProvider implements ActionProvider {
             commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
             commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
             commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
+            commands.put(RestSupport.COMMAND_TEST_RESTBEANS, new String[] {"test-restbeans"}); // NOI18N
         
         this.updateHelper = updateHelper;
         this.project = project;
@@ -586,12 +590,34 @@ class WebActionProvider implements ActionProvider {
         } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
             targetNames = setupDebugTestSingle(p, files);
+        } else if ( command.equals( RestSupport.COMMAND_TEST_RESTBEANS ) ) {
+            setupTestRestBeans(p);
         } else {
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
         }
         return targetNames;
+    }
+
+    private void setupTestRestBeans(Properties p) {
+        p.setProperty(RestSupport.PROP_BASE_URL_TOKEN, RestSupport.BASE_URL_TOKEN);
+
+        RestSupport rs = project.getLookup().lookup(RestSupport.class);
+        AntProjectHelper helper = project.getAntProjectHelper();
+        EditableProperties projectProps = helper.getProperties(helper.PROJECT_PROPERTIES_PATH);
+        String path = projectProps.getProperty(RestSupport.PROP_RESTBEANS_TEST_DIR);
+        if (path == null) {
+            path = RestSupport.RESTBEANS_TEST_DIR;
+        }
+        File testdir = helper.resolveFile(path);
+        try {
+            FileObject testFO = rs.generateTestClient(testdir);
+            p.setProperty(RestSupport.PROP_RESTBEANS_TEST_URL, testFO.getURL().toString());
+            p.setProperty(RestSupport.PROP_RESTBEANS_TEST_FILE, testFO.getPath());
+        } catch(Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
     }
 
     private String[] setupTestSingle(Properties p, FileObject[] files) {
@@ -783,6 +809,9 @@ class WebActionProvider implements ActionProvider {
         else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
             return files != null && files.length == 1;
+        }
+        else if ( command.equals( RestSupport.COMMAND_TEST_RESTBEANS ) ) {
+            return project.getLookup().lookup(RestSupport.class).isRestSupportOn();
         }
         else {
             // other actions are global

@@ -110,8 +110,35 @@ introduced by support for multiple source roots. -jglick
                 <property name="build.web.dir.real" value="${{build.ear.web.dir}}"/>
             </target>
             
+            <target name="-init-rest">
+                <condition property="do.rest" value="true">
+                    <and>
+                    <istrue value="${{rest.support.on}}"/>
+                    <resourcecount when="greater" count="0">
+                        <fileset includes="**/*.java" dir="src"/>
+                    </resourcecount>
+                    </and>
+                </condition>
+                <condition property="file.reference.tools.jar" value="${{java.home}}/lib/tools.jar">
+                    <available type="file" file="${{java.home}}/lib/tools.jar"/>
+                </condition>
+                <condition property="file.reference.tools.jar" value="${{java.home}}/../lib/tools.jar">
+                    <and>
+                        <not><isset property="file.reference.tools.jar"/></not>
+                        <available type="file" file="${{java.home}}/../lib/tools.jar"/>
+                    </and>
+                </condition>
+                <path id="apt.classpath.id">
+                    <path path="${{j2ee.platform.wsgen.classpath}}"/>
+                    <pathelement location="${{file.reference.tools.jar}}"/>
+                </path>
+                <taskdef name="apt" classname="com.sun.tools.ws.ant.Apt">
+                    <classpath refid="apt.classpath.id"/>
+                </taskdef>
+            </target>
+            
             <target name="-do-init">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property, -do-ear-init</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-rest,-init-private,-init-user,-init-project,-init-macrodef-property,-do-ear-init</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                     <webproject1:property name="platform.home" value="platforms.${{platform.active}}.home"/>
                     <webproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
@@ -1009,6 +1036,7 @@ introduced by support for multiple source roots. -jglick
                 <target name="wsimport-service-generate">
                     <xsl:attribute name="depends">
                         <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
+
                             <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
                             <xsl:if test="jaxws:wsdl-url">
                                 <xsl:text>wsimport-service-</xsl:text><xsl:value-of select="@name"/>
@@ -1198,8 +1226,30 @@ introduced by support for multiple source roots. -jglick
                 </xsl:if>
             </target>
             
+            <target name="-rest-pre-compile" if="do.rest">
+                <mkdir dir="${{build.generated.dir}}/rest-gen"/>
+                <apt fork="true" debug="true" verbose="false" 
+                     nocompile="false"
+                     destdir="${{build.classes.dir.real}}"
+                     sourcedestdir="${{build.generated.dir}}/rest-gen"  
+                     sourcePath="${{src.dir}}" endorseddirs="${{jaxws.endorsed.dir}}">
+                    <classpath>
+                        <path refid="apt.classpath.id"/>
+                        <path path="${{javac.classpath}}"/>
+                        <path path="${{j2ee.platform.classpath}}"/>
+                        <pathelement location="${{build.web.dir}}/WEB-INF/classes"/>
+                    </classpath>
+                    <source dir="${{src.dir}}">
+                        <include name="**/*.java"/>
+                    </source>
+                </apt>    
+                <copy todir="${{build.classes.dir}}">
+                    <fileset dir="${{src.dir}}" excludes="**/*.java"/>
+                </copy>
+            </target>
+
             <target name="-do-compile">
-                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">,wsimport-service-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -rest-pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">,wsimport-service-compile</xsl:if></xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 
                 <webproject2:javac destdir="${{build.classes.dir.real}}"/>
@@ -1746,7 +1796,11 @@ introduced by support for multiple source roots. -jglick
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
                 <webproject1:java classname="${{run.class}}"/>
             </target>
-            
+                        
+            <target name="test-restbeans" if="do.rest" depends="run-deploy,-init-display-browser">
+                <replace file="${{restbeans.test.file}}" token="${{base.url.token}}" value="${{client.url}}"/>
+                <nbbrowse url="${{restbeans.test.url}}"/>
+            </target>
             
             <xsl:comment>
                 DEBUGGING SECTION

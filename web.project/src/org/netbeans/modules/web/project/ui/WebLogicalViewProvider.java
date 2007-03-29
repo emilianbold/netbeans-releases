@@ -91,6 +91,7 @@ import org.netbeans.modules.web.project.SourceRoots;
 import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.util.ChangeSupport;
 
@@ -491,6 +492,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null )); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null )); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction( WebProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null )); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction( RestSupport.COMMAND_TEST_RESTBEANS, bundle.getString( "LBL_TestRestBeansAction_Name" ), null )); // NOI18N
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.openSubprojectsAction());

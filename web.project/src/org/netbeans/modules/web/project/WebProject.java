@@ -358,7 +358,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
             new WebPropertyEvaluatorImpl(evaluator()),
-            this, // never cast an externally obtained Project to WebProject - use lookup instead
+            new WebProjectRestSupport(helper),
+            this, // never cast an externally obtained Project to J2SEProject - use lookup instead
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
