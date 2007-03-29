@@ -20,10 +20,14 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import static org.netbeans.api.java.source.JavaSource.*;
@@ -95,6 +99,58 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
                     ClassTree clazz = (ClassTree) typeDecl;
                     ClassTree copy = make.addClassImplementsClause(
                         clazz, make.Identifier("List")
+                    );
+                    workingCopy.rewrite(clazz, copy);
+                }
+            }
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddMakeInterface() throws Exception {
+        testFile = new File(getWorkDir(), "Hombre.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.*;\n\n" +
+            "public class Hombre {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.*;\n\n" +
+            "public class Hombre implements DeMundo {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree inf = make.Interface(
+                        make.Modifiers(Collections.<Modifier>emptySet()),
+                        "DeMundo",
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<ExpressionTree>emptyList(),
+                        Collections.<Tree>emptyList()
+                );
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.addClassImplementsClause(
+                        clazz, inf
                     );
                     workingCopy.rewrite(clazz, copy);
                 }
