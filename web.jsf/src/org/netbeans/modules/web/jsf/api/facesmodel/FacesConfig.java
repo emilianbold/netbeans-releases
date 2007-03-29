@@ -23,7 +23,9 @@ import java.util.List;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**
- * The roor element of the faces configuration file.
+ * The "faces-config" element is the root of the configuration
+ * information hierarchy, and contains nested elements for all
+ * of the other configuration settings.
  * @author Petr Pisl
  */
 

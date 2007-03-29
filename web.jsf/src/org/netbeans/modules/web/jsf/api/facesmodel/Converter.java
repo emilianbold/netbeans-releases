@@ -22,20 +22,33 @@ package org.netbeans.modules.web.jsf.api.facesmodel;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**
- *
+ * The "converter" element represents a concrete Converter
+ * implementation class that should be registered under the
+ * specified converter identifier.  Converter identifiers must
+ * be unique within the entire web application.
+ * 
+ * Nested "attribute" elements identify generic attributes that
+ * may be configured on the corresponding UIComponent in order
+ * to affect the operation of the Converter.  Nested "property"
+ * elements identify JavaBeans properties of the Converter
+ * implementation class that may be configured to affect the
+ * operation of the Converter.  "attribute" and "property"
+ * elements are intended to allow component developers to
+ * more completely describe their components to tools and users.
+ * These elements have no required runtime semantics.
  * @author Petr Pisl
  */
 public interface Converter  extends JSFConfigComponent, ComponentInfo{
     /**
-     * 
+     *
      */
     public static final String CONVERTER_CLASS = JSFConfigQNames.CONVERTER_CLASS.getLocalName();
     /**
-     * 
+     *
      */
     public static final String CONVERTER_FOR_CLASS = JSFConfigQNames.CONVERTER_FOR_CLASS.getLocalName();
     /**
-     * 
+     *
      */
     public static final String CONVERTER_ID = JSFConfigQNames.CONVERTER_ID.getLocalName();
     

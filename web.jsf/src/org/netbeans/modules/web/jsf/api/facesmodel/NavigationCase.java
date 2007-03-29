@@ -22,7 +22,10 @@ package org.netbeans.modules.web.jsf.api.facesmodel;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**
- *
+ * The "navigation-case" element describes a particular
+ * combination of conditions that must match for this case to
+ * be executed, and the view id of the component tree that
+ * should be selected next.
  * @author Petr Pisl
  */
 public interface NavigationCase extends JSFConfigComponent, ComponentInfo {
@@ -40,8 +43,8 @@ public interface NavigationCase extends JSFConfigComponent, ComponentInfo {
     
     public void setRedirected(boolean redirect);
     public boolean isRedirected();
-
+    
     public String getToViewId();
     public void setToViewId(String toViewId);
-
+    
 }

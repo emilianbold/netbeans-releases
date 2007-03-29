@@ -23,7 +23,11 @@ import java.util.List;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**
- *
+ * The "navigation-rule" element represents an individual
+ * decision rule that will be utilized by the default
+ * NavigationHandler implementation to make decisions on
+ * what view should be displayed next, based on the
+ * view id being processed.
  * @author Petr Pisl
  */
 public interface NavigationRule extends JSFConfigComponent, ComponentInfo{
