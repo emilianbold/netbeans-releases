@@ -59,6 +59,6 @@ class Constants {
     
     public static final String XML_ELEMENT_ANNOTATION = "XmlElement";  //NOI18N
     
-    public static final String XML_ATTRIBUTE_ANNOTATION = "XmlAttributeElement";  //NOI18N
+    public static final String XML_ATTRIBUTE_ANNOTATION = "XmlAttribute";  //NOI18N
       
 }

@@ -26,7 +26,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
@@ -63,17 +65,14 @@ public class JavaSourceHelper {
         SourceGroup[] groups = SourceGroupSupport.getJavaSourceGroups(project);
         
         for (SourceGroup group : groups) {
-            System.out.println("group = " + group);
             FileObject root = group.getRootFolder();
             Enumeration<? extends FileObject> files = root.getData(true);
             
             while(files.hasMoreElements()) {
                 FileObject fobj = files.nextElement();
-                System.out.println("file = " + fobj);
-                
-                if (fobj.getExt().equals("java")) {
+           
+                if (fobj.getExt().equals("java")) {     //NOI18N
                     JavaSource source = JavaSource.forFileObject(fobj);
-                    System.out.println("source = " + source);
                     result.add(source);
                 }
             }
@@ -109,14 +108,10 @@ public class JavaSourceHelper {
                     if (classElement == null) {
                         System.out.println("Cannot resolve class!");
                     } else {
-                        System.out.println("Resolved class: " + classElement.getQualifiedName().toString());
                         List<? extends AnnotationMirror> annotations =
                                 controller.getElements().getAllAnnotationMirrors(classElement);
                         
-                        System.out.println("annotations: " + annotations);
-                        
                         for (AnnotationMirror annotation : annotations) {
-                            System.out.println("annotation = " + annotation.toString());
                             if (annotation.toString().equals("@javax.persistence.Entity")) {    //NOI18N
                                 isBoolean[0] = true;
                                 
@@ -248,9 +243,10 @@ public class JavaSourceHelper {
     }
     
     public static JavaSource createJavaSource(FileObject targetFolder,
-            String className) {
+            String packageName, String className) {
         try {
-            FileObject fobj = createDataObjectFromTemplate(CLASS_TEMPLATE, targetFolder, className).getPrimaryFile();
+            FileObject fobj = createDataObjectFromTemplate(CLASS_TEMPLATE, 
+                    targetFolder, packageName, className).getPrimaryFile();
             return JavaSource.forFileObject(fobj);
         } catch (IOException ex) {
             
@@ -259,7 +255,8 @@ public class JavaSourceHelper {
         return null;
     }
     
-    private static DataObject createDataObjectFromTemplate(String template, FileObject targetFolder, String targetName) throws IOException {
+    private static DataObject createDataObjectFromTemplate(String template, 
+            FileObject targetFolder, String packageName, String targetName) throws IOException {
         assert template != null;
         assert targetFolder != null;
         assert targetName != null && targetName.trim().length() >  0;
@@ -268,7 +265,11 @@ public class JavaSourceHelper {
         FileObject templateFO = defaultFS.findResource(template);
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
-        return templateDO.createFromTemplate(dataFolder, targetName);
+        
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("package", packageName);
+        
+        return templateDO.createFromTemplate(dataFolder, targetName, params);
     }
     
     public static void addClassAnnotation(WorkingCopy copy, String annotation,
@@ -326,7 +327,7 @@ public class JavaSourceHelper {
         
         VariableTree variableTree = maker.Variable(modifiersTree, name,
                 typeTree, null);
-        System.out.println("variableTree = " + variableTree);
+  
         return maker.insertClassMember(modifiedTree, 0, variableTree);
     }
     
@@ -360,8 +361,7 @@ public class JavaSourceHelper {
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifiersTree = createModifiersTree(copy, modifiers,
                 annotations, annotationAttrs);
-        
-        System.out.println("returnType = " + returnType);
+
         Tree returnTypeTree = createTypeTree(copy, returnType);
         
         ModifiersTree paramModTree = maker.Modifiers(
@@ -396,7 +396,11 @@ public class JavaSourceHelper {
     private static Tree createTypeTree(WorkingCopy copy, Object type) {
         if (type instanceof String) {
             TypeElement element = copy.getElements().getTypeElement((String) type);
-            return copy.getTreeMaker().QualIdent(element);
+            if (element != null) {
+                return copy.getTreeMaker().QualIdent(element);
+            } else {
+                return copy.getTreeMaker().Identifier((String) type);
+            }
         } else {
             return (Tree) type;
         }
