@@ -67,6 +67,9 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
     public void positionIcon(Widget widget, Point point, ConnectorState state) {
         boolean bValue = state == ConnectorState.REJECT ? false : true;
         if (mScene.getDragLayer().getChildren().size() > 0) {
+            if(mSceneBounds == null) {
+                mSceneBounds = mScene.getClientArea().getBounds();
+            }
             IconNodeWidget iconNodeWidget = (IconNodeWidget) mScene.getDragLayer().getChildren().get(0);
             iconNodeWidget.setImage(bValue ? mIconImage : null);
             iconNodeWidget.setLabel(bValue ? mIconLable : null);
@@ -75,6 +78,7 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
             if(bValue) {
                 Point scenePoint = widget.convertLocalToScene(point);
                 Rectangle visibleRect = new Rectangle(scenePoint.x, scenePoint.y, 10,iconNodeWidget.getBounds().height);    //A margin
+                
                 if(visibleRect.y <= mSceneBounds.getBounds().height - iconNodeWidget.getBounds().height) { //Dont go beyond screen height!
                     mScene.getView().scrollRectToVisible(visibleRect);
                 }
