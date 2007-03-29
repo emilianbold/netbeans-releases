@@ -352,7 +352,7 @@ Microsystems, Inc. All Rights Reserved.
                         <code-name-base>org.openidex.util</code-name-base>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.libs.freemarker</code-name-base>d
+                        <code-name-base>org.netbeans.libs.freemarker</code-name-base>
                     </test-dependency>
                 </test-type>
                 <test-type>
