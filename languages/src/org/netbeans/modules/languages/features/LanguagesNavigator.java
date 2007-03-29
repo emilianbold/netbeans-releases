@@ -280,7 +280,7 @@ public class LanguagesNavigator implements NavigatorPanel {
         String tooltip = (String) navigator.getValue ("tooltip", context);
         String icon = (String) navigator.getValue ("icon", context);
         if (icon == null)
-            icon = "/org/netbeans/modules/languages/resources/node.gif";
+            icon = "org/netbeans/modules/languages/resources/node.gif";
         boolean isLeaf = navigator.getBoolean ("tooltip", context, false);
         return new NavigatorNode (
             item,
@@ -298,7 +298,7 @@ public class LanguagesNavigator implements NavigatorPanel {
             Image image = Utilities.loadImage (resourceName);
             if (image == null)
                 image = Utilities.loadImage (
-                    "/org/netbeans/modules/languages/resources/node.gif"
+                    "org/netbeans/modules/languages/resources/node.gif"
                 );
             icons.put (
                 resourceName,
@@ -407,7 +407,7 @@ public class LanguagesNavigator implements NavigatorPanel {
                     path,
                     null, 0, 
                     "root", null,
-                    "/org/netbeans/modules/languages/resources/node.gif",
+                    "org/netbeans/modules/languages/resources/node.gif",
                     false
                 );
                 astToNode.put (root, navigatorNode);
