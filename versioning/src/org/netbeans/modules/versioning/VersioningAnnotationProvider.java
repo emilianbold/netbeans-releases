@@ -23,9 +23,6 @@ import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.FlatFolder;
-import org.netbeans.modules.versioning.util.Utils;
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
@@ -55,19 +52,6 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         instance = this;
     }
     
-    private VCSContext createContext(Set<FileObject> files) {
-        Set<File> roots = new HashSet<File>(files.size());
-        if (files instanceof NonRecursiveFolder) {
-            FileObject folder = ((NonRecursiveFolder) files).getFolder();
-            roots.add(new FlatFolder(FileUtil.toFile(folder).getAbsolutePath()));
-        } else {
-            for (FileObject fo : files) {
-                roots.add(FileUtil.toFile(fo));
-            }
-        }
-        return VCSContext.forFiles(roots);
-    }
-
     private VersioningSystem getOwner(File file) {
         return file == null ? null : VersioningManager.getInstance().getOwner(file);
     }
@@ -80,7 +64,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         VCSAnnotator an = vs.getVCSAnnotator();
         if (an == null) return null;
 
-        VCSContext context = createContext(files);
+        VCSContext context = VCSContext.forFileObjects(files);
         return an.annotateIcon(icon, context);
     }
 
@@ -92,7 +76,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         VCSAnnotator an = vs.getVCSAnnotator();
         if (an == null) return null;
 
-        VCSContext context = createContext(files);
+        VCSContext context = VCSContext.forFileObjects(files);
         return an.annotateName(name, context);
     }
 

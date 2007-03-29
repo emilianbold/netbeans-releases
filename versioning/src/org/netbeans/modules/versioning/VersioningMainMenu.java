@@ -25,7 +25,6 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.LocalHistory;
-import org.netbeans.modules.versioning.util.Utils;
 
 import javax.swing.*;
 import javax.swing.event.MenuListener;

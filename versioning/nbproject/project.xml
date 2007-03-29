@@ -158,14 +158,11 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.versioning.system.cvss</friend>
+                <friend>org.netbeans.modules.versioning.util</friend>
                 <friend>org.netbeans.modules.subversion</friend>
                 <friend>org.netbeans.modules.localhistory</friend>
                 <package>org.netbeans.modules.versioning</package>
                 <package>org.netbeans.modules.versioning.spi</package>
-                <package>org.netbeans.modules.versioning.util</package>
-                <package>org.netbeans.modules.versioning.diff</package>
-                <package>org.netbeans.modules.proxy</package>
-                <package>org.netbeans.modules.turbo</package>
             </friend-packages>
         </data>
     </configuration>

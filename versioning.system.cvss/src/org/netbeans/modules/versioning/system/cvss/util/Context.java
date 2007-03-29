@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.util;
 
-import org.netbeans.modules.versioning.util.FlatFolder;
+import org.netbeans.modules.versioning.spi.VCSContext;
 
 import java.io.File;
 import java.io.Serializable;
@@ -72,8 +72,8 @@ public class Context implements Serializable {
             File file = (File) i.next();
             for (Iterator j = newFiles.iterator(); j.hasNext();) {
                 File includedFile = (File) j.next();
-                if (Utils.isParentOrEqual(includedFile, file) && (file.isFile() || !(includedFile instanceof FlatFolder))) continue outter;
-                if (Utils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !(file instanceof FlatFolder))) {
+                if (Utils.isParentOrEqual(includedFile, file) && (file.isFile() || !VCSContext.isFlat(includedFile))) continue outter;
+                if (Utils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !VCSContext.isFlat(file))) {
                     j.remove();
                 }
             }

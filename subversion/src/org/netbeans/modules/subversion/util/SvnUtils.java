@@ -46,7 +46,7 @@ import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
-import org.netbeans.modules.versioning.util.FlatFolder;
+import org.netbeans.modules.versioning.spi.FlatFolder;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;

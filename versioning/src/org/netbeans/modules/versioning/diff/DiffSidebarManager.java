@@ -20,7 +20,7 @@ package org.netbeans.modules.versioning.diff;
 
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.versioning.VersioningConfig;
-import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.Utils;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

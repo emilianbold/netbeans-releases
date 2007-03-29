@@ -27,7 +27,6 @@ import java.util.Set;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.FlatFolder;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
@@ -59,7 +58,7 @@ public class RevertDeletedAction extends NodeAction {
                     return;
                 }                                        
                 for (File file : rootSet) {            
-                    if(file instanceof FlatFolder) {
+                    if(VCSContext.isFlat(file)) {
                         revert(file);
                     } else {
                         revertRecursively(file);

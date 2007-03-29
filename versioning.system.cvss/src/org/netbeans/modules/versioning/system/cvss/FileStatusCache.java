@@ -21,9 +21,9 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.modules.versioning.util.FlatFolder;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.lib.cvsclient.admin.Entry;
@@ -151,7 +151,7 @@ public class FileStatusCache {
             File [] roots = context.getRootFiles();
             for (int j = 0; j < roots.length; j++) {
                 File root = roots[j];
-                if (root instanceof FlatFolder) {
+                if (VCSContext.isFlat(root)) {
                     if (file.getParentFile().equals(root)) {
                         set.add(file);
                         break;

@@ -18,8 +18,7 @@
  */
 package org.netbeans.modules.versioning.spi;
 
-import org.netbeans.modules.versioning.util.Utils;
-import org.netbeans.modules.versioning.util.FlatFolder;
+import org.netbeans.modules.versioning.Utils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ProjectUtils;
@@ -119,6 +118,30 @@ public final class VCSContext {
         contextCached = new WeakReference<VCSContext>(ctx);
         contextNodesCached = new WeakReference<Node []>(nodes);
         return ctx;
+    }
+    
+    public static VCSContext forFileObjects(Set<FileObject> files) {
+        Set<File> roots = new HashSet<File>(files.size());
+        if (files instanceof NonRecursiveFolder) {
+            FileObject folder = ((NonRecursiveFolder) files).getFolder();
+            roots.add(new FlatFolder(FileUtil.toFile(folder).getAbsolutePath()));
+        } else {
+            for (FileObject fo : files) {
+                roots.add(FileUtil.toFile(fo));
+            }
+        }
+        return VCSContext.forFiles(roots);
+    }
+    
+    /**
+     * Tests whether the given file represents a flat folder (eg a java package), that is a folder 
+     * that contains only its direct children.
+     * 
+     * @param file a File to test
+     * @return true if the File represents a flat folder (eg a java package), false otherwise
+     */
+    public static boolean isFlat(File file) {
+        return file instanceof FlatFolder;
     }
     
     /**

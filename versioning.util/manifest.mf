@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.versioning.util
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/versioning/util/Bundle.properties
+

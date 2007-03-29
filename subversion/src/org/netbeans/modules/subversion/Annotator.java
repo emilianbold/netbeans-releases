@@ -35,10 +35,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.FlatFolder;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
@@ -575,7 +573,7 @@ public class Annotator {
 
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();
-            if (file instanceof FlatFolder) {
+            if (VCSContext.isFlat(file)) {
                 for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
                     if (mf.getParentFile().equals(file)) {

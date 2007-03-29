@@ -45,7 +45,6 @@ import org.netbeans.modules.versioning.system.cvss.ui.history.ViewRevisionAction
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.util.FlatFolder;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.api.project.Project;
 
@@ -349,7 +348,7 @@ public class Annotator {
 
         for (Iterator i = roots.iterator(); i.hasNext();) {
             File file = (File) i.next();
-            if (file instanceof FlatFolder) {
+            if (VCSContext.isFlat(file)) {
                 for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
                     if (mf.getParentFile().equals(file)) {
@@ -550,7 +549,7 @@ public class Annotator {
 
         for (Iterator<File> i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = i.next();
-            if (file instanceof FlatFolder) {
+            if (VCSContext.isFlat(file)) {
                 for (Iterator<File> j = modifiedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = j.next();
                     if (mf.getParentFile().equals(file)) {

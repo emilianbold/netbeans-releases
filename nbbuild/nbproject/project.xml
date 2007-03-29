@@ -364,6 +364,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../utilities/project</project>
                 <project>../versioncontrol</project>
                 <project>../versioncontrol/localhistory</project>
+                <project>../versioncontrol/util</project>
                 <project>../web/core</project>
                 <project>../web/el/lexer</project>
                 <project>../web/examples</project>

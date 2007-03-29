@@ -1,0 +1,47 @@
+<body>
+
+
+Entity attributes management framework.
+
+<h2>Pluggable Entity Attributes package</h2>
+
+The package supports entity attributes management. Attributes
+can be provided by plugged in providers, The implementation
+caches providers results.
+
+<h3>Clients Interface</h3>
+
+Clients should start at {@link Turbo} class.
+It allows to query for attribute values,
+to determine their readiness, to write
+them down and supports listening on attribute
+changes.
+
+<h3>Providers Interface</h3>
+
+Attribute providers should start at {@link FileAttributeProvider}
+implement it and register it using system filesystem at
+<code>Services/FileAttributeProviders/Default</code>.
+
+<h3>Consistency Note</h3>
+
+It may happen that value changes at providers level, however
+unnoticed by clients because the value is cached at memory
+layer and framework does not check providers in such case.
+<p>
+It may happen only if provider does not have exclusive control
+over stored data (e.g. CVS/Entries based provider and extenally
+executed cvs).
+<p>
+Solution is that this risk is documented at attribute definition
+contract and client of such contract provides to user explicit action
+that synchronizes states. Contract should define <code>null</code>
+value for invalidation purposes.
+
+<h3>Attribute Definition</h3>
+
+Both providers and clients must understand
+attribute definiton they are using. The attribute
+definitions are not covered by this package.
+
+</body>

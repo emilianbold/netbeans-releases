@@ -21,7 +21,6 @@ package org.netbeans.modules.versioning;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.LocalHistory;
-import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.diff.DiffSidebarManager;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.openide.util.Lookup;
