@@ -257,9 +257,13 @@ public class J2MEProjectGenerator {
                         if (!configurations.contains(cfgName)) {
                             configurations.add(cfgName);
                             Map<String, String> p = desc.getPrivateProperties();
-                            if (p != null) priv.putAll(p);
+                            if (p != null) for(Map.Entry<String, String> en : p.entrySet()) {
+                                if (!priv.containsKey(en.getKey())) priv.put(en.getKey(), en.getValue());
+                            }
                             p = desc.getProjectGlobalProperties();
-                            if (p != null) proj.putAll(p);
+                            if (p != null) for(Map.Entry<String, String> en : p.entrySet()) {
+                                if (!proj.containsKey(en.getKey())) proj.put(en.getKey(), en.getValue());
+                            }
                             p = desc.getProjectConfigurationProperties();
                             if (p != null) for(Map.Entry<String, String> en : p.entrySet()) {
                                 proj.put(prefix + en.getKey(), en.getValue());

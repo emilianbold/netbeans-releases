@@ -24,33 +24,47 @@
  */
 package org.netbeans.modules.mobility.project.ui.customizer;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.util.Collection;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.mobility.project.J2MEProjectUtils;
-import org.netbeans.modules.mobility.project.UserConfigurationTemplatesProvider;
+import org.netbeans.modules.mobility.project.ui.wizard.ConfigurationsSelectionPanelGUI;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.CategoryDescriptor;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.Descriptor;
 import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.HelpCtx;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author  gc149856
+ * @author  Adam Sotona
  */
-public class NewConfigurationPanel extends JPanel implements DocumentListener, ActionListener {
+public class NewConfigurationPanel extends JPanel implements DocumentListener, PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
     
     private DialogDescriptor dialogDescriptor;
     final private Collection<String> allNames;
+    private final ExplorerManager manager = new ExplorerManager();
+    private final BeanTreeView treeView;
     private String oldName;
     
     /** Creates new form NewConfigurationPanel */
@@ -58,22 +72,59 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, A
         this.allNames = allNames;
         initComponents();
         initAccessibility();
-        loadTemplateList();
+        treeView = new BeanTreeView();
+        jLabel1.setLabelFor(treeView);
+        treeView.setPopupAllowed(false);
+        treeView.setRootVisible(false);
+        treeView.setDefaultActionAllowed(false);
+        treeView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        jPanel1.add(treeView, BorderLayout.CENTER);
+        AbstractNode root = new AbstractNode(new Children.Keys<ProjectConfigurationFactory>(){
+            {setKeys(Lookup.getDefault().lookupAll(ProjectConfigurationFactory.class));}
+            protected Node[] createNodes(ProjectConfigurationFactory key) {
+                return new Node[] {new CategoryNode(key.getRootCategory())};
+            }
+        });
+        root.setName(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSelectionPanel_Templates")); //NOI18N
+        manager.setRootContext(root);
+        manager.addPropertyChangeListener(this);
+        manager.addVetoableChangeListener(this);
     }
     
-    private void loadTemplateList() {
-        jComboTemplate.removeAllItems();
-        jComboTemplate.addItem(NbBundle.getMessage(NewConfigurationPanel.class, "LBL_NewConfigPanel_EmptyConfiguration")); //NOI18N
-        final FileObject fo[] = VisualConfigSupport.getConfigurationTemplates();
-        for (int i=0; i<fo.length; i++) jComboTemplate.addItem(fo[i].getName());
+    private class CategoryNode extends AbstractNode {
+        public CategoryNode(final ProjectConfigurationFactory.CategoryDescriptor cat) {
+            super(new Children.Keys<ProjectConfigurationFactory.Descriptor>(){
+                {setKeys(cat.getChildren());}
+                protected Node[] createNodes(Descriptor key) {
+                    Node n = key instanceof CategoryDescriptor ? new CategoryNode((CategoryDescriptor)key) : key instanceof ConfigurationTemplateDescriptor ? new TemplateNode((ConfigurationTemplateDescriptor)key) : null;
+                    return n == null ? null : new Node[] {n};
+                }
+            });
+            setDisplayName(cat.getDisplayName());
+        }
+    }
+    
+    private class TemplateNode extends AbstractNode {
+        private ConfigurationTemplateDescriptor cfgTmp;
+        public TemplateNode(ConfigurationTemplateDescriptor cfgTmp) {
+            super(Children.LEAF, Lookups.singleton(cfgTmp));
+            this.cfgTmp = cfgTmp;
+            setDisplayName(cfgTmp.getDisplayName().equals(cfgTmp.getCfgName()) ? cfgTmp.getDisplayName() : NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSlePanel_TemplateNodePattern", cfgTmp.getDisplayName(), cfgTmp.getCfgName())); //NOI18N
+        }
+    }
+    
+    public ExplorerManager getExplorerManager() {
+        return manager;
     }
     
     public String getName() {
         return jTextFieldName.getText();
     }
     
-    public String getTemplate() {
-        return jComboTemplate.getSelectedIndex()==0 ? null : (String)jComboTemplate.getSelectedItem();
+    public ConfigurationTemplateDescriptor getTemplate() {
+        Node[] nodes = manager.getSelectedNodes();
+        if (nodes.length != 1) return null;
+        return nodes[0].getLookup().lookup(ConfigurationTemplateDescriptor.class);
     }
     
     public void setDialogDescriptor(final DialogDescriptor dd) {
@@ -83,8 +134,6 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, A
         jTextFieldName.getDocument().addDocumentListener(this);
         changedUpdate(null);
         oldName = ""; //NOI18N
-        jComboTemplate.addActionListener(this);
-        jButton1.addActionListener(this);
     }
     
     public boolean isValid() {
@@ -106,7 +155,7 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, A
     }
     
     public void changedUpdate(@SuppressWarnings("unused")
-	final DocumentEvent e) {
+            final DocumentEvent e) {
         if (dialogDescriptor != null) {
             dialogDescriptor.setValid(isValid());
         }
@@ -120,6 +169,28 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, A
         changedUpdate(e);
     }
     
+    public void propertyChange(PropertyChangeEvent evt) {
+        final String s = jTextFieldName.getText();
+        if (s.length() == 0 || s.equals(oldName)) {
+            Node[] nodes = manager.getSelectedNodes();
+            if (nodes.length != 1) return;
+            ConfigurationTemplateDescriptor desc = nodes[0].getLookup().lookup(ConfigurationTemplateDescriptor.class);
+            if (desc == null) return;
+            jTextFieldName.setText(desc.getCfgName());
+            oldName = jTextFieldName.getText();
+        }
+    }
+    
+    public void vetoableChange(PropertyChangeEvent evt)throws PropertyVetoException {
+        if (evt.getNewValue() instanceof Node[]) {
+            Node[] n = (Node[])evt.getNewValue();
+            if (n.length > 1) throw new PropertyVetoException("Mutiselection is not alloved", evt); //NOI18N
+            if (n.length == 0) return;
+            if (n[0].getLookup().lookup(ConfigurationTemplateDescriptor.class) == null) new PropertyVetoException("Only configuration templates selection allowed", evt); //NOI18N
+        }
+    }
+    
+    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -131,117 +202,77 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, A
         java.awt.GridBagConstraints gridBagConstraints;
 
         jLabel1 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
         jTextFieldName = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        jComboTemplate = new javax.swing.JComboBox();
-        jButton1 = new javax.swing.JButton();
         errorPanel = new org.netbeans.modules.mobility.project.ui.customizer.ErrorPanel();
 
+        setMinimumSize(new java.awt.Dimension(450, 200));
+        setPreferredSize(new java.awt.Dimension(480, 350));
         setLayout(new java.awt.GridBagLayout());
 
-        setMinimumSize(new java.awt.Dimension(450, 200));
-        setPreferredSize(new java.awt.Dimension(480, 130));
         jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(NewConfigurationPanel.class).getString("MNM_NewConfigPanel_ConfigurationName").charAt(0));
         jLabel1.setLabelFor(jTextFieldName);
-        jLabel1.setText(NbBundle.getMessage(NewConfigurationPanel.class, "LBL_NewConfigPanel_ConfigurationName"));
+        jLabel1.setText(NbBundle.getMessage(NewConfigurationPanel.class, "LBL_NewConfigPanel_ConfigurationName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel1, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 0);
-        add(jTextFieldName, gridBagConstraints);
-        jTextFieldName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConfigurationPanel.class, "ACSD_NewCfg_Name"));
-
-        jLabel2.setDisplayedMnemonic(NbBundle.getMessage(NewConfigurationPanel.class, "MNM_NewConfigPanel_ConfigTemplate").charAt(0));
-        jLabel2.setLabelFor(jComboTemplate);
-        jLabel2.setText(NbBundle.getMessage(NewConfigurationPanel.class, "LBL_NewConfigPanel_ConfigTemplate"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        jPanel1.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(jLabel2, gridBagConstraints);
-
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
+        add(jPanel1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 0);
-        add(jComboTemplate, gridBagConstraints);
-        jComboTemplate.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConfigurationPanel.class, "ACSD_NewCfg_Template"));
+        gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 12);
+        add(jTextFieldName, gridBagConstraints);
+        jTextFieldName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConfigurationPanel.class, "ACSD_NewCfg_Name")); // NOI18N
 
-        jButton1.setMnemonic(NbBundle.getMessage(NewConfigurationPanel.class, "MNM_NewConfigPanel_RemoveTmpBtn").charAt(0));
-        jButton1.setText(NbBundle.getMessage(NewConfigurationPanel.class, "LBL_NewConfigPanel_RemoveTmpBtn"));
-        jButton1.setEnabled(false);
+        jLabel2.setDisplayedMnemonic(NbBundle.getMessage(NewConfigurationPanel.class, "MNM_NewConfigPanel_ConfigTemplate").charAt(0));
+        jLabel2.setText(NbBundle.getMessage(NewConfigurationPanel.class, "LBL_NewConfigPanel_ConfigTemplate")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 12);
-        add(jButton1, gridBagConstraints);
-
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 5, 12);
+        add(jLabel2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.weighty = 1.0;
         add(errorPanel, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConfigurationPanel.class, "ACSN_NewConfigPanel"));
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConfigurationPanel.class, "ACSD_NewConfigPanel"));
     }
     
-    public void actionPerformed(final ActionEvent actionEvent) {
-        if (jComboTemplate == actionEvent.getSource()) {
-            jButton1.setEnabled(jComboTemplate.getSelectedIndex() > 0);
-            final String s = jTextFieldName.getText();
-            if (s.length() == 0 || s.equals(oldName)) {
-                String name = jComboTemplate.getSelectedIndex()==0 ? "" : (String)jComboTemplate.getSelectedItem();
-                if (name == null) return;
-                if (name.toLowerCase().endsWith(UserConfigurationTemplatesProvider.CFG_TEMPLATE_SUFFIX.toLowerCase())) name = name.substring(0, name.length() - UserConfigurationTemplatesProvider.CFG_TEMPLATE_SUFFIX.length());
-                jTextFieldName.setText(name);
-                oldName = jTextFieldName.getText();
-            }
-        } else if (jButton1 == actionEvent.getSource()) deleteTemplate();
-    }
-    
-    private void deleteTemplate() {
-        final String name = (String)jComboTemplate.getSelectedItem();
-        if (NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NbBundle.getMessage(NewConfigurationPanel.class, "LBL_NewConfigPanel_ConfirmDelete", name), NbBundle.getMessage(NewConfigurationPanel.class, "TITLE_NewConfigPanel_ConfirmDelete"), NotifyDescriptor.YES_NO_OPTION)))) { //NOI18N
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(UserConfigurationTemplatesProvider.CFG_TEMPLATES_PATH+'/'+name+'.'+UserConfigurationTemplatesProvider.CFG_EXT);
-            if (fo != null) try {
-                fo.delete();
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
-            }
-            loadTemplateList();
-        }
-    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.netbeans.modules.mobility.project.ui.customizer.ErrorPanel errorPanel;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JComboBox jComboTemplate;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField jTextFieldName;
     // End of variables declaration//GEN-END:variables
     

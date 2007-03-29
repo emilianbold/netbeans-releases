@@ -41,7 +41,7 @@ import org.openide.util.NbBundle;
 public class UserConfigurationTemplatesProvider implements ProjectConfigurationFactory, ProjectConfigurationFactory.CategoryDescriptor {
         
     public static final String PRIVATE_PREFIX = "private."; //NOI18N
-    public static final String CFG_TEMPLATE_SUFFIX = NbBundle.getMessage(J2MEProjectProperties.class, "LBL_Cfg_TemplateSuffix"); //NOI18N
+    public static final String CFG_TEMPLATE_SUFFIX = NbBundle.getMessage(UserConfigurationTemplatesProvider.class, "LBL_Cfg_TemplateSuffix"); //NOI18N
     public static final String CFG_EXT = "cfg"; //NOI18N
     public static final String CFG_TEMPLATES_PATH = "Templates/J2MEProjectConfigurations"; //NOI18N
     

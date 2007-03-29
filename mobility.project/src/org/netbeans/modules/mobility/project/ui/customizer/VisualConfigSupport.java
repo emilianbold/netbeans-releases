@@ -27,7 +27,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.Comparator;
@@ -42,6 +41,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -160,43 +160,27 @@ public final class VisualConfigSupport {
         
     }
     
-    public static void createFromTemplate(final J2MEProjectProperties properties, final String cfg, final String template) {
-        if (template == null) return;
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(UserConfigurationTemplatesProvider.CFG_TEMPLATES_PATH+'/'+template+'.'+UserConfigurationTemplatesProvider.CFG_EXT);
-        InputStream in = null;
-        if (fo != null) try {
-            final Properties props = new Properties();
-            in = fo.getInputStream();
-            props.load(in);
-            final EditableProperties priv = properties.getHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-            final EditableProperties proj = properties.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            final int privPrefixL = PRIVATE_PREFIX.length();
-            final String tmpPrefix = J2MEProjectProperties.CONFIG_PREFIX+template;
-            final int tmpPrefixL = tmpPrefix.length();
-            for ( final Map.Entry en : props.entrySet() ) {
-                String key = (String)en.getKey();
-                if (key.startsWith(PRIVATE_PREFIX)) {
-                    key = key.substring(privPrefixL);
-                    if (!priv.containsKey(key)) priv.put(key, (String)en.getValue());
-                } else if (!key.startsWith(tmpPrefix)) {
-                    if (!proj.containsKey(key)) proj.put(key, (String)en.getValue());
-                }
-            }
-            String platform = null;
-            for ( final Map.Entry en : props.entrySet() ) {
-                String key = (String)en.getKey();
-                if (key.startsWith(tmpPrefix)) {
-                    key = J2MEProjectProperties.CONFIG_PREFIX + cfg + (key.substring(tmpPrefixL));
-                    properties.putPropertyRawValue(key, (String)en.getValue());
-                    if ((J2MEProjectProperties.CONFIG_PREFIX + cfg + '.' + DefaultPropertiesDescriptor.PLATFORM_ACTIVE).equals(key)) platform = (String)en.getValue();
-                }
-            }
-            if (platform != null) fixPlatform(properties, cfg, platform);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        } finally {
-            if (in != null) try {in.close();} catch (IOException ioe2) {}
+    public static void createFromTemplate(final J2MEProjectProperties properties, final String cfg, final ConfigurationTemplateDescriptor desc) {
+        if (desc == null) return;
+        AntProjectHelper helper = properties.getHelper();
+        final EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        final EditableProperties proj = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String cfgName = desc.getCfgName();
+        String prefix = J2MEProjectProperties.CONFIG_PREFIX + cfgName + '.'; 
+        Map<String, String> p = desc.getPrivateProperties();
+        if (p != null) for(Map.Entry<String, String> en : p.entrySet()) {
+            if (!priv.containsKey(en.getKey())) priv.put(en.getKey(), en.getValue());
         }
+        p = desc.getProjectGlobalProperties();
+        if (p != null) for(Map.Entry<String, String> en : p.entrySet()) {
+            if (!proj.containsKey(en.getKey())) proj.put(en.getKey(), en.getValue());
+        }
+        p = desc.getProjectConfigurationProperties();
+        if (p != null) for(Map.Entry<String, String> en : p.entrySet()) {
+            properties.putPropertyRawValue(J2MEProjectProperties.CONFIG_PREFIX + cfg + '.' + en.getKey(), en.getValue());
+        }
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, proj);
     }
     
     private static void fixPlatform(final J2MEProjectProperties properties, final String configuration, final String platform) {
