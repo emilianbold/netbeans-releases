@@ -19,8 +19,7 @@
 
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
+import org.netbeans.modules.web.jsf.api.facesmodel.*;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.ComponentUpdater.Operation;
 
@@ -52,4 +51,51 @@ public class SyncUpdateVisitor extends JSFConfigVisitor.Default implements Compo
         child.accept(this);
     }
 
+    private void insert(String propertyName, JSFConfigComponent component) {
+        ((JSFConfigComponentImpl)target).insertAtIndex(propertyName, component, index);
+    }
+    
+    private void remove(String propertyName, JSFConfigComponent component) {
+        ((JSFConfigComponentImpl)target).removeChild(propertyName, component);
+    }
+    
+    public void visit(ManagedBean component){
+        if (target instanceof FacesConfig) {
+            if (operation == Operation.ADD) {
+                insert(FacesConfig.MANAGED_BEAN, component);
+            } else {
+                remove(FacesConfig.MANAGED_BEAN, component);
+            }
+        }
+    }
+    
+    public void visit(NavigationRule component){
+        if (target instanceof FacesConfig) {
+            if (operation == Operation.ADD) {
+                insert(FacesConfig.NAVIGATION_RULE, component);
+            } else {
+                remove(FacesConfig.NAVIGATION_RULE, component);
+            }
+        }
+    }
+    
+    public void visit(NavigationCase component){
+        if (target instanceof NavigationRule) {
+            if (operation == Operation.ADD) {
+                insert(NavigationRule.NAVIGATION_CASE, component);
+            } else {
+                remove(NavigationRule.NAVIGATION_CASE, component);
+            }
+        }
+    }
+    
+    public void visit(Converter component){
+        if (target instanceof FacesConfig) {
+            if (operation == Operation.ADD) {
+                insert(FacesConfig.CONVERTER, component);
+            } else {
+                remove(FacesConfig.CONVERTER, component);
+            }
+        }
+    }
 }
