@@ -30,6 +30,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,6 +57,7 @@ import org.openide.util.Exceptions;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -103,6 +105,11 @@ public class PageFlowController {
             fcl = new WebFolderListener();
             if( webFolder != null ){
                 webFolder.addFileChangeListener(fcl);
+                for (Enumeration<FileObject> e = (Enumeration<FileObject>) webFolder.getFolders(true); e.hasMoreElements() ;) {
+//                    System.out.println(e.nextElement());
+                    //I need to exclude WEB-INF, or maybe I should just allow it to stay..  Will it hurt?
+                    e.nextElement().addFileChangeListener(fcl);
+                }
             }
         }
         
@@ -114,8 +121,12 @@ public class PageFlowController {
     public void unregisterListeners() {
         if ( pcl != null && configModel != null )
             configModel.removePropertyChangeListener(pcl);
-        if (fcl != null && webFolder != null )
+        if (fcl != null && webFolder != null ) {
             webFolder.removeFileChangeListener(fcl);
+            for (Enumeration<FileObject> e = (Enumeration<FileObject>) webFolder.getFolders(true); e.hasMoreElements() ;) {
+                    e.nextElement().removeFileChangeListener(fcl);
+                }
+        }
     }
     
     /**
@@ -254,7 +265,7 @@ public class PageFlowController {
         createAllEdges(rules);
         //view.layoutGraph();
         view.validateGraph();
-//        view.layoutSceneImmediately();
+        //        view.layoutSceneImmediately();
         return true;
         
     }
@@ -534,8 +545,14 @@ public class PageFlowController {
             System.out.println("File Changed Event: " + fe);
         }
         
-        public void fileDeleted(FileEvent fe) {
+        public void fileDeleted(FileEvent fe) {            
             FileObject fileObj = fe.getFile();
+            
+            if( fileObj.isFolder() ){
+                fileObj.removeFileChangeListener(this);
+                return;
+            }
+            
             String pageDisplayName = fileObj.getNameExt();
             webFiles.remove(fileObj);
             
@@ -543,14 +560,14 @@ public class PageFlowController {
             if( node != null ) {
                 setupGraph();
                 view.layoutSceneImmediately();
-            }   
+            }
             
-//            PageFlowNode node = pageName2Node.get(pageDisplayName);
-//            if (node != null ) {
-//                Node tmpNode = new AbstractNode(Children.LEAF);
-//                tmpNode.setName(pageDisplayName);
-//                node = new PageFlowNode(tmpNode);
-//            }
+            //            PageFlowNode node = pageName2Node.get(pageDisplayName);
+            //            if (node != null ) {
+            //                Node tmpNode = new AbstractNode(Children.LEAF);
+            //                tmpNode.setName(pageDisplayName);
+            //                node = new PageFlowNode(tmpNode);
+            //            }
             //This is tricky because we don't just want the NameExt, we want the display name.
             //                String displayName = fe.getFile().getNameExt();
             ////                DataObject dataObj = DataObject.find(fe.getFile());
@@ -565,7 +582,7 @@ public class PageFlowController {
             System.out.println("File Rename Event: " + fe);
         }
         public void fileFolderCreated(FileEvent fe) {
-            
+            fe.getFile().addFileChangeListener(fcl);
         }
         
         
