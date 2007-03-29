@@ -236,7 +236,10 @@ public class NextVisualPositionAction extends TextAction {
 //        gm.move(webform.getPane(), /*beans,*/ rectangles, boxes, Position.NONE, offsetX, offsetY,
 //            snapDisabled);
 //        gm.move(webform.getPane(), /*beans,*/ rectangles, boxes, DomPosition.NONE, offsetX, offsetY, snapDisabled);
-        gm.move(webform.getPane(), /*beans,*/ points.toArray(new Point[points.size()]), boxes.toArray(new CssBox[boxes.size()]),
+//        gm.move(webform.getPane(), /*beans,*/ points.toArray(new Point[points.size()]), boxes.toArray(new CssBox[boxes.size()]),
+//                DomPosition.NONE, offsetX, offsetY, snapDisabled);
+        webform.getDomDocument().moveComponents(
+                webform, boxes.toArray(new CssBox[boxes.size()]), points.toArray(new Point[points.size()]),
                 DomPosition.NONE, offsetX, offsetY, snapDisabled);
     }
 }
