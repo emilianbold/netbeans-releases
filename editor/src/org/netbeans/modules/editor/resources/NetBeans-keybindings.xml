@@ -95,6 +95,9 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="paste-from-clipboard" key="D-V"/>
     <bind actionName="paste-from-clipboard" key="S-INSERT"/>
     <bind actionName="redo" key="D-Y"/>
+    <bind actionName="remove-line" key="D-E"/>
+    <bind actionName="remove-line-begin" key="D-U"/>
+    <bind actionName="remove-tab" key="S-TAB"/>
     <bind actionName="move-selection-else-line-up" key="O-UP"/>
     <bind actionName="move-selection-else-line-down" key="O-DOWN"/>
     <bind actionName="copy-selection-else-line-up" key="DO-UP"/>
