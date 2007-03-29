@@ -2097,5 +2097,214 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         
         fireComponentMovedTo(new DefaultDomDocumentEvent(this, null));
     }
+
+    // XXX Moved from designer/../GridHandler.
+    public void frontComponents(Box[] boxes) {
+//        Document doc = webform.getDocument();
+
+//        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(GridHandler.class, "BringToFront")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(GridHandler.class, "BringToFront")); // NOI18N
+        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_BringToFront")); // NOI18N
+        try {
+//            doc.writeLock(NbBundle.getMessage(GridHandler.class, "BringToFront")); // NOI18N
+
+//            int num = boxes.size();
+            int num = boxes.length;
+
+//            for (int i = 0; i < num; i++) {
+//                CssBox box = boxes.get(i);
+//            for (CssBox box : boxes) {
+            for (Box box : boxes) {
+//                MarkupDesignBean bean = box.getDesignBean();
+//                MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
+//                Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
+                Element componentRootElement = box.getComponentRootElement();
+                
+//                assert bean != null;
+
+//                Element e = box.getElement();
+
+//                if (e == null) {
+//                    e = bean.getElement();
+//                }
+
+//                assert e != null;
+                if (componentRootElement == null) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                            new NullPointerException("There is no component root element for box=" + box));
+                    continue;
+                }
+
+                // Locate the highest z index in box' parent
+//                int highest = CssBox.AUTO;
+                int highest = AUTO;
+//                CssBox parent = box.getParent();
+                Box parent = box.getParent();
+
+                // #6358276 NPE.
+                if(parent != null) {
+//                    for (int j = 0, m = parent.getBoxCount(); j < m; j++) {
+//                        CssBox sibling = parent.getBox(j);
+                    for (Box sibling : parent.getChildren()) {
+
+                        if (sibling == box) {
+                            continue;
+                        }
+
+//                        if ((highest == CssBox.AUTO) ||
+//                                ((sibling.getZ() != CssBox.AUTO) && (sibling.getZ() > highest))) {
+                        if ((highest == AUTO)
+                        || ((sibling.getZ() != AUTO) && (sibling.getZ() > highest))) {
+                            highest = sibling.getZ();
+                        }
+                    }
+                }
+
+//                if (highest == CssBox.AUTO) {
+                if (highest == AUTO) {
+                    highest = 500;
+                } else {
+                    highest++;
+                }
+
+                try {
+//                    doc.getWebForm().getDomSynchronizer().setUpdatesSuspended(bean, true);
+//                    doc.getWebForm().setUpdatesSuspended(componentRootElement, true);
+//                    webform.setUpdatesSuspended(componentRootElement, true);
+                    jsfForm.setUpdatesSuspended(componentRootElement, true);
+
+//                    XhtmlCssEngine engine = webform.getMarkup().getCssEngine();
+                    
+                    List<StyleData> set = new ArrayList<StyleData>(1);
+                    set.add(new StyleData(XhtmlCss.Z_INDEX, Integer.toString(highest)));
+// <removing design bean manipulation in engine>
+//                    engine.updateLocalStyleValues((RaveElement)e, set, null);
+// ====
+//                    Util.updateLocalStyleValuesForElement(e,
+//                            (StyleData[])set.toArray(new StyleData[set.size()]), null);
+//                    WebForm.getHtmlDomProviderService().updateLocalStyleValuesForElement(componentRootElement,
+//                            set.toArray(new StyleData[set.size()]), null);
+                    JsfSupportUtilities.updateLocalStyleValuesForElement(componentRootElement,
+                            set.toArray(new StyleData[set.size()]), null);
+// </removing design bean manipulation in engine>
+                } finally {
+//                    doc.getWebForm().getDomSynchronizer().setUpdatesSuspended(bean, false);
+//                    doc.getWebForm().setUpdatesSuspended(componentRootElement, false);
+//                    webform.setUpdatesSuspended(componentRootElement, false);
+                    jsfForm.setUpdatesSuspended(componentRootElement, false);
+                }
+            }
+        } finally {
+//            doc.writeUnlock();
+//            webform.getModel().writeUnlock(undoEvent);
+//            webform.writeUnlock(writeLock);
+            jsfForm.writeUnlock(writeLock);
+        }
+    }
+
+    // XXX Moved from designer/../GridHandler.
+//    public void back(WebForm webform, List<CssBox> boxes) {
+    public void backComponents(Box[] boxes) {
+//        Document doc = webform.getDocument();
+
+//        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(GridHandler.class, "SendToBack")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(GridHandler.class, "SendToBack")); // NOI18N
+        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SendToBack")); // NOI18N
+        try {
+//            doc.writeLock(NbBundle.getMessage(GridHandler.class, "SendToBack")); // NOI18N
+
+//            int num = boxes.size();
+            int num = boxes.length;
+
+//            for (int i = 0; i < num; i++) {
+//                CssBox box = boxes.get(i);
+//            for (CssBox box : boxes) {
+            for (Box box : boxes) {
+//                MarkupDesignBean bean = box.getDesignBean();
+//                MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
+//                Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
+                Element componentRootElement = box.getComponentRootElement();
+//                assert bean != null;
+
+//                Element e = box.getElement();
+//                Element e = componentRootElement;
+
+//                if (e == null) {
+//                    e = bean.getElement();
+//                }
+
+//                assert e != null;
+                if (componentRootElement == null) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                            new NullPointerException("There is no component root element for box=" + box));
+                    continue;
+                }
+
+                // Locate the lowest z index in box' parent
+                // XXX is auto less than 0?
+//                int lowest = CssBox.AUTO;
+                int lowest = AUTO;
+//                CssBox parent = box.getParent();
+                Box parent = box.getParent();
+
+                // #6358276 NPE.
+                if(parent != null) {
+//                    for (int j = 0, m = parent.getBoxCount(); j < m; j++) {
+//                        CssBox sibling = parent.getBox(j);
+                    for (Box sibling : parent.getChildren()) {
+                        if (sibling == box) {
+                            continue;
+                        }
+
+//                        if ((lowest == CssBox.AUTO) ||
+//                                ((sibling.getZ() != CssBox.AUTO) && (sibling.getZ() < lowest))) {
+//                            lowest = sibling.getZ();
+//                        }
+                        if ((lowest == AUTO)
+                        || ((sibling.getZ() != AUTO) && (sibling.getZ() < lowest))) {
+                            lowest = sibling.getZ();
+                        }
+                    }
+                }
+
+//                if (lowest == CssBox.AUTO) {
+                if (lowest == AUTO) {
+                    lowest = 500;
+                } else {
+                    lowest--;
+                }
+
+                try {
+//                    webform.getDomSynchronizer().setUpdatesSuspended(bean, true);
+//                    webform.setUpdatesSuspended(componentRootElement, true);
+                    jsfForm.setUpdatesSuspended(componentRootElement, true);
+
+//                    XhtmlCssEngine engine = webform.getMarkup().getCssEngine();
+                    
+                    List<StyleData> set = new ArrayList<StyleData>(1);
+                    set.add(new StyleData(XhtmlCss.Z_INDEX, Integer.toString(lowest)));
+// <removing design bean manipulation in engine>
+//                    engine.updateLocalStyleValues((RaveElement)e, set, null);
+// ====
+//                    Util.updateLocalStyleValuesForElement(e,
+//                            (StyleData[])set.toArray(new StyleData[set.size()]), null);
+//                    WebForm.getHtmlDomProviderService().updateLocalStyleValuesForElement(componentRootElement,
+//                            set.toArray(new StyleData[set.size()]), null);
+                    JsfSupportUtilities.updateLocalStyleValuesForElement(componentRootElement,
+                            set.toArray(new StyleData[set.size()]), null);
+// </removing design bean manipulation in engine>
+                } finally {
+//                    webform.getDomSynchronizer().setUpdatesSuspended(bean, false);
+//                    webform.setUpdatesSuspended(componentRootElement, false);
+                    jsfForm.setUpdatesSuspended(componentRootElement, false);
+                }
+            }
+        } finally {
+//            doc.writeUnlock();
+//            webform.getModel().writeUnlock(undoEvent);
+//            webform.writeUnlock(writeLock);
+            jsfForm.writeUnlock(writeLock);
+        }
+    }
     
 }
