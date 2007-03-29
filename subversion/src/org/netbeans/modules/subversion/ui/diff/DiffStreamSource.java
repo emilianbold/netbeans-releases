@@ -172,6 +172,10 @@ public class DiffStreamSource extends StreamSource {
                     boolean isBase = file.equals(baseFile);
                     try {
                         File rf = VersionsCache.getInstance().getFileRevision(file, revision);
+                        if(rf == null) {
+                            remoteFile = null;
+                            return;
+                        }
                         File newRemoteFile = new File(tempFolder, file.getName());
                         newRemoteFile.deleteOnExit();
                         Utils.copyStreamsCloseAll(new FileOutputStream(newRemoteFile), new FileInputStream(rf));
