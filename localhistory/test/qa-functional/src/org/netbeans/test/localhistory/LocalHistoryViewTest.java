@@ -34,6 +34,7 @@ package org.netbeans.test.localhistory;
 import java.io.File;
 import java.io.PrintStream;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -99,8 +100,15 @@ public class LocalHistoryViewTest extends JellyTestCase {
         new File(TMP_PATH).mkdirs();
         projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
         Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");    
+        
+        node.performPopupAction("Open");
+        EditorOperator eo = new EditorOperator("Main.java");
+        eo.deleteLine(2);
+        eo.saveDocument();
+
         ShowLocalHistoryOperator slho = ShowLocalHistoryOperator.invoke(node);
         slho.verify();
-        slho.performPopupAction(1, "Rollback from History");
+        
+        slho.performPopupAction(1, "Revert from History");
     }
 }
