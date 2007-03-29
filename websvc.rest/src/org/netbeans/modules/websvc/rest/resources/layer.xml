@@ -16,11 +16,10 @@
                 <attr name="SystemFileSystem.icon"
                       urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
-            
+<!-- declaring non-existent class will fail commit-validation test             
             <file name="RESTServicesFromPatterns">
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.RESTServicesFromPatternsIterator" />
-                <!--attr name="templateCategory" stringvalue="web-services"/-->
                 <attr name="templateWizardURL"
                       urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RESTServicesFromPatterns.html"/>
                 <attr name="SystemFileSystem.localizingBundle"
@@ -28,6 +27,7 @@
                 <attr name="SystemFileSystem.icon"
                       urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
+-->            
         </folder>
     </folder>
 </filesystem>
