@@ -49,7 +49,7 @@ public class ServiceModel {
     private String targetNamespace;
     private int status = STATUS_OK;
     
-    private List<MethodModel> operations;    
+    List<MethodModel> operations;    
     
     private FileObject implementationClass;
     private FileChangeListener fcl;

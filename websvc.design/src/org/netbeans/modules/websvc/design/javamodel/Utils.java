@@ -156,7 +156,7 @@ public class Utils {
                         Utils.populateOperation(controller, methods.get(i), operation);
                         operations.add(operation);
                     }
-                    serviceModel.setOperations(operations);
+                    serviceModel.operations=operations;
                 }
             }
             public void cancel() {}
@@ -173,10 +173,11 @@ public class Utils {
         TypeElement methodAnotationEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
         TypeElement onewayAnotationEl = controller.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
         List<? extends AnnotationMirror> methodAnnotations = methodEl.getAnnotationMirrors();
+        boolean nameFound=false;
         for (AnnotationMirror anMirror : methodAnnotations) {
             if (controller.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                boolean nameFound=false;               
+                               
                 for(ExecutableElement ex:expressions.keySet()) {
                     if (ex.getSimpleName().contentEquals("operationName")) { //NOI18N
                         methodModel.setOperationName((String)expressions.get(ex).getValue());
@@ -185,11 +186,13 @@ public class Utils {
                         methodModel.setAction((String)expressions.get(ex).getValue());
                     }
                 }
-                if (!nameFound) methodModel.setOperationName(methodEl.getSimpleName().toString());
+                
             } else if (controller.getTypes().isSameType(onewayAnotationEl.asType(), anMirror.getAnnotationType())) {
                 methodModel.setOneWay(true);
             }
         }
+        if (!nameFound) methodModel.setOperationName(methodEl.getSimpleName().toString());
+        
         // Return type
         TypeMirror returnType = methodEl.getReturnType();
         if (returnType.getKind() == TypeKind.DECLARED) {
