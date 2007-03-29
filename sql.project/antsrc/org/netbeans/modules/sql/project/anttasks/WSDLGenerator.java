@@ -382,47 +382,82 @@ public class WSDLGenerator {
                                 }
                                 generateSelectSchemaElements(currRequest, currResponse);
                             } else if (STATEMENT_TYPE.equalsIgnoreCase(INSERT_STATEMENT)) {
-                                currResponse = getElementByName(e, "numRowsEffected");
+                            	currResponse = getElementByName(e, sqlFileName + "Response");
+                            	removeSchemaElements(currRequest, currResponse);
+                                if (currResponse == null) {
+                                	currResponse = createElement("numRowsEffected", "xsd:int");
+                                }
+                            	currResponse = getElementByName(e, "numRowsEffected");
                                 if (currResponse == null) {
                                     currResponse = createElement("numRowsEffected", "xsd:int");
                                 }
-                                generateInsertSchemaElements(currRequest);
+                                generateInsertSchemaElements(currRequest, currResponse);
                             } else if (STATEMENT_TYPE.equalsIgnoreCase(UPDATE_STATEMENT)) {
-                                currResponse = getElementByName(e, "numRowsEffected");
+                            	currResponse = getElementByName(e, sqlFileName + "Response");
+                            	removeSchemaElements(currRequest, currResponse);
+                                if (currResponse == null) {
+                                	currResponse = createElement("numRowsEffected", "xsd:int");
+                                }
+                            	currResponse = getElementByName(e, "numRowsEffected");
                                 if (currResponse == null) {
                                     currResponse = createElement("numRowsEffected", "xsd:int");
                                 }
-                                generateInsertSchemaElements(currRequest);
+                                generateInsertSchemaElements(currRequest, currResponse);
                             } else if (STATEMENT_TYPE.equalsIgnoreCase(DELETE_STATEMENT)) {
-                                currResponse = getElementByName(e, "numRowsEffected");
+                            	currResponse = getElementByName(e, sqlFileName + "Response");
+                            	removeSchemaElements(currRequest, currResponse);
+                                if (currResponse == null) {
+                                	currResponse = createElement("numRowsEffected", "xsd:int");
+                                }
+                            	currResponse = getElementByName(e, "numRowsEffected");
                                 if (currResponse == null) {
                                     currResponse = createElement("numRowsEffected", "xsd:int");
                                 }
-                                generateInsertSchemaElements(currRequest);
+                                generateInsertSchemaElements(currRequest, currResponse);
                             }else if (STATEMENT_TYPE.equalsIgnoreCase(DDL_STATEMENT_CREATE)) {
-                                currResponse = getElementByName(e, "numRowsEffected");
+                            	currResponse = getElementByName(e, sqlFileName + "Response");
+                            	removeSchemaElements(currRequest, currResponse);
+                                if (currResponse == null) {
+                                	currResponse = createElement("numRowsEffected", "xsd:int");
+                                }
+                            	currResponse = getElementByName(e, "numRowsEffected");
                                 if (currResponse == null) {
                                     currResponse = createElement("numRowsEffected", "xsd:int");
                                 }
-                                generateCreateSchemaElements(currRequest);
+                                generateCreateSchemaElements(currRequest, currResponse);
                             }else if (STATEMENT_TYPE.equalsIgnoreCase(DDL_STATEMENT_ALTER)) {
-                                currResponse = getElementByName(e, "numRowsEffected");
+                            	currResponse = getElementByName(e, sqlFileName + "Response");
+                            	removeSchemaElements(currRequest, currResponse);
+                                if (currResponse == null) {
+                                	currResponse = createElement("numRowsEffected", "xsd:int");
+                                }
+                            	currResponse = getElementByName(e, "numRowsEffected");
                                 if (currResponse == null) {
                                     currResponse = createElement("numRowsEffected", "xsd:int");
                                 }
-                                generateAlterSchemaElements(currRequest);
+                                generateAlterSchemaElements(currRequest, currResponse);
                             }else if (STATEMENT_TYPE.equalsIgnoreCase(DDL_STATEMENT_DROP)) {
-                                currResponse = getElementByName(e, "numRowsEffected");
+                            	currResponse = getElementByName(e, sqlFileName + "Response");
+                            	removeSchemaElements(currRequest, currResponse);
+                                if (currResponse == null) {
+                                	currResponse = createElement("numRowsEffected", "xsd:int");
+                                }
+                            	currResponse = getElementByName(e, "numRowsEffected");
                                 if (currResponse == null) {
                                     currResponse = createElement("numRowsEffected", "xsd:int");
                                 }
-                                generateDropSchemaElements(currRequest);
+                                generateDropSchemaElements(currRequest, currResponse);
                             }else if (STATEMENT_TYPE.equalsIgnoreCase(TRUNCATE_STATEMENT)) {
-                                currResponse = getElementByName(e, "numRowsEffected");
+                            	currResponse = getElementByName(e, sqlFileName + "Response");
+                            	removeSchemaElements(currRequest, currResponse);
+                                if (currResponse == null) {
+                                	currResponse = createElement("numRowsEffected", "xsd:int");
+                                }
+                            	currResponse = getElementByName(e, "numRowsEffected");
                                 if (currResponse == null) {
                                     currResponse = createElement("numRowsEffected", "xsd:int");
                                 }
-                                generateTruncateSchemaElements(currRequest);
+                                generateTruncateSchemaElements(currRequest, currResponse);
                             } else if (STATEMENT_TYPE.equalsIgnoreCase(PROC_STATEMENT)) {
                                 currResponse = getElementByName(e, sqlFileName + "Response");
                                 if (currResponse == null) {
@@ -610,15 +645,33 @@ public class WSDLGenerator {
     }
 
 
-    private void generateDeleteSchemaElements(Element requestElement) {
+    private void generateDeleteSchemaElements(Element requestElement, Element responseElement) {
         try {
+        	PrepStmt prep = dbmeta.getPrepStmtMetaData();
             if (requestElement != null) {
-                PrepStmt prep = dbmeta.getPrepStmtMetaData();
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
                 if (sequenceElement != null) {
                     if (prep.getNumParameters() > 0) {
                         addPreparedStmtParametersToElement(prep, sequenceElement);
+                    } else {
+                        //remove elements under the current requestItem.             
+                        NodeList list = sequenceElement.getChildNodes();
+                        if (list != null) {
+                            for (int j = list.getLength() - 1; j >= 0; j--) {
+                                sequenceElement.removeChild(list.item(j));
+                            }
+                        }
+
+
                     }
+                    //sequenceElement.removeChild(colElem1);
+                }
+            }
+            if (responseElement != null) {
+                Element colElem2 = getElementByName(responseElement, "xsd:sequence");
+                if (colElem2 != null) {
+                    addResultSetColumnsToElement(prep, colElem2);
+                    //colElem2.getParentNode().removeChild(colElem2);
                 }
             }
         } catch (Exception e) {
@@ -626,25 +679,67 @@ public class WSDLGenerator {
         }
     }
     
-    private void generateCreateSchemaElements(Element requestElement) {
+    private void generateCreateSchemaElements(Element requestElement, Element responseElement) {
         try {
+        	PrepStmt prep = dbmeta.getPrepStmtMetaData();
             if (requestElement != null) {
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
+                if (sequenceElement != null) {
+                    if (prep.getNumParameters() > 0) {
+                        addPreparedStmtParametersToElement(prep, sequenceElement);
+                    } else {
+                        //remove elements under the current requestItem.             
+                        NodeList list = sequenceElement.getChildNodes();
+                        if (list != null) {
+                            for (int j = list.getLength() - 1; j >= 0; j--) {
+                                sequenceElement.removeChild(list.item(j));
+                            }
+                        }
+
+
+                    }
+                    //sequenceElement.removeChild(colElem1);
+                }
+            }
+            if (responseElement != null) {
+                Element colElem2 = getElementByName(responseElement, "xsd:sequence");
+                if (colElem2 != null) {
+                    addResultSetColumnsToElement(prep, colElem2);
+                    //colElem2.getParentNode().removeChild(colElem2);
+                }
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage());
         }
     }
     
-    private void generateAlterSchemaElements(Element requestElement) {
+    private void generateAlterSchemaElements(Element requestElement, Element responseElement) {
         try {
+        	PrepStmt prep = dbmeta.getPrepStmtMetaData();
             if (requestElement != null) {
-                PrepStmt prep = dbmeta.getPrepStmtMetaData();
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
                 if (sequenceElement != null) {
                     if (prep.getNumParameters() > 0) {
                         addPreparedStmtParametersToElement(prep, sequenceElement);
+                    } else {
+                        //remove elements under the current requestItem.             
+                        NodeList list = sequenceElement.getChildNodes();
+                        if (list != null) {
+                            for (int j = list.getLength() - 1; j >= 0; j--) {
+                                sequenceElement.removeChild(list.item(j));
+                            }
+                        }
+
+
                     }
+                    //sequenceElement.removeChild(colElem1);
+                }
+            }
+            if (responseElement != null) {
+                Element colElem2 = getElementByName(responseElement, "xsd:sequence");
+                if (colElem2 != null) {
+                    addResultSetColumnsToElement(prep, colElem2);
+                    //colElem2.getParentNode().removeChild(colElem2);
                 }
             }
         } catch (Exception e) {
@@ -652,49 +747,101 @@ public class WSDLGenerator {
         }
     }
 
-    private void generateDropSchemaElements(Element requestElement) {
+    private void generateDropSchemaElements(Element requestElement, Element responseElement) {
         try {
+        	PrepStmt prep = dbmeta.getPrepStmtMetaData();
             if (requestElement != null) {
-                PrepStmt prep = dbmeta.getPrepStmtMetaData();
-                Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
-                if (sequenceElement != null) {
-                    if (prep.getNumParameters() > 0) {
-                        addPreparedStmtParametersToElement(prep, sequenceElement);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, e.getLocalizedMessage());
-        }
-    }
-    
-    private void generateTruncateSchemaElements(Element requestElement) {
-        try {
-            if (requestElement != null) {
-                PrepStmt prep = dbmeta.getPrepStmtMetaData();
-                Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
-                if (sequenceElement != null) {
-                    if (prep.getNumParameters() > 0) {
-                        addPreparedStmtParametersToElement(prep, sequenceElement);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, e.getLocalizedMessage());
-        }
-    }
-    
-    private void generateInsertSchemaElements(Element requestElement) throws Exception {
-        try {
-            if (requestElement != null) {
-                PrepStmt prep = dbmeta.getPrepStmtMetaData();
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
                 if (sequenceElement != null) {
                     if (prep.getNumParameters() > 0) {
                         addPreparedStmtParametersToElement(prep, sequenceElement);
                     } else {
-                        addResultSetColumnsToElement(prep, sequenceElement);
+                        //remove elements under the current requestItem.             
+                        NodeList list = sequenceElement.getChildNodes();
+                        if (list != null) {
+                            for (int j = list.getLength() - 1; j >= 0; j--) {
+                                sequenceElement.removeChild(list.item(j));
+                            }
+                        }
+
+
                     }
+                    //sequenceElement.removeChild(colElem1);
+                }
+            }
+            if (responseElement != null) {
+                Element colElem2 = getElementByName(responseElement, "xsd:sequence");
+                if (colElem2 != null) {
+                    addResultSetColumnsToElement(prep, colElem2);
+                    //colElem2.getParentNode().removeChild(colElem2);
+                }
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, e.getLocalizedMessage());
+        }
+    }
+    
+    private void generateTruncateSchemaElements(Element requestElement, Element responseElement) {
+        try {
+        	PrepStmt prep = dbmeta.getPrepStmtMetaData();
+            if (requestElement != null) {
+                Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
+                if (sequenceElement != null) {
+                    if (prep.getNumParameters() > 0) {
+                        addPreparedStmtParametersToElement(prep, sequenceElement);
+                    } else {
+                        //remove elements under the current requestItem.             
+                        NodeList list = sequenceElement.getChildNodes();
+                        if (list != null) {
+                            for (int j = list.getLength() - 1; j >= 0; j--) {
+                                sequenceElement.removeChild(list.item(j));
+                            }
+                        }
+
+
+                    }
+                    //sequenceElement.removeChild(colElem1);
+                }
+            }
+            if (responseElement != null) {
+                Element colElem2 = getElementByName(responseElement, "xsd:sequence");
+                if (colElem2 != null) {
+                    addResultSetColumnsToElement(prep, colElem2);
+                    //colElem2.getParentNode().removeChild(colElem2);
+                }
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, e.getLocalizedMessage());
+        }
+    }
+    
+    private void generateInsertSchemaElements(Element requestElement, Element responseElement) throws Exception {
+        try {
+        	PrepStmt prep = dbmeta.getPrepStmtMetaData();
+            if (requestElement != null) {
+                Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
+                if (sequenceElement != null) {
+                    if (prep.getNumParameters() > 0) {
+                        addPreparedStmtParametersToElement(prep, sequenceElement);
+                    } else {
+                        //remove elements under the current requestItem.             
+                        NodeList list = sequenceElement.getChildNodes();
+                        if (list != null) {
+                            for (int j = list.getLength() - 1; j >= 0; j--) {
+                                sequenceElement.removeChild(list.item(j));
+                            }
+                        }
+
+
+                    }
+                    //sequenceElement.removeChild(colElem1);
+                }
+            }
+            if (responseElement != null) {
+                Element colElem2 = getElementByName(responseElement, "xsd:sequence");
+                if (colElem2 != null) {
+                    addResultSetColumnsToElement(prep, colElem2);
+                    //colElem2.getParentNode().removeChild(colElem2);
                 }
             }
         } catch (Exception e) {
@@ -1057,6 +1204,38 @@ public class WSDLGenerator {
         elem.setAttribute("type", type);
         return elem;
     }
+    
+    private void removeSchemaElements(Element requestElement, Element responseElement) {
+        try {
+            if (requestElement != null) {
+                Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
+                if (sequenceElement != null) {
+                    
+                        //remove elements under the current requestItem.             
+                        NodeList list = sequenceElement.getChildNodes();
+                        if (list != null) {
+                            for (int j = list.getLength() - 1; j >= 0; j--) {
+                                sequenceElement.removeChild(list.item(j));
+                            }
+                    }
+                    //sequenceElement.removeChild(colElem1);
+                }
+            }
+            if (responseElement != null) {
+                if (responseElement != null) {
+                    NodeList list = responseElement.getChildNodes();
+                    if (list != null) {
+                        for (int j = list.getLength() - 1; j >= 0; j--) {
+                            responseElement.removeChild(list.item(j));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, e.getLocalizedMessage());
+        }
+    }
+    
     
     public void setDBConnection(DatabaseConnection con) {
     	this.dbConn = con;
