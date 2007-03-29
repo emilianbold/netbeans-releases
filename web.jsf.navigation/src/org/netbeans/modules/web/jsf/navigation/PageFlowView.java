@@ -217,14 +217,15 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         //            System.out.println("PageName : " + pageName);
         //        }
         String pageName = pageNode.getDisplayName();
-        
         widget.setNodeProperties(IMAGE_LIST, pageName, type, glyphs);
-        
         scene.addPin(pageNode, new PinNode(pageNode));
-        
         
         return widget;
     }
+    
+//    protected boolean resetNode( PageFlowNode oldPageNode, PageFlowNode newPageNode ){
+//        
+//    }
     
 //    /**
 //     * Creates a PageFlowScene pin from a pageNode and pin name String.

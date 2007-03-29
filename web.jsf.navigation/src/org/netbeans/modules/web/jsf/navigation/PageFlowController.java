@@ -252,10 +252,9 @@ public class PageFlowController {
             createAllProjectPageNodes(pagesInConfig);
         }
         createAllEdges(rules);
-        //        view.layoutGraph();
-        
-        view.layoutSceneImmediately();
-        //        view.validate();
+        //view.layoutGraph();
+        view.validateGraph();
+//        view.layoutSceneImmediately();
         return true;
         
     }
@@ -408,6 +407,7 @@ public class PageFlowController {
                 if ( !setupGraph() ){
                     System.out.println("Something is wrong.  Why did setup not work?");
                 }
+                view.layoutSceneImmediately();
             }
             //            System.out.println("New Value: " + ev.getNewValue());
             //            System.out.println("Old Value: " + ev.getOldValue());
@@ -535,7 +535,22 @@ public class PageFlowController {
         }
         
         public void fileDeleted(FileEvent fe) {
+            FileObject fileObj = fe.getFile();
+            String pageDisplayName = fileObj.getNameExt();
+            webFiles.remove(fileObj);
             
+            PageFlowNode node = pageName2Node.get(pageDisplayName);
+            if( node != null ) {
+                setupGraph();
+                view.layoutSceneImmediately();
+            }   
+            
+//            PageFlowNode node = pageName2Node.get(pageDisplayName);
+//            if (node != null ) {
+//                Node tmpNode = new AbstractNode(Children.LEAF);
+//                tmpNode.setName(pageDisplayName);
+//                node = new PageFlowNode(tmpNode);
+//            }
             //This is tricky because we don't just want the NameExt, we want the display name.
             //                String displayName = fe.getFile().getNameExt();
             ////                DataObject dataObj = DataObject.find(fe.getFile());

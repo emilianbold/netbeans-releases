@@ -131,12 +131,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
                 sceneLayout.invokeLayout();
             }
         }));
-        
-        
-        
         getActions().addAction(createActionMap());
-        
-        
         
     }
     
@@ -172,6 +167,9 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         
     }
     
+    /**
+     * Removed the mal formed notes on the screen.
+     */
     public void removeMalFormedWidget() {
         List<Widget> widgets = getChildren();
         if( widgets.contains(malFormedLabel)); {
@@ -179,6 +177,11 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
             validate();
         }
     }
+    
+//    public boolean replacePageFlowNode( PageFlowNode oldNode, PageFlowNode newNode ){
+//        VMDNodeWidget widget = (VMDNodeWidget) findWidget(oldNode);
+//        widget.
+//    }
     
     /**
      * Implements attaching a widget to a node. The widget is VMDNodeWidget and has object-hover, select, popup-menu and move actions.
