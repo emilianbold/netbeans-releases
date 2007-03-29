@@ -133,7 +133,7 @@ public class IepProjectLogicalViewProvider implements LogicalViewProvider {
 
         private Action[] getAdditionalActions() {
 
-            ResourceBundle bundle = NbBundle.getBundle(IcanproLogicalViewProvider.class);
+            ResourceBundle bundle = NbBundle.getBundle(IepProjectLogicalViewProvider.class);
 
             return new Action[] {
                 // disable new action at the top...
@@ -154,7 +154,8 @@ public class IepProjectLogicalViewProvider implements LogicalViewProvider {
                 null,
                 SystemAction.get( org.openide.actions.FindAction.class ),
                 null,
-                SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
+                //SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
+                 org.openide.util.actions.SystemAction.get( org.openide.actions.ToolsAction.class ),
                 null,
                 brokenLinksAction,
                 CommonProjectActions.customizeProjectAction(),

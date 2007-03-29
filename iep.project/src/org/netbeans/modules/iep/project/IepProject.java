@@ -37,6 +37,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.iep.project.ui.customizer.IepProjectCustomizerProvider;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -132,13 +133,15 @@ public final class IepProject implements Project, AntProjectListener {
         );
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
         String webModuleLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_EJBModule"); //NOI18N
-        String srcJavaLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
+        String srcJavaLabel = org.openide.util.NbBundle.getMessage(IepProjectLogicalViewProvider.class, "LBL_Node_Sources"); //NOI18N
 
         sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null);
         sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
 
         sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", SOURCES_TYPE_ICANPRO, srcJavaLabel, /*XXX*/null, null);
-        sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", ProjectConstants.SOURCES_TYPE_XML, srcJavaLabel, /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", 
+                org.netbeans.modules.xml.catalogsupport.ProjectConstants.SOURCES_TYPE_XML,
+                srcJavaLabel, /*XXX*/null, null);
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -153,6 +156,7 @@ public final class IepProject implements Project, AntProjectListener {
             new IepProjectActionProvider( this, helper, refHelper ),
             new IepProjectLogicalViewProvider(this, helper, evaluator(), refHelper),
             new IcanproCustomizerProvider( this, helper, refHelper ),
+            //new IepProjectCustomizerProvider(this),
             new JbiArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
