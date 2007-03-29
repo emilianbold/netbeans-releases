@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -368,11 +367,11 @@ public final class PersistenceManager implements PropertyChangeListener {
     private void removeTopComponentForDataObject(DataObject dob) {
         //System.out.println("PM.removeTopComponentForDataObject ENTER"
         //+ " dob:" + dob.getName());
-        InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
+        InstanceCookie ic = dob.getCookie(InstanceCookie.class);
         //Remove corresponding tc from cache because its module was disabled
         if (ic == null) {
             synchronized(LOCK_IDS) {
-                String tc_id = (String) dataobjectToTopComponentMap.remove(dob);
+                String tc_id = dataobjectToTopComponentMap.remove(dob);
                 if (tc_id != null) {
                     /*System.out.println("- - - - - - - - - - - - - - - - - - - - -");
                     System.out.println("-- -- PM.removeTopComponentForDataObject"
@@ -380,9 +379,9 @@ public final class PersistenceManager implements PropertyChangeListener {
                     System.out.println("-- -- dob:" + dob.getClass().getName()
                     + " isValid:" + dob.isValid());*/
                     //Thread.dumpStack();
-                    WeakReference result = (WeakReference)id2TopComponentMap.remove(tc_id);
+                    Reference<TopComponent> result = id2TopComponentMap.remove(tc_id);
                     if (result != null) {
-                        TopComponent tc = (TopComponent)result.get();
+                        TopComponent tc = result.get();
                         if (tc != null) {
                             topComponent2IDMap.remove(tc);
                         }
@@ -401,14 +400,14 @@ public final class PersistenceManager implements PropertyChangeListener {
     public String getGlobalTopComponentID (TopComponent tc, String preferredID) {
         synchronized(LOCK_IDS) {
             //First check caches
-            String result = (String) topComponent2IDMap.get(tc);
+            String result = topComponent2IDMap.get(tc);
             if (result != null) {
                 if (isInvalidId(result)) {
                     restorePair(tc, result);
                 }
                 return result;
             }
-            result = (String) topComponentNonPersistent2IDMap.get(tc);
+            result = topComponentNonPersistent2IDMap.get(tc);
             if (result != null) {
                 return result;
             }
@@ -419,7 +418,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             try {
                 return createTopComponentPersistentID(tc, preferredID);
             } catch (IOException exc) {
-                LOG.log(Level.WARNING, "[Winsys.PersistenceManager.getGlobalTopComponentID]: Cannot create TC ID", exc); //NOI18N
+                LOG.log(Level.WARNING, "[PersistenceManager.getGlobalTopComponentID]: Cannot create TC ID", exc); //NOI18N
                 return createTopComponentNonPersistentID(tc, preferredID);
             }
         } else {
@@ -434,16 +433,16 @@ public final class PersistenceManager implements PropertyChangeListener {
 //        System.out.println("removing id=" + id);
         synchronized(LOCK_IDS) {
             globalIDSet.remove(id.toUpperCase(Locale.ENGLISH));
-            WeakReference result = (WeakReference)id2TopComponentMap.remove(id);
+            Reference<TopComponent> result = id2TopComponentMap.remove(id);
             if (result != null) {
-                TopComponent tc = (TopComponent)result.get();
+                TopComponent tc = result.get();
                 if (tc != null) {
                     topComponent2IDMap.remove(tc);
                 }
             }
-            result = (WeakReference)id2TopComponentNonPersistentMap.remove(id);
+            result = id2TopComponentNonPersistentMap.remove(id);
             if (result != null) {
-                TopComponent tc = (TopComponent)result.get();
+                TopComponent tc = result.get();
                 if (tc != null) {
                     topComponentNonPersistent2IDMap.remove(tc);
                 }
@@ -457,9 +456,9 @@ public final class PersistenceManager implements PropertyChangeListener {
     private TopComponent getTopComponentPersistentForID(String stringId) {
         synchronized(LOCK_IDS) {
             //Search in cache first
-            WeakReference result = (WeakReference)id2TopComponentMap.get(stringId);
+            Reference<TopComponent> result = id2TopComponentMap.get(stringId);
             if (result != null) {
-                TopComponent tc = (TopComponent)result.get();
+                TopComponent tc = result.get();
                 if (tc != null) {
                     return tc;
                 } else {
@@ -478,7 +477,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                 dob = findTopComponentDataObject(getComponentsModuleFolder(), stringId);
             }
             if (dob != null) {
-                InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
+                InstanceCookie ic = dob.getCookie(InstanceCookie.class);
                 if (ic != null) {
                     TopComponent tc = (TopComponent)ic.instanceCreate();
                     synchronized(LOCK_IDS) {
@@ -495,8 +494,8 @@ public final class PersistenceManager implements PropertyChangeListener {
                             PersistenceManager.class, "EXC_BrokenTCSetting", 
                             stringId);
                     resultExc = new SafeException(new IOException(excAnnotation));
-                    LOG.log(Level.WARNING,
-                        "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
+                    LOG.log(warningLevelForDeserTC(stringId),
+                        "[PersistenceManager.getTopComponentForID]" // NOI18N
                         + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
                         + excAnnotation, resultExc);
                 }
@@ -506,8 +505,8 @@ public final class PersistenceManager implements PropertyChangeListener {
                 String excAnnotation = NbBundle.getMessage(PersistenceManager.class,
                         "EXC_FailedLocateTC",  stringId);
                 resultExc = new FileNotFoundException(excAnnotation);
-                LOG.warning(
-                    "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
+                LOG.log(warningLevelForDeserTC(stringId),
+                    "[PersistenceManager.getTopComponentForID]" // NOI18N
                     + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
                     + excAnnotation);
 // can happen quite often when switching projects (in pre-40 codebase).. TC are project layer based while the winmanager+mainwindow are session based.
@@ -516,42 +515,47 @@ public final class PersistenceManager implements PropertyChangeListener {
 //                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, resultExc);
             }
         } catch (NoClassDefFoundError ndfe) { // TEMP>>
-            LOG.log(Level.WARNING,
-                "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
+            LOG.log(warningLevelForDeserTC(stringId),
+                "[PersistenceManager.getTopComponentForID]" // NOI18N
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
                 + ndfe.getMessage(), ndfe);
         } catch (InvalidObjectException ioe) {
-            LOG.log(Level.WARNING,
-                "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
+            LOG.log(warningLevelForDeserTC(stringId),
+                "[PersistenceManager.getTopComponentForID]" // NOI18N
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
                 + ioe.getMessage(), ioe);
         } catch (DataObjectNotFoundException dnfe) {
-            LOG.log(Level.WARNING,
-                "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
+            LOG.log(warningLevelForDeserTC(stringId),
+                "[PersistenceManager.getTopComponentForID]" // NOI18N
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
                 + " Object not found: " + dnfe.getMessage() // NOI18N
                 + ". It was probably deleted.", dnfe); // NOI18N
         } catch (ClassNotFoundException exc) {
             // ignore, will result in IOException fail below, annotate
             // and turn into IOExc
-            LOG.log(Level.WARNING,
-                "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
+            LOG.log(warningLevelForDeserTC(stringId),
+                "[PersistenceManager.getTopComponentForID]" // NOI18N
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
                 + exc.getMessage(), exc);
         } catch (ClassCastException exc) {
             // instance is not top component (is broken), annotate and
             // turn into IOExc
-            LOG.log(Level.WARNING,
-                "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
+            LOG.log(warningLevelForDeserTC(stringId),
+                "[PersistenceManager.getTopComponentForID]" // NOI18N
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
                 + exc.getMessage(), exc);
         } catch (IOException ioe) {
-            LOG.log(Level.WARNING,
-                "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
+            LOG.log(warningLevelForDeserTC(stringId),
+                "[PersistenceManager.getTopComponentForID]" // NOI18N
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
                 + ioe.getMessage(), ioe);
         }
         return null;
+    }
+    private final Set<String> warnedIDs = Collections.synchronizedSet(new HashSet<String>());
+    /** Avoid printing dozens of warnings about the same ID in one IDE session. */
+    private Level warningLevelForDeserTC(String id) {
+        return warnedIDs.add(id) ? Level.WARNING : Level.FINE;
     }
     
     /** @return Searches for TopComponent with given string id and returns
@@ -668,7 +672,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             compsFolder = DataFolder.findFolder(getComponentsLocalFolder());            
         } catch (IOException exc) {
             LOG.log(Level.WARNING,
-                "[WinSys.PersistenceManager.saveTopComponents]" // NOI18N
+                "[PersistenceManager.saveTopComponents]" // NOI18N
                 + " Cannot get components folder", exc); // NOI18N
             return;
         }
@@ -696,26 +700,26 @@ public final class PersistenceManager implements PropertyChangeListener {
                           );
                     } else {
                         // save to settings file if there is already
-                        SaveCookie sc = (SaveCookie)ido.getCookie(SaveCookie.class);
+                        SaveCookie sc = ido.getCookie(SaveCookie.class);
                         if (sc != null) {
                             sc.save();
                         } else {
                             ido.delete();
                             InstanceDataObject.create(
-                            compsFolder, unescape((String)curEntry.getKey()), curTC, null
+                            compsFolder, unescape(curEntry.getKey()), curTC, null
                             );
                         }
                     }
                 } catch (NotSerializableException nse) {
                     // #36916: Handle case when TC is not serializable.
-                    String id = (String) topComponent2IDMap.get(curTC);
+                    String id = topComponent2IDMap.get(curTC);
                     // #75247: Log warning when TC is not serializable.
                     LOG.log(Level.WARNING, "TopComponent " + id + " is not serializable.", nse); //NOI18N
                     removeTCFromConfig(wmc,id);
                 } catch (IOException exc) {
                     // some problem with saving of top component, log warning
                     LOG.log(Level.WARNING, null, exc);
-                    String id = (String) topComponent2IDMap.get(curTC);
+                    String id = topComponent2IDMap.get(curTC);
                     removeTCFromConfig(wmc,id);
                 } catch (RuntimeException exc) {
                     //Bugfix #19688: Catch all other exceptions to be able to continue with saving process
@@ -724,7 +728,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                             curTC.getName());
                     Exceptions.attachLocalizedMessage(exc, annotation);
                     LOG.log(Level.WARNING, null, exc);
-                    String id = (String) topComponent2IDMap.get(curTC);
+                    String id = topComponent2IDMap.get(curTC);
                     removeTCFromConfig(wmc,id);
                 } catch (LinkageError le) {
                     String annotation = NbBundle.getMessage(
@@ -732,7 +736,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                             curTC.getName());
                     Exceptions.attachLocalizedMessage(le, annotation);
                     LOG.log(Level.WARNING, null, le);
-                    String id = (String) topComponent2IDMap.get(curTC);
+                    String id = topComponent2IDMap.get(curTC);
                     removeTCFromConfig(wmc,id);
                 }
             }
@@ -745,10 +749,9 @@ public final class PersistenceManager implements PropertyChangeListener {
         if (result != null) {
             return result;
         }
-        FileObject[] childrenArray = folder.getChildren();
-        for (int i = 0; i < childrenArray.length; i++) {
-            if (childrenArray[i].isFolder()) {
-                result = findTopComponentRefFile(childrenArray[i], tcId);
+        for (FileObject child : folder.getChildren()) {
+            if (child.isFolder()) {
+                result = findTopComponentRefFile(child, tcId);
                 if (result != null) {
                     return result;
                 }
@@ -766,7 +769,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         try {
             Method escape = 
                 InstanceDataObject.class.getDeclaredMethod(
-                    "escapeAndCut", new Class[] {String.class}); //NOI18N
+                    "escapeAndCut", String.class); //NOI18N
             escape.setAccessible(true);
             return (String) escape.invoke(null, name);
         } catch (Exception ex) {
@@ -785,7 +788,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         try {
             Method unescape =
             InstanceDataObject.class.getDeclaredMethod(
-            "unescape", new Class[] {String.class}); //NOI18N
+                    "unescape", String.class); //NOI18N
             unescape.setAccessible(true);
             return (String) unescape.invoke(null, name);
         } catch (Exception ex) {
@@ -869,7 +872,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             compsFO = getComponentsLocalFolder();
         } catch (IOException exc) {
             LOG.log(Level.WARNING,
-                "[WinSys.PersistenceManager.restorePair]" // NOI18N
+                "[PersistenceManager.restorePair]" // NOI18N
                 + " Cannot get components folder", exc); // NOI18N
             return null;
         }
@@ -922,13 +925,12 @@ public final class PersistenceManager implements PropertyChangeListener {
             return;
         }
 
-        for(Iterator it = failedCompsMap.keySet().iterator(); it.hasNext(); ) {
-            Exception e = (Exception)it.next();
-            Object name = failedCompsMap.get(e);
+        for (Exception e : failedCompsMap.keySet()) {
+            String name = failedCompsMap.get(e);
             // create message
             String message = NbBundle.getMessage(PersistenceManager.class, 
                     (reading ? "FMT_TCReadError" : "FMT_TCWriteError"),
-                    new Object[] {name});
+                    name);
             Exceptions.attachLocalizedMessage(e, message);
             LOG.log(Level.WARNING, null, e);
         }
@@ -1019,24 +1021,22 @@ public final class PersistenceManager implements PropertyChangeListener {
      * file is deleted from local component folder.
      */
     private void checkUsedTCId () throws IOException {
-        FileObject [] files = getComponentsLocalFolder().getChildren();
-        for (int i = 0; i < files.length; i++) {
-            if (!files[i].isFolder() && "settings".equals(files[i].getExt())) { // NOI18N
-                String tc_id = files[i].getName();
+        for (FileObject file : getComponentsLocalFolder().getChildren()) {
+            if (!file.isFolder() && "settings".equals(file.getExt())) { // NOI18N
+                String tc_id = file.getName();
                 boolean contains;
                 synchronized(LOCK_IDS) {
                     contains = usedTcIds.contains(tc_id);
                 }
                 if (!contains) {
-                    deleteOneFO(files[i]);
+                    deleteOneFO(file);
                 }
             }
         }
         //Fill global set of used TopComponent IDs
-        files = getComponentsLocalFolder().getChildren();
-        for (int i = 0; i < files.length; i++) {
-            if (!files[i].isFolder() && "settings".equals(files[i].getExt())) { // NOI18N
-                String tc_id = files[i].getName();
+        for (FileObject file : getComponentsLocalFolder().getChildren()) {
+            if (!file.isFolder() && "settings".equals(file.getExt())) { // NOI18N
+                String tc_id = file.getName();
                 synchronized(LOCK_IDS) {
                     globalIDSet.add(tc_id.toUpperCase(Locale.ENGLISH));
                 }
@@ -1246,6 +1246,7 @@ public final class PersistenceManager implements PropertyChangeListener {
      * @deprecated will be replaced by similar method in Modules Open APIs in
      * future releases
      */
+    @Deprecated
     static final ModuleInfo findModule (String codeNameBase, String strRelease, String strSpec) {
         SpecificationVersion spec = null;
         int release = -1;
