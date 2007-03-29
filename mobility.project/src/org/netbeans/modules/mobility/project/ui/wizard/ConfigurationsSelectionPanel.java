@@ -26,12 +26,14 @@
 package org.netbeans.modules.mobility.project.ui.wizard;
 
 import java.awt.Component;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -42,11 +44,13 @@ public class ConfigurationsSelectionPanel implements WizardDescriptor.Finishable
     public static final String CONFIGURATION_TEMPLATES = "configuration_templates"; //NOI18N
     
     private ConfigurationsSelectionPanelGUI gui = null;
+    private TemplateWizard wiz;
     
     public void readSettings(final Object settings) {
-        final List l = (List)((TemplateWizard)settings).getProperty(CONFIGURATION_TEMPLATES);
+        wiz = (TemplateWizard)settings;
+        Set s = (Set<ConfigurationTemplateDescriptor>)wiz.getProperty(CONFIGURATION_TEMPLATES);
         getComponent();
-        gui.setSelectedTemplates(l == null ? Collections.EMPTY_LIST : l);
+        gui.setSelectedTemplates(s == null ? new HashSet() : s);
     }
     
     public void storeSettings(final Object settings) {
@@ -54,12 +58,13 @@ public class ConfigurationsSelectionPanel implements WizardDescriptor.Finishable
         ((TemplateWizard)settings).putProperty(CONFIGURATION_TEMPLATES, gui.getSelectedTemplates());
     }
     
-    public void addChangeListener(@SuppressWarnings("unused")
-	final ChangeListener l) {
+    public void addChangeListener(final ChangeListener l) {
+        getComponent();
+        gui.addChangeListener(l);
     }
     
-    public void removeChangeListener(@SuppressWarnings("unused")
-	final ChangeListener l) {
+    public void removeChangeListener(final ChangeListener l) {
+        if (gui != null) gui.removeChangeListener(l);
     }
     
     public Component getComponent() {
@@ -76,6 +81,9 @@ public class ConfigurationsSelectionPanel implements WizardDescriptor.Finishable
     }
     
     public boolean isValid() {
-        return true;
+        getComponent();
+        boolean valid = gui.isValid();
+        if (wiz != null) wiz.putProperty("WizardPanel_errorMessage", valid ? null : NbBundle.getMessage(ConfigurationsSelectionPanel.class, "ERR_CfgSelPanel_NameCollision")); // NOI18N
+        return valid;
     }
 }

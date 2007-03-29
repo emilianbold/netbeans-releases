@@ -957,7 +957,7 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
                 if (!docs.contains(o)) docs.add(o);
             }
             platform.setJavadocFolders(docs);
-            PlatformConvertor.createConfigurationTemplates(platform);
+//            PlatformConvertor.createConfigurationTemplates(platform);
             loadData(platform);
         }
     }//GEN-LAST:event_jButtonRefreshActionPerformed

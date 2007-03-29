@@ -41,7 +41,6 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -61,7 +60,6 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.*;
@@ -78,6 +76,7 @@ import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mobility.project.ui.customizer.MIDletScanner;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
@@ -213,7 +212,7 @@ public class J2MEProjectGenerator {
         return h;
     }
     
-    public static AntProjectHelper createNewProject(final File projectLocation, final String name, final PlatformSelectionPanel.PlatformDescription platform, final Collection<DataObject> createHelloMIDlet, final List cfgTemplates) throws IOException {
+    public static AntProjectHelper createNewProject(final File projectLocation, final String name, final PlatformSelectionPanel.PlatformDescription platform, final Collection<DataObject> createHelloMIDlet, final Set<ConfigurationTemplateDescriptor> cfgTemplates) throws IOException {
         return createProject(projectLocation, name, platform, new ProjectGeneratorCallback() {
             public void doPostGeneration(Project project, AntProjectHelper helper, FileObject projectLocation, @SuppressWarnings("unused") File projectLocationFile, ArrayList<String> configurations) throws IOException {
                 final FileObject src = projectLocation.createFolder(SRC); // NOI18N
@@ -252,34 +251,18 @@ public class J2MEProjectGenerator {
                 if (cfgTemplates != null) {
                     final EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     final EditableProperties proj = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    final int privPrefixL = PRIVATE_PREFIX.length();
-                    for (int i=0; i<cfgTemplates.size(); i++) {
-                        final FileObject fo = (FileObject)cfgTemplates.get(i);
-                        String cfgName = fo.getName();
-                        if (cfgName.toLowerCase().endsWith(PlatformConvertor.CFG_TEMPLATE_SUFFIX.toLowerCase())) cfgName = cfgName.substring(0, cfgName.length() - PlatformConvertor.CFG_TEMPLATE_SUFFIX.length()); //NOI18N
+                    for (ConfigurationTemplateDescriptor desc : cfgTemplates) {
+                        String cfgName = desc.getCfgName();
+                        String prefix = J2MEProjectProperties.CONFIG_PREFIX + cfgName + '.'; 
                         if (!configurations.contains(cfgName)) {
                             configurations.add(cfgName);
-                            final Properties props = new Properties();
-                            InputStream in = null;
-                            try {
-                                in = fo.getInputStream();
-                                props.load(in);
-                            } catch (IOException ioe) {
-                                ErrorManager.getDefault().notify(ioe);
-                            } finally {
-                                if (in != null) try {in.close();} catch (IOException ioe2) {}
-                            }
-                            final String tmpPrefix = J2MEProjectProperties.CONFIG_PREFIX + fo.getName();
-                            final int tmpPrefixL = tmpPrefix.length();
-                            for ( final Map.Entry en : props.entrySet() ) {
-                                String key = (String)en.getKey();
-                                if (key.startsWith(PRIVATE_PREFIX)) {
-                                    key = key.substring(privPrefixL);
-                                    if (!priv.containsKey(key)) priv.put(key, (String)en.getValue());
-                                } else {
-                                    if (key.startsWith(tmpPrefix)) key = J2MEProjectProperties.CONFIG_PREFIX + cfgName + (key.substring(tmpPrefixL));
-                                    if (!proj.containsKey(key)) proj.put(key, (String)en.getValue());
-                                }
+                            Map<String, String> p = desc.getPrivateProperties();
+                            if (p != null) priv.putAll(p);
+                            p = desc.getProjectGlobalProperties();
+                            if (p != null) proj.putAll(p);
+                            p = desc.getProjectConfigurationProperties();
+                            if (p != null) for(Map.Entry<String, String> en : p.entrySet()) {
+                                proj.put(prefix + en.getKey(), en.getValue());
                             }
                         }
                     }

@@ -24,57 +24,141 @@
  */
 package org.netbeans.modules.mobility.project.ui.wizard;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.JCheckBox;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JPanel;
-import org.netbeans.modules.mobility.project.ui.customizer.VisualConfigSupport;
-import org.openide.filesystems.FileObject;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.CategoryDescriptor;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.Descriptor;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.TreeTableView;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.Node.Property;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author  Adam Sotona
  */
-public class ConfigurationsSelectionPanelGUI extends JPanel {
+public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerManager.Provider {
     
+    private static final String SELECTION = NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSelectionPanel_Selection"); //NOI18N
     private static final String TEMPLATE_FILEOBJECT_PROPERTY = "template_fileobject"; //NOI18N
+    private final ExplorerManager manager = new ExplorerManager();
+    private final TreeTableView treeView;
+    private Set<ConfigurationTemplateDescriptor> selection = new HashSet();
+    private HashSet<ChangeListener> listeners = new HashSet();
     
     /** Creates new form ConfigurationsSelectionPanelGUI */
     public ConfigurationsSelectionPanelGUI() {
         initComponents();
-        FileObject ch[] = VisualConfigSupport.getConfigurationTemplates();
-        if (ch.length > 0) {
-            templatesPanel.setVisible(false);
-            for (int i=0; i<ch.length; i++) {
-                String name = ch[i].getName();
-                final JCheckBox cb = new JCheckBox(name);
-                cb.setToolTipText(name);
-                cb.putClientProperty(TEMPLATE_FILEOBJECT_PROPERTY, ch[i]);
-                templatesPanel.add(cb, new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+        treeView = new TreeTableView();
+        jLabel1.setLabelFor(treeView);
+        treeView.setPopupAllowed(false);
+        treeView.setRootVisible(false);
+        treeView.setDefaultActionAllowed(false);
+        treeView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        treeView.setProperties(new Property[]{ new PropertySupport.ReadWrite<Boolean>("selection", Boolean.class, SELECTION, SELECTION){ //NOI18N
+            public void setValue(Boolean value) {}
+            public Boolean getValue() {return true;}
+        }});
+        templatesPanel.add(treeView, BorderLayout.CENTER);
+        AbstractNode root = new AbstractNode(new Children.Keys<ProjectConfigurationFactory>(){
+            {setKeys(Lookup.getDefault().lookupAll(ProjectConfigurationFactory.class));}
+            protected Node[] createNodes(ProjectConfigurationFactory key) {
+                return new Node[] {new CategoryNode(key.getRootCategory())};
             }
-            templatesPanel.add(new JPanel(), new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, 1.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0));
-            templatesPanel.setVisible(true);
-            templatesPanel.repaint();
-            templatesPanel.validate();
+        });
+        root.setName(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSelectionPanel_Templates")); //NOI18N
+        manager.setRootContext(root);
+        treeView.setPreferredSize(new Dimension(480, 350));
+        treeView.setTreePreferredWidth(420);
+        treeView.setTableColumnPreferredWidth(0, 60);
+    }
+
+    private class CategoryNode extends AbstractNode {
+        public CategoryNode(final ProjectConfigurationFactory.CategoryDescriptor cat) {
+            super(new Children.Keys<ProjectConfigurationFactory.Descriptor>(){
+                {setKeys(cat.getChildren());}
+                protected Node[] createNodes(Descriptor key) {
+                    Node n = key instanceof CategoryDescriptor ? new CategoryNode((CategoryDescriptor)key) : key instanceof ConfigurationTemplateDescriptor ? new TemplateNode((ConfigurationTemplateDescriptor)key) : null;
+                    return n == null ? null : new Node[] {n};
+                }
+            });
+            setDisplayName(cat.getDisplayName());
         }
     }
     
-    public void setSelectedTemplates(final List<Object> selected) {
-        final Component c[] = templatesPanel.getComponents();
-        for (int i=0; i<c.length; i++)
-            if (c[i] instanceof JCheckBox) ((JCheckBox)c[i]).setSelected(selected.contains(((JCheckBox)c[i]).getClientProperty(TEMPLATE_FILEOBJECT_PROPERTY)));
+    private class TemplateNode extends AbstractNode {
+        private ConfigurationTemplateDescriptor cfgTmp;
+        public TemplateNode(ConfigurationTemplateDescriptor cfgTmp) {
+            super(Children.LEAF);
+            this.cfgTmp = cfgTmp;
+            setDisplayName(cfgTmp.getDisplayName().equals(cfgTmp.getCfgName()) ? cfgTmp.getDisplayName() : NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSlePanel_TemplateNodePattern", cfgTmp.getDisplayName(), cfgTmp.getCfgName())); //NOI18N
+        }
+        
+        protected Sheet createSheet() {
+            Sheet s = Sheet.createDefault();
+            Sheet.Set ss = s.get(Sheet.PROPERTIES);
+            ss.put(new PropertySupport.ReadWrite<Boolean>("selection", Boolean.class, SELECTION, SELECTION) { //NOI18N
+                public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
+                    return selection.contains(cfgTmp);
+                }
+                public void setValue(Boolean val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                    if (val) selection.add(cfgTmp);
+                    else selection.remove(cfgTmp);
+                    fireChange();
+                }
+            });
+            return s;
+        }
+
     }
     
-    public List<Object> getSelectedTemplates() {
-        final ArrayList<Object> selected = new ArrayList<Object>();
-        final Component c[] = templatesPanel.getComponents();
-        for (int i=0; i<c.length; i++)
-            if (c[i] instanceof JCheckBox && ((JCheckBox)c[i]).isSelected()) selected.add(((JCheckBox)c[i]).getClientProperty(TEMPLATE_FILEOBJECT_PROPERTY));
-        return selected;
+    private void fireChange() {
+        for (ChangeListener l : listeners) {
+            l.stateChanged(new ChangeEvent(this));
+        }
+    }
+    
+    public void addChangeListener(ChangeListener l) {
+        listeners.add(l);
+    }
+    
+    public void removeChangeListener(ChangeListener l) {
+        listeners.remove(l);
+    }
+    
+    public boolean isValid() {
+        HashSet<String> names = new HashSet();
+        for (ConfigurationTemplateDescriptor cfg : selection) {
+            if (!names.add(cfg.getCfgName())) return false;
+        }
+        return true; 
+    }
+    
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
+    
+    public void setSelectedTemplates(Set<ConfigurationTemplateDescriptor> selected) {
+        this.selection = selected;
+    }
+    
+    public Set<ConfigurationTemplateDescriptor> getSelectedTemplates() {
+        return selection;
     }
     
     /** This method is called from within the constructor to
@@ -87,67 +171,35 @@ public class ConfigurationsSelectionPanelGUI extends JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jLabel1 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
         templatesPanel = new javax.swing.JPanel();
-        jCheckBoxSelectAll = new javax.swing.JCheckBox();
 
+        setName(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "TITLE_ConfigurationsSelection")); // NOI18N
+        setPreferredSize(new java.awt.Dimension(560, 350));
         setLayout(new java.awt.GridBagLayout());
 
-        setName(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "TITLE_ConfigurationsSelection"));
-        setPreferredSize(new java.awt.Dimension(560, 350));
         jLabel1.setDisplayedMnemonic(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "MNM_ConfigurationsSelection").charAt(0));
         jLabel1.setLabelFor(templatesPanel);
-        jLabel1.setText(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_ConfigurationsSelection"));
+        jLabel1.setText(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_ConfigurationsSelection")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jLabel1, gridBagConstraints);
 
-        templatesPanel.setLayout(new java.awt.GridBagLayout());
-
-        jScrollPane1.setViewportView(templatesPanel);
-
+        templatesPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        templatesPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        add(jScrollPane1, gridBagConstraints);
-
-        jCheckBoxSelectAll.setMnemonic(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "MNM_SelectAll").charAt(0));
-        jCheckBoxSelectAll.setText(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_SelectAll"));
-        jCheckBoxSelectAll.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBoxSelectAllActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 2, 0, 0);
-        add(jCheckBoxSelectAll, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
-    
-    private void jCheckBoxSelectAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxSelectAllActionPerformed
-        final boolean selected = jCheckBoxSelectAll.isSelected();
-        final Component c[] = templatesPanel.getComponents();
-        for (int i=0; i<c.length; i++)
-            if (c[i] instanceof JCheckBox) ((JCheckBox)c[i]).setSelected(selected);
-        
-    }//GEN-LAST:event_jCheckBoxSelectAllActionPerformed
+        add(templatesPanel, gridBagConstraints);
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox jCheckBoxSelectAll;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel templatesPanel;
     // End of variables declaration//GEN-END:variables
 }

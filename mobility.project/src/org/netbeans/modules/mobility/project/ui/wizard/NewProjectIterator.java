@@ -26,11 +26,12 @@ package org.netbeans.modules.mobility.project.ui.wizard;
 
 import java.io.File;
 import java.util.HashSet;
-import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import javax.swing.JComponent;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.loaders.DataObject;
@@ -134,7 +135,7 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         final Boolean createMIDlet = (Boolean) templateWizard.getProperty(ProjectPanel.PROJECT_CREATE_MIDLET);
         HashSet<DataObject> result = createMIDlet != null && createMIDlet.booleanValue() ? new HashSet<DataObject>() : null;
         
-        final AntProjectHelper helper = J2MEProjectGenerator.createNewProject(projectLocation, name, platform, result, (List)templateWizard.getProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES));
+        final AntProjectHelper helper = J2MEProjectGenerator.createNewProject(projectLocation, name, platform, result, (Set<ConfigurationTemplateDescriptor>)templateWizard.getProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES));
         if (result == null) result = new HashSet<DataObject>();
         result.add(DataObject.find(helper.getProjectDirectory()));
         return result;

@@ -31,6 +31,7 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages>
+                <package>org.netbeans.spi.mobility.cfgfactory</package>
                 <package>org.netbeans.spi.mobility.cldcplatform</package>
                 <package>org.netbeans.spi.mobility.deployment</package>
             </public-packages>
