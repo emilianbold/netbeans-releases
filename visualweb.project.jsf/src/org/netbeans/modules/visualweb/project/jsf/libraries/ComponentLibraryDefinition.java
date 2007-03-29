@@ -20,7 +20,6 @@
 package org.netbeans.modules.visualweb.project.jsf.libraries;
 
 import org.netbeans.modules.visualweb.project.jsf.api.LibraryDefinition;
-import org.netbeans.modules.visualweb.project.jsf.api.LibraryDefinition.LibraryDomain;
 import org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider;
 
 import java.io.IOException;
@@ -31,15 +30,13 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-// TODO Can't hack NB anymore.
-//import org.netbeans.api.project.libraries.RaveLibraryTypeRegistry;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 
 /**
  *
- * @author dey
+ * @author Po-Ting Wu
  */
 public class ComponentLibraryDefinition extends LibraryDefinition {
     /**
@@ -50,9 +47,6 @@ public class ComponentLibraryDefinition extends LibraryDefinition {
      * @param localizingBundle Sets the localizing bundle. The bundle is used for localizing the name and
      * description. The bundle is located using the system ClassLoader. This resource name will look
      * something like: org.netbeans.modules.visualweb.mymodule.Bundle
-     * @param domain Location where this library definition should live (tool, user, project)
-     * <i>Not implemented. Until NetBeans supports this feature, all library definitions are
-     * perssisted in the user domain (i.e. userdir) </i>
      * @param classPaths List of classpath references: jar, zip, or folder. Can be empty or null.
      * @param javadocs List of javadoc references, jar zip, or folder. Can be empty or null.
      * @param sources, List of jar, zip, or folder. Can be empty or null;
@@ -62,22 +56,10 @@ public class ComponentLibraryDefinition extends LibraryDefinition {
     public static Library create(   String name,
                                     String description,
                                     String localizingBundle,
-                                    LibraryDomain domain,
                                     List /* <URL> */ classPaths,
                                     List /* <URL> */ sources,
                                     List /* <URL> */ javadocs,
                                     List /* <URL> */ designtimes) throws IOException {
-
-        /* TODO Can't hack NB anymore.
-        LibraryTypeProvider provider = RaveLibraryTypeRegistry.getLibraryTypeProvider (ComponentLibraryTypeProvider.LIBRARY_TYPE);
-
-        if (provider == null) {
-            return null;
-        }
-
-        LibraryImplementation impl = provider.createLibrary();
-        */
-
         LibraryImplementation impl = LibrariesSupport.createLibraryImplementation(ComponentLibraryTypeProvider.LIBRARY_TYPE, ComponentLibraryTypeProvider.VOLUME_TYPES);
         impl.setName (name);
         impl.setDescription (description);
@@ -133,9 +115,6 @@ public class ComponentLibraryDefinition extends LibraryDefinition {
      * @param localizingBundle Sets the localizing bundle. The bundle is used for localizing the name and 
      * description. The bundle is located using the system ClassLoader. This resource name will look
      * something like: org.netbeans.modules.visualweb.mymodule.Bundle
-     * @param domain Location where this library definition should live (tool, user, project) 
-     * <i>Not implemented. Until NetBeans supports this feature, all library definitions are 
-     * perssisted in the user domain (i.e. userdir) </i> 
      * @param classPaths List of classpath references: jar, zip, or folder. Can be empty or null.
      * @param javadocs List of javadoc references, jar zip, or folder. Can be empty or null.
      * @param sources, List of jar, zip, or folder. Can be empty or null;
@@ -146,13 +125,12 @@ public class ComponentLibraryDefinition extends LibraryDefinition {
     public static Library update(   String name, 
                                     String description,
                                     String localizingBundle,
-                                    LibraryDomain domain,
                                     List /* <URL> */ classPaths, 
                                     List /* <URL> */ sources, 
                                     List /* <URL> */ javadocs, 
                                     List /* <URL> */ designtimes) throws IOException {
-        remove(name, domain);
-        return create(name, description, localizingBundle, domain, classPaths, sources, javadocs, designtimes);
+        remove(name);
+        return create(name, description, localizingBundle, classPaths, sources, javadocs, designtimes);
     }
 
 }

@@ -20,9 +20,7 @@
 package org.netbeans.modules.visualweb.project.jsf.api;
 
 import org.netbeans.modules.visualweb.project.jsf.JsfProjectTemplateJakarta;
-import org.netbeans.modules.visualweb.project.jsf.api.LibraryDefinition.LibraryDomain;
 import org.netbeans.modules.visualweb.project.jsf.actions.ImportFileAction;
-import org.netbeans.modules.visualweb.project.jsf.libraries.J2SELibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.ComponentLibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.JsfProjectLibrary;
 
@@ -1155,9 +1153,9 @@ public class JsfProjectUtils {
         // XXX NetBeans API not finished yet
         // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
         String type = ClassPath.COMPILE;
-            try {
+        try {
             return ProjectClassPathModifier.addLibraries(libraries, getSourceRoot(project), type);
-                } catch (IOException e) {
+        } catch (IOException e) {
             // Should continue here, many exceptions happened in NetBeans codes are not fatal.
         }
 
@@ -1358,32 +1356,19 @@ public class JsfProjectUtils {
         }
     }
     
-    public static Library createJ2SELibrary(
-            String name,
-            String description,
-            String localizingBundle,
-            LibraryDomain domain,
-            List /* <URL> */ classPaths,
-            List /* <URL> */ sources,
-            List /* <URL> */ javadocs) throws IOException {
-        return J2SELibraryDefinition.create(name, description, localizingBundle, domain, classPaths, sources, javadocs);
-    }
-    
     public static Library createComponentLibrary(
             String name,
             String description,
             String localizingBundle,
-            LibraryDomain domain,
             List /* <URL> */ classPaths,
             List /* <URL> */ sources,
             List /* <URL> */ javadocs,
             List /* <URL> */ designtimes) throws IOException {
-        return ComponentLibraryDefinition.create(name, description, localizingBundle, domain, classPaths, sources, javadocs, designtimes);
+        return ComponentLibraryDefinition.create(name, description, localizingBundle, classPaths, sources, javadocs, designtimes);
     }
     
-    public static void removeLibrary(  String name,
-            LibraryDomain domain) throws IOException {
-        LibraryDefinition.remove(name, domain);
+    public static void removeLibrary(String name) throws IOException {
+        LibraryDefinition.remove(name);
     }
     
     public static boolean isDesigntimeLib(String name) {
