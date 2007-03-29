@@ -49,6 +49,7 @@ public class AnalyserTest extends TestCase {
         })));
         l.addRule (LLSyntaxAnalyser.Rule.create ("S", Arrays.asList (new Object[] {
         })));
+        l.initializeAnalyser ();
         LLSyntaxAnalyser a = l.getAnalyser ();
         //PetraTest.print (Petra.first (r, 5));
         TokenInput input = TokenInputUtils.create (new ASTToken[] {
@@ -141,7 +142,6 @@ public class AnalyserTest extends TestCase {
 
     public void test4 () throws ParseException {
         Language l = NBSLanguageReader.readLanguage (
-            "test", 
             "TOKEN:operator:( '{' | '}' | '.' | ',' | '(' | ')' )" +
             "TOKEN:separator:( ';' )" +
             "TOKEN:whitespace:( ['\\n' '\\r' ' ' '\\t']+ )" +
@@ -154,13 +154,14 @@ public class AnalyserTest extends TestCase {
             "variable = modifiers <identifier> <identifier> <separator,';'>;" +
             "modifiers = <keyword,'public'> modifiers;" +
             "modifiers = ;",
+            "test", 
             mimeType
         );
         CharInput input = new StringInput (
             "void a;" +
-            "public ii name;",
-            "source"
+            "public ii name;"
         );
+        l.initializeAnalyser ();
         ASTNode n = l.getAnalyser ().read (
             TokenInputUtils.create (
                 "text/test",
@@ -271,7 +272,6 @@ public class AnalyserTest extends TestCase {
     
     public void test3 () throws ParseException {
         Language l = NBSLanguageReader.readLanguage (
-            "test", 
             "TOKEN:operator:( '{' | '}' | '.' | ';' | ',' | '(' | ')' )" +
             "TOKEN:whitespace:( ['\\n' '\\r' ' ' '\\t']+ )" +
             "TOKEN:keyword:( 'package' | 'class' | 'import' | 'static' | 'synchronized' | 'final' | 'abstract' | 'native' | 'import' | 'extends' | 'implements' | 'public' | 'protected' | 'private' )" +
@@ -282,12 +282,13 @@ public class AnalyserTest extends TestCase {
             "SS = <identifier,'if'> E <identifier,'then'> SS <identifier,'else'> SS;" +
             "SS = <identifier, 'b'>;" +
             "E = <identifier,'e'>;",
+            "test", 
             mimeType
         );
         CharInput input = new StringInput (
-            "a if e then if e then b else b b",
-            "source"
+            "a if e then if e then b else b b"
         );
+        l.initializeAnalyser ();
         ASTNode n = l.getAnalyser ().read (
             TokenInputUtils.create (
                 "text/test",
@@ -307,7 +308,48 @@ public class AnalyserTest extends TestCase {
     
     public void test5 () throws ParseException {
         Language l = NBSLanguageReader.readLanguage (
+            "TOKEN:TAG:( '<' ['a'-'z']+ )" +
+            "TOKEN:SYMBOL:( '>' | '=')" +
+            "TOKEN:ENDTAG:( '</' ['a'-'z']+ )" +
+            "TOKEN:ATTRIBUTE:( ['a'-'z']+ )" +
+            "TOKEN:ATTR_VALUE:( '\\\"' [^ '\\n' '\\r' '\\\"']+ '\\\"' )" +
+            "TOKEN:VALUE:( '\\\"' [^ '\\n' '\\r' '\\\"']+ '\\\"' )" +
+            "TOKEN:TEXT:( [^'<']+ )" +
+            "S = tags;" +
+            "tags = (startTag | endTag | etext)*;" + 
+            "startTag = <TAG> (attribute)* ( <SYMBOL, '>'> | <SYMBOL, '/>'> );" + 
+            "endTag = <ENDTAG> <SYMBOL, '>'>;" + 
+            "attribute = <ATTRIBUTE>;" + 
+            "attribute = <ATTR_VALUE>;" + 
+            "attribute = <ATTRIBUTE> <SYMBOL,'='> <VALUE>;" + 
+            "etext = (<TEXT>)*;",
             "test", 
+            mimeType
+        );
+        CharInput input = new StringInput (
+            "<a></a>"
+        );
+        l.initializeAnalyser ();
+        ASTNode n = l.getAnalyser ().read (
+            TokenInputUtils.create (
+                "text/test",
+                l.getParser (),
+                input,
+                l.getSkipTokenTypes ()
+            ),
+            false
+        );
+        System.out.println(n.print ());
+        assertTrue (input.eof ());
+        assertEquals (3, n.getChildren ().size ());
+        n = (ASTNode) n.getChildren ().get (1);
+        assertEquals (4, n.getChildren ().size ());
+        n = (ASTNode) n.getChildren ().get (3);
+        assertEquals (6, n.getChildren ().size ());
+    }
+    
+    public void test6 () throws ParseException {
+        Language l = NBSLanguageReader.readLanguage (
             "TOKEN:operator:( '{' | '}' | '.' | ';' | ',' | '(' | ')' )" +
             "TOKEN:whitespace:( ['\\n' '\\r' ' ' '\\t']+ )" +
             "TOKEN:keyword:( 'package' | 'class' | 'import' | 'static' | 'synchronized' | 'final' | 'abstract' | 'native' | 'import' | 'extends' | 'implements' | 'public' | 'protected' | 'private' )" +
@@ -318,12 +360,13 @@ public class AnalyserTest extends TestCase {
             "SS = <identifier,'if'> E <identifier,'then'> SS <identifier,'else'> SS;" +
             "SS = <identifier, 'b'>;" +
             "E = <identifier,'e'>;",
+            "test", 
             mimeType
         );
         CharInput input = new StringInput (
-            "a if e then if e then b else b b",
-            "source"
+            "a if e then if e then b else b b"
         );
+        l.initializeAnalyser ();
         ASTNode n = l.getAnalyser ().read (
             TokenInputUtils.create (
                 "text/test",

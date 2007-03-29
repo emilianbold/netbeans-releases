@@ -19,6 +19,10 @@
 
 package org.netbeans.modules.languages;
 
+import java.awt.Point;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,8 +30,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Position;
+
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor.Message;
+import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
 
@@ -123,5 +130,22 @@ public class Utils {
                 s += size (value);
         }
         return s;
+    }
+    
+    public static Point findPosition (
+        String      text, 
+        int         offset
+    ) {
+        int current = 0;
+        int next = text.indexOf ('\n', current);
+        int lineNumber = 1;
+        while (next >= 0) {
+            if (next > offset)
+                return new Point (lineNumber, offset - current + 1);
+            lineNumber++;
+            current = next + 1;
+            next = text.indexOf ('\n', current);
+        }
+        throw new ArrayIndexOutOfBoundsException ();
     }
 }

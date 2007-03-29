@@ -111,7 +111,7 @@ public class PatternTest extends TestCase {
         boolean result,
         String ext
     ) throws ParseException {
-        StringInput in = new StringInput (text, "test");
+        StringInput in = new StringInput (text);
         Pattern p = Pattern.create (expression);
         assertEquals (expression + " <" + text + ">", result, p.next (in) != null);
         assertEquals (expression + " <" + text + ">", ext, in.getAsText ());

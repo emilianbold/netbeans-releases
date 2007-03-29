@@ -91,7 +91,7 @@ public class LanguageTest extends TestCase {
         assertEquals (5, l.getTokenTypes ().size ());
         Parser p = l.getParser ();
         MyCookie cookie = new MyCookie ();
-        StringInput input = new StringInput ("10090aas$AAQ+", "test");
+        StringInput input = new StringInput ("10090aas$AAQ+");
         ASTToken t = p.read (cookie, input, l.getMimeType ());
         assertEquals ("jedna", t.getType ());
         assertEquals ("10090", t.getIdentifier ());

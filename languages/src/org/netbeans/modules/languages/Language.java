@@ -35,7 +35,6 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.List;
-import java.util.logging.Logger;
 
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
@@ -56,10 +55,6 @@ import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.modules.languages.parser.Petra;
 import org.netbeans.modules.languages.parser.StringInput;
 import org.netbeans.modules.languages.parser.TokenInputUtils;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Message;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -144,6 +139,10 @@ public class Language {
     }
     
     public LLSyntaxAnalyser getAnalyser () {
+        return analyser;
+    }
+    
+    public LLSyntaxAnalyser initializeAnalyser () throws ParseException {
         if (analyser != null) return analyser;
         synchronized (this) {
             if (analyser != null) return analyser;
@@ -151,9 +150,8 @@ public class Language {
                 analyser = LLSyntaxAnalyser.create (this);
                 return analyser;
             } catch (ParseException ex) {
-                Utils.message ("Editors/" + mimeType + "/language.nbs: " + ex.getMessage ());
                 analyser = LLSyntaxAnalyser.createEmpty (this);
-                return analyser;
+                throw ex;
             }
         }
     }
@@ -580,7 +578,7 @@ public class Language {
         TokenInput ti = TokenInputUtils.create (
             getMimeType (),
             getParser (), 
-            new StringInput (sb.toString (), sourceName),
+            new StringInput (sb.toString ()),
             getSkipTokenTypes ()
         );
         return getAnalyser ().read (ti, true);

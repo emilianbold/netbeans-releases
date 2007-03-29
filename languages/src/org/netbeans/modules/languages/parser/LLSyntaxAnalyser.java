@@ -130,7 +130,7 @@ public class LLSyntaxAnalyser {
                 int newRule = getRule (nt, input);
                 if (newRule == -1) {
                     if (!skipErrors)
-                        throw new ParseException ("No rule for " + input.next (1) + " in " + input, root.createASTNode ());
+                        throw new ParseException ("No rule for " + input.next (1) + " in " + nt + ".", root.createASTNode ());
                     if (input.eof ()) {
                         if (node == null)
                             root = node = new Node ("Root", -1, offset, whitespaces);
@@ -183,14 +183,14 @@ public class LLSyntaxAnalyser {
                 ASTToken token = (ASTToken) current;
                 if (input.eof ()) {
                     if (!skipErrors)
-                        throw new ParseException ("Unexpected end of file in " + input, root.createASTNode ());
+                        throw new ParseException ("Unexpected end of file.", root.createASTNode ());
                     createErrorNode (node, input.getOffset ());
                     //S ystem.out.println(input.getIndex () + ": unexpected eof " + token);
                     return root.createASTNode ();
                 } else
                 if (!isCompatible (token, input.next (1))) {
                     if (!skipErrors)
-                        throw new ParseException ("Unexpected token " + input.next (1) + " in " + input + ". Expecting " + token, root.createASTNode ());
+                        throw new ParseException ("Unexpected token " + input.next (1) + ". Expecting " + token, root.createASTNode ());
                     createErrorNode (node, input.getOffset ()).addItem (readEmbeddings (input.read (), skipErrors));
                     //S ystem.out.println(input.getIndex () + ": unrecognized token " + token + "<>" + input.next (1));
                 } else {
@@ -200,7 +200,7 @@ public class LLSyntaxAnalyser {
             }
         } while (true);
         if (!skipErrors && !input.eof ())
-            throw new ParseException ("Unexpected token " + input.next (1) + " in " + input, root.createASTNode ());
+            throw new ParseException ("Unexpected token " + input.next (1) + ".", root.createASTNode ());
         while (
             !input.eof () //&& 
             //input.next (1).getMimeType () == mimeType

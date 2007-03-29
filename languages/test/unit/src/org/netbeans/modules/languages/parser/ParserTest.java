@@ -158,8 +158,7 @@ public class ParserTest extends TestCase {
             "    void main (String[] s) {\n" +
             "        return \"asd\" + \'a\' + 123;\n" +
             "    }\n" +
-            "}",
-            "test"
+            "}"
         );
         Cookie c = new MyCookie ();
         assertEquals ("state: " + c.getState () + " text: " + in, "comment", ((ASTToken) parser.read (c, in, "text/test")).getType ());
@@ -197,8 +196,7 @@ public class ParserTest extends TestCase {
             " \" sdf\" = sdf" +
             "<!-- NewPage" +
             "  ?!?@? -- > sdf -> -->\n" +
-            "<HTML><\\HTML> <test t>",
-            "test"
+            "<HTML><\\HTML> <test t>"
         );
         Cookie c = new MyCookie ();
         assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((ASTToken) parser.read (c, in, "text/test")).getType ());

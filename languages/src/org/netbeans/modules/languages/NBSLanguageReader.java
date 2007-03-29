@@ -19,31 +19,29 @@
 
 package org.netbeans.modules.languages;
 
-import java.util.Collections;
-import java.util.Iterator;
+import java.awt.Point;
+import java.io.InputStream;
+import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.CharInput;
-import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.modules.languages.Feature.Type;
+import org.netbeans.modules.languages.parser.Pattern;
+import org.netbeans.modules.languages.parser.StringInput;
+import org.netbeans.modules.languages.parser.TokenInputUtils;
+import org.openide.filesystems.FileObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ParseException;
-import org.netbeans.modules.languages.parser.Pattern;
-import org.netbeans.api.languages.ASTToken;
-import org.netbeans.modules.languages.parser.StringInput;
-import org.netbeans.modules.languages.parser.TokenInputUtils;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-
-    
+import java.util.Collections;
+import java.util.Iterator;
+ 
     
 /**
  *
@@ -55,23 +53,17 @@ public class NBSLanguageReader {
         FileObject  fo, 
         String      mimeType
     ) throws ParseException, IOException {
-        BufferedReader reader = null;
-        try {
-            return readLanguage (fo.getPath (), fo.getInputStream (), mimeType);
-        } finally {
-            if (reader != null)
-                reader.close ();
-        }
+        return readLanguage (fo.getInputStream (), fo.getPath (), mimeType);
     }
     
     public static Language readLanguage (
-        String      fileName, 
-        InputStream inputStream,
+        InputStream is, 
+        String      sourceName, 
         String      mimeType
-    ) throws IOException, ParseException {
+    ) throws ParseException, IOException {
         BufferedReader reader = null;
         try {
-            InputStreamReader r = new InputStreamReader (inputStream);
+            InputStreamReader r = new InputStreamReader (is);
             reader = new BufferedReader (r);
             StringBuilder sb = new StringBuilder ();
             String line = reader.readLine ();
@@ -79,7 +71,7 @@ public class NBSLanguageReader {
                 sb.append (line).append ('\n');
                 line = reader.readLine ();
             }
-            return readLanguage (fileName, sb.toString (), mimeType);
+            return readLanguage (sb.toString (), sourceName, mimeType);
         } finally {
             if (reader != null)
                 reader.close ();
@@ -87,32 +79,56 @@ public class NBSLanguageReader {
     }
     
     public static Language readLanguage (
-        String      fileName, 
-        String      s, 
+        String      source, 
+        String      sourceName, 
         String      mimeType
     ) throws ParseException {
-        CharInput input = new StringInput (s, fileName);
+        CharInput input = new StringInput (source);
         Language language = new Language (mimeType);
-        Language nbsLanguage = NBSLanguage.getNBSLanguage ();
-        TokenInput tokenInput = TokenInputUtils.create (
-            mimeType,
-            nbsLanguage.getParser (), 
-            input, 
-            Collections.EMPTY_SET
-        );
-        ASTNode node = nbsLanguage.getAnalyser ().read (tokenInput, false);
-        if (node == null) 
-            System.out.println("Can not parse " + fileName);
-        else
-        if (node.getChildren ().isEmpty ())
-            System.out.println("Can not parse " + fileName + " " + node.getNT ());
-        readBody (node, language);
+        ASTNode node = null;
+        TokenInput tokenInput = null;
+        try {
+            Language nbsLanguage = getNBSLanguage ();
+            tokenInput = TokenInputUtils.create (
+                mimeType,
+                nbsLanguage.getParser (), 
+                input, 
+                Collections.EMPTY_SET
+            );
+            node = nbsLanguage.getAnalyser ().read (tokenInput, false);
+            if (node == null) 
+                System.out.println ("Can not parse " + sourceName);
+            else
+            if (node.getChildren ().isEmpty ())
+                System.out.println ("Can not parse " + sourceName + " " + node.getNT ());
+        } catch (ParseException ex) {
+            //ex.printStackTrace ();
+            Point p = Utils.findPosition (source, tokenInput.getOffset ());
+            throw new ParseException (
+                sourceName + " " + 
+                p.x + "," + p.y + ": " + 
+                ex.getMessage ()
+            );
+        }
+        readBody (source, sourceName, node, language);
         return language;
     }
     
+    private static Language nbsLanguage;
+    
+    private static Language getNBSLanguage () throws ParseException {
+        if (nbsLanguage == null) {
+            nbsLanguage = NBSLanguage.getNBSLanguage ();
+            nbsLanguage.initializeAnalyser ();
+        }
+        return nbsLanguage;
+    }
+    
     private static void readBody (
-        ASTNode root, 
-        Language language
+        String      source,
+        String      sourceName,
+        ASTNode     root, 
+        Language    language
     ) throws ParseException {
         Iterator it = root.getChildren ().iterator ();
         while (it.hasNext ()) {
@@ -120,16 +136,16 @@ public class NBSLanguageReader {
             if (o instanceof ASTToken) continue;
             ASTNode node = (ASTNode) o;
             if (node.getNT ().equals ("token"))
-                readToken (node, language, null);
+                readToken (source, sourceName, node, language, null);
             else
             if (node.getNT ().equals ("tokenState"))
-                readTokenState (node, language);
+                readTokenState (source, sourceName, node, language);
             else
             if (node.getNT ().equals ("grammarRule"))
                 readGrammarRule (node, language);
             else
             if (node.getNT ().equals ("command"))
-                readCommand (node, language);
+                readCommand (source, sourceName, node, language);
             else
                 throw new ParseException (
                     "Unknown grammar rule (" + node.getNT () + ")."
@@ -138,9 +154,11 @@ public class NBSLanguageReader {
     }
     
     private static void readToken (
-        ASTNode node, 
-        Language language, 
-        String state
+        String      source,
+        String      sourceName,
+        ASTNode     node, 
+        Language    language, 
+        String      state
     ) throws ParseException {
         String startState = null;
         String endState = null;
@@ -149,7 +167,7 @@ public class NBSLanguageReader {
         String name  = node.getTokenType ("identifier").getIdentifier ();
         ASTNode pnode = node.getNode ("token2.properties");
         if (pnode != null) {
-            properties = readProperties (null, null, pnode);
+            properties = readProperties (source, sourceName, null, null, pnode);
 //            startState = getString (properties, "start_state", false);
 //            endState = getString (properties, "end_state", false);
 //            pattern = (Pattern) properties.get ("pattern");
@@ -159,9 +177,10 @@ public class NBSLanguageReader {
             if (pattern == null && properties.getType("call") == Type.METHOD_CALL)
                 pattern = Pattern.create (".");
         } else {
-            String patternString = node.getNode ("token2.regularExpression").getAsText ().trim ();
+            ASTNode regularExpressionNode = node.getNode ("token2.regularExpression");
+            String patternString = regularExpressionNode.getAsText ().trim ();
             endState = node.getTokenTypeIdentifier ("token2.token3.state.identifier");
-            pattern = Pattern.create (patternString);
+            pattern = readPattern (source, sourceName, patternString, regularExpressionNode.getOffset ());
         }
         if (startState != null && state != null) 
             throw new ParseException ("Start state should not be specified inside token group block!");
@@ -177,41 +196,47 @@ public class NBSLanguageReader {
     }
     
     private static void readGrammarRule (
-        ASTNode node, 
-        Language language
+        ASTNode     node, 
+        Language    language
     ) {
         language.addRule (node);
     }
     
     private static void readTokenState (
-        ASTNode node, 
-        Language language
+        String      source,
+        String      sourceName,
+        ASTNode     node, 
+        Language    language
     ) throws ParseException {
         String startState = node.getTokenTypeIdentifier ("state.identifier");
         ASTNode n = node.getNode ("tokenState1.token");
         if (n != null)
-            readToken (n, language, startState);
+            readToken (source, sourceName, n, language, startState);
         else
-            readTokenGroup (node.getNode ("tokenState1.tokenGroup"), language, startState);
+            readTokenGroup (source, sourceName, node.getNode ("tokenState1.tokenGroup"), language, startState);
     }
     
     private static void readTokenGroup (
-        ASTNode node, 
-        Language language,
-        String startState
+        String      source,
+        String      sourceName,
+        ASTNode     node, 
+        Language    language,
+        String      startState
     ) throws ParseException {
         Iterator it = node.getNode ("tokensInGroup").getChildren ().iterator ();
         while (it.hasNext ()) {
             Object o = it.next ();
             if (o instanceof ASTToken) continue;
             ASTNode n = (ASTNode) o;
-            readToken (n, language, startState);
+            readToken (source, sourceName, n, language, startState);
         }
     }
     
     private static void readCommand (
-        ASTNode commandNode, 
-        Language language
+        String      source,
+        String      sourceName,
+        ASTNode     commandNode, 
+        Language    language
     ) throws ParseException {
         String keyword = commandNode.getTokenTypeIdentifier ("keyword");
         ASTNode command0Node = commandNode.getNode ("command0");
@@ -224,24 +249,26 @@ public class NBSLanguageReader {
             ASTNode command1Node = command0Node.getNode ("command1");
             ASTNode valueNode = command1Node.getNode ("value");
             if (valueNode != null)
-                feature = readValue (keyword, selector, valueNode);
+                feature = readValue (source, sourceName, keyword, selector, valueNode);
             else
                 feature = Feature.create (keyword, selector);
         } else {
             ASTNode valueNode = command0Node.getNode ("value");
-            feature = readValue (keyword, selector, valueNode);
+            feature = readValue (source, sourceName, keyword, selector, valueNode);
         }
         language.addFeature (feature);
     }
     
     private static Feature readValue (
+        String      source,
+        String      sourceName,
         String      keyword,
         Selector    selector,
         ASTNode     valueNode
     ) throws ParseException {
         ASTNode propertiesNode = valueNode.getNode ("properties");
         if (propertiesNode != null)
-            return readProperties (keyword, selector, propertiesNode);
+            return readProperties (source, sourceName, keyword, selector, propertiesNode);
         ASTNode classNode = valueNode.getNode ("class");
         if (classNode != null)
             return Feature.createMethodCallFeature (keyword, selector, readClass (classNode));
@@ -251,9 +278,11 @@ public class NBSLanguageReader {
     }
     
     private static Feature readProperties (
-        String keyword,
-        Selector selector,
-        ASTNode node
+        String      source,
+        String      sourceName,
+        String      keyword,
+        Selector    selector,
+        ASTNode     node
     ) throws ParseException {
         Map<String,String> methods = new HashMap<String,String> ();
         Map<String,String> expressions = new HashMap<String,String> ();
@@ -275,7 +304,7 @@ public class NBSLanguageReader {
                 methods.put (key, value);
             } else {
                 value = n.getNode ("propertyValue.regularExpression").getAsText ().trim ();
-                Pattern pattern = Pattern.create (value);
+                Pattern pattern = readPattern (source, sourceName, value, n.getOffset ());
                 patterns.put (key, pattern);
             }
         }
@@ -297,6 +326,24 @@ public class NBSLanguageReader {
         return sb.toString ();
     }
     
+    private static Pattern readPattern (
+        String      source,
+        String      sourceName, 
+        String      pattern, 
+        int         offset
+    ) throws ParseException {
+        StringInput input = new StringInput (pattern);
+        try {
+            return Pattern.create (input);
+        } catch (ParseException e) {
+            Point p = Utils.findPosition (source, offset + input.getIndex ());
+            throw new ParseException (
+                sourceName + " " + 
+                p.x + "," + p.y + ": " + 
+                e.getMessage ()
+            );
+        }
+    }
     
     private static String c (String s) {
         s = s.replace ("\\n", "\n");

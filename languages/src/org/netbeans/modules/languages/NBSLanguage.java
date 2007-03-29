@@ -67,8 +67,7 @@ public class NBSLanguage {
     static final ASTToken GT = ASTToken.create (NBS, "operator", ">", 0);
     static final ASTToken PARENTHESIS = ASTToken.create (NBS, "operator", "(", 0);
     static final ASTToken PARENTHESIS2 = ASTToken.create (NBS, "operator", ")", 0);
-    
-    private static Parser nbsParser;
+
     
     static Language getNBSLanguage () throws ParseException {
         Language l = new Language (NBS);

@@ -92,14 +92,14 @@ public class LanguagesManager {
             Language l = null;
             try {
                 l = NBSLanguageReader.readLanguage (fo, mimeType);
+                l.initializeAnalyser ();
             } catch (ParseException ex) {
                 l = new Language (mimeType);
-                Utils.message ("Editors/" + mimeType + "/language.nbs: " + ex.getMessage ());
+                Utils.message (ex.getMessage ());
             } catch (IOException ex) {
                 l = new Language (mimeType);
                 Utils.message ("Editors/" + mimeType + "/language.nbs: " + ex.getMessage ());
             }
-            l.getAnalyser ();
             initLanguage (l);
             //l.print ();
             mimeTypeToLanguage.put (mimeType, l);

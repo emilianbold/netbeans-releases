@@ -44,8 +44,8 @@ public class Pattern {
     }
     
     public static Pattern create (String input) throws ParseException {
-        if (input.length () == 0) throw new ParseException ();
-        return create (new StringInput (input, ""));
+        if (input.length () == 0) throw new ParseException ("Empty pattern.");
+        return create (new StringInput (input));
     }
     
     public static Pattern create (CharInput input) throws ParseException {
@@ -68,25 +68,26 @@ public class Pattern {
                     break;
                 case '*':
                     input.read ();
-                    if (last == null) throw new ParseException ();
+                    if (last == null) throw new ParseException ("Unexpected character '" + ch + "'.");
                     last = last.star ();
                     break;
                 case '?':
                     input.read ();
-                    if (last == null) throw new ParseException ();
+                    if (last == null) throw new ParseException ("Unexpected character '" + ch + "'.");
                     last = last.question ();
                     break;
                 case '+':
                     input.read ();
-                    if (last == null) throw new ParseException ();
+                    if (last == null) throw new ParseException ("Unexpected character '" + ch + "'.");
                     last = last.plus ();
                     break;
                 case '(':
                     input.read ();
                     if (last != null) pattern = pattern.append (last);
                     last = createIn (input);
-                    if (input.read () != ')')
-                        throw new ParseException (") expected: " + input);
+                    if (input.next () != ')')
+                        throw new ParseException ("Unexpected character '" + input.next () + "'.");
+                    input.read ();
                     break;
 //                case '<':
 //                    input.read ();
@@ -103,7 +104,7 @@ public class Pattern {
                     ch = input.next ();
                     while (ch != '"' && ch != '\'') {
                         if (ch == 0)
-                            throw new ParseException ();
+                            throw new ParseException ("Unexpected character '" + ch + "'.");
                         if (ch == '\\') {
                             input.read ();
                             switch (input.next ()) {
@@ -156,7 +157,7 @@ public class Pattern {
                                         } else if ('A' <= c && c <= 'F') {
                                             ii = c - 'A' + 10;
                                         } else {
-                                            throw new ParseException ("Wrong character after \\u:" + input.toString ());
+                                            throw new ParseException ("Unexpected character after \\u:" + c);
                                         }
                                         ch1 += ii * i;
                                         input.read ();
@@ -166,7 +167,7 @@ public class Pattern {
                                     ));
                                     break;
                                 default:
-                                    throw new ParseException ("Unknown character after \\:" + input.toString ());
+                                    throw new ParseException ("Unexpected character after \\:" + input.next ());
                             }
                         } else {
                             Character charr = new Character (input.read ());
@@ -188,11 +189,11 @@ public class Pattern {
                     skipWhitespaces (input);
                     ch = input.next ();
                     if (ch != '\'' && ch != '"')
-                        throw new ParseException (input.toString ());
+                        throw new ParseException ("Unexpected character '" + ch + "'.");
                     input.read ();
                     ch = input.next ();
                     if (ch == '\'' || ch == '"')
-                        throw new ParseException (input.toString ());
+                        throw new ParseException ("Unexpected character '" + ch + "'.");
                     Character edge = new Character (input.next ());
                     last = new Pattern (true, Collections.<Character>singleton (edge));
                     last = last.star ().append (new Pattern (edge));
@@ -200,7 +201,7 @@ public class Pattern {
                     ch = input.next ();
                     while (ch != '\'' && ch != '"') {
                         if (ch == 0)
-                            throw new ParseException (input.toString ());
+                            throw new ParseException ("Unexpected character '" + ch + "'.");
                         last = last.plus ();
                         Integer endN = last.dg.getEnds ().iterator ().next ();
                         Integer newE = last.nodeFactory.createNode ();
@@ -284,20 +285,20 @@ public class Pattern {
                                                 } else if ('A' <= c && c <= 'F') {
                                                     ii = c - 'A' + 10;
                                                 } else {
-                                                    throw new ParseException ("Wrong character after \\u:" + input.toString ());
+                                                    throw new ParseException ("Unexpected character after \\u:" + c);
                                                 }
                                                 l += ii * i;
                                             }
                                             break;
                                         default:
-                                            throw new ParseException (input.toString ());
+                                            throw new ParseException ("Unexpected character '" + ch + "'.");
                                     } // switch
                                     input.read ();
                                 } else // if '\\'
                                     l = input.read ();
                                 ch = input.next ();
                                 if (ch != '"' && ch != '\'')
-                                    throw new ParseException (input.toString ());
+                                    throw new ParseException ("Unexpected character '" + ch + "'.");
                                 input.read ();
                                 if (minus) {
                                     addInterval (set, ol, l);
@@ -307,7 +308,7 @@ public class Pattern {
                                 break; // case '"'
                             case '-':
                                 input.read ();
-                                if (l == 0) throw new ParseException (input.toString ());
+                                if (l == 0) throw new ParseException ("Unexpected character '-'.");
                                 minus = true;
                                 break;
 //                            case '<':
@@ -320,18 +321,18 @@ public class Pattern {
 //                                    throw new ParseException ("> expected: " + input);
 //                                break;
                             default:
-                                throw new ParseException (input.toString ());
+                                throw new ParseException ("Unexpected character '" + ch + "'.");
                         } // switch
                         ch = input.next ();
                     } // while
-                    if (minus) throw new ParseException ();
+                    if (minus) throw new ParseException ("Unexpected character '" + ch + "'.");
                     if (l != 0) 
                         set.add (new Character (l));
                     input.read ();
                     last = new Pattern (not, set);
                     break;
                 default:
-                    throw new ParseException ("Unexpected char '" + input.next () + ":" + input.toString ());
+                    throw new ParseException ("Unexpected character '" + ch + "'.");
 //                    input.read ();
 //                    if (last != null) pattern = pattern.append (last);
 //                    last = new Pattern (new Character (ch));
@@ -404,7 +405,7 @@ public class Pattern {
     
     private static void addInterval (Set<Character> set, char from, char to) 
     throws ParseException {
-        if (from > to) throw new ParseException ();
+        if (from > to) throw new ParseException ("Invalid interval (" + from + ">" + to + ").");
         do {
             set.add (new Character (from));
             from++;

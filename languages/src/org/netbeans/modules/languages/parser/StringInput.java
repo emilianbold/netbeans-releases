@@ -23,15 +23,13 @@ import org.netbeans.api.languages.CharInput;
 
 public class StringInput extends CharInput {
 
-    private String sourceName;
     private String expression;
     private int index = 0;
     private int length;
 
-    public StringInput (String expression, String sourceName) {
+    public StringInput (String expression) {
         this.expression = expression;
         length = expression.length ();
-        this.sourceName = sourceName;
     }
 
     public char read () {
@@ -69,16 +67,6 @@ public class StringInput extends CharInput {
             expression.length ()
         );
     }
-    
-    public String toString () {
-        int lineNumber = 1;
-        int i = expression.indexOf ('\n');
-        int offset = 0;
-        while (i >= 0 && i < index) {
-            lineNumber++;
-            i = expression.indexOf ('\n', i + 1);
-            if (i >= 0 && (i < index)) offset = i;
-        }
-        return sourceName + ":" + lineNumber + ',' + (index - offset);
-    }
 }
+
+

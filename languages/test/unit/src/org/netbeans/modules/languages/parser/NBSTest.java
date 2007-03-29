@@ -37,7 +37,8 @@ public class NBSTest extends TestCase {
     public void testFirst () {
         InputStream is = getClass ().getClassLoader ().getResourceAsStream ("org/netbeans/modules/languages/resources/NBS.nbs");
         try {
-            Language l = NBSLanguageReader.readLanguage ("test", is, "test/x-nbs");
+            Language l = NBSLanguageReader.readLanguage (is, "test", "test/x-nbs");
+            l.initializeAnalyser( );
             List r = l.getAnalyser ().getRules ();
 //            AnalyserAnalyser.printRules (r, null);
 //            AnalyserAnalyser.printUndefinedNTs (r, null);
@@ -55,7 +56,8 @@ public class NBSTest extends TestCase {
     
     public void test2 () throws ParseException, IOException {
         InputStream is = getClass ().getClassLoader ().getResourceAsStream ("org/netbeans/modules/languages/resources/NBS.nbs");
-        Language l = NBSLanguageReader.readLanguage ("test", is, "test/x-nbs");
+        Language l = NBSLanguageReader.readLanguage (is, "test", "test/x-nbs");
+            l.initializeAnalyser( );
 
         is = getClass ().getClassLoader ().getResourceAsStream ("org/netbeans/modules/languages/resources/NBS.nbs");
         BufferedReader br = new BufferedReader (new InputStreamReader (is));
@@ -68,7 +70,7 @@ public class NBSTest extends TestCase {
         TokenInput ti = TokenInputUtils.create (
             "text/test",
             l.getParser (), 
-            new StringInput (sb.toString (), "NBS.nbs"),
+            new StringInput (sb.toString ()),
             l.getSkipTokenTypes ()
         );
         ASTNode n = l.getAnalyser ().read (ti, false);
