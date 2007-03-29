@@ -52,10 +52,12 @@ implements ActionListener, Runnable, Callable<JButton> {
         this.exceptionOnly = exceptionOnly;
     }
 
-    static void registerCallback(PropertyChangeListener l) {
+    static void addPropertyChangeListener(PropertyChangeListener l) {
         SUPPORT.addPropertyChangeListener(l);
     }
-    
+    static void removePropertyChangeListener(PropertyChangeListener l) {
+        SUPPORT.removePropertyChangeListener(l);
+    }
     
     public void publish(LogRecord record) {
         if (exceptionOnly && record.getThrown() == null) {
