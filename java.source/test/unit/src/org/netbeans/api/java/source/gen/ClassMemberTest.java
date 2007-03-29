@@ -18,24 +18,13 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import java.io.*;
+import java.util.*;
+import javax.lang.model.element.*;
+import javax.lang.model.type.*;
 import com.sun.source.tree.*;
-import com.sun.source.tree.TypeParameterTree;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.*;
+import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -70,6 +59,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         suite.addTest(new ClassMemberTest("testMemberIndent93735_1"));
         suite.addTest(new ClassMemberTest("testMemberIndent93735_2"));
         suite.addTest(new ClassMemberTest("testAddArrayMember"));
+        suite.addTest(new ClassMemberTest("testAddCharMember"));
         return suite;
     }
 
@@ -1008,6 +998,81 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                         njuMethod.getParameters(),
                         njuMethod.getThrows(),
                         njuMethod.getBody(),
+                        (ExpressionTree) njuMethod.getDefaultValue()
+                );
+                ClassTree copy = make.insertClassMember(classTree, 0, njuMethod);
+                workingCopy.rewrite(classTree, copy);
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddCharMember() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    public char taragui() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    public char newlyCreatedMethod() {\n" +
+            "        char returnValue = taragui();\n" + 
+            "    }\n" +
+            "    \n" +
+            "    public char taragui() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                TypeElement neterk = workingCopy.getElements().getTypeElement("hierbas.del.litoral.Test");
+                List<? extends Element> members = workingCopy.getElements().getAllMembers(neterk);
+                ExecutableElement konecny = null;
+                for (Element e : members) {
+                    if ("taragui".contentEquals(e.getSimpleName())) {
+                        konecny = (ExecutableElement) e;
+                        break;
+                    }
+                }
+                List<ExpressionTree> empatik = Collections.<ExpressionTree>emptyList();
+                MethodInvocationTree mit = make.MethodInvocation(empatik, make.Identifier("taragui"), empatik);
+                VariableTree stmt = make.Variable(
+                        make.Modifiers(Collections.<Modifier>emptySet()),
+                        "returnValue",
+                        make.Type(konecny.getReturnType()),
+                        mit);
+                BlockTree block = make.Block(Collections.<StatementTree>singletonList(stmt), false);
+                MethodTree njuMethod = (MethodTree) classTree.getMembers().get(1);
+                njuMethod = make.Method(
+                        njuMethod.getModifiers(),
+                        "newlyCreatedMethod",
+                        make.Type(konecny.getReturnType()),
+                        njuMethod.getTypeParameters(), 
+                        njuMethod.getParameters(),
+                        njuMethod.getThrows(),
+                        block,
                         (ExpressionTree) njuMethod.getDefaultValue()
                 );
                 ClassTree copy = make.insertClassMember(classTree, 0, njuMethod);
