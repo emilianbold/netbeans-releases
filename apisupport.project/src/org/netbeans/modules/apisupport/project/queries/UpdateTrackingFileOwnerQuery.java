@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -73,7 +73,7 @@ public final class UpdateTrackingFileOwnerQuery implements FileOwnerQueryImpleme
         while (it.hasNext()) {
             File sourcedir = ((ModuleEntry) it.next()).getSourceLocation();
             if (sourcedir != null) {
-                FileObject sourcedirFO = FileUtil.toFileObject(sourcedir);
+                FileObject sourcedirFO = FileUtil.toFileObject(FileUtil.normalizeFile(sourcedir));
                 if (sourcedirFO != null) {
                     try {
                         Project p = ProjectManager.getDefault().findProject(sourcedirFO);
