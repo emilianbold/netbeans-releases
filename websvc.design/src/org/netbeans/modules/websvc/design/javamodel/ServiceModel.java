@@ -41,10 +41,10 @@ public class ServiceModel {
     public static final int STATUS_NOT_SERVICE=1;
     public static final int STATUS_INCORRECT_SERVICE=2;
 
-    private String serviceName;
-    private String portName;
+    String serviceName;
+    String portName;
+    String name;
     private String endpointInterface;
-    private String name;
     private String wsdlLocation;
     private String targetNamespace;
     private int status = STATUS_OK;

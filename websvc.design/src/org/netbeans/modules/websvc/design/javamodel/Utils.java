@@ -88,13 +88,13 @@ public class Utils {
                         boolean portNameFound=false;                
                         for(ExecutableElement ex:expressions.keySet()) {
                             if (ex.getSimpleName().contentEquals("serviceName")) { //NOI18N
-                                serviceModel.setServiceName((String)expressions.get(ex).getValue());
+                                serviceModel.serviceName = (String)expressions.get(ex).getValue();
                                 serviceNameFound=true;
                             } else if (ex.getSimpleName().contentEquals("name")) { //NOI18N
-                                serviceModel.setName((String)expressions.get(ex).getValue());
+                                serviceModel.name = (String)expressions.get(ex).getValue();
                                 nameFound=true;
                             } else if (ex.getSimpleName().contentEquals("portName")) { //NOI18N
-                                serviceModel.setPortName((String)expressions.get(ex).getValue());
+                                serviceModel.portName = (String)expressions.get(ex).getValue();
                                 portNameFound=true;
                             } else if (ex.getSimpleName().contentEquals("targetNamespace")) { //NOI18N
                                 serviceModel.setTargetNamespace((String)expressions.get(ex).getValue());
@@ -105,9 +105,9 @@ public class Utils {
                             }
                         }
                         // set default names
-                        if (!nameFound) serviceModel.setName(implClass.getName());
-                        if (!portNameFound) serviceModel.setPortName(serviceModel.getName()+"Port"); //NOI18N
-                        if (!serviceNameFound) serviceModel.setServiceName(implClass.getName()+"Service"); //NOI18N                
+                        if (!nameFound) serviceModel.name=implClass.getName();
+                        if (!portNameFound) serviceModel.portName = serviceModel.getName()+"Port"; //NOI18N
+                        if (!serviceNameFound) serviceModel.serviceName=implClass.getName()+"Service"; //NOI18N                
                     }
                     
                     boolean foundWebMethodAnnotation=false;
