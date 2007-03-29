@@ -39,7 +39,7 @@ introduced by support for multiple source roots. -jglick
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:param name = "jax_ws_uri">jax-ws.xml</xsl:param>
     <xsl:param name = "jaxws" select="document($jax_ws_uri)"/>
-    <xsl:param name="jaxwsversion"/>
+    <xsl:param name="jaxwsversion">jaxws20lib</xsl:param>
     
     <xsl:template match="/">
         

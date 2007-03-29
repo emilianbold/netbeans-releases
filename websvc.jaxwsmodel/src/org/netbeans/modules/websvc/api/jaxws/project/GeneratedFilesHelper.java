@@ -279,10 +279,12 @@ public final class GeneratedFilesHelper {
                                         new ByteArrayInputStream(stylesheetData), stylesheet.toExternalForm());
                                 Transformer t = tf.newTransformer(stylesheetSource);
                                 if (jaxWsFileObject!=null) t.setParameter("jax_ws_uri",jaxWsFileObject.getURL().toURI().toASCIIString()); //NOI18N
-                                if(isJAXWS21()){
-                                    t.setParameter(JAXWS_VERSION, JAXWS_21_LIB );
-                                }else{
-                                    t.setParameter(JAXWS_VERSION, JAXWS_20_LIB );
+                                if (jaxWsFileObject!=null) {
+                                    if(isJAXWS21()){
+                                        t.setParameter(JAXWS_VERSION, JAXWS_21_LIB );
+                                    }else{
+                                        t.setParameter(JAXWS_VERSION, JAXWS_20_LIB );
+                                    }
                                 }
                                 File projectXmlF = FileUtil.toFile(projectXml);
                                 assert projectXmlF != null;

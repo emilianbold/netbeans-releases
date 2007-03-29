@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <xsl:param name = "jax_ws_uri">jax-ws.xml</xsl:param>
     <xsl:param name = "jaxws" select="document($jax_ws_uri)"/>
-    <xsl:param name="jaxwsversion"/>
+    <xsl:param name="jaxwsversion">jaxws20lib</xsl:param>
 
     <xsl:template match="/">
         
