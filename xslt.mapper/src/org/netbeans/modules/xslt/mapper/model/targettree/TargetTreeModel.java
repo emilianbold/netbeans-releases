@@ -37,10 +37,13 @@ public class TargetTreeModel extends XsltNodesTreeModel {
     
     public TargetTreeModel(XsltMapper mapper) {
         this.mapper = mapper;
+        resetRoot();
+    }
+
+    public void resetRoot() {
         if (mapper.getContext().getXSLModel() != null &&
             mapper.getContext().getXSLModel().getStylesheet() != null){
             Stylesheet stylesheet = mapper.getContext().getXSLModel().getStylesheet();
-            
             
             List<Template> templates = stylesheet.getChildren(Template.class);
             for (Template t: templates){

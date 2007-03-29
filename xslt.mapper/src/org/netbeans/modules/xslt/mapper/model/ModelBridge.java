@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JTree;
 import javax.swing.Timer;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -53,6 +54,7 @@ import org.netbeans.modules.xslt.mapper.model.nodes.Node;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.SchemaNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.StylesheetNode;
+import org.netbeans.modules.xslt.mapper.model.targettree.TargetTreeModel;
 import org.netbeans.modules.xslt.mapper.view.NodeCreatorVisitor;
 import org.netbeans.modules.xslt.mapper.view.SetExpressionVisitor;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
@@ -63,6 +65,9 @@ import org.netbeans.modules.xslt.model.Element;
 import org.netbeans.modules.xslt.model.NamespaceSpec;
 import org.netbeans.modules.xslt.model.SequenceConstructor;
 import org.netbeans.modules.xslt.model.SequenceElement;
+import org.netbeans.modules.xslt.model.Stylesheet;
+import org.netbeans.modules.xslt.model.StylesheetChild;
+import org.netbeans.modules.xslt.model.Template;
 import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.openide.filesystems.FileObject;
@@ -304,10 +309,30 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
         if (mapper.getContext() != null){
             XslModel xslModel = mapper.getContext().getXSLModel();
             if (xslModel == null || xslModel.getState() != XslModel.State.VALID){
-                errorMessages +=
-                        NbBundle.getMessage(ModelBridge.class, "MSG_Error_BadXSL");// NOI18N
+                errorMessages += NbBundle.getMessage(
+                        ModelBridge.class, "MSG_Error_BadXSL");// NOI18N
             }
             
+            Stylesheet stylesheet = xslModel.getStylesheet();
+            if (stylesheet == null) {
+                errorMessages += NbBundle.getMessage(
+                        ModelBridge.class, "MSG_Error_NoStylesheet");// NOI18N
+            } else {
+                List<Template> templates = stylesheet.getChildren(Template.class);
+                boolean templateFound = false;
+                for (Template t: templates){
+                    if (t.getMatch().equals("/")){
+                        templateFound = true;
+                        break;
+                    }
+                }
+                //
+                if (!templateFound) {
+                    errorMessages += NbBundle.getMessage(
+                            ModelBridge.class, "MSG_Error_NoRootTemplate");// NOI18N
+                }
+            }
+            //
             AXIComponent typeIn = mapper.getContext().getSourceType();
             if (typeIn == null || typeIn.getModel().getState() != XslModel.State.VALID){
                 errorMessages +=
@@ -346,15 +371,30 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
         //reload target document tree
         JTree destTree = mapper.getMapperViewManager().getDestView().getTree();
         
-        
         TreeNode treeRoot = (TreeNode) destTree.getModel().getRoot();
-        
-        
+
         TreePath startFrom_tp = TreeNode.getTreePath(treeRoot);
         
         //save the expanded state
         Enumeration<TreePath> expanded
                 = destTree.getExpandedDescendants(startFrom_tp);
+        
+        // Renew the root element (template) if it is not actual
+        boolean isRootTemplateAlive = false;
+        Object rootObject = treeRoot.getDataObject();
+        if (rootObject != null & rootObject instanceof XslComponent) {
+            XslModel model = ((XslComponent)rootObject).getModel();
+            if (model != null) {
+                isRootTemplateAlive = true;
+            }
+        }
+        
+        if (!isRootTemplateAlive) {
+            TreeModel model = destTree.getModel();
+            assert model instanceof TargetTreeModel;
+            ((TargetTreeModel)model).resetRoot();
+            treeRoot = (TreeNode) model.getRoot();
+        }
         
         /*
          * trigger tree reload
