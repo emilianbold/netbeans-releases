@@ -19,7 +19,11 @@
 
 package org.netbeans.modules.refactoring.java.api.ui;
 
+import org.netbeans.modules.refactoring.java.ui.ChangeParametersAction;
 import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceAction;
+import org.netbeans.modules.refactoring.java.ui.InnerToOuterAction;
+import org.netbeans.modules.refactoring.java.ui.PullUpAction;
+import org.netbeans.modules.refactoring.java.ui.PushDownAction;
 import org.netbeans.modules.refactoring.java.ui.UseSuperTypeAction;
 import org.openide.util.ContextAwareAction;
 
@@ -57,8 +61,7 @@ public final class JavaRefactoringActionsFactory {
      * @return an instance of ChangeParametersAction
      */
     public static ContextAwareAction changeParametersAction() {
-        throw new UnsupportedOperationException("Not supported yet.");
-//        return (ChangeParametersAction) ChangeParametersAction.findObject(ChangeParametersAction.class, true);
+        return ChangeParametersAction.findObject(ChangeParametersAction.class, true);
     }
     
     
@@ -67,8 +70,7 @@ public final class JavaRefactoringActionsFactory {
      * @return an instance of PullUpAction
      */
     public static ContextAwareAction pullUpAction() {
-        throw new UnsupportedOperationException("Not supported yet.");
-//        return (PullUpAction) PullUpAction.findObject(PullUpAction.class, true);
+        return (PullUpAction) PullUpAction.findObject(PullUpAction.class, true);
     }
     
     /**
@@ -76,8 +78,7 @@ public final class JavaRefactoringActionsFactory {
      * @return an instance of PushDownAction
      */
     public static ContextAwareAction pushDownAction() {
-        throw new UnsupportedOperationException("Not supported yet.");
-//        return (PushDownAction) PushDownAction.findObject(PushDownAction.class, true);
+        return (PushDownAction) PushDownAction.findObject(PushDownAction.class, true);
     }
     
     /**
@@ -85,8 +86,7 @@ public final class JavaRefactoringActionsFactory {
      * @return an instance of InnerToOuterAction
      */
     public static ContextAwareAction innerToOuterAction() {
-        throw new UnsupportedOperationException("Not supported yet.");
-//        return (InnerToOuterAction) InnerToOuterAction.findObject(InnerToOuterAction.class, true);
+        return (InnerToOuterAction) InnerToOuterAction.findObject(InnerToOuterAction.class, true);
     }
 
     /**
