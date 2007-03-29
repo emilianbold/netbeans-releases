@@ -205,8 +205,7 @@ public abstract class RestSupport {
     }
 
     public boolean hasSwdpLibrary() {
-        String v = helper.getStandardPropertyEvaluator().getProperty(PROP_SWDP_CLASSPATH);
-        return v != null;
+        return ! needsSwdpLibrary(getProject());
     }
 
     /**
@@ -227,6 +226,11 @@ public abstract class RestSupport {
         return true;
     }
     
+    public boolean isRestSupportOn() {
+        String v = getProjectProperty(REST_SUPPORT_ON);
+        return "true".equalsIgnoreCase(v) || "on".equalsIgnoreCase(v);
+    }
+
     protected void setProjectProperty(String name, String value) {
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty(REST_SUPPORT_ON, "true");
