@@ -481,6 +481,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         earProjects = new ArrayList();
         for (int i = 0; i < allProjects.length; i++) {
             J2eeApplicationProvider j2eeAppProvider = allProjects[i].getLookup().lookup(J2eeApplicationProvider.class);
+            if (j2eeAppProvider == null) {
+                continue;
+            }
             J2eeApplication j2eeApplication = (J2eeApplication) j2eeAppProvider.getJ2eeModule();
             ProjectInformation projectInfo = ProjectUtils.getInformation(allProjects[i]);
             if (j2eeApplication != null) {
