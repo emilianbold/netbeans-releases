@@ -22,7 +22,10 @@ package org.netbeans.modules.web.jsf.impl.facesmodel;
 import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
+import org.netbeans.modules.web.jsf.api.facesmodel.Description;
+import org.netbeans.modules.web.jsf.api.facesmodel.DisplayName;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.Icon;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponentFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
@@ -82,6 +85,18 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
         return new ConverterImpl(model);
     }
     
+    public Description createDescription() {
+        return new DescriptionImpl (model);
+    }
+
+    public DisplayName createDisplayName() {
+        return new DisplayNameImpl(model);
+    }
+
+    public Icon createIcon() {
+        return new IconImpl(model);
+    }
+    
     public static boolean areSameQName(JSFConfigQNames jsfqname,Element element) {
         QName qname = AbstractDocumentComponent.getQName(element);
         boolean aresame = false;
@@ -124,19 +139,36 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
         public void visit(ManagedBean context) {
             if (isElementQName(JSFConfigQNames.MANAGED_BEAN)) {
                 created = new ManagedBeanImpl((JSFConfigModelImpl)context.getModel(), element);
+            } else {
+                checkDescriptionGroup(context);
             }
         }
         
         public void visit(NavigationRule context) {
             if (isElementQName(JSFConfigQNames.NAVIGATION_CASE)) {
                 created = new NavigationCaseImpl((JSFConfigModelImpl)context.getModel(), element);
+            } else {
+                checkDescriptionGroup(context);
             }
         }
         
         public void visit(Converter context){
             if (isElementQName(JSFConfigQNames.NAVIGATION_CASE)) {
                 created = new ConverterImpl((JSFConfigModelImpl)context.getModel(), element);
+            } else {
+                checkDescriptionGroup(context);
+            }
+        }
+        
+        public void checkDescriptionGroup(JSFConfigComponent context){
+            if (isElementQName(JSFConfigQNames.DESCRIPTION)){
+                created = new DescriptionImpl((JSFConfigModelImpl)context.getModel(), element);
+            } else if (isElementQName(JSFConfigQNames.DISPLAY_NAME)){
+                created = new DisplayNameImpl((JSFConfigModelImpl)context.getModel(), element);
+            } else if (isElementQName(JSFConfigQNames.ICON)){
+                created = new IconImpl((JSFConfigModelImpl)context.getModel(), element);
             }
         }
     }
+
 }

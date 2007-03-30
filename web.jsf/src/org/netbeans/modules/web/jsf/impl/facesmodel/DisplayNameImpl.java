@@ -17,24 +17,43 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.web.jsf.api.facesmodel;
+package org.netbeans.modules.web.jsf.impl.facesmodel;
 
+import org.netbeans.modules.web.jsf.api.facesmodel.*;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JSFConfigComponentFactory {
+public class DisplayNameImpl extends JSFConfigComponentImpl implements DisplayName{
+
+    public DisplayNameImpl(JSFConfigModelImpl model, Element element) {
+        super(model, element);
+    }
     
-    JSFConfigComponent create(Element element, JSFConfigComponent context);
-    
-    FacesConfig createFacesConfig();
-    ManagedBean createManagedBean();
-    NavigationRule createNavigationRule();
-    NavigationCase createNavigationCase();
-    Converter createConverter();
-    Description createDescription();
-    DisplayName createDisplayName();
-    Icon createIcon();
+    public DisplayNameImpl(JSFConfigModelImpl model) {
+        super(model, createElementNS(model, JSFConfigQNames.DISPLAY_NAME));
+    }
+
+    public void accept(JSFConfigVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    public String getValue() {
+        return getText();
+    }
+
+    public void setValue(String displayName) {
+        setText(DISPLAY_NAME, displayName);
+    }
+
+    public String getLang() {
+        return getAttribute(FacesAttributes.LANG);
+    }
+
+    public void setLang(String lang) {
+        setAttribute(LangAttribute.LANG_ATTRIBUTE, FacesAttributes.LANG, lang);
+    }
+
 }

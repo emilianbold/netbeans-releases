@@ -19,28 +19,33 @@
 
 package org.netbeans.modules.web.jsf.api.facesmodel;
 
-import java.util.List;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**
- * The "navigation-rule" element represents an individual
- * decision rule that will be utilized by the default
- * NavigationHandler implementation to make decisions on
- * what view should be displayed next, based on the
- * view id being processed.
+ * The description type is used by a description element to
+ * provide text describing the parent element.  The elements
+ * that use this type should include any information that the
+ * Deployment Component's Deployment File file producer wants
+ * to provide to the consumer of the Deployment Component's
+ * Deployment File (i.e., to the Deployer). Typically, the
+ * tools used by such a Deployment File consumer will display
+ * the description when processing the parent element that
+ * contains the description.
+ * 
  * @author Petr Pisl
  */
-public interface NavigationRule extends JSFConfigComponent, DescriptionGroup{
+public interface Description extends LangAttribute{
+    public static String DESCRIPTION = JSFConfigQNames.DESCRIPTION.getLocalName();
     
-    public static final String FROM_VIEW_ID = JSFConfigQNames.FROM_VIEW_ID.getLocalName();
-    public static final String NAVIGATION_CASE = JSFConfigQNames.NAVIGATION_CASE.getLocalName();
+    /**
+     * Gets the content of the description element.
+     * @return the content of the element.
+     */
+    public String  getValue();
     
-    List<NavigationCase> getNavigationCases();
-    void addNavigationCase(NavigationCase navigationCase);
-    void addNavigationCase(int index, NavigationCase navigationCase);
-    void removeNavigationCase(NavigationCase navigationCase);
-    
-    String getFromViewId();
-    void setFromViewId(String fromView);
-    
+    /**
+     * Sets the content of the description element.
+     * @param description new content of the element
+     */
+    public void setValue(String description);
 }

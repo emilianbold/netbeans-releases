@@ -19,28 +19,27 @@
 
 package org.netbeans.modules.web.jsf.api.facesmodel;
 
-import java.util.List;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**
- * The "navigation-rule" element represents an individual
- * decision rule that will be utilized by the default
- * NavigationHandler implementation to make decisions on
- * what view should be displayed next, based on the
- * view id being processed.
+ * The display-name type contains a short name that is intended
+ * to be displayed by tools. It is used by display-name
+ * elements.  The display name need not be unique.
+ * 
  * @author Petr Pisl
  */
-public interface NavigationRule extends JSFConfigComponent, DescriptionGroup{
+public interface DisplayName extends LangAttribute{
+    public static String DISPLAY_NAME = JSFConfigQNames.DISPLAY_NAME.getLocalName();
+        
+    /**
+     * Gets the content of the display-name element.
+     * @return the content of the element.
+     */
+    public String  getValue();
     
-    public static final String FROM_VIEW_ID = JSFConfigQNames.FROM_VIEW_ID.getLocalName();
-    public static final String NAVIGATION_CASE = JSFConfigQNames.NAVIGATION_CASE.getLocalName();
-    
-    List<NavigationCase> getNavigationCases();
-    void addNavigationCase(NavigationCase navigationCase);
-    void addNavigationCase(int index, NavigationCase navigationCase);
-    void removeNavigationCase(NavigationCase navigationCase);
-    
-    String getFromViewId();
-    void setFromViewId(String fromView);
-    
+    /**
+     * Sets the content of the display-name element.
+     * @param displayName new content of the element
+     */
+    public void setValue(String displayName);
 }

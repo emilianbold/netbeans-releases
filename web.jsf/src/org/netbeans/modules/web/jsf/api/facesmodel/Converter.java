@@ -38,7 +38,7 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * These elements have no required runtime semantics.
  * @author Petr Pisl
  */
-public interface Converter  extends JSFConfigComponent, ComponentInfo{
+public interface Converter  extends JSFConfigComponent, DescriptionGroup {
     /**
      *
      */

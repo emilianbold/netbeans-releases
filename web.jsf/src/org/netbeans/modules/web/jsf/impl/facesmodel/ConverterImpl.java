@@ -27,7 +27,7 @@ import org.w3c.dom.Element;
  *
  * @author Petr Pisl
  */
-public class ConverterImpl extends JSFConfigComponentImpl.ComponentInfoImpl implements Converter{
+public class ConverterImpl extends DescriptionGroupImpl implements Converter{
     
     /** Creates a new instance of CondverterImpl */
     public ConverterImpl(JSFConfigModelImpl model, Element element) {

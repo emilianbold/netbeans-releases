@@ -33,6 +33,7 @@ import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.Description;
 import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponentFactory;
@@ -164,7 +165,9 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         String description = (String) wizard.getProperty(WizardProperties.DESCRIPTION);
         if (description != null && description.length() > 0){
             String newLine = System.getProperty("line.separator");
-            bean.setDescription(newLine + description + newLine);
+            Description beanDescription = bean.getModel().getFactory().createDescription();
+            beanDescription.setValue(newLine + description + newLine);
+            bean.addDescription(beanDescription);
         }
         facesConfig.getModel().startTransaction();
         facesConfig.addManagedBean(bean);

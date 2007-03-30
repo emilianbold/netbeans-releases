@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.w3c.dom.Element;
@@ -27,12 +29,16 @@ import org.w3c.dom.Element;
  *
  * @author Petr Pisl
  */
-public class NavigationCaseImpl extends JSFConfigComponentImpl.ComponentInfoImpl implements NavigationCase{
+public class NavigationCaseImpl extends DescriptionGroupImpl implements NavigationCase{
     
-    public static final String REDIRECT = JSFConfigQNames.REDIRECT.getLocalName();
-    public static final String FROM_ACTION = JSFConfigQNames.FROM_ACTION.getLocalName();
-    public static final String FROM_OUTCOME = JSFConfigQNames.FROM_OUTCOME.getLocalName();
-    public static final String TO_VIEW_ID = JSFConfigQNames.TO_VIEW_ID.getLocalName();
+    protected static final List<String> SORTED_ELEMENTS = new ArrayList();
+    {
+        SORTED_ELEMENTS.addAll(DescriptionGroupImpl.SORTED_ELEMENTS);
+        SORTED_ELEMENTS.add(JSFConfigQNames.FROM_ACTION.getLocalName());
+        SORTED_ELEMENTS.add(JSFConfigQNames.FROM_OUTCOME.getLocalName());
+        SORTED_ELEMENTS.add(JSFConfigQNames.TO_VIEW_ID.getLocalName());
+        SORTED_ELEMENTS.add(JSFConfigQNames.REDIRECT.getLocalName());
+    }
     
     /** Creates a new instance of NavigationCaseImpl */
     public NavigationCaseImpl(JSFConfigModelImpl model, Element element) {
@@ -57,6 +63,11 @@ public class NavigationCaseImpl extends JSFConfigComponentImpl.ComponentInfoImpl
     
     public void setFromOutcome(String fromOutcome) {
         setChildElementText(FROM_OUTCOME, fromOutcome, JSFConfigQNames.FROM_OUTCOME.getQName(getModel().getVersion()));
+        reorderChildren();
+    }
+
+    protected List<String> getSortedListOfLocalNames(){
+        return SORTED_ELEMENTS;
     }
     
     public void setRedirected(boolean redirect) {

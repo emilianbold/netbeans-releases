@@ -26,7 +26,9 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
  * @author Petr Pisl
  */
 public enum FacesAttributes implements Attribute{
-    ID("id");
+    ID("id"),
+    LANG("xml:lang");
+    
     private String name;
     private Class type;
     

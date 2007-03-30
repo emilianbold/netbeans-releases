@@ -34,7 +34,7 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * the created instance.
  * @author Petr Pisl
  */
-public interface ManagedBean extends JSFConfigComponent, ComponentInfo{
+public interface ManagedBean extends JSFConfigComponent, DescriptionGroup{
     
     public static final String MANAGED_BEAN_NAME = JSFConfigQNames.MANAGED_BEAN_NAME.getLocalName();
     public static final String MANAGED_BEAN_CLASS = JSFConfigQNames.MANAGED_BEAN_CLASS.getLocalName();

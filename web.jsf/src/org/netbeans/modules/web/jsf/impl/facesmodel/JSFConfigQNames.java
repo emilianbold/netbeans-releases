@@ -37,6 +37,8 @@ public enum JSFConfigQNames {
     DESCRIPTION("description"),
     DISPLAY_NAME("display-name"),
     ICON("icon"),
+    SMALL_ICON("small-icon"),
+    LARGE_ICON("large-icon"),
     //managed-bean
     MANAGED_BEAN("managed-bean"),
     MANAGED_BEAN_NAME("managed-bean-name"),
@@ -97,12 +99,18 @@ public enum JSFConfigQNames {
         mappedQNames_1_1.add(CONVERTER.getQName(JSFVersion.JSF_1_1));
         mappedQNames_1_1.add(NAVIGATION_RULE.getQName(JSFVersion.JSF_1_1));
         mappedQNames_1_1.add(NAVIGATION_CASE.getQName(JSFVersion.JSF_1_1));
+        mappedQNames_1_1.add(DESCRIPTION.getQName(JSFVersion.JSF_1_1));
+        mappedQNames_1_1.add(DISPLAY_NAME.getQName(JSFVersion.JSF_1_1));
+        mappedQNames_1_1.add(ICON.getQName(JSFVersion.JSF_1_1));
         
         mappedQNames_1_2.add(FACES_CONFIG.getQName(JSFVersion.JSF_1_2));
         mappedQNames_1_2.add(MANAGED_BEAN.getQName(JSFVersion.JSF_1_2));
         mappedQNames_1_2.add(CONVERTER.getQName(JSFVersion.JSF_1_2));
         mappedQNames_1_2.add(NAVIGATION_RULE.getQName(JSFVersion.JSF_1_2));
         mappedQNames_1_2.add(NAVIGATION_CASE.getQName(JSFVersion.JSF_1_2));
+        mappedQNames_1_2.add(DESCRIPTION.getQName(JSFVersion.JSF_1_2));
+        mappedQNames_1_2.add(DISPLAY_NAME.getQName(JSFVersion.JSF_1_2));
+        mappedQNames_1_2.add(ICON.getQName(JSFVersion.JSF_1_2));
     }
     
     public static Set<QName> getMappedQNames(JSFVersion version) {

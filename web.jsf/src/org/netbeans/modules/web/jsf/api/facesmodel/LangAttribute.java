@@ -19,28 +19,30 @@
 
 package org.netbeans.modules.web.jsf.api.facesmodel;
 
-import java.util.List;
-import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
+import org.netbeans.modules.web.jsf.impl.facesmodel.FacesAttributes;
 
 /**
- * The "navigation-rule" element represents an individual
- * decision rule that will be utilized by the default
- * NavigationHandler implementation to make decisions on
- * what view should be displayed next, based on the
- * view id being processed.
+ * The xml:lang attribute defines the language that the
+ * elements are provided in. Its value is "en" (English)
+ * by default
  * @author Petr Pisl
  */
-public interface NavigationRule extends JSFConfigComponent, DescriptionGroup{
+public interface LangAttribute extends JSFConfigComponent{
+    public static String LANG_ATTRIBUTE  = FacesAttributes.LANG.getName();
     
-    public static final String FROM_VIEW_ID = JSFConfigQNames.FROM_VIEW_ID.getLocalName();
-    public static final String NAVIGATION_CASE = JSFConfigQNames.NAVIGATION_CASE.getLocalName();
+    /**
+     * The xml:lang attribute defines the language that the
+     * elements are provided in. Its value is "en" (English)
+     * by default.
+     * @return the lang attribute.
+     */
+    public String getLang();
     
-    List<NavigationCase> getNavigationCases();
-    void addNavigationCase(NavigationCase navigationCase);
-    void addNavigationCase(int index, NavigationCase navigationCase);
-    void removeNavigationCase(NavigationCase navigationCase);
-    
-    String getFromViewId();
-    void setFromViewId(String fromView);
-    
+    /**
+     * The lang attribute defines the language that the
+     * elements are provided in. Its value is "en" (English)
+     * by default.
+     * @param lang the value of lang attribute.
+     */
+    public void setLang(String lang);
 }

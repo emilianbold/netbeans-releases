@@ -28,7 +28,7 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * should be selected next.
  * @author Petr Pisl
  */
-public interface NavigationCase extends JSFConfigComponent, ComponentInfo {
+public interface NavigationCase extends JSFConfigComponent, DescriptionGroup {
     
     public static final String FROM_ACTION = JSFConfigQNames.FROM_ACTION.getLocalName();
     public static final String FROM_OUTCOME = JSFConfigQNames.FROM_OUTCOME.getLocalName();

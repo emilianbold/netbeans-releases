@@ -20,6 +20,7 @@
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
@@ -30,7 +31,14 @@ import org.w3c.dom.Element;
  *
  * @author Petr Pisl
  */
-public class NavigationRuleImpl extends JSFConfigComponentImpl.ComponentInfoImpl implements NavigationRule{
+public class NavigationRuleImpl extends DescriptionGroupImpl implements NavigationRule{
+    
+    protected static final List<String> SORTED_ELEMENTS = new ArrayList();
+    {
+        SORTED_ELEMENTS.addAll(DescriptionGroupImpl.SORTED_ELEMENTS);
+        SORTED_ELEMENTS.add(JSFConfigQNames.FROM_VIEW_ID.getLocalName());
+        SORTED_ELEMENTS.add(JSFConfigQNames.NAVIGATION_CASE.getLocalName());
+    }
     
     public NavigationRuleImpl(JSFConfigModelImpl model, Element element) {
         super(model, element);
@@ -62,6 +70,10 @@ public class NavigationRuleImpl extends JSFConfigComponentImpl.ComponentInfoImpl
     
     public void setFromViewId(String fromView) {
         setChildElementText(FROM_VIEW_ID, fromView, JSFConfigQNames.FROM_VIEW_ID.getQName(getModel().getVersion()));
+    }
+    
+    protected List<String> getSortedListOfLocalNames(){
+        return SORTED_ELEMENTS;
     }
     
     public void accept(JSFConfigVisitor visitor) {

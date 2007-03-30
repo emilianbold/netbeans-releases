@@ -17,18 +17,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
-import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
-import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.netbeans.modules.web.jsf.api.facesmodel.*;
 import org.netbeans.modules.web.jsf.impl.facesmodel.FacesAttributes;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelImpl;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.NodeList;
@@ -87,7 +81,7 @@ public class JSFConfigModelTest extends NbTestCase {
         Collection<NavigationRule> navigationRules = facesConfig.getNavigationRules();
         assertEquals("Number of navigation rules ", 1, navigationRules.size());
         NavigationRule navigationRule = navigationRules.iterator().next();
-        assertNull("Rule description ", navigationRule.getDescription());
+        assertEquals("Rule description ", 0, navigationRule.getDescriptions().size());
         assertNull("Rule from-view-id ", navigationRule.getFromViewId());
         Collection<NavigationCase> navigationCases = navigationRule.getNavigationCases();
         assertEquals("Number of navigation cases ", 3, navigationCases.size());
@@ -96,19 +90,19 @@ public class JSFConfigModelTest extends NbTestCase {
         assertEquals("login", navigationCase.getFromOutcome());
         assertEquals("/login.jsp", navigationCase.getToViewId());
         assertTrue(navigationCase.isRedirected());
-        assertNull(navigationCase.getDescription());
+        assertEquals(0, navigationCase.getDescriptions().size());
         assertNull(navigationCase.getFromAction());
         navigationCase = it.next();
         assertEquals("create", navigationCase.getFromOutcome());
         assertEquals("/create.jsp", navigationCase.getToViewId());
         assertFalse(navigationCase.isRedirected());
-        assertNull(navigationCase.getDescription());
+        assertEquals(0, navigationCase.getDescriptions().size());
         assertNull(navigationCase.getFromAction());
         navigationCase = it.next();
         assertEquals("app-main", navigationCase.getFromOutcome());
         assertEquals("/welcomeJSF.jsp", navigationCase.getToViewId());
         assertTrue(navigationCase.isRedirected());
-        assertNull(navigationCase.getDescription());
+        assertEquals(0, navigationCase.getDescriptions().size());
         assertNull(navigationCase.getFromAction());
     }
     
@@ -121,20 +115,22 @@ public class JSFConfigModelTest extends NbTestCase {
         Collection<NavigationRule> navigationRules = facesConfig.getNavigationRules();
         assertEquals("Number of navigation rules ", 1, navigationRules.size());
         NavigationRule navigationRule = navigationRules.iterator().next();
-        assertNull("Rule description ", navigationRule.getDescription());
+        assertEquals("Rule description ", 0,  navigationRule.getDescriptions().size());
         assertNull("Rule from-view-id ", navigationRule.getFromViewId());
         
         // provide change in the NavigationRule
         model.startTransaction();
-        navigationRule.setDescription(newDescription);
+        Description description = model.getFactory().createDescription();
+        description.setValue(newDescription);
+        navigationRule.addDescription(description);
         navigationRule.setFromViewId(newFromViewID);
         model.endTransaction();
-        
+
         // test whether the change is in the model
         navigationRules = facesConfig.getNavigationRules();
         assertEquals("Number of navigation rules ", 1, navigationRules.size());
         navigationRule = navigationRules.iterator().next();
-        assertEquals(newDescription, navigationRule.getDescription());
+        assertEquals(newDescription, navigationRule.getDescriptions().get(0).getValue());
         assertEquals(newFromViewID, navigationRule.getFromViewId());
         
         // save the model into a tmp file and reload. then test again.
@@ -142,18 +138,18 @@ public class JSFConfigModelTest extends NbTestCase {
         navigationRules = model.getRootComponent().getNavigationRules();
         navigationRule = navigationRules.iterator().next();
         assertEquals("Number of navigation rules ", 1, navigationRules.size());
-        assertEquals(newDescription, navigationRule.getDescription());
+        assertEquals(newDescription, navigationRule.getDescriptions().get(0).getValue());
         assertEquals(newFromViewID, navigationRule.getFromViewId());
         
         // delete change in the NavigationRule
         model.startTransaction();
-        navigationRule.setDescription(null);
+        navigationRule.removeDescription(navigationRule.getDescriptions().get(0));
         navigationRule.setFromViewId(null);
         model.endTransaction();
         
         navigationRules = model.getRootComponent().getNavigationRules();
         navigationRule = navigationRules.iterator().next();
-        assertNull(navigationRule.getDescription());
+        assertEquals(0, navigationRule.getDescriptions().size());
         assertNull(navigationRule.getFromViewId());
         dumpModelToFile(model, "test-config-02.xml");
     }
@@ -167,7 +163,10 @@ public class JSFConfigModelTest extends NbTestCase {
         assertEquals("Number of navigation rules ", 1, navigationRules.size());
         
         NavigationRule newRule = model.getFactory().createNavigationRule();
-        newRule.setDescription(newDescription);
+        
+        Description description = model.getFactory().createDescription();
+        description.setValue(newDescription);
+        newRule.addDescription(description);
         newRule.setFromViewId(newFromViewID);
         
         model.startTransaction();
@@ -181,7 +180,7 @@ public class JSFConfigModelTest extends NbTestCase {
         Iterator <NavigationRule> iterator = navigationRules.iterator();
         iterator.next();
         newRule = iterator.next();
-        assertEquals(newDescription, newRule.getDescription());
+        assertEquals(newDescription, newRule.getDescriptions().get(0).getValue());
         assertEquals(newFromViewID, newRule.getFromViewId());
         
         model.startTransaction();
@@ -206,7 +205,10 @@ public class JSFConfigModelTest extends NbTestCase {
         NavigationCase navigationCase = navigationCases.iterator().next();
         
         model.startTransaction();
-        navigationCase.setDescription("Test Description");
+        Description description = navigationCase.getModel().getFactory().createDescription();
+        description.setValue("Test Description");
+        description.setLang("cz");
+        navigationCase.addDescription(description);
         navigationCase.setFromAction("hahatest");
         navigationCase.setToViewId("welcomme.test");
         navigationCase.setRedirected(false);
@@ -232,7 +234,10 @@ public class JSFConfigModelTest extends NbTestCase {
         Collection<NavigationCase> navigationCases = navigationRule.getNavigationCases();
         assertEquals("Number of navigation cases ", 3, navigationCases.size());
         NavigationCase newCase = model.getFactory().createNavigationCase();
-        newCase.setDescription("Test case description");
+        Description description = newCase.getModel().getFactory().createDescription();
+        description.setValue("Test case description");
+        description.setLang("cz");
+        newCase.addDescription(description);
         newCase.setFromOutcome("/fromOutcame.jsp");
         newCase.setToViewId("/toviewide.jsp");
         
@@ -373,6 +378,26 @@ public class JSFConfigModelTest extends NbTestCase {
         assertEquals(list.item(3).getNodeName(), "to-view-id");
     }
     
-    
+    public void testDescriptionGroup() throws Exception {
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-description.xml");
+        
+        model.addPropertyChangeListener(new PropertyChangeListener(){
+            public void propertyChange(PropertyChangeEvent event) {
+                System.out.println("property: " +  event.getPropertyName());
+            } 
+        });
+        
+        NavigationRule rule = model.getRootComponent().getNavigationRules().get(0);
+        
+        
+        assertEquals("Count of Descriptions ", 2, rule.getDescriptions().size());
+        Description description = rule.getDescriptions().get(0);
+        assertEquals("cz", description.getLang());
+        description = rule.getDescriptions().get(1);
+        assertEquals("en", description.getLang());
+        
+        assertEquals("Count of DisplayNames ", 1, rule.getDisplayNames().size());
+        assertEquals("Count of Icons ", 2, rule.getIcons().size());
+    }
     
 }

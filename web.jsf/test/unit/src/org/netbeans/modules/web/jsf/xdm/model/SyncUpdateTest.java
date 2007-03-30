@@ -96,4 +96,28 @@ public class SyncUpdateTest extends NbTestCase {
         assertTrue(propertyChangeCalled);
     }
     
+    public void testSyncRemoveCase() throws Exception {
+        
+        propertyChangeCalled = false;
+        
+        /* Load a file that has a simple rule*/
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-99325.xml");
+        
+         model.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent arg0) {
+                propertyChangeCalled = true;
+                System.out.println("event prisla : " + arg0);
+            }
+        });       
+
+        try {
+            Util.setDocumentContentTo(model,"faces-config-99325-end.xml");
+        } catch (IOException ioe ){
+            ioe.printStackTrace();
+            assertTrue(false);
+        }
+        
+        assertTrue(propertyChangeCalled);
+    }
+    
 }

@@ -31,6 +31,8 @@ import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.Description;
+import org.netbeans.modules.web.jsf.api.facesmodel.Description;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.dialogs.AddDialog;
 import org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog;
@@ -117,10 +119,11 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     bean.setManagedBeanClass(dialogPanel.getBeanClass());
                     bean.setManagedBeanScope(dialogPanel.getScope());
                     if (dialogPanel.getDescription() != null &&
-                            !dialogPanel.getDescription().equals(""))
-                        bean.setDescription(END_LINE +
-                                dialogPanel.getDescription() +
-                                END_LINE);
+                            !dialogPanel.getDescription().equals("")){
+                        Description description = facesConfig.getModel().getFactory().createDescription();
+                        description.setValue(END_LINE + dialogPanel.getDescription() + END_LINE);
+                        bean.addDescription(description);
+                    }
                     facesConfig.getModel().startTransaction();
                     facesConfig.addManagedBean(bean);
                     facesConfig.getModel().endTransaction();
@@ -155,10 +158,12 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     FacesConfig facesConfig = model.getRootComponent();
                     NavigationRule rule = facesConfig.getModel().getFactory().createNavigationRule();
                     if (dialogPanel.getDescription() == null || "".equals(dialogPanel.getDescription())){
-                        rule.setDescription(null);
+                        rule.addDescription(null);
                     } 
                     else {
-                        rule.setDescription(END_LINE + dialogPanel.getDescription() + END_LINE);
+                        Description description = facesConfig.getModel().getFactory().createDescription();
+                        description.setValue(END_LINE + dialogPanel.getDescription() + END_LINE);
+                        rule.addDescription(description);
                     }
                     if (dialogPanel.getFromView() == null || dialogPanel.getFromView().length() == 0){
                         rule.setFromViewId(null);
@@ -220,9 +225,11 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                         nCase.setFromOutcome(dialogPanel.getFromOutcome());
                     nCase.setRedirected(dialogPanel.isRedirect());
                     nCase.setToViewId(dialogPanel.getToView());
-                    if(dialogPanel.getDescription() != null && !dialogPanel.getDescription().equals(""))    //NOI18N
-                        nCase.setDescription(END_LINE + dialogPanel.getDescription() + END_LINE);
-                    
+                    if(dialogPanel.getDescription() != null && !dialogPanel.getDescription().equals("")) {   //NOI18N
+                        Description description = nCase.getModel().getFactory().createDescription();
+                        description.setValue(END_LINE + dialogPanel.getDescription() + END_LINE);
+                        nCase.addDescription(description);
+                    }
                     facesConfig.getModel().startTransaction();
                     rule.addNavigationCase(nCase);
                     facesConfig.getModel().endTransaction();

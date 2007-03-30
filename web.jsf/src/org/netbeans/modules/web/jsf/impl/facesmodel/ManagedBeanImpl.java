@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.w3c.dom.Element;
@@ -27,7 +29,15 @@ import org.w3c.dom.Element;
  *
  * @author Petr Pisl
  */
-public class ManagedBeanImpl extends JSFConfigComponentImpl.ComponentInfoImpl implements ManagedBean {
+public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean {
+    
+    protected static final List<String> SORTED_ELEMENTS = new ArrayList();
+    {
+        SORTED_ELEMENTS.addAll(DescriptionGroupImpl.SORTED_ELEMENTS);
+        SORTED_ELEMENTS.add(JSFConfigQNames.MANAGED_BEAN_NAME.getLocalName());
+        SORTED_ELEMENTS.add(JSFConfigQNames.MANAGED_BEAN_CLASS.getLocalName());
+        SORTED_ELEMENTS.add(JSFConfigQNames.MANAGED_BEAN_SCOPE.getLocalName());
+    }
     
     /** Creates a new instance of ManagedBeanImpl */
     public ManagedBeanImpl(JSFConfigModelImpl model,Element element) {
@@ -60,6 +70,10 @@ public class ManagedBeanImpl extends JSFConfigComponentImpl.ComponentInfoImpl im
     
     public void setManagedBeanScope(String scope) {
         setChildElementText(MANAGED_BEAN_SCOPE, scope, JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getModel().getVersion()));
+    }
+    
+    protected List<String> getSortedListOfLocalNames(){
+        return SORTED_ELEMENTS;
     }
     
     public void accept(JSFConfigVisitor visitor) {

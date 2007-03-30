@@ -30,6 +30,10 @@ public interface JSFConfigVisitor {
     void visit(NavigationRule component);
     void visit(NavigationCase component);
     void visit(Converter component);
+    void visit(Description component);
+    void visit(DisplayName compoent);
+    void visit(Icon component);
+    
     /**
      * Default shallow visitor.
      */
@@ -47,6 +51,15 @@ public interface JSFConfigVisitor {
             visitChild();
         }
         public void visit(Converter component) {
+            visitChild();
+        }
+        public void visit(Description component) {
+            visitChild();
+        }
+        public void visit(DisplayName component) {
+            visitChild();
+        }
+        public void visit(Icon component) {
             visitChild();
         }
         protected void visitChild() {
