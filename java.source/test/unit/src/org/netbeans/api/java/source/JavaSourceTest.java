@@ -54,6 +54,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
+import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -121,7 +122,11 @@ public class JavaSourceTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
-    
+        this.clearWorkDir();
+        File workDir = getWorkDir();
+        File cacheFolder = new File (workDir, "cache"); //NOI18N
+        cacheFolder.mkdirs();
+        IndexUtil.setCacheFolder(cacheFolder);
     }
 
     protected void tearDown() throws Exception {
