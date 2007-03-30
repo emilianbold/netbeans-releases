@@ -64,7 +64,7 @@ public class AnalyserAnalyser {
         }
         Collections.sort (l);
         Iterator<String> it2 = l.iterator ();
-        while (it.hasNext ()) {
+        while (it2.hasNext ()) {
             String nt = it2.next ();
             List ll = m.get (nt);
             Iterator it3 = ll.iterator ();

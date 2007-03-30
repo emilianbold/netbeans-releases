@@ -10,6 +10,7 @@ package org.netbeans.modules.languages;
 import junit.framework.TestCase;
 
 import org.netbeans.api.languages.ParseException;
+import org.netbeans.modules.languages.parser.AnalyserAnalyser;
 
 
 /**
@@ -20,6 +21,32 @@ public class NBSLanguageReaderTest extends TestCase {
     
     public NBSLanguageReaderTest(String testName) {
         super(testName);
+    }
+    
+    
+    public void testOK () throws ParseException {
+        Language l = NBSLanguageReader.readLanguage (
+            "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
+            "TOKEN:SYMBOL:( '>' | '=')\n" +
+            "TOKEN:ENDTAG:( '</' ['a'-'z']+ )\n" +
+            "TOKEN:ATTRIBUTE:( ['a'-'z']+ )\n" +
+            "TOKEN:ATTR_VALUE:( '\\\"' [^ '\\n' '\\r' '\\\"']+ '\\\"' )\n" +
+            "TOKEN:VALUE:( '\\\"' [^ '\\n' '\\r' '\\\"']+ '\\\"' )\n" +
+            "TOKEN:TEXT:( [^'<']+ )\n" +
+            "\n" +
+            "S = tags;\n" +
+            "tags = (startTag | endTag | etext)*;\n" +
+            "startTag = <TAG> (attribute)* ( <SYMBOL, '>'> | <SYMBOL, '/>'> );\n" +
+            "endTag = <ENDTAG> <SYMBOL, '>'>; \n" +
+            "attribute = <ATTRIBUTE>;\n" +
+            "attribute = <ATTR_VALUE>; \n" +
+            "attribute = <ATTRIBUTE> <SYMBOL,'='> <VALUE>; \n" +
+            "etext = (<TEXT>)*;\n",
+            "test.nbs", 
+            "text/x-test"
+        );
+        l.getAnalyser ();
+        System.out.println("");
     }
     
     public void testUnexpectedToken () {
@@ -106,35 +133,6 @@ public class NBSLanguageReaderTest extends TestCase {
         }
     }
     
-    public void testCycle () throws ParseException {
-        Language l = NBSLanguageReader.readLanguage (
-            "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
-            "TOKEN:SYMBOL:( '>' | '=')\n" +
-            "TOKEN:ENDTAG:( '</' ['a'-'z']+ )\n" +
-            "TOKEN:ATTRIBUTE:( ['a'-'z']+ )\n" +
-            "TOKEN:ATTR_VALUE:( '\\\"' [^ '\\n' '\\r' '\\\"']+ '\\\"' )\n" +
-            "TOKEN:VALUE:( '\\\"' [^ '\\n' '\\r' '\\\"']+ '\\\"' )\n" +
-            "TOKEN:TEXT:( [^'<']+ )\n" +
-            "\n" +
-            "S = tags;\n" +
-            "tags = (startTag | endTag | etext)*;\n" +
-            "startTag = S <TAG> (attribute)* ( <SYMBOL, '>'> | <SYMBOL, '/>'> );\n" +
-            "endTag = <ENDTAG> <SYMBOL, '>'>; \n" +
-            "attribute = <ATTRIBUTE>;\n" +
-            "attribute = <ATTR_VALUE>; \n" +
-            "attribute = <ATTRIBUTE> <SYMBOL,'='> <VALUE>; \n" +
-            "etext = (<TEXT>)*;\n",
-            "test.nbs", 
-            "text/x-test"
-        );
-        try {
-            l.getAnalyser ();
-            assert (false);
-        } catch (ParseException ex) {
-            assertEquals ("cycle detected! tags [tags, tags$1, tags$2, startTag, S]", ex.getMessage ());
-        }
-    }
-    
     public void testUndefinedNT () throws ParseException {
         Language l = NBSLanguageReader.readLanguage (
             "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
@@ -161,30 +159,6 @@ public class NBSLanguageReaderTest extends TestCase {
         } catch (ParseException ex) {
             assertEquals ("endTag grammar rule not defined!", ex.getMessage ());
         }
-    }
-    
-    public void testOK () throws ParseException {
-        Language l = NBSLanguageReader.readLanguage (
-            "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
-            "TOKEN:SYMBOL:( '>' | '=')\n" +
-            "TOKEN:ENDTAG:( '</' ['a'-'z']+ )\n" +
-            "TOKEN:ATTRIBUTE:( ['a'-'z']+ )\n" +
-            "TOKEN:ATTR_VALUE:( '\\\"' [^ '\\n' '\\r' '\\\"']+ '\\\"' )\n" +
-            "TOKEN:VALUE:( '\\\"' [^ '\\n' '\\r' '\\\"']+ '\\\"' )\n" +
-            "TOKEN:TEXT:( [^'<']+ )\n" +
-            "\n" +
-            "S = tags;\n" +
-            "tags = (startTag | endTag | etext)*;\n" +
-            "startTag = <TAG> (attribute)* ( <SYMBOL, '>'> | <SYMBOL, '/>'> );\n" +
-            "endTag = <ENDTAG> <SYMBOL, '>'>; \n" +
-            "attribute = <ATTRIBUTE>;\n" +
-            "attribute = <ATTR_VALUE>; \n" +
-            "attribute = <ATTRIBUTE> <SYMBOL,'='> <VALUE>; \n" +
-            "etext = (<TEXT>)*;\n",
-            "test.nbs", 
-            "text/x-test"
-        );
-        l.getAnalyser ();
     }
 }
 

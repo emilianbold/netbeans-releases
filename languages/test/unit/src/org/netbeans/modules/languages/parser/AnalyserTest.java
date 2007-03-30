@@ -337,11 +337,17 @@ public class AnalyserTest extends TestCase {
         );
         System.out.println(n.print ());
         assertTrue (input.eof ());
-        assertEquals (3, n.getChildren ().size ());
-        n = (ASTNode) n.getChildren ().get (1);
-        assertEquals (4, n.getChildren ().size ());
-        n = (ASTNode) n.getChildren ().get (3);
-        assertEquals (6, n.getChildren ().size ());
+        assertEquals (1, n.getChildren ().size ());
+        assertEquals ("S", n.getNT ());
+        n = (ASTNode) n.getChildren ().get (0);
+        assertEquals (2, n.getChildren ().size ());
+        assertEquals ("tags", n.getNT ());
+        assertEquals ("startTag", ((ASTNode) n.getChildren ().get (0)).getNT ());
+        assertEquals ("endTag", ((ASTNode) n.getChildren ().get (1)).getNT ());
+        n = (ASTNode) n.getChildren ().get (0);
+        assertEquals (2, n.getChildren ().size ());
+        assertEquals ("TAG", ((ASTToken) n.getChildren ().get (0)).getType ());
+        assertEquals ("SYMBOL", ((ASTToken) n.getChildren ().get (1)).getType ());
     }
     
     public void test6 () throws ParseException {
