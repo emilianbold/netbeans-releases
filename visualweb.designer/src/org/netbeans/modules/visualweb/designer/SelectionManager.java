@@ -2248,6 +2248,9 @@ public class SelectionManager {
     }
 
     /**
+     * XXX Bad architecture.
+     * TODO Get rid of this, and update the primary as selection changes.
+     * 
      * Ask the selection manager to pick a primary selection object, if it has
      * one or more selection objects but none designated as primary.
      * If one is already primary, it is kept as the primary.

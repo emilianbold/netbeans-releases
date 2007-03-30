@@ -59,6 +59,8 @@ public interface Designer {
     public int getSelectedCount();
     /** Gets selected componets (component root elements). */
     public Element[] getSelectedComponents();
+    // XXX Suspicious?
+    public Element getPrimarySelectedComponent();
 
     public enum Alignment {
         SNAP_TO_GRID,
@@ -69,8 +71,8 @@ public interface Designer {
         CENTER,
         RIGHT
     }
-    public void align(Alignment alignment);
-    public void snapToGrid();
+//    public void align(Alignment alignment);
+//    public void snapToGrid();
 
     public boolean isInlineEditing();
 
@@ -105,6 +107,7 @@ public interface Designer {
         
         // XXX Get rid of.
         public boolean isPositioned();
+        public boolean isAbsolutelyPositioned();
         // XXX Very suspicious.
         public Box getPositionedBy();
     } // End of Box.
@@ -112,6 +115,8 @@ public interface Designer {
     public Box findBox(int x, int y);
     // XXX Get rid of.
     public Box findBoxForSourceElement(Element sourceElement);
+    
+    public Box findBoxForComponentRootElement(Element componentRootElement);
     
     public int snapX(int x, Box positionedBy);
     public int snapY(int y, Box positionedBy);

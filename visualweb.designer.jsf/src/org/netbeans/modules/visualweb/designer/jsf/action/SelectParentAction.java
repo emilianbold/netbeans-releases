@@ -26,6 +26,7 @@ import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.designer.jsf.JsfSupportUtilities;
 import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.spi.designtime.idebridge.action.AbstractDesignBeanAction;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 
@@ -103,7 +104,13 @@ public class SelectParentAction  extends AbstractDesignBeanAction {
             return;
         }
         
-        Designer designer = JsfSupportUtilities.getDesignerForDesignContext(designBean.getDesignContext());
+        Designer designer = JsfSupportUtilities.findDesignerForDesignContext(designBean.getDesignContext());
+        if (designer == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+                    new NullPointerException("Can't find designer for design context=" // NOI18N
+                    + designBean.getDesignContext()));
+            return;
+        }
         designer.selectComponent(componentRootElement);
     }
 }

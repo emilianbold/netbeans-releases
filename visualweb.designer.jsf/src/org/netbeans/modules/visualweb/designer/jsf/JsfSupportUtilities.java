@@ -47,13 +47,22 @@ public final class JsfSupportUtilities {
         return HtmlDomProviderServiceImpl.getEditablePropertyNames(designBean);
     }
 
-    public static Designer getDesignerForDesignContext(DesignContext designContext) {
+    public static Designer findDesignerForDesignContext(DesignContext designContext) {
         Designer[] designers = JsfForm.findDesignersForDesignContext(designContext);
-        return designers.length > 0 ? designers[0] : null;
+        return designers.length == 0 ? null : designers[0];
+    }
+    
+    public static Designer findDesignerForJsfForm(JsfForm jsfForm) {
+        Designer[] designers = JsfForm.findDesigners(jsfForm);
+        return designers.length == 0 ? null : designers[0];
     }
 
     public static Element getComponentRootElementForDesignBean(DesignBean bean) {
         return HtmlDomProviderServiceImpl.getComponentRootElementForDesignBean(bean);
+    }
+    
+    public static JsfForm findJsfFormForDesignContext(DesignContext designContext) {
+        return JsfForm.findJsfForm(designContext);
     }
     
     // XXX Also in designer/../DesignerUtils.

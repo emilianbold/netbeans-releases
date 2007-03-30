@@ -36,6 +36,7 @@ import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.awt.StatusDisplayer;
@@ -70,7 +71,7 @@ public class AlignAction extends AbstractDesignBeanAction {
         }
 
 //        WebForm webform = WebForm.findWebFormForDesignContext(designBeans[0].getDesignContext());
-        Designer designer = JsfSupportUtilities.getDesignerForDesignContext(designBeans[0].getDesignContext());
+        Designer designer = JsfSupportUtilities.findDesignerForDesignContext(designBeans[0].getDesignContext());
 //        if (webform == null) {
         if (designer == null) {
             return alignName;
@@ -97,7 +98,7 @@ public class AlignAction extends AbstractDesignBeanAction {
 //                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBeans[0]))) {
 //            WebForm webform = WebForm.findWebFormForDesignContext(designBeans[0].getDesignContext());
 //            if (webform != null && webform.getSelection().getNumSelected() > 0) {
-            Designer designer = JsfSupportUtilities.getDesignerForDesignContext(designBeans[0].getDesignContext());
+            Designer designer = JsfSupportUtilities.findDesignerForDesignContext(designBeans[0].getDesignContext());
             if (designer != null && designer.getSelectedCount() > 0) {
                 return true;
             } else {
@@ -143,7 +144,8 @@ public class AlignAction extends AbstractDesignBeanAction {
             }
 
 //            protected abstract void performAction(WebForm webform);
-            protected abstract void performAction(Designer designer);
+//            protected abstract void performAction(Designer designer);
+            protected abstract void performAction(JsfForm jsfForm);
         } // End of Alignment class.
         
         private static class SnapToGridAlignment extends Alignment {
@@ -154,10 +156,17 @@ public class AlignAction extends AbstractDesignBeanAction {
 //            protected void performAction(WebForm webform) {
 //                snapToGrid(webform);
 //            }
-            protected void performAction(Designer designer) {
-                if (designer != null) {
-                    designer.snapToGrid();
+//            protected void performAction(Designer designer) {
+//                if (designer != null) {
+//                    designer.snapToGrid();
+//                }
+//            }
+            protected void performAction(JsfForm jsfForm) {
+                Designer designer = JsfSupportUtilities.findDesignerForJsfForm(jsfForm);
+                if (designer == null) {
+                    return;
                 }
+                jsfForm.snapToGrid(designer);
             }
         } // End of SnapToGridAlignment class.
         
@@ -169,10 +178,17 @@ public class AlignAction extends AbstractDesignBeanAction {
 //            protected void performAction(WebForm webform) {
 //                align(webform, alignmentType);
 //            }
-            protected void performAction(Designer designer) {
-                if (designer != null) {
-                    designer.align(getDesignerAlignment());
+//            protected void performAction(Designer designer) {
+//                if (designer != null) {
+//                    designer.align(getDesignerAlignment());
+//                }
+//            }
+            protected void performAction(JsfForm jsfForm) {
+                Designer designer = JsfSupportUtilities.findDesignerForJsfForm(jsfForm);
+                if (designer == null) {
+                    return;
                 }
+                jsfForm.align(designer, getDesignerAlignment());
             }
         } // End of SimpleAlignment class.
         
@@ -196,7 +212,7 @@ public class AlignAction extends AbstractDesignBeanAction {
             
 //            WebForm webform = WebForm.findWebFormForDesignContext(designBeans[0].getDesignContext());
 //            if (webform == null) {
-            Designer designer = JsfSupportUtilities.getDesignerForDesignContext(designBeans[0].getDesignContext());
+            Designer designer = JsfSupportUtilities.findDesignerForDesignContext(designBeans[0].getDesignContext());
             if (designer == null) {
                 this.alignments = new Alignment[0];
 //            } else if (webform.getSelection().getNumSelected() == 1) {
@@ -230,13 +246,19 @@ public class AlignAction extends AbstractDesignBeanAction {
 //            if (webform == null) {
 //                return;
 //            }
-            Designer designer = JsfSupportUtilities.getDesignerForDesignContext(designBeans[0].getDesignContext());
-            if (designer == null) {
+//            Designer designer = JsfSupportUtilities.getDesignerForDesignContext(designBeans[0].getDesignContext());
+//            if (designer == null) {
+//                return;
+//            }
+//            
+////            alignments[i].performAction(webform);
+//            alignments[i].performAction(designer);
+            JsfForm jsfForm = JsfSupportUtilities.findJsfFormForDesignContext(designBeans[0].getDesignContext());
+            if (jsfForm == null) {
                 return;
             }
             
-//            alignments[i].performAction(webform);
-            alignments[i].performAction(designer);
+            alignments[i].performAction(jsfForm);
         }
 
         public void addChangeListener(ChangeListener changeListener) {

@@ -4346,6 +4346,10 @@ public class CssBox implements Box {
     public boolean isPositioned() {
         return getBoxType().isPositioned();
     }
+
+    public boolean isAbsolutelyPositioned() {
+        return getBoxType().isAbsolutelyPositioned();
+    }
     
     
 //    /** Gets the width of the block which directly contains the

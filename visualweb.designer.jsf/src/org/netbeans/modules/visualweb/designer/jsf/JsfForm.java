@@ -300,7 +300,7 @@ public class JsfForm {
         return getJsfForm(facesModel);
     }
     
-    private static JsfForm findJsfForm(DesignContext designContext) {
+    /*private*/ static JsfForm findJsfForm(DesignContext designContext) {
         if (designContext == null) {
             return null;
         }
@@ -1187,6 +1187,14 @@ public class JsfForm {
     
     public boolean isWriteLocked() {
         return getFacesModel().isWriteLocked();
+    }
+    
+    public void snapToGrid(Designer designer) {
+        getDomDocumentImpl().snapToGrid(designer);
+    }
+    
+    public void align(Designer designer, Designer.Alignment alignment) {
+        getDomDocumentImpl().align(designer, alignment);
     }
     
 //    public boolean canDropDesignBeansAtNode(DesignBean[] designBeans, Node node) {

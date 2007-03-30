@@ -2438,4 +2438,203 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         }
     }
 
+    // XXX Moved from designer/../GridHandler.
+    public void snapToGrid(Designer designer) {
+////        GridHandler handler = GridHandler.getInstance();
+////        DesignerPane editor = webForm.getPane();
+//        SelectionManager sm = webForm.getSelection();
+////        Iterator it = sm.iterator();
+//        Element[] componentRootElements = sm.getSelectedComponentRootElements();
+////        ModelViewMapper mapper = webform.getMapper();
+        Element[] componentRootElements = designer.getSelectedComponents();
+        
+        boolean haveMoved = false;
+//        Document doc = webform.getDocument();
+
+//        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(AlignAction.class, "LBL_SnapToGrid")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = webForm.writeLock(NbBundle.getMessage(GridHandler.class, "LBL_SnapToGrid")); // NOI18N
+        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SnapToGrid")); // NOI18N
+        try {
+//            doc.writeLock(NbBundle.getMessage(AlignAction.class, "LBL_SnapToGrid")); // NOI18N
+
+//            while (it.hasNext()) {
+//                MarkupDesignBean bean = (MarkupDesignBean)it.next();
+            for (Element componentRootElement : componentRootElements) {
+//                MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                CssBox box = mapper.findBox(bean);
+//                CssBox box = ModelViewMapper.findBoxForComponentRootElement(webForm.getPane().getPageBox(), componentRootElement);
+                Box box = designer.findBoxForComponentRootElement(componentRootElement);
+
+                if (box == null) {
+                    continue;
+                }
+
+//                boolean canAlign = box.getBoxType().isAbsolutelyPositioned();
+                boolean canAlign = box.isAbsolutelyPositioned();
+
+                if (!canAlign) {
+                    continue;
+                }
+
+                int x = box.getAbsoluteX();
+                int y = box.getAbsoluteY();
+
+                // Snap to grid.
+//                x = snapX(x, box.getPositionedBy());
+//                y = snapY(y, box.getPositionedBy());
+                x = designer.snapX(x, box.getPositionedBy());
+                y = designer.snapY(y, box.getPositionedBy());
+                
+//                moveTo(editor, /*bean,*/ box, x, y /*, false*/);
+//                webForm.getDomDocument().moveComponentTo(box, x, y);
+                moveComponentTo(box, x, y);
+                
+                haveMoved = true;
+            }
+        } finally {
+//            doc.writeUnlock();
+//            webform.getModel().writeUnlock(undoEvent);
+//            webForm.writeUnlock(writeLock);
+            jsfForm.writeUnlock(writeLock);
+        }
+
+//        if (!haveMoved) {
+//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GridHandler.class, "MSG_AlignAbsolute"));
+//            UIManager.getLookAndFeel().provideErrorFeedback(webForm.getPane());
+//        }
+        
+//        fireComponentsMoved(new DefaultDomDocumentEvent(this, null));
+    }
+
+    // XXX Moved from designer/../GridHandler.
+    public void align(Designer designer, Designer.Alignment alignment) {
+        // Primary
+//        SelectionManager sm = webForm.getSelection();
+//
+//        if (sm.isSelectionEmpty()) {
+//            return;
+//        }
+//
+//        sm.pickPrimary();
+        Element primaryComponnetRootElement = designer.getPrimarySelectedComponent();
+
+//        ModelViewMapper mapper = webform.getMapper();
+//        CssBox primaryBox = mapper.findBox(sm.getPrimary());
+//        CssBox primaryBox = ModelViewMapper.findBox(webForm.getPane().getPageBox(), sm.getPrimary());
+        Box primaryBox = designer.findBoxForComponentRootElement(primaryComponnetRootElement);
+
+        if (primaryBox == null) {
+            return;
+        }
+
+        boolean haveMoved = false;
+//        Document doc = webform.getDocument();
+
+//        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = webForm.writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
+        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_Align")); // NOI18N
+        try {
+//            doc.writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
+
+//            GridHandler handler = GridHandler.getInstance();
+//            DesignerPane editor = webForm.getPane();
+//            boolean canAlign = primaryBox.getBoxType().isAbsolutelyPositioned();
+            boolean canAlign = primaryBox.isAbsolutelyPositioned();
+            
+            int x = primaryBox.getAbsoluteX();
+            int y = primaryBox.getAbsoluteY();
+            int w = primaryBox.getWidth();
+            int h = primaryBox.getHeight();
+//            Iterator it = sm.iterator();
+//
+//            while (canAlign && it.hasNext()) {
+//                MarkupDesignBean bean = (MarkupDesignBean)it.next();
+//            for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
+            for (Element componentRootElement : designer.getSelectedComponents()) {
+//                MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                CssBox box = mapper.findBox(bean);
+//                CssBox box = ModelViewMapper.findBoxForComponentRootElement(webForm.getPane().getPageBox(), componentRootElement);
+                Box box = designer.findBoxForComponentRootElement(componentRootElement);
+
+                if (box == null) {
+                    continue;
+                }
+
+                // XXX Should I use isPositioned() instead? (e.g. are relative
+                // positioned boxes alignable?
+//                if (!box.getBoxType().isAbsolutelyPositioned()) {
+                if (!box.isAbsolutelyPositioned()) {
+                    continue;
+                }
+
+                haveMoved = true;
+
+                /*
+                 Element element = FacesSupport.getElement(fob.component);
+                 if (element == null) {
+                 continue;
+                 }
+                 */
+                switch (alignment) {
+                case TOP:
+//                    moveTo(editor, /*bean,*/ box, box.getAbsoluteX(), y/*, true*/);
+//                    webForm.getDomDocument().moveComponentTo(box, box.getAbsoluteX(), y);
+                    moveComponentTo(box, box.getAbsoluteX(), y);
+
+                    break;
+
+                case MIDDLE:
+//                    moveTo(editor, /*bean,*/ box, box.getAbsoluteX(),
+//                        (y + (h / 2)) - (box.getHeight() / 2)/*, true*/);
+//                    webForm.getDomDocument().moveComponentTo(box, box.getAbsoluteX(), (y + (h / 2)) - (box.getHeight() / 2));
+                    moveComponentTo(box, box.getAbsoluteX(), (y + (h / 2)) - (box.getHeight() / 2));
+
+                    break;
+
+                case BOTTOM:
+//                    moveTo(editor, /*bean,*/ box, box.getAbsoluteX(),
+//                        (y + h) - box.getHeight()/*, true*/);
+//                    webForm.getDomDocument().moveComponentTo(box, box.getAbsoluteX(), (y + h) - box.getHeight());
+                    moveComponentTo(box, box.getAbsoluteX(), (y + h) - box.getHeight());
+
+                    break;
+
+                case LEFT:
+//                    moveTo(editor, /*bean,*/ box, x, box.getAbsoluteY()/*, true*/);
+//                    webForm.getDomDocument().moveComponentTo(box, x, box.getAbsoluteY());
+                    moveComponentTo(box, x, box.getAbsoluteY());
+
+                    break;
+
+                case CENTER:
+//                    moveTo(editor, /*bean,*/ box, (x + (w / 2)) - (box.getWidth() / 2),
+//                        box.getAbsoluteY()/*, true*/);
+//                    webForm.getDomDocument().moveComponentTo(box, (x + (w / 2)) - (box.getWidth() / 2), box.getAbsoluteY());
+                    moveComponentTo(box, (x + (w / 2)) - (box.getWidth() / 2), box.getAbsoluteY());
+
+                    break;
+
+                case RIGHT:
+//                    moveTo(editor, /*bean,*/ box, (x + w) - box.getWidth(), box.getAbsoluteY()/*, true*/);
+//                    webForm.getDomDocument().moveComponentTo(box, (x + w) - box.getWidth(), box.getAbsoluteY());
+                    moveComponentTo(box, (x + w) - box.getWidth(), box.getAbsoluteY());
+
+                    break;
+                }
+            }
+        } finally {
+//            doc.writeUnlock();
+//            webform.getModel().writeUnlock(undoEvent);
+//            webForm.writeUnlock(writeLock);
+            jsfForm.writeUnlock(writeLock);
+        }
+
+//        if (!haveMoved) {
+//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GridHandler.class,"MSG_AlignAbsolute"));
+//            UIManager.getLookAndFeel().provideErrorFeedback(webForm.getPane());
+//        }
+        
+//        fireComponentsMoved(new DefaultDomDocumentEvent(this, null));
+    }
+
 }

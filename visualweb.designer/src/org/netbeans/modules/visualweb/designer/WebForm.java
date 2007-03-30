@@ -2112,13 +2112,13 @@ public class WebForm implements Designer {
         return getSelection().getSelectedComponentRootElements();
     }
     
-    public void snapToGrid() {
-        getGridHandler().snapToGrid();
-    }
+//    public void snapToGrid() {
+//        getGridHandler().snapToGrid();
+//    }
 
-    public void align(Designer.Alignment alignment) {
-        getGridHandler().align(alignment);
-    }
+//    public void align(Designer.Alignment alignment) {
+//        getGridHandler().align(alignment);
+//    }
     // << Designer Implmenetation
     
     
@@ -2747,12 +2747,22 @@ public class WebForm implements Designer {
         return findCssBoxForElement(sourceElement);
     }
 
+    public Box findBoxForComponentRootElement(Element componentRootElement) {
+        return ModelViewMapper.findBoxForComponentRootElement(getPane().getPageBox(), componentRootElement);
+    }
+    
     public int snapX(int x, Box positionedBy) {
         return getGridHandler().snapX(x, positionedBy);
     }
 
     public int snapY(int y, Box positionedBy) {
         return getGridHandler().snapY(y, positionedBy);
+    }
+
+    public Element getPrimarySelectedComponent() {
+        // XXX
+        getSelection().pickPrimary();
+        return getSelection().getPrimary();
     }
     
 }

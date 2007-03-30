@@ -174,7 +174,7 @@ public class InlineEditAction extends AbstractDesignBeanAction {
 //                        + bean.getDesignContext()));
 //                return;
 //            }
-            Designer designer = JsfSupportUtilities.getDesignerForDesignContext(bean.getDesignContext());
+            Designer designer = JsfSupportUtilities.findDesignerForDesignContext(bean.getDesignContext());
             if (designer == null) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
                         new NullPointerException("Can't find designer for design context=" // NOI18N
