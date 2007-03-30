@@ -126,15 +126,15 @@ final class PanelWebService<T> extends Panel<T> {
   protected void update()
   {
     myWSDL.removeAllItems();
-    FileObject [] files = Util.getWSDLFiles(getProject());
+    Util.WSDLFile [] files = Util.getWSDLFiles(getProject());
 
-    for (FileObject file : files) {
+    for (Util.WSDLFile file : files) {
       myWSDL.addItem(file);
     }
   }
 
   private FileObject getWSDL() {
-    return (FileObject) myWSDL.getSelectedItem();
+    return ((Util.WSDLFile) myWSDL.getSelectedItem()).getFile();
   }
 
   private JButton myBrowse;

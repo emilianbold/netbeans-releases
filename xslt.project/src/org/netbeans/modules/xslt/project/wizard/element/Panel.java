@@ -255,8 +255,8 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
    {
       super.getListCellRendererComponent(list, value, index, isSelected, hasFocus);
 
-      if (value instanceof FileObject) {
-        setText(Util.calculateRelativeName((FileObject) value, getProject()));
+      if (value instanceof Util.WSDLFile) {
+        setText(((Util.WSDLFile) value).getName());
       }
       if (value instanceof Operation) {
         setText(((Operation) value).getName());
