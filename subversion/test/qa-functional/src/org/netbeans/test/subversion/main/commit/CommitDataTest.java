@@ -86,8 +86,20 @@ public class CommitDataTest extends JellyTestCase {
     }
     
     public void testCommitFile() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
+        long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        try {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+        } finally {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
+        }
+        
+        timeout = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
+        try {
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
+        } finally {
+            JemmyProperties.setCurrentTimeout("CDialogWaiter.WaitDialogTimeout", timeout);
+        }
+        
         try {
             TestKit.closeProject(PROJECT_NAME);
             org.openide.nodes.Node nodeIDE;
@@ -361,6 +373,7 @@ public class CommitDataTest extends JellyTestCase {
             wdso.finish();
             //open project
             OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
 //            oto.clear();            
             oto.waitText("Checking out... finished.");
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");

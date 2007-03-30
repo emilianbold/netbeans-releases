@@ -113,7 +113,7 @@ public class CheckoutContentTest extends JellyTestCase {
             wdso.finish();
             //open project
             oto = new OutputTabOperator("file:///tmp/repo");
-//            oto.clear();            
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
             oto.waitText("Checking out... finished.");
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
@@ -123,7 +123,7 @@ public class CheckoutContentTest extends JellyTestCase {
             new QueueTool().waitEmpty(1000);
             ProjectSupport.waitScanFinished();
             
-            Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
+            //Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
             
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
@@ -162,6 +162,7 @@ public class CheckoutContentTest extends JellyTestCase {
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.finish();
             OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
 //            oto.clear();            
             //open project
             oto.waitText("Checking out... finished.");
