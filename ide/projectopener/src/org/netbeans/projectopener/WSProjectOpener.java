@@ -248,12 +248,12 @@ public class WSProjectOpener {
             // then ask user for another NB install dir and save to properties
             boolean found = false;
             while (!found) {
-                int cont = Utils.getAnotherNBInstallDir(nbVersion);
-                if (cont == Utils.DialogDescriptor.EXIT) {
+                Integer cont = Utils.getAnotherNBInstallDir(nbVersion);
+                if (cont.equals(Utils.DialogDescriptor.EXIT)) {
                     LOGGER.info("User selected Exit when asked for another NB install dir, exiting ...");
                     System.exit(0);
                 }
-                if (cont == Utils.DialogDescriptor.DOWNLOAD) {
+                if (cont.equals(Utils.DialogDescriptor.DOWNLOAD)) {
                     LOGGER.info("User selected Download, opening the page in browser, exiting ...");
                     Utils.showDocument(bundle.getString("URL_Download_NB"));
                     System.exit(0);

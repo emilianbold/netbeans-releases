@@ -191,7 +191,6 @@ public class NBInstallation {
         return "";
     }
     
-    @Override
     public String toString() {
         return userDir.getAbsolutePath();
     }

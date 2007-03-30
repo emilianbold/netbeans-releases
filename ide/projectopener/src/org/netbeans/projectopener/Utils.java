@@ -368,7 +368,7 @@ public class Utils {
         
     }
     
-    public static int getAnotherNBInstallDir(String nbv) {
+    public static Integer getAnotherNBInstallDir(String nbv) {
         DialogDescriptor dd = new DialogDescriptor();
         NBInstallDir nbd = new NBInstallDir();
         BrowseNetBeansDialog browseNBDialog = new BrowseNetBeansDialog(dd, nbd, nbv);

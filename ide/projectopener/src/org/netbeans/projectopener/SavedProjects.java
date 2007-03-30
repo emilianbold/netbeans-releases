@@ -95,7 +95,6 @@ public class SavedProjects {
             return folder.getAbsolutePath();
         }
     
-        @Override
         public String toString() {
             return folder.getAbsolutePath();
         }
