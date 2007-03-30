@@ -55,6 +55,11 @@ public final class JavaDataObject extends MultiDataObject {
     
     public JavaDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
+        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs( FileObject newFileName ) throws IOException {
+                createJavaEditorSupport().saveAs( newFileName );
+            }
+        });
     }
 
     public @Override Node createNodeDelegate() {
@@ -99,11 +104,6 @@ public final class JavaDataObject extends MultiDataObject {
             
             public Environment(JavaDataObject obj) {
                 super(obj);
-                obj.getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
-                    public void saveAs( FileObject newFileName ) throws IOException {
-                        ((JavaEditorSupport)findCloneableOpenSupport()).saveAs( newFileName );
-                    }
-                });
             }
             
             protected FileObject getFile() {
