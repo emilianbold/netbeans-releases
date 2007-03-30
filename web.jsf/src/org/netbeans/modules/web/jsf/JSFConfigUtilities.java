@@ -54,7 +54,7 @@ public class JSFConfigUtilities {
         Collection<NavigationRule> rules = config.getNavigationRules();
         for (Iterator<NavigationRule> it = rules.iterator(); it.hasNext();) {
             NavigationRule nRule = it.next();
-            if ((fromView != null && fromView.equals(nRule.getFromViewId())) 
+            if ((fromView != null && fromView.equals(nRule.getFromViewId()))
                     || (fromView == null && (nRule.getFromViewId() == null || nRule.getFromViewId().trim().length()==0))){
                 navigationRule = nRule;
                 continue;
@@ -150,6 +150,12 @@ public class JSFConfigUtilities {
     public static String[] getConfigFiles(FileObject deploymentDesc){
         ArrayList<String> files = new ArrayList();
         String[]  filesURI;
+        // looking for WEB-INF/faces-config.xml
+        WebModule webModule = WebModule.getWebModule(deploymentDesc);
+        FileObject baseDir = webModule.getDocumentBase();
+        FileObject fileObject = baseDir.getFileObject("WEB-INF/faces-config.xml");
+        if (fileObject != null)
+            files.add("WEB-INF/faces-config.xml");
         if (deploymentDesc != null){
             InitParam param = null;
             try{
@@ -168,13 +174,7 @@ public class JSFConfigUtilities {
                     for (int i = 0; i < filesURI.length; i++)
                         files.add(filesURI[i].trim());
                 }
-            } 
-            // looking for WEB-INF/faces-config.xml
-            WebModule webModule = WebModule.getWebModule(deploymentDesc);
-            FileObject baseDir = webModule.getDocumentBase();
-            FileObject fileObject = baseDir.getFileObject("WEB-INF/faces-config.xml");
-            if (fileObject != null)
-                files.add("WEB-INF/faces-config.xml");
+            }
         }
         filesURI = new String[files.size()];
         return files.toArray(filesURI);

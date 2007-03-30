@@ -111,7 +111,10 @@ public class ConfigurationUtils {
     }
     
     /**
-     * The method returns all faces configuration files in the web module
+     * The method returns all faces configuration files in the web module.
+     * If there is faces-config.xml file in the web project, then it's returned 
+     * as the first one. Other configuration files are in the same order as are 
+     * listed in the javax.faces.CONFIG_FILES attribute in the web.xml file.
      * @param webModule - the web module, where you want to find the faces
      * configuration files
      * @return array of all faces configuration files. If there are not any 
