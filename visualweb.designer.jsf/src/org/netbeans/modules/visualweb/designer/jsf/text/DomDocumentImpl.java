@@ -2637,4 +2637,107 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //        fireComponentsMoved(new DefaultDomDocumentEvent(this, null));
     }
 
+    // XXX Moved from designer/../DesignerCaret
+    /**
+     * @todo Check deletion back to first char in <body> !
+     * @todo Check read-only state etc
+     */
+    public boolean deleteNextChar(Designer designer, DomRange range) {
+        if (range == null) {
+            return false;
+        }
+        
+        // TODO - compute previous visual position, decide if it's
+        //    isWithinEditableRegion(Position pos) 
+        // and if so, set the range to it and delete the range.
+//        if (hasSelection()) {
+//            removeSelection();
+        if (!range.isEmpty()) {
+            deleteRangeContents(range);
+            return true;
+        }
+
+//        Document doc = component.getDocument();
+//        Position mark = range.getMark();
+        DomPosition mark = range.getMark();
+//        Position dot = ModelViewMapper.computeArrowRight(doc.getWebForm(), mark);
+//        Position dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
+//        DomPosition dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
+        DomPosition dot = designer.computeNextPosition(mark);
+
+//        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
+//        if ((dot == DomPosition.NONE) || !isWithinEditableRegion(dot)) {
+        if ((dot == DomPosition.NONE) || !designer.isInsideEditableRegion(dot)) {
+//            UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
+
+            return false;
+        }
+
+        range.setRange(dot.getNode(), dot.getOffset(), mark.getNode(), mark.getOffset());
+//        range.deleteContents();
+//        removeSelection();
+        deleteRangeContents(range);
+
+        return true;
+    }
+
+    // XXX Moved from designer/../DesignerCaret.
+    /**
+     * @todo Check deletion back to first char in <body> !
+     * @todo Check read-only state etc
+     */
+    public boolean deletePreviousChar(Designer designer, DomRange range) {
+        if (range == null) {
+            return false;
+        }
+        // TODO - compute previous visual position, decide if it's
+        //    isWithinEditableRegion(Position pos) 
+        // and if so, set the range to it and delete the range.
+//        if (hasSelection()) {
+//            removeSelection();
+        if (!range.isEmpty()) {
+            deleteRangeContents(range);
+
+            return true;
+        }
+
+//        Document doc = component.getDocument();
+//        Position mark = range.getMark();
+        DomPosition mark = range.getMark();
+//        Position dot = ModelViewMapper.computeArrowLeft(doc.getWebForm(), mark);
+//        Position dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
+//        DomPosition dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
+        DomPosition dot = designer.computePreviousPosition(mark);
+
+//        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
+//        if ((dot == DomPosition.NONE) || !isWithinEditableRegion(dot)) {
+        if ((dot == DomPosition.NONE) || !designer.isInsideEditableRegion(dot)) {
+//            UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
+
+            return false;
+        }
+
+        range.setRange(dot.getNode(), dot.getOffset(), mark.getNode(), mark.getOffset());
+
+        // XXX DEBUGGING ONLY
+        /*
+        Element element = doc.getBody();
+        if (element != null) {
+            System.out.println("BEFORE DELETION: " + org.netbeans.modules.visualweb.css2.FacesSupport.getHtmlStream(element));
+        }
+        */
+//        range.deleteContents();
+//        removeSelection();
+        deleteRangeContents(range);
+
+        // XXX DEBUGGING ONLY
+
+        /*
+        if (element != null) {
+            System.out.println("BEFORE DELETION: " + org.netbeans.modules.visualweb.css2.FacesSupport.getHtmlStream(element));
+        }
+        */
+        return true;
+    }
+    
 }

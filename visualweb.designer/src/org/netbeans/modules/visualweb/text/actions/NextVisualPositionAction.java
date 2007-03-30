@@ -109,7 +109,8 @@ public class NextVisualPositionAction extends TextAction {
 
 //            if ((dot == Position.NONE) || !caret.isWithinEditableRegion(dot)) {
 //            if ((dot == DomPosition.NONE) || !caret.isWithinEditableRegion(dot)) {
-            if ((dot == DomPosition.NONE) || !target.isCaretWithinEditableRegion(dot)) {
+//            if ((dot == DomPosition.NONE) || !target.isCaretWithinEditableRegion(dot)) {
+            if ((dot == DomPosition.NONE) || !target.getWebForm().isInsideEditableRegion(dot)) {
                 // Can't move caret that way, but I should still clear the selection
                 // if any
 //                caret.setDot(originalDot);

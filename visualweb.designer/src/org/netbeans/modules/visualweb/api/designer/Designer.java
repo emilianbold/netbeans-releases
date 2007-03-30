@@ -23,6 +23,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
@@ -54,6 +55,7 @@ public interface Designer {
     // XXX Temp after moved TopComponent impl out <<<
 
     public void startInlineEditing(Element componentRootElement, String propertyName);
+    public boolean isInlineEditing();
 
     public void selectComponent(Element componentRootElement);
     public int getSelectedCount();
@@ -74,7 +76,11 @@ public interface Designer {
 //    public void align(Alignment alignment);
 //    public void snapToGrid();
 
-    public boolean isInlineEditing();
+    // XXX Move to document >>>
+    public DomPosition computeNextPosition(DomPosition pos);
+    public DomPosition computePreviousPosition(DomPosition pos);
+    public boolean isInsideEditableRegion(DomPosition pos);
+    // XXX Move to document <<<
 
     // >>> Boxes stuff
     /** Representing the individual box. Providing accessors (getters) only! */

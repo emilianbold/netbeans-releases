@@ -1305,6 +1305,7 @@ import org.w3c.dom.Node;
 //        component.getWebForm().getDomDocument().insertString(pos, content);
 //    }
 
+    // XXX Moved to designer/jsf/../DomDocumentIpmpl.
     /**
      * @todo Check deletion back to first char in <body> !
      * @todo Refactor document mutation into the document class
@@ -1312,33 +1313,35 @@ import org.w3c.dom.Node;
      */
     public boolean removeNextChar() {
         // TODO - compute previous visual position, decide if it's
-        //    isWithinEditableRegion(Position pos) 
-        // and if so, set the range to it and delete the range.
-        if (hasSelection()) {
-            removeSelection();
-
-            return true;
-        }
-
-//        Document doc = component.getDocument();
-//        Position mark = range.getMark();
-        DomPosition mark = range.getMark();
-//        Position dot = ModelViewMapper.computeArrowRight(doc.getWebForm(), mark);
-//        Position dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
-        DomPosition dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
-
-//        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
-        if ((dot == DomPosition.NONE) || !isWithinEditableRegion(dot)) {
-            UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
-
-            return false;
-        }
-
-        range.setRange(dot.getNode(), dot.getOffset(), mark.getNode(), mark.getOffset());
-//        range.deleteContents();
-        removeSelection();
-
-        return true;
+//        //    isWithinEditableRegion(Position pos) 
+//        // and if so, set the range to it and delete the range.
+//        if (hasSelection()) {
+//            removeSelection();
+//
+//            return true;
+//        }
+//
+////        Document doc = component.getDocument();
+////        Position mark = range.getMark();
+//        DomPosition mark = range.getMark();
+////        Position dot = ModelViewMapper.computeArrowRight(doc.getWebForm(), mark);
+////        Position dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
+//        DomPosition dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
+//
+////        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
+//        if ((dot == DomPosition.NONE) || !isWithinEditableRegion(dot)) {
+//            UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
+//
+//            return false;
+//        }
+//
+//        range.setRange(dot.getNode(), dot.getOffset(), mark.getNode(), mark.getOffset());
+////        range.deleteContents();
+//        removeSelection();
+//
+//        return true;
+        WebForm webForm = component.getWebForm();
+        return webForm.getDomDocument().deleteNextChar(webForm, range);
     }
 
     /**
@@ -1348,109 +1351,112 @@ import org.w3c.dom.Node;
      */
     public boolean removePreviousChar() {
         // TODO - compute previous visual position, decide if it's
-        //    isWithinEditableRegion(Position pos) 
-        // and if so, set the range to it and delete the range.
-        if (hasSelection()) {
-            removeSelection();
-
-            return true;
-        }
-
-//        Document doc = component.getDocument();
-//        Position mark = range.getMark();
-        DomPosition mark = range.getMark();
-//        Position dot = ModelViewMapper.computeArrowLeft(doc.getWebForm(), mark);
-//        Position dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
-        DomPosition dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
-
-//        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
-        if ((dot == DomPosition.NONE) || !isWithinEditableRegion(dot)) {
-            UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
-
-            return false;
-        }
-
-        range.setRange(dot.getNode(), dot.getOffset(), mark.getNode(), mark.getOffset());
-
-        // XXX DEBUGGING ONLY
-        /*
-        Element element = doc.getBody();
-        if (element != null) {
-            System.out.println("BEFORE DELETION: " + org.netbeans.modules.visualweb.css2.FacesSupport.getHtmlStream(element));
-        }
-        */
-//        range.deleteContents();
-        removeSelection();
-
-        // XXX DEBUGGING ONLY
-
-        /*
-        if (element != null) {
-            System.out.println("BEFORE DELETION: " + org.netbeans.modules.visualweb.css2.FacesSupport.getHtmlStream(element));
-        }
-        */
-        return true;
+//        //    isWithinEditableRegion(Position pos) 
+//        // and if so, set the range to it and delete the range.
+//        if (hasSelection()) {
+//            removeSelection();
+//
+//            return true;
+//        }
+//
+////        Document doc = component.getDocument();
+////        Position mark = range.getMark();
+//        DomPosition mark = range.getMark();
+////        Position dot = ModelViewMapper.computeArrowLeft(doc.getWebForm(), mark);
+////        Position dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
+//        DomPosition dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
+//
+////        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
+//        if ((dot == DomPosition.NONE) || !isWithinEditableRegion(dot)) {
+//            UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
+//
+//            return false;
+//        }
+//
+//        range.setRange(dot.getNode(), dot.getOffset(), mark.getNode(), mark.getOffset());
+//
+//        // XXX DEBUGGING ONLY
+//        /*
+//        Element element = doc.getBody();
+//        if (element != null) {
+//            System.out.println("BEFORE DELETION: " + org.netbeans.modules.visualweb.css2.FacesSupport.getHtmlStream(element));
+//        }
+//        */
+////        range.deleteContents();
+//        removeSelection();
+//
+//        // XXX DEBUGGING ONLY
+//
+//        /*
+//        if (element != null) {
+//            System.out.println("BEFORE DELETION: " + org.netbeans.modules.visualweb.css2.FacesSupport.getHtmlStream(element));
+//        }
+//        */
+//        return true;
+        WebForm webForm = component.getWebForm();
+        return webForm.getDomDocument().deletePreviousChar(webForm, range);
     }
 
-    /** Return true iff the position is within the editable portion of the document. */
-//    public boolean isWithinEditableRegion(Position pos) {
-    public boolean isWithinEditableRegion(DomPosition pos) {
-//        WebForm webform = component.getDocument().getWebForm();
-        WebForm webform = component.getWebForm();
-
-        InlineEditor editor = webform.getManager().getInlineEditor();
-
-        if (editor != null) {
-//            Position editableRegionStart = editor.getBegin();
-//            Position editableRegionEnd = editor.getEnd();
-            DomPosition editableRegionStart = editor.getBegin();
-            DomPosition editableRegionEnd = editor.getEnd();
-
-//            assert editableRegionStart != Position.NONE;
-//            assert editableRegionEnd != Position.NONE;
-
-            return pos.isLaterThan(editableRegionStart) && pos.isEarlierThan(editableRegionEnd);
-        }
-
-//        assert !pos.isRendered() : pos;
-        if (MarkupService.isRenderedNode(pos.getNode())) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new IllegalStateException("Node is expected to be not rendered, node=" + pos.getNode()));
-        }
-        
-
-        if (!webform.isGridMode()) {
-            // In page flow mode, all regions are editable. Note - this
-            // may not be true when I start allowing sub-grids
-            return true;
-        }
-
-        CssBox box = webform.getManager().getInsertModeBox();
-
-        if (box == null) {
-            return false;
-        }
-
-        //Position editableRegionStart = Position.create(box.getSourceElement());
-        //Position editableRegionEnd = new Position(null, editableRegionStart.getNode(),
-        //                                               editableRegionStart.getOffset()+1);
-        Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
-//        Position editableRegionStart =
-//            new Position(box.getDesignBean().getElement(), 0, Bias.FORWARD);
-                // XXX Possible NPE?
-//                new Position(CssBox.getMarkupDesignBeanForCssBox(box).getElement(), 0, Bias.FORWARD);
-//                new Position(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
-//        DomPosition editableRegionStart = DesignerPaneBase.createDomPosition(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
-        DomPosition editableRegionStart = component.getWebForm().createDomPosition(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
-        
-//        Position editableRegionEnd =
-//            new Position(editableRegionStart.getNode(),
-//                editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
-//        DomPosition editableRegionEnd = DesignerPaneBase.createDomPosition(editableRegionStart.getNode(), editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
-        DomPosition editableRegionEnd = component.getWebForm().createDomPosition(editableRegionStart.getNode(), editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
-
-        return pos.isLaterThan(editableRegionStart) && pos.isEarlierThan(editableRegionEnd);
-    }
+    // XXX Moved to WebForm.
+//    /** Return true iff the position is within the editable portion of the document. */
+////    public boolean isWithinEditableRegion(Position pos) {
+//    public boolean isWithinEditableRegion(DomPosition pos) {
+////        WebForm webform = component.getDocument().getWebForm();
+//        WebForm webform = component.getWebForm();
+//
+//        InlineEditor editor = webform.getManager().getInlineEditor();
+//
+//        if (editor != null) {
+////            Position editableRegionStart = editor.getBegin();
+////            Position editableRegionEnd = editor.getEnd();
+//            DomPosition editableRegionStart = editor.getBegin();
+//            DomPosition editableRegionEnd = editor.getEnd();
+//
+////            assert editableRegionStart != Position.NONE;
+////            assert editableRegionEnd != Position.NONE;
+//
+//            return pos.isLaterThan(editableRegionStart) && pos.isEarlierThan(editableRegionEnd);
+//        }
+//
+////        assert !pos.isRendered() : pos;
+//        if (MarkupService.isRenderedNode(pos.getNode())) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                    new IllegalStateException("Node is expected to be not rendered, node=" + pos.getNode()));
+//        }
+//        
+//
+//        if (!webform.isGridMode()) {
+//            // In page flow mode, all regions are editable. Note - this
+//            // may not be true when I start allowing sub-grids
+//            return true;
+//        }
+//
+//        CssBox box = webform.getManager().getInsertModeBox();
+//
+//        if (box == null) {
+//            return false;
+//        }
+//
+//        //Position editableRegionStart = Position.create(box.getSourceElement());
+//        //Position editableRegionEnd = new Position(null, editableRegionStart.getNode(),
+//        //                                               editableRegionStart.getOffset()+1);
+//        Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
+////        Position editableRegionStart =
+////            new Position(box.getDesignBean().getElement(), 0, Bias.FORWARD);
+//                // XXX Possible NPE?
+////                new Position(CssBox.getMarkupDesignBeanForCssBox(box).getElement(), 0, Bias.FORWARD);
+////                new Position(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+////        DomPosition editableRegionStart = DesignerPaneBase.createDomPosition(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+//        DomPosition editableRegionStart = component.getWebForm().createDomPosition(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+//        
+////        Position editableRegionEnd =
+////            new Position(editableRegionStart.getNode(),
+////                editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
+////        DomPosition editableRegionEnd = DesignerPaneBase.createDomPosition(editableRegionStart.getNode(), editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
+//        DomPosition editableRegionEnd = component.getWebForm().createDomPosition(editableRegionStart.getNode(), editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
+//
+//        return pos.isLaterThan(editableRegionStart) && pos.isEarlierThan(editableRegionEnd);
+//    }
 
     /** Return true iff the caret is within a read only region */
     public boolean isReadOnlyRegion() {

@@ -77,7 +77,8 @@ public class EndWordAction extends TextAction {
 
 //            DesignerCaret caret = target.getCaret();
 //            if (!caret.isWithinEditableRegion(endPos)) {
-            if (!target.isCaretWithinEditableRegion(endPos)) {
+//            if (!target.isCaretWithinEditableRegion(endPos)) {
+            if (!webform.isInsideEditableRegion(endPos)) {
                 InlineEditor editor = webform.getManager().getInlineEditor();
 
                 if (editor != null) {

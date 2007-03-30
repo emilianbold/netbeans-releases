@@ -1639,9 +1639,9 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
         return caret == null ? false : caret.isReadOnlyRegion();
     }
     
-    public boolean isCaretWithinEditableRegion(DomPosition domPosition) {
-        return caret == null ? false : caret.isWithinEditableRegion(domPosition);
-    }
+//    public boolean isCaretWithinEditableRegion(DomPosition domPosition) {
+//        return caret == null ? false : caret.isWithinEditableRegion(domPosition);
+//    }
     
     public boolean isCaretVisible() {
         return caret == null ? false : caret.isVisible();

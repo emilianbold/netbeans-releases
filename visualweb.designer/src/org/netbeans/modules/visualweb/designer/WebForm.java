@@ -58,6 +58,7 @@ import javax.swing.JComponent;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
@@ -2775,6 +2776,73 @@ public class WebForm implements Designer {
         // XXX
         getSelection().pickPrimary();
         return getSelection().getPrimary();
+    }
+
+    public DomPosition computeNextPosition(DomPosition pos) {
+        return ModelViewMapper.computeArrowRight(this, pos);
+    }
+
+    public DomPosition computePreviousPosition(DomPosition pos) {
+        return ModelViewMapper.computeArrowLeft(this, pos);
+    }
+
+    /** Return true iff the position is within the editable portion of the document. */
+//    public boolean isWithinEditableRegion(Position pos) {
+    public boolean isInsideEditableRegion(DomPosition pos) {
+//        WebForm webform = component.getDocument().getWebForm();
+
+        InlineEditor editor = getManager().getInlineEditor();
+
+        if (editor != null) {
+//            Position editableRegionStart = editor.getBegin();
+//            Position editableRegionEnd = editor.getEnd();
+            DomPosition editableRegionStart = editor.getBegin();
+            DomPosition editableRegionEnd = editor.getEnd();
+
+//            assert editableRegionStart != Position.NONE;
+//            assert editableRegionEnd != Position.NONE;
+
+            return pos.isLaterThan(editableRegionStart) && pos.isEarlierThan(editableRegionEnd);
+        }
+
+//        assert !pos.isRendered() : pos;
+        if (MarkupService.isRenderedNode(pos.getNode())) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("Node is expected to be not rendered, node=" + pos.getNode()));
+        }
+        
+
+        if (!isGridMode()) {
+            // In page flow mode, all regions are editable. Note - this
+            // may not be true when I start allowing sub-grids
+            return true;
+        }
+
+        CssBox box = getManager().getInsertModeBox();
+
+        if (box == null) {
+            return false;
+        }
+
+        //Position editableRegionStart = Position.create(box.getSourceElement());
+        //Position editableRegionEnd = new Position(null, editableRegionStart.getNode(),
+        //                                               editableRegionStart.getOffset()+1);
+        Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
+//        Position editableRegionStart =
+//            new Position(box.getDesignBean().getElement(), 0, Bias.FORWARD);
+                // XXX Possible NPE?
+//                new Position(CssBox.getMarkupDesignBeanForCssBox(box).getElement(), 0, Bias.FORWARD);
+//                new Position(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+//        DomPosition editableRegionStart = DesignerPaneBase.createDomPosition(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+        DomPosition editableRegionStart = createDomPosition(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+        
+//        Position editableRegionEnd =
+//            new Position(editableRegionStart.getNode(),
+//                editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
+//        DomPosition editableRegionEnd = DesignerPaneBase.createDomPosition(editableRegionStart.getNode(), editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
+        DomPosition editableRegionEnd = createDomPosition(editableRegionStart.getNode(), editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
+
+        return pos.isLaterThan(editableRegionStart) && pos.isEarlierThan(editableRegionEnd);
     }
     
 }

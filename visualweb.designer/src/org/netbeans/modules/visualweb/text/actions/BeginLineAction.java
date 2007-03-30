@@ -78,7 +78,8 @@ public class BeginLineAction extends TextAction {
             if (begPos != DomPosition.NONE) {
 //                DesignerCaret caret = target.getCaret();
 //                if (!caret.isWithinEditableRegion(begPos)) {
-                if (!target.isCaretWithinEditableRegion(begPos)) {
+//                if (!target.isCaretWithinEditableRegion(begPos)) {
+                if (!webform.isInsideEditableRegion(begPos)) {
                     InlineEditor editor = webform.getManager().getInlineEditor();
 
                     if (editor != null) {
