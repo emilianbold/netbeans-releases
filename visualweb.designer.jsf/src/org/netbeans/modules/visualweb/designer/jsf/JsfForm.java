@@ -1170,9 +1170,9 @@ public class JsfForm {
         htmlDomProvider.writeUnlock(writeLock);
     }
 
-    public void deleteComponent(Element componentRootElement) {
-        htmlDomProvider.deleteComponent(componentRootElement);
-    }
+//    public void deleteComponent(Element componentRootElement) {
+//        htmlDomProvider.deleteComponent(componentRootElement);
+//    }
 
     DomDocumentImpl getDomDocumentImpl() {
         return domDocumentImpl;
@@ -1196,6 +1196,10 @@ public class JsfForm {
     
     DataObject getJspDataObject() {
         return htmlDomProvider.getJspDataObject();
+    }
+    
+    public void deleteDesignBean(DesignBean designBean) {
+        getFacesModel().getLiveUnit().deleteBean(designBean);
     }
     
     public void setUpdatesSuspended(Element componentRootElement, boolean suspend) {

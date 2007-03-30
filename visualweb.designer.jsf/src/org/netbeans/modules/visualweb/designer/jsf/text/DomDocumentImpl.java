@@ -20,6 +20,7 @@
 package org.netbeans.modules.visualweb.designer.jsf.text;
 
 
+import com.sun.rave.designtime.DesignBean;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.netbeans.modules.visualweb.designer.jsf.JsfSupportUtilities;
+import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -1005,34 +1007,35 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //        FacesModel model = webform.getModel();
 //        Document doc = webform.getDocument();
 
-//        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
-        try {
-//            doc.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-
-//            for (int i = 0; i < beans.size(); i++) {
-//                DesignBean bean = (DesignBean)beans.get(i);
-            for (Element componentRootElement : components) {
-
-//                if (!FacesSupport.isSpecialBean(/*webform, */bean)) {
-//                if (!Util.isSpecialBean(bean)) {
-//                if (bean instanceof MarkupDesignBean && !WebForm.getHtmlDomProviderService().isSpecialComponent(
-//                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean))) {
-//                if (!WebForm.getHtmlDomProviderService().isSpecialComponent(componentRootElement)) {
-                if (!JsfSupportUtilities.isSpecialComponent(componentRootElement)) {
-//                    model.getLiveUnit().deleteBean(bean);
-//                    webform.deleteBean(bean);
-//                    webform.deleteComponent(componentRootElement);
-                    jsfForm.deleteComponent(componentRootElement);
-                }
-            }
-        } finally {
-//            doc.writeUnlock();
-//            webform.getModel().writeUnlock(undoEvent);
-//            webform.writeUnlock(writeLock);
-            jsfForm.writeUnlock(writeLock);
-        }
+////        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+////        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
+//        try {
+////            doc.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+//
+////            for (int i = 0; i < beans.size(); i++) {
+////                DesignBean bean = (DesignBean)beans.get(i);
+//            for (Element componentRootElement : components) {
+//
+////                if (!FacesSupport.isSpecialBean(/*webform, */bean)) {
+////                if (!Util.isSpecialBean(bean)) {
+////                if (bean instanceof MarkupDesignBean && !WebForm.getHtmlDomProviderService().isSpecialComponent(
+////                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean))) {
+////                if (!WebForm.getHtmlDomProviderService().isSpecialComponent(componentRootElement)) {
+//                if (!JsfSupportUtilities.isSpecialComponent(componentRootElement)) {
+////                    model.getLiveUnit().deleteBean(bean);
+////                    webform.deleteBean(bean);
+////                    webform.deleteComponent(componentRootElement);
+//                    jsfForm.deleteComponent(componentRootElement);
+//                }
+//            }
+//        } finally {
+////            doc.writeUnlock();
+////            webform.getModel().writeUnlock(undoEvent);
+////            webform.writeUnlock(writeLock);
+//            jsfForm.writeUnlock(writeLock);
+//        }
+        deleteComponents(components.toArray(new Element[components.size()]));
     }
 
 
@@ -2799,6 +2802,29 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
             jsfForm.writeUnlock(writeLock);
         }
 
+    }
+
+    public void deleteComponents(Element[] componentRootElements) {
+//        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(SelectionTopComp.class, "DeleteSelection")); // NOI18N
+        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteComponents")); // NOI18N
+        try {
+            for (Element componentRootElement : componentRootElements) {
+                if (JsfSupportUtilities.isSpecialComponent(componentRootElement)) {
+                    continue;
+                }
+
+                DesignBean designBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+                if (designBean == null) {
+                    return;
+                }
+                jsfForm.deleteDesignBean(designBean);
+            }
+        } finally {
+//            doc.writeUnlock();
+//            webform.getModel().writeUnlock(undoEvent);
+            jsfForm.writeUnlock(writeLock);
+
+        }
     }
     
 }

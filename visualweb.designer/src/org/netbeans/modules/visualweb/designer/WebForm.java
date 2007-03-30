@@ -1953,9 +1953,9 @@ public class WebForm implements Designer {
 //    public void deleteBean(DesignBean designBean) {
 //        htmlDomProvider.deleteBean(designBean);
 //    }
-    public void deleteComponent(Element componentRootElement) {
-        htmlDomProvider.deleteComponent(componentRootElement);
-    }
+//    public void deleteComponent(Element componentRootElement) {
+//        htmlDomProvider.deleteComponent(componentRootElement);
+//    }
 
 //    boolean canCreateBean(String className, DesignBean parent, Position pos) {
 //        return htmlDomProvider.canCreateBean(className, parent, pos);
