@@ -21,6 +21,7 @@
 package org.netbeans.modules.websvc.design.configuration;
 
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -31,8 +32,9 @@ public interface WSConfigurationProvider {
     /**
      * Returns the WSConfiguration for provided service.
      * @param service for which configuration to be provided.
+     * @param implementationClass FileObject of the implementation bean
      * @return WSConfiguration representing given service.
      */
-    WSConfiguration getWSConfiguration(Service service);
+    WSConfiguration getWSConfiguration(Service service, FileObject implementationClass);
     
 }

@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -21,7 +21,9 @@ package org.netbeans.modules.websvc.design.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Point;
+import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -33,6 +35,8 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
+import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
 import org.netbeans.modules.websvc.design.util.Util;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
@@ -60,7 +64,7 @@ public class DesignView extends JPanel  {
      */
     public DesignView(Service service, FileObject implementationClass) {
         super(new BorderLayout());
-
+        
         this.service = service;
         this.implementationClass = implementationClass;
         this.wsdlModel = getWSDLModel();
@@ -68,9 +72,9 @@ public class DesignView extends JPanel  {
         scene = new Scene();
         zoomer = new ZoomManager(scene);
         // add actions
-        scene.getActions().addAction(ActionFactory.createZoomAction ());
-        scene.getActions().addAction(ActionFactory.createPanAction ());
-
+        scene.getActions().addAction(ActionFactory.createZoomAction());
+        scene.getActions().addAction(ActionFactory.createPanAction());
+        
         mMainLayer = new LayerWidget(scene);
         mMainLayer.setPreferredLocation(new Point(0, 0));
         mMainLayer.setBackground(Color.WHITE);
@@ -83,15 +87,17 @@ public class DesignView extends JPanel  {
         //add operations widget
         operationsWidget = new OperationsWidget(scene,service,implementationClass, wsdlModel);
         contentWidget.addChild(operationsWidget);
-
+        
         JComponent sceneView = scene.createView();
         JScrollPane panel = new JScrollPane(sceneView);
         panel.getVerticalScrollBar().setUnitIncrement(16);
         panel.getHorizontalScrollBar().setUnitIncrement(16);
         panel.setBorder(null);
         add(panel, BorderLayout.CENTER);
+        
+        addConfigurationPanel();
     }
-
+    
     /**
      * Adds the graph actions to the given toolbar.
      *
@@ -103,7 +109,7 @@ public class DesignView extends JPanel  {
         toolbar.addSeparator();
         operationsWidget.addToolbarActions(toolbar);
     }
-
+    
     /**
      * Return the view content, suitable for printing (i.e. without a
      * scroll pane, which would result in the scroll bars being printed).
@@ -113,19 +119,19 @@ public class DesignView extends JPanel  {
     public JComponent getContent() {
         return scene.getView();
     }
-
+    
     public void requestFocus() {
         super.requestFocus();
         // Ensure the graph widgets have the focus.
         scene.getView().requestFocus();
     }
-
+    
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
         // Ensure the graph widgets have the focus.
         return scene.getView().requestFocusInWindow();
     }
-
+    
     private WSDLModel getWSDLModel(){
         String localWsdlUrl = service.getLocalWsdlFile();
         if (localWsdlUrl!=null) { //WS from e
@@ -139,6 +145,23 @@ public class DesignView extends JPanel  {
             }
         }
         return null;
+    }
+    
+    private void addConfigurationPanel(){
+        //if there is configuration, add configuration panel for each Configuration provider
+        Set<WSConfigurationProvider> providers = WSConfigurationProviderRegistry.getDefault()
+                .getWSConfigurationProviders();
+        if(providers.size() > 0){
+            JPanel configPanel = new JPanel();
+            JScrollPane pane = new JScrollPane(configPanel);
+            for(WSConfigurationProvider provider : providers){
+                Component c = provider.getWSConfiguration(service, implementationClass).getComponent();
+                if(c != null){
+                    configPanel.add(c);
+                }
+            }
+            add(pane, BorderLayout.SOUTH);
+        }
     }
     
 }

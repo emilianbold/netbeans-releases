@@ -23,6 +23,7 @@ import java.awt.BorderLayout;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import org.openide.windows.TopComponent;
@@ -31,8 +32,11 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
+import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
 import org.netbeans.modules.websvc.design.view.DesignView;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -68,6 +72,7 @@ public class DesignMultiViewElement extends TopComponent
         associateLookup(Lookups.fixed(mvSupport));
         service = mvSupport.getService();
         implementationClass = mvSupport.getDataObject().getPrimaryFile();
+        populateConfigurationProviders();
     }
     
     public int getPersistenceType() {
@@ -155,6 +160,18 @@ public class DesignMultiViewElement extends TopComponent
 	if (firstObject instanceof MultiViewSupport ) {
             initialize((MultiViewSupport)firstObject);
 	}
+    }
+    
+    private void populateConfigurationProviders(){
+        WSConfigurationProviderRegistry registry = WSConfigurationProviderRegistry.getDefault();
+        if(registry.getWSConfigurationProviders().isEmpty()){
+            Lookup.Result results = Lookup.getDefault().
+                    lookup(new Lookup.Template(WSConfigurationProvider.class));
+            Collection<WSConfigurationProvider> providers = results.allInstances();
+            for(WSConfigurationProvider provider : providers){
+                registry.register(provider);
+            }
+        }
     }
     
 }
