@@ -146,11 +146,12 @@ public class Utils {
                         }
                     }
                     // populate methods
+                    
+                    List<MethodModel> operations = new ArrayList<MethodModel>();
                     if (methods.size()==0) {
                         serviceModel.setStatus(ServiceModel.STATUS_INCORRECT_SERVICE);
                         return;
                     }
-                    List<MethodModel> operations = new ArrayList<MethodModel>();
                     
                     for (int i=0;i<methods.size();i++) {
                         MethodModel operation = new MethodModel();

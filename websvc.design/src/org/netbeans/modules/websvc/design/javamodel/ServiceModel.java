@@ -71,7 +71,12 @@ public class ServiceModel {
     }
 
     void setName(String name) {
-        if (!this.name.equals(name)) {
+        if (this.name==null) {
+            if (name!=null) {
+                this.name=name;
+                firePropertyChanged("name", null, name);
+            }
+        } else if (!this.name.equals(name)) {
             String oldName = this.name;
             this.name = name;
             firePropertyChanged("name", oldName, name);
@@ -83,7 +88,12 @@ public class ServiceModel {
     }
 
     void setServiceName(String serviceName) {
-        if (!this.serviceName.equals(serviceName)) {
+        if (this.serviceName==null) {
+            if (serviceName!=null) {
+                this.serviceName=serviceName;
+                firePropertyChanged("serviceName", null, serviceName);
+            }
+        } else if (!this.serviceName.equals(serviceName)) {
             String oldName = this.serviceName;
             this.serviceName = serviceName;
             firePropertyChanged("serviceName", oldName, serviceName);
@@ -95,12 +105,16 @@ public class ServiceModel {
     }
 
     void setPortName(String portName) {
-        if (!this.portName.equals(portName)) {
+        if (this.portName==null) {
+            if (portName!=null) {
+                this.portName=portName;
+                firePropertyChanged("portName", null, portName);
+            }
+        } else if (!this.portName.equals(portName)) {
             String oldName = this.portName;
             this.portName = portName;
             firePropertyChanged("portName", oldName, portName);
         }
-        
     }
 
     public String getEndpointInterface() {
