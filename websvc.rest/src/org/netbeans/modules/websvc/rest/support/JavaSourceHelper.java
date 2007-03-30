@@ -14,8 +14,10 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
@@ -24,6 +26,8 @@ import com.sun.source.util.Trees;
 import java.util.List;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -31,20 +35,17 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -70,7 +71,7 @@ public class JavaSourceHelper {
             
             while(files.hasMoreElements()) {
                 FileObject fobj = files.nextElement();
-           
+                
                 if (fobj.getExt().equals("java")) {     //NOI18N
                     JavaSource source = JavaSource.forFileObject(fobj);
                     result.add(source);
@@ -97,6 +98,7 @@ public class JavaSourceHelper {
     public static boolean isEntity(JavaSource source) {
         final boolean[] isBoolean = new boolean[1];
         
+        System.out.println("isEntity called on source = " + source);
         try {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller)
@@ -245,7 +247,7 @@ public class JavaSourceHelper {
     public static JavaSource createJavaSource(FileObject targetFolder,
             String packageName, String className) {
         try {
-            FileObject fobj = createDataObjectFromTemplate(CLASS_TEMPLATE, 
+            FileObject fobj = createDataObjectFromTemplate(CLASS_TEMPLATE,
                     targetFolder, packageName, className).getPrimaryFile();
             return JavaSource.forFileObject(fobj);
         } catch (IOException ex) {
@@ -255,7 +257,7 @@ public class JavaSourceHelper {
         return null;
     }
     
-    private static DataObject createDataObjectFromTemplate(String template, 
+    private static DataObject createDataObjectFromTemplate(String template,
             FileObject targetFolder, String packageName, String targetName) throws IOException {
         assert template != null;
         assert targetFolder != null;
@@ -272,31 +274,40 @@ public class JavaSourceHelper {
         return templateDO.createFromTemplate(dataFolder, targetName, params);
     }
     
-    public static void addClassAnnotation(WorkingCopy copy, String annotation,
-            Object[] arguments) {
+    public static void addClassAnnotation(WorkingCopy copy, String[] annotations,
+            Object[] annotationAttrs) {
         TreeMaker maker = copy.getTreeMaker();
         ClassTree tree = getTopLevelClassTree(copy);
-        List<ExpressionTree> argumentTrees = new ArrayList<ExpressionTree>();
-        
-        for (Object argument : arguments) {
-            if (argument instanceof ExpressionTree) {
-                argumentTrees.add((ExpressionTree) argument);
-            } else {
-                argumentTrees.add(maker.Literal(argument));
-            }
-        }
-        
-        AnnotationTree newAnnotation = maker.Annotation(
-                maker.Identifier(annotation),
-                argumentTrees);
         
         ModifiersTree modifiers = tree.getModifiers();
         
-        if (modifiers != null) {
-            ModifiersTree newModifiers = maker.addModifiersAnnotation(
-                    modifiers, newAnnotation);
-            copy.rewrite(modifiers, newModifiers);
+        for (int i = 0; i < annotations.length; i++) {
+            List<ExpressionTree> attrTrees = null;
+            Object attr = annotationAttrs[i];
+            
+            if (attr != null) {
+                attrTrees = new ArrayList<ExpressionTree>();
+                
+                if (attr instanceof ExpressionTree) {
+                    attrTrees.add((ExpressionTree) attr);
+                } else {
+                    attrTrees.add(maker.Literal(attr));
+                }
+            } else {
+                attrTrees = Collections.<ExpressionTree>emptyList();
+            }
+    
+            AnnotationTree newAnnotation = maker.Annotation(
+                    maker.Identifier(annotations[i]),
+                    attrTrees);
+            
+            if (modifiers != null) {
+                modifiers = maker.addModifiersAnnotation(
+                        modifiers, newAnnotation);
+            }
         }
+        
+        copy.rewrite(tree.getModifiers(), modifiers);
     }
     
     public static void addImports(WorkingCopy copy, String[] imports) {
@@ -327,7 +338,7 @@ public class JavaSourceHelper {
         
         VariableTree variableTree = maker.Variable(modifiersTree, name,
                 typeTree, null);
-  
+        
         return maker.insertClassMember(modifiedTree, 0, variableTree);
     }
     
@@ -361,7 +372,7 @@ public class JavaSourceHelper {
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifiersTree = createModifiersTree(copy, modifiers,
                 annotations, annotationAttrs);
-
+        
         Tree returnTypeTree = createTypeTree(copy, returnType);
         
         ModifiersTree paramModTree = maker.Modifiers(
@@ -404,6 +415,10 @@ public class JavaSourceHelper {
         } else {
             return (Tree) type;
         }
+    }
+   
+    public static Tree createIdentifierTree(WorkingCopy copy, String value) {
+        return copy.getTreeMaker().Identifier(value);
     }
     
     public static Tree createParameterizedTypeTree(WorkingCopy copy,

@@ -18,24 +18,26 @@ class Constants {
     public static final String[] CONTAINER_IMPORTS = {
         "com.sun.ws.rest.api.UriTemplate",                      //NOI18N
         "com.sun.ws.rest.api.HttpMethod",                       //NOI18N
+        "com.sun.ws.rest.api.ProduceMime",                      //NOI18N
+        "com.sun.ws.rest.api.SubResources",                     //NOI18N
+        "com.sun.ws.rest.api.WebApplicationException",          //NOI18N
         "javax.annotation.Resource",                            //NOI18N
-        "com.sun.ws.rest.api.representation.JAXBRepresentation", //NOI18N
-        "javax.xml.bind.JAXBContext",                           //NOI18N
-        "com.sun.ws.rest.api.WebApplicationException"           //NOI18N
-                //"com.sun.ws.rest.api.ProduceMime",                      //NOI18N
-                //"com.sun.ws.rest.api.ConsumeMime",                      //NOI18N
-                //"com.sun.ws.rest.api.UriParam"                          //NOI18N
+        "javax.persistence.Persistence"                         //NOI18N
+                       
+        //"com.sun.ws.rest.api.ConsumeMime",                      //NOI18N
+        //"com.sun.ws.rest.api.UriParam"                          //NOI18N
     };
     
     public static final String[] ITEM_IMPORTS = {
         "com.sun.ws.rest.api.UriTemplate",                      //NOI18N
         "com.sun.ws.rest.api.HttpMethod",                       //NOI18N
-        "com.sun.ws.rest.api.representation.JAXBRepresentation", //NOI18N
-        "javax.xml.bind.JAXBContext",                           //NOI18N
-        "com.sun.ws.rest.api.WebApplicationException"           //NOI18N
-        //"com.sun.ws.rest.api.ProduceMime",                      //NOI18N
-        //"com.sun.ws.rest.api.ConsumeMime",                      //NOI18N
-        //"com.sun.ws.rest.api.UriParam"                          //NOI18N
+        "com.sun.ws.rest.api.ProduceMime",                      //NOI18N
+        "com.sun.ws.rest.api.WebApplicationException",          //NOI18N
+        "javax.annotation.Resource",                            //NOI18N
+        "javax.persistence.Persistence"                         //NOI18N
+                
+                //"com.sun.ws.rest.api.ConsumeMime",                      //NOI18N
+                //"com.sun.ws.rest.api.UriParam"                          //NOI18N
     };
     
     public static final String[] CONVERTER_ANNOTATION_IMPORTS = {
@@ -51,14 +53,22 @@ class Constants {
     
     public static final String RESOURCE_ANNOTATION = "Resource";        //NOI18N
     
+    public static final String SUB_RESOURCES_ANNOTATION = "SubResources";        //NOI18N
+    
     public static final String URI_TEMPLATE_ANNOTATION = "UriTemplate"; //NOI18N
     
     public static final String HTTP_METHOD_ANNOTATION = "HttpMethod";   //NOI18N
+    
+    public static final String PRODUCE_MIME_ANNOTATION = "ProduceMime"; //NOI18N
+    
+    public static final String XML_MIME_TYPE = "application/xml";       //NOI18N
+    
+    public static final String HTTP_GET_METHOD = "GET";             //NOI18N
     
     public static final String XML_ROOT_ELEMENT_ANNOTATION = "XmlRootElement";  //NOI18N
     
     public static final String XML_ELEMENT_ANNOTATION = "XmlElement";  //NOI18N
     
     public static final String XML_ATTRIBUTE_ANNOTATION = "XmlAttribute";  //NOI18N
-      
+    
 }
