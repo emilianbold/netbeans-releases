@@ -27,6 +27,7 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.impl.RetrieverImpl;
+import org.netbeans.modules.xml.retriever.impl.CertificationPanel;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -109,14 +110,7 @@ public abstract class Retriever {
      */
     @Deprecated()
     public abstract File getProjectCatalog();
-    
-    /**
-     * Returns the default implementation of the Retriever.
-     */
-    public static Retriever getDefault(){
-        return new RetrieverImpl();
-    }
-    
+        
     /**
      * Returns a map that maps retrieved entries that had exceptions while
      * retrieving, along with the exceptions.
@@ -147,5 +141,18 @@ public abstract class Retriever {
     public abstract void setOverwriteFilesWithSameName(boolean overwriteFiles);
     
     
+    /**
+     * Returns a default implementation of the Retriever.
+     */
+    public static Retriever getDefault(){
+        return new RetrieverImpl();
+    }
+    
+    /**
+     * Returns the certification panel.
+     */
+    public static javax.swing.JPanel getCertificationPanel(java.security.cert.X509Certificate cert) {
+        return new CertificationPanel(cert);
+    }
     
 }

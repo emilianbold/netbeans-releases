@@ -89,7 +89,7 @@ public class RetrieverTask {
             
             if(isAlreadyDownloadedInThisSession(rr.getEffectiveAddress(baseAddress , sourceToBeGot))){
                 String fileExists = NbBundle.getMessage(RetrieverTask.class,
-                        IConstants.EXCEPTION_CYCLIC_REFERENCE_INDICATOR);
+                        "EXCEPTION_CYCLIC_REFERENCE_INDICATOR");
                 throw new IOException(fileExists);
             }
             
@@ -269,7 +269,7 @@ public class RetrieverTask {
     
     private void checkForCycle(File saveFile, long l, InputStream is) throws IOException {
         String fileExists = NbBundle.getMessage(RetrieverTask.class,
-                IConstants.EXCEPTION_CYCLIC_REFERENCE_INDICATOR);
+                "EXCEPTION_CYCLIC_REFERENCE_INDICATOR");
         if(saveFile.isFile()){
             if( (isAlreadyDownloadedInThisSession(saveFile)) ||
                     ((saveFile.length() == l) && !retEngine.getFileOverwrite()) ) {
@@ -289,7 +289,7 @@ public class RetrieverTask {
         if(saveFile.isDirectory()){
             is.close();
             String dirExists = NbBundle.getMessage(RetrieverTask.class,
-                    IConstants.EXCEPTION_DIRECTORY_ALREADY_EXISTS);
+                    "EXCEPTION_DIRECTORY_ALREADY_EXISTS");
             throw new IOException(dirExists + " : "+saveFile.getCanonicalPath()); //NOI18N
         }
     }

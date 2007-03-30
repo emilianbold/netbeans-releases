@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import javax.net.ssl.*;
 
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.xml.retriever.CertificationPanel;
+import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -520,7 +520,7 @@ public class WsdlRetriever implements Runnable {
                     // ask user to accept the unknown certificate
                     if (certs!=null) {
                         for (int i=0;i<certs.length;i++) {
-                            DialogDescriptor desc = new DialogDescriptor(new CertificationPanel(certs[i]),
+                            DialogDescriptor desc = new DialogDescriptor(Retriever.getCertificationPanel(certs[i]),
                                     NbBundle.getMessage(WsdlRetriever.class,"TTL_CertifiedWebSite"),
                                     true,
                                     DialogDescriptor.YES_NO_OPTION,

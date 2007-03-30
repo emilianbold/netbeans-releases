@@ -30,6 +30,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import org.netbeans.modules.xml.retriever.*;
+import org.netbeans.modules.xml.retriever.DocumentTypeParser;
 import org.netbeans.modules.xml.retriever.IConstants;
 import org.netbeans.modules.xml.retriever.catalog.Utilities.DocumentTypesEnum;
 import org.netbeans.modules.xml.retriever.catalog.Utilities.HashNamespaceResolver;
