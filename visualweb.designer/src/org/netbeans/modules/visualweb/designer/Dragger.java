@@ -339,7 +339,8 @@ public class Dragger extends Interaction implements KeyListener {
 
 //                        if ((pos == Position.NONE) && webform.getDocument().isGridMode()) {
 //                        if ((pos == Position.NONE) && webform.isGridModeDocument()) {
-                        if ((pos == DomPosition.NONE) && webform.isGridModeDocument()) {
+//                        if ((pos == DomPosition.NONE) && webform.isGridModeDocument()) {
+                        if ((pos == DomPosition.NONE) && webform.isGridMode()) {
                             // Safety net: in page grid mode, if we
                             // can't find a valid position, position
                             // it at the absolute position instead
@@ -993,7 +994,8 @@ public class Dragger extends Interaction implements KeyListener {
 
 //                if ((pos == Position.NONE) && webform.getDocument().isGridMode()) {
 //                if ((pos == Position.NONE) && webform.isGridModeDocument()) {
-                if ((pos == DomPosition.NONE) && webform.isGridModeDocument()) {
+//                if ((pos == DomPosition.NONE) && webform.isGridModeDocument()) {
+                if ((pos == DomPosition.NONE) && webform.isGridMode()) {
                     // Safety net: in page grid mode, if we can't find a valid
                     // position, position it at the absolute position instead
                     grid = true;

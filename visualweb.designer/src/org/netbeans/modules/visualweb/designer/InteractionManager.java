@@ -159,7 +159,8 @@ public class InteractionManager {
         DesignerPane pane = webform.getPane();
 
 //        if ((box != null) && (box == pane.getPageBox()) && webform.getDocument().isGridMode()) {
-        if ((box != null) && (box == pane.getPageBox()) && webform.isGridModeDocument()) {
+//        if ((box != null) && (box == pane.getPageBox()) && webform.isGridModeDocument()) {
+        if ((box != null) && (box == pane.getPageBox()) && webform.isGridMode()) {
             box = null;
         }
 
@@ -190,7 +191,8 @@ public class InteractionManager {
 //            DesignerCaret dc = pane.getCaret();
             
 //            boolean showCaret = (box != null) || !webform.getDocument().isGridMode();
-            boolean showCaret = (box != null) || !webform.isGridModeDocument();
+//            boolean showCaret = (box != null) || !webform.isGridModeDocument();
+            boolean showCaret = (box != null) || !webform.isGridMode();
 
 //            if (showCaret == (dc != null)) {
             if (showCaret == pane.hasCaret()) {
@@ -675,7 +677,8 @@ public class InteractionManager {
         CssBox insertBox = findInsertBox(box);
 
 //        if ((insertBox == pane.getPageBox()) && webform.getDocument().isGridMode()) {
-        if ((insertBox == pane.getPageBox()) && webform.isGridModeDocument()) {
+//        if ((insertBox == pane.getPageBox()) && webform.isGridModeDocument()) {
+        if ((insertBox == pane.getPageBox()) && webform.isGridMode()) {
             insertBox = null;
         }
 
@@ -1413,7 +1416,8 @@ public class InteractionManager {
                 return;
 //            } else if (!webform.getDocument().isGridMode() && (caret != null)) {
 //            } else if (!webform.isGridModeDocument() && (caret != null)) {
-            } else if (!webform.isGridModeDocument() && pane.hasCaret()) {
+//            } else if (!webform.isGridModeDocument() && pane.hasCaret()) {
+            } else if (!webform.isGridMode() && pane.hasCaret()) {
 //                caret.mouseClicked(e);
                 pane.mouseClicked(e);
 
@@ -1648,7 +1652,8 @@ public class InteractionManager {
                 // be selected in the normal way
 //            } else if (!webform.getDocument().isGridMode() && (caret != null)) {
 //            } else if (!webform.isGridModeDocument() && (caret != null)) {
-            } else if (!webform.isGridModeDocument() && pane.hasCaret()) {
+//            } else if (!webform.isGridModeDocument() && pane.hasCaret()) {
+            } else if (!webform.isGridMode() && pane.hasCaret()) {
 //                caret.mouseDragged(e);
                 pane.mouseDragged(e);
 
@@ -1769,7 +1774,8 @@ public class InteractionManager {
                 // be selected in the normal way
 //            } else if (!paletteItemSelected && !webform.getDocument().isGridMode()) {
 //            } else if (!paletteItemSelected && !webform.isGridModeDocument()) {
-            } else if (!isCnCInProgress() && !webform.isGridModeDocument()) {
+//            } else if (!isCnCInProgress() && !webform.isGridModeDocument()) {
+            } else if (!isCnCInProgress() && !webform.isGridMode()) {
 //                if (caret == null) {
 //                    caret = pane.getPaneUI().createCaret();
 //                    pane.setCaret(caret);
@@ -2342,7 +2348,8 @@ public class InteractionManager {
                 // be selected in the normal way
 //            } else if (!webform.getDocument().isGridMode() && (caret != null)) {
 //            } else if (!webform.isGridModeDocument() && (caret != null)) {
-            } else if (!webform.isGridModeDocument() && pane.hasCaret()) {
+//            } else if (!webform.isGridModeDocument() && pane.hasCaret()) {
+            } else if (!webform.isGridMode() && pane.hasCaret()) {
 //                caret.mouseReleased(e);
                 pane.mouseReleased(e);
 

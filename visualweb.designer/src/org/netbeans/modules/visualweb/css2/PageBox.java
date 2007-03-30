@@ -1100,7 +1100,8 @@ public class PageBox extends DocumentBox implements ChangeListener {
      * grid mode handling from mouse operations */
     protected void initializeGrid() {
 //        if (webform.getDocument().isGridMode()) {
-        if (webform.isGridModeDocument()) {
+//        if (webform.isGridModeDocument()) {
+        if (webform.isGridMode()) {
             setGrid(true);
         }
     }

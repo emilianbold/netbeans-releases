@@ -116,7 +116,7 @@ public class WebForm implements Designer {
 //    private Document document;
 //    private final DomDocument domDocument = DesignerPaneBase.createDomDocument(this);
     
-    private boolean gridMode = false;
+//    private boolean gridMode = false;
 //    private ModelViewMapper mapper;
 //    private CssLookup css;
     
@@ -518,7 +518,7 @@ public class WebForm implements Designer {
 //        }
 
         return super.toString() + "[htmlDomProvider=" + htmlDomProvider + " ,selection=" + selection + ", view=" +
-        view + ", gridmode=" + gridMode + "]";
+        view + ", gridmode=" + isGridMode() + "]";
     }
 
 //    /** Look up a webform for a given model */
@@ -931,20 +931,26 @@ public class WebForm implements Designer {
 //        return domSyncer;
 //    }
 
-    /**
-     * Set whether or not grid mode is in effect
-     */
-    private void setGridMode(boolean on) {
-        gridMode = on;
-
+//    /**
+//     * Set whether or not grid mode is in effect
+//     */
+//    private void setGridMode(boolean on) {
+//        gridMode = on;
+//
+//        DesignerPane pane = getPane();
+//
+//        if (pane != null) {
+//            pane.setGridMode(on);
+//        }
+//
+//        // Gotta set the cursor to a pointer instead! How can I do
+//        // this in a PLAF agnostic way?
+//    }
+    private void updatePaneGrid(boolean gridMode) {
         DesignerPane pane = getPane();
-
         if (pane != null) {
-            pane.setGridMode(on);
+            pane.setGridMode(gridMode);
         }
-
-        // Gotta set the cursor to a pointer instead! How can I do
-        // this in a PLAF agnostic way?
     }
 
     /**
@@ -953,31 +959,32 @@ public class WebForm implements Designer {
      *  have an isFlowMode() method with reverse logic that I use instead.
      */
     public boolean isGridMode() {
-        return gridMode;
+//        return gridMode;
+        return htmlDomProvider.isGridMode();
     }
 
 
-    // XXX Moved from document.
-    /**
-     *  Return true if this document is in "grid mode" (objects
-     *  should be positioned by absolute coordinates instead of in
-     *  "flow" order.
-     *
-     *  @return true iff the document should be in grid mode
-     */
-    public boolean isGridModeDocument() {
-        Element body = getHtmlBody();
-
-        if (body == null) {
-            return false;
-        }
-
-//        Value val = CssLookup.getValue(b, XhtmlCss.RAVELAYOUT_INDEX);
-        CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(body, XhtmlCss.RAVELAYOUT_INDEX);
-
-//        return val == CssValueConstants.GRID_VALUE;
-        return CssProvider.getValueService().isGridValue(cssValue);
-    }
+//    // XXX Moved from document.
+//    /**
+//     *  Return true if this document is in "grid mode" (objects
+//     *  should be positioned by absolute coordinates instead of in
+//     *  "flow" order.
+//     *
+//     *  @return true iff the document should be in grid mode
+//     */
+//    public boolean isGridModeDocument() {
+//        Element body = getHtmlBody();
+//
+//        if (body == null) {
+//            return false;
+//        }
+//
+////        Value val = CssLookup.getValue(b, XhtmlCss.RAVELAYOUT_INDEX);
+//        CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(body, XhtmlCss.RAVELAYOUT_INDEX);
+//
+////        return val == CssValueConstants.GRID_VALUE;
+//        return CssProvider.getValueService().isGridValue(cssValue);
+//    }
     
     public boolean isBraveheartPage() {
         return htmlDomProvider.isBraveheartPage();
@@ -1357,7 +1364,9 @@ public class WebForm implements Designer {
     
     public void updateGridMode() {
 //        setGridMode(getDocument().isGridMode()); // XXX
-        setGridMode(isGridModeDocument());
+//        setGridMode(isGridModeDocument());
+        // XXX
+        updatePaneGrid(htmlDomProvider.isGridMode());
     }
 
     public void documentReplaced() {
@@ -2297,8 +2306,11 @@ public class WebForm implements Designer {
             webForm.updateErrorsInComponent();
         }
 
-        public void updateGridMode() {
-            webForm.updateGridMode();
+//        public void updateGridMode() {
+//            webForm.updateGridMode();
+//        }
+        public void gridModeUpdated(boolean gridMode) {
+            webForm.updatePaneGrid(gridMode);
         }
 
         public void documentReplaced() {

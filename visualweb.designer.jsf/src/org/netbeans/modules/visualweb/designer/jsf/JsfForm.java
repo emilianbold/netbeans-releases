@@ -49,6 +49,9 @@ import java.util.WeakHashMap;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
+import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
+import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -555,7 +558,21 @@ public class JsfForm {
     
     void updateGridMode() {
 //        designer.updateGridMode();
-        fireUpdateGridMode();
+        fireUpdateGridMode(isGridMode());
+    }
+    
+    boolean isGridMode() {
+        Element body = getHtmlBody();
+
+        if (body == null) {
+            return false;
+        }
+
+//        Value val = CssLookup.getValue(b, XhtmlCss.RAVELAYOUT_INDEX);
+        CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(body, XhtmlCss.RAVELAYOUT_INDEX);
+
+//        return val == CssValueConstants.GRID_VALUE;
+        return CssProvider.getValueService().isGridValue(cssValue);
     }
     
     void documentReplaced() {
@@ -850,10 +867,10 @@ public class JsfForm {
         }
     }
 
-    private void fireUpdateGridMode() {
+    private void fireUpdateGridMode(boolean gridMode) {
         HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
         for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.updateGridMode();
+            listener.gridModeUpdated(gridMode);
         }
     }
 
