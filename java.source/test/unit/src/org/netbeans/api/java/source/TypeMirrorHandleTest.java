@@ -19,6 +19,7 @@
 
 package org.netbeans.api.java.source;
 
+import java.io.File;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -54,6 +56,11 @@ public class TypeMirrorHandleTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
+        this.clearWorkDir();
+        File workDir = getWorkDir();
+        File cacheFolder = new File (workDir, "cache"); //NOI18N
+        cacheFolder.mkdirs();
+        IndexUtil.setCacheFolder(cacheFolder);
     }
 
     private TypeMirror parse(CompilationInfo info, String name) {

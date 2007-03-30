@@ -39,6 +39,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileLock;
@@ -89,6 +90,10 @@ public class ElementHandleTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         clearWorkDir();
+        File workDir = getWorkDir();
+        File cacheFolder = new File (workDir, "cache"); //NOI18N
+        cacheFolder.mkdirs();
+        IndexUtil.setCacheFolder(cacheFolder);
         FileObject wd = FileUtil.toFileObject(this.getWorkDir());
         assertNotNull(wd);
         this.src = wd.createFolder("src");

@@ -18,11 +18,13 @@
  */
 package org.netbeans.api.java.source;
 
+import java.io.File;
 import java.net.URL;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
@@ -38,6 +40,11 @@ public class TypeUtilitiesTest extends NbTestCase {
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
         super.setUp();
+        this.clearWorkDir();
+        File workDir = getWorkDir();
+        File cacheFolder = new File (workDir, "cache"); //NOI18N
+        cacheFolder.mkdirs();
+        IndexUtil.setCacheFolder(cacheFolder);
     }
 
     protected void tearDown() throws Exception {

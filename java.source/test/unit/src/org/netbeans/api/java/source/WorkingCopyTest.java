@@ -25,6 +25,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -37,9 +38,16 @@ public class WorkingCopyTest extends NbTestCase {
     public WorkingCopyTest(String name) {
         super(name);
     }
+    
+    protected void setUp() throws Exception {
+        this.clearWorkDir();
+        File workDir = getWorkDir();
+        File cacheFolder = new File (workDir, "cache"); //NOI18N
+        cacheFolder.mkdirs();
+        IndexUtil.setCacheFolder(cacheFolder);
+    }
 
     public void testToPhaseAfterRewrite() throws Exception {
-        clearWorkDir();
         File f = new File(getWorkDir(), "TestClass.java");
         TestUtilities.copyStringToFile(f,
                 "package foo;" +

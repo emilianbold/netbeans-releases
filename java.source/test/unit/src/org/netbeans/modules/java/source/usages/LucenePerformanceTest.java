@@ -60,7 +60,11 @@ public class LucenePerformanceTest extends NbTestCase {
 	this.clearWorkDir();
         //jlahoda: disabling Lucene locks for tests (hopefully correct):
         FSDirectory.setDisableLocks(true);
-        //Prepare indeces
+        //Prepare indeces        
+        File workDir = getWorkDir();
+        File cacheFolder = new File (workDir, "cache"); //NOI18N
+        cacheFolder.mkdirs();
+        IndexUtil.setCacheFolder(cacheFolder);
     }   
     
     public void testPerformance () throws Exception {

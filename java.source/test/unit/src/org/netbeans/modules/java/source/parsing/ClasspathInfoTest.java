@@ -40,9 +40,11 @@ import javax.tools.StandardLocation;
 import junit.framework.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 
@@ -50,7 +52,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Hrebejk
  */
-public class ClasspathInfoTest extends TestCase {
+public class ClasspathInfoTest extends NbTestCase {
     
     private File workDir;
     private File rtJar;
@@ -68,7 +70,11 @@ public class ClasspathInfoTest extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        workDir = TestUtil.createWorkFolder();
+        this.clearWorkDir();
+        File workDir = getWorkDir();
+        File cacheFolder = new File (workDir, "cache"); //NOI18N
+        cacheFolder.mkdirs();
+        IndexUtil.setCacheFolder(cacheFolder);
         TestUtil.copyFiles( TestUtil.getJdkDir(), workDir, TestUtil.RT_JAR );
         rtJar = FileUtil.normalizeFile(new File( workDir, TestUtil.RT_JAR ));
         URL url = FileUtil.getArchiveRoot (rtJar.toURI().toURL());
@@ -77,7 +83,6 @@ public class ClasspathInfoTest extends TestCase {
     }
 
     protected void tearDown() throws Exception {
-        TestUtil.removeWorkFolder( workDir );
     }
 
     public static Test suite() {

@@ -40,6 +40,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -64,7 +65,7 @@ public class APIIsSelfContainedTest extends NbTestCase {
         super(name);
     }
     
-    protected void setUp() throws Exception {
+    protected void setUp() throws Exception {               
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
     }
     
@@ -221,8 +222,11 @@ public class APIIsSelfContainedTest extends NbTestCase {
      */
     public static FileObject makeScratchDir(NbTestCase test) throws IOException {
         test.clearWorkDir();
-        File root = test.getWorkDir();
+        File root = test.getWorkDir();        
         assert root.isDirectory() && root.list().length == 0;
+        File cacheFolder = new File (root, "cache"); //NOI18N
+        cacheFolder.mkdirs();
+        IndexUtil.setCacheFolder(cacheFolder);
         FileObject fo = FileUtil.toFileObject(root);
         if (fo != null) {
             // Presumably using masterfs.
