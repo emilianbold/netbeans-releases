@@ -984,22 +984,22 @@ public class SelectionManager {
 
 //                                Document doc = webform.getDocument();
 
-//                                UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class,
+////                                UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class,
+////                                        "InsertChar"));
+//                                HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class,
 //                                        "InsertChar"));
-                                HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class,
-                                        "InsertChar"));
-                                try {
+//                                try {
 //                                    doc.writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class,
 //                                            "InsertChar"));
 
                                     final String content = event.getActionCommand();
 //                                    pane.getCaret().replaceSelection(content);
                                     pane.replaceSelection(content);
-                                } finally {
-//                                    doc.writeUnlock();
-//                                    webform.getModel().writeUnlock(undoEvent);
-                                    webform.writeUnlock(writeLock);
-                                }
+//                                } finally {
+////                                    doc.writeUnlock();
+////                                    webform.getModel().writeUnlock(undoEvent);
+//                                    webform.writeUnlock(writeLock);
+//                                }
 
                                 return true;
                             }
