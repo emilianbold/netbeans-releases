@@ -32,6 +32,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileStateInvalidException;
 
 
 /**
@@ -106,12 +108,12 @@ public class JsfProjectLibrary {
 
         JsfProjectUtils.addLibraryReferences(project, designtimeLibs, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
         JsfProjectUtils.addLibraryReferences(project, runtimeLibs, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
-        JsfProjectUtils.addLocalizedThemeArchive(project, defaultTheme);
+        JsfProjectUtils.addLocalizedTheme(project, defaultTheme);
 
         return defaultTheme;
     }
 
-    public static void updateLocalizedArchives(Project project) throws IOException {
+    public static void updateLocalizedRoots(Project project) throws IOException {
         String[] designtimeList;
         String[] runtimeList;
         String[] locDesigntimeList;
@@ -128,20 +130,29 @@ public class JsfProjectLibrary {
         locDesigntimeList = getLocalePaths(designtimeList);
         locRuntimeList = getLocalePaths(runtimeList);
 
-        JsfProjectUtils.addLocalizedArchives(project, locDesigntimeList, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
-        JsfProjectUtils.addLocalizedArchives(project, locRuntimeList, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+        JsfProjectUtils.addLocalizedRoots(project, locDesigntimeList, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
+        JsfProjectUtils.addLocalizedRoots(project, locRuntimeList, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
 
         String defaultTheme = JsfProjectUtils.getProjectProperty(project, JsfProjectConstants.PROP_CURRENT_THEME);
-        JsfProjectUtils.addLocalizedThemeArchive(project, defaultTheme);
+        JsfProjectUtils.addLocalizedTheme(project, defaultTheme);
     }
 
-    public static File getLocalizedThemeArchive(String themeName) {
+    public static URL getLocalizedThemeRoot(String themeName) {
         String[] list = getLocalePaths(new String[] { themeName });
         if (list.length == 0) {
             return null;
         }
         
-        return InstalledFileLocator.getDefault().locate(list[0], null, true);
+        File file = InstalledFileLocator.getDefault().locate(list[0], null, true);
+        if (file == null) {
+            return null;
+        }
+
+        try {
+            return FileUtil.toFileObject(file).getURL();
+        } catch (FileStateInvalidException e) {
+            return null;
+        }
     }
 
     private static String[] getLocalePaths(String[] libNames) {

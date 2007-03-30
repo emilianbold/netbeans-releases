@@ -687,7 +687,6 @@ public class JsfProjectUtils {
         return javaFile;
     }
     
-    // EAT Made public so InSync can use it !!!
     // !EAT TODO We will be moving this code back into InSync, but at moment we do not want to have
     // to add a dependency on InSync here, would create a circularity :(
     public static String getBasePathForJava(FileObject javaFile) {
@@ -757,7 +756,6 @@ public class JsfProjectUtils {
         return jspFile;
     }
     
-    // EAT Made public so InSync can use it !!!
     // !EAT TODO We will be moving this code back into InSync, but at moment we do not want to have
     // to add a dependency on InSync here, would create a circularity :(
     public static String getBasePathForJsp(FileObject jspFile) {
@@ -1133,11 +1131,11 @@ public class JsfProjectUtils {
     
     /**
      * @deprecated
-     * Use {@link JsfProjectHelper#addLibraryReferences}.
+     * Use {@link JsfProjectUtils#addLibraryReferences}.
      * Add a single library reference to a project, qualified by the role parameter.
      */
     public static boolean addLibraryReference(Project project, Library library, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
-        return addLibraryReferences(project, new Library[] {library}, role);
+        return addLibraryReferences(project, new Library[] { library }, role);
     }
     
     /**
@@ -1191,8 +1189,6 @@ public class JsfProjectUtils {
      * @param role Determines whether the library is to be referenced from the design-time classpath or deploy
      * time classpath
      * @return Returns true if the library is already referenced by the project, false otherwise
-     *
-     * XXX Will be Deprecated when the new ProjectClassPathModifier implementation is available
      */
     public static boolean hasLibraryReference(Project project, Library library, JsfProjectClassPathExtender.LibraryRole role) {
         List lst = library.getContent("classpath");
@@ -1216,142 +1212,130 @@ public class JsfProjectUtils {
     
     /**
      * @deprecated
-     * Use {@link JsfProjectHelper#addArchiveReferences}.
-     * Add a single archive reference to a project, qualified by the role parameter.
+     * Use {@link JsfProjectUtils#addRootReferences}.
+     * Add a single root reference to a project, qualified by the role parameter.
      */
-    public static boolean addArchiveReference(Project project, FileObject archiveFile, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
-        return addArchiveReferences(project, new FileObject[] { archiveFile }, role);
+    public static boolean addRootReference(Project project, URL rootFile, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
+        return addRootReferences(project, new URL[] { rootFile }, role);
     }
     
     /**
-     * Add an archive reference to a project qualified by the role parameter.
-     * @param project Project to which the archive is to be added
-     * @param archiveFile file object of the archive
-     * @param role Determines whether the archive is to be added to the design-time classpath or deployed
+     * Add an root reference to a project qualified by the role parameter.
+     * @param project Project to which the root is to be added
+     * @param rootFile file object of the root
+     * @param role Determines whether the root is to be added to the design-time classpath or deployed
      * with the application
-     * @return Returns true if the archive was successfully added
+     * @return Returns true if the root was successfully added
      * @throws an IOException if there was a problem adding the reference
      */
-    public static boolean addArchiveReferences(Project project, FileObject[] archiveFiles, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
-        Lookup lookup = project.getLookup();
-        
-        JsfProjectClassPathExtender cpJsfExtender = (JsfProjectClassPathExtender) lookup.lookup(JsfProjectClassPathExtender.class);
-        if (cpJsfExtender != null) {
-            try {
-                return cpJsfExtender.addArchiveReferences(archiveFiles, role);
-            } catch (IOException ex) {
-                return false;
-            }
-        }
-        
-        // XXX Wait for the new ProjectClassPathModifier implementation
-        ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) lookup.lookup(ProjectClassPathExtender.class);
-        if (cpExtender != null) {
-            for (int i = 0; i < archiveFiles.length; i++) {
-                cpExtender.addArchiveFile(archiveFiles[i]);
-            }
-            return true;
+    public static boolean addRootReferences(Project project, URL[] rootFiles, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
+        // XXX NetBeans API not finished yet
+        // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
+        String type = ClassPath.COMPILE;
+        try {
+            return ProjectClassPathModifier.addRoots(rootFiles, getSourceRoot(project), type);
+        } catch (IOException e) {
+            // Should continue here, many exceptions happened in NetBeans codes are not fatal.
         }
 
         return false;
     }
     
     /**
-     * Remove an array of archive references from a project qualified by the role parameter.
-     * @param project Project from which the archive references is to be removed
-     * @param archiveFile file object of the archive
-     * @param role Determines whether the archive is to be removed from the design-time classpath or deploy
+     * Remove an array of root references from a project qualified by the role parameter.
+     * @param project Project from which the root references is to be removed
+     * @param rootFile file object of the root
+     * @param role Determines whether the root is to be removed from the design-time classpath or deploy
      * time classpath
-     * @return Returns true if at least one of the archives was successfully removed
+     * @return Returns true if at least one of the roots was successfully removed
      * @throws an IOException if there was a problem removing the references
      */
-    public static boolean removeArchiveReferences(Project project, FileObject[] archiveFiles, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
-        Lookup lookup = project.getLookup();
-
-        JsfProjectClassPathExtender cpJsfExtender = (JsfProjectClassPathExtender) lookup.lookup(JsfProjectClassPathExtender.class);
-        if (cpJsfExtender != null) {
-            return cpJsfExtender.removeArchiveReferences(archiveFiles, role);
+    public static boolean removeRootReferences(Project project, URL[] rootFiles, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
+        // XXX NetBeans API not finished yet
+        // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
+        String type = ClassPath.COMPILE;
+        try {
+            return ProjectClassPathModifier.removeRoots(rootFiles, getSourceRoot(project), type);
+        } catch (IOException e) {
+            // Should continue here, many exceptions happened in NetBeans codes are not fatal.
         }
         
-        // XXX No removeRoots method in ProjectClassPathExtender, wait for the new ProjectClassPathModifier implementation
-
         return false;
     }
     
     /**
-     * Check if a project has an archive reference to the named archive qualified by the role parameter.
+     * Check if a project has an root reference to the named root qualified by the role parameter.
      * @param project Target project
-     * @param archiveFile file object of the archive
-     * @param role Determines whether the archive is to be referenced from the design-time classpath or deploy
+     * @param rootFile file object of the root
+     * @param role Determines whether the root is to be referenced from the design-time classpath or deploy
      * time classpath
-     * @return Returns true if the archive is already referenced by the project, false otherwise
-     *
-     * XXX Will be Deprecated when the new ProjectClassPathModifier implementation is available
+     * @return Returns true if the root is already referenced by the project, false otherwise
      */
-    public static boolean hasArchiveReference(Project project, FileObject archiveFile, JsfProjectClassPathExtender.LibraryRole role) {
-        Lookup lookup = project.getLookup();
-        JsfProjectClassPathExtender cpJsfExtender = (JsfProjectClassPathExtender) lookup.lookup(JsfProjectClassPathExtender.class);
-        if (cpJsfExtender != null) {
-            return cpJsfExtender.hasArchiveReference(archiveFile, role);
+    public static boolean hasRootReference(Project project, URL rootFile, JsfProjectClassPathExtender.LibraryRole role) {
+        FileObject obj = URLMapper.findFileObject(rootFile);
+        if (obj == null) {
+            return false;
         }
-        
-        return false;
+
+        // XXX NetBeans API not finished yet
+        // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
+        String type = ClassPath.COMPILE;
+        ClassPath cp = ClassPath.getClassPath(getSourceRoot(project), type);
+
+        return cp.contains(obj);
     }
     
-    public static void addLocalizedArchive(Project project, String jarName, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
-        File f = InstalledFileLocator.getDefault().locate(jarName, null, true);
-        if (f != null) {
-            FileObject archive = FileUtil.toFileObject(f);
-            if (!hasArchiveReference(project, archive, role)) {
-                addArchiveReferences(project, new FileObject[] {archive}, role);
-            }
-        }
+    /**
+     * @deprecated
+     * Use {@link JsfProjectUtils#addLocalizedRoots}.
+     * Add a single localized root reference to a project, qualified by the role parameter.
+     */
+    public static void addLocalizedRoot(Project project, String jarName, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
+        addLocalizedRoots(project, new String[] { jarName }, role);
     }
 
-    public static void addLocalizedArchives(Project project, String[] jarName, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
+    public static void addLocalizedRoots(Project project, String[] jarName, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
         ArrayList jars = new ArrayList(jarName.length);
         for (int i = 0; i < jarName.length; i++) {
             File f = InstalledFileLocator.getDefault().locate(jarName[i], null, true);
             if (f != null) {
-                FileObject archive = FileUtil.toFileObject(f);
-                if (!hasArchiveReference(project, archive, role)) {
-                    jars.add(archive);
+                URL root = FileUtil.toFileObject(f).getURL();
+                if (!hasRootReference(project, root, role)) {
+                    jars.add(root);
                 }
             }
         }
-        addArchiveReferences(project, (FileObject[])jars.toArray(new FileObject[0]), role);
+        addRootReferences(project, (URL[])jars.toArray(new URL[0]), role);
     }
 
-    public static void updateLocalizedArchives(Project project) {
+    public static void updateLocalizedRoots(Project project) {
         try {
-            JsfProjectLibrary.updateLocalizedArchives(project);
+            JsfProjectLibrary.updateLocalizedRoots(project);
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
         }
     }
 
-    public static void addLocalizedThemeArchive(Project project, String themeName) throws IOException {
-        File f = JsfProjectLibrary.getLocalizedThemeArchive(themeName);
-        if (f != null) {
-            FileObject archive = FileUtil.toFileObject(f);
-            if (!hasArchiveReference(project, archive, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
-                addArchiveReferences(project, new FileObject[] {archive}, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
+    public static void addLocalizedTheme(Project project, String themeName) throws IOException {
+        URL root = JsfProjectLibrary.getLocalizedThemeRoot(themeName);
+        if (root != null) {
+            if (!hasRootReference(project, root, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
+                addRootReferences(project, new URL[] { root }, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
             }
-            if (!hasArchiveReference(project, archive, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
-                addArchiveReferences(project, new FileObject[] {archive}, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+            if (!hasRootReference(project, root, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
+                addRootReferences(project, new URL[] { root }, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
             }
         }
     }
     
-    public static void removeLocalizedThemeArchive(Project project, String themeName)  throws IOException {
-        File f = JsfProjectLibrary.getLocalizedThemeArchive(themeName);
-        if (f != null) {
-            FileObject archive = FileUtil.toFileObject(f);
-            if (hasArchiveReference(project, archive, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
-                removeArchiveReferences(project, new FileObject[] {archive}, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
+    public static void removeLocalizedTheme(Project project, String themeName)  throws IOException {
+        URL root = JsfProjectLibrary.getLocalizedThemeRoot(themeName);
+        if (root != null) {
+            if (hasRootReference(project, root, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
+                removeRootReferences(project, new URL[] { root }, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
             }
-            if (hasArchiveReference(project, archive, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
-                removeArchiveReferences(project, new FileObject[] {archive}, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+            if (hasRootReference(project, root, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
+                removeRootReferences(project, new URL[] { root }, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
             }
         }
     }
