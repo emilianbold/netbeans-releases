@@ -120,6 +120,7 @@ public class ETContainerDrawEngine extends ADNodeDrawEngine implements IADContai
         ViewportChangeListener viewportChangeListener = null;
         
 	private boolean drawContained = false;
+   private boolean ignoreDrawContained = false;
 
 	/*
 	 * Default constructor.
@@ -1414,7 +1415,7 @@ public class ETContainerDrawEngine extends ADNodeDrawEngine implements IADContai
 				}
 			}
 		}
-	}
+}
 
 	/*
 	 * Returns all contained graph objects including edges and labels.
@@ -1465,13 +1466,13 @@ public class ETContainerDrawEngine extends ADNodeDrawEngine implements IADContai
 			IETGraphObject obj = iter.next();
 			// Don't draw the edges, they are drawn after nodes.
 //			if (obj == null || obj.isEdge() || pDrawInfo == null)
-                        if (obj == null || pDrawInfo == null)
-                            continue;
-                        				
+         if (obj == null || pDrawInfo == null)
+            continue;
+         
 			if ( obj != null &&
-                            !(obj.getEngine() instanceof IADContainerDrawEngine) &&
-                            obj.getETUI() != null )
-				obj.getETUI().draw(pDrawInfo.getTSEGraphics());
+              !(obj.getEngine() instanceof IADContainerDrawEngine) &&
+               obj.getETUI() != null )
+            obj.getETUI().draw(pDrawInfo.getTSEGraphics());
 			else if (obj.getEngine() != null)
 			{
 				//	Make sure we don't have two containers on top of each other with equal sizes.
@@ -1489,9 +1490,10 @@ public class ETContainerDrawEngine extends ADNodeDrawEngine implements IADContai
 	 */
 	public void doDraw(IDrawInfo pDrawInfo)
         {
-            if ( this.getGraphWindow().getCurrentTool() instanceof TSEMoveSelectedTool)
+            if ( getIgnoreDrawContained() || 
+                 getGraphWindow().getCurrentTool() instanceof TSEMoveSelectedTool)
             {
-                this.setDrawContained(false);
+                setDrawContained(false);
             }
             else
             {
@@ -1504,7 +1506,7 @@ public class ETContainerDrawEngine extends ADNodeDrawEngine implements IADContai
                 boolean onMainDisplay = pDrawInfo.getDrawingToMainDrawingArea();
                 if (onMainDisplay)
                 {
-                    this.drawContained(pDrawInfo);
+                    drawContained(pDrawInfo);
                     drawContained = false;
                 }
             }
@@ -1677,6 +1679,14 @@ public class ETContainerDrawEngine extends ADNodeDrawEngine implements IADContai
    }
    public void setDrawContained(boolean val) {
        this.drawContained = val;
+   }
+   
+   public boolean getIgnoreDrawContained() {       
+       return this.ignoreDrawContained;
+   }
+   
+   public void setIgnoreDrawContained(boolean val) {
+       this.ignoreDrawContained = val;
    }
    
    public String getResizeBehavior() {
