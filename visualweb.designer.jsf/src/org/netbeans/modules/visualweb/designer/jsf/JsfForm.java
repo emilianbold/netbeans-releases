@@ -1182,7 +1182,9 @@ public class JsfForm {
     }
     
     public void setUpdatesSuspended(Element componentRootElement, boolean suspend) {
-        htmlDomProvider.setUpdatesSuspended(componentRootElement, suspend);
+//        htmlDomProvider.setUpdatesSuspended(componentRootElement, suspend);
+        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+        setUpdatesSuspended(markupDesignBean, suspend);
     }
     
     public boolean isWriteLocked() {
