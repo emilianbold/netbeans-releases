@@ -2507,7 +2507,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
     }
 
     // XXX Moved from designer/../GridHandler.
-    public void align(Designer designer, Designer.Alignment alignment) {
+    public void align(Designer designer, JsfForm.Alignment alignment) {
         // Primary
 //        SelectionManager sm = webForm.getSelection();
 //

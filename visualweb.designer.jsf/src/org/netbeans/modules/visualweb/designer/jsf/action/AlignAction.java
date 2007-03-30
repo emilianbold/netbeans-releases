@@ -21,33 +21,18 @@
 package org.netbeans.modules.visualweb.designer.jsf.action;
 
 import org.netbeans.modules.visualweb.api.designer.Designer;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import com.sun.rave.designtime.DesignBean;
-import com.sun.rave.designtime.DesignContext;
-import com.sun.rave.designtime.DesignEvent;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.designer.jsf.JsfSupportUtilities;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.spi.designtime.idebridge.action.AbstractDesignBeanAction;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
-import org.openide.ErrorManager;
 import org.openide.awt.Actions;
-import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.EditCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Element;
 
 /**
  * Action providing aligning.
@@ -126,12 +111,12 @@ public class AlignAction extends AbstractDesignBeanAction {
 
     /** Implementation of the actions submenu model. */
     private static class AlignMenuModel implements Actions.SubMenuModel {
-        private static abstract class Alignment {
-            private final Designer.Alignment designerAlignment;
+        private static abstract class AlignmentAction {
+            private final JsfForm.Alignment alignment;
             private final String displayName;
 
-            public Alignment(Designer.Alignment designerAlignment, String displayName) {
-                this.designerAlignment = designerAlignment;
+            public AlignmentAction(JsfForm.Alignment alignment, String displayName) {
+                this.alignment = alignment;
                 this.displayName = displayName;
             }
             
@@ -139,8 +124,8 @@ public class AlignAction extends AbstractDesignBeanAction {
                 return displayName;
             }
             
-            public Designer.Alignment getDesignerAlignment() {
-                return designerAlignment;
+            public JsfForm.Alignment getAlignment() {
+                return alignment;
             }
 
 //            protected abstract void performAction(WebForm webform);
@@ -148,9 +133,9 @@ public class AlignAction extends AbstractDesignBeanAction {
             protected abstract void performAction(JsfForm jsfForm);
         } // End of Alignment class.
         
-        private static class SnapToGridAlignment extends Alignment {
+        private static class SnapToGridAlignment extends AlignmentAction {
             public SnapToGridAlignment(String displayName) {
-                super(Designer.Alignment.SNAP_TO_GRID, displayName);
+                super(JsfForm.Alignment.SNAP_TO_GRID, displayName);
             }
             
 //            protected void performAction(WebForm webform) {
@@ -170,8 +155,8 @@ public class AlignAction extends AbstractDesignBeanAction {
             }
         } // End of SnapToGridAlignment class.
         
-        private static class SimpleAlignment extends Alignment {
-            public SimpleAlignment(Designer.Alignment designerAlignment, String displayName) {
+        private static class SimpleAlignment extends AlignmentAction {
+            public SimpleAlignment(JsfForm.Alignment designerAlignment, String displayName) {
                 super(designerAlignment, displayName);
             }
             
@@ -188,22 +173,22 @@ public class AlignAction extends AbstractDesignBeanAction {
                 if (designer == null) {
                     return;
                 }
-                jsfForm.align(designer, getDesignerAlignment());
+                jsfForm.align(designer, getAlignment());
             }
         } // End of SimpleAlignment class.
         
         // XXX Make an enum once moved to jdk5.0 sources.
-        private static final Alignment SNAP_TO_GRID = new SnapToGridAlignment(NbBundle.getMessage(AlignAction.class, "LBL_SnapToGrid"));
-        private static final Alignment TOP          = new SimpleAlignment(Designer.Alignment.TOP, NbBundle.getMessage(AlignAction.class, "LBL_Top"));
-        private static final Alignment MIDDLE       = new SimpleAlignment(Designer.Alignment.MIDDLE, NbBundle.getMessage(AlignAction.class, "LBL_Middle"));
-        private static final Alignment BOTTOM       = new SimpleAlignment(Designer.Alignment.BOTTOM, NbBundle.getMessage(AlignAction.class, "LBL_Bottom"));
-        private static final Alignment LEFT         = new SimpleAlignment(Designer.Alignment.LEFT, NbBundle.getMessage(AlignAction.class, "LBL_Left"));
-        private static final Alignment CENTER       = new SimpleAlignment(Designer.Alignment.CENTER, NbBundle.getMessage(AlignAction.class, "LBL_Center"));
-        private static final Alignment RIGHT        = new SimpleAlignment(Designer.Alignment.RIGHT, NbBundle.getMessage(AlignAction.class, "LBL_Right"));
+        private static final AlignmentAction SNAP_TO_GRID = new SnapToGridAlignment(NbBundle.getMessage(AlignAction.class, "LBL_SnapToGrid"));
+        private static final AlignmentAction TOP          = new SimpleAlignment(JsfForm.Alignment.TOP, NbBundle.getMessage(AlignAction.class, "LBL_Top"));
+        private static final AlignmentAction MIDDLE       = new SimpleAlignment(JsfForm.Alignment.MIDDLE, NbBundle.getMessage(AlignAction.class, "LBL_Middle"));
+        private static final AlignmentAction BOTTOM       = new SimpleAlignment(JsfForm.Alignment.BOTTOM, NbBundle.getMessage(AlignAction.class, "LBL_Bottom"));
+        private static final AlignmentAction LEFT         = new SimpleAlignment(JsfForm.Alignment.LEFT, NbBundle.getMessage(AlignAction.class, "LBL_Left"));
+        private static final AlignmentAction CENTER       = new SimpleAlignment(JsfForm.Alignment.CENTER, NbBundle.getMessage(AlignAction.class, "LBL_Center"));
+        private static final AlignmentAction RIGHT        = new SimpleAlignment(JsfForm.Alignment.RIGHT, NbBundle.getMessage(AlignAction.class, "LBL_Right"));
         
 //        private static final Alignment[] alignments   = new Alignment[] {
 //            SNAP_TO_GRID, TOP, MIDDLE, BOTTOM, LEFT, CENTER, RIGHT};
-        private final Alignment[] alignments;
+        private final AlignmentAction[] alignments;
         
         private final DesignBean[] designBeans;
         
@@ -214,12 +199,12 @@ public class AlignAction extends AbstractDesignBeanAction {
 //            if (webform == null) {
             Designer designer = JsfSupportUtilities.findDesignerForDesignContext(designBeans[0].getDesignContext());
             if (designer == null) {
-                this.alignments = new Alignment[0];
+                this.alignments = new AlignmentAction[0];
 //            } else if (webform.getSelection().getNumSelected() == 1) {
             } else if (designer.getSelectedCount() == 1) {
-                this.alignments = new Alignment[] {SNAP_TO_GRID};
+                this.alignments = new AlignmentAction[] {SNAP_TO_GRID};
             } else {
-                this.alignments = new Alignment[] {SNAP_TO_GRID, TOP, MIDDLE, BOTTOM, LEFT, CENTER, RIGHT};
+                this.alignments = new AlignmentAction[] {SNAP_TO_GRID, TOP, MIDDLE, BOTTOM, LEFT, CENTER, RIGHT};
             }
         }
         

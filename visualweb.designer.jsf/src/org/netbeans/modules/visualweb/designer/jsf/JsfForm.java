@@ -1193,9 +1193,20 @@ public class JsfForm {
         getDomDocumentImpl().snapToGrid(designer);
     }
     
-    public void align(Designer designer, Designer.Alignment alignment) {
+    public void align(Designer designer, Alignment alignment) {
         getDomDocumentImpl().align(designer, alignment);
     }
+
+    /** Alignments. */
+    public enum Alignment {
+        SNAP_TO_GRID,
+        TOP,
+        MIDDLE,
+        BOTTOM,
+        LEFT,
+        CENTER,
+        RIGHT
+    } // End of Alignment.
     
 //    public boolean canDropDesignBeansAtNode(DesignBean[] designBeans, Node node) {
 //        DesignBean parent = null;

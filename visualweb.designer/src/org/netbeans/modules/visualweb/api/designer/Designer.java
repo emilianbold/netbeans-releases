@@ -62,15 +62,15 @@ public interface Designer {
     // XXX Suspicious?
     public Element getPrimarySelectedComponent();
 
-    public enum Alignment {
-        SNAP_TO_GRID,
-        TOP,
-        MIDDLE,
-        BOTTOM,
-        LEFT,
-        CENTER,
-        RIGHT
-    }
+//    public enum Alignment {
+//        SNAP_TO_GRID,
+//        TOP,
+//        MIDDLE,
+//        BOTTOM,
+//        LEFT,
+//        CENTER,
+//        RIGHT
+//    }
 //    public void align(Alignment alignment);
 //    public void snapToGrid();
 
