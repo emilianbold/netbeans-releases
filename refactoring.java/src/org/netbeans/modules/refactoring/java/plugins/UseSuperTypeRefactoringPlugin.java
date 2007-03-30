@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -48,7 +47,6 @@ import org.netbeans.modules.refactoring.java.DiffElement;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.java.classpath.RefactoringClassPathImplementation;
 import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
-import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -70,8 +68,6 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
     
     private final UseSuperTypeRefactoring refactoring;
     private final RenameRefactoring renameRefactoring = null;
-    private final Logger log = Logger.getLogger("org.netbeans.modules.refactoring.plugins"); // NOI18N
-    private ErrorManager errMngr =  ErrorManager.getDefault();
     private static final float ONE_DOT_FIVE = 1.5f;
     
     /**
@@ -88,15 +84,8 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
      */
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         
-        ElementHandle superType = refactoring.getTargetSuperType();
         TreePathHandle subClassHandle = refactoring.getTypeElement();
-        fireProgressListenerStart(AbstractRefactoring.PREPARE, 1);
-        
-        try{
-            getClasspathInfo(subClassHandle, refactoringElements);
-        }finally{
-            fireProgressListenerStop();
-        }
+        replaceSubtypeUsages(subClassHandle, refactoringElements);
         return null;
     }
     
@@ -133,7 +122,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
     
     //---------private  methods follow--------
     
-    private void getClasspathInfo(final TreePathHandle subClassHandle,
+    private void replaceSubtypeUsages(final TreePathHandle subClassHandle,
             final RefactoringElementsBag elemsBag){
         JavaSource javaSrc = JavaSource.forFileObject(subClassHandle.getFileObject());
         
@@ -191,6 +180,8 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             }, false);
         }catch(IOException ioex){
             ioex.printStackTrace();
+        }finally{
+            fireProgressListenerStop();
         }
         return;
     }
@@ -209,23 +200,22 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         }
         
         public void run(WorkingCopy compiler) throws Exception {
-            compiler.toPhase(JavaSource.Phase.RESOLVED);
-            CompilationUnitTree cu = compiler.getCompilationUnit();
-            if (cu == null) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
-                return;
+            try{
+                compiler.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cu = compiler.getCompilationUnit();
+                if (cu == null) {
+                    ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
+                    return;
+                }
+                Element subClassElement = subClassHandle.resolveElement(compiler);
+                Element superClassElement = superClassHandle.resolve(compiler);
+                assert subClassElement != null;
+                ReferencesVisitor findRefVisitor = new ReferencesVisitor(compiler,
+                        subClassElement, superClassElement);
+                findRefVisitor.scan(compiler.getCompilationUnit(), subClassElement);
+            }finally{
+                fireProgressListenerStep();
             }
-            Element subClassElement = subClassHandle.resolveElement(compiler);
-            Element superClassElement = superClassHandle.resolve(compiler);
-            assert subClassElement != null;
-            ReferencesVisitor findRefVisitor = new ReferencesVisitor(compiler,
-                    subClassElement, superClassElement);
-            findRefVisitor.scan(compiler.getCompilationUnit(), subClassElement);
-            for (TreePath tree : findRefVisitor.getUsages()) {
-                ElementGripFactory.getDefault().put(compiler.getFileObject(),
-                        tree, compiler);
-            }
-            fireProgressListenerStep();
         }
     }
     
@@ -249,7 +239,6 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             if(varType.equals(elementToMatch.asType())){
                 if(isReplaceCandidate(varElement)){
                     replaceWithSuperType(varTree, superTypeElement);
-                    addUsage(treePath);
                 }
             }
             return super.visitVariable(varTree, elementToMatch);

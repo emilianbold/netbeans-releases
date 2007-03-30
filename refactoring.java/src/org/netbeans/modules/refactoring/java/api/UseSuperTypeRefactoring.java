@@ -15,12 +15,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -115,22 +112,8 @@ public final class UseSuperTypeRefactoring extends AbstractRefactoring{
                     complController.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement javaClassElement = (TypeElement) 
                             javaClassHandle.resolveElement(complController);
-                    Set<TypeElement> intermediateSuperIFs = 
-                            getAllSuperTypes(javaClassElement);
-                    HashSet<ElementHandle> finalSuperIfSet =
-                            new HashSet<ElementHandle>(intermediateSuperIFs.size());
-                    for(TypeElement typeElem : intermediateSuperIFs){
-                        finalSuperIfSet.add(ElementHandle.create(typeElem));
-                    }
-                    //Now, add java.lang.Object to candidate super types
-//                    TypeMirror typeMirror = complController.getTreeUtilities().
-//                            parseType(JAVA_LANG_OBJECT, javaClassElement);
-//                    if(TypeKind.DECLARED.equals(typeMirror.getKind())){
-//                        Element objectTypeElement = ((DeclaredType) typeMirror).
-//                                asElement();
-//                         finalSuperIfSet.add(ElementHandle.create(objectTypeElement));
-//                    }
-                    candidateSuperTypes = finalSuperIfSet.toArray(new ElementHandle[0]);
+                    candidateSuperTypes = deduceSuperTypes(javaClassElement, 
+                            complController);
                 }
             }, false);
         }catch(IOException ioex){
@@ -156,52 +139,40 @@ public final class UseSuperTypeRefactoring extends AbstractRefactoring{
         //        }
     }
     
-    private Set<TypeElement> getAllSuperTypes(TypeElement subTypeElement){
-        HashSet<TypeElement> finalSuperIFs = new HashSet<TypeElement>();
-        
-        //Required to avoid repetitive Depth first search in getAllSuperInterfaces
-        HashSet<TypeElement> workingSet = new HashSet<TypeElement>();
-        
-        //Setup required for getAllSuperInterfaces
-        workingSet.add(subTypeElement);
-        getAllSuperInterfaces(subTypeElement, workingSet, finalSuperIFs);
-        
-        if(isDeclaredType(subTypeElement.getSuperclass())){
-            DeclaredType tempDeclType = (DeclaredType) subTypeElement.getSuperclass();
-            TypeElement tempType = (TypeElement) tempDeclType.asElement();
-            
-            while (tempType != null) {
-                finalSuperIFs.add(tempType);
-                workingSet.add(tempType);
-                getAllSuperInterfaces(tempType, workingSet,
-                        finalSuperIFs);
-                
-                if(!isDeclaredType(tempType.getSuperclass()))
-                    break;
-                tempDeclType = (DeclaredType) tempType.getSuperclass();
-                tempType = (TypeElement) tempDeclType.asElement();
-            }
+    private ElementHandle[] deduceSuperTypes(TypeElement subTypeElement, 
+            CompilationController compCtlr){
+
+        TypeMirror subtypeMirror = subTypeElement.asType();
+        Types types = compCtlr.getTypes();
+        HashSet<TypeMirror> finalSuperTypeMirrors = new HashSet<TypeMirror>();
+        HashSet<TypeMirror> workingTypeMirrors = new HashSet<TypeMirror>();
+        workingTypeMirrors.add(subtypeMirror);
+        getAllSuperIFs(subtypeMirror, workingTypeMirrors, finalSuperTypeMirrors,
+                compCtlr);
+        ElementHandle[] superTypeHandles = new ElementHandle[finalSuperTypeMirrors.size()];
+        int index = 0;
+        for (Iterator<TypeMirror> it = finalSuperTypeMirrors.iterator(); it.hasNext();) {
+            TypeMirror typeMirror = it.next();
+            superTypeHandles[index++] = ElementHandle.create(types.asElement(typeMirror));
         }
-        return finalSuperIFs;
-    }
-    
-    private void getAllSuperInterfaces(TypeElement subType,
-            Collection<TypeElement> uniqueIFs, Collection<TypeElement> finalIFCollection){
-        
-        Iterator subTypeIFs = subType.getInterfaces().iterator();
+        return superTypeHandles;
+
+    }    
+
+    private void getAllSuperIFs(TypeMirror subTypeMirror,
+            Collection<TypeMirror> uniqueIFs, Collection<TypeMirror> finalIFCollection,
+            CompilationController compCtlr){
+        Types types = compCtlr.getTypes();
+        Iterator<? extends TypeMirror> subTypeIFs = types.directSupertypes(subTypeMirror).
+                iterator();
         while(subTypeIFs.hasNext()){
-            DeclaredType declType = (DeclaredType) subTypeIFs.next();
-            TypeElement superIF = (TypeElement) declType.asElement();
-            finalIFCollection.add(superIF);
-            if(!uniqueIFs.contains(superIF)){
-                getAllSuperInterfaces(superIF, uniqueIFs, finalIFCollection);
+            TypeMirror superType = subTypeIFs.next();
+            finalIFCollection.add(superType);
+            if(!uniqueIFs.contains(superType)){
+                getAllSuperIFs(superType, uniqueIFs, finalIFCollection, compCtlr);
             }
         }
         return;
-    }
-    
-    private boolean isDeclaredType(TypeMirror type){
-        return TypeKind.DECLARED.equals(type.getKind());
     }
     
 }
