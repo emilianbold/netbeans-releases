@@ -167,11 +167,11 @@ public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
                     for (Difference dif: result.getDifferences(jfo)) {
                         String old = dif.getOldText();
-                        if (old!=null) {
-                            //TODO: workaround
-                            //generator issue?
+//                        if (old!=null) {
+//                            //TODO: workaround
+//                            //generator issue?
                             refactoringElements.add(refactoring,DiffElement.create(dif, jfo, result));
-                        }
+//                        }
                     }
                 }
             }
@@ -471,7 +471,8 @@ public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
             }
             Element el = treePathHandle.resolveElement(compiler);
             assert el != null;
-            MethodTree mtree = (MethodTree) treePathHandle.resolve(compiler).getLeaf();
+            Element method = refactoring.getMembers()[0].member.resolve(compiler);
+            MethodTree mtree = (MethodTree) compiler.getTrees().getTree(method);
             
             PushDownTransformer findVisitor = new PushDownTransformer(compiler, mtree);
             findVisitor.scan(compiler.getCompilationUnit(), el);

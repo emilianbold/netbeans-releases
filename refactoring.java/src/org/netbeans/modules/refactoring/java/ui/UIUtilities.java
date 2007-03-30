@@ -19,9 +19,8 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import java.awt.Component;
-import java.util.Iterator;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -33,9 +32,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.UiUtils;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.refactoring.java.api.MemberInfo;
 
 
 /** Class containing various utility methods and inner classes
@@ -48,29 +45,6 @@ public final class UIUtilities {
     private UIUtilities() {
     }
 
-    /** Returns display text for a given Java element.
-     * Covers:
-     * <ul>
-     *  <li>class, interface, annotation, enum - returns simple name</li>
-     *  <li>method, constructor - returns signature (<code>method(paramType1, paramType2, ...)</code>)</li>
-     *  <li>other subclasses of NamedElement - returns name</li>
-     * </ul>
-     * @param element Java element.
-     * @return Display text.
-     */
-    public static String getDisplayText(TreePathHandle element) {
-        return null;
-    }
-    
-    /** Returns icon base (path to the standard icon file without ".gif" extension) for a given
-     * Java element or <code>null</code> if the element does not have a standard icon associated.
-     * @param element Java element.
-     * @return Base name of the icon for the element (or <code>null</code> if no icon associated).
-     */
-    public static String getIconBase(TreePathHandle element) {
-        return null;
-    }
-    
     /** Returns the same string as passed in or " " if the passed string was an empty string.
      * This method is used as a workaround for issue #58302.
      * @param name Original table column name.
@@ -119,23 +93,13 @@ public final class UIUtilities {
     public static class JavaElementTableCellRenderer extends DefaultTableCellRenderer {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             super.getTableCellRendererComponent(table, extractText(value), isSelected, hasFocus, row, column);
-            String iconBase = extractIconBase(value);
-            setIcon(iconBase == null ? null : new ImageIcon(org.openide.util.Utilities.loadImage(iconBase + ".gif"))); // NOI18N
+            if (value instanceof MemberInfo) {
+                Icon i = ((MemberInfo) value).getIcon();
+                setIcon(i); 
+            }
             return this;
         }
         
-        /** Can be overriden to return non-standard icons or to return icons for
-         * non-standard elements.
-         * @param value Cell value.
-         * @return Base name of the icon file (without the extension).
-         */
-        protected String extractIconBase(Object value) {
-            if (value instanceof TreePathHandle) {
-                return getIconBase((TreePathHandle) value);
-            } else {
-                return null;
-            }
-        }
         
         /** Can be overriden to return alter the standard display text returned for elements.
          * @param value Cell value.
@@ -144,8 +108,8 @@ public final class UIUtilities {
         protected String extractText(Object value) {
             if (value==null)
                 return null;
-            if (value instanceof TreePathHandle) {
-                return getDisplayText((TreePathHandle) value);
+            if (value instanceof MemberInfo) {
+                return ((MemberInfo) value).getHtmlText();
             } else {
                 return value.toString();
             }
@@ -158,33 +122,21 @@ public final class UIUtilities {
     public static class JavaElementListCellRenderer extends DefaultListCellRenderer {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, extractText(value), index, isSelected, cellHasFocus);
-            String iconBase = extractIconBase(value);
-            if (iconBase != null) {
-                setIcon(new ImageIcon(org.openide.util.Utilities.loadImage(iconBase + ".gif"))); // NOI18N   
+            if (value instanceof MemberInfo) {
+                Icon i = ((MemberInfo) value).getIcon();
+                setIcon(i); 
             }
             return this;
         }
 
-        /** Can be overriden to return non-standard icons or to return icons for
-         * non-standard elements.
-         * @param value Cell value.
-         * @return Base name of the icon file (without the extension).
-         */
-        protected String extractIconBase(Object value) {
-            if (value instanceof TreePathHandle) {
-                return getIconBase((TreePathHandle) value);
-            } else {
-                return null;
-            }
-        }
         
         /** Can be overriden to return alter the standard display text returned for elements.
          * @param value Cell value.
          * @return Display text.
          */
         protected String extractText(Object value) {
-            if (value instanceof TreePathHandle) {
-                return getDisplayText((TreePathHandle) value);
+            if (value instanceof MemberInfo) {
+                return ((MemberInfo) value).getHtmlText();
             } else {
                 return value.toString();
             }

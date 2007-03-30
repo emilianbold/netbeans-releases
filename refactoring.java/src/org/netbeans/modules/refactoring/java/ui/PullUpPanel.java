@@ -217,6 +217,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         supertypePanel = new javax.swing.JPanel();
         supertypeCombo = new javax.swing.JComboBox();
         supertypeLabel = new javax.swing.JLabel();
@@ -224,23 +225,23 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
         scrollPane = new javax.swing.JScrollPane();
         membersTable = new javax.swing.JTable();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
+        setName(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "LBL_PullUpHeader", new Object[] {"TODO"}) /* NOI18N */); // NOI18N
         setLayout(new java.awt.BorderLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
-        setName(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "LBL_PullUpHeader", new Object[] {UIUtilities.getDisplayText(refactoring.getSourceType())}) /* NOI18N */);
-        supertypePanel.setLayout(new java.awt.BorderLayout(12, 0));
-
         supertypePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        supertypePanel.setLayout(new java.awt.BorderLayout(12, 0));
         supertypePanel.add(supertypeCombo, java.awt.BorderLayout.CENTER);
 
         supertypeLabel.setLabelFor(supertypeCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(supertypeLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/ui/Bundle").getString("LBL_PullUp_Supertype"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/java/ui/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(supertypeLabel, bundle.getString("LBL_PullUp_Supertype")); // NOI18N
         supertypePanel.add(supertypeLabel, java.awt.BorderLayout.WEST);
-        supertypeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "ACSD_DestinationSupertypeName"));
-        supertypeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "ACSD_DestinationSupertypeDescription"));
+        supertypeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "ACSD_DestinationSupertypeName")); // NOI18N
+        supertypeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "ACSD_DestinationSupertypeDescription")); // NOI18N
 
         chooseLabel.setLabelFor(membersTable);
-        org.openide.awt.Mnemonics.setLocalizedText(chooseLabel, org.openide.util.NbBundle.getMessage(PullUpPanel.class, "LBL_PullUpLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(chooseLabel, org.openide.util.NbBundle.getMessage(PullUpPanel.class, "LBL_PullUpLabel")); // NOI18N
         chooseLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 0, 0, 0));
         supertypePanel.add(chooseLabel, java.awt.BorderLayout.SOUTH);
 
@@ -249,13 +250,11 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
         membersTable.setModel(tableModel);
         membersTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
         scrollPane.setViewportView(membersTable);
-        membersTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "ACSD_MembersToPullUp"));
-        membersTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "ACSD_MembersToPullUpDescription"));
+        membersTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "ACSD_MembersToPullUp")); // NOI18N
+        membersTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "ACSD_MembersToPullUpDescription")); // NOI18N
 
         add(scrollPane, java.awt.BorderLayout.CENTER);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

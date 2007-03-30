@@ -54,60 +54,7 @@ public class PushDownRefactoring extends AbstractRefactoring {
         this.members = members;
     }
     
-//    public JavaClass[] collectSubtypes() {
-//        if (subtypes == null) {
-//            if (sourceType != null) {
-//                Collection c = sourceType.findSubTypes(false);
-//                subtypes = (JavaClass[]) c.toArray(new JavaClass[c.size()]);
-//            } else {
-//                subtypes = new JavaClass[0];
-//            }
-//        }
-//        return subtypes;
-//    }
-    
     public TreePathHandle getSourceType() {
         return getRefactoringSource().lookup(TreePathHandle.class);
-    }
-    
-    /** Class describing a member to be pushed down.
-     */
-    public static final class MemberInfo {
-        public final TreePathHandle member;
-        public final boolean makeAbstract;
-        
-        /** Creates a new instance of MemberInfo describing a method.
-         * @param method Method to be pulled up.
-         * @param makeAbstract Indicates whether the method should be made abstract
-         *              in the supertype.
-         */
-        public MemberInfo(TreePathHandle method, boolean makeAbstract) {
-            this.member = method;
-            this.makeAbstract = makeAbstract;
-        }
-        
-        /** Creates a new instance of MemberInfo describing a field 
-         * to be pulled up.
-         * @param field Field to be pulled up.
-         */
-        public MemberInfo(TreePathHandle innerClass) {
-            this(innerClass, false);
-        }
-        
-//        /** Creates a new instance of MemberInfo describing a field 
-//         * to be pulled up.
-//         * @param field Field to be pulled up.
-//         */
-//        public MemberInfo(Field field) {
-//            this(field, false);
-//        }
-//        
-//        /** Creates a new instance of MemberInfo describing an interface name
-//         * from the implements clause that should be pulled up.
-//         * @param interfaceName Interface name to be pulled up.
-//         */
-//        public MemberInfo(MultipartId interfaceName) {
-//            this(interfaceName, false);
-//        }
     }
 }

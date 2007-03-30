@@ -18,10 +18,12 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.util.TreePath;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -53,11 +55,11 @@ public class PushDownRefactoringUI implements RefactoringUI {
         // compute source type and members that should be pre-selected from the
         // set of elements the action was invoked on
         
-        //TODO:
-        //sourceType = getSourceType(selectedElements, initialMembers);
-        TreePathHandle sourceType=null;
-        // create an instance of pull up refactoring object
+       // create an instance of pull up refactoring object
+        TreePath tp = info.getTrees().getPath(SourceUtils.getEnclosingTypeElement(selectedElements[0].resolveElement(info)));
+        TreePathHandle sourceType = TreePathHandle.create(tp, info);
         refactoring = new PushDownRefactoring(Lookups.singleton(sourceType));
+        refactoring.getContext().add(info);
     }
     
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------
@@ -109,8 +111,7 @@ public class PushDownRefactoringUI implements RefactoringUI {
      * to the refactoring object.
      */
     private void captureParameters() {
-        //todo:
-        //refactoring.setMembers(panel.getMembers());
+        refactoring.setMembers(panel.getMembers());
     }
     
 //    /** Method that computes the source type and initially selected members from
