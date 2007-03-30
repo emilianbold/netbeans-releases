@@ -2107,7 +2107,11 @@ public class WebForm implements Designer {
     public int getSelectedCount() {
         return getSelection().getNumSelected();
     }
-
+    
+    public Element[] getSelectedComponents() {
+        return getSelection().getSelectedComponentRootElements();
+    }
+    
     public void snapToGrid() {
         getGridHandler().snapToGrid();
     }

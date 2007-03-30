@@ -39,6 +39,7 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.netbeans.modules.visualweb.designer.jsf.JsfSupportUtilities;
@@ -2306,5 +2307,135 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
             jsfForm.writeUnlock(writeLock);
         }
     }
-    
+
+    // XXX Moved from designer/../GridHandler.
+    /** Resize the given component to new dimensions.
+     * Note that the x,y position might change too, for example, when
+     * you resize the component by dragging a selection handle on the
+     * top or left edges of the component.
+     *
+     * <p>
+     * @param editor The editor containing the resized component
+     * @param component Component being resized
+     * @param element The DOM element for the component
+     * @param newX The left edge of the component after resize
+     * @param xMoved True iff the left edge position changed during the resize
+     * @param newY The top edge of the component after resize
+     * @param yMoved True iff the top edge position moved during the resize
+     * @param newWidth The new width after resize
+     * @param newHeight The new height after resize
+     * @param box Box being resized
+     * @param snapDisabled If true, skip snapping
+     * @todo Should I use floating point coordinates instead?
+     */
+//    public void resize(DesignerPane editor, Element componentRootElement, /*MarkupDesignBean bean,*/ int newX, boolean xMoved,
+//        int newY, boolean yMoved, int newWidth, boolean widthChanged, int newHeight,
+//        boolean heightChanged, CssBox box, boolean snapDisabled) {
+    public void resizeComponent(Designer designer, Element componentRootElement, /*MarkupDesignBean bean,*/ int newX, boolean xMoved,
+        int newY, boolean yMoved, int newWidth, boolean widthChanged, int newHeight,
+        boolean heightChanged, Box box, boolean snapEnabled) {
+        // Locate a grid layout parent
+//        Document doc = editor.getDocument();
+//        WebForm webform = doc.getWebForm();
+//        WebForm webform = editor.getWebForm();
+
+        int x = newX;
+        int y = newY;
+
+        if (snapEnabled) {
+//            x = snapX(newX, box.getPositionedBy());
+//            y = snapY(newY, box.getPositionedBy());
+            x = designer.snapX(newX, box.getPositionedBy());
+            y = designer.snapY(newY, box.getPositionedBy());
+        }
+
+        Element element = box.getElement();
+
+        if (element == null) {
+//            element = bean.getElement();
+            element = componentRootElement;
+        }
+
+        boolean absolute = isAbsolutelyPositioned(element);
+
+//        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(GridHandler.class, "ResizeComponent")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(GridHandler.class, "ResizeComponent")); // NOI18N
+        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_ResizeComponent")); // NOI18N
+        // Gotta set width and height attributes!
+        try {
+//            doc.writeLock(NbBundle.getMessage(GridHandler.class, "ResizeComponent")); // NOI18N
+
+            // prevent multiple updates for the same element - only need a single refresh
+//            webform.getDomSynchronizer().setUpdatesSuspended(bean, true);
+//            webform.setUpdatesSuspended(componentRootElement, true);
+            jsfForm.setUpdatesSuspended(componentRootElement, true);
+
+            List<StyleData> set = new ArrayList<StyleData>(5);
+            List<StyleData> remove = new ArrayList<StyleData>(3);
+
+            if (absolute && (xMoved || yMoved)) {
+//                set.add(new StyleData(XhtmlCss.POSITION_INDEX, CssConstants.CSS_ABSOLUTE_VALUE));
+                set.add(new StyleData(XhtmlCss.POSITION_INDEX, CssProvider.getValueService().getAbsoluteValue()));
+
+//                CssBox parentBox = box.getParent();
+                Box parentBox = box.getParent();
+
+                if (xMoved) {
+                    set.add(getHorizontalCssSetting(x, newWidth, box, parentBox, element));
+                }
+
+                if (yMoved) {
+                    set.add(getVerticalCssSetting(y, newHeight, box, parentBox, element));
+                }
+            }
+
+            if (widthChanged) {
+//                if (!DndHandler.setDesignProperty(bean, HtmlAttribute.WIDTH, newWidth, webform)) {
+//                if (!WebForm.getHtmlDomProviderService().setDesignProperty(bean, HtmlAttribute.WIDTH, newWidth)) {
+//                if (!WebForm.getHtmlDomProviderService().setStyleAttribute(componentRootElement, HtmlAttribute.WIDTH, newWidth)) {
+                if (!JsfSupportUtilities.setStyleAttribute(componentRootElement, HtmlAttribute.WIDTH, newWidth)) {
+                    set.add(new StyleData(XhtmlCss.WIDTH_INDEX, Integer.toString(newWidth) + "px")); // NOI18N
+                } else {
+                    // Ensure that we don't have a conflict
+                    remove.add(new StyleData(XhtmlCss.WIDTH_INDEX));
+                }
+            }
+
+            if (heightChanged) {
+//                if (!DndHandler.setDesignProperty(bean, HtmlAttribute.HEIGHT, newHeight, webform)) {
+//                if (!WebForm.getHtmlDomProviderService().setDesignProperty(bean, HtmlAttribute.HEIGHT, newHeight)) {
+                if (!JsfSupportUtilities.setStyleAttribute(componentRootElement, HtmlAttribute.HEIGHT, newHeight)) {
+                    set.add(new StyleData(XhtmlCss.HEIGHT_INDEX, Integer.toString(newHeight) + "px")); // NOI18N
+                } else {
+                    // Ensure that we don't have a conflict
+                    remove.add(new StyleData(XhtmlCss.HEIGHT_INDEX));
+                }
+            }
+
+//            XhtmlCssEngine engine = webform.getMarkup().getCssEngine();
+            
+// <removing design bean manipulation in engine>
+//            engine.updateLocalStyleValues((RaveElement)element, set, remove);
+// ====
+//            Util.updateLocalStyleValuesForElement(element,
+//                    (StyleData[])set.toArray(new StyleData[set.size()]),
+//                    (StyleData[])remove.toArray(new StyleData[remove.size()]));
+//            WebForm.getHtmlDomProviderService().updateLocalStyleValuesForElement(element,
+//                    set.toArray(new StyleData[set.size()]),
+//                    remove.toArray(new StyleData[remove.size()]));
+            JsfSupportUtilities.updateLocalStyleValuesForElement(element,
+                    set.toArray(new StyleData[set.size()]),
+                    remove.toArray(new StyleData[remove.size()]));
+// </removing design bean manipulation in engine>
+        } finally {
+//            webform.getDomSynchronizer().setUpdatesSuspended(bean, false);
+//            webform.setUpdatesSuspended(componentRootElement, false);
+            jsfForm.setUpdatesSuspended(componentRootElement, false);
+//            doc.writeUnlock();
+//            webform.getModel().writeUnlock(undoEvent);
+//            webform.writeUnlock(writeLock);
+            jsfForm.writeUnlock(writeLock);
+        }
+    }
+
 }

@@ -57,6 +57,8 @@ public interface Designer {
 
     public void selectComponent(Element componentRootElement);
     public int getSelectedCount();
+    /** Gets selected componets (component root elements). */
+    public Element[] getSelectedComponents();
 
     public enum Alignment {
         SNAP_TO_GRID,
@@ -76,6 +78,8 @@ public interface Designer {
     /** Representing the individual box. Providing accessors (getters) only! */
     public interface Box {
         public Element getComponentRootElement();
+        public Element getElement();
+        
         public Box getParent();
         public Box[] getChildren();
         

@@ -102,4 +102,13 @@ public final class JsfSupportUtilities {
     public static void updateLocalStyleValuesForElement(Element e, StyleData[] setStyleData, StyleData[] removeStyleData) {
         Util.updateLocalStyleValuesForElement(e, setStyleData, removeStyleData);
     }
+
+    public static boolean setStyleAttribute(Element componentRootElement, String attribute, int value) {
+        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+        if (markupDesignBean == null) {
+            return false;
+        }
+        return Util.setDesignProperty(markupDesignBean, attribute, value);
+    }
+    
 }
