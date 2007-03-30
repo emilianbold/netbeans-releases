@@ -33,6 +33,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddWSDLPortsAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.AutoLayoutAction;
 import org.netbeans.modules.compapp.casaeditor.properties.LookAndFeelProperty;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
@@ -114,6 +116,18 @@ public class CasaRootNode extends CasaNode {
             }
             return false;
         }
+        
+        else if (action instanceof AddWSDLPortsAction) {
+            CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
+            Widget bindingRegion = scene.getBindingRegion();
+            Rectangle bindingRegionRect =
+                    bindingRegion.convertLocalToScene(new Rectangle(bindingRegion.getBounds().width, bindingRegion.getBounds().height));
+            if (bindingRegionRect.contains(sceneLocation)) {
+                return true;
+            }
+            return false;
+        }
+        
         return true;
     }
     
@@ -121,6 +135,9 @@ public class CasaRootNode extends CasaNode {
         try {
             final Project jbiProject = getModel().getJBIProject();
             actions.add(new AddJBIModuleAction(jbiProject));
+//            actions.add(new AddWSDLPortsAction(getDataObject()));
+            actions.add(null);
+            actions.add(new AutoLayoutAction(getDataObject()));
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }

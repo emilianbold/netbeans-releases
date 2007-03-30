@@ -24,7 +24,7 @@ import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -34,24 +34,24 @@ import org.openide.util.Utilities;
  */
 public class AutoLayoutAction extends AbstractAction {
     
+    private WeakReference<CasaDataObject> mReference;
+    
     private static final Image ICON_IMAGE = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/AutoLayout.png");
     
-    private WeakReference mReference;
     
-    
-    public AutoLayoutAction(CasaModelGraphScene scene) {
+    public AutoLayoutAction(CasaDataObject dataObject) {
         super(
                 NbBundle.getMessage(AutoLayoutAction.class, "TXT_AutoLayout"), 
                 new ImageIcon(ICON_IMAGE));
-        mReference = new WeakReference(scene);
+        mReference = new WeakReference(dataObject);
     }
     
     
     public void actionPerformed(ActionEvent e) {
-        CasaModelGraphScene scene = (CasaModelGraphScene) mReference.get();
-        if (scene != null) {
-            scene.autoLayout(true, true);
+        CasaDataObject dataObject = mReference.get();
+        if (dataObject != null) {
+            dataObject.getEditorSupport().getScene().autoLayout(true, true);
         }
     }
 }

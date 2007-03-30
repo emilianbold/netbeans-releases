@@ -20,8 +20,10 @@
 package org.netbeans.modules.compapp.casaeditor.graph.actions;
 
 import java.awt.Point;
+import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.api.visual.action.PopupMenuProvider;
@@ -30,6 +32,7 @@ import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.CanvasNodeProxyContext;
 import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
@@ -71,7 +74,11 @@ public class CasaPopupMenuProvider implements PopupMenuProvider {
                 Point sceneLocation = widget.convertLocalToScene(localLocation);
                 if (casaNode.isValidSceneActionForLocation(action, widget, sceneLocation)) {
                     if (action instanceof AbstractAction) {
-                        popupMenu.add(action);
+                        CanvasNodeActionProxy proxy = CanvasNodeActionProxy.createAction(
+                                action, 
+                                sceneLocation, 
+                                localLocation);
+                        popupMenu.add(proxy);
                         hasActions = true;
                         lastActionAdded = action;
                     } else if (action instanceof NodeAction) {
@@ -90,5 +97,48 @@ public class CasaPopupMenuProvider implements PopupMenuProvider {
         }
         
         return hasActions ? popupMenu : null;
+    }
+    
+    
+    private static class CanvasNodeActionProxy extends AbstractAction implements CanvasNodeProxyContext {
+        private Action mActionable;
+        private Point mLocalLocation;
+        private Point mSceneLocation;
+
+
+        private CanvasNodeActionProxy(
+                Action actionable,
+                Point sceneLocation,
+                Point localLocation)
+        {
+            super(
+                    (String) actionable.getValue(Action.NAME),
+                    (Icon) actionable.getValue(Action.SMALL_ICON));
+            mActionable = actionable;
+            mSceneLocation = sceneLocation;
+            mLocalLocation = localLocation;
+        }
+
+
+        public static CanvasNodeActionProxy createAction(
+                Action actionable,
+                Point sceneLocation,
+                Point localLocation)
+        {
+            return new CanvasNodeActionProxy(actionable, sceneLocation, localLocation);
+        }
+
+        public Point getLocalLocation() {
+            return mLocalLocation;
+        }
+
+        public Point getSceneLocation() {
+            return mSceneLocation;
+        }
+
+        public void actionPerformed(ActionEvent actionEvent) {
+            actionEvent.setSource(this);
+            mActionable.actionPerformed(actionEvent);
+        }
     }
 }

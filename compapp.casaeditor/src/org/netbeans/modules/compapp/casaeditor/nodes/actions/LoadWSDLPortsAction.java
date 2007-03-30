@@ -135,10 +135,11 @@ public class LoadWSDLPortsAction extends NodeAction {
         final List<Port> plist = portList;
         final HashMap fmap = fileMap;
         if (plist.size() > 0) {
-            final List<String> slist = new ArrayList();
-            for (Port p : portList) {
+            final String[] slist = new String[portList.size()];
+            for (int i=0; i < portList.size(); i++) {
+                Port p = portList.get(i);
                 String sName = ((Service) p.getParent()).getName();
-                slist.add("Service="+sName+", Port="+p.getName());      // NOI18N
+                slist[i] = "Service=" + sName + ", Port=" + p.getName();
             }
             
             final LoadWsdlPortPanel panel = new LoadWsdlPortPanel(suname, slist);
@@ -149,7 +150,7 @@ public class LoadWSDLPortsAction extends NodeAction {
                     new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                        int sel = panel.getSelectedItem();
+                        int sel = panel.getSelectedIndex();
                         
                         Port port = plist.get(sel);
                         File f = (File) fmap.get(port);

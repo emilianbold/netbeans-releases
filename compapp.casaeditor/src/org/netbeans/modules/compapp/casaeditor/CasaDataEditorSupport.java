@@ -58,6 +58,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.CasaModelFactory;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -83,7 +84,7 @@ implements
     /** Used for managing the prepareTask listener. */
     private transient Task prepareTask2;
     
-    private transient Scene mScene;
+    private transient CasaModelGraphScene mScene;
     
     //private CasaDataObject mDataObject;
     
@@ -303,12 +304,12 @@ implements
     }
     
     // When the scene is created, it is set here for access later.
-    public void setScene(Scene scene) {
+    public void setScene(CasaModelGraphScene scene) {
         mScene = scene;
     }
     
     // Provides access to the scene, for convenience.
-    public Scene getScene() {
+    public CasaModelGraphScene getScene() {
         return mScene;
     }
     

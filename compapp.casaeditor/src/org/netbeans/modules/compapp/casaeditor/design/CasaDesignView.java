@@ -150,7 +150,7 @@ public class CasaDesignView {
     }
     
     private void setupActions() {
-        mAutoLayoutAction = new AutoLayoutAction(mScene);
+        mAutoLayoutAction = new AutoLayoutAction(mDataObject);
         mBuildAction = new BuildAction(mScene.getModel());
     }
 
