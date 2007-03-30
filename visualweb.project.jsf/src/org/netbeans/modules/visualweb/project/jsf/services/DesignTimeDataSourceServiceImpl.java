@@ -28,7 +28,8 @@
 
 package org.netbeans.modules.visualweb.project.jsf.services;
 
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+// XXX wait for 03/30/2007 build for org.netbeans.modules.j2eeserver 1.23.0
+// import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
 import java.util.HashSet;
 
@@ -59,7 +60,8 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
         Set  dss = null;
         try {
             dss = jmp.getModuleDatasources();
-        } catch (ConfigurationException e) {
+        // XXX wait for 03/30/2007 build for org.netbeans.modules.j2eeserver 1.23.0
+        } catch (Exception /*ConfigurationException*/ e) {
             dss = new HashSet();
             // TODO: give some feedback to the user
         }
@@ -82,7 +84,8 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
             try {
                 jmp.createDatasource(req.getResourceName(), req.getUrl(),
                         req.getUsername(), req.getPassword(), req.getDriverClassName());
-            } catch (ConfigurationException e) {
+            // XXX wait for 03/30/2007 build for org.netbeans.modules.j2eeserver 1.23.0
+            // } catch (ConfigurationException e) {
                 // TODO: give some feedback to the user
             } catch (DatasourceAlreadyExistsException e) {
                 List dsList = e.getDatasources();
@@ -126,7 +129,8 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
         Set<Datasource> dss = null;
         try {
             dss = jmp.getServerDatasources();
-        } catch (ConfigurationException e) {
+        // XXX wait for 03/30/2007 build for org.netbeans.modules.j2eeserver 1.23.0
+        } catch (Exception /*ConfigurationException*/ e) {
             dss = new HashSet<Datasource>();
             // TODO: give some feedback to the user
         }
@@ -151,7 +155,8 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
         Set<Datasource> dss = null;
         try {
             dss = jmp.getModuleDatasources();
-        } catch (ConfigurationException e) {
+        // XXX wait for 03/30/2007 build for org.netbeans.modules.j2eeserver 1.23.0
+        } catch (Exception /*ConfigurationException*/ e) {
             dss = new HashSet<Datasource>();
             // TODO: give some feedback to the user
         }
