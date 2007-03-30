@@ -40,6 +40,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.design.util.SourceUtils;
+import org.openide.ErrorManager;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.filesystems.FileObject;
 
@@ -165,7 +166,7 @@ public class Utils {
         try {
             javaSource.runUserActionTask(task, true);
         } catch (IOException ex) {
-            
+            ErrorManager.getDefault().notify(ex);
         }
     }
     
