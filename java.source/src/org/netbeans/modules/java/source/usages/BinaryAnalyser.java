@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,6 +42,11 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.classfile.Access;
 import org.netbeans.modules.classfile.CPClassInfo;
@@ -57,10 +63,14 @@ import org.netbeans.modules.classfile.LocalVariableTypeTableEntry;
 import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.Variable;
 import org.netbeans.modules.classfile.Parameter;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.ParamNameResolver;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -117,11 +127,12 @@ public class BinaryAnalyser implements LowMemoryListener {
                                     }
                                     final ZipFile zipFile = new ZipFile(archive);
                                     try {
+                                        prebuildArgs(zipFile, root);
                                         analyseArchive( zipFile );
                                     }
                                     finally {
                                         zipFile.close();
-                                    }
+                                    }                                    
                                 }
                             }
                         }
@@ -512,4 +523,33 @@ public class BinaryAnalyser implements LowMemoryListener {
         }
         uset.add(usage);
     }                
+    
+    /**
+     * Prebuilds argument names for {@link javax.swing.JComponent} to speed up first
+     * call of code completion on swing classes. Has no semantic impact only improves performance,
+     * so it's can be safely disabled.
+     * @param archiveFile the archive
+     * @param archiveUrl url of an archive
+     */
+    private static void prebuildArgs (final ZipFile archiveFile, final URL archiveUrl) {
+        final ZipEntry e = archiveFile.getEntry(FileObjects.convertPackage2Folder(javax.swing.JComponent.class.getName())+'.'+FileObjects.CLASS);   //NOI18N
+        if (e != null) {                                   //NOI18N
+            ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
+                ClassPathSupport.createClassPath(new URL[0]),
+                ClassPathSupport.createClassPath(new URL[0]));
+            final JavacTaskImpl jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, null, null);            
+            ParamNameResolver.preRegister(jt.getContext(), cpInfo);
+            TypeElement jc = jt.getElements().getTypeElement(javax.swing.JComponent.class.getName());
+            if (jc != null) {
+                List<ExecutableElement> methods = ElementFilter.methodsIn(jc.getEnclosedElements());
+                for (ExecutableElement method : methods) {
+                    List<? extends VariableElement> params = method.getParameters();
+                    if (!params.isEmpty()) {
+                        params.get(0).getSimpleName();
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
