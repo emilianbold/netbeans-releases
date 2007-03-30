@@ -485,12 +485,12 @@ public class DataEditorSupport extends CloneableEditorSupport {
         */
         public Env (DataObject obj) {
             super (obj);
-            if( null == obj.getLookup().lookup( SaveAsCapable.class )
+            /*if( null == obj.getLookup().lookup( SaveAsCapable.class )
                 && obj instanceof MultiDataObject 
                 && obj.getLoader() instanceof UniFileLoader ) {
                 CookieSet cs = DataObjectAccessor.DEFAULT.getCookieSet( (MultiDataObject)obj );
                 cs.assign( SaveAsCapable.class, new SaveAsCapableImpl() );
-            }
+            }*/
         }
         
         /** Getter for the file to work on.
