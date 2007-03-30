@@ -71,7 +71,6 @@ import org.openide.util.Lookup.Template;
 import org.openide.util.WeakListeners;
 
 import org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectClassPathExtender;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.openide.windows.TopComponent;
@@ -489,8 +488,7 @@ public abstract class ModelSet implements FileChangeListener {
             
             for (int i = 0; i < libraries.length; i++) {
                 Library library = libraries[i];
-                if (JsfProjectUtils.hasLibraryReference(project, library,
-                        JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
+                if (JsfProjectUtils.hasLibraryReference(project, library, ClassPath.COMPILE)) {
                     // TODO The following hardcoded constants are defined in
                     // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider
                     // However this class is not part of a public package.

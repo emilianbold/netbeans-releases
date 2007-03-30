@@ -23,7 +23,6 @@ import org.netbeans.modules.visualweb.project.jsf.JsfProjectTemplateJakarta;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.ProjectTemplate;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectClassPathExtender;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -128,11 +127,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 if (!WebApp.VERSION_2_5.equals(ddRoot.getVersion())) {
                     if (isMyFaces) {
                         JsfProjectUtils.removeLibraryReferences(project,
-                                new Library[]{ LibraryManager.getDefault().getLibrary("jsf-designtime")},
-                                JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
+                                new Library[]{ LibraryManager.getDefault().getLibrary("jsf-designtime")}, ClassPath.COMPILE);
                         JsfProjectUtils.removeLibraryReferences(project,
-                                new Library[]{ LibraryManager.getDefault().getLibrary("jsf-runtime")},
-                                JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+                                new Library[]{ LibraryManager.getDefault().getLibrary("jsf-runtime")}, ClassPath.EXECUTE);
                     } else {
                         boolean hasJstl = cp.findResource("javax/servlet/jsp/jstl/core/Config.class") != null; // NOI18N
  
@@ -140,10 +137,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
                             
                             if (jstlLibrary != null) {
-                                JsfProjectUtils.addLibraryReferences(project, new Library[] { jstlLibrary },
-                                        JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
-                                JsfProjectUtils.addLibraryReferences(project, new Library[] { jstlLibrary },
-                                        JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+                                JsfProjectUtils.addLibraryReferences(project, new Library[] { jstlLibrary }, ClassPath.COMPILE);
+                                JsfProjectUtils.addLibraryReferences(project, new Library[] { jstlLibrary }, ClassPath.EXECUTE);
                             }
                         }
                     }

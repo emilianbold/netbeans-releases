@@ -51,6 +51,7 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
@@ -67,7 +68,6 @@ import org.netbeans.modules.visualweb.complib.PaletteUtil.Category;
 import org.netbeans.modules.visualweb.complib.PaletteUtil.Item;
 import org.netbeans.modules.visualweb.complib.PaletteUtil.Palette;
 import org.netbeans.modules.visualweb.complib.ui.ComplibsRootNode;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectClassPathExtender;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.project.jsf.api.LibraryDefinition;
 import org.netbeans.spi.palette.PaletteFilter;
@@ -615,10 +615,10 @@ public class ComplibServiceProvider implements ComplibService {
 
         // If needed, create new compile-time Library Ref
         if (!JsfProjectUtils.hasLibraryReference(project, libDef,
-                JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
+                ClassPath.COMPILE)) {
             if (!JsfProjectUtils.addLibraryReferences(project,
                     new Library[] { libDef },
-                    JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
+                    ClassPath.COMPILE)) {
                 IdeUtil
                         .logError("Failed to add compile-time library reference to project: "
                                 + libDef.getName());
@@ -627,10 +627,10 @@ public class ComplibServiceProvider implements ComplibService {
 
         // If needed, create new "deploy" Library Ref
         if (!JsfProjectUtils.hasLibraryReference(project, libDef,
-                JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
+                ClassPath.EXECUTE)) {
             if (!JsfProjectUtils.addLibraryReferences(project,
                     new Library[] { libDef },
-                    JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
+                    ClassPath.EXECUTE)) {
                 IdeUtil
                         .logError("Failed to add deploy library reference to project: "
                                 + libDef.getName());
@@ -654,17 +654,17 @@ public class ComplibServiceProvider implements ComplibService {
             // Existing definition so first remove any existing references
 
             if (JsfProjectUtils.hasLibraryReference(project, libDef,
-                    JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
+                    ClassPath.COMPILE)) {
                 JsfProjectUtils.removeLibraryReferences(project,
                         new Library[] { libDef },
-                        JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
+                        ClassPath.COMPILE);
             }
 
             if (JsfProjectUtils.hasLibraryReference(project, libDef,
-                    JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
+                    ClassPath.EXECUTE)) {
                 JsfProjectUtils.removeLibraryReferences(project,
                         new Library[] { libDef },
-                        JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+                        ClassPath.EXECUTE);
             }
 
             JsfProjectUtils.removeLibrary(libName);
@@ -1768,10 +1768,10 @@ public class ComplibServiceProvider implements ComplibService {
 
         // If needed, create new compile-time Library Ref
         if (!JsfProjectUtils.hasLibraryReference(project, libDef,
-                JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
+                ClassPath.COMPILE)) {
             if (!JsfProjectUtils.addLibraryReferences(project,
                     new Library[] { libDef },
-                    JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
+                    ClassPath.COMPILE)) {
                 IdeUtil
                         .logError("Failed to add compile-time library reference to project: "
                                 + libDef.getName());
@@ -1780,10 +1780,10 @@ public class ComplibServiceProvider implements ComplibService {
 
         // If needed, create new "deploy" Library Ref
         if (!JsfProjectUtils.hasLibraryReference(project, libDef,
-                JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
+                ClassPath.EXECUTE)) {
             if (!JsfProjectUtils.addLibraryReferences(project,
                     new Library[] { libDef },
-                    JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
+                    ClassPath.EXECUTE)) {
                 IdeUtil
                         .logError("Failed to add deploy library reference to project: "
                                 + libDef.getName());
@@ -1809,17 +1809,17 @@ public class ComplibServiceProvider implements ComplibService {
             // Existing definition so first remove any existing references
 
             if (JsfProjectUtils.hasLibraryReference(project, libDef,
-                    JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
+                    ClassPath.COMPILE)) {
                 JsfProjectUtils.removeLibraryReferences(project,
                         new Library[] { libDef },
-                        JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
+                        ClassPath.COMPILE);
             }
 
             if (JsfProjectUtils.hasLibraryReference(project, libDef,
-                    JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
+                    ClassPath.EXECUTE)) {
                 JsfProjectUtils.removeLibraryReferences(project,
                         new Library[] { libDef },
-                        JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+                        ClassPath.EXECUTE);
             }
 
             JsfProjectUtils.removeLibrary(libName);

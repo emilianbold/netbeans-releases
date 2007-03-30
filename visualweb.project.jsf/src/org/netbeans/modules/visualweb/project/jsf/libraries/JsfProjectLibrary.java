@@ -21,13 +21,13 @@ package org.netbeans.modules.visualweb.project.jsf.libraries;
 
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectClassPathExtender;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -106,8 +106,8 @@ public class JsfProjectLibrary {
         }
         runtimeLibs[runtimeList.length] = libMgr.getLibrary(defaultTheme);
 
-        JsfProjectUtils.addLibraryReferences(project, designtimeLibs, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
-        JsfProjectUtils.addLibraryReferences(project, runtimeLibs, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+        JsfProjectUtils.addLibraryReferences(project, designtimeLibs, ClassPath.COMPILE);
+        JsfProjectUtils.addLibraryReferences(project, runtimeLibs, ClassPath.EXECUTE);
         JsfProjectUtils.addLocalizedTheme(project, defaultTheme);
 
         return defaultTheme;
@@ -130,8 +130,8 @@ public class JsfProjectLibrary {
         locDesigntimeList = getLocalePaths(designtimeList);
         locRuntimeList = getLocalePaths(runtimeList);
 
-        JsfProjectUtils.addLocalizedRoots(project, locDesigntimeList, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
-        JsfProjectUtils.addLocalizedRoots(project, locRuntimeList, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+        JsfProjectUtils.addLocalizedRoots(project, locDesigntimeList, ClassPath.COMPILE);
+        JsfProjectUtils.addLocalizedRoots(project, locRuntimeList, ClassPath.EXECUTE);
 
         String defaultTheme = JsfProjectUtils.getProjectProperty(project, JsfProjectConstants.PROP_CURRENT_THEME);
         JsfProjectUtils.addLocalizedTheme(project, defaultTheme);

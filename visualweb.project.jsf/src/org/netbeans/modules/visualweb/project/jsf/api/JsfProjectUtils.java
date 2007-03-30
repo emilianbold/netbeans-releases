@@ -1135,8 +1135,8 @@ public class JsfProjectUtils {
      * Use {@link JsfProjectUtils#addLibraryReferences}.
      * Add a single library reference to a project, qualified by the role parameter.
      */
-    public static boolean addLibraryReference(Project project, Library library, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
-        return addLibraryReferences(project, new Library[] { library }, role);
+    public static boolean addLibraryReference(Project project, Library library, String type) throws IOException {
+        return addLibraryReferences(project, new Library[] { library }, type);
     }
     
     /**
@@ -1148,10 +1148,9 @@ public class JsfProjectUtils {
      * @return Returns true if the library reference was successfully added
      * @throws an IOException if there was a problem adding the reference
      */
-    public static boolean addLibraryReferences(Project project, Library[] libraries, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
+    public static boolean addLibraryReferences(Project project, Library[] libraries, String type) throws IOException {
         // XXX NetBeans API not finished yet
-        // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
-        String type = ClassPath.COMPILE;
+        type = ClassPath.COMPILE;
         try {
             return ProjectClassPathModifier.addLibraries(libraries, getSourceRoot(project), type);
         } catch (IOException e) {
@@ -1170,10 +1169,9 @@ public class JsfProjectUtils {
      * @return Returns true if at least one of the library references were successfully removed
      * @throws an IOException if there was a problem removing the reference
      */
-    public static boolean removeLibraryReferences(Project project, Library[] libraries, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
+    public static boolean removeLibraryReferences(Project project, Library[] libraries, String type) throws IOException {
         // XXX NetBeans API not finished yet
-        // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
-        String type = ClassPath.COMPILE;
+        type = ClassPath.COMPILE;
         try {
             return ProjectClassPathModifier.removeLibraries(libraries, getSourceRoot(project), type);
         } catch (IOException e) {
@@ -1191,7 +1189,7 @@ public class JsfProjectUtils {
      * time classpath
      * @return Returns true if the library is already referenced by the project, false otherwise
      */
-    public static boolean hasLibraryReference(Project project, Library library, JsfProjectClassPathExtender.LibraryRole role) {
+    public static boolean hasLibraryReference(Project project, Library library, String type) {
         List lst = library.getContent("classpath");
         if (lst.isEmpty()) {
             return false;
@@ -1204,8 +1202,7 @@ public class JsfProjectUtils {
         }
 
         // XXX NetBeans API not finished yet
-        // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
-        String type = ClassPath.COMPILE;
+        type = ClassPath.COMPILE;
         ClassPath cp = ClassPath.getClassPath(getSourceRoot(project), type);
 
         return cp.contains(obj);
@@ -1216,8 +1213,8 @@ public class JsfProjectUtils {
      * Use {@link JsfProjectUtils#addRootReferences}.
      * Add a single root reference to a project, qualified by the role parameter.
      */
-    public static boolean addRootReference(Project project, URL rootFile, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
-        return addRootReferences(project, new URL[] { rootFile }, role);
+    public static boolean addRootReference(Project project, URL rootFile, String type) throws IOException {
+        return addRootReferences(project, new URL[] { rootFile }, type);
     }
     
     /**
@@ -1229,10 +1226,9 @@ public class JsfProjectUtils {
      * @return Returns true if the root was successfully added
      * @throws an IOException if there was a problem adding the reference
      */
-    public static boolean addRootReferences(Project project, URL[] rootFiles, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
+    public static boolean addRootReferences(Project project, URL[] rootFiles, String type) throws IOException {
         // XXX NetBeans API not finished yet
-        // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
-        String type = ClassPath.COMPILE;
+        type = ClassPath.COMPILE;
         try {
             return ProjectClassPathModifier.addRoots(rootFiles, getSourceRoot(project), type);
         } catch (IOException e) {
@@ -1251,10 +1247,9 @@ public class JsfProjectUtils {
      * @return Returns true if at least one of the roots was successfully removed
      * @throws an IOException if there was a problem removing the references
      */
-    public static boolean removeRootReferences(Project project, URL[] rootFiles, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
+    public static boolean removeRootReferences(Project project, URL[] rootFiles, String type) throws IOException {
         // XXX NetBeans API not finished yet
-        // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
-        String type = ClassPath.COMPILE;
+        type = ClassPath.COMPILE;
         try {
             return ProjectClassPathModifier.removeRoots(rootFiles, getSourceRoot(project), type);
         } catch (IOException e) {
@@ -1272,15 +1267,14 @@ public class JsfProjectUtils {
      * time classpath
      * @return Returns true if the root is already referenced by the project, false otherwise
      */
-    public static boolean hasRootReference(Project project, URL rootFile, JsfProjectClassPathExtender.LibraryRole role) {
+    public static boolean hasRootReference(Project project, URL rootFile, String type) {
         FileObject obj = URLMapper.findFileObject(rootFile);
         if (obj == null) {
             return false;
         }
 
         // XXX NetBeans API not finished yet
-        // String type = (role == JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN) ? ClassPath.COMPILE : ClassPath.EXECUTE;
-        String type = ClassPath.COMPILE;
+        type = ClassPath.COMPILE;
         ClassPath cp = ClassPath.getClassPath(getSourceRoot(project), type);
 
         return cp.contains(obj);
@@ -1291,22 +1285,22 @@ public class JsfProjectUtils {
      * Use {@link JsfProjectUtils#addLocalizedRoots}.
      * Add a single localized root reference to a project, qualified by the role parameter.
      */
-    public static void addLocalizedRoot(Project project, String jarName, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
-        addLocalizedRoots(project, new String[] { jarName }, role);
+    public static void addLocalizedRoot(Project project, String jarName, String type) throws IOException {
+        addLocalizedRoots(project, new String[] { jarName }, type);
     }
 
-    public static void addLocalizedRoots(Project project, String[] jarName, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
+    public static void addLocalizedRoots(Project project, String[] jarName, String type) throws IOException {
         ArrayList jars = new ArrayList(jarName.length);
         for (int i = 0; i < jarName.length; i++) {
             File f = InstalledFileLocator.getDefault().locate(jarName[i], null, true);
             if (f != null) {
                 URL root = FileUtil.toFileObject(f).getURL();
-                if (!hasRootReference(project, root, role)) {
+                if (!hasRootReference(project, root, type)) {
                     jars.add(root);
                 }
             }
         }
-        addRootReferences(project, (URL[])jars.toArray(new URL[0]), role);
+        addRootReferences(project, (URL[])jars.toArray(new URL[0]), type);
     }
 
     public static void updateLocalizedRoots(Project project) {
@@ -1320,11 +1314,11 @@ public class JsfProjectUtils {
     public static void addLocalizedTheme(Project project, String themeName) throws IOException {
         URL root = JsfProjectLibrary.getLocalizedThemeRoot(themeName);
         if (root != null) {
-            if (!hasRootReference(project, root, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
-                addRootReferences(project, new URL[] { root }, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
+            if (!hasRootReference(project, root, ClassPath.COMPILE)) {
+                addRootReferences(project, new URL[] { root }, ClassPath.COMPILE);
             }
-            if (!hasRootReference(project, root, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
-                addRootReferences(project, new URL[] { root }, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+            if (!hasRootReference(project, root, ClassPath.EXECUTE)) {
+                addRootReferences(project, new URL[] { root }, ClassPath.EXECUTE);
             }
         }
     }
@@ -1332,11 +1326,11 @@ public class JsfProjectUtils {
     public static void removeLocalizedTheme(Project project, String themeName)  throws IOException {
         URL root = JsfProjectLibrary.getLocalizedThemeRoot(themeName);
         if (root != null) {
-            if (hasRootReference(project, root, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
-                removeRootReferences(project, new URL[] { root }, JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
+            if (hasRootReference(project, root, ClassPath.COMPILE)) {
+                removeRootReferences(project, new URL[] { root }, ClassPath.COMPILE);
             }
-            if (hasRootReference(project, root, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
-                removeRootReferences(project, new URL[] { root }, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+            if (hasRootReference(project, root, ClassPath.EXECUTE)) {
+                removeRootReferences(project, new URL[] { root }, ClassPath.EXECUTE);
             }
         }
     }
