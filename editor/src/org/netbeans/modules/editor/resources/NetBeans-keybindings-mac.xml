@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+
+<!-- 
+    IMPORTANT:  This file modifies keybindings from the editor module to make them work in Mac OS.
+    Original java keybindings: editor/src/org/netbeans/modules/editor/resources/NetBeans-keybindings.xml
+    Last synced with version: 1.8
+-->
+
+<bindings>
+    <!-- Things we add that replace standard keybindings -->
+    
+    <bind key="F3" remove="true"/>
+    <bind key="M-G" actionName="find-next"/> 
+    
+    <bind key="S-F3" remove="true"/>
+    <bind key="MS-G" actionName="find-previous"/> 
+
+    <bind key="D-F3" remove="true"/>
+    <bind key="CA-G" actionName="find-selection"/> 
+    
+    <bind key="D-LEFT" remove="true"/>
+    <bind key="A-LEFT" actionName="caret-previous-word"/> 
+    
+    <bind key="D-RIGHT" remove="true"/>
+    <bind key="A-RIGHT" actionName="caret-next-word"/> 
+
+    <bind key="DS-LEFT" remove="true"/>
+    <bind key="AS-LEFT" actionName="selection-previous-word"/>
+
+    <bind key="DS-RIGHT" remove="true"/>
+    <bind key="AS-RIGHT" actionName="selection-next-word"/>
+    
+    
+    <!-- Things we add only on the mac -->
+    
+    <bind actionName="caret-begin" key="M-UP"/> 
+    <bind actionName="caret-end" key="M-DOWN"/>
+    <bind actionName="selection-begin-line" key="MS-LEFT"/>
+    <bind actionName="selection-end-line" key="MS-RIGHT"/>
+    <bind actionName="caret-end-line" key="M-RIGHT"/>
+    <bind actionName="caret-begin-line" key="M-LEFT"/>
+    
+</bindings>
