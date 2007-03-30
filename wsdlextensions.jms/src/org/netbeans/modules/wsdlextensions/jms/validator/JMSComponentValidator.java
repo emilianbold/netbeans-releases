@@ -526,18 +526,9 @@ public class JMSComponentValidator
                                              maxConcurrentConsumers})));                 
         }
         
+        /*
         int batchSize = target.getBatchSize();
         if (batchSize > 1) {
-            /* should be ok for topic - there will only be one consumer
-            if (destinationType.equals(JMSConstants.TOPIC)) {
-                results.add(new Validator.ResultItem(this,
-                        Validator.ResultType.ERROR,
-                        target,
-                        getMessage("JMSOperation.BATCH_NOT_SUPPORTED_FOR_TOPICS",
-                                   new Object[] {bindingOp.getName(),
-                                                 batchSize})));     
-            }
-             **/
             String transaction = target.getTransaction();             
             if (transaction != null &&
                 transaction.equals(JMSConstants.TRANSACTION_XA)) {
@@ -549,7 +540,8 @@ public class JMSComponentValidator
                                                  batchSize})));     
             }            
         }
-
+        */
+        
         String redeliveryHandling = target.getRedeliveryHandling();
         if (redeliveryHandling != null && redeliveryHandling.length() > 0) {
             if (!isAToken(redeliveryHandling, target)) {

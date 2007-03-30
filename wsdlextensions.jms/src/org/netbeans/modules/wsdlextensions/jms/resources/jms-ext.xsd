@@ -116,19 +116,22 @@
                     <prop:Property attributeName="messageSelector" groupName="Consumer" propertyOrder="2">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
-                    <prop:Property attributeName="subscriptionDurability" groupName="Consumer" propertyOrder="3">
+                    <prop:Property attributeName="validateMessageSelector" groupName="Consumer" propertyOrder="3">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
-                    <prop:Property attributeName="subscriptionName" groupName="Consumer" propertyOrder="4">
+                    <prop:Property attributeName="subscriptionDurability" groupName="Consumer" propertyOrder="4">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
-                    <prop:Property attributeName="maxConcurrentConsumers" groupName="Consumer" propertyOrder="5">
+                    <prop:Property attributeName="subscriptionName" groupName="Consumer" propertyOrder="5">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
-                    <prop:Property attributeName="batchSize" groupName="Consumer" propertyOrder="6">
+                    <prop:Property attributeName="maxConcurrentConsumers" groupName="Consumer" propertyOrder="6">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
-                    <prop:Property attributeName="redeliveryHandling" groupName="Consumer" propertyOrder="7">
+                    <prop:Property attributeName="batchSize" groupName="Consumer" propertyOrder="7">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="redeliveryHandling" groupName="Consumer" propertyOrder="8">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
                 </prop:ElementProperties>
@@ -237,6 +240,11 @@ This causes no delay up to the 5th delivery; a 1000 ms delay is invoked when the
                                                 </xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
+				<xs:attribute name="validateMessageSelector" type="xs:boolean" use="optional">
+					<xs:annotation>
+						<xs:documentation>If messageSelector is used, this enables or disables the validation of the message selector syntax during deployment. Default is true if not specified.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>                                
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
