@@ -18,12 +18,9 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ContentElement;
-import org.netbeans.modules.bpel.nodes.refactoring.Util;
 import org.netbeans.modules.xml.xam.Named;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
@@ -79,7 +76,7 @@ public class DefaultBpelEntityNode extends BpelNode<BpelEntity> {
         }
         
         if (name == null) {
-            name = Util.getTagName(ref);
+            name = org.netbeans.modules.bpel.editors.api.utils.Util.getTagName(ref);
         }
         
         return (name != null) ? name : "";

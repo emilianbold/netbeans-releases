@@ -28,7 +28,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.properties.Constants.StandardImportType;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import java.util.StringTokenizer;
@@ -44,7 +43,6 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.soa.ui.nodes.NodesTreeParams;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
-import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
@@ -325,20 +323,6 @@ public class Util {
             break;
         }
         return null;
-    }
-    
-    public static final String getCorrectedHtmlRenderedString(String htmlString) {
-        if (htmlString == null) {
-            return null;
-        }
-        htmlString = htmlString.replaceAll("&amp;","&"); // NOI18n
-        htmlString = htmlString.replaceAll("&gt;",">;"); // NOI18n
-        htmlString = htmlString.replaceAll("&lt;","<"); // NOI18n
-        
-        htmlString = htmlString.replaceAll("&","&amp;"); // NOI18n
-        htmlString = htmlString.replaceAll(">","&gt;"); // NOI18n
-        htmlString = htmlString.replaceAll("<","&lt;"); // NOI18n
-        return htmlString;
     }
     
     public static boolean isUniquePropertyName(WSDLModel wsdlModel, String propName) {

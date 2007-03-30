@@ -204,7 +204,7 @@ public interface TooltipManager {
             for (int i = 0; i < docs.length; i++) {
                 String content = docs[i].getContent();
                 if (content != null) {
-                    content = org.netbeans.modules.bpel.properties.Util.getCorrectedHtmlRenderedString(content);
+                    content = org.netbeans.modules.bpel.editors.api.utils.Util.getCorrectedHtmlRenderedString(content);
                     docsStr.append(content);
                     if (i < docs.length -1) {
                         docsStr.append("<br>");

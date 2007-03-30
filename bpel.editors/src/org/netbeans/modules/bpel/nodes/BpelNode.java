@@ -59,7 +59,6 @@ import org.netbeans.modules.bpel.nodes.actions.AddPropertyToWsdlAction;
 import org.netbeans.modules.bpel.nodes.actions.DeleteBpelExtensibiltyWsdlRefAction;
 import org.netbeans.modules.bpel.nodes.actions.DeletePropertyAction;
 import org.netbeans.modules.bpel.nodes.actions.FindMexPeerAction;
-import org.netbeans.modules.bpel.nodes.actions.FindUsagesAction;
 import org.netbeans.modules.bpel.nodes.actions.GoToDiagrammAction;
 import org.netbeans.modules.bpel.nodes.actions.GoToMessageExchangeContainerSourceAction;
 import org.netbeans.modules.bpel.nodes.actions.MoveDownCopyAction;
@@ -694,7 +693,7 @@ public abstract class BpelNode<T>
         htmlDisplayName = htmlDisplayName != null && htmlDisplayName.length() > 0 ?
             htmlDisplayName : getNodeType().getDisplayName();
         
-        return org.netbeans.modules.bpel.properties.Util.getCorrectedHtmlRenderedString(htmlDisplayName);
+        return org.netbeans.modules.bpel.editors.api.utils.Util.getCorrectedHtmlRenderedString(htmlDisplayName);
     }
     
     protected String getImplShortDescription() {

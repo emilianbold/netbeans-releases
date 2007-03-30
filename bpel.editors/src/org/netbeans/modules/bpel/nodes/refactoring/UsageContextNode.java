@@ -19,11 +19,11 @@
 package org.netbeans.modules.bpel.nodes.refactoring;
 
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
+import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Sequence;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /**
@@ -76,14 +76,14 @@ public class UsageContextNode extends UsageFilterNode {
             case VARIABLE_CONTAINER :
             case CORRELATION_SET_CONTAINER :
             case MESSAGE_EXCHANGE_CONTAINER :
-                contextName = Util.getUsageContextPath(
+                contextName = RefactorUtil.getUsageContextPath(
                         ((BpelNode)originalNode).getHtmlDisplayName()
                         , (BpelEntity)ref
                         , Sequence.class);
                 break;
             default :
                 contextName =
-                        Util.getUsageContextPath((BpelEntity)ref, Sequence.class);
+                        RefactorUtil.getUsageContextPath((BpelEntity)ref, Sequence.class);
         }
         
         if (contextName == null) {
@@ -103,7 +103,7 @@ public class UsageContextNode extends UsageFilterNode {
             return contextPathName;
         }
         
-        int lastSepPosition = contextPathName.lastIndexOf(Util.ENTITY_SEPARATOR);
+        int lastSepPosition = contextPathName.lastIndexOf(RefactorUtil.ENTITY_SEPARATOR);
         if (lastSepPosition > 0) {
             lastSepPosition++;
             contextPathName = SoaUiUtil.getGrayString(
