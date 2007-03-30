@@ -1994,13 +1994,13 @@ public class WebForm implements Designer {
         return htmlDomProvider.copyComponents(componentRootElements);
     }
 
-    public HtmlDomProvider.WriteLock writeLock(String message) {
-        return htmlDomProvider.writeLock(message);
-    }
-    
-    public void writeUnlock(HtmlDomProvider.WriteLock writeLock) {
-        htmlDomProvider.writeUnlock(writeLock);
-    }
+//    public HtmlDomProvider.WriteLock writeLock(String message) {
+//        return htmlDomProvider.writeLock(message);
+//    }
+//    
+//    public void writeUnlock(HtmlDomProvider.WriteLock writeLock) {
+//        htmlDomProvider.writeUnlock(writeLock);
+//    }
 
     boolean isModelValid() {
         return htmlDomProvider.isModelValid();
