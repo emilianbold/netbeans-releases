@@ -181,14 +181,46 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //    }
     
 //    public void insertString(/*DesignerCaret caret,*/ Position pos, String str) {
-    public void insertString(/*DesignerCaret caret,*/ DomPosition pos, String str) {
+    public boolean insertString(/*DesignerCaret caret,*/ Designer designer, DomRange domRange, String str) {
+        if (domRange == null) {
+            return false;
+        }
+        
+//        if (hasSelection()) {
+//            removeSelection();
+        if (!domRange.isEmpty()) {
+            deleteRangeContents(domRange);
+        }
+
+//        Position pos = getDot();
+//        DomPosition pos = getDot();
+        DomPosition pos = domRange.getDot();
+
+//        if (editor == null) {
+//        if (!component.getWebForm().isInlineEditing()) {
+        if (!designer.isInlineEditing()) {
+//            assert (pos == Position.NONE) || !pos.isRendered();
+//            if (pos != Position.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+            if (pos != DomPosition.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                        new IllegalStateException("Node is expected to be not rendered, node=" + pos.getNode())); // NOI18N
+                return false;
+            }
+        } // else: Stay in the DocumentFragment; don't jump to the source DOM (there is none)
+
+//        if (pos == Position.NONE) {
+        if (pos == DomPosition.NONE) {
+//            UIManager.getLookAndFeel().provideErrorFeedback(this);
+            return false;
+        }
+        
         // TODO: If you're pressing shift while hitting Enter, we should force a <br/>,
         // and otherwise we should split the current block tag (if there is one, and
         // that block tag is not a <div> or a <body> (for these we always use <br>).
 //        assert (pos != null) && (pos != Position.NONE);
         if (pos == null || pos == DomPosition.NONE) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalArgumentException("Invalid position, pos=" + pos)); // NOI18N
-            return;
+            return false;
         }
 
 //        Element body = webform.getHtmlBody();
@@ -221,7 +253,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         if (str.equals("\n") || str.equals("\r\n")) {
             insertNewline(/*caret,*/ pos.getNode(), pos.getOffset());
 
-            return;
+            return true;
         }
 
         // Can't put "&" directly in source!
@@ -245,7 +277,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 
                 // XXX check that this works on Windows too - or do they
                 // use \r\n ?
-                return;
+                return true;
             } else {
                 text.insertData(offset, str);
                 targetNode = text;
@@ -282,7 +314,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //                caret.setDot(new Position(text, str.length(), Bias.FORWARD));
                 fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(text, str.length(), Bias.FORWARD)));
 
-                return;
+                return true;
             } else if (offset < len) {
                 // Insert text before the given sibling;
                 // if prev is a text node append to
@@ -295,7 +327,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //                    caret.setDot(new Position(text, text.getLength(), pos.getBias()));
                     fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(text, text.getLength(), pos.getBias())));
 
-                    return;
+                    return true;
                 } else {
 //                    org.w3c.dom.Document dom = webform.getJspDom();
                     org.w3c.dom.Document dom = jsfForm.getJspDom();
@@ -313,12 +345,14 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //                    caret.setDot(new Position(text, str.length(), Bias.FORWARD));
                     fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(text, str.length(), Bias.FORWARD)));
 
-                    return;
+                    return true;
                 }
             }
         } else {
             ErrorManager.getDefault().log("Unexpected node: " + offset + ", str=" + str);
+            return false;
         }
+        return true;
     }
     
     public boolean deleteRangeContents(DomRange domRange) {

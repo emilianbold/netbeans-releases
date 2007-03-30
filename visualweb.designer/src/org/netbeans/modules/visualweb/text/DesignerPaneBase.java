@@ -1544,51 +1544,58 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
     public void replaceSelection(String content) {
 //        WebForm webform = component.getDocument().getWebForm();
         WebForm webform = getWebForm();
-        
-        InlineEditor editor = webform.getManager().getInlineEditor();
-        if ((content.equals("\n") || content.equals("\r\n")) // NOI18N
-        && (editor != null) && !editor.isMultiLine()) {
-            // Commit
-            // Should I look to see if the Shift key is pressed, and if so let
-            // you insert a newline?
-            webform.getManager().finishInlineEditing(false);
-            return;
-        }
+
+        // XXX Moving to DefaultKeyTypedAction.
+//        InlineEditor editor = webform.getManager().getInlineEditor();
+//        if ((content.equals("\n") || content.equals("\r\n")) // NOI18N
+//        && (editor != null) && !editor.isMultiLine()) {
+//            // Commit
+//            // Should I look to see if the Shift key is pressed, and if so let
+//            // you insert a newline?
+//            webform.getManager().finishInlineEditing(false);
+//            return;
+//        }
 
         if (caret == null) {
             return;
         }
-        /*
-        if (range.isReadOnlyRegion()) {
-            UIManager.getLookAndFeel().provideErrorFeedback(component);
-            return;
-        }
-         */
-        if (caret.hasSelection()) {
-            caret.removeSelection();
-        }
-
-//        Position pos = getDot();
-        DomPosition pos = caret.getDot();
-
-        if (editor == null) {
-//            assert (pos == Position.NONE) || !pos.isRendered();
-//            if (pos != Position.NONE && MarkupService.isRenderedNode(pos.getNode())) {
-            if (pos != DomPosition.NONE && MarkupService.isRenderedNode(pos.getNode())) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                        new IllegalStateException("Node is expected to be not rendered, node=" + pos.getNode())); // NOI18N
-            }
-        } // else: Stay in the DocumentFragment; don't jump to the source DOM (there is none)
-
-//        if (pos == Position.NONE) {
-        if (pos == DomPosition.NONE) {
+        // XXX Moving to DesigneCaret, and designer/jsf/../DomDocumentImpl.
+//        /*
+//        if (range.isReadOnlyRegion()) {
+//            UIManager.getLookAndFeel().provideErrorFeedback(component);
+//            return;
+//        }
+//         */
+//        if (caret.hasSelection()) {
+//            caret.removeSelection();
+//        }
+//
+////        Position pos = getDot();
+//        DomPosition pos = caret.getDot();
+//
+//        if (editor == null) {
+////            assert (pos == Position.NONE) || !pos.isRendered();
+////            if (pos != Position.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+//            if (pos != DomPosition.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                        new IllegalStateException("Node is expected to be not rendered, node=" + pos.getNode())); // NOI18N
+//            }
+//        } // else: Stay in the DocumentFragment; don't jump to the source DOM (there is none)
+//
+////        if (pos == Position.NONE) {
+//        if (pos == DomPosition.NONE) {
+//            UIManager.getLookAndFeel().provideErrorFeedback(this);
+//            return;
+//        }
+//
+////        component.getDocument().insertString(this, pos, content);
+////        component.getDocument().insertString(pos, content);
+//        webform.getDomDocument().insertString(pos, content);
+        boolean beep = !caret.replaceSelection(content);
+        
+        if (beep) {
             UIManager.getLookAndFeel().provideErrorFeedback(this);
-            return;
         }
-
-//        component.getDocument().insertString(this, pos, content);
-//        component.getDocument().insertString(pos, content);
-        webform.getDomDocument().insertString(pos, content);
     }
     
     // XXX Moved from DesignerCaret.

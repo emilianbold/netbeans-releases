@@ -1396,6 +1396,44 @@ import org.w3c.dom.Node;
         WebForm webForm = component.getWebForm();
         return webForm.getDomDocument().deletePreviousChar(webForm, range);
     }
+    
+    boolean replaceSelection(String content) {
+        // XXX Moved to DomDocumentImpl.
+        /*
+        if (range.isReadOnlyRegion()) {
+            UIManager.getLookAndFeel().provideErrorFeedback(component);
+            return;
+        }
+         */
+//        if (hasSelection()) {
+//            removeSelection();
+//        }
+//
+////        Position pos = getDot();
+//        DomPosition pos = getDot();
+//
+////        if (editor == null) {
+//        if (!component.getWebForm().isInlineEditing()) {
+////            assert (pos == Position.NONE) || !pos.isRendered();
+////            if (pos != Position.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+//            if (pos != DomPosition.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                        new IllegalStateException("Node is expected to be not rendered, node=" + pos.getNode())); // NOI18N
+//                return false;
+//            }
+//        } // else: Stay in the DocumentFragment; don't jump to the source DOM (there is none)
+//
+////        if (pos == Position.NONE) {
+//        if (pos == DomPosition.NONE) {
+////            UIManager.getLookAndFeel().provideErrorFeedback(this);
+//            return false;
+//        }
+//
+////        component.getDocument().insertString(this, pos, content);
+////        component.getDocument().insertString(pos, content);
+//        return component.getWebForm().getDomDocument().insertString(pos, content);
+        return component.getWebForm().getDomDocument().insertString(component.getWebForm(), range, content);
+    }
 
     // XXX Moved to WebForm.
 //    /** Return true iff the position is within the editable portion of the document. */

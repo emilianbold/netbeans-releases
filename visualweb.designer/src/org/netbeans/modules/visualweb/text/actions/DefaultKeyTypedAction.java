@@ -22,6 +22,7 @@ import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import java.awt.event.ActionEvent;
 
 import javax.swing.UIManager;
+import org.netbeans.modules.visualweb.designer.InlineEditor;
 
 import org.openide.util.NbBundle;
 
@@ -121,6 +122,19 @@ public class DefaultKeyTypedAction extends TextAction {
                         }
                     }
 
+                    // XXX Moved from DesingerPaneBase
+                    // XXX Hack, check whether to finish inline editing.
+                    // TODO Fix inline editing.
+                    InlineEditor editor = webform.getManager().getInlineEditor();
+                    if ((content.equals("\n") || content.equals("\r\n")) // NOI18N
+                    && (editor != null) && !editor.isMultiLine()) {
+                        // Commit
+                        // Should I look to see if the Shift key is pressed, and if so let
+                        // you insert a newline?
+                        webform.getManager().finishInlineEditing(false);
+                        return;
+                    }
+                    
 //                    UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class, "InsertChar")); // NOI18N
                     HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class, "InsertChar")); // NOI18N
                     try {
