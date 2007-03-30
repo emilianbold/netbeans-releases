@@ -47,7 +47,9 @@ public class ProxySettings {
     private String httpsHost;
     private String httpsPort;
     private String proxyType;
-            
+      
+    private String toString = null;
+    
     public ProxySettings() {
         init();
     };
@@ -105,5 +107,57 @@ public class ProxySettings {
     
     public String getNotProxyHosts() {
         return notProxyHosts;
-    }           
+    }
+    
+    public boolean equals(Object obj) {
+        if(obj == null) {
+            return false;
+        }
+        if(! (obj instanceof ProxySettings) ) {
+            return false;
+        } 
+        ProxySettings ps = (ProxySettings) obj;        
+        return httpHost.equals(httpHost) &&
+               ps.httpPort.equals(httpPort) &&
+               ps.httpsHost.equals(httpsHost) &&
+               ps.httpsPort.equals(httpsPort) &&
+               ps.notProxyHosts.equals(notProxyHosts) &&
+               ps.password.equals(password) &&
+               ps.proxyType.equals(proxyType) &&
+               ps.username.equals(username) &&
+               ps.useAuth == useAuth;                   
+    }
+    
+    public String toString() {
+        if(toString == null) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("[");
+            sb.append(httpHost);
+            sb.append(",");        
+            sb.append(httpPort);
+            sb.append(",");        
+            sb.append(httpsHost);
+            sb.append(",");        
+            sb.append(httpsPort);
+            sb.append(",");        
+            sb.append(notProxyHosts);
+            sb.append(",");        
+            sb.append(password);
+            sb.append(",");        
+            sb.append(proxyType);
+            sb.append(",");        
+            sb.append(username);
+            sb.append(",");        
+            sb.append(useAuth);                
+            sb.append("]");
+            toString = sb.toString();
+        }        
+        return toString;
+    }
+
+    public int hashCode() {
+        return toString().hashCode();
+    }
+    
+    
 }

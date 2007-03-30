@@ -22,8 +22,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -63,6 +61,8 @@ public class SvnConfigFiles {
      * file used by the Subversion module */
     private Ini config = null;
 
+    private ProxySettings proxySettings;
+    
     private static final String UNIX_CONFIG_DIR = ".subversion/";                                                               // NOI18N
     private static final String GROUPS_SECTION = "groups";                                                                      // NOI18N
     private static final String GLOBAL_SECTION = "global";                                                                      // NOI18N
@@ -134,7 +134,12 @@ public class SvnConfigFiles {
         }
         
         String host =  SvnUtils.ripUserFromHost(url.getHost());
-        ProxySettings proxySettings = new ProxySettings();
+        ProxySettings ps = new ProxySettings();
+        if(proxySettings != null && ps.equals(proxySettings)) {
+            return;
+        } else {
+            proxySettings = ps;
+        }
         
         Ini nbServers = new Ini();
         Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);

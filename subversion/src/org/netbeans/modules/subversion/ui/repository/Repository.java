@@ -110,18 +110,18 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         DefaultComboBoxModel dcbm = (DefaultComboBoxModel) repositoryPanel.urlComboBox.getModel();
         int idx = dcbm.getIndexOf(url.toString());
         if(idx > -1) {
-            repositoryPanel.urlComboBox.setSelectedItem(url.toString());    
+            dcbm.setSelectedItem(url.toString());    
         } else if(force) {
             RepositoryConnection rc = new RepositoryConnection(url.toString());
-            repositoryPanel.urlComboBox.addItem(rc);
-            repositoryPanel.urlComboBox.setSelectedItem(rc);    
+            dcbm.addElement(rc);
+            dcbm.setSelectedItem(rc);    
         }                        
     }
     
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource()==repositoryPanel.proxySettingsButton) {
+        if(e.getSource() == repositoryPanel.proxySettingsButton) {
             onProxyConfiguration();
-        } else if(e.getSource()==repositoryPanel.removeButton) {
+        } else if(e.getSource() == repositoryPanel.removeButton) {
             onRemoveClick();
         }  
     }
@@ -606,7 +606,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                 if(idx > -1) {
                     obj = getElementAt(idx);
                 } else {
-                    obj = createNewRepositoryConnection((String)obj);                   
+                    obj = createNewRepositoryConnection((String) obj);                   
                 }                
             }            
             super.setSelectedItem(obj);

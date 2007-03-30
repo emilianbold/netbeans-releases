@@ -142,7 +142,7 @@ public class SvnClientExceptionHandler {
     private boolean handleRepositoryConnectError() {
         SVNUrl url = client.getSvnUrl();
         String title = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters");                 // NOI18N
-        Repository repository = new Repository(title); 
+        Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, title); 
         repository.selectUrl(url, true);
         
         JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N        

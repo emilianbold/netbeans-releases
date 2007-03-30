@@ -172,13 +172,11 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             // Cliet Adapter
             if(support != null) {
                 support.setCancellableDelegate(cancellable);
-            }
-            if (remoteMethods.contains(proxyMethod.getName())) {
-                // save the proxy settings into the svn servers file                
-                if(desc != null && desc.getSvnUrl() != null) {
-                    SvnConfigFiles.getInstance().setProxy(desc.getSvnUrl());      
-                }                
-            }
+            }            
+            // save the proxy settings into the svn servers file                
+            if(desc != null && desc.getSvnUrl() != null) {
+                SvnConfigFiles.getInstance().setProxy(desc.getSvnUrl());      
+            }                            
             ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);
             if(support != null) {
                 support.setCancellableDelegate(null);
