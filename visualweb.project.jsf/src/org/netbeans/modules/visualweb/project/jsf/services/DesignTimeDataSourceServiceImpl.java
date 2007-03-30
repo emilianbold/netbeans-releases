@@ -117,6 +117,9 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
                         return false;
                     }
                 }
+            // XXX wait for 03/30/2007 build for org.netbeans.modules.j2eeserver 1.23.0
+            } catch (Exception e) {
+                // TODO: give some feedback to the user
             }
         }
             
