@@ -160,12 +160,12 @@ public class ServiceModel {
     
     void addOperation(MethodModel operation) {
         operations.add(operation);
-        fireMethodAdded(operation);
+        fireOperationAdded(operation);
     }
     
     void removeOperation(MethodModel operation) {
         operations.remove(operation);
-        fireMethodRemoved(operation);
+        fireOperationRemoved(operation);
     }
     
     public int getStatus() {
@@ -206,7 +206,7 @@ public class ServiceModel {
             // comparing if something has changed in method
             if (!method1.isEqualTo(method2)) {
                 method1=method2;
-                fireMethodChanged(method2);
+                fireOperationChanged(method2);
             }
         }
         // op1 contains methods present in model1 that are not in model2
@@ -237,22 +237,22 @@ public class ServiceModel {
     
     void firePropertyChanged(String propName, String oldValue, String newValue) {
         for (ServiceChangeListener listener:serviceChangeListeners) {
-            listener.propertyChange(propName, oldValue, newValue);
+            listener.propertyChanged(propName, oldValue, newValue);
         }
     }
-    void fireMethodAdded(MethodModel method) {
+    void fireOperationAdded(MethodModel method) {
         for (ServiceChangeListener listener:serviceChangeListeners) {
-            listener.methodAdded(method);
+            listener.operationAdded(method);
         }
     }
-    void fireMethodRemoved(MethodModel method) {
+    void fireOperationRemoved(MethodModel method) {
         for (ServiceChangeListener listener:serviceChangeListeners) {
-            listener.methodRemoved(method);
+            listener.operationRemoved(method);
         }
     }
-    void fireMethodChanged(MethodModel method) {
+    void fireOperationChanged(MethodModel method) {
         for (ServiceChangeListener listener:serviceChangeListeners) {
-            listener.methodChanged(method);
+            listener.operationChanged(method);
         }
     }
     
@@ -284,11 +284,12 @@ public class ServiceModel {
         Utils.populateModel(implementationClass, this);
     }
     
-    private void mergeModel(ServiceModel model2) {
+    /** package private due to test functionality */ 
+    void mergeModel(ServiceModel model2) {
         setStatus(model2.status);
         setName(model2.name);
         setServiceName(model2.serviceName);
-        setServiceName(model2.portName);
+        setPortName(model2.portName);
         setEndpointInterface(model2.endpointInterface);
         setWsdlLocation(model2.wsdlLocation);
         setTargetNamespace(model2.targetNamespace);

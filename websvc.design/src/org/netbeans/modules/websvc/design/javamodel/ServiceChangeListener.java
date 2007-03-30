@@ -26,12 +26,12 @@ package org.netbeans.modules.websvc.design.javamodel;
 public interface ServiceChangeListener {
     
     /** Creates a new instance of ServiceChangeListener */
-    public void propertyChange(String propertyName, String oldValue, String newValue);
+    public void propertyChanged(String propertyName, String oldValue, String newValue);
     
-    public void methodAdded(MethodModel method);
+    public void operationAdded(MethodModel method);
     
-    public void methodRemoved(MethodModel method);
+    public void operationRemoved(MethodModel method);
     
-    public void methodChanged(MethodModel method);
+    public void operationChanged(MethodModel method);
     
 }
