@@ -23,17 +23,17 @@ public class testJavaFoldsNavigation {
     JApplet applet;
     
     /** One-line Constructor Javadoc Fold */
-    public testJavaFolds() {} //One-line Constructor Fold
+    public testJavaFoldsNavigation() { } //One-line Constructor Fold
     
     /** 
      *  Multi-line Constructor Javadoc Fold
      */
-    public testJavaFolds(String s) { //Multi-line Constructor Fold
+    public testJavaFoldsNavigation(String s) { //Multi-line Constructor Fold
         button = new JButton();
         applet = new JApplet();
     }
     // ------------------------------------------------------------------------------------------
-    public void firstMethod(){System.out.println("");}  public void secondMethod(){} public void thirdMethod(){}
+    public void firstMethod(){System.out.println("");}  public void secondMethod(){ } public void thirdMethod(){ }
     //-------------------------------------------------------------------------------------------
     
 }
