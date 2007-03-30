@@ -80,17 +80,17 @@ public class DeletePrevCharAction extends TextAction {
                 return;
             }
 
-//            UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-            HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-            try {
+////            UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+//            HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+//            try {
 //                doc.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
 //                beep = !caret.removePreviousChar();
                 beep = !target.removePreviousChar();
-            } finally {
-//                doc.writeUnlock();
-//                webform.getModel().writeUnlock(undoEvent);
-                webform.writeUnlock(writeLock);
-            }
+//            } finally {
+////                doc.writeUnlock();
+////                webform.getModel().writeUnlock(undoEvent);
+//                webform.writeUnlock(writeLock);
+//            }
         }
 
         if (beep) {

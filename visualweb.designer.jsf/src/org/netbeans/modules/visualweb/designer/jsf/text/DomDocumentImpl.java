@@ -2646,39 +2646,46 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         if (range == null) {
             return false;
         }
-        
-        // TODO - compute previous visual position, decide if it's
-        //    isWithinEditableRegion(Position pos) 
-        // and if so, set the range to it and delete the range.
-//        if (hasSelection()) {
-//            removeSelection();
-        if (!range.isEmpty()) {
+
+//            UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
+        try {
+            // TODO - compute previous visual position, decide if it's
+            //    isWithinEditableRegion(Position pos) 
+            // and if so, set the range to it and delete the range.
+    //        if (hasSelection()) {
+    //            removeSelection();
+            if (!range.isEmpty()) {
+                deleteRangeContents(range);
+                return true;
+            }
+
+    //        Document doc = component.getDocument();
+    //        Position mark = range.getMark();
+            DomPosition mark = range.getMark();
+    //        Position dot = ModelViewMapper.computeArrowRight(doc.getWebForm(), mark);
+    //        Position dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
+    //        DomPosition dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
+            DomPosition dot = designer.computeNextPosition(mark);
+
+    //        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
+    //        if ((dot == DomPosition.NONE) || !isWithinEditableRegion(dot)) {
+            if ((dot == DomPosition.NONE) || !designer.isInsideEditableRegion(dot)) {
+    //            UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
+
+                return false;
+            }
+
+            range.setRange(dot.getNode(), dot.getOffset(), mark.getNode(), mark.getOffset());
+    //        range.deleteContents();
+    //        removeSelection();
             deleteRangeContents(range);
+
             return true;
+        } finally {
+//                doc.writeUnlock();
+            jsfForm.writeUnlock(writeLock);
         }
-
-//        Document doc = component.getDocument();
-//        Position mark = range.getMark();
-        DomPosition mark = range.getMark();
-//        Position dot = ModelViewMapper.computeArrowRight(doc.getWebForm(), mark);
-//        Position dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
-//        DomPosition dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
-        DomPosition dot = designer.computeNextPosition(mark);
-
-//        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
-//        if ((dot == DomPosition.NONE) || !isWithinEditableRegion(dot)) {
-        if ((dot == DomPosition.NONE) || !designer.isInsideEditableRegion(dot)) {
-//            UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
-
-            return false;
-        }
-
-        range.setRange(dot.getNode(), dot.getOffset(), mark.getNode(), mark.getOffset());
-//        range.deleteContents();
-//        removeSelection();
-        deleteRangeContents(range);
-
-        return true;
     }
 
     // XXX Moved from designer/../DesignerCaret.
@@ -2690,54 +2697,64 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         if (range == null) {
             return false;
         }
-        // TODO - compute previous visual position, decide if it's
-        //    isWithinEditableRegion(Position pos) 
-        // and if so, set the range to it and delete the range.
-//        if (hasSelection()) {
-//            removeSelection();
-        if (!range.isEmpty()) {
+        
+//            UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
+        try {
+            // TODO - compute previous visual position, decide if it's
+            //    isWithinEditableRegion(Position pos) 
+            // and if so, set the range to it and delete the range.
+    //        if (hasSelection()) {
+    //            removeSelection();
+            if (!range.isEmpty()) {
+                deleteRangeContents(range);
+
+                return true;
+            }
+
+    //        Document doc = component.getDocument();
+    //        Position mark = range.getMark();
+            DomPosition mark = range.getMark();
+    //        Position dot = ModelViewMapper.computeArrowLeft(doc.getWebForm(), mark);
+    //        Position dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
+    //        DomPosition dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
+            DomPosition dot = designer.computePreviousPosition(mark);
+
+    //        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
+    //        if ((dot == DomPosition.NONE) || !isWithinEditableRegion(dot)) {
+            if ((dot == DomPosition.NONE) || !designer.isInsideEditableRegion(dot)) {
+    //            UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
+
+                return false;
+            }
+
+            range.setRange(dot.getNode(), dot.getOffset(), mark.getNode(), mark.getOffset());
+
+            // XXX DEBUGGING ONLY
+            /*
+            Element element = doc.getBody();
+            if (element != null) {
+                System.out.println("BEFORE DELETION: " + org.netbeans.modules.visualweb.css2.FacesSupport.getHtmlStream(element));
+            }
+            */
+    //        range.deleteContents();
+    //        removeSelection();
             deleteRangeContents(range);
 
+            // XXX DEBUGGING ONLY
+
+            /*
+            if (element != null) {
+                System.out.println("BEFORE DELETION: " + org.netbeans.modules.visualweb.css2.FacesSupport.getHtmlStream(element));
+            }
+            */
             return true;
+        } finally {
+//                doc.writeUnlock();
+//                webform.getModel().writeUnlock(undoEvent);
+            jsfForm.writeUnlock(writeLock);
         }
 
-//        Document doc = component.getDocument();
-//        Position mark = range.getMark();
-        DomPosition mark = range.getMark();
-//        Position dot = ModelViewMapper.computeArrowLeft(doc.getWebForm(), mark);
-//        Position dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
-//        DomPosition dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
-        DomPosition dot = designer.computePreviousPosition(mark);
-
-//        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
-//        if ((dot == DomPosition.NONE) || !isWithinEditableRegion(dot)) {
-        if ((dot == DomPosition.NONE) || !designer.isInsideEditableRegion(dot)) {
-//            UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
-
-            return false;
-        }
-
-        range.setRange(dot.getNode(), dot.getOffset(), mark.getNode(), mark.getOffset());
-
-        // XXX DEBUGGING ONLY
-        /*
-        Element element = doc.getBody();
-        if (element != null) {
-            System.out.println("BEFORE DELETION: " + org.netbeans.modules.visualweb.css2.FacesSupport.getHtmlStream(element));
-        }
-        */
-//        range.deleteContents();
-//        removeSelection();
-        deleteRangeContents(range);
-
-        // XXX DEBUGGING ONLY
-
-        /*
-        if (element != null) {
-            System.out.println("BEFORE DELETION: " + org.netbeans.modules.visualweb.css2.FacesSupport.getHtmlStream(element));
-        }
-        */
-        return true;
     }
     
 }

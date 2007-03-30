@@ -81,17 +81,18 @@ public class DeleteNextCharAction extends TextAction {
                 return;
             }
 
-//            UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-            HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-            try {
+            // XXX Moved to designer/jsf/../DomDocumentImpl.
+////            UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+//            HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+//            try {
 //                doc.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
 //                beep = !caret.removeNextChar();
                 beep = !target.removeNextChar();
-            } finally {
-//                doc.writeUnlock();
-//                webform.getModel().writeUnlock(undoEvent);
-                webform.writeUnlock(writeLock);
-            }
+//            } finally {
+////                doc.writeUnlock();
+////                webform.getModel().writeUnlock(undoEvent);
+//                webform.writeUnlock(writeLock);
+//            }
         }
 
         if (beep) {
