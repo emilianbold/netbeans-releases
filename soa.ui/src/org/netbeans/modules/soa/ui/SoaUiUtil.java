@@ -20,7 +20,14 @@
 package org.netbeans.modules.soa.ui;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Image;
+import java.awt.Window;
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.swing.RootPaneContainer;
+import org.netbeans.modules.soa.ui.form.InitialFocusProvider;
 
 /**
  *
@@ -172,6 +179,73 @@ public class SoaUiUtil {
         htmlString = htmlString.replaceAll(">","&gt;"); // NOI18n
         htmlString = htmlString.replaceAll("<","&lt;"); // NOI18n
         return htmlString;
+    }
+    
+    public static <T> T lookForChildByClass(Container parent, Class<T> clazz) {
+        for (Component child : parent.getComponents()) {
+            if (clazz.isInstance(child)) {
+                return clazz.cast(child);
+            }
+            if (child instanceof Container) {
+                return lookForChildByClass((Container)child, clazz);
+            }
+        }
+        return null;
+    }
+    
+    public static <T> Collection<T> lookForChildrenByClass(
+            Container parent, Class<T> clazz) {
+        ArrayList<T> result = new ArrayList<T>();
+        lookForChildrenByClass(parent, clazz, result);
+        return result;
+    }
+    
+    private static <T> void lookForChildrenByClass(
+            Container parent, Class<T> clazz, Collection<T> candidates) {
+        for (Component child : parent.getComponents()) {
+            if (clazz.isInstance(child)) {
+                T candidate = clazz.cast(child);
+                candidates.add(candidate);
+            }
+            if (child instanceof Container) {
+                lookForChildrenByClass((Container)child, clazz, candidates);
+            }
+        }
+    }
+    
+    /**
+     * Looks for the component to which the focus should be set initially.
+     * @param container 
+     * @return 
+     */
+    public static Component getInitialFocusComponent(Container container) {
+        Collection<InitialFocusProvider> providers = lookForChildrenByClass(
+                container, InitialFocusProvider.class);
+        //
+        int maxPriority = Integer.MIN_VALUE;
+        Component resultComp = null;
+        //
+        for (InitialFocusProvider provider : providers) {
+            int priority = provider.getProviderPriority();
+            if (priority > maxPriority) {
+                maxPriority = priority;
+                resultComp = provider.getInitialFocusComponent();
+            }
+        }
+        //
+        return resultComp;
+    }
+    
+    /**
+     * This method has to be called after the pack() and before the setVisible() 
+     * for the dialog or window.
+     */ 
+    public static boolean setInitialFocusComponentFor(Container container) {
+        Component comp = SoaUiUtil.getInitialFocusComponent(container);
+        if (comp != null) {
+            return comp.requestFocusInWindow();
+        }
+        return false;
     }
     
 }

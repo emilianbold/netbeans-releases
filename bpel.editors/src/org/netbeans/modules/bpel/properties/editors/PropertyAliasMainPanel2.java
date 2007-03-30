@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.properties.editors;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.xml.namespace.QName;
@@ -37,6 +38,7 @@ import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.bpel.properties.choosers.PropAliasTypeChooserPanel;
+import org.netbeans.modules.soa.ui.form.InitialFocusProvider;
 import org.netbeans.modules.soa.ui.form.valid.DefaultDialogDescriptor;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
@@ -57,7 +59,7 @@ import org.openide.util.NbBundle;
  * @version 1.1
  */
 public class PropertyAliasMainPanel2 extends EditorLifeCycleAdapter
-        implements Validator.Provider, HelpCtx.Provider {
+        implements Validator.Provider, HelpCtx.Provider, InitialFocusProvider {
     
     static final long serialVersionUID = 1L;
     
@@ -325,6 +327,14 @@ public class PropertyAliasMainPanel2 extends EditorLifeCycleAdapter
         return myValidator;
     }
     
+    public Component getInitialFocusComponent() {
+        return btnBrowseProp;
+    }
+
+    public int getProviderPriority() {
+        return 0;
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -445,5 +455,6 @@ public class PropertyAliasMainPanel2 extends EditorLifeCycleAdapter
     
     private QName myPropTypeQname;
     private CorrelationProperty myCorrProp;
+
 }
 

@@ -20,6 +20,7 @@
 package org.netbeans.modules.bpel.properties;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ import org.netbeans.modules.soa.ui.form.valid.SoaDialogDisplayer;
 import org.netbeans.modules.bpel.editors.api.ui.valid.NodeEditorDescriptor;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.nodes.ContainerBpelNode;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -81,6 +83,7 @@ public class NodeUtils {
             CustomNodeEditor editor = (CustomNodeEditor)c;
             NodeEditorDescriptor descriptor = new NodeEditorDescriptor(editor, title);
             Dialog dialog = SoaDialogDisplayer.getDefault().createDialog(descriptor);
+            SoaUiUtil.setInitialFocusComponentFor((Container)c);
             dialog.setVisible(true);
             
             return descriptor.isOkHasPressed();
@@ -194,7 +197,7 @@ public class NodeUtils {
      * if it equals to 1 than it means that searching is requested
      * only among direct children of the source node.
      * <p>
-     * CAUTION! This method do simple iteration over thå hierarchy.
+     * CAUTION! This method do simple iteration over thï¿½ hierarchy.
      * So it can take a lot of time depending on the data structure
      * if the maxDepth restriction isn't specified!
      */
@@ -248,7 +251,7 @@ public class NodeUtils {
      * If the requiredObj parameter is null then only the node class is
      * taken into consideration.
      * <p>
-     * CAUTION! This method do simple iteration over thå hierarchy.
+     * CAUTION! This method do simple iteration over thï¿½ hierarchy.
      * So it can take a lot of time depending on the data structure
      * if the maxDepth restriction isn't specified!
      */

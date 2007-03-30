@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -31,6 +32,7 @@ import org.netbeans.modules.soa.ui.form.CustomNodeEditor.EditingMode;
 import org.netbeans.modules.bpel.properties.editors.controls.SimpleCustomEditor;
 import org.netbeans.modules.soa.ui.form.valid.SoaDialogDisplayer;
 import org.netbeans.modules.bpel.editors.api.ui.valid.NodeEditorDescriptor;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
@@ -100,6 +102,8 @@ public class AddPropertyAliasToWsdlAction  extends BpelNodeAction {
         descriptor.setHelpCtx(null);
         //
         Dialog dialog = SoaDialogDisplayer.getDefault().createDialog(descriptor);
+        //
+        SoaUiUtil.setInitialFocusComponentFor(customEditor);
         dialog.setVisible(true);
     }
     
