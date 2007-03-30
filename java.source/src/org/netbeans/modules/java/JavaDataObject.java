@@ -36,9 +36,12 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
@@ -65,6 +68,13 @@ public final class JavaDataObject extends MultiDataObject {
         return super.getCookie(type);
     }
     
+    protected DataObject handleCopyRename(DataFolder df, String name, String ext) throws IOException {
+        FileObject fo = getPrimaryEntry ().copyRename (df.getPrimaryFile (), name, ext);
+        DataObject dob = DataObject.find( fo );
+        //TODO invoke refactoring here (if needed)
+        return dob;
+    }
+    
     private synchronized JavaEditorSupport createJavaEditorSupport () {
         if (jes == null) {
             jes = new JavaEditorSupport (this);
@@ -89,6 +99,11 @@ public final class JavaDataObject extends MultiDataObject {
             
             public Environment(JavaDataObject obj) {
                 super(obj);
+                obj.getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+                    public void saveAs( FileObject newFileName ) throws IOException {
+                        ((JavaEditorSupport)findCloneableOpenSupport()).saveAs( newFileName );
+                    }
+                });
             }
             
             protected FileObject getFile() {

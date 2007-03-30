@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.*;
+import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -114,6 +115,10 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     /** default logger for whole package */
     static final Logger LOG = Logger.getLogger("org.openide.loaders"); // NOI18N
 
+    static {
+        DataObjectAccessor.DEFAULT = new DataObjectAccessorImpl();
+    }
+    
     /** Create a new data object.
      *
      * @param pf primary file object for this data object
@@ -527,6 +532,39 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * @exception IOException if an error occures
     */
     protected abstract DataObject handleCopy (DataFolder f) throws IOException;
+
+    /** Copy this object to a folder under a different name and file extension.
+     * The copy of the object is required to be deletable and movable.
+     * <p>An event is fired, and atomicity is implemented.
+     * @param f the folder to copy the object to
+     * @exception IOException if something went wrong
+     * @return the new object
+     * @since 6.3
+     */
+    final DataObject copyRename (final DataFolder f, final String name, final String ext) throws IOException {
+        final DataObject[] result = new DataObject[1];
+        invokeAtomicAction (f.getPrimaryFile (), new FileSystem.AtomicAction () {
+                                public void run () throws IOException {
+                                    result[0] = handleCopyRename (f, name, ext);
+                                }
+                            }, null);
+        fireOperationEvent (
+            new OperationEvent(result[0]), OperationEvent.CREATE
+        );
+        return result[0];
+    }
+    /** 
+     * Copy and rename this object to a folder (implemented by subclasses).
+     * @param f target folder
+     * @param name new file name
+     * @param ext new file extension
+     * @return the new data object
+     * @exception IOException if an error occures or the file cannot be copied/renamed
+     * @since 6.3
+     */
+    protected DataObject handleCopyRename (DataFolder f, String name, String ext) throws IOException {
+        throw new IOException( "Unsupported operation" ); //NOI18N
+    }
 
     /** Delete this object.
      * <p>Events are fired and atomicity is implemented.

@@ -51,6 +51,12 @@ public class FileEntry extends MultiDataObject.Entry {
         return fo.copy (f, newName, fo.getExt ());
     }
 
+    @Override
+    public FileObject copyRename(FileObject f, String name, String ext) throws IOException {
+        FileObject fo = getFile();
+        return fo.copy (f, name, ext);
+    }
+    
     /* Renames underlying fileobject. This implementation return the
     * same file.
     *

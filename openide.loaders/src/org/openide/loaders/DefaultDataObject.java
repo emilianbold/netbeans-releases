@@ -127,6 +127,12 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
         return super.handleCreateFromTemplate (df, name);
     }
     
+    @Override
+    protected DataObject handleCopyRename(DataFolder df, String name, String ext) throws IOException {
+        FileObject fo = getPrimaryEntry ().copyRename (df.getPrimaryFile (), name, ext);
+        return DataObject.find( fo );
+    }
+    
     /** Either opens the in text editor or asks user questions.
      */
     public void open() {

@@ -29,8 +29,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.*;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.netbeans.modules.openide.loaders.UIException;
 import org.openide.*;
+import org.openide.cookies.OpenCookie;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
@@ -349,6 +352,114 @@ public class DataEditorSupport extends CloneableEditorSupport {
         return (DataObject)l.getLookup ().lookup (DataObject.class);
     }
     
+    /**
+     * Save the document under a new file name and/or extension.
+     * @param newFileName New location to save the DataObject to.
+     * @throws java.io.IOException If the operation failed
+     * @since 6.3
+     */
+    public void saveAs( FileObject newFileName ) throws IOException {
+        if( env instanceof Env ) {
+            
+            FileObject newFolder = newFileName.getParent();
+            //ask the user for a new file name to save to
+            String newExtension = newFileName.getExt();
+            
+            DataObject newDob = null;
+            DataObject currentDob = getDataObject();
+            if( !currentDob.isModified() || null == getDocument() ) {
+                //the document is not modified on disk, we copy/rename the file
+                DataFolder df = DataFolder.findFolder( newFolder );
+                //remove the target file if it already exists
+                newFileName.delete();
+                
+                newDob = DataObjectAccessor.DEFAULT.copyRename( currentDob, df, newFileName.getName(), newExtension );
+            } else {
+                //the document is modified in editor, we need to save the editor kit instead
+                
+                saveDocumentAs( newFileName.getOutputStream() );
+                currentDob.setModified( false );
+                newDob = DataObject.find( newFileName );
+            }
+            
+            if( null != newDob ) {
+                //TODO open the document at the position of the original document when #94607 is implemented
+                OpenCookie c = newDob.getCookie( OpenCookie.class );
+                if( null != c ) {
+                    //close the original document
+                    close( false );
+                    //open the new one
+                    c.open();
+                }
+            }
+        }
+    }
+    
+    /** 
+     * Save the document to a new file.
+     * @param output 
+     * @exception IOException on I/O error
+     * @since 6.3
+     */
+    private void saveDocumentAs( final OutputStream output ) throws IOException {
+
+        final StyledDocument myDoc = getDocument();
+        
+        // save the document as a reader
+        class SaveAsWriter implements Runnable {
+            private IOException ex;
+
+            public void run() {
+                try {
+                    OutputStream os = null;
+
+                    try {
+                        os = new BufferedOutputStream( output );
+                        saveFromKitToStream( myDoc, os );
+
+                        os.close(); // performs firing
+                        os = null;
+
+                    } catch( BadLocationException ex ) {
+                        ERR.log( Level.INFO, null, ex );
+                    } finally {
+                        if (os != null) { // try to close if not yet done
+                            os.close();
+                        }
+                    }
+                } catch (IOException e) {
+                    this.ex = e;
+                }
+            }
+
+            public void after() throws IOException {
+                if (ex != null) {
+                    throw ex;
+                }
+            }
+        }
+
+        SaveAsWriter saveAsWriter = new SaveAsWriter();
+        myDoc.render(saveAsWriter);
+        saveAsWriter.after();
+    }
+    
+    /**
+     * Save the document to given stream
+     * @param myDoc
+     * @param os
+     * @throws IOException
+     * @throws BadLocationException
+     * @since 6.3
+     */
+    private void saveFromKitToStream( StyledDocument myDoc, OutputStream os ) throws IOException, BadLocationException {
+        // Note: there's no new kit getting created, the method actually caches
+        // previously created kit and has just a funny name
+        final EditorKit kit = createEditorKit();
+        
+        saveFromKitToStream( myDoc, kit, os );
+    }
+
     /** Environment that connects the data object and the CloneableEditorSupport.
     */
     public static abstract class Env extends OpenSupport.Env implements CloneableEditorSupport.Env {
@@ -374,6 +485,12 @@ public class DataEditorSupport extends CloneableEditorSupport {
         */
         public Env (DataObject obj) {
             super (obj);
+            if( null == obj.getLookup().lookup( SaveAsCapable.class )
+                && obj instanceof MultiDataObject 
+                && obj.getLoader() instanceof UniFileLoader ) {
+                CookieSet cs = DataObjectAccessor.DEFAULT.getCookieSet( (MultiDataObject)obj );
+                cs.assign( SaveAsCapable.class, new SaveAsCapableImpl() );
+            }
         }
         
         /** Getter for the file to work on.
@@ -613,6 +730,15 @@ public class DataEditorSupport extends CloneableEditorSupport {
         private void readObject (ObjectInputStream ois) throws ClassNotFoundException, IOException {
             ois.defaultReadObject ();
             warned = true;
+        }
+        
+        private class SaveAsCapableImpl implements SaveAsCapable {
+            public void saveAs(FileObject newFileName) throws IOException {
+                CloneableOpenSupport cos = Env.super.findCloneableOpenSupport();
+                if (cos instanceof DataEditorSupport) {
+                    ((DataEditorSupport)cos).saveAs( newFileName );
+                }
+            }
         }
     } // end of Env
     

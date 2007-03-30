@@ -712,6 +712,17 @@ public class MultiDataObject extends DataObject {
         }
     }
 
+    @Override
+    protected DataObject handleCopyRename(DataFolder df, String name, String ext) throws IOException {
+        if( getLoader() instanceof UniFileLoader ) {
+            //allow the operation for single file DataObjects
+            FileObject fo = getPrimaryEntry().copyRename (df.getPrimaryFile (), name, ext);
+            return DataObject.find( fo );
+        }
+        
+        throw new IOException( "SaveAs operation not supported for this file type." );
+    }
+    
     /** Set the set of cookies.
      * To the provided cookie set a listener is attached,
     * and any change to the set is propagated by
@@ -1089,6 +1100,19 @@ public class MultiDataObject extends DataObject {
         */
         public abstract FileObject createFromTemplate (FileObject f, String name) throws IOException;
 
+        /** 
+         * Called when the entry is to be copied and renamed.
+         * @param f the folder to create this entry in
+         * @param name new file name
+         * @param ext new file extension
+         * @return the copied and renamed <code>FileObject</code>, never null
+         * @exception IOException when the operation fails
+         * @since 6.3
+         */
+        public FileObject copyRename (FileObject f, String name, String ext) throws IOException {
+            throw new IOException( "Unsupported operation" );
+        }
+        
         /** Try to lock this file entry.
         * @return the lock if the operation was successful; otherwise <code>null</code>
         * @throws IOException if the lock could not be taken

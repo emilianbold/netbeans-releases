@@ -20,12 +20,16 @@
 
 package org.netbeans.modules.form;
 
+import java.io.IOException;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 
@@ -64,6 +68,11 @@ public class FormDataObject extends MultiDataObject {
     {
         super(jfo, loader);
         formEntry = (FileEntry)registerEntry(ffo);
+        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs(FileObject newFileName) throws IOException {
+                getFormEditorSupport().saveAs( newFileName );
+            }
+        });
     }
 
     //--------------------------------------------------------------------
@@ -147,6 +156,12 @@ public class FormDataObject extends MultiDataObject {
     private void readObject(java.io.ObjectInputStream is)
         throws java.io.IOException, ClassNotFoundException {
         is.defaultReadObject();
+    }
+
+    @Override
+    protected DataObject handleCopyRename(DataFolder df, String name, String ext) throws IOException {
+        FileObject fo = getPrimaryEntry().copyRename (df.getPrimaryFile (), name, ext);
+        return DataObject.find( fo );
     }
 
 }
