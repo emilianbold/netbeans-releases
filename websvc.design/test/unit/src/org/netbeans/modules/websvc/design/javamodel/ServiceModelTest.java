@@ -108,7 +108,6 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
         try {
             // compare model values
             ServiceModel model = ServiceModel.getServiceModel(sourceFileObject);
-            System.out.println("model = "+model+":"+model.getName()+":"+model.getOperations().size());
             assertEquals(NAME, model.getName());
             assertEquals(SERVICE_NAME, model.getServiceName());
             assertEquals(PORT_NAME, model.getPortName());
