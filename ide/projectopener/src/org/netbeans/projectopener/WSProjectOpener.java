@@ -26,6 +26,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -44,6 +45,8 @@ public class WSProjectOpener {
     
     private static String DEFAULT_USERDIR = "5.5.1";
     
+    private static Comparator COMPARATOR = NBInstallation.LAST_USED_COMPARATOR;
+    
     private WSProjectOpener() {}
     
     /**
@@ -61,7 +64,9 @@ public class WSProjectOpener {
         // Register own logger that prints messages to ${TEMP}/projectopener.log
         LOGGER.addHandler(new FileLogHandler());
         
-        // ---
+        // ######################
+        // ### Test Arguments ###
+        // ######################
         
         String allArgs = handler.getAllArgs();
         if (allArgs.equals("")) {
@@ -215,7 +220,7 @@ public class WSProjectOpener {
         // ##################################
         
         File execDir = null;
-        NBInstallation nbis[] = UserdirScanner.suitableNBInstallations(new File(userHome), nbVersion);
+        NBInstallation nbis[] = UserdirScanner.suitableNBInstallations(new File(userHome), nbVersion, COMPARATOR);
         LOGGER.info("Suitable NB installations: " + Arrays.asList(nbis).toString());
         if (nbis.length > 0) {
             for (int i = 0; i < nbis.length; i++) {
