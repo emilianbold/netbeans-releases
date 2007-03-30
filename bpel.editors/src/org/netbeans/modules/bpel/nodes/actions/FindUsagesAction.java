@@ -53,7 +53,8 @@ public class FindUsagesAction extends CookieAction {
     
    // @Override
     public boolean enable(Node[] nodes) {
-        return super.enable(nodes);
+        return nodes != null && nodes.length == 1 && nodes[0] instanceof BpelNode;
+//        return super.enable(nodes);
     }
 
   protected Referenceable getReferenceable(Node[] nodes) {
