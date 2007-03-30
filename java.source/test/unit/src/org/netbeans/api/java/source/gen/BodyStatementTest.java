@@ -86,6 +86,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new BodyStatementTest("testRenameClazz"));
 //        suite.addTest(new BodyStatementTest("testRenameInCase"));
 //        suite.addTest(new BodyStatementTest("testRenameClazzInNewParameter"));
+//        suite.addTest(new BodyStatementTest("test99445"));
         return suite;
     }
     
@@ -2154,6 +2155,64 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
                 NewClassTree nct = (NewClassTree) mit.getArguments().get(0);
                 workingCopy.rewrite(nct.getIdentifier(), make.Identifier("RenamedTest"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #99445: Not well formatted statements when adding statement to body.
+     */
+    public void test99445() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(Class o) {\n" +
+            "        method(new Test());\n" +
+            "    }\n" +
+            "}\n");
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(Class o) {\n" +
+            "        method(new Test());\n" +
+            "    System.out.println(\"Test\");\n" +
+            "}\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                ExpressionStatementTree est = make.ExpressionStatement(
+                    make.MethodInvocation(
+                        Collections.<ExpressionTree>emptyList(),
+                        make.MemberSelect(
+                            make.MemberSelect(
+                                make.Identifier("System"),
+                                "out"
+                            ),
+                            "println"
+                        ),
+                        Collections.<ExpressionTree>singletonList(
+                            make.Literal("Test")
+                        )
+                    )
+                );
+                workingCopy.rewrite(block, make.addBlockStatement(block, est));
             }
             
             public void cancel() {
