@@ -2052,7 +2052,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         return new Point(x, y);
     }
 
-    public void moveComponentTo(Box box, int x, int y) {
+    private void moveComponentTo(Box box, int x, int y) {
         Element componentRootElement = box.getComponentRootElement();
         // We should already have a locked buffer with a user visible
         // undo event when this methhod is called
