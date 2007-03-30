@@ -37,7 +37,7 @@ package org.openide.util;
  * }
  * </pre>
  *
- * Using this class you can do the same is a simpler way:
+ * Using this class you can do the same in a simpler way:
  *
  * <pre>
  * public void myMethod(String myParam) {
