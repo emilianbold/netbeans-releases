@@ -18,25 +18,15 @@
  */
 package org.netbeans.modules.bpel.nodes.refactoring;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.text.StyledDocument;
+import javax.swing.Icon;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BooleanExpr;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.nodes.BpelNode;
-import org.netbeans.modules.bpel.nodes.navigator.NavigatorNodeFactory;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.bpel.model.api.Process;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.Line;
-import org.openide.util.Lookup;
+import org.netbeans.modules.bpel.nodes.navigator.HtmlNameManager;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.w3c.dom.Element;
 
 /**
@@ -65,14 +55,14 @@ public class Util {
     
     public static String getUsageContextPath(BpelEntity entity, Class<? extends BpelEntity> filter) {
         assert entity != null;
-        StringBuffer path = new StringBuffer(getEntityName(entity));
+        StringBuffer path = new StringBuffer(getName(entity));
         BpelEntity tmpEntity = entity;
         while((tmpEntity = tmpEntity.getParent()) != null) {
             if (tmpEntity.getElementType() == filter) {
                 continue;
             }
             
-            String tmpEntityName = getEntityName(tmpEntity);
+            String tmpEntityName = getName(tmpEntity);
             if (tmpEntityName != null && tmpEntityName.length() > 0) {
                 path.insert(0,ENTITY_SEPARATOR).insert(0,tmpEntityName);
             }
@@ -81,47 +71,42 @@ public class Util {
         return path.toString();
     }
     
-    public static String getEntityName(BpelEntity entity) {
-        assert entity != null;
+    public static String getName(DocumentComponent component) {
+        assert component != null;
         String name = null;
-        if (entity instanceof Named) {
-            name = ((Named)entity).getName();
-        } else if (entity instanceof BooleanExpr) {
-            name = ((BooleanExpr)entity).getContent();
+        if (component instanceof Named) {
+            name = ((Named)component).getName();
+        } else if (component instanceof BooleanExpr) {
+            name = ((BooleanExpr)component).getContent();
             name = name == null ? null : name.trim();
             if (name != null && name.length() > MAX_SIMPLE_NAME_LENGTH) {
                 name = name.substring(0, MAX_SIMPLE_NAME_LENGTH);
             }
-        } else {
+        } else if (component instanceof BpelEntity) {
             org.netbeans.modules.bpel.editors.api.nodes.NodeType
                     bpelNodeType = org.netbeans.modules.bpel.editors.api.utils.
-                                        Util.getBasicNodeType(entity);
+                                        Util.getBasicNodeType((BpelEntity)component);
             
-            if (bpelNodeType != null) {
-                switch (bpelNodeType) {
-                    case UNKNOWN_TYPE:
-                        name = getTagName(entity);
-                        break;
-                    case DEFAULT_BPEL_ENTITY_NODE:
-                        name = getTagName(entity);
-                        break;
-                    default:
-                        name = bpelNodeType.getDisplayName();
-                }
+            if (bpelNodeType != null 
+                    && ! NodeType.UNKNOWN_TYPE.equals(bpelNodeType))
+            {
+                name = bpelNodeType.getDisplayName();
             }
-//            
-//            name = bpelNodeType == null ? name : bpelNodeType.getDisplayName();
+        }
+        
+        if (name == null) {
+            name = getTagName(component);
         }
         
         return name == null ? "" : name;
     }
     
-    public static String getTagName(BpelEntity entity ) {
-        if (entity == null) {
+    public static String getTagName(DocumentComponent component ) {
+        if (component == null) {
             return null;
         }
         
-        Element enEl = entity.getPeer();
+        Element enEl = component.getPeer();
         return enEl == null ? null : enEl.getTagName();
     }
     
@@ -136,7 +121,7 @@ public class Util {
         NodeType nodeType = node.getNodeType();
         switch (nodeType) {
             case BOOLEAN_EXPR :
-                nodeName = Util.getEntityName((BpelEntity)ref);
+                nodeName = Util.getName((BpelEntity)ref);
                 break;
             case INVOKE :
             case RECEIVE :
@@ -160,4 +145,70 @@ public class Util {
         }
         return nodeName;
     }
+    
+    // TODO m
+    public static String getHtmlName(DocumentComponent component) {
+        String htmlName = null;
+        NodeType nodeType = getBpelNodeType(component);
+        
+        HtmlNameManager[] nameManagers =  HtmlNameManager.HTML_NAME_MANAGERS;
+        for (HtmlNameManager htmlNameManager : nameManagers) {
+            if (htmlNameManager.accept(nodeType, component)) {
+                htmlName = htmlNameManager.getHtmlName(nodeType, component);
+            }
+        }
+
+        htmlName = htmlName == null ? BpelNode.EMPTY_STRING : htmlName;
+        
+        return removeHtmlHeader(htmlName);
+    }
+    
+    // TODO m
+    public static Icon getIcon(DocumentComponent component) {
+        Icon icon = null;
+        if (component instanceof BpelEntity) {
+            org.netbeans.modules.bpel.editors.api.nodes.NodeType
+                bpelNodeType = org.netbeans.modules.bpel.editors.api.utils.
+                                        Util.getBasicNodeType((BpelEntity)component);
+            if (bpelNodeType != null 
+                    && ! org.netbeans.modules.bpel.editors.api.nodes.NodeType.
+                                UNKNOWN_TYPE.equals(bpelNodeType)) 
+            {
+                icon = bpelNodeType.getIcon();
+            }
+        }
+        
+        icon = icon != null 
+                ? icon 
+                : org.netbeans.modules.bpel.editors.api.nodes.NodeType.
+                                            DEFAULT_BPEL_ENTITY_NODE.getIcon();
+        
+        return icon;
+    }
+    
+    private static String removeHtmlHeader(String htmlString) {
+        if (htmlString == null) {
+            return htmlString;
+        }
+        
+        String htmlStart = "<html>"; // NOI18N
+        String htmlEnd = "</html>"; // NOI18N
+        
+        if (htmlString.matches(htmlStart+".*"+htmlEnd)) {
+            htmlString = htmlString.substring(htmlStart.length() -1,
+                    htmlString.length() - htmlEnd.length() + 1);
+        }
+        
+        return htmlString;
+    }
+    
+    private static NodeType getBpelNodeType(Component component) {
+        if (!(component instanceof BpelEntity)) {
+            return null;
+        }
+        
+        return org.netbeans.modules.bpel.editors.api.utils.
+                Util.getBasicNodeType((BpelEntity)component);
+    }
+    
 }
