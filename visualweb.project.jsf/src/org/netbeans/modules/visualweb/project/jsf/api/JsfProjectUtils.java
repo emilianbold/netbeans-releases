@@ -21,6 +21,7 @@ package org.netbeans.modules.visualweb.project.jsf.api;
 
 import org.netbeans.modules.visualweb.project.jsf.JsfProjectTemplateJakarta;
 import org.netbeans.modules.visualweb.project.jsf.actions.ImportFileAction;
+import org.netbeans.modules.visualweb.project.jsf.libraries.J2SELibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.ComponentLibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.JsfProjectLibrary;
 
@@ -1338,6 +1339,16 @@ public class JsfProjectUtils {
                 removeRootReferences(project, new URL[] { root }, JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
             }
         }
+    }
+    
+    public static Library createJ2SELibrary(
+            String name,
+            String description,
+            String localizingBundle,
+            List /* <URL> */ classPaths,
+            List /* <URL> */ sources,
+            List /* <URL> */ javadocs) throws IOException {
+        return J2SELibraryDefinition.create(name, description, localizingBundle, classPaths, sources, javadocs);
     }
     
     public static Library createComponentLibrary(
