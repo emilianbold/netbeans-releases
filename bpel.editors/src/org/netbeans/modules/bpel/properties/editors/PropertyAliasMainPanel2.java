@@ -328,7 +328,8 @@ public class PropertyAliasMainPanel2 extends EditorLifeCycleAdapter
     }
     
     public Component getInitialFocusComponent() {
-        return btnBrowseProp;
+        PropAliasTypeChooserPanel typeChooser = (PropAliasTypeChooserPanel)pnlTypeChooser;
+        return typeChooser.getTreeComponent();
     }
 
     public int getProviderPriority() {

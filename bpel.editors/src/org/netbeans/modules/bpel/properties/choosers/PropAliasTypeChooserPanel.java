@@ -18,10 +18,12 @@
  */
 package org.netbeans.modules.bpel.properties.choosers;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.JTree;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.soa.ui.axinodes.AxiomNode;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
@@ -62,6 +64,7 @@ import org.netbeans.modules.soa.ui.nodes.NodesTreeParams;
 import org.netbeans.modules.soa.ui.form.Reusable;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.bpel.properties.editors.nodes.factory.PropertyAliasTypeChooserNodeFactory;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -447,6 +450,11 @@ public class PropAliasTypeChooserPanel
             return "ERR_PROP_ALIAS_TYPE_NOT_SPECIFIED"; // NOI18N
         }
         
+    }
+    
+    public Component getTreeComponent() {
+        JTree tree = SoaUiUtil.lookForChildByClass(treeView, JTree.class);
+        return tree;
     }
     
     /** This method is called from within the constructor to
