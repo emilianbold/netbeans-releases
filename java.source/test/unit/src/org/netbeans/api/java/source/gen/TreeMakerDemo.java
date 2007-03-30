@@ -32,7 +32,6 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileUtil;
 import static com.sun.source.tree.Tree.*;
 
@@ -43,7 +42,7 @@ import static com.sun.source.tree.Tree.*;
  * 
  * @author Pavel Flaska
  */
-public class TreeMakerDemo extends NbTestCase {
+public class TreeMakerDemo extends GeneratorTestMDRCompat {
     
     /* Prevent instantiation */
     public TreeMakerDemo(String name) {
@@ -248,10 +247,7 @@ public class TreeMakerDemo extends NbTestCase {
             );
         JavaSource tutorialSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final String statementText = 
-                "            new Runnable() {" +
-                "                public void run() {" +
-                "                }" +
-                "            };";
+                "System.out.println(\"Test\");";
         
         CancellableTask task = new CancellableTask<WorkingCopy>() {
 
@@ -279,5 +275,13 @@ public class TreeMakerDemo extends NbTestCase {
             out.println(str);
         }
         in.close();
+    }
+
+    String getGoldenPckg() {
+        return "";
+    }
+
+    String getSourcePckg() {
+        return "";
     }
 }
