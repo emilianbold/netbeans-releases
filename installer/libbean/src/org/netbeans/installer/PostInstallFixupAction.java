@@ -347,6 +347,7 @@ public class PostInstallFixupAction extends ProductAction {
             setKey(rs,".xsl",true,"text");
             setKey(rs,".css",true,"text");
             setKey(rs,".jsp",true,"text");
+            setKey(rs,".sql",true,"text");
             //Image types
             setKey(rs,".gif",true,"image");
             setKey(rs,".jpg",true,"image");
