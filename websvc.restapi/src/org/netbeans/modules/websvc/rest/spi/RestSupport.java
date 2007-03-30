@@ -170,11 +170,6 @@ public abstract class RestSupport {
      *  @param classPathTypes types of class path to add ("javac.compile",...)
      */
     public void addSwdpLibrary(String[] classPathTypes) throws IOException {
-        Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
-        if (swdpLibrary == null) {
-            throw new IllegalStateException("SWDP library not found");
-        }
-
         Project project = getProject();
         if (project == null) {
             return;
@@ -184,6 +179,12 @@ public abstract class RestSupport {
             return;
         }
         
+        // leave it here in case we decide to have SWDP library through download
+        Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
+        if (swdpLibrary == null) {
+            return;
+        }
+
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         FileObject sourceRoot = sgs[0].getRootFolder();
         ProjectClassPathExtender pce = project.getLookup().lookup(ProjectClassPathExtender.class);
