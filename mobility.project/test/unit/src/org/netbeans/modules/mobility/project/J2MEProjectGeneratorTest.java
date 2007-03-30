@@ -37,16 +37,21 @@ import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.openide.ErrorManager;
 import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
@@ -224,6 +229,7 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         "platform.profile",
         "platform.trigger",
         "platform.type",
+        "all.configurations",
     };
     
     private final static String[][] manifestData = {
@@ -437,9 +443,68 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         
         FileObject root = TestUtil.makeScratchDir(this);
         
-        FileObject fo=FileUtil.toFileObject(getGoldenFile("Test_template.cfg"));
-        ArrayList list=new ArrayList();
-        list.add(fo);
+        final FileObject fo=FileUtil.toFileObject(getGoldenFile("Test_template.cfg"));
+        HashSet list=new HashSet();
+        list.add(new ConfigurationTemplateDescriptor() {
+                        Map<String, String> pcp, pgp, pp;
+                        String name = fo.getName();
+                        {if (name.toLowerCase().endsWith(UserConfigurationTemplatesProvider.CFG_TEMPLATE_SUFFIX.toLowerCase())) name = name.substring(0, name.length() - UserConfigurationTemplatesProvider.CFG_TEMPLATE_SUFFIX.length());}
+                        public String getCfgName() {
+                            return name;
+                        }
+                        public String getDisplayName() {
+                            return name;
+                        }
+                        public Map<String, String> getProjectConfigurationProperties() {
+                            synchronized(this) {
+                                if (pcp == null) loadProperties();
+                            }
+                            return pcp;
+                        }
+                        public Map<String, String> getProjectGlobalProperties() {
+                            synchronized(this) {
+                                if (pgp == null) loadProperties();
+                            }
+                            return pgp;
+                        }
+                        public Map<String, String> getPrivateProperties() {
+                            synchronized(this) {
+                                if (pp == null) loadProperties();
+                            }
+                            return pp;
+                        }
+                        private void loadProperties() {
+                            Properties props = new Properties();
+                            InputStream in = null;
+                            pcp = new HashMap();
+                            pgp = new HashMap();
+                            pp = new HashMap();
+                            try {
+                                in = fo.getInputStream();
+                                props.load(in);
+                            } catch (IOException ioe) {
+                                ErrorManager.getDefault().notify(ioe);
+                                return;
+                            } finally {
+                                if (in != null) try {in.close();} catch (IOException ioe) {}
+                            }
+                            int privPrefixL = UserConfigurationTemplatesProvider.PRIVATE_PREFIX.length() ;
+                            String tmpPrefix = J2MEProjectProperties.CONFIG_PREFIX + fo.getName() + '.';
+                            int tmpPrefixL = tmpPrefix.length();
+                            for ( final Map.Entry en : props.entrySet() ) {
+                                String key = (String)en.getKey();
+                                if (key.startsWith(UserConfigurationTemplatesProvider.PRIVATE_PREFIX)) {
+                                    key = key.substring(privPrefixL);
+                                    pp.put(key, (String)en.getValue());
+                                } else if (key.startsWith(tmpPrefix)) {
+                                    key = key.substring(tmpPrefixL);
+                                    pcp.put(key, (String)en.getValue());
+                                } else {
+                                    pgp.put(key, (String)en.getValue());
+                                }
+                            }
+                        }
+                    });
         
         ProjectManager pm = ProjectManager.getDefault();
         AntProjectHelper aph=null;
@@ -454,8 +519,8 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         TestUtil.setHelper(aph);
         /* To avoid raise conditions - save projects */
         pm.saveAllProjects();
-        fo = aph.getProjectDirectory();
-        assertTrue(checkFiles(fo,aph,false));
+        FileObject fo1 = aph.getProjectDirectory();
+        assertTrue(checkFiles(fo1,aph,false));
     }
     
     public void testLoadJadAndManifest() throws Exception {

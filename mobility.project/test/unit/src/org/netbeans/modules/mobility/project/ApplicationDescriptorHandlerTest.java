@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -134,7 +135,7 @@ public class ApplicationDescriptorHandlerTest extends NbTestCase {
             TemplateWizard wiz=new TemplateWizard();
             synchronized(syncObj) {
                 p=J2MEProjectGenerator.createNewProject(dirFile,"MyProject"+dirFile.getName(),null,new ArrayList(10),
-                        (List)wiz.getProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES));
+                        (Set)wiz.getProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES));
                 waitFinished();
             }
             TestUtil.setHelper(p);

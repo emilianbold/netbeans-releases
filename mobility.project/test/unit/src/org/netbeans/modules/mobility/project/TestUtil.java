@@ -150,6 +150,7 @@ public class TestUtil extends ProxyLookup {
         System.setProperty("test.bridge.jar","${test.ant.home}/nblib/bridge.jar");
         //System.setProperty("libs.j2me_ant_ext.classpath",root+root Ext);
         System.setProperty("libs.j2me_ant_ext.classpath",antLib);
+        System.setProperty("libs.ant-contrib.classpath","${netbeans.dest.dir}/${cluster}/external/ant-contrib-1.0b3.jar");
         Logger.getLogger("org.openide.util.RequestProcessor").addHandler(new Handler() {
             public void publish(LogRecord record) {
                 String s=record.getMessage();
@@ -307,9 +308,13 @@ public class TestUtil extends ProxyLookup {
     public static String waitFinished() {
         assert Thread.currentThread().holdsLock(rootStr);
         
-        try {
-            rootStr.wait();
-        } catch (InterruptedException ex) {}
+        while (true)
+        {
+            try {
+                rootStr.wait();
+                break;
+            } catch (InterruptedException ex) {}
+        }
         return message!=null?new String(message):null;
     }
     

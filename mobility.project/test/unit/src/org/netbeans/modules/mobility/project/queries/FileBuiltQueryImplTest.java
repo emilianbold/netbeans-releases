@@ -36,7 +36,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.junit.NbTestCase;
@@ -110,7 +109,6 @@ public class FileBuiltQueryImplTest extends NbTestCase {
                             s.indexOf("J2MEProject$6")!=-1 &&
                             s.indexOf("RequestProcessor")!=-1) {
                         synchronized (syncObj) {
-                            System.out.println("XXXFinished: "+s);
                             syncObj.notify();
                         }
                     }
