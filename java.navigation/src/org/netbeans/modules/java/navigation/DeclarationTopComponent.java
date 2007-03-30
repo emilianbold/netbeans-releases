@@ -51,6 +51,12 @@ public final class DeclarationTopComponent extends TopComponent {
         setName(NbBundle.getMessage(DeclarationTopComponent.class, "CTL_DeclarationTopComponent"));
         setToolTipText(NbBundle.getMessage(DeclarationTopComponent.class, "HINT_DeclarationTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
+        
+        // Don't highlight caret row 
+        declarationEditorPane.putClientProperty(
+            "HighlightsLayerExcludes", // NOI18N
+            "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" // NOI18N
+        );
     }
     
     private static final Rectangle ZERO = new Rectangle(0,0,1,1);
