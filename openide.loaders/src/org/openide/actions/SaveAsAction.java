@@ -130,7 +130,7 @@ final public class SaveAsAction extends AbstractAction implements ContextAwareAc
     public void resultChanged(LookupEvent ev) {
         TopComponent tc = TopComponent.getRegistry().getActivated();
         
-        setEnabled (lkpInfo.allItems().size() != 0 && null != tc && WindowManager.getDefault().isEditorTopComponent( tc ) );
+        setEnabled (null != lkpInfo && lkpInfo.allItems().size() != 0 && null != tc && WindowManager.getDefault().isEditorTopComponent( tc ) );
     }
     
     /**
