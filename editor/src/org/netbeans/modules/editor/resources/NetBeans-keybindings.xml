@@ -99,8 +99,8 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="remove-tab" key="S-TAB"/>
     <bind actionName="move-selection-else-line-up" key="O-UP"/>
     <bind actionName="move-selection-else-line-down" key="O-DOWN"/>
-    <bind actionName="copy-selection-else-line-up" key="DO-UP"/>
-    <bind actionName="copy-selection-else-line-down" key="DO-DOWN"/>
+    <bind actionName="copy-selection-else-line-up" key="DS-UP"/>
+    <bind actionName="copy-selection-else-line-down" key="DS-DOWN"/>
     <!-- #47709 <bind actionName="remove-word" key="D-W"/> -->
     <bind actionName="remove-word-next" key="D-DELETE"/>
     <bind actionName="remove-word-previous" key="D-BACK_SPACE"/>
