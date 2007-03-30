@@ -433,7 +433,12 @@ public class GlobalSourcePathTest extends NbTestCase {
         };
         L l = new L ();
         cp.addPropertyChangeListener(l);
-        Object propId = "ID1";
+        Object propId = "ID0";
+        for (PRI pri : resources) {
+            pri.firePropertyChange(propId);
+        }
+        cp.getRoots();
+        propId = "ID1";
         for (PRI pri : resources) {
             pri.firePropertyChange(propId);
         }
