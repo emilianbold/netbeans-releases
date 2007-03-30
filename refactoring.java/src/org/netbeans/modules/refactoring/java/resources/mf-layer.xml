@@ -27,8 +27,15 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>    
      </folder>   
-     -->
-    
+    -->    
+    <folder name="Menu">
+        <folder name="Refactoring">
+         <attr name="UseSuperTypeAction.instance/LastSeparator.instance" boolvalue="true"/>
+            <file name="UseSuperTypeAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.java.ui.UseSuperTypeAction"/>
+            </file>
+        </folder>    
+     </folder>   
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
@@ -89,6 +96,14 @@ Microsystems, Inc. All Rights Reserved.
           <file name="options"/>
       </folder>
   </folder>
+  <folder name="Actions">
+     <folder name="Refactoring">
+         <attr name="UseSuperTypeAction.instance/LastSeparator.instance" boolvalue="true"/>
+          <file name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.useSuperTypeAction"/>
+          </file>
+    </folder>
+  </folder>  
   <!--
   <folder name="Actions">
      <folder name="Refactoring">
@@ -98,5 +113,4 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>  
   -->
-  
 </filesystem>
