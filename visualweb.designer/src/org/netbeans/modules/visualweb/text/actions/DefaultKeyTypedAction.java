@@ -135,17 +135,17 @@ public class DefaultKeyTypedAction extends TextAction {
                         return;
                     }
                     
-//                    UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class, "InsertChar")); // NOI18N
-                    HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class, "InsertChar")); // NOI18N
-                    try {
+////                    UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class, "InsertChar")); // NOI18N
+//                    HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class, "InsertChar")); // NOI18N
+//                    try {
 //                        doc.writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class, "InsertChar")); // NOI18N
 //                        target.getCaret().replaceSelection(content);
                         target.replaceSelection(content);
-                    } finally {
-//                        doc.writeUnlock();
-//                        webform.getModel().writeUnlock(undoEvent);
-                        webform.writeUnlock(writeLock);
-                    }
+//                    } finally {
+////                        doc.writeUnlock();
+////                        webform.getModel().writeUnlock(undoEvent);
+//                        webform.writeUnlock(writeLock);
+//                    }
                 } // 0x7f (del) will get processed by a different action
             }
         }

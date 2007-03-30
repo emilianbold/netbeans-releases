@@ -185,6 +185,9 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         if (domRange == null) {
             return false;
         }
+//                    UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class, "InsertChar")); // NOI18N
+        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_InsertText")); // NOI18N
+        try {
         
 //        if (hasSelection()) {
 //            removeSelection();
@@ -353,6 +356,13 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
             return false;
         }
         return true;
+        
+        } finally {
+//                        doc.writeUnlock();
+//                        webform.getModel().writeUnlock(undoEvent);
+            jsfForm.writeUnlock(writeLock);
+        }
+
     }
     
     public boolean deleteRangeContents(DomRange domRange) {
