@@ -142,7 +142,9 @@ public class LoadWSDLPortsAction extends NodeAction {
                 slist[i] = "Service=" + sName + ", Port=" + p.getName();
             }
             
-            final LoadWsdlPortPanel panel = new LoadWsdlPortPanel(suname, slist);
+            final LoadWsdlPortPanel panel = new LoadWsdlPortPanel(
+                    NbBundle.getMessage(getClass(), "LBL_AvailableWSDLPortsFor", suname),
+                    slist);
             DialogDescriptor descriptor = new DialogDescriptor(
                     panel,
                     NbBundle.getMessage(LoadWsdlPortPanel.class, "LBL_WsdlPort_Selection_Panel"),   // NOI18N

@@ -92,7 +92,9 @@ public class AddWSDLPortsAction extends AbstractAction {
         String[] ports = portMap.keySet().toArray(new String[0]);
         Arrays.sort(ports);
 
-        final LoadWsdlPortPanel panel = new LoadWsdlPortPanel("N/A", ports);
+        final LoadWsdlPortPanel panel = new LoadWsdlPortPanel(
+                NbBundle.getMessage(getClass(), "LBL_AllAvailableWSDLPorts"), 
+                ports);
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
                 NbBundle.getMessage(LoadWsdlPortPanel.class, "LBL_WsdlPort_Selection_Panel"),   // NOI18N

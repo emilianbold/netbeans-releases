@@ -31,13 +31,15 @@ import javax.swing.*;
 public class LoadWsdlPortPanel extends javax.swing.JPanel {
 
     /** Creates new form LoadWsdlPortPanel */
-    public LoadWsdlPortPanel(String name, String[] ports) {
+    public LoadWsdlPortPanel(String headerText, String[] ports) {
         initComponents();
         DefaultListModel model = new DefaultListModel();
         for (String p : ports) {
             model.addElement(p);
         }
         listPorts.setModel(model);
+        listPorts.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        labelAvailablePorts.setText(headerText);
     }
 
     /** This method is called from within the constructor to
@@ -59,8 +61,7 @@ public class LoadWsdlPortPanel extends javax.swing.JPanel {
         });
         jScrollPane1.setViewportView(listPorts);
 
-        labelAvailablePorts.setFont(new java.awt.Font("Tahoma", 1, 12));
-        labelAvailablePorts.setText(org.openide.util.NbBundle.getMessage(LoadWsdlPortPanel.class, "LBL_AvailableWSDLPorts")); // NOI18N
+        labelAvailablePorts.setFont(new java.awt.Font("Dialog", 1, 12));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -79,13 +80,12 @@ public class LoadWsdlPortPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(labelAvailablePorts)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void portSelectionHandler(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_portSelectionHandler
-// TODO add your handling code here:
     }//GEN-LAST:event_portSelectionHandler
 
     public int getSelectedIndex() {

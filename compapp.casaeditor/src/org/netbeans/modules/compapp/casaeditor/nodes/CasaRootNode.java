@@ -25,7 +25,6 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -135,7 +134,7 @@ public class CasaRootNode extends CasaNode {
         try {
             final Project jbiProject = getModel().getJBIProject();
             actions.add(new AddJBIModuleAction(jbiProject));
-//            actions.add(new AddWSDLPortsAction(getDataObject()));
+            actions.add(new AddWSDLPortsAction(getDataObject()));
             actions.add(null);
             actions.add(new AutoLayoutAction(getDataObject()));
         } catch (IOException e) {
