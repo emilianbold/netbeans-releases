@@ -310,7 +310,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../libs/swing-layout</project>
                 <project>../libs/xerces</project>
                 <project>../logger/uihandler</project>
-                <project>../logger/uihandlerforprojects</project>
                 <project>../logger/uihandlerlib</project>
                 <project>../monitor</project>
                 <project>../openide/actions</project>
@@ -380,15 +379,19 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../web/servletjspapi</project>
                 <project>../web/struts</project>
                 <project>../web/webapi</project>
+                <project>../web/webrest</project>
                 <project>../websvc/clientapi</project>
                 <project>../websvc/core</project>
                 <project>../websvc/customization</project>
+                <project>../websvc/design</project>
                 <project>../websvc/jaxrpc16</project>
                 <project>../websvc/jaxrpcsupport</project>
                 <project>../websvc/jaxws20</project>
                 <project>../websvc/jaxwsapi</project>
                 <project>../websvc/jaxwsmodel</project>
                 <project>../websvc/registry</project>
+                <project>../websvc/rest</project>
+                <project>../websvc/restapi</project>
                 <project>../websvc/serviceapi</project>
                 <project>../websvc/websvcapi</project>
                 <project>../websvc/websvcddapi</project>
