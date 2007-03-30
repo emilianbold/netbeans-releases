@@ -40,19 +40,23 @@ public class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     public Problem preCheck() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //TODO:
+        return null;
     }
 
     public Problem checkParameters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //TODO:
+        return null;
     }
 
     public Problem fastCheckParameters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //TODO:
+        return null;
     }
 
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //TODO:
+        return null;
     }
 
 //    /** Checks pre-conditions of the refactoring.

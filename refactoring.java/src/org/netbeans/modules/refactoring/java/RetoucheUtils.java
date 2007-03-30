@@ -26,11 +26,14 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -290,6 +293,26 @@ public class RetoucheUtils {
         } catch (URISyntaxException ex) {
             throw (IOException) new IOException().initCause(ex);
         }
+    }
+    
+    public static Collection<Element> getSuperTypes(TypeElement type, CompilationInfo info) {
+        Collection<Element> result = new HashSet();
+        result.add(typeToElement(type.getSuperclass(), info));
+        result.addAll(typesToElements(type.getInterfaces(), info));
+        return result;
+        
+    }
+    
+    public static Element typeToElement(TypeMirror type, CompilationInfo info) {
+        return info.getTypes().asElement(type);
+    }
+    
+    private static Collection<Element> typesToElements(Collection<? extends TypeMirror> types, CompilationInfo info) {
+        Collection<Element> result = new HashSet();
+        for (TypeMirror tm : types) {
+            result.add(typeToElement(tm, info));
+        }
+        return result;
     }
     
     

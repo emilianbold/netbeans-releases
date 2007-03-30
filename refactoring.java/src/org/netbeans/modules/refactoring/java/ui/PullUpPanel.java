@@ -20,15 +20,31 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.api.MemberInfo;
+import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
@@ -78,91 +94,84 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     /** Initialization of the panel (called by the parent window).
      */
     public void initialize() {
-//        // retrieve supertypes (will be used in the combo)
-//        JavaClass[] supertypes = refactoring.collectSupertypes();
-//        
-//        // *** initialize combo
-//        // set renderer for the combo (to display name of the class)
-//        supertypeCombo.setRenderer(new UIUtilities.JavaElementListCellRenderer() {
-//            /** Returns display text of the class. The text is returned in the
-//             * following format: SimpleName (package.name). If the class is an inner
-//             * class the text is: Outer.SimpleName (package.name).
-//             */
-//            protected String extractText(Object value) {
-//                // the value is always an instance of JavaClass
-//                JavaClass topLevel = (JavaClass) value;
-//                Object current;
-//                // iterate up through the parents to find the top-level class
-//                while ((current = topLevel.refImmediateComposite()) instanceof JavaClass) {
-//                    topLevel = (JavaClass) current;
-//                }
-//                // derive the package name by subtracting the simple name of top-level class
-//                // from the fully qualified name of the top-level class
-//                String packageName = topLevel.getName();
-//                packageName = packageName.substring(0, packageName.length() - topLevel.getSimpleName().length());
-//                // now, get the class name by subtracting the package name from the class FQN
-//                String className = ((JavaClass) value).getName().substring(packageName.length());
-//                // remove the ending dot from the package name and surrond it by parentheses
-//                if (packageName.length() > 0) {
-//                    packageName = " (" + packageName.substring(0, packageName.length() - 1) + ")"; // NOI18N
-//                }
-//                // create the displayText (concatenate the class name and package name)
-//                return className.concat(packageName);
-//            }
-//        });
-//        // set combo model
-//        supertypeCombo.setModel(new ComboModel(supertypes));
-//        
-//        // *** initialize table
-//        // set renderer for the second column ("Member") do display name of the feature
-//        membersTable.setDefaultRenderer(COLUMN_CLASSES[1], new UIUtilities.JavaElementTableCellRenderer() {
-//            // override the extractText method to add "implements " prefix to the text
-//            // in case the value is instance of MultipartId (i.e. it represents an interface
-//            // name from implements clause)
-//            protected String extractText(Object value) {
-//                String displayValue = super.extractText(value);
-//                if (value instanceof MultipartId) {
-//                    displayValue = "implements " + displayValue; // NOI18N
-//                }
-//                return displayValue;
-//            }
-//        });
-//        // send renderer for the third column ("Make Abstract") to make the checkbox:
-//        // 1. hidden for elements that are not methods
-//        // 2. be disabled for static methods
-//        // 3. be disabled and checked for methods if the target type is an interface
-//        // 4. be disabled and check for abstract methods
-//        membersTable.getColumnModel().getColumn(2).setCellRenderer(new UIUtilities.BooleanTableCellRenderer() {
-//            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-//                // make the checkbox checked (even if "Make Abstract" is not set)
-//                // for non-static methods if the target type is an interface
-//                Object object = table.getModel().getValueAt(row, 1);
-//                if (object instanceof Method) {
-//                    if ((targetType.isInterface() && !Modifier.isStatic(((Method) object).getModifiers())) || Modifier.isAbstract(((Method) object).getModifiers())) {
-//                        value = Boolean.TRUE;
-//                    }
-//                }
-//                // the super method automatically makes sure the checkbox is not visible if the
-//                // "Make Abstract" value is null (which holds for non-methods)
-//                // and that the checkbox is disabled if the cell is not editable (which holds for
-//                // static methods all the time and for all methods in case the target type is an interface
-//                // - see the table model)
-//                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-//            }
-//        });
-//        // set background color of the scroll pane to be the same as the background
-//        // of the table
-//        scrollPane.setBackground(membersTable.getBackground());
-//        scrollPane.getViewport().setBackground(membersTable.getBackground());
-//        // set default row height
-//        membersTable.setRowHeight(18);
-//        // set grid color to be consistent with other netbeans tables
-//        if (UIManager.getColor("control") != null) { // NOI18N
-//            membersTable.setGridColor(UIManager.getColor("control")); // NOI18N
-//        }
-//        // compute and set the preferred width for the first and the third column
-//        UIUtilities.initColumnWidth(membersTable, 0, Boolean.TRUE, 4);
-//        UIUtilities.initColumnWidth(membersTable, 2, Boolean.TRUE, 4);
+        final TreePathHandle handle = refactoring.getSourceType();
+        JavaSource source = JavaSource.forFileObject(handle.getFileObject());
+        try {
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                
+                public void run(CompilationController parameter) throws Exception {
+                    parameter.toPhase(JavaSource.Phase.RESOLVED);
+                    // retrieve supertypes (will be used in the combo)
+                    Collection<Element> supertypes = RetoucheUtils.getSuperTypes((TypeElement)handle.resolveElement(parameter), parameter);
+                    MemberInfo[] minfo = new MemberInfo[supertypes.size()];
+                    int i=0;
+                    for (Element e: supertypes) {
+                        minfo[i++] = new MemberInfo(ElementHandle.create(e), UiUtils.getHeader(e, parameter, UiUtils.PrintPart.NAME), UiUtils.getDeclarationIcon(e));
+                    }
+                    
+                    // *** initialize combo
+                    // set renderer for the combo (to display name of the class)
+                    supertypeCombo.setRenderer(new UIUtilities.JavaElementListCellRenderer());        // set combo model
+                    supertypeCombo.setModel(new ComboModel(minfo));
+                    
+                    // *** initialize table
+                    // set renderer for the second column ("Member") do display name of the feature
+                    membersTable.setDefaultRenderer(COLUMN_CLASSES[1], new UIUtilities.JavaElementTableCellRenderer() {
+                        // override the extractText method to add "implements " prefix to the text
+                        // in case the value is instance of MultipartId (i.e. it represents an interface
+                        // name from implements clause)
+                        protected String extractText(Object value) {
+                            String displayValue = super.extractText(value);
+                            //                if (value instanceof MultipartId) {
+                            //                    displayValue = "implements " + displayValue; // NOI18N
+                            //                }
+                            return displayValue;
+                        }
+                    });
+                    // send renderer for the third column ("Make Abstract") to make the checkbox:
+                    // 1. hidden for elements that are not methods
+                    // 2. be disabled for static methods
+                    // 3. be disabled and checked for methods if the target type is an interface
+                    // 4. be disabled and check for abstract methods
+                    membersTable.getColumnModel().getColumn(2).setCellRenderer(new UIUtilities.BooleanTableCellRenderer() {
+                        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                            // make the checkbox checked (even if "Make Abstract" is not set)
+                            // for non-static methods if the target type is an interface
+                            Object object = table.getModel().getValueAt(row, 1);
+                            //TODO:
+//                            if (object instanceof Method) {
+//                                if ((targetType.isInterface() && !Modifier.isStatic(((Method) object).getModifiers())) || Modifier.isAbstract(((Method) object).getModifiers())) {
+//                                    value = Boolean.TRUE;
+//                                }
+//                            }
+                            // the super method automatically makes sure the checkbox is not visible if the
+                            // "Make Abstract" value is null (which holds for non-methods)
+                            // and that the checkbox is disabled if the cell is not editable (which holds for
+                            // static methods all the time and for all methods in case the target type is an interface
+                            // - see the table model)
+                            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                        }
+                    });
+                    // set background color of the scroll pane to be the same as the background
+                    // of the table
+                    scrollPane.setBackground(membersTable.getBackground());
+                    scrollPane.getViewport().setBackground(membersTable.getBackground());
+                    // set default row height
+                    membersTable.setRowHeight(18);
+                    // set grid color to be consistent with other netbeans tables
+                    if (UIManager.getColor("control") != null) { // NOI18N
+                        membersTable.setGridColor(UIManager.getColor("control")); // NOI18N
+                    }
+                    // compute and set the preferred width for the first and the third column
+                    UIUtilities.initColumnWidth(membersTable, 0, Boolean.TRUE, 4);
+                    UIUtilities.initColumnWidth(membersTable, 2, Boolean.TRUE, 4);
+                }
+            }, true);
+        } catch (IOException ioe) {
+            throw (RuntimeException) new RuntimeException().initCause(ioe);
+        }
     }
     
     // --- GETTERS FOR REFACTORING PARAMETERS ----------------------------------
@@ -178,7 +187,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     /** Getter used by the refactoring UI to get members to be pulled up.
      * @return Descriptors of members to be pulled up.
      */
-    public PullUpRefactoring.MemberInfo[] getMembers() {
+    public MemberInfo[] getMembers() {
 //        List list = new ArrayList();
 //        // remeber if the target type is an interface (will be used in the loop)
 //        boolean targetIsInterface = targetType.isInterface();
@@ -205,7 +214,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
 //        }
 //        // return the array of selected members
 //        return (PullUpRefactoring.MemberInfo[]) list.toArray(new PullUpRefactoring.MemberInfo[list.size()]);
-        return new PullUpRefactoring.MemberInfo[0];
+        return new MemberInfo[0];
     }
     
     // --- GENERATED CODE ------------------------------------------------------
@@ -400,18 +409,18 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
 //            // fire event to repaint the table
 //            this.fireTableDataChanged();
 //        }
-//    }
+    }
 
     /** Model for combo box for choosing target type.
      */
     private class ComboModel extends AbstractListModel implements ComboBoxModel {
-        private final TreePathHandle[] supertypes;
+        private final MemberInfo[] supertypes;
        
         /** Creates the combo model.
          * @param supertypes List of applicable supertypes that may be chosen to be
          *      target types.
          */
-        ComboModel(TreePathHandle[] supertypes) {
+        ComboModel(MemberInfo[] supertypes) {
             this.supertypes = supertypes;
             if (supertypes.length > 0) {
                 setSelectedItem(supertypes[0]);
@@ -445,7 +454,8 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
         }
 
         public Object getSelectedItem() {
-            return targetType;
+            return getElementAt(0);
+            //return targetType;
         }
 
         public Object getElementAt(int index) {
@@ -455,7 +465,5 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
         public int getSize() {
             return supertypes.length;
         }
-    }
-
     }
 }

@@ -134,48 +134,5 @@ public final class PullUpRefactoring extends AbstractRefactoring {
 //            collectSupertypes((JavaClass) it.next(), result, visited);
 //        }
 //    }
-//    
-   
-    // --- HELPER CLASSES ------------------------------------------------------
-    
-    /** Class describing a member to be pulled up.
-     */
-    public static final class MemberInfo {
-        public final TreePathHandle member;
-        public final boolean makeAbstract;
-        
-        /** Creates a new instance of MemberInfo describing a method.
-         * @param method Method to be pulled up.
-         * @param makeAbstract Indicates whether the method should be made abstract
-         *              in the supertype.
-         */
-        private MemberInfo(TreePathHandle member, boolean makeAbstract) {
-            this.member = member;
-            this.makeAbstract = makeAbstract;
-        }
 
-        /** Creates a new instance of MemberInfo describing an inner class
-         * to be pulled up.
-         * @param field Inner class to be pulled up.
-         */
-        public MemberInfo(TreePathHandle innerClass) {
-            this(innerClass, false);
-        }
-        
-//        /** Creates a new instance of MemberInfo describing a field 
-//         * to be pulled up.
-//         * @param field Field to be pulled up.
-//         */
-//        public MemberInfo(TreePathHandle field) {
-//            this(field, false);
-//        }
-//        
-//        /** Creates a new instance of MemberInfo describing an interface name
-//         * from the implements clause that should be pulled up.
-//         * @param interfaceName Interface name to be pulled up.
-//         */
-//        public MemberInfo(TreePathHandle interfaceName) {
-//            this(interfaceName, false);
-//        }
-    }
 }

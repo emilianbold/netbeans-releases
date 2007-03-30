@@ -20,6 +20,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Collection;
@@ -471,10 +472,13 @@ public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
             }
             Element el = treePathHandle.resolveElement(compiler);
             assert el != null;
-            Element method = refactoring.getMembers()[0].member.resolve(compiler);
-            MethodTree mtree = (MethodTree) compiler.getTrees().getTree(method);
+            Tree trees[] = new Tree[refactoring.getMembers().length];
+            for (int i = 0; i < refactoring.getMembers().length; i++) {
+                Element method = refactoring.getMembers()[i].member.resolve(compiler);
+                trees[i] = SourceUtils.treeFor(compiler, method);
+            }
             
-            PushDownTransformer findVisitor = new PushDownTransformer(compiler, mtree);
+            PushDownTransformer findVisitor = new PushDownTransformer(compiler, trees);
             findVisitor.scan(compiler.getCompilationUnit(), el);
             
             for (TreePath tree : findVisitor.getUsages()) {

@@ -30,18 +30,24 @@ import org.netbeans.api.java.source.WorkingCopy;
  */
 public class PushDownTransformer extends SearchVisitor {
 
-    MethodTree method;
-    public PushDownTransformer(WorkingCopy workingCopy, MethodTree method) {
+    Tree[] trees;
+    public PushDownTransformer(WorkingCopy workingCopy, Tree trees[]) {
         super(workingCopy);
-        this.method = method;
+        this.trees = trees;
     }
 
     @Override
     public Tree visitClass(ClassTree tree, Element p) {
         Element el = workingCopy.getTrees().getElement(getCurrentPath());
+        if (el.equals(p))
+            return null;
         TypeMirror tm = el.asType();
         if (workingCopy.getTypes().isSubtype(tm, p.asType())) {
-            workingCopy.rewrite(tree, make.addClassMember(tree, method));
+            ClassTree newOne = tree;
+            for (int i = 0; i<trees.length; i++) {
+                newOne = make.addClassMember(newOne, trees[i]);
+            }
+            workingCopy.rewrite(tree, newOne);
         }
         return super.visitClass(tree, p);
     }
