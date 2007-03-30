@@ -18,31 +18,9 @@
  */
 package org.netbeans.modules.bpel.refactoring;
 
-import java.beans.BeanInfo;
-import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-
-import org.netbeans.modules.refactoring.api.RefactoringElement;
-import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.xml.xam.Referenceable;
-import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
-import org.netbeans.modules.bpel.refactoring.Util;
-
-import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
-import org.netbeans.modules.xml.xam.Component;
-import org.openide.filesystems.FileObject;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -50,6 +28,7 @@ import org.openide.filesystems.FileObject;
  */
 public final class Tree implements TreeElementFactoryImplementation {
 
+  /**{@inheritDoc}*/
   public TreeElement getTreeElement(Object object) {
     if (object instanceof Component) {
       return new Element((Component) object);
@@ -57,5 +36,6 @@ public final class Tree implements TreeElementFactoryImplementation {
     return null;
   }
 
+  /**{@inheritDoc}*/
   public void cleanUp() {}
 }

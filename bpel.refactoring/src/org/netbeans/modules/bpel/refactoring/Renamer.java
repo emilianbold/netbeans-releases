@@ -20,49 +20,49 @@ package org.netbeans.modules.bpel.refactoring;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.Import;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+
+import javax.xml.namespace.QName;
+
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.Transaction;
 
 import org.netbeans.modules.xml.refactoring.ErrorItem;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringUtil;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
-import org.netbeans.modules.xml. refactoring.XMLRefactoringTransaction;
+import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Referenceable;
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.xml.xam.dom.Attribute;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
+import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalType;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import javax.xml.namespace.QName;
+import org.netbeans.modules.xml.wsdl.model.Fault;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Catch;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
@@ -82,26 +82,6 @@ import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
-
-import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalType;
-
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.xml.xam.dom.Attribute;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-
-import org.netbeans.modules.xml.wsdl.model.Fault;
-import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.model.Operation;
-import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 
 import static org.netbeans.modules.print.api.PrintUI.*;
 
@@ -116,7 +96,8 @@ final class Renamer extends Plugin implements XMLRefactoringPlugin {
   }
   
   public Problem fastCheckParameters() {
-    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference =
+      myRequest.getRefactoringSource().lookup(Referenceable.class);
     ErrorItem error = null;
 
     if (reference instanceof Model) {
@@ -132,7 +113,8 @@ final class Renamer extends Plugin implements XMLRefactoringPlugin {
   }
     
   public Problem checkParameters() {
-    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference =
+      myRequest.getRefactoringSource().lookup(Referenceable.class);
   
     if (reference == null) {
       return null;
@@ -159,7 +141,8 @@ final class Renamer extends Plugin implements XMLRefactoringPlugin {
   }
     
   public Problem prepare(RefactoringElementsBag refactoringElements) {
-    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference =
+      myRequest.getRefactoringSource().lookup(Referenceable.class);
 
     if (reference == null) {
       return null;
@@ -177,7 +160,7 @@ final class Renamer extends Plugin implements XMLRefactoringPlugin {
         elements.addAll(founds);
       }
     }
-    if (elements != null && elements.size() > 0) {
+    if (elements.size() > 0) {
       List<Model> models = getModels(elements);
       List<ErrorItem> errors = RefactoringUtil.precheckUsageModels(models, true);
 
@@ -185,14 +168,13 @@ final class Renamer extends Plugin implements XMLRefactoringPlugin {
         return processErrors(errors);
       } 
     } 
-    XMLRefactoringTransaction transaction = myRequest.getContext().lookup(XMLRefactoringTransaction.class);
+    XMLRefactoringTransaction transaction =
+      myRequest.getContext().lookup(XMLRefactoringTransaction.class);
     transaction.register(this, elements);
     refactoringElements.registerTransaction(transaction);
 
-    if (elements != null && elements.size() > 0)   {
-      for (RefactoringElementImplementation element : elements) {
-        refactoringElements.add(myRequest, element);
-      }
+    for (RefactoringElementImplementation element : elements) {
+      refactoringElements.add(myRequest, element);
     }      
     return null;
   }
@@ -222,10 +204,13 @@ final class Renamer extends Plugin implements XMLRefactoringPlugin {
     return head;
   }
    
-  public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
+  public void doRefactoring(
+    List<RefactoringElementImplementation> elements) throws IOException
+  {
     Map<Model, Set<RefactoringElementImplementation>> map = getModelMap(elements);
     Set<Model> models = map.keySet();
-    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference =
+      myRequest.getRefactoringSource().lookup(Referenceable.class);
     String oldName = myRequest.getContext().lookup(String.class);
 
     for (Model model: models) {
@@ -269,7 +254,9 @@ final class Renamer extends Plugin implements XMLRefactoringPlugin {
     return results;
   }
 
-  private List<Component> getComponents(Set<RefactoringElementImplementation> elements) {
+  private List<Component> getComponents(
+    Set<RefactoringElementImplementation> elements)
+  {
     List<Component> component = new ArrayList<Component>(elements.size());
   
     for (RefactoringElementImplementation element : elements){
@@ -336,7 +323,8 @@ final class Renamer extends Plugin implements XMLRefactoringPlugin {
     }
     try {
       Import _import = (Import) component;
-      _import.setLocation(SharedUtils.calculateNewLocationString(_import.getLocation(), myRequest));
+      _import.setLocation(
+        SharedUtils.calculateNewLocationString(_import.getLocation(), myRequest));
     }
     catch(VetoException e) {
       throw new IOException(e.getMessage());
