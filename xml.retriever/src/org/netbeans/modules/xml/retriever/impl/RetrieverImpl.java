@@ -55,7 +55,7 @@ public class RetrieverImpl extends Retriever {
     }
     
     File seedFile = null;
-    RetrieverEngine instance;
+    RetrieverEngineImpl instance;
     public boolean startNewThread = false;
     
     public FileObject retrieveResource(FileObject destinationDir, URI relativePathToCatalogFile, URI resourceToRetrieve) throws UnknownHostException, URISyntaxException, IOException {
@@ -109,7 +109,7 @@ public class RetrieverImpl extends Retriever {
     private FileObject retrieveResourceImpl(FileObject destinationDir, 
             URI resourceToRetrieve, FileObject catalogFileObject, boolean save2singleFolder) 
             throws UnknownHostException, URISyntaxException, IOException {
-        instance = new RetrieverEngine(FileUtil.toFile(destinationDir), startNewThread);
+        instance = new RetrieverEngineImpl(FileUtil.toFile(destinationDir), startNewThread);
         instance.setFileOverwrite(overwriteFiles);
         instance.setSave2SingleFolder(save2singleFolder);
         if(catalogFileObject != null)

@@ -17,29 +17,27 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.xml.retriever;
+/*
+ * IConstants.java
+ *
+ * Created on January 10, 2006, 10:42 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
 
-import org.netbeans.modules.xml.retriever.impl.RetrieverEngineImpl;
+package org.netbeans.modules.xml.retriever.impl;
 
 /**
- * Utility class used to retrieve resource(s) in a thread.
  *
  * @author girix
  */
-public abstract class RetrieverEngine implements Runnable {
+public interface IConstants {
+    public static final String XPATH_SCHEMA_IMPORT_LOCATION = "//xsd:schema/xsd:import/@schemaLocation"; //NOI18N
+    public static final String XPATH_SCHEMA_INCLUDE_LOCATION = "//xsd:schema/xsd:include/@schemaLocation"; //NOI18N
+    public static final String XPATH_SCHEMA_REDEFINE_LOCATION = "//xsd:schema/xsd:redefine/@schemaLocation" ; //NOI18N
+    public static final String XPATH_WSDL_IMPORT_LOCATION = "//wsdl:definitions/wsdl:import/@location"; //NOI18N
     
-    public abstract void addResourceToRetrieve(RetrieveEntry rent);
-    
-    public abstract void setFileOverwrite(boolean fileOverwrite);
-    
-    public abstract void start();
-    
-    public static RetrieverEngine getRetrieverEngine(java.io.File fixedSaveRootFolder) {
-        return new RetrieverEngineImpl(fixedSaveRootFolder);
-    }
-
-    public static RetrieverEngine getRetrieverEngine(java.io.File fixedSaveRootFolder,
-            boolean startNewThread) {
-        return new RetrieverEngineImpl(fixedSaveRootFolder, startNewThread);
-    }
+    public static final String XPATH_WSDL_TAG = "/wsdl:definitions"; //NOI18N
+    public static final String XPATH_SCHEMA_TAG = "/xsd:schema"; //NOI18N     
 }

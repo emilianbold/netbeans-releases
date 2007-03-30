@@ -38,7 +38,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import org.netbeans.modules.xml.retriever.*;
-import org.netbeans.modules.xml.retriever.IConstants;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.openide.filesystems.FileLock;
@@ -62,11 +61,11 @@ public class RetrieverTask {
     
     private RetrieveEntry rent;
     
-    private RetrieverEngine retEngine = null;
+    private RetrieverEngineImpl retEngine = null;
     
     /** Creates a new instance of RetrieverTask */
     public RetrieverTask(RetrieveEntry rent, RetrieverEngine retEngine){
-        this.retEngine = retEngine;
+        this.retEngine = (RetrieverEngineImpl)retEngine;
         this.sourceToBeGot = rent.getCurrentAddress();
         this.baseAddress = rent.getBaseAddress();
         this.saveFile = rent.getSaveFile();
