@@ -27,11 +27,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.ErrorManager;
-import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.util.NbBundle;
 
 public abstract class BluePrintSampleWizardIterator extends SampleWizardIterator {
     private static final long serialVersionUID = 1L;
@@ -51,17 +49,18 @@ public abstract class BluePrintSampleWizardIterator extends SampleWizardIterator
     
     protected abstract String[] createSteps();
    
-    public Set instantiate() throws IOException {
-        Set resultSet = super.instantiate();
+    public Set<FileObject> instantiate() throws IOException {
+        Set<FileObject> resultSet = super.instantiate();
         
         FileObject dirParent = getProject().getProjectDirectory().getParent();
         try {
             String name = (String) wiz.getProperty(NAME) + "Application";
 
-            Set set = createBluePrintCompositeApplicationProject(dirParent, name);
-            Iterator iterator = set.iterator();
-            while(iterator.hasNext())
+            Set<FileObject> set = createBluePrintCompositeApplicationProject(dirParent, name);
+            Iterator<FileObject> iterator = set.iterator();
+            while(iterator.hasNext()) {
                 resultSet.add(iterator.next());
+            }
         } catch(FileNotFoundException fnfe) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,fnfe);
         } catch(IOException ioe) {
@@ -72,9 +71,9 @@ public abstract class BluePrintSampleWizardIterator extends SampleWizardIterator
     }
 
     
-    private Set createBluePrintCompositeApplicationProject(FileObject targetProjectDir, String name)
+    private Set<FileObject> createBluePrintCompositeApplicationProject(FileObject targetProjectDir, String name)
     throws FileNotFoundException, IOException {
-        Set resultSet = new HashSet();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
         
         FileObject compApptargetProjectDir = targetProjectDir.createFolder(name);                
         assert compApptargetProjectDir != null : "targetProjectDir for Blue Print project is null";

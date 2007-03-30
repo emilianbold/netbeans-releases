@@ -21,13 +21,9 @@ package org.netbeans.modules.bpel.samples;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
-import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -55,8 +51,10 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
         };
     }
     
-    private void createJ2eeReservationPartnerServicesProjects(FileObject targetProjectDir) throws FileNotFoundException , IOException {
+    private Set<FileObject> createJ2eeReservationPartnerServicesProjects(FileObject targetProjectDir) throws FileNotFoundException , IOException {
         assert targetProjectDir != null : "targetProjectDir for ReservationPartnerServices project is null";
+        Set<FileObject> resultSet = new HashSet<FileObject>();
+
         FileObject j2eeReservationProjectDir = targetProjectDir.createFolder(SoaSampleProjectProperties.RESERVATION_PARTNER_SERVICES);
 
         FileObject j2eeSamples = Repository.getDefault().
@@ -64,12 +62,14 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
 
         SoaSampleUtils.unZipFile(j2eeSamples.getInputStream(), j2eeReservationProjectDir);
 
-        return;
+        resultSet.add(j2eeReservationProjectDir);               
+        
+        return resultSet;
     }
     
-    private Set createTRSCompositeApplicationProject(FileObject targetProjectDir, String name)
+    private Set<FileObject> createTRSCompositeApplicationProject(FileObject targetProjectDir, String name)
     throws FileNotFoundException, IOException {
-        Set resultSet = new HashSet();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
         
         FileObject compApptargetProjectDir = targetProjectDir.createFolder(name);                
         assert compApptargetProjectDir != null : "targetProjectDir for TRSCompositeApplicationProject project is null";
@@ -91,17 +91,17 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
         return resultSet;
     }
     
-    public Set/*<FileObject>*/ instantiate() throws IOException {
-        Set resultSet = super.instantiate();
+    public Set<FileObject> instantiate() throws IOException {
+        Set<FileObject> resultSet = super.instantiate();
         
         FileObject dirParent = getProject().getProjectDirectory().getParent();
         try {
-            createJ2eeReservationPartnerServicesProjects(dirParent);
+            Set<FileObject> jeeSet = createJ2eeReservationPartnerServicesProjects(dirParent);
+            resultSet.addAll(jeeSet);
+
             String name = (String) wiz.getProperty(NAME) + "Application";
-            Set set = createTRSCompositeApplicationProject(dirParent, name);
-            Iterator iterator = set.iterator();
-            while(iterator.hasNext())
-                resultSet.add(iterator.next());
+            Set<FileObject> compositeSet = createTRSCompositeApplicationProject(dirParent, name);
+            resultSet.addAll(compositeSet);
             
         } catch(FileNotFoundException fnfe) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,fnfe);

@@ -20,7 +20,6 @@ package org.netbeans.modules.bpel.samples;
 
 import java.awt.Component;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Enumeration;
@@ -34,7 +33,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -73,8 +71,8 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         return myProject;
     }
     
-    public Set/*<FileObject>*/ instantiate() throws IOException {
-        Set resultSet = new LinkedHashSet();
+    public Set<FileObject> instantiate() throws IOException {
+        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR));
         dirF.mkdirs();
         

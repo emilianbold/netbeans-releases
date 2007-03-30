@@ -18,9 +18,6 @@
  */
 package org.netbeans.modules.bpel.samples;
 
-import java.awt.GridBagConstraints;
-import org.openide.util.NbBundle;
-
 public class SynchronousSamplePanelVisual extends SampleWizardPanelVisual{
     private static final long serialVersionUID = 1L;
 

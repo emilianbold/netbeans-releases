@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.samples;
 
-import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;

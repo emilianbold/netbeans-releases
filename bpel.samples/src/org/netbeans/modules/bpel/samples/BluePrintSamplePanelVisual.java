@@ -18,9 +18,6 @@
  */
 package org.netbeans.modules.bpel.samples;
 
-import java.awt.GridBagConstraints;
-import org.openide.util.NbBundle;
-
 public class BluePrintSamplePanelVisual extends SampleWizardPanelVisual{
     private static final long serialVersionUID = 1L;
     private String bluePrintSampleName;

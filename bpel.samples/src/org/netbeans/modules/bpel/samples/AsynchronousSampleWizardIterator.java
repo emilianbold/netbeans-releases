@@ -54,15 +54,15 @@ public class AsynchronousSampleWizardIterator extends SampleWizardIterator {
         };
     }
     
-    public Set instantiate() throws IOException {
-        Set resultSet = super.instantiate();
+    public Set<FileObject> instantiate() throws IOException {
+        Set<FileObject> resultSet = super.instantiate();
         
         FileObject dirParent = getProject().getProjectDirectory().getParent();
         try {
             String name = (String) wiz.getProperty(NAME) + "Application";
             
-            Set set = createAsynchronousCompositeApplicationProject(dirParent, name);
-            Iterator iterator = set.iterator();
+            Set<FileObject> set = createAsynchronousCompositeApplicationProject(dirParent, name);
+            Iterator<FileObject> iterator = set.iterator();
             while(iterator.hasNext())
                 resultSet.add(iterator.next());
         } catch(FileNotFoundException fnfe) {
@@ -74,9 +74,9 @@ public class AsynchronousSampleWizardIterator extends SampleWizardIterator {
         return resultSet;
     }
     
-    private Set createAsynchronousCompositeApplicationProject(FileObject targetProjectDir, String name)
+    private Set<FileObject> createAsynchronousCompositeApplicationProject(FileObject targetProjectDir, String name)
     throws FileNotFoundException, IOException {
-        Set resultSet = new HashSet();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
         
         FileObject compApptargetProjectDir = targetProjectDir.createFolder(name);
         assert compApptargetProjectDir != null : "targetProjectDir for AsynchronousCompositeApplicationProject project is null";
