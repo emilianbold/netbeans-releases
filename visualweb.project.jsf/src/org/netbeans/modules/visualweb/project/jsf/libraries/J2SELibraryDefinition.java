@@ -20,6 +20,7 @@
 package org.netbeans.modules.visualweb.project.jsf.libraries;
 
 import org.netbeans.modules.visualweb.project.jsf.api.LibraryDefinition;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,13 +31,22 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-import org.netbeans.modules.visualweb.project.jsf.libraries.*;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 
 /**
  *
- * @author dey
+ * @author Po-Ting Wu
  */
 public class J2SELibraryDefinition extends LibraryDefinition {
+    public static final String LIBRARY_TYPE = "j2se";       //NOI18N
+    public static final String VOLUME_TYPE_CLASSPATH = "classpath";       //NOI18N
+    public static final String VOLUME_TYPE_SRC = "src";       //NOI18N
+    public static final String VOLUME_TYPE_JAVADOC = "javadoc";       //NOI18N
+    public static final String[] VOLUME_TYPES = new String[] {
+        VOLUME_TYPE_CLASSPATH,
+        VOLUME_TYPE_SRC,
+        VOLUME_TYPE_JAVADOC,
+    };
 
     /**
      * Create a library definition with specified resources.
@@ -52,23 +62,13 @@ public class J2SELibraryDefinition extends LibraryDefinition {
      * @return Library The new Library instance registered with the NetBeans Library Manager
      * @throws IOException if the library definition already exists or could not be created
      */
-
     public static Library create(   String name,
                                     String description,
                                     String localizingBundle,
                                     List /* <URL> */ classPaths,
                                     List /* <URL> */ sources,
                                     List /* <URL> */ javadocs) throws IOException {
-
-        // TODO Can't hack NB anymore.
-//        LibraryTypeProvider provider = RaveLibraryTypeRegistry.getLibraryTypeProvider ("j2se");
-        LibraryTypeProvider provider = null;
-
-        if (provider == null) {
-            return null;
-        }
-
-        LibraryImplementation impl = provider.createLibrary();
+        LibraryImplementation impl = LibrariesSupport.createLibraryImplementation(LIBRARY_TYPE, VOLUME_TYPES);
         impl.setName (name);
         impl.setDescription (description);
         impl.setLocalizingBundle (localizingBundle);
@@ -77,21 +77,21 @@ public class J2SELibraryDefinition extends LibraryDefinition {
             for (Iterator i = classPaths.iterator(); i.hasNext(); ) {
                 a.add(toResourceURL((URL)i.next()));
             }
-            impl.setContent("classpath", a);
+            impl.setContent("classpath", a); // NOI18N
         }
         if (sources != null) {
             ArrayList a = new ArrayList(sources.size());
             for (Iterator i = sources.iterator(); i.hasNext(); ) {
                 a.add(toResourceURL((URL)i.next()));
             }
-            impl.setContent("src", a);
+            impl.setContent("src", a);  // NOI18N
         }
         if (javadocs != null) {
             ArrayList a = new ArrayList(javadocs.size());
             for (Iterator i = javadocs.iterator(); i.hasNext(); ) {
                 a.add(toResourceURL((URL)i.next()));
             }
-            impl.setContent("javadoc", a);
+            impl.setContent("javadoc", a);  // NOI18N
         }
 
         addLibrary(impl);
