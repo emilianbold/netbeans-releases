@@ -39,19 +39,17 @@ import java.awt.datatransfer.Transferable;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
-import java.util.logging.ErrorManager;
 import javax.naming.NamingException;
-//import javax.xml.transform.Result;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
-//import org.openide.ErrorManager;
+import org.openide.ErrorManager;
 
 /**
  * Manages the Design Time Data sources transferables
- * @author Winston   Prakash
+ * @author Winston Prakash, John Baker
  */
 public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
     
@@ -61,9 +59,11 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
     public DisplayItem getDisplayItem(Transferable transferable) {
         Object transferData = null;
         try {
-            DataFlavor supportedFlavor = DatabaseMetaDataTransfer.TABLE_FLAVOR;
-            if (transferable.isDataFlavorSupported(supportedFlavor)){
-                transferData = transferable.getTransferData(supportedFlavor);
+            DataFlavor tableFlavor = DatabaseMetaDataTransfer.TABLE_FLAVOR;
+            DataFlavor viewFlavor = DatabaseMetaDataTransfer.VIEW_FLAVOR;
+
+            if (transferable.isDataFlavorSupported(tableFlavor)){
+                transferData = transferable.getTransferData(tableFlavor);
                 if(transferData != null){
                     if(transferData.getClass().isAssignableFrom(DatabaseMetaDataTransfer.Table.class)){
                         DatabaseMetaDataTransfer.Table tableInfo = (DatabaseMetaDataTransfer.Table) transferData;
@@ -80,9 +80,26 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                         return new DatasourceBeanCreateInfoSet(dbConnection, jdbcDriver, tableName);
                     }
                 }
+            } else if (transferable.isDataFlavorSupported(viewFlavor)){
+                transferData = transferable.getTransferData(viewFlavor);
+                if(transferData != null){
+                    if(transferData.getClass().isAssignableFrom(DatabaseMetaDataTransfer.View.class)){
+                        DatabaseMetaDataTransfer.View viewInfo = (DatabaseMetaDataTransfer.View) transferData;
+                        String schemaName = viewInfo.getDatabaseConnection().getSchema();
+                        String viewName =
+                                ((schemaName == null) || (schemaName.equals(""))) ?
+                                    viewInfo.getViewName() :
+                                    schemaName + "." + viewInfo.getViewName();
+                        DatabaseConnection dbConnection = (DatabaseConnection)viewInfo.getDatabaseConnection();
+                        JDBCDriver jdbcDriver = (JDBCDriver) viewInfo.getJDBCDriver();
+                        
+                        // Create the Bean Create Infoset and return
+                        return new DatasourceBeanCreateInfoSet(dbConnection, jdbcDriver, viewName);
+                    }
+                }
             }
-        }catch (Exception exc) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+        } catch (Exception exc) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
         }
         return null;
     }
@@ -153,7 +170,7 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                     if (urlPath != null)  // test if urlPath is undefined
                         driverUtil.copyJarNoConfirm(urlPath);
                 } catch (URISyntaxException urie) {
-//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, urie);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, urie);
                 }
             }
         }
