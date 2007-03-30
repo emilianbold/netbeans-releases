@@ -20,9 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
 
 <!-- 
-    IMPORTANT:  This file modifies keybindings from the editor module to make them work in Mac OS.
-    Original java keybindings: editor/src/org/netbeans/modules/editor/resources/NetBeans-keybindings.xml
-    Last synced with version: 1.8
+    IMPORTANT:  This file modifies keybindings from NetBeans-keybindings.xml to make them work on Mac OS.
 -->
 
 <bindings>

@@ -21,8 +21,7 @@ Microsystems, Inc. All Rights Reserved.
                           
 <!-- 
     IMPORTANT:  To handle Apple-specific keybindings, some of the keybindings
-    added here are modified in ide/applemenu.  When doing changes please
-    update ide/applemenu/src/org/netbeans/modules/applemenu/AllEditorsKeyBindings.xml accordingly.
+    added here are modified in NetBeans-keybindings-mac.xml.
 -->
 
 <bindings>
