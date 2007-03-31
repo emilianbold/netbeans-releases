@@ -334,10 +334,13 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Children.Map;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+
+/*
+ * Main Display Control for all UML Diagram Types.
+ */
 
 /*
  * Main Display Control for all UML Diagram Types.
@@ -726,29 +729,29 @@ public class ADDrawingAreaControl extends ApplicationView
    }
    //JM: added this method to register the ui classes for TSEVisualizationXMLReader   
    static void registerNewUIs()
-	{
-		TSEEnumerationTable.getTable().addUIName(
-			ETUIFactory.GENERIC_NODE_UI,
-			ETGenericNodeUI.class);
-		TSEEnumerationTable.getTable().addUIName(
-			ETUIFactory.GENERIC_NODE_LABEL_UI,
-			ETGenericNodeLabelUI.class);
-		TSEEnumerationTable.getTable().addUIName(
-			"relationEdge",
-			RelationEdge.class);
-		TSEEnumerationTable.getTable().addUIName(
-			"basicEdge",
-			ETGenericEdgeUI.class);
-		TSEEnumerationTable.getTable().addUIName(
-			ETUIFactory.GENERIC_EDGE_LABEL_UI,
-			ETGenericEdgeLabelUI.class);
-		//TSEEnumerationTable.getTable().addUIName(
-		//	"etpNode",
-		//	ETGenericPathNodeUI.class);
-		TSEEnumerationTable.getTable().addUIName(
-			ETUIFactory.GENERIC_GRAPH_UI,
-			ETGenericGraphUI.class);
-	}
+   {
+      TSEEnumerationTable.getTable().addUIName(
+            ETUIFactory.GENERIC_NODE_UI,
+            ETGenericNodeUI.class);
+      TSEEnumerationTable.getTable().addUIName(
+            ETUIFactory.GENERIC_NODE_LABEL_UI,
+            ETGenericNodeLabelUI.class);
+      TSEEnumerationTable.getTable().addUIName(
+            "relationEdge",
+            RelationEdge.class);
+      TSEEnumerationTable.getTable().addUIName(
+            "basicEdge",
+            ETGenericEdgeUI.class);
+      TSEEnumerationTable.getTable().addUIName(
+            ETUIFactory.GENERIC_EDGE_LABEL_UI,
+            ETGenericEdgeLabelUI.class);
+      //TSEEnumerationTable.getTable().addUIName(
+      //	"etpNode",
+      //	ETGenericPathNodeUI.class);
+      TSEEnumerationTable.getTable().addUIName(
+            ETUIFactory.GENERIC_GRAPH_UI,
+            ETGenericGraphUI.class);
+   }
 
    /**
     * This method sets whether the graph has been modified since
@@ -811,10 +814,6 @@ public class ADDrawingAreaControl extends ApplicationView
     */
    public void registerKeyCommands(JComponent component)
    {
-//       if ( keyboardProvider == null )
-//       {
-//           keyboardProvider = new DiagramKeyboardAccessProvider(this);
-//       }
        DiagramKeyboardAccessProvider kbAccessProvider = 
                 DiagramKeyboardAccessProvider.getInstance(this);
        kbAccessProvider.registerKeyCommands(component);
@@ -827,10 +826,6 @@ public class ADDrawingAreaControl extends ApplicationView
     */
    public void unregisterKeyCommands(JComponent component)
    {
-//       if ( keyboardProvider != null )
-//       {
-//           keyboardProvider.unregisterKeyCommands();
-//       }
        DiagramKeyboardAccessProvider kbAccessProvider = 
                 DiagramKeyboardAccessProvider.getInstance(this);
        kbAccessProvider.unregisterKeyCommands(component);
@@ -4734,23 +4729,31 @@ public class ADDrawingAreaControl extends ApplicationView
             //2. get all the visible nodes with bounds that intersect the targe bounding rect
             List overlappingNodes = graph.getNodesTouchingBounds(selBounds, null); 
             
-            // Fixed IZ=95091 - Element moved to back is still shown above container
-            // Cause: contained objects in a container is being redrawn 
-            // as a result of the Refresh() call at the end of this method;
-            // Set the flag not to redraw objects contained in a container if any.
-            setDrawContained(overlappingNodes, true);
-            
             //3. get the selected nodes out of the overlapping nodes and save them to prevSelected list
             List prevSelected = new ArrayList();
             prevSelected.addAll(this.getSelected(overlappingNodes));
             
-            Iterator prevSelectedIter = prevSelected.iterator();
-            while (prevSelectedIter.hasNext())
+            // Fix IZ=95094 - Move to back affects not selected elements
+            // The root cause of this issue is if there are other nodes intersecting with the 
+            // bounding rect of the container but not intersecting with the selected nodes, 
+            // redrawing the container node will cover up these nodes. 
+            // Need to get all the nodes that intersect the extended bounding rect and  
+            // redraw them all.
+            // 4. find the smallest bounding rect that covers all the overlapping nodes
+            ETList<IPresentationElement> overlappingPEs = new ETArrayList <IPresentationElement>();
+            Iterator listIter = overlappingNodes.iterator();
+            while (listIter.hasNext())
             {
-               TSENode graphObj = (TSENode) prevSelectedIter.next();
-               graphObj.setSelected(false);
+               TSNode graphObj = (ETNode) listIter.next();
+               IPresentationElement pe = TypeConversions.getPresentationElement(graphObj);
+               overlappingPEs.add(pe);
             }
+            selBounds = buildMinBoundingRect(overlappingPEs);
             
+            //5. get all nodes that touch the extended bounding rec
+            List extendedOverlappingNodes = graph.getNodesTouchingBounds(selBounds, null); 
+
+            // make sure the passed in elements are selected
             Iterator peIter = pPresentationElements.iterator();
             while (peIter.hasNext())
             {
@@ -4762,10 +4765,16 @@ public class ADDrawingAreaControl extends ApplicationView
                }
             }
             
+            // Fixed IZ=95091 - Element moved to back is still shown above container
+            // Cause: contained objects in a container is being redrawn 
+            // as a result of the Refresh() call at the end of this method;
+            // Set the flag not to redraw objects contained in a container if any.
+            ignoreDrawContainedObject(overlappingNodes, true);
+            
             if (pStackingCommand == IDrawingAreaControl.SOK_MOVETOFRONT)
             {
                List tmpList = new ArrayList();
-               Iterator desiredStackListIter = overlappingNodes.iterator();
+               Iterator desiredStackListIter = extendedOverlappingNodes.iterator();
                while (desiredStackListIter.hasNext())
                {
                   TSENode stackedObj = (TSENode) desiredStackListIter.next();
@@ -4786,25 +4795,24 @@ public class ADDrawingAreaControl extends ApplicationView
             } 
             else if (pStackingCommand == IDrawingAreaControl.SOK_MOVETOBACK)
             {
-               Collections.reverse(overlappingNodes);
-               Iterator desiredStackListIter = overlappingNodes.iterator();
+               Collections.reverse(extendedOverlappingNodes);
+               Iterator desiredStackListIter = extendedOverlappingNodes.iterator();
                while (desiredStackListIter.hasNext())
                {
-                  TSENode stackedObj = (TSENode) desiredStackListIter.next();
-                  if (!stackedObj.isSelected())
-                  {
-                     graph.remove(stackedObj);
-                     graph.insert(stackedObj);
+                  TSENode stackedNode = (TSENode) desiredStackListIter.next();
+                  if (!stackedNode.isSelected()) {
+                     graph.remove(stackedNode);
+                     graph.insert(stackedNode);
                   }
                }
-            } 
+            }
             else if (pStackingCommand == IDrawingAreaControl.SOK_MOVEFORWARD)
             {
                List tmpList = new ArrayList();
-               if (((TSENode)overlappingNodes.get(0)).isSelected())
+               if (((TSENode)extendedOverlappingNodes.get(0)).isSelected())
                   return;
-               Collections.reverse(overlappingNodes);
-               Iterator desiredStackListIter = overlappingNodes.iterator();
+               Collections.reverse(extendedOverlappingNodes);
+               Iterator desiredStackListIter = extendedOverlappingNodes.iterator();
                while (desiredStackListIter.hasNext())
                {
                   TSENode stackedObj = (TSENode) desiredStackListIter.next();
@@ -4831,7 +4839,7 @@ public class ADDrawingAreaControl extends ApplicationView
             {
                List bakList = new ArrayList();
                List tmpList = new ArrayList();
-               Iterator desiredStackListIter = overlappingNodes.iterator();
+               Iterator desiredStackListIter = extendedOverlappingNodes.iterator();
                while (desiredStackListIter.hasNext())
                {
                   TSENode stackedObj = (TSENode) desiredStackListIter.next();
@@ -4857,6 +4865,15 @@ public class ADDrawingAreaControl extends ApplicationView
                while (bakIter.hasNext())
                {
                   TSENode stackedObj = (TSENode) bakIter.next();
+                  if (stackedObj.isSelected())
+                  {  // if the selected node is next to the last node in overlappingNodes list,
+                     // do not redraw it.
+                     int index = overlappingNodes.indexOf(stackedObj);
+                     if (index >= (overlappingNodes.size()-2))
+                     {
+                        continue;
+                     }
+                  }
                   graph.remove(stackedObj);
                   graph.insert(stackedObj);
                }
@@ -4878,24 +4895,25 @@ public class ADDrawingAreaControl extends ApplicationView
       }
    }
    
-      private void setDrawContained(List overlappingNodes, boolean ignore)
+   private void ignoreDrawContainedObject(List overlappingNodes, boolean ignore)
+   {
+      Iterator listIter = overlappingNodes.iterator();
+      while (listIter.hasNext())
       {
-         Iterator listIter = overlappingNodes.iterator();
-         while (listIter.hasNext())
+         TSENode stackedObj = (TSENode) listIter.next();
+         if (stackedObj != null )
          {
-            TSENode stackedObj = (TSENode) listIter.next();
-            if (stackedObj != null )
+            ETGenericNodeUI nodeUI = (ETGenericNodeUI) stackedObj.getNodeUI();
+            IDrawEngine objDrawEngine = nodeUI.getDrawEngine();
+            if (objDrawEngine instanceof ETContainerDrawEngine)
             {
-               ETGenericNodeUI nodeUI = (ETGenericNodeUI) stackedObj.getNodeUI();
-               IDrawEngine objDrawEngine = nodeUI.getDrawEngine();
-               if (objDrawEngine instanceof ETContainerDrawEngine)
-               {
-                  ((ETContainerDrawEngine)objDrawEngine).setIgnoreDrawContained(ignore);
-               }
+               ((ETContainerDrawEngine)objDrawEngine).setIgnoreDrawContained(ignore);
             }
          }
       }
-      
+   }
+
+   
    // Used by ExecuteStackingCommand to calculate min bounding rect of specfied elements
    private TSConstRect buildMinBoundingRect(List pPresentationElements)
    {
