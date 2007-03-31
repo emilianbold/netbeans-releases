@@ -920,12 +920,14 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         earProjects = new ArrayList();
         for (int i = 0; i < allProjects.length; i++) {
             J2eeApplicationProvider j2eeAppProvider = allProjects[i].getLookup().lookup(J2eeApplicationProvider.class);
-            J2eeApplication j2eeApplication = (J2eeApplication) j2eeAppProvider.getJ2eeModule();
-            ProjectInformation projectInfo = ProjectUtils.getInformation(allProjects[i]);
-            if (j2eeApplication != null) {
-                earProjects.add(projectInfo.getProject());
-                jComboBoxEnterprise.addItem(projectInfo.getDisplayName());
-            }
+	    if (j2eeAppProvider != null) {
+		J2eeApplication j2eeApplication = (J2eeApplication) j2eeAppProvider.getJ2eeModule();
+		ProjectInformation projectInfo = ProjectUtils.getInformation(allProjects[i]);
+		if (j2eeApplication != null) {
+		    earProjects.add(projectInfo.getProject());
+		    jComboBoxEnterprise.addItem(projectInfo.getDisplayName());
+		}
+	    }
         }
         if (earProjects.size() <= 0) {
             jComboBoxEnterprise.setEnabled(false);
