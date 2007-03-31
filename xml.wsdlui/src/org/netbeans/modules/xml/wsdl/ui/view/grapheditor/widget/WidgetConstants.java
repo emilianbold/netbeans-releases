@@ -36,7 +36,7 @@ public interface WidgetConstants {
     /** The minimum width for message widget */
     public int MESSAGE_MINIMUM_WIDTH = 600;
     /** The minimum widget for the top-level widgets (e.g. collaborations). */
-    public int PARTNERLLINKTYPE_MINIMUM_WIDTH = 700;
+    public int PARTNERLLINKTYPE_MINIMUM_WIDTH = 675;
     
     /** Minimum width for partnerlinktypes and messages header*/
     public int HEADER_MINIMUM_WIDTH = 900;
@@ -65,17 +65,23 @@ public interface WidgetConstants {
     
     /** Header gradient border*/
     public org.netbeans.api.visual.border.Border GRADIENT_BLUE_WHITE_BORDER = new GradientFillBorder(0, 0, 4, 8,
-            null, WidgetConstants.GRADIENT_TOP_COLOR, WidgetConstants.GRADIENT_BOTTOM_COLOR);
+            null, Color.WHITE, new Color(0xADCFEF));
+    
+    public org.netbeans.api.visual.border.Border GRADIENT_GRAY_WHITE_BORDER = new GradientFillBorder(0, 0, 4, 8,
+            null, Color.WHITE, DISABLED_GRAY);
+    public org.netbeans.api.visual.border.Border GRADIENT_GREEN_WHITE_BORDER = new GradientFillBorder(0, 0, 4, 8,
+            null, Color.WHITE, Color.GREEN);
     
     /** Gap between header and content */
     public int GAP_BETWEEN_HEADER_AND_CONTENT = 15;
     
     /** Gap between child widgets in content*/
-    public int GAP_BETWEEN_CHILD_WIDGETS = 8;
+    public int GAP_BETWEEN_CHILD_WIDGETS = 16;
     
     /** Empty border for header widgets */
     public org.netbeans.api.visual.border.Border HEADER_BORDER = org.netbeans.api.visual.border.BorderFactory.createEmptyBorder(5, 0);
     
+    public int TEXT_LABEL_HEIGHT = 25;
 
     
     

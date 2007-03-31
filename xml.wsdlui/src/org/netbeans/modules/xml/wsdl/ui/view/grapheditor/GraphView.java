@@ -23,14 +23,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.Collections;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -43,7 +39,6 @@ import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.Scene;
@@ -85,6 +80,7 @@ public class GraphView extends JPanel {
     private Widget middleWidget;
     
     private JScrollPane panel;
+    
 
     /**
      * Creates a new instance of GraphView.
@@ -95,7 +91,6 @@ public class GraphView extends JPanel {
 
         scene = new PartnerScene(mModel);
         scene.setBackground(Color.WHITE);
-        scene.setLayout(LayoutFactory.createFillLayout());
         zoomer = new ZoomManager(scene);
 
         JComponent sceneView = scene.createView();
@@ -103,33 +98,45 @@ public class GraphView extends JPanel {
         if (sceneView instanceof MouseWheelListener) {
             sceneView.removeMouseWheelListener((MouseWheelListener) sceneView);
         }        
-        panel = new JScrollPane(sceneView);
-        panel.getVerticalScrollBar().setUnitIncrement(16);
-        panel.getHorizontalScrollBar().setUnitIncrement(16);
-        panel.setBorder(null);
-        add(panel, BorderLayout.CENTER);
         
         collaborationsWidget = scene.getCollaborationsWidget();
         messagesWidget = scene.getMessagesWidget();
         // Note that the arrangement of collaborationsWidget and
         // messagesWidget is also controlled by the View actions below.
         contentWidget = new Widget(scene);
-        contentWidget.setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.CENTER, 0));
+        contentWidget.setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, 0));
         contentWidget.addChild(collaborationsWidget);
         
-        middleWidget = new LineWidget(scene, 5);
+        middleWidget = new Widget(scene);
         middleWidget.setMinimumSize(new Dimension(WidgetConstants.HEADER_MINIMUM_WIDTH, 5));
-        middleWidget.setForeground(Color.LIGHT_GRAY);
+        middleWidget.setBackground(Color.LIGHT_GRAY);
         middleWidget.setOpaque(true);
         contentWidget.addChild(middleWidget);
         contentWidget.addChild(messagesWidget);
-
-        scene.addChild(contentWidget);
         
+        scene.addChild(contentWidget);
+        scene.addSceneListener (new Scene.SceneListener() {
+            public void sceneRepaint () {
+            }
+            public void sceneValidating () {
+
+            }
+            public void sceneValidated () {
+                int width = panel.getViewport().getWidth();
+                if (width <= scene.getBounds().width) {
+                    contentWidget.setMinimumSize(new Dimension(width, 0));
+                }
+            }
+        });
         mDragLayer = scene.getDragOverLayer();
 
         scene.addChild(mDragLayer);
         
+        panel = new JScrollPane(sceneView);
+        panel.getVerticalScrollBar().setUnitIncrement(16);
+        panel.getHorizontalScrollBar().setUnitIncrement(16);
+        panel.setBorder(null);
+        add(panel, BorderLayout.CENTER);
 
     }
 
@@ -318,85 +325,6 @@ public class GraphView extends JPanel {
 
         public void run() {
             setMessagesVisible(!isMessagesShowing());
-        }
-    }
-    
-    public class PartnerViewContentLayout implements Layout {
-        Layout layout;
-        
-        public PartnerViewContentLayout() {
-            this(0);
-        }
-        
-        public PartnerViewContentLayout(int gap) {
-            layout =  LayoutFactory.createVerticalLayout(
-                    SerialAlignment.JUSTIFY, gap);
-        }
-
-        public void justify(Widget widget) {
-            layout.justify(widget);
-            List<Widget> children = widget.getChildren();
-            
-            int size = children.size();
-            if (size > 0) {
-                Widget lastWidget = children.get(size - 1);
-                Rectangle parentBounds  = widget.getClientArea();
-              
-                if (getHeight() > parentBounds.height) {
-                    int newHeight = getHeight() - parentBounds.height;
-                    Rectangle rectangle = lastWidget.getBounds();
-                    rectangle.height += newHeight;
-                    lastWidget.resolveBounds (lastWidget.getLocation(), rectangle);
-                }
-            }
-        }
-
-        public void layout(Widget widget) {
-            layout.layout(widget);
-            List<Widget> children = widget.getChildren();
-            int size = children.size();
-            if (size > 0) {
-                Widget lastWidget = children.get(size - 1);
-                
-                Point location = lastWidget.getLocation();
-                Rectangle rect = lastWidget.getBounds();
-                int endOfLastWidget = location.y + rect.height;
-                int diffInHeight = 0;
-                if ((diffInHeight = getHeight() - endOfLastWidget) > 0) {
-                    rect.height += diffInHeight;
-                    lastWidget.resolveBounds (location, rect);
-                }
-            }
-            
-        }
-
-        public boolean requiresJustification(Widget widget) {
-            return true;
-        }
-
-    }
-    
-    
-    public class LineWidget extends Widget {
-        int height = 0;
-        public LineWidget(Scene scene, int height) {
-            super(scene);
-            this.height = height;
-        }
-        
-        @Override
-        protected void paintWidget() {
-            super.paintWidget();
-            Rectangle r = getScene().getBounds();
-            Rectangle clientArea = getClientArea();
-            if (r != null) {
-                Graphics2D g = getGraphics();
-                Color oldColor = g.getColor();
-                g.setColor(getForeground());
-                Point p = convertSceneToLocal(new Point());
-                g.fillRect(p.x, clientArea.height - height, r.width, height);
-                g.setColor(oldColor);
-            }
         }
     }
 }

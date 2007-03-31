@@ -265,24 +265,47 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
     }
 
     public boolean dragOver(Point scenePoint, WidgetDropTargetDragEvent event) {
-        boolean collaborationsHit = collaborationsWidget != null && collaborationsWidget.isVisible() && 
-            collaborationsWidget.isHitAt(collaborationsWidget.convertSceneToLocal(new Point(100, scenePoint.y)));
+        boolean messageVisible = messagesWidget != null && messagesWidget.isVisible();
+        boolean collabVisible = collaborationsWidget != null && collaborationsWidget.isVisible();
         
-        if (collaborationsHit) {
+        if (messageVisible && collabVisible) {
+
+            boolean collaborationsHit = 
+                collaborationsWidget.isHitAt(collaborationsWidget.convertSceneToLocal(new Point(100, scenePoint.y)));
+
+            if (collaborationsHit) {
+                return collaborationsWidget.dragOver(scenePoint, event);
+            }
+            return messagesWidget.dragOver(scenePoint, event);
+            
+        } else if (messageVisible) {
+            return messagesWidget.dragOver(scenePoint, event);
+        } else if (collabVisible) {
             return collaborationsWidget.dragOver(scenePoint, event);
         }
-        return messagesWidget.dragOver(scenePoint, event);
-        
+        return false;
     }
 
     public boolean drop(Point scenePoint, WidgetDropTargetDropEvent event) {
-        boolean collaborationsHit = collaborationsWidget != null && collaborationsWidget.isVisible() && 
-        collaborationsWidget.isHitAt(collaborationsWidget.convertSceneToLocal(new Point(100, scenePoint.y)));
-    
-        if (collaborationsHit) {
+        boolean messageVisible = messagesWidget != null && messagesWidget.isVisible();
+        boolean collabVisible = collaborationsWidget != null && collaborationsWidget.isVisible();
+        
+        if (messageVisible && collabVisible) {
+
+            boolean collaborationsHit = 
+                collaborationsWidget.isHitAt(collaborationsWidget.convertSceneToLocal(new Point(100, scenePoint.y)));
+
+            if (collaborationsHit) {
+                return collaborationsWidget.drop(scenePoint, event);
+            }
+            return messagesWidget.drop(scenePoint, event);
+            
+        } else if (messageVisible) {
+            return messagesWidget.drop(scenePoint, event);
+        } else if (collabVisible) {
             return collaborationsWidget.drop(scenePoint, event);
         }
-        return messagesWidget.drop(scenePoint, event);
+        return false;
     }
 
     public void expandForDragAndDrop() {
@@ -292,4 +315,10 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
     public boolean isCollapsed() {
         return false;
     }
+
+    public void dragExit() {
+        collaborationsWidget.dragExit();
+        messagesWidget.dragExit();
+    }
+
 }

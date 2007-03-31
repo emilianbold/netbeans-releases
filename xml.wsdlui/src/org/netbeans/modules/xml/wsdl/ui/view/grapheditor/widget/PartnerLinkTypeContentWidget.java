@@ -19,7 +19,6 @@
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.awt.Color;
-import java.awt.Rectangle;
 
 import javax.swing.BorderFactory;
 
@@ -58,7 +57,6 @@ public class PartnerLinkTypeContentWidget extends Widget {
             this
         });
         refreshRoles();
-        //setBorder(BorderFactory.createLineBorder(Color.RED));
 
     }
     
@@ -66,17 +64,12 @@ public class PartnerLinkTypeContentWidget extends Widget {
         return mOperationSceneLayer;
     }
     
-    @Override
-    public Rectangle calculateClientArea() {
-        return super.calculateClientArea();
-    }
-    
     private void refreshRoles() {
         removeChildren();
         Scene scene = getScene();
         setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(2, 0, 0, 0, Color.LIGHT_GRAY), BorderFactory.createEmptyBorder(10, 14, 0, 14)));
         
-        setLayout(new PartnerLinkTypeContentLayout(75));
+        setLayout(new PartnerLinkTypeContentLayout(90));
         
         
         WidgetFactory factory = WidgetFactory.getInstance();

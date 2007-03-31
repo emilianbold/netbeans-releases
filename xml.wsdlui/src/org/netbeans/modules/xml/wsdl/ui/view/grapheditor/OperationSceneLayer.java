@@ -73,7 +73,6 @@ public class OperationSceneLayer extends Widget implements ComponentListener {
     }
     
     private void init() {
-//        setBorder(BorderFactory.createLineBorder(Color.CYAN));
         setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, OPERATION_GAP));
         dummyOperationWidget = new Widget(getScene());
         dummyOperationWidget.setPreferredBounds(new Rectangle(0, 67));//67 = height of a operation widget

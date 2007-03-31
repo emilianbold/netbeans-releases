@@ -282,6 +282,7 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
             currentBorder = null;
         }
         repaint();
+        revalidate(true);
     }
 
     /**

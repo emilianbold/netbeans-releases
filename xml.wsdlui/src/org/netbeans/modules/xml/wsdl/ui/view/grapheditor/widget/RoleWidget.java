@@ -19,12 +19,18 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -38,15 +44,17 @@ import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.LabelWidget.Alignment;
+import org.netbeans.api.visual.widget.LabelWidget.VerticalAlignment;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.HoverActionProvider;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortTypeNode;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -64,9 +72,11 @@ import org.openide.util.NbBundle;
  */
 public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     private PortTypeWidget mPortTypeWidget;
-    private CenteredLabelWidget mLabelWidget;
+    private LabelWidget mLabelWidget;
     private PartnerLinkType mPartnerLinkType;
     private boolean leftSided;
+    private int GAP = 25;
+    private int MINIMUM_WIDTH = 225;
 
     /**
      * Creates a new instance of RoleWidget.
@@ -82,8 +92,8 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     }
 
     private void init() {
-        setLayout(new RoleWidgetLayout(10));
-        setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        setMinimumSize(new Dimension(MINIMUM_WIDTH, 0));
+        setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.CENTER, GAP));
         setOpaque(true);
         updateContent();
         if (getWSDLComponent() != null)
@@ -168,15 +178,21 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     private void refreshPortTypeColumn() {
         removeChildren();
         if (getWSDLComponent() == null) {
-            mLabelWidget = new CenteredLabelWidget(getScene(), getName(), WidgetConstants.DISABLED_GRAY);
+            mLabelWidget = new LabelWidget(getScene(), getName());
+            mLabelWidget.setAlignment(Alignment.CENTER);
+            mLabelWidget.setVerticalAlignment(VerticalAlignment.CENTER);
+            mLabelWidget.setForeground(Color.LIGHT_GRAY);
             mLabelWidget.setToolTipText(NbBundle.getMessage(RoleWidget.class, "RoleWidget_DBL_CLICK_CREATE_NEW_ROLE_TT"));
         } else {
-            mLabelWidget = new CenteredLabelWidget(getScene(), getName(), Color.WHITE);
+            mLabelWidget = new LabelWidget(getScene(), getName());
+            mLabelWidget.setAlignment(Alignment.CENTER);
+            mLabelWidget.setVerticalAlignment(VerticalAlignment.CENTER);
             mLabelWidget.setToolTipText(null);
         }
+       // mLabelWidget.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        mLabelWidget.setMinimumSize(new Dimension(MINIMUM_WIDTH, WidgetConstants.TEXT_LABEL_HEIGHT));
         addChild(mLabelWidget);
-        //mLabelWidget.setBackground(Color.WHITE);
-        mLabelWidget.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+
         mLabelWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
 
             public void setText(Widget widget, String text) {
@@ -268,7 +284,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
         
         public RoleWidgetLayout(int gap) {
             mGap = gap;
-            vertLayout = LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, gap);
+            vertLayout = LayoutFactory.createVerticalLayout(SerialAlignment.CENTER, gap);
         }
         
         public void justify(Widget widget) {
@@ -398,5 +414,36 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
                 liter.remove();
             }
         }
+    }
+    
+    @Override
+    protected Shape createSelectionShape() {
+        return new Rectangle2D.Double(getBounds().x + 1, getBounds().y + 1, getBounds().width, WidgetConstants.TEXT_LABEL_HEIGHT * 2 + GAP);
+    }
+    
+    @Override
+    protected void paintWidget() {
+        super.paintWidget();
+        
+        if (getState().isSelected()) {
+            return;
+        }
+        
+        Graphics2D g = getGraphics();
+        Color old = g.getColor();
+        Stroke stk = g.getStroke();
+        
+        if (getWSDLComponent() != null) {
+            g.setColor(Color.BLACK);
+            g.setStroke(new BasicStroke(1));
+        } else {
+            g.setColor(Color.GRAY);
+            BasicStroke dotted = new BasicStroke(1, BasicStroke.CAP_BUTT, 
+                    BasicStroke.JOIN_MITER, 5.0f, new float[]{10,5,10,5}, 0);
+            g.setStroke(dotted);
+        }
+        g.draw(createSelectionShape());
+        g.setColor(old);
+        g.setStroke(stk);
     }
 }
