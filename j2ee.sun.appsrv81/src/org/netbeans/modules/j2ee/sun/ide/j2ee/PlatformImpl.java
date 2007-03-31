@@ -87,10 +87,7 @@ public class PlatformImpl extends J2eePlatformImpl {
     public static final String[] SWDP_JARS = new String[] {
             "lib/addons/restbeans-api.jar",
             "lib/addons/restbeans-impl.jar",
-            "lib/addons/wadl2java.jar",
-            "lib/addons/localizer.jar",
-            "lib/addons/rome-0.9.jar",
-            "lib/addons/jdom-1.0.jar"
+            "lib/addons/wadl2java.jar"
     };
     
     private static final String[] TRUSTSTORE_LOCATION = new String[] {
