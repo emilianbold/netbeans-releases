@@ -316,9 +316,4 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         return false;
     }
 
-    public void dragExit() {
-        collaborationsWidget.dragExit();
-        messagesWidget.dragExit();
-    }
-
 }
