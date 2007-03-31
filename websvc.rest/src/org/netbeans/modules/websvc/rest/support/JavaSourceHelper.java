@@ -60,6 +60,7 @@ public class JavaSourceHelper {
     
     static final String CLASS_TEMPLATE = "Templates/Classes/Class.java"; // NOI18N
     static final String INTERFACE_TEMPLATE = "Templates/Classes/Interface.java"; // NOI18N
+    static final String JAVA_EXT = "java";                  //NOI18N
     
     public static List<JavaSource> getJavaSources(Project project) {
         List<JavaSource> result = new ArrayList<JavaSource>();
@@ -72,7 +73,7 @@ public class JavaSourceHelper {
             while(files.hasMoreElements()) {
                 FileObject fobj = files.nextElement();
                 
-                if (fobj.getExt().equals("java")) {     //NOI18N
+                if (fobj.getExt().equals(JAVA_EXT)) {
                     JavaSource source = JavaSource.forFileObject(fobj);
                     result.add(source);
                 }

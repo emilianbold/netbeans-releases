@@ -34,6 +34,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 
@@ -372,6 +373,8 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
         if (model instanceof EntityListModel) {
             EntityListModel elm = (EntityListModel) model;
             settings.putProperty(WizardProperties.ENTITY_CLASSES, elm.getEntityClasses());
+            settings.putProperty(WizardProperties.PERSISTENCE_UNIT_NAME,
+                    PersistenceHelper.getPersistenceUnitName(project));
         }
     }
     

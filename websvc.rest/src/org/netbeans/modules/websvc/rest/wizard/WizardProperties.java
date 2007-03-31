@@ -25,4 +25,5 @@ public class WizardProperties {
     public static final String SCOPE = "Scope"; // NOI18N
     public static final String ENTITY_CLASSES = "EntityClasses"; //NOI18N
     public static final String REST_CLASSES_PACKAGE = "RESTBean"; //NOI18N
+    public static final String PERSISTENCE_UNIT_NAME = "PersistenceUnitName";       //NOI18N
 }
