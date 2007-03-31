@@ -71,6 +71,9 @@ import org.openide.cookies.OpenCookie;
  * @author Po-Ting Wu
  */
 public class JSFFrameworkProvider extends WebFrameworkProvider {
+    private static final String FACES_STATE_SAVING_METHOD = "javax.faces.STATE_SAVING_METHOD"; // NOI18N
+    private static final String FACES_VALIDATE_XML = "com.sun.faces.validateXml"; // NOI18N
+    private static final String FACES_VERIFY_OBJECTS = "com.sun.faces.verifyObjects"; // NOI18N
 
     private JSFConfigurationPanel panel;
     /** Creates a new instance of JSFFrameworkProvider */
@@ -267,102 +270,173 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             if (ddRoot != null){
                 try{
                     // Set the context parameter
-                    InitParam contextParam = (InitParam)ddRoot.createBean("InitParam"); // NOI18N
-                    contextParam.setParamName("javax.faces.STATE_SAVING_METHOD"); // NOI18N
-                    contextParam.setParamValue("server"); // NOI18N
-                    ddRoot.addContextParam(contextParam);
+                    InitParam facesSaving = null;
+                    InitParam facesValidate = null;
+                    InitParam facesVerify = null;
+                    InitParam[] params = ddRoot.getContextParam();
+                    for (int i = 0; i < params.length; i++) {
+                        InitParam ip = params[i];
+                        String name = ip.getParamName();
+                        if (FACES_STATE_SAVING_METHOD.equals(name)) {
+                            facesSaving = ip;
+                        } else if (FACES_VALIDATE_XML.equals(name)) {
+                            facesValidate = ip;
+                        } else if (FACES_VERIFY_OBJECTS.equals(name)) {
+                            facesVerify = ip;
+                        }
+                    }
+
+                    if (facesSaving == null) {
+                        facesSaving = (InitParam)ddRoot.createBean("InitParam"); // NOI18N
+                        facesSaving.setParamName(FACES_STATE_SAVING_METHOD);
+                        facesSaving.setParamValue("client"); // NOI18N
+                        ddRoot.addContextParam(facesSaving);
+                    }
                     
-                    contextParam = (InitParam)ddRoot.createBean("InitParam"); // NOI18N
+                    String value = (panel == null || panel.validateXML()) ? "true" : "false"; // NOI18N
+                    if (facesValidate == null) {
+                        facesValidate = (InitParam)ddRoot.createBean("InitParam"); //NOI18N
+                        facesValidate.setParamName(FACES_VALIDATE_XML);
+                        facesValidate.setParamValue(value);
+                        ddRoot.addContextParam(facesValidate);
+                    } else {
+                        facesValidate.setParamValue(value);
+                    }
+                    
+                    value = (panel == null || panel.verifyObjects()) ? "true" : "false"; // NOI18N
+                    if (facesVerify == null) {
+                        facesVerify = (InitParam)ddRoot.createBean("InitParam"); //NOI18N
+                        facesVerify.setParamName(FACES_VERIFY_OBJECTS);
+                        facesVerify.setParamValue(value);
+                        ddRoot.addContextParam(facesVerify);
+                    } else {
+                        facesVerify.setParamValue(value);
+                    }
+                    
+                    InitParam contextParam = (InitParam)ddRoot.createBean("InitParam"); // NOI18N
                     contextParam.setParamName("javax.faces.CONFIG_FILES"); // NOI18N
                     contextParam.setParamValue("/WEB-INF/navigation.xml,/WEB-INF/managed-beans.xml"); // NOI18N
                     ddRoot.addContextParam(contextParam);
                     
-                    contextParam = (InitParam)ddRoot.createBean("InitParam"); //NOI18N
-                    contextParam.setParamName("com.sun.faces.validateXml"); //NOI18N
-                    if(panel == null || panel.validateXML())
-                        contextParam.setParamValue("true"); //NOI18N
-                    else
-                        contextParam.setParamValue("false"); //NOI18N
-                    ddRoot.addContextParam(contextParam);
-                    
-                    contextParam = (InitParam)ddRoot.createBean("InitParam"); //NOI18N
-                    contextParam.setParamName("com.sun.faces.verifyObjects");  //NOI18N
-                    if (panel != null && panel.verifyObjects())
-                        contextParam.setParamValue("true");  //NOI18N
-                    else
-                        contextParam.setParamValue("false");  //NOI18N
-                    ddRoot.addContextParam(contextParam);
-                    
                     // The UpLoad Filter
-                    Filter filter = (Filter)ddRoot.createBean("Filter"); // NOI18N
-                    filter.setFilterName("UploadFilter"); // NOI18N
-                    if (J2eeModule.JAVA_EE_5.equals(j2eeLevel))
-                        filter.setFilterClass("com.sun.webui.jsf.util.UploadFilter"); // NOI18N
-                    else
-                        filter.setFilterClass("com.sun.rave.web.ui.util.UploadFilter"); // NOI18N
+                    Filter filter;
+                    boolean hasUploadFilter = false;
+                    Filter[] filters = ddRoot.getFilter();
+                    for (int i = 0; i < filters.length; i++) {
+                        filter = filters[i];
+                        if ("UploadFilter".equals(filter.getFilterName())) {
+                            hasUploadFilter = true;
+                            break;
+                        }
+                    }
+
+                    if (!hasUploadFilter) {
+                        filter = (Filter)ddRoot.createBean("Filter"); // NOI18N
+                        filter.setFilterName("UploadFilter"); // NOI18N
+                        if (J2eeModule.JAVA_EE_5.equals(j2eeLevel))
+                            filter.setFilterClass("com.sun.webui.jsf.util.UploadFilter"); // NOI18N
+                        else
+                            filter.setFilterClass("com.sun.rave.web.ui.util.UploadFilter"); // NOI18N
                     
-                    contextParam = (InitParam)filter.createBean("InitParam"); // NOI18N
-                    contextParam.setDescription("The maximum allowed upload size in bytes.  If this is set " +
-                            "to a negative value, there is no maximum.  The default " +
-                            "value is 1000000."); // NOI18N
-                    contextParam.setParamName("maxSize"); // NOI18N
-                    contextParam.setParamValue("1000000"); // NOI18N
-                    filter.addInitParam(contextParam);
-                    
-                    contextParam = (InitParam)filter.createBean("InitParam"); // NOI18N
-                    contextParam.setDescription("The size (in bytes) of an uploaded file which, if it is " +
-                            "exceeded, will cause the file to be written directly to " +
-                            "disk instead of stored in memory.  Files smaller than or " +
-                            "equal to this size will be stored in memory.  The default " +
-                            "value is 4096."); // NOI18N
-                    contextParam.setParamName("sizeThreshold"); // NOI18N
-                    contextParam.setParamValue("4096"); // NOI18N
-                    filter.addInitParam(contextParam);
-                    ddRoot.addFilter(filter);
-                    
-                    FilterMapping filterMapping = (FilterMapping)ddRoot.createBean("FilterMapping"); // NOI18N
-                    filterMapping.setFilterName("UploadFilter"); // NOI18N
-                    filterMapping.setServletName(panel.getServletName());
-                    ddRoot.addFilterMapping(filterMapping);
+                        contextParam = (InitParam)filter.createBean("InitParam"); // NOI18N
+                        contextParam.setDescription("The maximum allowed upload size in bytes.  If this is set " +
+                                "to a negative value, there is no maximum.  The default " +
+                                "value is 1000000."); // NOI18N
+                        contextParam.setParamName("maxSize"); // NOI18N
+                        contextParam.setParamValue("1000000"); // NOI18N
+                        filter.addInitParam(contextParam);
+                        
+                        contextParam = (InitParam)filter.createBean("InitParam"); // NOI18N
+                        contextParam.setDescription("The size (in bytes) of an uploaded file which, if it is " +
+                                "exceeded, will cause the file to be written directly to " +
+                                "disk instead of stored in memory.  Files smaller than or " +
+                                "equal to this size will be stored in memory.  The default " +
+                                "value is 4096."); // NOI18N
+                        contextParam.setParamName("sizeThreshold"); // NOI18N
+                        contextParam.setParamValue("4096"); // NOI18N
+                        filter.addInitParam(contextParam);
+                        ddRoot.addFilter(filter);
+                        
+                        FilterMapping filterMapping = (FilterMapping)ddRoot.createBean("FilterMapping"); // NOI18N
+                        filterMapping.setFilterName("UploadFilter"); // NOI18N
+                        filterMapping.setServletName(panel.getServletName());
+                        ddRoot.addFilterMapping(filterMapping);
+                    }
                     
                     // The Servlets
-                    Servlet servlet = (Servlet)ddRoot.createBean("Servlet"); // NOI18N
-                    servlet.setServletName(panel.getServletName());
-                    servlet.setServletClass("javax.faces.webapp.FacesServlet"); // NOI18N    
-                    servlet.setLoadOnStartup(new BigInteger("1"));// NOI18N
-                    ddRoot.addServlet(servlet);
+                    Servlet servlet;
+                    boolean hasFacesServlet = false;
+                    boolean hasExceptionServlet = false;
+                    boolean hasThemeServlet = false;
+                    Servlet[] servlets = ddRoot.getServlet();
+                    for (int i = 0; i < servlets.length; i++) {
+                        servlet = servlets[i];
+                        String name = servlet.getServletName();
+                        if (panel.getServletName().equals(name)) {
+                            hasFacesServlet = true;
+                        } else if ("ExceptionHandlerServlet".equals(name)) {
+                            hasExceptionServlet = true;
+                        } else if ("ThemeServlet".equals(name)) {
+                            hasThemeServlet = true;
+                        }
+                    }
 
-                    servlet = (Servlet)ddRoot.createBean("Servlet"); // NOI18N
-                    servlet.setServletName("ExceptionHandlerServlet");
-                    servlet.setServletClass("com.sun.errorhandler.ExceptionHandler"); // NOI18N    
+                    if (!hasFacesServlet) {
+                        servlet = (Servlet)ddRoot.createBean("Servlet"); // NOI18N
+                        servlet.setServletName(panel.getServletName());
+                        servlet.setServletClass("javax.faces.webapp.FacesServlet"); // NOI18N    
+                        servlet.setLoadOnStartup(new BigInteger("1"));// NOI18N
+                        ddRoot.addServlet(servlet);
+                    }
 
-                    contextParam = (InitParam)servlet.createBean("InitParam"); // NOI18N
-                    contextParam.setParamName("errorHost"); // NOI18N
-                    contextParam.setParamValue("localhost"); // NOI18N
-                    servlet.addInitParam(contextParam);
+                    if (!hasExceptionServlet) {
+                        servlet = (Servlet)ddRoot.createBean("Servlet"); // NOI18N
+                        servlet.setServletName("ExceptionHandlerServlet");
+                        servlet.setServletClass("com.sun.errorhandler.ExceptionHandler"); // NOI18N    
 
-                    contextParam = (InitParam)servlet.createBean("InitParam"); // NOI18N
-                    contextParam.setParamName("errorPort"); // NOI18N
-                    contextParam.setParamValue("24444"); // NOI18N
-                    servlet.addInitParam(contextParam);
+                        contextParam = (InitParam)servlet.createBean("InitParam"); // NOI18N
+                        contextParam.setParamName("errorHost"); // NOI18N
+                        contextParam.setParamValue("localhost"); // NOI18N
+                        servlet.addInitParam(contextParam);
 
-                    ddRoot.addServlet(servlet);
+                        contextParam = (InitParam)servlet.createBean("InitParam"); // NOI18N
+                        contextParam.setParamName("errorPort"); // NOI18N
+                        contextParam.setParamValue("24444"); // NOI18N
+                        servlet.addInitParam(contextParam);
 
-                    servlet = (Servlet)ddRoot.createBean("Servlet"); // NOI18N
-                    servlet.setServletName("ThemeServlet"); // NOI18N
+                        ddRoot.addServlet(servlet);
+                    }
 
-                    if (J2eeModule.JAVA_EE_5.equals(j2eeLevel))
-                        servlet.setServletClass("com.sun.webui.theme.ThemeServlet"); // NOI18N
-                    else
-                        servlet.setServletClass("com.sun.rave.web.ui.theme.ThemeServlet"); // NOI18N
+                    if (!hasThemeServlet) {
+                        servlet = (Servlet)ddRoot.createBean("Servlet"); // NOI18N
+                        servlet.setServletName("ThemeServlet"); // NOI18N
 
-                    ddRoot.addServlet(servlet);
+                        if (J2eeModule.JAVA_EE_5.equals(j2eeLevel))
+                            servlet.setServletClass("com.sun.webui.theme.ThemeServlet"); // NOI18N
+                        else
+                            servlet.setServletClass("com.sun.rave.web.ui.theme.ThemeServlet"); // NOI18N
+
+                        ddRoot.addServlet(servlet);
+                    }
                     
                     // The Servlet Mappings
-                    ServletMapping mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); // NOI18N
-                    mapping.setServletName(panel.getServletName());
-                    mapping.setUrlPattern(panel.getURLPattern());
-                    ddRoot.addServletMapping(mapping);
+                    ServletMapping mapping;
+                    boolean hasFacesPattern = false;
+                    ServletMapping[] maps = ddRoot.getServletMapping();
+                    for (int i = 0; i < maps.length; i++) {
+                        mapping = maps[i];
+                        if (panel.getServletName().equals(mapping.getServletName()) &&
+                            panel.getURLPattern().equals(mapping.getUrlPattern())) {
+                            hasFacesPattern = true;
+                        }
+                    }
+
+                    if (!hasFacesPattern) {
+                        mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); // NOI18N
+                        mapping.setServletName(panel.getServletName());
+                        mapping.setUrlPattern(panel.getURLPattern());
+                        ddRoot.addServletMapping(mapping);
+                    }
 
                     mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); // NOI18N
                     mapping.setServletName("ExceptionHandlerServlet");
@@ -405,13 +479,16 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
                     // The JSP Configuration
                     if (!J2eeModule.J2EE_13.equals(j2eeLevel)) {
-                        JspConfig jspConfig = (JspConfig)ddRoot.createBean("JspConfig"); // NOI18N
-                        JspPropertyGroup jspGroup = (JspPropertyGroup)jspConfig.createBean("JspPropertyGroup"); // NOI18N
-                        jspGroup.addUrlPattern("*.jspf");
-                        jspGroup.setIsXml(true);
-                        jspConfig.addJspPropertyGroup(jspGroup);
                         try {
-                            ddRoot.addJspConfig(jspConfig);
+                            JspConfig jspConfig = ddRoot.getSingleJspConfig();
+                            if (jspConfig == null) {
+                                jspConfig = (JspConfig)ddRoot.createBean("JspConfig"); // NOI18N
+                                JspPropertyGroup jspGroup = (JspPropertyGroup)jspConfig.createBean("JspPropertyGroup"); // NOI18N
+                                jspGroup.addUrlPattern("*.jspf");
+                                jspGroup.setIsXml(true);
+                                jspConfig.addJspPropertyGroup(jspGroup);
+                                ddRoot.addJspConfig(jspConfig);
+                            }
                         } catch (VersionNotSupportedException e) {
                             // already exclude J2EE 1.3 project here
                         }
