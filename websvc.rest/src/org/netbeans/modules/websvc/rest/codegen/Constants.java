@@ -71,4 +71,6 @@ class Constants {
     
     public static final String XML_ATTRIBUTE_ANNOTATION = "XmlAttribute";  //NOI18N
     
+    public static final String URI_TYPE = "java.lang.String";       
+    
 }
