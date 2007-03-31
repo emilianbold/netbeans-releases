@@ -110,35 +110,8 @@ introduced by support for multiple source roots. -jglick
                 <property name="build.web.dir.real" value="${{build.ear.web.dir}}"/>
             </target>
             
-            <target name="-init-rest">
-                <condition property="do.rest" value="true">
-                    <and>
-                    <istrue value="${{rest.support.on}}"/>
-                    <resourcecount when="greater" count="0">
-                        <fileset includes="**/*.java" dir="src"/>
-                    </resourcecount>
-                    </and>
-                </condition>
-                <condition property="file.reference.tools.jar" value="${{java.home}}/lib/tools.jar">
-                    <available type="file" file="${{java.home}}/lib/tools.jar"/>
-                </condition>
-                <condition property="file.reference.tools.jar" value="${{java.home}}/../lib/tools.jar">
-                    <and>
-                        <not><isset property="file.reference.tools.jar"/></not>
-                        <available type="file" file="${{java.home}}/../lib/tools.jar"/>
-                    </and>
-                </condition>
-                <path id="apt.classpath.id">
-                    <path path="${{j2ee.platform.wsgen.classpath}}"/>
-                    <pathelement location="${{file.reference.tools.jar}}"/>
-                </path>
-                <taskdef name="apt" classname="com.sun.tools.ws.ant.Apt">
-                    <classpath refid="apt.classpath.id"/>
-                </taskdef>
-            </target>
-            
             <target name="-do-init">
-                <xsl:attribute name="depends">-pre-init,-init-rest,-init-private,-init-user,-init-project,-init-macrodef-property,-do-ear-init</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property,-do-ear-init</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                     <webproject1:property name="platform.home" value="platforms.${{platform.active}}.home"/>
                     <webproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
@@ -1226,23 +1199,20 @@ introduced by support for multiple source roots. -jglick
                 </xsl:if>
             </target>
             
-            <target name="-rest-pre-compile" if="do.rest">
+            <target name="-rest-pre-compile" if="rest.support.on">
                 <mkdir dir="${{build.generated.dir}}/rest-gen"/>
-                <apt fork="true" debug="true" verbose="false" 
-                     nocompile="false"
-                     destdir="${{build.classes.dir.real}}"
-                     sourcedestdir="${{build.generated.dir}}/rest-gen"  
-                     sourcePath="${{src.dir}}" endorseddirs="${{jaxws.endorsed.dir}}">
+                <apt fork="true" debug="true" verbose="true" includeJavaRuntime="yes"
+                     destdir="${{build.classes.dir.real}}" 
+                     preprocessdir="${{build.generated.dir}}/rest-gen">
+                    <bootclasspath path="${{j2ee.platform.classpath}}"/>
                     <classpath>
-                        <path refid="apt.classpath.id"/>
                         <path path="${{javac.classpath}}"/>
                         <path path="${{j2ee.platform.classpath}}"/>
                         <pathelement location="${{build.web.dir}}/WEB-INF/classes"/>
                     </classpath>
-                    <source dir="${{src.dir}}">
-                        <include name="**/*.java"/>
-                    </source>
-                </apt>    
+                    <src location="${{src.dir}}" />
+                    <include name="**/*.java"/>
+                </apt>
                 <copy todir="${{build.classes.dir}}">
                     <fileset dir="${{src.dir}}" excludes="**/*.java"/>
                 </copy>
