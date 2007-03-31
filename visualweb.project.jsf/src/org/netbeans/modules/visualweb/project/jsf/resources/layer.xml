@@ -294,10 +294,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="JsfAdvanced">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/advancedTemplateHelp.html" />
-            <!-- web.xml templates -->
-            <file name="web1.3.xml" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_3/web.xml.template"/>
-            <file name="web1.4.xml" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_4/web.xml.template"/>
-            <file name="web1.5.xml" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/web.xml.template"/>
             <!-- managed-beans/navigation/faces-config xml templates -->
             <file name="managed-beans.xml" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/managed-beans.xml.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
