@@ -165,6 +165,10 @@ public final class StartTomcat extends StartServer implements ProgressObject {
      * Returns true if the admin server should be started before admininistrative configuration.
      */
     public boolean needsStartForAdminConfig() { return false; }
+    
+    public boolean needsRestart(Target target) {
+         return tm.getNeedsRestart();
+    }
 
     /**
      * Returns true if this admin server is running.
@@ -544,8 +548,12 @@ public final class StartTomcat extends StartServer implements ProgressObject {
             }            
             fireCmdExecProgressEvent("MSG_waiting", StateType.RUNNING);
             if (hasCommandSucceeded()) {
-                if (command == CommandType.START && mode == MODE_DEBUG) {
-                    isDebugModeUri.put(tm.getUri(), new Object());
+                if (command == CommandType.START) {
+                    // reset the need restart flag
+                    tm.setNeedsRestart(false);
+                    if (mode == MODE_DEBUG) {
+                        isDebugModeUri.put(tm.getUri(), new Object());
+                    }
                 }
                 fireCmdExecProgressEvent(command == CommandType.START ? "MSG_Started" : "MSG_Stopped", 
                                          StateType.COMPLETED);

@@ -28,12 +28,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -71,9 +75,9 @@ public final class Deployment {
     
     public String deploy (J2eeModuleProvider jmp, boolean debugmode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy, Logger logger) throws DeploymentException {
         
-        DeploymentTargetImpl target = new DeploymentTargetImpl(jmp, clientModuleUrl);
+        DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(jmp, clientModuleUrl);
         TargetModule[] modules = null;
-        final J2eeModule module = target.getModule();
+        final J2eeModule module = deploymentTarget.getModule();
 
         String title = NbBundle.getMessage(Deployment.class, "LBL_Deploying", jmp.getDeploymentName());
         ProgressUI progress = new ProgressUI(title, false, logger);
@@ -81,19 +85,32 @@ public final class Deployment {
         try {
             progress.start();
             
-            ServerString server = target.getServer(); //will throw exception if bad server id
+            ServerString server = deploymentTarget.getServer(); //will throw exception if bad server id
         
             if (module == null) {
                 String msg = NbBundle.getMessage (Deployment.class, "MSG_NoJ2eeModule");
                 throw new DeploymentException(msg);
             }
-            if (server == null || server.getServerInstance() == null) {
+            ServerInstance serverInstance = server.getServerInstance();
+            if (server == null || serverInstance == null) {
                 String msg = NbBundle.getMessage (Deployment.class, "MSG_NoTargetServer");
                 throw new DeploymentException(msg);
             }
             
+            JDBCDriverDeployer jdbcDriverDeployer = server.getServerInstance().getJDBCDriverDeployer();
+            
+            // Currently it is not possible to select target to which modules will 
+            // be deployed. Lets use the first one.
+            Target target = serverInstance.getTargets()[0].getTarget();
+            Set<Datasource> moduleDatasources = jmp.getModuleDatasources();
+            if (moduleDatasources.size() > 0 && jdbcDriverDeployer != null
+                    && jdbcDriverDeployer.supportsDeployJDBCDrivers(target)) {
+                ProgressObject po = jdbcDriverDeployer.deployJDBCDrivers(target, moduleDatasources);
+                ProgressObjectUtil.trackProgressObject(progress, po, Long.MAX_VALUE);
+            }
+            
             boolean serverReady = false;
-            TargetServer targetserver = new TargetServer(target);
+            TargetServer targetserver = new TargetServer(deploymentTarget);
 
             if (alsoStartTargets || debugmode) {
                 targetserver.startTargets(debugmode, progress);
@@ -109,12 +126,12 @@ public final class Deployment {
             targetserver.notifyIncrementalDeployment(modules);
             
             if (modules != null && modules.length > 0) {
-                target.setTargetModules(modules);
+                deploymentTarget.setTargetModules(modules);
             } else {
                 String msg = NbBundle.getMessage(Deployment.class, "MSG_ModuleNotDeployed");
                 throw new DeploymentException (msg);
             }
-            return target.getClientUrl(clientUrlPart);
+            return deploymentTarget.getClientUrl(clientUrlPart);
         } catch (Exception ex) {            
             String msg = NbBundle.getMessage (Deployment.class, "MSG_DeployFailed", ex.getLocalizedMessage ());
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

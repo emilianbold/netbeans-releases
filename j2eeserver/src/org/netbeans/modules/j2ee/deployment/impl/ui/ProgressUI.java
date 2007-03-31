@@ -94,9 +94,13 @@ public class ProgressUI implements ProgressListener {
         }
         dialog = new JDialog(WindowManager.getDefault().getMainWindow(), title, true);
         dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        String lastMessageTmp;
+        synchronized (this) {
+            lastMessageTmp = lastMessage;
+        }
         dialog.getContentPane().add(createProgressDialog(
                                         handle, 
-                                        lastMessage != null ? lastMessage : title));
+                                        lastMessageTmp != null ? lastMessageTmp : title));
         dialog.pack();
         dialog.setBounds(Utilities.findCenterBounds(dialog.getSize()));
         dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
@@ -105,19 +109,31 @@ public class ProgressUI implements ProgressListener {
     
     /** Displays a specified progress message. */
     public void progress(final String message) {
-        handle.progress(message);
+        String lastMessageTmp;
+        synchronized (this) {
+            lastMessageTmp = lastMessage;
+        }
+        // do not display blank message or the same message twice
+        if (message != null && message.length() > 0 && !message.equals(lastMessageTmp)) {
+            handle.progress(message);
+            synchronized (this) {
+                lastMessage = message;
+            }
+            log(message);
+        }
         if (modal) {
             Mutex.EVENT.readAccess(new Runnable() {
                 public void run() {
                     if (messageLabel != null) {
                         messageLabel.setText(message);
                     } else {
-                        lastMessage = message;
+                        synchronized (ProgressUI.this) {
+                            lastMessage = message;
+                        }
                     }
                 }
             });
         }
-        log(message);
     }
     
     /** Finish the task, unregister the progress object listener and dispose the ui. */
@@ -164,6 +180,8 @@ public class ProgressUI implements ProgressListener {
             DeploymentStatus status = progObj.getDeploymentStatus();
             if (status.isCompleted() || status.isFailed()) {
                 handleDeploymentStatus(status);
+            } else {
+                progress(status.getMessage());
             }
         }
     }

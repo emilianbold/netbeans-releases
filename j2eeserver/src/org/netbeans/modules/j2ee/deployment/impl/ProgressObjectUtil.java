@@ -31,19 +31,20 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 
 /**
- *
+ * A utility class for asynchronous monitoring of progress objects.
+ * 
  * @author sherold
  */
 public final class ProgressObjectUtil {
     
     private static final Logger LOGGER = Logger.getLogger(ProgressObjectUtil.class.getName());
     
-        /**
+    /**
      * Waits till the progress object is in final state or till the timeout runs out.
      *
      * @param ui progress ui which will be notified about progress object changes .
      * @param po progress object which will be tracked.
-     * @param timeout timeout in millis
+     * @param timeout timeout in millis. Zero timeout means unlimited timeout.
      *
      * @return true if the progress object completed successfully, false otherwise.
      *         This is a workaround for issue 82428.
@@ -71,7 +72,11 @@ public final class ProgressObjectUtil {
                 DeploymentStatus status = po.getDeploymentStatus();
                 if (!status.isCompleted() && !status.isFailed()) {
                     try {
-                        progressFinished.await(timeout, TimeUnit.MILLISECONDS);
+                        if (timeout == 0) {
+                            progressFinished.await();
+                        } else {
+                            progressFinished.await(timeout, TimeUnit.MILLISECONDS);
+                        }
                     } catch (InterruptedException e) {
                         LOGGER.log(Level.INFO, null, e);
                     }

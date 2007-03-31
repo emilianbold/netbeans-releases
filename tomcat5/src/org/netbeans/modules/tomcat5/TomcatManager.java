@@ -101,6 +101,8 @@ public class TomcatManager implements DeploymentManager {
     private TomcatVersion tomcatVersion;
     
     private InstanceProperties ip;
+    
+    private boolean needsRestart;
 
     /** Creates an instance of connected TomcatManager
      * @param conn <CODE>true</CODE> to create connected manager
@@ -137,6 +139,14 @@ public class TomcatManager implements DeploymentManager {
     
     public TomcatProperties getTomcatProperties() {
         return tp;
+    }
+    
+    public synchronized void setNeedsRestart(boolean needsRestart) {
+        this.needsRestart = needsRestart;
+    }
+    
+    public synchronized boolean getNeedsRestart() {
+        return needsRestart;
     }
 
     /**

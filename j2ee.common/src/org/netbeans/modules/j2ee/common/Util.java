@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.common;
 
 import java.awt.Component;
+import java.io.IOException;
 import javax.swing.JLabel;
 import java.awt.Container;
 import java.io.File;
@@ -29,11 +30,14 @@ import javax.swing.JComponent;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -50,6 +54,7 @@ import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Parameters;
 
 public class Util {
     
@@ -319,4 +324,44 @@ public class Util {
         return new File[0];
     }
     
+    /**
+     * Returns true if the specified classpath contains a class of the given name,
+     * false otherwise.
+     * 
+     * @param classpath consists of jar files and folders containing classes
+     * @param className the name of the class
+     * 
+     * @return true if the specified classpath contains a class of the given name,
+     *         false otherwise.
+     * 
+     * @throws IOException if an I/O error has occurred
+     * 
+     * @since 1.15
+     */
+    public static boolean containsClass(Collection<File> classpath, String className) throws IOException {
+        Parameters.notNull("classpath", classpath); // NOI18N
+        Parameters.notNull("driverClassName", className); // NOI18N
+        String classFilePath = className.replace('.', '/') + ".class"; // NOI18N
+        for (File file : classpath) {
+            if (file.isFile()) {
+                JarFile jf = new JarFile(file);
+                try {
+                    Enumeration entries = jf.entries();
+                    while (entries.hasMoreElements()) {
+                        JarEntry entry = (JarEntry) entries.nextElement();
+                        if (classFilePath.equals(entry.getName())) {
+                            return true;
+                        }
+                    }
+                } finally {
+                    jf.close();
+                }
+            } else {
+                if (new File(file, classFilePath).exists()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

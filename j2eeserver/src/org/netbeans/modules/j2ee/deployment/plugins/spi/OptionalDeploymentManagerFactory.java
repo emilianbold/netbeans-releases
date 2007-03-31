@@ -93,4 +93,18 @@ public abstract class OptionalDeploymentManagerFactory {
     public DatasourceManager getDatasourceManager(DeploymentManager dm) {
         return null;
     }
+    
+    /**
+     * Creates a JDBC driver deployer for the specified deployment manager.
+     * 
+     * @param dm deployment manager.
+     * 
+     * @return JDBC driver deployer for the specified deployment manager or null
+     *         if JDBC driver deployment is not supported.
+     * 
+     * @since 1.24
+     */
+    public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
+        return null;
+    }
 }

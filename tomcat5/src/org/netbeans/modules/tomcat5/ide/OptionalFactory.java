@@ -26,8 +26,11 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.tomcat5.AntDeploymentProviderImpl;
+import org.netbeans.modules.tomcat5.TomcatJDBCDriverDeployer;
+import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.config.TomcatDatasourceManager;
 import org.netbeans.modules.tomcat5.jsps.FindJSPServletImpl;
@@ -86,5 +89,9 @@ public class OptionalFactory extends OptionalDeploymentManagerFactory {
     
     public AntDeploymentProvider getAntDeploymentProvider(DeploymentManager dm) {
         return new AntDeploymentProviderImpl(dm);
+    }
+    
+    public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
+        return new TomcatJDBCDriverDeployer((TomcatManager) dm);
     }
 }

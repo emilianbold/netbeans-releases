@@ -35,6 +35,7 @@ import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.openide.filesystems.*;
 import java.util.*;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
@@ -470,6 +471,15 @@ public class ServerInstance implements Node.Cookie, Comparable {
     public AntDeploymentProvider getAntDeploymentProvider() {
         try {
             return server.getOptionalFactory().getAntDeploymentProvider(getDisconnectedDeploymentManager());
+        } catch (DeploymentManagerCreationException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return null;
+        }
+    }
+    
+    public JDBCDriverDeployer getJDBCDriverDeployer() {
+        try {
+            return server.getOptionalFactory().getJDBCDriverDeployer(getDisconnectedDeploymentManager());
         } catch (DeploymentManagerCreationException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return null;

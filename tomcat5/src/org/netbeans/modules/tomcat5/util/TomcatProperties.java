@@ -321,6 +321,13 @@ public class TomcatProperties {
         return baseDir == null ? homeDir : baseDir;
     }
     
+    /** Returns the lib directory where for example the JDBC drivers should be deployed.
+     */
+    public File getLibsDir() {
+        String libsDir = tm.isTomcat50() || tm.isTomcat55() ? "common/lib" : "lib"; // NOI18N
+        return new File(getCatalinaHome(), libsDir);
+    }
+    
     public String getUsername() {
         String val = ip.getProperty(PROP_USERNAME);
         return val != null ? val : ""; // NOI18N
