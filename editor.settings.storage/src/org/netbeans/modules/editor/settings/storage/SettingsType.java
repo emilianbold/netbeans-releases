@@ -256,15 +256,20 @@ public enum SettingsType {
             
             FileObject [] ff = getOrderedChildren(folder);
             for(FileObject f : ff) {
-                if (f.isData() && f.getMIMEType().equals(settingType.getMimeType())) {
+                if (!f.isData()) {
+                    continue;
+                }
+                
+                if (f.getMIMEType().equals(settingType.getMimeType())) {
                     Object targetOs = f.getAttribute(FA_TARGET_OS);
                     if (targetOs != null) {
                         try {
                             if (!isApplicableForThisTargetOs(targetOs)) {
+                                LOG.fine("Ignoring OS specific file: '" + f.getPath() + "', it's targetted for '" + targetOs + "'"); //NOI18N
                                 continue;
                             }
                         } catch (Exception e) {
-                            LOG.log(Level.WARNING, "Ignoring editor settings file with invalid OS type mask '" + targetOs + "' file: " + f.getPath()); //NOI18N
+                            LOG.log(Level.WARNING, "Ignoring editor settings file with invalid OS type mask '" + targetOs + "' file: '" + f.getPath() + "'"); //NOI18N
                             continue;
                         }
                     }
@@ -293,7 +298,7 @@ public enum SettingsType {
                         break;
                     }
                 } else {
-                    LOG.fine("Ignoring file: " + f.getPath() + " of type " + f.getMIMEType()); //NOI18N
+                    LOG.fine("Ignoring file: '" + f.getPath() + "' of type " + f.getMIMEType()); //NOI18N
                 }
             }
 
