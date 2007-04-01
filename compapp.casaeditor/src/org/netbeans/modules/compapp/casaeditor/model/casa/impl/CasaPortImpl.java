@@ -52,28 +52,10 @@ public class CasaPortImpl extends CasaComponentImpl implements CasaPort {
     
     public CasaPortImpl(CasaModel model) {
         this(model, createElementNS(model, CasaQName.PORT));
-    }
-    
+    }    
+         
     public void accept(CasaComponentVisitor visitor) {
         visitor.visit(this);
-    }
-//
-//    public CasaEndpoints getEndpoints() {
-//        return getChild(CasaEndpoints.class);
-//    }
-//
-//    public void setEndpoints(CasaEndpoints endpoints) {
-//        List<Class<? extends CasaComponent>> empty = Collections.emptyList();
-//        setChild(CasaEndpoints.class, ENDPOINTS_PROPERTY, endpoints, empty);
-//    }
-    
-    public CasaLink getLink() {
-        return getChild(CasaLink.class);
-    }
-    
-    public void setLink(CasaLink link) {
-        List<Class<? extends CasaComponent>> empty = Collections.emptyList();
-        setChild(CasaLink.class, LINK_PROPERTY, link, empty);
     }
     
     public int getX() {
@@ -90,7 +72,25 @@ public class CasaPortImpl extends CasaComponentImpl implements CasaPort {
     
     public void setY(int y) {
         setAttribute(Y_PROPERTY, CasaAttribute.Y, new Integer(y).toString());
+    }    
+    
+    public String getState() {
+        return getAttribute(CasaAttribute.STATE);
     }
+
+    public void setState(String state) {
+        setAttribute(STATE_PROPERTY, CasaAttribute.STATE, state);
+    }
+        
+    public CasaLink getLink() {
+        return getChild(CasaLink.class);
+    }
+    
+    public void setLink(CasaLink link) {
+        List<Class<? extends CasaComponent>> empty = Collections.emptyList();
+        setChild(CasaLink.class, LINK_PROPERTY, link, empty);
+    }
+    
 //
 //    public String getBindingState() {
 //        return getAttribute(CasaAttribute.BINDINGSTATE.getName());
@@ -116,14 +116,6 @@ public class CasaPortImpl extends CasaComponentImpl implements CasaPort {
 //        setAttribute(BINDINGTYPE_PROPERTY, CasaAttribute.BINDINGTYPE, bindingType);
 //    }
     
-    // Convenience method
-//
-//    public void setLocation(int x, int y) {
-//        CasaLocation location = getLocation();
-//        location.setX(x);
-//        location.setY(y);
-//    }
-//
     public CasaConsumes getConsumes() {
         return getChild(CasaConsumes.class);
     }

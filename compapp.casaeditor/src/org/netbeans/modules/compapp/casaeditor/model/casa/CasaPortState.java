@@ -26,9 +26,8 @@ import org.openide.util.NbBundle;
  */
 public enum CasaPortState {
     
-    VISIBLE("visible"),                 // NOI18N
-    INVISIBLE("invisible"),             // NOI18N
-    NEW("new");                         // NOI18N
+    DELETED("deleted"),           // NOI18N
+    NORMAL("normal");             // NOI18N
     
     CasaPortState(String state) {
         this.state = state;
@@ -41,14 +40,12 @@ public enum CasaPortState {
     public static CasaPortState getCasaPortState(String state) {
         if (state == null) {
             return null;
-        } else if (state.equals("visible")) {       // NOI18N
-            return VISIBLE;
-        } else if (state.equals("invisible")) {     // NOI18N
-            return INVISIBLE;   
-        } else if (state.equals("new")) {           // NOI18N
-            return NEW;
-        } else {
-            throw new RuntimeException(NbBundle.getMessage(CasaPortState.class, "Error_Illegal_connection_state") + state); // NOI18N
+        } else if (state.equals("deleted")) {       // NOI18N
+            return DELETED;
+        } else { // if (state.equals("normal")) {     // NOI18N
+            return NORMAL;   
+//        } else {
+//            throw new RuntimeException(NbBundle.getMessage(CasaPortState.class, "Error_Illegal_casa_state") + state); // NOI18N
         }
     }
     

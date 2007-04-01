@@ -184,12 +184,16 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     /**
-     * Gets all the WSDL endpoints in the CASA model.
+     * Gets all the visible WSDL endpoints in the CASA model.
      */
     public List<CasaPort> getCasaPorts() {
         List<CasaPort> ret = new ArrayList<CasaPort>();        
         for (CasaBindingComponentServiceUnit bcSU : getBindingComponentServiceUnits()) {
-            ret.addAll(bcSU.getPorts().getPorts());
+            for (CasaPort casaPort : bcSU.getPorts().getPorts()) {
+                if (! CasaPortState.DELETED.getState().equals(casaPort.getState())) {
+                    ret.add(casaPort);
+                }
+            }
         }        
         return ret;
     }
@@ -475,9 +479,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         System.out.println("Got WSDLEndpoint Action.. Pt: " + portType);
         
         String wsdlLocation = casaWrapperModel.getWSDLLocation(interfaceQName);
-//        if (wsdlLocation.equals("../jbiasa/casa.wsdl")) { // NOI18N
-//            wsdlLocation = null;    // no need to import itself
-//        }
+
         System.out.println("Got WSDL location: " + wsdlLocation);
         
         ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
@@ -1151,7 +1153,8 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     /**
-     * Add a port from wsdl file into CASA
+     * Add a port from wsdl file into CASA. This is to restore deleted casa port
+     * from component projects.
      *
      * @param port  selected port to add
      * @param wsdlFile the source wsdl file
@@ -1175,10 +1178,22 @@ public class CasaWrapperModel extends CasaModelImpl {
             String portHref = "../" + href + "#xpointer(/definitions/service[@name='" // NOI18N
                     + newServiceName + "']/port[@name='" + newPortName + "'])"; // NOI18N
             
-            return addCasaPortToModel(componentName, 
-                    newServiceName, newPortName, portHref, port, x, y);
+            for (CasaBindingComponentServiceUnit bcSU : getBindingComponentServiceUnits()) {
+                for (CasaPort casaPort : bcSU.getPorts().getPorts()) {
+                    if (portHref.equals(casaPort.getLink().getHref())) {
+                        assert CasaPortState.DELETED.getState().equals(casaPort.getState());
+                        setCasaPortState(casaPort, CasaPortState.NORMAL);
+                        return casaPort;
+                    }
+                }
+            }
+            
+            assert false;
+//            return addCasaPortToModel(componentName, 
+//                    newServiceName, newPortName, portHref, port, x, y);
         } catch (Exception ex) {
             // add failed...
+            ex.printStackTrace();
         }
         
         return null;
@@ -1278,9 +1293,13 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     /**
-     * Removes a casa port. All the visible connections connecting the 
-     * casa port's Consumes or Provides endpoint are deleted as well.
-     * The corresponding WSDL port and binding in casa.wsdl are cleaned up.
+     * Deletes a casa port or marks it as deleted depending on where the casa
+     * port is defined. All the visible connections connecting the casa port's
+     * Consumes and Provides endpoint are deleted or marked as deleted as a
+     * side effect. 
+     *
+     * If the casa port is defined in compapp, then the corresponding WSDL port 
+     * and binding in casa.wsdl are cleaned up.
      *
      * @param casaPort          a casa port
      */
@@ -1308,65 +1327,98 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         }
         
-        // 2. Delete the casa port itself or delete the binding component 
-        // service unit if there is no casa port left behind.
-        CasaPorts casaPorts = (CasaPorts) casaPort.getParent();
+        if (!isDefinedInCompApp(casaPort)) {
+            // 2. Simply mark the casa port as deleted and that's it.
+            setCasaPortState(casaPort, CasaPortState.DELETED);
+            
+        } else {
+            // 2. Delete the casa port itself or delete the binding component
+            // service unit if there is no casa port left behind.
+            CasaPorts casaPorts = (CasaPorts) casaPort.getParent();
+            startTransaction();
+            try {
+                if (casaPorts.getPorts().size() > 1) {
+                    casaPorts.removePort(casaPort);
+                } else {
+                    CasaBindingComponentServiceUnit bcSU =
+                            (CasaBindingComponentServiceUnit) casaPorts.getParent();
+                    CasaServiceUnits sus = (CasaServiceUnits) bcSU.getParent();
+                    sus.removeBindingComponentServiceUnit(bcSU);
+                }
+            } finally {
+                if (isIntransaction()) {
+                    fireCasaPortRemoved(casaPort);
+                    endTransaction();
+                }
+            }
+            
+            // 3. Delete dangling endpoint
+            removeDanglingEndpoint(endpoint);
+            
+            // 4. Clean up casa.wsdl
+            // Added invokeLater to fix a IllegalStateException from WSDL UI
+            // temporarily.
+            // To reproduce the problem:
+            // (1) Use SynchSample
+            // (2) Open CASA editor
+            // (3) Open casa.wsdl (this is the key step)
+            // (4) Drop a WSDL port into CASA
+            // (5) Make a connection from the WSDL port to BPEL SU's endpoint
+            // (6) Delete the dropped WSDL port
+            //     => IllegalStateException: Referencing component not part of model
+            //
+            // If we delete the new connection first then delete the WSDL port,
+            // then everything is OK.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    Binding binding = port.getBinding().get();
+                    Service service = (Service) port.getParent();
+                    Definitions definitions = (Definitions) service.getParent();
+                    
+                    WSDLModel casaWSDLModel = port.getModel();
+                    casaWSDLModel.startTransaction();
+                    try {
+                        service.removePort(port);
+                        definitions.removeService(service);
+                        definitions.removeBinding(binding);
+                    } finally {
+                        if (casaWSDLModel.isIntransaction()) {
+                            casaWSDLModel.endTransaction();
+                        }
+                    }
+                }
+            });
+            
+            // 5. Clear the cached WSDL component reference.
+            cachedWSDLComponents.remove(linkHref);
+        }
+    }
+    
+    public void reloadCasaPorts(CasaServiceEngineServiceUnit seSU) {
+        
+    }
+    
+     private void setCasaPortState(final CasaPort casaPort,
+            final CasaPortState state) {
+        String initialState = casaPort.getState();
         startTransaction();
         try {
-            if (casaPorts.getPorts().size() > 1) {
-                casaPorts.removePort(casaPort);
-            } else {
-                CasaBindingComponentServiceUnit bcSU = 
-                        (CasaBindingComponentServiceUnit) casaPorts.getParent();
-                CasaServiceUnits sus = (CasaServiceUnits) bcSU.getParent();
-                sus.removeBindingComponentServiceUnit(bcSU);
-            }
+            casaPort.setState(state.getState());
         } finally {
             if (isIntransaction()) {
-                fireCasaPortRemoved(casaPort);
+                if (//CasaPortState.UNCHANGED.getState().equals(initialState) &&
+                        CasaPortState.DELETED.equals(state)) { // FIXME
+                    fireCasaPortRemoved(casaPort);
+                } else if (CasaPortState.DELETED.getState().equals(initialState) //&&
+                        //ConnectionState.UNCHANGED.equals(state)
+                        ) {
+                    fireCasaPortAdded(casaPort);
+                } else {
+                    assert false : "Uh? setCasaPortState: " + initialState + "->" + state.getState(); // NOI18N
+                }
                 endTransaction();
             }
         }
-        
-        // 3. Delete dangling endpoint
-        removeDanglingEndpoint(endpoint);
-        
-        // 4. Clean up casa.wsdl    
-        // Added invokeLater to fix a IllegalStateException from WSDL UI 
-        // temporarily.
-        // To reproduce the problem:
-        // (1) Use SynchSample
-        // (2) Open CASA editor
-        // (3) Open casa.wsdl (this is the key step)
-        // (4) Drop a WSDL port into CASA 
-        // (5) Make a connection from the WSDL port to BPEL SU's endpoint
-        // (6) Delete the dropped WSDL port 
-        //     => IllegalStateException: Referencing component not part of model
-        //
-        // If we delete the new connection first then delete the WSDL port, 
-        // then everything is OK.
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {                
-                Binding binding = port.getBinding().get();
-                Service service = (Service) port.getParent();
-                Definitions definitions = (Definitions) service.getParent();
-                
-                WSDLModel casaWSDLModel = port.getModel();
-                casaWSDLModel.startTransaction();
-                try {
-                    service.removePort(port);
-                    definitions.removeService(service);
-                    definitions.removeBinding(binding);
-                } finally {
-                    if (casaWSDLModel.isIntransaction()) {
-                        casaWSDLModel.endTransaction();
-                    }
-                }
-            }
-        });
-        
-        // 5. Clear the cached WSDL component reference.
-        cachedWSDLComponents.remove(linkHref);
     }
     
     /**

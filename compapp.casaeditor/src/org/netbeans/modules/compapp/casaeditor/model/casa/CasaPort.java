@@ -28,9 +28,10 @@ import org.netbeans.modules.compapp.casaeditor.model.jbi.Provides;
  * @author jqian
  */
 public interface CasaPort extends CasaComponent {
-    public static final String LINK_PROPERTY = "link";                  // NOI18N
     public static final String X_PROPERTY = "x";                        // NOI18N
     public static final String Y_PROPERTY = "y";                        // NOI18N
+    public static final String STATE_PROPERTY = "state";                // NOI18N
+    public static final String LINK_PROPERTY = "link";                  // NOI18N
     public static final String CONSUMES_PROPERTY = "consumes";          // NOI18N
     public static final String PROVIDES_PROPERTY = "provides";          // NOI18N
     
@@ -48,6 +49,9 @@ public interface CasaPort extends CasaComponent {
     
     int getY();
     void setY(int y);
+    
+    String getState();
+    void setState(String state);
     
     CasaLink getLink();
     void setLink(CasaLink link);
