@@ -21,7 +21,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -86,7 +85,7 @@ public class JavadocUtilities {
      * @param es javadoc token sequence
      * @param tag javadoc tag to find in the token sequence
      */
-    private static void moveToTag(TokenSequence<JavadocTokenId> es, Tag tag) {
+    private static void moveToTag(TokenSequence<JavadocTokenId> es, Tag tag, CompilationInfo javac) {
         Doc doc = tag.holder();
         Tag[] tags = doc.tags();
         int index = findIndex(tags, tag);
@@ -105,9 +104,7 @@ public class JavadocUtilities {
         
         assert index >=0;
         
-        boolean wasNext = false;
-        
-        while (index >= 0 && (wasNext = es.moveNext())) {
+        while (index >= 0 && es.moveNext()) {
             if (es.token().id() == JavadocTokenId.TAG &&
                     tag.name().contentEquals(es.token().text()) &&
                     --index < 0) {
@@ -115,7 +112,13 @@ public class JavadocUtilities {
             }
         }
         
-        throw new IllegalStateException("cannot match the tag: " + tag.toString()); // NOI18N
+        throw new IllegalStateException("Cannot match the tag: '" + tag.toString() // NOI18N
+                + "'\nDoc.dump:\n" + doc.getRawCommentText() // NOI18N
+                + "\nTokenSequence.dump: '" + es.toString() // NOI18N
+                + "'\nElement.dump: " + javac.getElementUtilities().elementFor(doc) // NOI18N
+                + "\nFile.name: " + javac.getFileObject() // NOI18N
+                + "\nFile.dump:\n" + javac.getText() // NOI18N
+                ); // NOI18N
     }
     
     public static TokenSequence<JavadocTokenId> tokensFor(CompilationInfo javac, Tag tag) {
@@ -123,7 +126,7 @@ public class JavadocUtilities {
         TokenSequence<JavadocTokenId> es = findTokenSequence(javac, doc);
         assert es != null;
         
-        moveToTag(es, tag);
+        moveToTag(es, tag, javac);
         
         int offset = es.offset();
         
@@ -145,7 +148,7 @@ public class JavadocUtilities {
         TokenSequence<JavadocTokenId> tseq = findTokenSequence(info, tag.holder());
         if (tseq == null)
             return null;
-        moveToTag(tseq, tag);
+        moveToTag(tseq, tag, info);
         Position[] positions = new Position[2];
         positions[0] = doc.createPosition(tseq.offset());
         positions[1] = doc.createPosition(tseq.offset() + tseq.token().length());
@@ -187,7 +190,7 @@ public class JavadocUtilities {
         TokenSequence<JavadocTokenId> tseq = findTokenSequence(javac, tag.holder());
         if (tseq == null)
             return null;
-        moveToTag(tseq, tag);
+        moveToTag(tseq, tag, javac);
         
         int start = tseq.offset();
         
