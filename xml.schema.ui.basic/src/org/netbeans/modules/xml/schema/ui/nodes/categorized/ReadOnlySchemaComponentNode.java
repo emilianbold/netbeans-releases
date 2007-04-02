@@ -74,6 +74,9 @@ public class ReadOnlySchemaComponentNode extends FilterNode {
         super(original, children, new ProxyLookup(new Lookup[] {
             new AbstractLookup(ic), original.getLookup()}));
         ic.add(this);
+        SchemaComponentNode scn = (SchemaComponentNode) original.getLookup().
+                lookup(SchemaComponentNode.class);
+        if(scn!=null) scn.setReferencingNode(this);
     }
     
     public void setDisplayTemplate(String displayTemplate) {

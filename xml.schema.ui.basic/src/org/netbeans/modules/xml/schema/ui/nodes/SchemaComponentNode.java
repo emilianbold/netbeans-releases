@@ -1056,4 +1056,17 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
         }
         return null;
     }
+    
+    /**
+     * This api is used to set the back pointer to the ReadOnlySchemaComponentNode,
+     * which represents this node on UI in case of refrenced components.
+     */
+    public void setReferencingNode(final Node referencingNode) {
+        getLookupContents().add(
+                new ReferencingNodeProvider() {
+            public Node getNode() {
+                return referencingNode;
+            }
+        });
+    }
 }
