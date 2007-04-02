@@ -66,6 +66,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
@@ -106,7 +107,7 @@ import org.openide.util.NbBundle;
  * @see <a href="http://java.sun.com/javase/6/docs/technotes/guides/javadoc/deprecation/index.html">Deprecation of APIs</a>
  * @author Jan Pokorsky
  */
-public final class JavadocHintProvider implements CancellableTask<CompilationInfo> {
+final class JavadocHintProvider implements CancellableTask<CompilationInfo> {
     
     private static final Severity hintSeverity = Severity.WARNING;
     private static final int NOPOS = -2; // XXX copied from jackpot; should be in api
@@ -137,6 +138,9 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
     public void run(CompilationInfo javac) throws Exception {
         readSettings();
         if (CREATE_JAVADOC_HINT_LIMIT <= 0 && FIX_JAVADOC_HINT_LIMIT <= 0) {
+            return;
+        }
+        if (Boolean.FALSE.equals(AccessibilityQuery.isPubliclyAccessible(file.getParent()))) {
             return;
         }
         
@@ -230,7 +234,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
 
         @Override
         public Void visitClass(ClassTree node, List<ErrorDescription> arg1) {
-            if (access.isAccesible(node.getModifiers().getFlags())) {
+            if (access.isAccessible(node.getModifiers().getFlags())) {
                 processNode(node, arg1);
                 // scan enclosed members
                 return scan(node.getMembers(), arg1);
@@ -244,7 +248,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             if (clazz.getKind() == Tree.Kind.CLASS &&
                     (javac.getTreeUtilities().isInterface((ClassTree) clazz) ||
                     javac.getTreeUtilities().isAnnotation((ClassTree) clazz) ||
-                    access.isAccesible(node.getModifiers().getFlags()))) {
+                    access.isAccessible(node.getModifiers().getFlags()))) {
                 processNode(node, arg1);
             }
             return null;
@@ -252,7 +256,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
         
         @Override
         public Void visitVariable(VariableTree node, List<ErrorDescription> arg1) {
-            if (access.isAccesible(node.getModifiers().getFlags())) {
+            if (access.isAccessible(node.getModifiers().getFlags())) {
                 processNode(node, arg1);
             }
             return null;
@@ -1373,8 +1377,8 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
     private static boolean doOpenImpl(FileObject fo, int offset) {
         try {
             DataObject od = DataObject.find(fo);
-            EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
-            LineCookie lc = (LineCookie) od.getCookie(LineCookie.class);
+            EditorCookie ec = od.getCookie(EditorCookie.class);
+            LineCookie lc = od.getCookie(LineCookie.class);
             
             if (ec != null && lc != null && offset != -1) {                
                 StyledDocument doc = ec.openDocument();                
@@ -1424,7 +1428,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             return Access.PROTECTED;
         }
         
-        public boolean isAccesible(Set<Modifier> flags) {
+        public boolean isAccessible(Set<Modifier> flags) {
             switch(this) {
                 case PRIVATE:
                     return true;

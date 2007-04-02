@@ -43,6 +43,10 @@ public class AccessibilityQueryImplTest extends TestBase {
     }
     
     // XXX testSubpackages - would need to generate a new module to test
+
+    public void testTestRoots() throws Exception {
+        assertEquals(Boolean.FALSE, AccessibilityQuery.isPubliclyAccessible(nbCVSRoot().getFileObject("ant/project/test/unit/src/org/netbeans/api/project/ant")));
+    }
     
     public void testOtherSourceRoots() throws Exception {
         assertEquals(null, AccessibilityQuery.isPubliclyAccessible(nbCVSRoot().getFileObject("ant/src-bridge/org/apache/tools/ant/module/bridge/impl")));

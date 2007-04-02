@@ -34,13 +34,13 @@ import org.w3c.dom.Element;
  * @author Jesse Glick
  */
 public final class AccessibilityQueryImpl implements AccessibilityQueryImplementation {
-    
+
     private final NbModuleProject project;
-    
+
     public AccessibilityQueryImpl(NbModuleProject project) {
         this.project = project;
     }
-    
+
     public Boolean isPubliclyAccessible(FileObject pkg) {
         FileObject srcdir = project.getSourceDirectory();
         if (srcdir != null) {
@@ -60,17 +60,21 @@ public final class AccessibilityQueryImpl implements AccessibilityQueryImplement
                         boolean sub = "subpackages".equals(pubPkg.getLocalName()); // NOI18N
                         String pubPkgS = Util.findText(pubPkg);
                         if (name.equals(pubPkgS) || (sub && name.startsWith(pubPkgS + '.'))) {
-                            return Boolean.TRUE;
+                            return true;
                         }
                     }
-                    return Boolean.FALSE;
+                    return false;
                 } else {
                     Util.err.log(ErrorManager.WARNING, "Invalid project.xml for " + project);
                     return null;
                 }
             }
         }
+        FileObject testSrcDir = project.getTestSourceDirectory();
+        if (pkg == testSrcDir || FileUtil.isParentOf(testSrcDir, pkg)) {
+            return false;
+        }
         return null;
     }
-    
+
 }
