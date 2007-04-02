@@ -69,8 +69,8 @@ public class WindowsNativeUtils extends NativeUtils {
     
     private static final String SHELL_FOLDERS_KEY = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders";
     
-    private static final String CURRENT_USER_ENVIRONMENT_KEY = "Environment";
-    private static final String ALL_USERS_ENVIRONMENT_KEY    = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
+    public static final String CURRENT_USER_ENVIRONMENT_KEY = "Environment";
+    public static final String ALL_USERS_ENVIRONMENT_KEY    = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
     
     private static final String RUNONCE_KEY = "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce";
     private static final String RUNONCE_DELETE_VALUE_NAME = "NBI Temporary Files Delete";
@@ -244,9 +244,9 @@ public class WindowsNativeUtils extends NativeUtils {
             if (Pattern.compile("[\\/:*\\?\"<>|]").matcher(parts[i]).find()) {
                 return false;
             }
-            if (parts[i].startsWith(" ") || 
-                    parts[i].startsWith("\t") || 
-                    parts[i].endsWith(" ") || 
+            if (parts[i].startsWith(" ") ||
+                    parts[i].startsWith("\t") ||
+                    parts[i].endsWith(" ") ||
                     parts[i].endsWith("\t")) {
                 return false;
             }
@@ -376,7 +376,7 @@ public class WindowsNativeUtils extends NativeUtils {
     
     public void removeComponentFromSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
         String properUid = getProperUninstallUid(
-                descriptor.getUid(), 
+                descriptor.getUid(),
                 descriptor.getInstallPath());
         
         if (properUid != null) {
@@ -431,8 +431,13 @@ public class WindowsNativeUtils extends NativeUtils {
                 
                 if (registry.keyExists(section, rootKey)) {
                     registry.setStringValue(section, rootKey, name, value, expand);
+                    if(scope == EnvironmentScope.ALL_USERS) {
+                        notifyEnvironmentChanged0();                        
+                    }
                 } else {
-                    LogManager.log(ErrorLevel.WARNING, "Root envonment key doesn`t exist. Can`t get environment variable");
+                    LogManager.log(ErrorLevel.WARNING, 
+                            "Root envonment key doesn`t exist. " +
+                            "Can`t set environment variable");
                 }
             }
         }
@@ -465,12 +470,12 @@ public class WindowsNativeUtils extends NativeUtils {
                 }
                 
                 // contents based analysis
-                // Switched off due to Issue 97995	
+                // Switched off due to Issue 97995
                 // This analysis can be switched back only after the serious invesigation
                 // The main additional check should be done based on the name
-		// If it contains any extenstion (except .sh) then check is failed anyway
-		// E.G: GlassFish\imq\lib\props\broker\default.properties 
-		/*
+                // If it contains any extenstion (except .sh) then check is failed anyway
+                // E.G: GlassFish\imq\lib\props\broker\default.properties
+                /*
                 String line = FileUtils.readFirstLine(child);
                 if (line != null) {
                     if (line.startsWith("#!/bin/sh")) { // shell script
@@ -478,7 +483,7 @@ public class WindowsNativeUtils extends NativeUtils {
                         continue;
                     }
                 }
-		*/
+                 */
                 
             }
         }
@@ -1162,4 +1167,6 @@ public class WindowsNativeUtils extends NativeUtils {
     private native void notifyAssociationChanged0();
     
     private native int checkAccessTokenAccessLevel0(String path, int desiredLevel) throws NativeException;
+    
+    private native int notifyEnvironmentChanged0() throws NativeException;
 }

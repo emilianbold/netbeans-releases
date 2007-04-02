@@ -52,6 +52,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
     private boolean isUserAdmin;
     private static final String [] FORBIDDEN_DELETING_FILES_UNIX = {
         System.getProperty("user.home"),
+	System.getProperty("java.home"),
         "/",
         "/bin",
         "/boot",

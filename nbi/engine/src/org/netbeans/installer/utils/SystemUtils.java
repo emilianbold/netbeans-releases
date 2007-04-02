@@ -58,7 +58,7 @@ public final class SystemUtils {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Static
-    private static Map<String, String> environment = 
+    private static Map<String, String> environment =
             new ProcessBuilder().environment();
     
     private static NativeUtils nativeUtils;
@@ -320,11 +320,10 @@ public final class SystemUtils {
         
         ProcessBuilder builder= new ProcessBuilder(command).directory(workingDirectory);
         
-        if (environment != null) {
-            builder.environment().clear();
-            builder.environment().putAll(environment);
-            environment = null;
-        }
+        builder.environment().clear();
+        builder.environment().putAll(environment);
+        setDefaultEnvironment();
+        
         Process process = builder.start();
         
         long runningTime;
@@ -394,7 +393,7 @@ public final class SystemUtils {
         }
         
         // if the port is not in the restricted list, we'll try to open a server
-        // socket on it, if we fail, then someone is already listening on this port 
+        // socket on it, if we fail, then someone is already listening on this port
         // and it is occupied
         ServerSocket socket = null;
         try {
@@ -408,7 +407,7 @@ public final class SystemUtils {
                     socket.close();
                 } catch (IOException e) {
                     ErrorManager.notifyError(
-                            "Could not close server socket on port " + port, 
+                            "Could not close server socket on port " + port,
                             e);
                 }
             }
@@ -521,7 +520,9 @@ public final class SystemUtils {
                     "Interrupted while sleeping", e);
         }
     }
-    
+    public static void setDefaultEnvironment() {
+        environment = new ProcessBuilder().environment();
+    }
     public static Map<String, String> getEnvironment() {
         return environment;
     }
@@ -534,19 +535,19 @@ public final class SystemUtils {
             if (System.getProperty("os.name").contains("Linux")) {
                 currentPlatform = Platform.LINUX;
             }
-            if (System.getProperty("os.name").contains("Mac OS X") && 
+            if (System.getProperty("os.name").contains("Mac OS X") &&
                     System.getProperty("os.arch").contains("ppc")) {
                 currentPlatform = Platform.MACOS_X_PPC;
             }
-            if (System.getProperty("os.name").contains("Mac OS X") && 
+            if (System.getProperty("os.name").contains("Mac OS X") &&
                     System.getProperty("os.arch").contains("i386")) {
                 currentPlatform = Platform.MACOS_X_X86;
             }
-            if (System.getProperty("os.name").contains("SunOS") && 
+            if (System.getProperty("os.name").contains("SunOS") &&
                     System.getProperty("os.arch").contains("sparc")) {
                 currentPlatform = Platform.SOLARIS_SPARC;
             }
-            if (System.getProperty("os.name").contains("SunOS") && 
+            if (System.getProperty("os.name").contains("SunOS") &&
                     System.getProperty("os.arch").contains("x86")) {
                 currentPlatform = Platform.SOLARIS_X86;
             }
@@ -556,17 +557,17 @@ public final class SystemUtils {
     }
     
     public static String getHostName() {
-    try {
-      String hostName = InetAddress.getLocalHost().getHostName();
-      if (hostName != null) {
-        return hostName;
-      }
-    } catch (UnknownHostException e) {
-      LogManager.log(ErrorLevel.MESSAGE, e);      
+        try {
+            String hostName = InetAddress.getLocalHost().getHostName();
+            if (hostName != null) {
+                return hostName;
+            }
+        } catch (UnknownHostException e) {
+            LogManager.log(ErrorLevel.MESSAGE, e);
+        }
+        
+        return "localhost"; //NOI18N
     }
-    
-    return "localhost"; //NOI18N
-  }
     
     // platforms probes /////////////////////////////////////////////////////////////
     public static boolean isWindows() {
@@ -608,7 +609,6 @@ public final class SystemUtils {
         if (nativeUtils == null) {
             nativeUtils = NativeUtils.getInstance();
         }
-        
         return nativeUtils;
     }
 }
