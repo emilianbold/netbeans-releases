@@ -2277,7 +2277,8 @@ introduced by support for multiple source roots. -jglick
             <xsl:attribute name="catalog"><xsl:value-of select="$Catalog" /></xsl:attribute>
             
             <xsl:if test="jaxws:binding">
-                <binding dir="${{conf.dir}}/xml-resources/web-service-references/{$wsName}/bindings">
+                <binding>
+                    <xsl:attribute name="dir">${conf.dir}/xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/bindings</xsl:attribute>
                     <xsl:attribute name="includes">
                         <xsl:for-each select="jaxws:binding">
                             <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
