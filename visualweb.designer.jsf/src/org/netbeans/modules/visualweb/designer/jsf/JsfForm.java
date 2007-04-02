@@ -30,7 +30,6 @@ import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.event.DesignContextListener;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.WriteLock;
 import org.netbeans.modules.visualweb.designer.jsf.text.DomDocumentImpl;
 //NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
@@ -52,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
+import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -1162,12 +1162,19 @@ public class JsfForm {
         return false;
     }
 
-    public WriteLock writeLock(String message) {
-        return htmlDomProvider.writeLock(message);
+//    public WriteLock writeLock(String message) {
+//        return htmlDomProvider.writeLock(message);
+//    }
+//
+//    public void writeUnlock(WriteLock writeLock) {
+//        htmlDomProvider.writeUnlock(writeLock);
+//    }
+    public UndoEvent writeLock(String message) {
+        return getFacesModel().writeLock(message);
     }
 
-    public void writeUnlock(WriteLock writeLock) {
-        htmlDomProvider.writeUnlock(writeLock);
+    public void writeUnlock(UndoEvent writeLock) {
+        getFacesModel().writeUnlock(writeLock);
     }
 
 //    public void deleteComponent(Element componentRootElement) {

@@ -2030,9 +2030,9 @@ public class WebForm implements Designer {
 //        return htmlDomProvider.getProject();
 //    }
 
-    boolean isWriteLocked() {
-        return htmlDomProvider.isWriteLocked();
-    }
+//    boolean isWriteLocked() {
+//        return htmlDomProvider.isWriteLocked();
+//    }
 
 //    Class getBeanClass(String className) throws ClassNotFoundException {
 //        return htmlDomProvider.getBeanClass(className);

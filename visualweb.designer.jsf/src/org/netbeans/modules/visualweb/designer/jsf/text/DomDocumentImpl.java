@@ -44,6 +44,7 @@ import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.netbeans.modules.visualweb.designer.jsf.JsfSupportUtilities;
+import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 
 import org.openide.ErrorManager;
@@ -188,7 +189,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
             return false;
         }
 //                    UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class, "InsertChar")); // NOI18N
-        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_InsertText")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_InsertText")); // NOI18N
+        UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_InsertText")); // NOI18N
         try {
         
 //        if (hasSelection()) {
@@ -1669,7 +1671,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         }
 //        UndoEvent undoEvent = webform.getModel().writeLock(description);
 //        HtmlDomProvider.WriteLock writeLock = webform.writeLock(description);
-        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(description);
+//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(description);
+        UndoEvent writeLock = jsfForm.writeLock(description);
         try {
 //            String description;
 //
@@ -2152,7 +2155,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 
 //        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(GridHandler.class, "BringToFront")); // NOI18N
 //        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(GridHandler.class, "BringToFront")); // NOI18N
-        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_BringToFront")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_BringToFront")); // NOI18N
+        UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_BringToFront")); // NOI18N
         try {
 //            doc.writeLock(NbBundle.getMessage(GridHandler.class, "BringToFront")); // NOI18N
 
@@ -2257,7 +2261,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 
 //        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(GridHandler.class, "SendToBack")); // NOI18N
 //        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(GridHandler.class, "SendToBack")); // NOI18N
-        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SendToBack")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SendToBack")); // NOI18N
+        UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SendToBack")); // NOI18N
         try {
 //            doc.writeLock(NbBundle.getMessage(GridHandler.class, "SendToBack")); // NOI18N
 
@@ -2407,7 +2412,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 
 //        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(GridHandler.class, "ResizeComponent")); // NOI18N
 //        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(GridHandler.class, "ResizeComponent")); // NOI18N
-        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_ResizeComponent")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_ResizeComponent")); // NOI18N
+        UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_ResizeComponent")); // NOI18N
         // Gotta set width and height attributes!
         try {
 //            doc.writeLock(NbBundle.getMessage(GridHandler.class, "ResizeComponent")); // NOI18N
@@ -2500,7 +2506,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 
 //        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(AlignAction.class, "LBL_SnapToGrid")); // NOI18N
 //        HtmlDomProvider.WriteLock writeLock = webForm.writeLock(NbBundle.getMessage(GridHandler.class, "LBL_SnapToGrid")); // NOI18N
-        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SnapToGrid")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SnapToGrid")); // NOI18N
+        UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SnapToGrid")); // NOI18N
         try {
 //            doc.writeLock(NbBundle.getMessage(AlignAction.class, "LBL_SnapToGrid")); // NOI18N
 
@@ -2579,7 +2586,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 
 //        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
 //        HtmlDomProvider.WriteLock writeLock = webForm.writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
-        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_Align")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_Align")); // NOI18N
+        UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_Align")); // NOI18N
         try {
 //            doc.writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
 
@@ -2695,7 +2703,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         }
 
 //            UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
+        UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
         try {
             // TODO - compute previous visual position, decide if it's
             //    isWithinEditableRegion(Position pos) 
@@ -2746,7 +2755,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         }
         
 //            UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
+        UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
         try {
             // TODO - compute previous visual position, decide if it's
             //    isWithinEditableRegion(Position pos) 
@@ -2806,7 +2816,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 
     public void deleteComponents(Element[] componentRootElements) {
 //        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(SelectionTopComp.class, "DeleteSelection")); // NOI18N
-        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteComponents")); // NOI18N
+//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteComponents")); // NOI18N
+        UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteComponents")); // NOI18N
         try {
             for (Element componentRootElement : componentRootElements) {
                 if (JsfSupportUtilities.isSpecialComponent(componentRootElement)) {
