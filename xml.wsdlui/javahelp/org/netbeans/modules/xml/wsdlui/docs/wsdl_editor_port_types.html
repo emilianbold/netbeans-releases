@@ -21,22 +21,11 @@
 <p>In a WSDL file, a <i>port type</i> contains one or more related operations that the web service can perform. 
   An example of an operation is <tt>GetQuote</tt>.</p>
 
-<!--
-<p>The WSDL 1.1 specification defines the following categories of operations:</p>
-
-<ul>
-  <li><b>One-way</b>. The operation receives a message as input.</li>
-  <li><b>Request-response</b>. The operation receives a message as input, and sends a message as output.</li>
-  <li><b>Solicit-response</b>. The operation sends a message as output, and receives a message as input.</li>
-  <li><b>Notification</b>. The operation sends a message as output.</li>
-</ul>
--->
-
 <p>The WSDL Editor supports the following categories of operations:</p>
 
 <ul>
-  <li><b>One-way</b>. The operation receives a message as input.</li>
   <li><b>Request-response</b>. The operation receives a message as input, and sends a message as output.</li>
+  <li><b>One-way</b>. The operation receives a message as input.</li>
 </ul>
 
 <p>Each message contains one or more logical parts. 
@@ -47,18 +36,21 @@
   To rename all occurrences in associated XSD, WSDL, and BPEL files as well, 
   right-click the component node and choose Refactor &gt; Rename.</p>
 
+
+
 <p><b>To create a port type:</b></p>
 
 <ol>
   <li>In the WSDL view, right-click the Port Types node and choose Add Port Type. <br>
     The Create New Port Type dialog box appears.</li>
-  <li>Supply a name for the port type.</li>
-  <li>Supply a name for the operation.</li>
-  <li>Select the category of operation from the Operation Type drop-down list.</li>
-  <li>Depending on the category of operation, you supply message information for the input, or both the input and output. 
+  <li>Enter a name for the port type.</li>
+  <li>Enter a name for the operation.</li>
+  <li>Select the category of operation.</li>
+  <li>Define the message that the operation receives as input. 
     You can create a message from scratch by entering a new message name, or you can select an existing message from the drop-down list. 
     For a new message, the Add and Remove buttons enable you to add and remove message parts.</li>
-  <li>(Optional) If the operation is a request-response operation, then you can supply message information for a fault.</li>
+  <li>If the operation is a request-response operation, then define the message that the operation sends as output.</li>
+  <li>(Optional) If the operation is a request-response operation, then you can define a message that the operation sends as a fault.</li>
   <li>Click OK. <br>
     A port type node appears. The port type node contains an operation node. 
     If you created one or more messages, then the message nodes appear. 
@@ -70,42 +62,54 @@
 <ol>
   <li>In the WSDL view, right-click the port type node and choose Add &gt; Operation. <br>
     The Create New Operation dialog box appears.</li>
-  <li>Supply a name for the operation.</li>
-  <li>Select the category of operation from the Operation Type drop-down list.</li>
-  <li>Depending on the category of operation, you supply message information for the input, or both the input and output.     
+  <li>Enter a name for the operation.</li>
+  <li>Select the category of operation.</li>
+  <li>Define the message that the operation receives as input. 
     You can create a message from scratch by entering a new message name, or you can select an existing message from the drop-down list. 
     For a new message, the Add and Remove buttons enable you to add and remove message parts.</li>
-  <li>(Optional) If the operation is a request-response operation, then you can supply message information for a fault.</li>
+  <li>If the operation is a request-response operation, then define the message that the operation sends as output.</li>
+  <li>(Optional) If the operation is a request-response operation, then you can define a message that the operation sends as a fault.</li>
   <li>Click OK. <br>
     An operation node appears. 
     If you created one or more messages, then the message nodes appear.</li>
 </ol>
 
-<p><b>To change the name of a port type:</b></p>
+<p><b>To add a fault to a request-response operation:</b></p>
 
 <ol>
   <li>If the Properties window is not visible, choose Window &gt; Properties.</li>
-  <li>Select the port type node.</li>
+  <li>Right-click the operation node and choose Add &gt; Fault. <br>
+    The fault node appears.</li>
+  <li>Set the Message property to the fault message.</li>
+</ol>
+
+
+
+<p><b>To change the name of a port type or operation:</b></p>
+
+<ol>
+  <li>If the Properties window is not visible, choose Window &gt; Properties.</li>
+  <li>Select the port type or operation node.</li>
   <li>Set the Name property to the new name.</li>
 </ol>
 
-<p><b>To change the properties of an operation:</b></p>
+<p><b>To change the parameter order of an operation:</b></p>
+
+<ul class="note">
+  <li>The parameter order is intended for use with RPC bindings.</li>
+</ul>
 
 <ol>
   <li>If the Properties window is not visible, choose Window &gt; Properties.</li>
   <li>Select the operation node.</li>
-  <li>Set the Name property to the new name.</li>
-  <li>If you want to specify the parameter order of the operation, then perform the following steps. 
-    The Parameter Order property is intended for use with RPC bindings.</li>
-  <ol type="a">
-    <li>Click the ellipsis (...) button for the Parameter Order property.</li>
-    <li>Move message parts from the Available Parameters list to the Current Parameters list.</li>
-    <li>Arrange the parts in the desired order.</li>
-    <li>Click OK.</li>
-  </ol>
+  <li>Click the ellipsis (...) button for the Parameter Order property. <br>
+    The Parameter Order dialog box appears.</li>
+  <li>Move message parts from the Available Parameters list to the Current Parameters list.</li>
+  <li>Arrange the parts in the desired order.</li>
+  <li>Click OK.</li>
 </ol>
 
-<p><b>To remove a port type or operation:</b></p>
+<p><b>To delete a port type or operation:</b></p>
 
 <ol>
   <li>Select the port type or operation node.</li>
