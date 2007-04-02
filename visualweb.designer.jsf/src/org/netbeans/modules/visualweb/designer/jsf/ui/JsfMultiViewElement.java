@@ -19,14 +19,23 @@
 
 package org.netbeans.modules.visualweb.designer.jsf.ui;
 
-import org.netbeans.modules.visualweb.api.designer.Designer;
+import java.awt.Component;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JToolBar;
+import javax.swing.border.EmptyBorder;
+
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.visualweb.api.designer.Designer;
+import org.netbeans.modules.visualweb.extension.openide.loaders.SystemFileSystemSupport;
+import org.openide.awt.Actions;
 import org.openide.awt.UndoRedo;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.actions.Presenter;
 
 /**
  * Implemenation of JSF multiview element.
@@ -35,8 +44,13 @@ import org.openide.util.Lookup;
  */
 public class JsfMultiViewElement implements MultiViewElement {
 
+    private static final String PATH_TOOLBAR_FOLDER = "Designer/application/x-designer/Toolbars/Default"; // NOI18N
+    
     private final Designer designer;
+    
+    private JToolBar toolbar;
 
+    
     /** Creates a new instance of DesignerMultiViewElement */
     public JsfMultiViewElement(Designer designer) {
         if (designer == null) {
@@ -45,12 +59,59 @@ public class JsfMultiViewElement implements MultiViewElement {
         this.designer = designer;
     }
 
+    
     public JComponent getVisualRepresentation() {
         return designer.getVisualRepresentation();
     }
 
+    // XXX Moved from designer/../DesignerTopComp.
     public JComponent getToolbarRepresentation() {
-        return designer.getToolbarRepresentation();
+//        return designer.getToolbarRepresentation();
+        if (toolbar == null) {
+            // TODO -- Look at NbEditorToolBar in the editor - it does stuff
+            // with the UI to get better Aqua and Linux toolbar
+            toolbar = new JToolBar();
+            toolbar.setFloatable(false);
+            toolbar.setRollover(true);
+            toolbar.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+//            ToolbarListener listener = new ToolbarListener();
+
+            toolbar.addSeparator();
+//            previewButton =
+//                new JButton(new ImageIcon(Utilities.loadImage("org/netbeans/modules/visualweb/designer/preview.png"))); // NOI18N
+//            previewButton.addActionListener(listener);
+//            previewButton.setToolTipText(NbBundle.getMessage(DesignerTopComp.class, "PreviewAction"));
+//            toolbar.add(previewButton);
+            // XXX TODO For now adding only BrowserPreviewAction, but later all of them.
+//            Component[] comps = ToolBarInstancesProvider.getDefault().getToolbarComponentsForDesignerComponent(this);
+            Action[] actions = SystemFileSystemSupport.getActions(PATH_TOOLBAR_FOLDER);
+            Lookup context = getLookup();
+            for (int i = 0; i < actions.length; i++) {
+                Action action = actions[i];
+                if (action == null) {
+                    toolbar.addSeparator();
+                } else {
+                    if (action instanceof ContextAwareAction) {
+                        Action contextAwareAction = ((ContextAwareAction)action).createContextAwareInstance(context);
+                        if (contextAwareAction != null) {
+                            action = contextAwareAction;
+                        }
+                    }
+                    if (action instanceof Presenter.Toolbar) {
+                        Component tbp = ((Presenter.Toolbar)action).getToolbarPresenter();
+                        toolbar.add(tbp);
+                    } else {
+//                        toolbar.add(new Actions.ToolbarButton((Action)action));
+                        JButton toolbarButton = new JButton();
+                        Actions.connect(toolbarButton, (Action)action);
+                        toolbar.add(toolbarButton);
+                    }
+                }
+            }
+        }
+            
+        return toolbar;
     }
 
     public Action[] getActions() {

@@ -1837,9 +1837,9 @@ public class WebForm implements Designer {
         return getTopComponent().getVisualRepresentation();
     }
 
-    public JComponent getToolbarRepresentation() {
-        return getTopComponent().getToolbarRepresentation();
-    }
+//    public JComponent getToolbarRepresentation() {
+//        return getTopComponent().getToolbarRepresentation();
+//    }
 
     public Action[] getActions() {
         return getTopComponent().getActions();

@@ -40,7 +40,7 @@ public interface Designer {
 
     // XXX Temp after moved TopComponent impl out >>>
     public JComponent getVisualRepresentation();
-    public JComponent getToolbarRepresentation();
+//    public JComponent getToolbarRepresentation();
     public Action[] getActions();
     public Lookup getLookup();
     public void componentOpened();
