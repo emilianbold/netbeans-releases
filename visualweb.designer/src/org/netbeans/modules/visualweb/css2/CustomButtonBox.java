@@ -26,7 +26,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 
 import javax.swing.UIManager;
 

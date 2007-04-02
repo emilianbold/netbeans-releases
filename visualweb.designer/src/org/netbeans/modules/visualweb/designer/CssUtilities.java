@@ -21,10 +21,8 @@ package org.netbeans.modules.visualweb.designer;
 
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
-import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Toolkit;
 import java.util.Hashtable;
 import java.util.Map;
 import org.w3c.dom.Element;

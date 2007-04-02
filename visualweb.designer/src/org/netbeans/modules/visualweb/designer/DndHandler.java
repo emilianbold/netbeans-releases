@@ -23,11 +23,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -40,15 +36,10 @@ import org.netbeans.modules.visualweb.css2.CssBox;
 
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 
 

@@ -29,10 +29,7 @@ import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.B
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomRange;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.InlineEditorSupport;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProviderService;
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
-import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
@@ -47,7 +44,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;

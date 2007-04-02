@@ -18,13 +18,9 @@
  */
 package org.netbeans.modules.visualweb.css2;
 
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssEngineService;
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
-import org.netbeans.modules.visualweb.designer.SelectionManager;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
@@ -33,10 +29,8 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.lang.reflect.Method;
 
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
@@ -44,7 +38,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -58,7 +51,6 @@ import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.GridHandler;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
-import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 
 

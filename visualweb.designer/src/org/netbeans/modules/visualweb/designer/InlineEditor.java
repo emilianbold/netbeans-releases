@@ -28,9 +28,6 @@ import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
-import java.beans.BeanDescriptor;
-import java.beans.BeanInfo;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.openide.ErrorManager;

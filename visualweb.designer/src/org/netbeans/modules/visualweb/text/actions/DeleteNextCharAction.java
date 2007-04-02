@@ -24,12 +24,9 @@
  */
 package org.netbeans.modules.visualweb.text.actions;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import java.awt.event.ActionEvent;
 
 import javax.swing.UIManager;
-
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;

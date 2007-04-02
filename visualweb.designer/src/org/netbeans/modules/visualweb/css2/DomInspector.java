@@ -68,7 +68,6 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
 import org.netbeans.modules.visualweb.designer.DesignerUtils;

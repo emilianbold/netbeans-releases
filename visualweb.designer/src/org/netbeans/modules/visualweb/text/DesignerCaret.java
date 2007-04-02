@@ -46,20 +46,15 @@ import javax.swing.UIManager;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocumentEvent;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocumentListener;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomRange;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
-import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
-import org.netbeans.modules.visualweb.designer.DesignerUtils;
-import org.netbeans.modules.visualweb.designer.InlineEditor;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.actions.SelectLineAction;
 import org.netbeans.modules.visualweb.text.actions.SelectWordAction;
 
 import org.openide.ErrorManager;
 
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 

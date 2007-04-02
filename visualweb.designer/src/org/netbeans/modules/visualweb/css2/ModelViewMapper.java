@@ -28,13 +28,10 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
 import org.netbeans.modules.visualweb.designer.InlineEditor;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 
 import org.openide.ErrorManager;
 import org.w3c.dom.Element;

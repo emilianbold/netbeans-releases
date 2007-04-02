@@ -21,8 +21,6 @@ package org.netbeans.modules.visualweb.designer;
 
 
 import java.awt.BasicStroke;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
@@ -34,22 +32,16 @@ import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
-import java.beans.BeanInfo;
-import java.beans.FeatureDescriptor;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JTable;
 import javax.swing.JViewport;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.table.TableModel;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProviderService.ResizeConstraint;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.css2.BoxType;
@@ -58,14 +50,10 @@ import org.netbeans.modules.visualweb.css2.ExternalDocumentBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.netbeans.modules.visualweb.text.actions.DefaultKeyTypedAction;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 import org.w3c.dom.Element;
 

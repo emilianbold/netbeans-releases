@@ -22,7 +22,6 @@ import org.w3c.dom.Element;
 
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.openide.ErrorManager;
 
 /**
  * Creates a box for a given element.

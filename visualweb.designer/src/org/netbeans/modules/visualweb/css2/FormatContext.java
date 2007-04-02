@@ -14,7 +14,6 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValueService;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import java.util.ArrayList;
-import org.openide.ErrorManager;
 
 
 

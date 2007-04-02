@@ -20,7 +20,6 @@ package org.netbeans.modules.visualweb.text;
 
 import java.util.HashMap;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.actions.SelectLineAction;
 import java.awt.AWTEvent;
@@ -52,9 +51,6 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.text.Keymap;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocument;
-import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
-import org.netbeans.modules.visualweb.designer.InlineEditor;
 import org.netbeans.modules.visualweb.text.actions.BeginLineAction;
 import org.netbeans.modules.visualweb.text.actions.BeginWordAction;
 import org.netbeans.modules.visualweb.text.actions.DefaultKeyTypedAction;
@@ -64,9 +60,6 @@ import org.netbeans.modules.visualweb.text.actions.EndLineAction;
 import org.netbeans.modules.visualweb.text.actions.EndWordAction;
 import org.netbeans.modules.visualweb.text.actions.NextVisualPositionAction;
 import org.netbeans.modules.visualweb.text.actions.SelectAllAction;
-import org.openide.ErrorManager;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 
 /**

@@ -21,8 +21,6 @@ package org.netbeans.modules.visualweb.css2;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
-import java.awt.Font;
-import java.awt.Toolkit;
 
 import javax.swing.JViewport;
 

@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.visualweb.text;
 
-import java.awt.Point;
-import java.awt.Rectangle;
 import javax.swing.UIManager;
 
 import javax.swing.plaf.ComponentUI;

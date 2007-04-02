@@ -37,8 +37,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.beans.BeanDescriptor;
-import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;

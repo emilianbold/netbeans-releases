@@ -32,8 +32,6 @@ import javax.swing.ImageIcon;
 
 import org.w3c.dom.Element;
 
-import org.openide.ErrorManager;
-
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;

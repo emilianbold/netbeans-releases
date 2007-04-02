@@ -20,7 +20,6 @@ package org.netbeans.modules.visualweb.designer;
 
 import java.util.Arrays;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProviderService.ResizeConstraint;
-import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
@@ -32,8 +31,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.beans.BeanDescriptor;
-import java.beans.BeanInfo;
 
 import javax.swing.ImageIcon;
 

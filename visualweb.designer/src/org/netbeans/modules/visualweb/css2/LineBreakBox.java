@@ -18,17 +18,12 @@
  */
 package org.netbeans.modules.visualweb.css2;
 
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
-import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import org.openide.ErrorManager;
 
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;

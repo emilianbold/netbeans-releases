@@ -18,18 +18,14 @@
  */
 package org.netbeans.modules.visualweb.css2;
 
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import javax.swing.ImageIcon;
+
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssListValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import javax.swing.ImageIcon;
-
 import org.openide.ErrorManager;
-import org.w3c.dom.Element;
 
 
 
