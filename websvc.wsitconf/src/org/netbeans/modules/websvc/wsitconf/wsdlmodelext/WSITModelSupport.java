@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -179,18 +180,7 @@ public class WSITModelSupport {
                 if (mainConfigFO == null) {
                     mainConfigFO = createMainConfig(srcFolder, createdFiles);
                 }
-
-                // config file doesn't exist - copy the wsdl and create wsdl model from it
-                configFO = FileUtil.copyFile(originalWsdlFO, srcFolder, originalWsdlFO.getName());
-                if (configFO != null) {
-                    if (createdFiles != null) {
-                        createdFiles.add(configFO);
-                    }
-                    model = getModelFromFO(configFO, true);
-                    removePolicies(model);
-                    removeTypes(model);
-                }
-                
+               
                 copyImports(originalwsdlmodel, srcFolder, createdFiles);
 
                 // import the model from client model
@@ -199,8 +189,11 @@ public class WSITModelSupport {
                 mainModel.startTransaction();
                 WSDLComponentFactory wcf = mainModel.getFactory();
 
+                configFO = (FileObject)createdFiles.toArray()[1];
                 org.netbeans.modules.xml.wsdl.model.Import imp = wcf.createImport();
-                imp.setLocation(originalWsdlFO.getNameExt());
+                imp.setLocation((configFO).getNameExt());
+                
+                model = getModelFromFO(configFO, false);
                 imp.setNamespace(model.getDefinitions().getTargetNamespace());
                 Definitions def = mainModel.getDefinitions();
                 def.setName("mainclientconfig"); //NOI18N
@@ -228,31 +221,41 @@ public class WSITModelSupport {
             }
             
         } catch (CatalogModelException ex) {
-            ex.printStackTrace();
+            logger.log(Level.INFO, null, ex);
         }
                  
         return model;
     }
 
-    private static void copyImports(final WSDLModel model, final FileObject srcFolder, Collection createdFiles) throws CatalogModelException {        
-        Collection<Import> imports = model.getDefinitions().getImports();
-        for (Import i : imports) {
-            WSDLModel importedModel = i.getImportedWSDLModel();
-            ModelSource importedms = importedModel.getModelSource();
-            FileObject importedfo = Utilities.getFileObject(importedms);
-            model.startTransaction();
-            i.setLocation(importedfo.getNameExt());
-            model.endTransaction();
-            try {
-                FileObject configFO = FileUtil.copyFile(importedfo, srcFolder, importedfo.getName());
-                if (createdFiles != null) {
-                    createdFiles.add(configFO);
-                }
-                copyImports(importedModel, srcFolder, createdFiles);
-            } catch (IOException e) {
-                // ignore - this happens when files are imported recursively
-            }            
-        }
+    private static void copyImports(final WSDLModel model, final FileObject srcFolder, Collection createdFiles) throws CatalogModelException {
+        
+        FileObject modelFO = Utilities.getFileObject(model.getModelSource());
+
+        try {
+            FileObject configFO = FileUtil.copyFile(modelFO, srcFolder, modelFO.getName(), CONFIG_WSDL_EXTENSION);
+            if (createdFiles != null) {
+                createdFiles.add(configFO);
+            }
+            
+            WSDLModel newModel = getModelFromFO(configFO, true);
+            
+            removePolicies(newModel);
+            removeTypes(newModel);
+            
+            Collection<Import> oldImports = model.getDefinitions().getImports();
+            Collection<Import> newImports = newModel.getDefinitions().getImports();
+            Iterator<Import> newImportsIt = newImports.iterator();
+            for (Import i : oldImports) {
+                WSDLModel oldImportedModel = i.getImportedWSDLModel();
+                FileObject oldImportFO = Utilities.getFileObject(oldImportedModel.getModelSource());
+                newModel.startTransaction();
+                newImportsIt.next().setLocation(oldImportFO.getName() + "." + CONFIG_WSDL_EXTENSION);
+                newModel.endTransaction();
+                copyImports(oldImportedModel, srcFolder, createdFiles);
+            }
+        } catch (IOException e) {
+            // ignore - this happens when files are imported recursively
+        }        
     }
 
     /** Creates new empty main client configuration file
