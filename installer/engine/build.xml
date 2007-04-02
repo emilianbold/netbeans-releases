@@ -14,7 +14,7 @@
         <write-jar-content-list 
             dir="${basedir}/${build.classes.dir}" 
             output="${basedir}/${build.classes.dir}/${jar.contents.list}"
-            mask="(^launcher/.*|^native/.*|^org/.*|^data/engine\.properties)"/>
+            mask="(^launcher/.*|^native/.*|^org/.*|^data/|^data/engine\.properties)"/>
     </target>
     
     <target name="init-custom-tasks" depends="build-custom-tasks">
