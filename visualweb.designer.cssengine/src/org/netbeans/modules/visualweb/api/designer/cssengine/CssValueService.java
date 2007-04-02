@@ -145,4 +145,9 @@ public interface CssValueService {
 
     // XXX Get rid of the HtmlTag parameter.
     public boolean isInlineTag(CssValue cssDisplay, Element element, HtmlTag tag);
+    
+    /** XXX Computes css length, provides the auto value as <code>CssValue.AUTO</code>, revise that, it looks very dangerous.
+     * XXX Hack, this engine impl is incorrect, it shouldn't be up to the engine to compute the final value. */
+    public int getCssLength(Element element, int property);
+
 }

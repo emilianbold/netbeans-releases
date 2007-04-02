@@ -26,6 +26,10 @@ package org.netbeans.modules.visualweb.api.designer.cssengine;
  * @author Peter Zavadsky
  */
 public interface CssValue {
+    
+    /** XXX Hack used throu the modules.
+     * TODO Get rid of it. */
+    public static final int AUTO = Integer.MAX_VALUE - 1;
 
     public String getStringValue();
 

@@ -771,5 +771,25 @@ public class CssValueServiceImpl implements CssValueService {
 
         return true;
     }
+
+    /** XXX */
+    public int getCssLength(Element element, int property) {
+//        Value val = getValue(element, property);
+        CssValue cssValue = CssEngineServiceImpl.get().getComputedValueForElement(element, property);
+        
+        // XXX #6460007 Possible NPE.
+        if (cssValue == null) {
+            // XXX What value to return?
+            return 0;
+        }
+        
+//        if (val == CssValueConstants.AUTO_VALUE) {
+        if (isAutoValue(cssValue)) {
+            return CssValue.AUTO;
+        }
+        
+//        return (int)val.getFloatValue();
+        return (int)cssValue.getFloatValue();
+    }
     
 }

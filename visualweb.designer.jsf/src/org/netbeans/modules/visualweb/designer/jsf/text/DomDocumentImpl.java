@@ -1932,11 +1932,11 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //        int right = CssLookup.getLength(e, XhtmlCss.RIGHT_INDEX);
 //        int left = CssUtilities.getCssLength(e, XhtmlCss.LEFT_INDEX);
 //        int right = CssUtilities.getCssLength(e, XhtmlCss.RIGHT_INDEX);
-        int left = getCssLength(e, XhtmlCss.LEFT_INDEX);
-        int right = getCssLength(e, XhtmlCss.RIGHT_INDEX);
+        int left = CssProvider.getValueService().getCssLength(e, XhtmlCss.LEFT_INDEX);
+        int right = CssProvider.getValueService().getCssLength(e, XhtmlCss.RIGHT_INDEX);
 
 //        if ((left == CssBox.AUTO) && (right != CssBox.AUTO)) {
-        if ((left == AUTO) && (right != AUTO)) {
+        if ((left == CssValue.AUTO) && (right != CssValue.AUTO)) {
 //            int rx = right - (x - box.getX()) - (width - box.getWidth());
 //            Point p = translateCoordinates(parentBox, rx, 0);
 //            rx = p.x;
@@ -1991,11 +1991,11 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //        int bottom = CssLookup.getLength(e, XhtmlCss.BOTTOM_INDEX);
 //        int top = CssUtilities.getCssLength(e, XhtmlCss.TOP_INDEX);
 //        int bottom = CssUtilities.getCssLength(e, XhtmlCss.BOTTOM_INDEX);
-        int top = getCssLength(e, XhtmlCss.TOP_INDEX);
-        int bottom = getCssLength(e, XhtmlCss.BOTTOM_INDEX);
+        int top = CssProvider.getValueService().getCssLength(e, XhtmlCss.TOP_INDEX);
+        int bottom = CssProvider.getValueService().getCssLength(e, XhtmlCss.BOTTOM_INDEX);
 
 //        if ((top == CssBox.AUTO) && (bottom != CssBox.AUTO)) {
-        if ((top == AUTO) && (bottom != AUTO)) {
+        if ((top == CssValue.AUTO) && (bottom != CssValue.AUTO)) {
 //            int ry = bottom - (y - box.getY()) - (height - box.getHeight());
 //            Point p = translateCoordinates(parentBox, 0, ry);
 //            ry = p.y;
@@ -2041,33 +2041,33 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         return y;
     }
     
-    // XXX Copy aldo in designer/../CssUtilities.
-    // FIXME This is very suspicious, and should be revisited.
-    public static final int AUTO = Integer.MAX_VALUE - 1;
-    
-    /** XXX Copy also in insync/FacesDnDSupport.
-     * XXX Copy also in designer/../CssUtilities
-     * XXX Provides the auto value as <code>AUTO</code>, revise that, it looks very dangerous.
-     * TODO At least move into designer/cssengine.
-     */
-    private static int getCssLength(Element element, int property) {
-//        Value val = getValue(element, property);
-        CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(element, property);
-        
-        // XXX #6460007 Possible NPE.
-        if (cssValue == null) {
-            // XXX What value to return?
-            return 0;
-        }
-        
-//        if (val == CssValueConstants.AUTO_VALUE) {
-        if (CssProvider.getValueService().isAutoValue(cssValue)) {
-            return AUTO;
-        }
-        
-//        return (int)val.getFloatValue();
-        return (int)cssValue.getFloatValue();
-    }
+//    // XXX Copy aldo in designer/../CssUtilities.
+//    // FIXME This is very suspicious, and should be revisited.
+//    public static final int AUTO = Integer.MAX_VALUE - 1;
+//    
+//    /** XXX Copy also in insync/FacesDnDSupport.
+//     * XXX Copy also in designer/../CssUtilities
+//     * XXX Provides the auto value as <code>AUTO</code>, revise that, it looks very dangerous.
+//     * TODO At least move into designer/cssengine.
+//     */
+//    private static int getCssLength(Element element, int property) {
+////        Value val = getValue(element, property);
+//        CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(element, property);
+//        
+//        // XXX #6460007 Possible NPE.
+//        if (cssValue == null) {
+//            // XXX What value to return?
+//            return 0;
+//        }
+//        
+////        if (val == CssValueConstants.AUTO_VALUE) {
+//        if (CssProvider.getValueService().isAutoValue(cssValue)) {
+//            return AUTO;
+//        }
+//        
+////        return (int)val.getFloatValue();
+//        return (int)cssValue.getFloatValue();
+//    }
 
     // XXX Copy also in designer/../GridHandler.
     /** Given absolute coordinates x,y in the viewport, compute
@@ -2189,7 +2189,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 
                 // Locate the highest z index in box' parent
 //                int highest = CssBox.AUTO;
-                int highest = AUTO;
+                int highest = CssValue.AUTO;
 //                CssBox parent = box.getParent();
                 Box parent = box.getParent();
 
@@ -2205,15 +2205,15 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 
 //                        if ((highest == CssBox.AUTO) ||
 //                                ((sibling.getZ() != CssBox.AUTO) && (sibling.getZ() > highest))) {
-                        if ((highest == AUTO)
-                        || ((sibling.getZ() != AUTO) && (sibling.getZ() > highest))) {
+                        if ((highest == CssValue.AUTO)
+                        || ((sibling.getZ() != CssValue.AUTO) && (sibling.getZ() > highest))) {
                             highest = sibling.getZ();
                         }
                     }
                 }
 
 //                if (highest == CssBox.AUTO) {
-                if (highest == AUTO) {
+                if (highest == CssValue.AUTO) {
                     highest = 500;
                 } else {
                     highest++;
@@ -2296,7 +2296,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
                 // Locate the lowest z index in box' parent
                 // XXX is auto less than 0?
 //                int lowest = CssBox.AUTO;
-                int lowest = AUTO;
+                int lowest = CssValue.AUTO;
 //                CssBox parent = box.getParent();
                 Box parent = box.getParent();
 
@@ -2313,15 +2313,15 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //                                ((sibling.getZ() != CssBox.AUTO) && (sibling.getZ() < lowest))) {
 //                            lowest = sibling.getZ();
 //                        }
-                        if ((lowest == AUTO)
-                        || ((sibling.getZ() != AUTO) && (sibling.getZ() < lowest))) {
+                        if ((lowest == CssValue.AUTO)
+                        || ((sibling.getZ() != CssValue.AUTO) && (sibling.getZ() < lowest))) {
                             lowest = sibling.getZ();
                         }
                     }
                 }
 
 //                if (lowest == CssBox.AUTO) {
-                if (lowest == AUTO) {
+                if (lowest == CssValue.AUTO) {
                     lowest = 500;
                 } else {
                     lowest--;

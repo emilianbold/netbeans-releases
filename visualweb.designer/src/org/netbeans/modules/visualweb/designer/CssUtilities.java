@@ -38,7 +38,8 @@ public final class CssUtilities {
     // XXX Copied form CssBox.
     // XXX Copy also in designer/jsf/../DomDocumentImpl.
     // FIXME This is very suspicious, and should be revisited.
-    public static final int AUTO = Integer.MAX_VALUE - 1;
+//    public static final int AUTO = Integer.MAX_VALUE - 1;
+    public static final int AUTO = CssValue.AUTO;
 
     /** Creates a new instance of CssBoxUtilities */
     private CssUtilities() {
@@ -181,22 +182,23 @@ public final class CssUtilities {
      * TODO At least move into designer/cssengine.
      */
     public static int getCssLength(Element element, int property) {
-//        Value val = getValue(element, property);
-        CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(element, property);
-        
-        // XXX #6460007 Possible NPE.
-        if (cssValue == null) {
-            // XXX What value to return?
-            return 0;
-        }
-        
-//        if (val == CssValueConstants.AUTO_VALUE) {
-        if (CssProvider.getValueService().isAutoValue(cssValue)) {
-            return AUTO;
-        }
-        
-//        return (int)val.getFloatValue();
-        return (int)cssValue.getFloatValue();
+////        Value val = getValue(element, property);
+//        CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(element, property);
+//        
+//        // XXX #6460007 Possible NPE.
+//        if (cssValue == null) {
+//            // XXX What value to return?
+//            return 0;
+//        }
+//        
+////        if (val == CssValueConstants.AUTO_VALUE) {
+//        if (CssProvider.getValueService().isAutoValue(cssValue)) {
+//            return AUTO;
+//        }
+//        
+////        return (int)val.getFloatValue();
+//        return (int)cssValue.getFloatValue();
+        return CssProvider.getValueService().getCssLength(element, property);
     }
 
 }

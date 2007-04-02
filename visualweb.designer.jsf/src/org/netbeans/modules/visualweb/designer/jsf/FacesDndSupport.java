@@ -111,8 +111,8 @@ import org.w3c.dom.Text;
  */
 class FacesDndSupport {
 
-    /** XXX Copy from designer/CssBox. Solve it better way. */
-    private static final int CSS_AUTO = Integer.MAX_VALUE - 1;
+//    /** XXX Copy from designer/CssBox. Solve it better way. */
+//    private static final int CSS_AUTO = Integer.MAX_VALUE - 1;
 
     // XXX Copy from designer/DndHandler.
     private static final int DROP_ABOVE  = -1;
@@ -1519,8 +1519,8 @@ class FacesDndSupport {
             // component yet the position is specified relative to the border (visible) area
 //            int leftMargin = CssLookup.getLength(element, XhtmlCss.MARGIN_LEFT_INDEX);
 //            int topMargin = CssLookup.getLength(element, XhtmlCss.MARGIN_TOP_INDEX);
-            int leftMargin = getCssLength(element, XhtmlCss.MARGIN_LEFT_INDEX);
-            int topMargin = getCssLength(element, XhtmlCss.MARGIN_TOP_INDEX);
+            int leftMargin = CssProvider.getValueService().getCssLength(element, XhtmlCss.MARGIN_LEFT_INDEX);
+            int topMargin = CssProvider.getValueService().getCssLength(element, XhtmlCss.MARGIN_TOP_INDEX);
             x -= leftMargin;
             y -= topMargin;
 
@@ -2962,15 +2962,15 @@ linkCheckFinished:
                         || CssProvider.getValueService().isFixedValue(cssValue)) {
 //                            int top = CssLookup.getLength(element, XhtmlCss.TOP_INDEX);
 //                            int left = CssLookup.getLength(element, XhtmlCss.LEFT_INDEX);
-                            int top = getCssLength(element, XhtmlCss.TOP_INDEX);
-                            int left = getCssLength(element, XhtmlCss.LEFT_INDEX);
+                            int top = CssProvider.getValueService().getCssLength(element, XhtmlCss.TOP_INDEX);
+                            int left = CssProvider.getValueService().getCssLength(element, XhtmlCss.LEFT_INDEX);
 
-                            if ((top != CSS_AUTO) || (left != CSS_AUTO)) {
-                                if (left == CSS_AUTO) {
+                            if ((top != CssValue.AUTO) || (left != CssValue.AUTO)) {
+                                if (left == CssValue.AUTO) {
                                     left = 0;
                                 }
 
-                                if (top == CSS_AUTO) {
+                                if (top == CssValue.AUTO) {
                                     top = 0;
                                 }
 
@@ -3088,15 +3088,15 @@ linkCheckFinished:
             || CssProvider.getValueService().isFixedValue(cssValue)) {
 //                int top = CssLookup.getLength(element, XhtmlCss.TOP_INDEX);
 //                int left = CssLookup.getLength(element, XhtmlCss.LEFT_INDEX);
-                int top = getCssLength(element, XhtmlCss.TOP_INDEX);
-                int left = getCssLength(element, XhtmlCss.LEFT_INDEX);
+                int top = CssProvider.getValueService().getCssLength(element, XhtmlCss.TOP_INDEX);
+                int left = CssProvider.getValueService().getCssLength(element, XhtmlCss.LEFT_INDEX);
 
-                if ((top != CSS_AUTO) || (left != CSS_AUTO)) {
-                    if (left == CSS_AUTO) {
+                if ((top != CssValue.AUTO) || (left != CssValue.AUTO)) {
+                    if (left == CssValue.AUTO) {
                         left = 0;
                     }
 
-                    if (top == CSS_AUTO) {
+                    if (top == CssValue.AUTO) {
                         top = 0;
                     }
 
@@ -3141,18 +3141,18 @@ linkCheckFinished:
         return CssProvider.getValueService().isGridValue(cssValue);
     }
 
-    /** XXX Provides the auto value as <code>AUTO</code>, revise that, it looks very dangerous. */
-    private static int getCssLength(Element element, int property) {
-//        Value val = getValue(element, property);
-        CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(element, property);
-//        if (val == CssValueConstants.AUTO_VALUE) {
-        if (CssProvider.getValueService().isAutoValue(cssValue)) {
-            return CSS_AUTO;
-        }
-        
-//        return (int)val.getFloatValue();
-        return (int)cssValue.getFloatValue();
-    }
+//    /** XXX Provides the auto value as <code>AUTO</code>, revise that, it looks very dangerous. */
+//    private static int getCssLength(Element element, int property) {
+////        Value val = getValue(element, property);
+//        CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(element, property);
+////        if (val == CssValueConstants.AUTO_VALUE) {
+//        if (CssProvider.getValueService().isAutoValue(cssValue)) {
+//            return CSS_AUTO;
+//        }
+//        
+////        return (int)val.getFloatValue();
+//        return (int)cssValue.getFloatValue();
+//    }
 
     // Moved to Util.
 //    /**
