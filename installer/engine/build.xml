@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="NetBeans_Installer" default="default" basedir=".">
+    <import file="nbproject/build-impl.xml"/>
+    
+    <target name="-post-compile">
+        <!-- Add the contents of the core engine to the engine we're building -->
+        <unjar 
+            src="${reference.NBI_Engine.jar}" 
+            dest="${build.classes.dir}" 
+            overwrite="false"/>
+    </target>
+</project>
