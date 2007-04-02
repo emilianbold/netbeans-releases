@@ -122,6 +122,8 @@ public final class ParametersPanel extends javax.swing.JPanel {
         
         List<ReferenceableSchemaComponent> schemaTypes = new ArrayList<ReferenceableSchemaComponent>();
         for(Schema schema : schemas) {
+            // primitive types
+            schemaTypes.addAll(Utils.getPrimitiveTypes());
             // populate with internal schema
             String schemaNamespace = schema.getTargetNamespace();
             if (schemaNamespace!=null) {
@@ -138,7 +140,6 @@ public final class ParametersPanel extends javax.swing.JPanel {
     }
     
     private void populateWithElements(WSDLModel wsdlModel, SchemaModel schemaModel, List<ReferenceableSchemaComponent> schemaTypes) {
-        schemaTypes.addAll(Utils.getPrimitiveTypes());
         Collection<GlobalElement> elements = schemaModel.getSchema().getElements();
         for(GlobalElement element : elements) {
             if (!isUsedInOperation(wsdlModel, element)) {
