@@ -62,7 +62,10 @@ public abstract class RestSupport {
     public static final String RESTBEANS_TEST_DIR = "nbproject/private/restbeans";
     public static final String COMMAND_TEST_RESTBEANS = "test.restbeans";
     public static final String REST_SUPPORT_ON = "rest.support.on";
-    public static final String TEST_RESBEANS = "test-resbeans.html";
+    public static final String TEST_RESBEANS = "test-resbeans";
+    public static final String TEST_RESBEANS_HTML = TEST_RESBEANS + ".html";
+    public static final String TEST_RESBEANS_JS = TEST_RESBEANS + ".js";
+    public static final String TEST_RESBEANS_CSS = TEST_RESBEANS + ".css";
     
     AntProjectHelper helper;
 
@@ -103,9 +106,9 @@ public abstract class RestSupport {
             testdir.mkdirs();
         }
         FileObject dir = FileUtil.toFileObject(testdir);
-        FileObject testFO = dir.getFileObject(TEST_RESBEANS);
+        FileObject testFO = dir.getFileObject(TEST_RESBEANS_HTML);
         if (testFO == null) {
-            testFO = dir.createData(TEST_RESBEANS);
+            testFO = dir.createData(TEST_RESBEANS_HTML);
         }
         FileLock lock = null;
         BufferedWriter writer = null;
@@ -114,7 +117,7 @@ public abstract class RestSupport {
             lock = testFO.lock();
             OutputStream os = testFO.getOutputStream(lock);
             writer = new BufferedWriter(new OutputStreamWriter(os));
-            InputStream is = RestSupport.class.getResourceAsStream("resources/"+TEST_RESBEANS);
+            InputStream is = RestSupport.class.getResourceAsStream("resources/"+TEST_RESBEANS_HTML);
             reader = new BufferedReader(new InputStreamReader(is));
             String line;
             String lineSep = "\n";//Unix
@@ -134,13 +137,16 @@ public abstract class RestSupport {
                 reader.close();
             }
         }
-        copyFile("resources/expand.gif", testdir, "expand.gif");
-        copyFile("resources/collapse.gif", testdir, "collapse.gif");
-        copyFile("resources/item.gif", testdir, "item.gif");
+        copyFile(testdir, TEST_RESBEANS_JS);
+        copyFile(testdir, TEST_RESBEANS_CSS);
+        copyFile(testdir, "expand.gif");
+        copyFile(testdir, "collapse.gif");
+        copyFile(testdir, "item.gif");
         return testFO;
     }
 
-    private void copyFile(String path, File testdir, String name) throws IOException {
+    private void copyFile(File testdir, String name) throws IOException {
+        String path = "resources/"+name;
         File df = new File(testdir, name);
         if(!df.exists()) {
             InputStream is = null;
@@ -148,9 +154,9 @@ public abstract class RestSupport {
             try {
                 is = RestSupport.class.getResourceAsStream(path);
                 os = new FileOutputStream(df);
-                byte[] bytes = new byte[1000];
-                while (is.read(bytes) != -1) {
-                    os.write(bytes);
+                int c;
+                while ((c = is.read()) != -1) {
+                    os.write(c);
                 }
             } finally {
                 if(os != null) {

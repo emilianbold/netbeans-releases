@@ -1,0 +1,107 @@
+body{
+    font: 10pt Verdana, sans-serif;
+    color: navy;
+}
+.category{
+    cursor: pointer;
+    display: block;        
+}
+.item{
+    display: none;
+    margin-left: 16px;
+    color: #FFFFFF;
+}
+a{
+    text-decoration: none;
+    color: #FFFFFF;
+}
+a:hover{
+    text-decoration: underline;
+}
+
+a:visited{
+    font-weight: bolder;
+}
+
+.outerBorder {
+    margin: 0px 20px 30px 20px;
+    padding: 0 10px 10px 10px;
+}
+
+.header {
+    height:20%;
+}
+
+.subheader {
+    clear:both;
+    height: 50px;
+    background-color: #006699;
+    color: #FFFFFF;
+    font-size:11px;
+}
+
+.subheader div {
+    float:right;
+}
+
+.main {
+    position: relative;
+    width: 100%;
+    margin-top: -10px;
+}
+
+.content {
+    margin: 0 0 0 0px;
+    height: 700px;
+    background-color: #9999FF;
+    color: #000000;
+}
+
+.details {
+    margin: 0 0 0 20px;
+}
+
+.leftSidebar {
+    float: left; 
+    height: 700px;
+    width: 200px;
+    font-size: 10px;
+    background-color: #6699CC;
+    color: #FFFFFF;
+}
+
+.banner {
+    vertical-align:middle;
+    font-size:25px;
+    background-color: #006699;
+    color: #FFFFFF;  
+    width: 100%;
+}        
+
+.tableheader {
+    background-color: #006699;
+    color: #FFFFFF;
+}
+.results
+{
+    width: 600px;
+}
+.results .col
+{
+    width: 20%;
+    float: left;
+    margin-top: 0px;
+}
+.results .resultHeader
+{
+    background-color: #164A78;
+    color: #FF9933;
+    font-family: Arial, Verdana, Helvetica;
+    font-size: 11px;
+}
+.results
+{
+    margin-left: 0%;
+    border: 1px solid #e0e7ec;
+    font: bold 90% verdana, arial;
+}
