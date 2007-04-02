@@ -2,11 +2,41 @@
 <project name="NetBeans_Installer" default="default" basedir=".">
     <import file="nbproject/build-impl.xml"/>
     
-    <target name="-post-compile">
+    <property file="build.properties"/>
+    
+    <target name="-post-compile" depends="init-custom-tasks">
         <!-- Add the contents of the core engine to the engine we're building -->
         <unjar 
             src="${reference.NBI_Engine.jar}" 
             dest="${build.classes.dir}" 
             overwrite="false"/>
+            
+        <write-jar-content-list 
+            dir="${basedir}/${build.classes.dir}" 
+            output="${basedir}/${build.classes.dir}/${jar.contents.list}"
+            mask="(^launcher/.*|^native/.*|^org/.*|^data/engine\.properties)"/>
+    </target>
+    
+    <target name="init-custom-tasks" depends="build-custom-tasks">
+        <taskdef 
+            name="write-jar-content-list" 
+            classname="org.netbeans.installer.infra.build.ant.WriteFileList" 
+            classpath="${custom.tasks.cls}"/>
+    </target>
+    
+    <target name="build-custom-tasks" unless="dont.build.custom.tasks">
+        <delete dir="${custom.tasks.cls}"/>
+        <mkdir dir="${custom.tasks.cls}"/>
+        
+        <javac 
+            srcdir="${custom.tasks.src.1}" 
+            destdir="${custom.tasks.cls}" 
+            debug="true" 
+            classpath="${custom.tasks.classpath}"/>
+        <javac 
+            srcdir="${custom.tasks.src.2}" 
+            destdir="${custom.tasks.cls}" 
+            debug="true" 
+            classpath="${custom.tasks.classpath}"/>
     </target>
 </project>

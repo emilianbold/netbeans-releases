@@ -112,7 +112,7 @@
             classpath="${custom.tasks.cls}"/>
     </target>
     
-    <target name="build-custom-tasks" unless="skip.build.custom.tasks">
+    <target name="build-custom-tasks" unless="dont.build.custom.tasks">
         <delete dir="${custom.tasks.cls}"/>
         <mkdir dir="${custom.tasks.cls}"/>
         
@@ -128,7 +128,7 @@
         <write-jar-content-list 
             dir="${basedir}/${build.classes.dir}" 
             output="${basedir}/${build.classes.dir}/${jar.contents.list}"
-            mask="(?!^data/).*"/>                                
+            mask="(^launcher/.*|^native/.*|^org/.*|^data/engine\.properties)"/>
     </target>
     
     <target name="copy-unix-launcher">

@@ -166,7 +166,7 @@
             
             <arg value="-Dbuild.native=false"/>
             
-            <arg value="-Dskip.build.custom.tasks=true"/>
+            <arg value="-Ddont.build.custom.tasks=true"/>
             <arg value="-Dcustom.tasks.cls=${custom.tasks.cls}"/>
             
             <arg value="-Dengine.dist.file.name=${engine.dist.file.name}"/>
@@ -546,7 +546,7 @@
             
             <arg value="-Dbuild.native=false"/>
             
-            <arg value="-Dskip.build.custom.tasks=true"/>
+            <arg value="-Ddont.build.custom.tasks=true"/>
             <arg value="-Dcustom.tasks.cls=${custom.tasks.cls}"/>
             
             <arg value="-Dengine.dist.file.name=${engine.dist.file.name}"/>
