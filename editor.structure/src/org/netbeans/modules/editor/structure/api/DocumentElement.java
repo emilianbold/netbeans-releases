@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -72,7 +73,8 @@ public final class DocumentElement {
     private static final int ELEMENT_EMPTY_FALSE = 2;
     
     //stores DocumentElement listeners
-    private HashSet<DocumentElementListener> deListeners = new HashSet<DocumentElementListener>();
+    DocumentElementListener deListener = null;
+    HashSet<DocumentElementListener> deListeners = null;
     
     DocumentElement(String name, String type, Map attrsMap,
             int startOffset, int endOffset, DocumentModel model) throws BadLocationException {
@@ -197,7 +199,7 @@ public final class DocumentElement {
         
     }
     
-    /** Returns the name of the element. 
+    /** Returns the name of the element.
      *
      * @return the element name
      */
@@ -241,15 +243,15 @@ public final class DocumentElement {
     }
     
     /** Returns an instance of DocumentModel within which hierarchy the element lives.
-     * @return the DocumentModel which holds this element 
+     * @return the DocumentModel which holds this element
      */
     public DocumentModel getDocumentModel() {
         return model;
     }
     
     /** Returns a type of the element.
-     * Each DocumentModelProvider should create a set of elements types and the pass these 
-     * types when elements of corresponding types are created. 
+     * Each DocumentModelProvider should create a set of elements types and the pass these
+     * types when elements of corresponding types are created.
      * Clients of the API then uses the element's type to determine the element type.
      *
      * @return the element type
@@ -264,19 +266,46 @@ public final class DocumentElement {
     }
     
     /** Adds a DocumentElementListener to this DocumentElement instance */
-    public void addDocumentElementListener(DocumentElementListener del) {
-        deListeners.add(del);
+    public synchronized void addDocumentElementListener(DocumentElementListener del) {
+        if(del == null) {
+            throw new NullPointerException("The argument cannot be null!");
+        }
+        
+        if(del == deListener || deListeners != null && deListeners.contains(del)) {
+            return ; //already added
+        }
+        
+        if(deListeners == null) {
+            if(deListener == null) {
+                //first listener added, just use the field, do not init the set
+                deListener = del;
+            } else {
+                //this is a second listener - create the set, move the listener from separate field into the set
+                deListeners = new HashSet<DocumentElementListener>();
+                deListeners.add(deListener);
+                deListeners.add(del);
+                deListener = null;
+            }
+        } else {
+            deListeners.add(del);
+        }
     }
     
     /** Removes a DocumentElementListener to this DocumentElement instance */
-    public void removeDocumentElementListener(DocumentElementListener del) {
-        deListeners.remove(del);
+    public synchronized void removeDocumentElementListener(DocumentElementListener del) {
+        if(del == deListener) {
+            deListener = null;
+        } else {
+            if(deListeners != null) {
+                deListeners.remove(del);
+            } //else nothing to remove
+        }
     }
     
     /* <<< EOF public methods */
     
     //called by the DocumentModel - performance improvement
-    synchronized void setRootElement(boolean value) {
+    void setRootElement(boolean value) {
         this.isRootElement = value;
     }
     
@@ -296,32 +325,42 @@ public final class DocumentElement {
         return model.getDocument().getText(getStartOffset(), getEndOffset() - getStartOffset());
     }
     
-    private void fireDocumentElementEvent(DocumentElementEvent dee) {
-        for (DocumentElementListener cl: deListeners) {
-            switch(dee.getType()) {
-                case DocumentElementEvent.CHILD_ADDED: cl.elementAdded(dee);break;
-                case DocumentElementEvent.CHILD_REMOVED: cl.elementRemoved(dee);break;
-                case DocumentElementEvent.CONTENT_CHANGED: cl.contentChanged(dee);break;
-                case DocumentElementEvent.ATTRIBUTES_CHANGED: cl.attributesChanged(dee);break;
+    private synchronized void fireDocumentElementEvent(DocumentElementEvent dee) {
+        if(deListener != null) {
+            fireDocumentElementEvent(deListener, dee);
+        } else {
+            if(deListeners != null) {
+                for (DocumentElementListener cl: deListeners) {
+                    fireDocumentElementEvent(cl, dee);
+                }
             }
+        }
+    }
+    
+    private void fireDocumentElementEvent(DocumentElementListener cl, DocumentElementEvent dee) {
+        switch(dee.getType()) {
+        case DocumentElementEvent.CHILD_ADDED: cl.elementAdded(dee);break;
+        case DocumentElementEvent.CHILD_REMOVED: cl.elementRemoved(dee);break;
+        case DocumentElementEvent.CONTENT_CHANGED: cl.contentChanged(dee);break;
+        case DocumentElementEvent.ATTRIBUTES_CHANGED: cl.attributesChanged(dee);break;
         }
     }
     
     //called by model when a new DocumentElement was added to this element
     void childAdded(DocumentElement de) {
-//        System.out.println("[event] " + this + ": child added:" + de);
+        //        System.out.println("[event] " + this + ": child added:" + de);
         fireDocumentElementEvent(new DocumentElementEvent(DocumentElementEvent.CHILD_ADDED, this, de));
     }
     
     //called by model when one of the children of this element was removed
     void childRemoved(DocumentElement de) {
-//        System.out.println("[event] " + this + ": child removed:" + de);
+        //        System.out.println("[event] " + this + ": child removed:" + de);
         fireDocumentElementEvent(new DocumentElementEvent(DocumentElementEvent.CHILD_REMOVED, this, de));
     }
     
     //called by model when element content changed
     void contentChanged() {
-//        System.out.println("[event] " + this + ": content changed");
+        //        System.out.println("[event] " + this + ": content changed");
         fireDocumentElementEvent(new DocumentElementEvent(DocumentElementEvent.CONTENT_CHANGED, this, null));
     }
     
@@ -329,7 +368,7 @@ public final class DocumentElement {
     void attributesChanged() {
         fireDocumentElementEvent(new DocumentElementEvent(DocumentElementEvent.ATTRIBUTES_CHANGED, this, null));
     }
-
+    
     
     public boolean equals(Object o) {
         if(!(o instanceof DocumentElement)) return false;

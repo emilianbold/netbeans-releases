@@ -116,6 +116,52 @@ public class DocumentModelTest extends NbTestCase {
         
     }
     
+     public void testMoreDocumentElementListeners() throws DocumentModelException, BadLocationException, InterruptedException {
+        Document doc = new BaseDocument(DefaultEditorKit.class, false);
+        DocumentModel model = new DocumentModel(doc, dmProvider);
+        
+        DocumentElement root = model.getRootElement();
+        
+        assertNotNull(root);
+        
+        DocumentElementListener del1 = new DocumentElementListenerAdapter();
+        DocumentElementListener del2 = new DocumentElementListenerAdapter();
+
+        assertNull(root.deListener);
+        assertNull(root.deListeners);
+        
+        root.addDocumentElementListener(del1);
+        
+        assertTrue(root.deListener == del1);
+        assertNull(root.deListeners);
+        
+        root.addDocumentElementListener(del2);
+        
+        assertNull(root.deListener);
+        assertNotNull(root.deListeners);
+        assertEquals(2, root.deListeners.size());
+        
+        //try to add twice
+        root.addDocumentElementListener(del2);
+        
+        assertNull(root.deListener);
+        assertNotNull(root.deListeners);
+        assertEquals(2, root.deListeners.size());
+        
+        root.removeDocumentElementListener(del2);
+        
+        assertNull(root.deListener);
+        assertNotNull(root.deListeners);
+        assertEquals(1, root.deListeners.size());
+        
+        root.removeDocumentElementListener(del1);
+        
+        assertNull(root.deListener);
+        assertNotNull(root.deListeners);
+        assertEquals(0, root.deListeners.size());
+        
+    }
+    
     public void testRemoveElementEvent() throws DocumentModelException, BadLocationException, InterruptedException {
         Document doc = new BaseDocument(DefaultEditorKit.class, false);
         doc.insertString(0,"abcde|fgh|ij|k",null); //4 elements should be created
