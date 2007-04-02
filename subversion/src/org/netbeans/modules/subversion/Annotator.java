@@ -435,7 +435,7 @@ public class Annotator {
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             actions.add(SystemAction.get(CheckoutAction.class));
             actions.add(SystemAction.get(ImportAction.class));
-            actions.add(new RelocateAction(loc.getString("CTL_MenuItem_Relocate"), ctx));
+            actions.add(SystemAction.get(RelocateAction.class));
             actions.add(null);
             actions.add(SystemAction.get(UpdateWithDependenciesAction.class));
             actions.add(null);

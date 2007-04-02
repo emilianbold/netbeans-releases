@@ -19,24 +19,23 @@
 package org.netbeans.modules.subversion.ui.relocate;
 
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ResourceBundle;
-import java.util.Set;
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -47,33 +46,68 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author  Peter Pis
  */
-public class RelocateAction extends AbstractAction {
+public class RelocateAction extends ContextAction {
+ 
     
-    VCSContext ctx;
     SvnProgressSupport support;
     
-    /** Creates a new instance of RelocateAction */
-    public RelocateAction(String name, VCSContext ctx) {
-        super(name);
-        this.ctx = ctx;
-    }
-    
-    public boolean isEnabled() {
-        Set<File> roots = ctx.getRootFiles();
-        if(roots == null || roots.size() != 1) {
+    protected boolean enable(Node[] nodes) {
+        final Context ctx = getContext(nodes);
+        File[] roots = ctx.getRootFiles();
+        if(roots == null || roots.length != 1) {
             return false;
         }
-        File file = roots.iterator().next();
+        File file = roots[0];
         return file != null && file.isDirectory();
     }
     
-    public void actionPerformed(ActionEvent event) {
+    protected int getDirectoryEnabledStatus() {
+        return FileInformation.STATUS_MANAGED 
+             & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
+             & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+    }
+    
+    private String getCurrentURL(File root) {       
+        try {
+            SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+            return repositoryUrl.toString();
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);            
+        }                            
+        return "";
+    }        
+    
+    private String getWorkingCopy(File root) {
+        final String working = root.getAbsolutePath();
+        return working;
+    }
+    
+    public void validate(RelocatePanel panel, JButton btnOk) {
+        try {
+            new SVNUrl(panel.getNewURL().getText());
+            btnOk.setEnabled(true);
+        } catch (MalformedURLException e) {
+            btnOk.setEnabled(false);
+        }
+        
+    }
+
+    protected String getBaseName(Node[] activatedNodes) {
+        return "CTL_Relocate_Title";
+    }
+
+    protected void performContextAction(Node[] nodes) {
         ResourceBundle loc = NbBundle.getBundle(RelocateAction.class);
         
-        final RelocatePanel panel = new RelocatePanel();
-        panel.getCurrentURL().setText(getCurrentURL());
-        panel.getWorkingCopy().setText(getWorkingCopy());
+        final Context ctx = getContext(nodes);
+        File[] roots = ctx.getRootFiles();
+        if (roots == null) {
+            return;
+        }
         
+        final RelocatePanel panel = new RelocatePanel();
+        panel.getCurrentURL().setText(getCurrentURL(roots[0]));
+        panel.getWorkingCopy().setText(getWorkingCopy(roots[0]));
         
         final JButton btnRelocate = new JButton(loc.getString("CTL_Relocate_Action_Name"));
         btnRelocate.setEnabled(false);
@@ -104,23 +138,16 @@ public class RelocateAction extends AbstractAction {
         if (descriptor.getValue() != btnRelocate) 
             return;
         
-        panel.getNewURL().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                validate(panel, btnRelocate);
-            }
-        });
-        
         final String newUrl = panel.getNewURL().getText();
         
-        File root = ctx.getRootFiles().iterator().next();
         final SVNUrl repositoryUrl;
         try {            
-            repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }                  
-        final String wc = root.getAbsolutePath();
+        final String wc = roots[0].getAbsolutePath();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
             support = new SvnProgressSupport() {
@@ -138,32 +165,5 @@ public class RelocateAction extends AbstractAction {
         } finally {
             support = null;
         }
-    }
-    
-    private String getCurrentURL() {
-        File root = ctx.getRootFiles().iterator().next();
-        try {
-            SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
-            return repositoryUrl.toString();
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);            
-        }                            
-        return "";
-    }        
-    
-    private String getWorkingCopy() {
-        File root = ctx.getRootFiles().iterator().next();
-        final String working = root.getAbsolutePath();
-        return working;
-    }
-    
-    public void validate(RelocatePanel panel, JButton btnOk) {
-        try {
-            new SVNUrl(panel.getNewURL().getText());
-            btnOk.setEnabled(true);
-        } catch (MalformedURLException e) {
-            btnOk.setEnabled(false);
-        }
-        
     }
 }
