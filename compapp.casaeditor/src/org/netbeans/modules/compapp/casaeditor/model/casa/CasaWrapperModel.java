@@ -1932,23 +1932,11 @@ public class CasaWrapperModel extends CasaModelImpl {
      * Gets the owning compapp project.
      */
     public Project getJBIProject() throws IOException {
-        ModelSource modelSource = getModelSource();
-        Lookup lookup = modelSource.getLookup();
+        Lookup lookup = getModelSource().getLookup();
         FileObject casaFO = (FileObject) lookup.lookup(FileObject.class);
         FileObject projectFO = casaFO.getParent().getParent().getParent();
         return ProjectManager.getDefault().findProject(projectFO);
-    }
-    
-    public void buildCompApp() {
-        try {
-            Project jbiProject = getJBIProject();
-            ActionProvider actionProvider =
-                    (ActionProvider) jbiProject.getLookup().lookup(ActionProvider.class);
-            actionProvider.invokeAction(ActionProvider.COMMAND_BUILD, null);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
+    }      
     
     /**
      * Gets a (non-null) list of casa connections connecting the given endpoint.
@@ -2244,32 +2232,28 @@ public class CasaWrapperModel extends CasaModelImpl {
     public boolean isEditable(final CasaPort casaPort, String propertyName) {
         return isEditable(casaPort);
     }
-    
-    /**
-     * Checks whether an endpoint is editable.
-     * Only endpoints in external service units and editable casaports 
-     * are editable.
-     * @deprecated use #isEditable(CasaEndpoint, String) instead
-     */
-    public boolean isEditable(final CasaEndpointRef endpointRef) {
-        CasaServiceEngineServiceUnit seSU =
-                getCasaEngineServiceUnit(endpointRef);
-        if (seSU != null) {
-            return !seSU.isInternal();
-        } else {
-            CasaPort casaPort = getCasaPort(endpointRef);
-            return isEditable(casaPort);
-        }        
-    }
-    
+        
     /**
      * Checks whether a particular property of an endpoint is editable.
+     *
+     * Endpoints in internal service engine service unit and WSDL endpoints 
+     * casa port that come from component projects are not editable.
      */
     public boolean isEditable(final CasaEndpointRef endpointRef, 
             String propertyName) {
-        if (!isEditable(endpointRef)) {
-            return false;
-        }
+        
+        CasaServiceEngineServiceUnit seSU =
+                getCasaEngineServiceUnit(endpointRef);
+        if (seSU != null) {
+            if (seSU.isInternal()) {
+                return false;
+            }
+        } else {
+            CasaPort casaPort = getCasaPort(endpointRef);
+            if (!isEditable(casaPort)) {
+                return false;
+            }
+        }    
         
         // Can't edit internface name when there is visible connection
         if (JBIAttributes.INTERFACE_NAME.getName().equals(propertyName)) {
@@ -2290,15 +2274,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         
         return true;
     }
-    
-    /**
-     * Checks whether a connection is editable.
-     * Connections are never editable.
-     */
-    public boolean isEditable(final CasaConnection connection) {
-        return false;
-    }
-    
+        
     private boolean isDefinedInCompApp(final CasaPort casaPort) {
         CasaLink link = casaPort.getLink();
         String linkHref = link.getHref();
@@ -2538,7 +2514,15 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
     }
     
-    public void setUnitName(final CasaServiceUnit su, String unitName) {           
+    public void setUnitName(final CasaServiceUnit su, String unitName) {   
+        if (su instanceof CasaBindingComponentServiceUnit) {
+            throw new RuntimeException("Cannot change unit-name of binding component service unit.");
+        }
+        
+        if (((CasaServiceEngineServiceUnit) su).isInternal()) {
+            throw new RuntimeException("Cannot change unit-name of internal service engine service unit.");            
+        }
+        
         startTransaction();
         try {
             su.setUnitName(unitName);
