@@ -58,8 +58,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-//todo vlv
-//import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -271,10 +270,10 @@ public class Util {
             
             
             projects.add(affectedProject);for (Project project : OpenProjects.getDefault().getOpenProjects()){
-/*todo vlv                
-                Object isJ2eeApp = project.getLookup().lookup(J2eeAppProvider.class);
+                
+                Object isJ2eeApp = project.getLookup().lookup(J2eeApplicationProvider.class);
                 if (isJ2eeApp != null) {
-                    J2eeAppProvider j2eeApp = (J2eeAppProvider)isJ2eeApp;
+                    J2eeApplicationProvider j2eeApp = (J2eeApplicationProvider)isJ2eeApp;
                     J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
                 
                     if (j2eeModules != null) {
@@ -308,7 +307,6 @@ public class Util {
                         }
                     }
                 }
-*/
             }
         }
         
