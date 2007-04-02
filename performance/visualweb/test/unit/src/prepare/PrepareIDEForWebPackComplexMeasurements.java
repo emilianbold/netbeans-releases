@@ -25,6 +25,7 @@ import junit.framework.TestSuite;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 
@@ -64,17 +65,17 @@ public class PrepareIDEForWebPackComplexMeasurements  extends PrepareIDEForCompl
     public void openPages() {
         log("::open Pages");
         try {
-            String PageName = "Page1.jsp";
-            String WPN = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.project.jsfproject.ui.Bundle", "LBL_Node_DocBase");
+            String projectName = "HugeApp";
+            String pageName = "Page1.jsp";
 
             // try to workarround problems with tooltip on Win2K & WinXP - issue 56825
-            ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode("HugeApp");
+            ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);
             projectNode.expand();
 
-            Node pagesNode = new Node(projectNode,WPN);
+            WebPagesNode pagesNode = new WebPagesNode(projectName);
             pagesNode.expand();
             
-	    Node webPage = new Node(projectNode,WPN+"|"+PageName);
+	    Node webPage = new Node(pagesNode,pageName);
 	    webPage.select();
 	            
             try { 
