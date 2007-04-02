@@ -26,6 +26,7 @@ import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -44,10 +45,21 @@ public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
             return null;
         }
         URL sourceURL = Index.getSourceRootForClassFolder(binaryRoot);
-        if (sourceURL != null) {
-            return new R (sourceURL);
+        SourceForBinaryQuery.Result result = null;
+        if (sourceURL != null) {            
+            for ( SourceForBinaryQueryImplementation impl :Lookup.getDefault().lookupAll(SourceForBinaryQueryImplementation.class)) {
+                if (impl != this) {
+                    result = impl.findSourceRoots(sourceURL);
+                    if (result != null) {
+                        break;
+                    }
+                }
+            }
+            if (result == null) {
+                result = new R (sourceURL);
+            }
         }        
-        return null;
+        return result;
     }
     
     private static class R implements SourceForBinaryQuery.Result {
