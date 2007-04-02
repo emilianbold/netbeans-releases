@@ -405,38 +405,38 @@ public final class JavaSource {
         
         assert !holdsDocumentWriteLock(files) : "JavaSource.runCompileControlTask called under Document write lock.";    //NOI18N
         
-        if (this.files.size()<=1) {            
-            CompilationInfo currentInfo = null;
-            synchronized (this) {                        
-                if (this.currentInfo != null && (this.flags & INVALID)==0) {
-                            currentInfo = this.currentInfo;
-                }
-                if (!shared) {
-                    this.flags|=INVALID;
-                }                        
-            }
-            if (currentInfo == null) {
-                currentInfo = createCurrentInfo(this,this.files.isEmpty() ? null : this.files.iterator().next(), filterListener, null);                
-                if (shared) {
-                    synchronized (this) {                        
-                        if (this.currentInfo == null || (this.flags & INVALID) != 0) {
-                            this.currentInfo = currentInfo;
-                            this.flags&=~INVALID;
-                        }
-                        else {
-                            currentInfo = this.currentInfo;
-                        }
-                    }
-                }
-            }
-            assert currentInfo != null;
+        if (this.files.size()<=1) {                        
             final JavaSource.Request request = currentRequest.getTaskToCancel();
             try {
                 if (request != null) {
                     request.task.cancel();
                 }            
-                this.javacLock.lock();
+                this.javacLock.lock();                                
                 try {
+                    CompilationInfo currentInfo = null;
+                    synchronized (this) {                        
+                        if (this.currentInfo != null && (this.flags & INVALID)==0) {
+                            currentInfo = this.currentInfo;
+                        }
+                        if (!shared) {
+                            this.flags|=INVALID;
+                        }                        
+                    }
+                    if (currentInfo == null) {
+                        currentInfo = createCurrentInfo(this,this.files.isEmpty() ? null : this.files.iterator().next(), filterListener, null);                
+                        if (shared) {
+                            synchronized (this) {                        
+                                if (this.currentInfo == null || (this.flags & INVALID) != 0) {
+                                    this.currentInfo = currentInfo;
+                                    this.flags&=~INVALID;
+                                }
+                                else {
+                                    currentInfo = this.currentInfo;
+                                }
+                            }
+                        }
+                    }
+                    assert currentInfo != null;
                     if (shared) {
                         if (!infoStack.isEmpty()) {
                             currentInfo = infoStack.peek();
@@ -527,33 +527,33 @@ public final class JavaSource {
         
         ModificationResult result = new ModificationResult(this);
         if (this.files.size()<=1) {
-            long start = System.currentTimeMillis();
-            CompilationInfo currentInfo = null;
-            synchronized (this) {
-                if (this.currentInfo != null &&  (this.flags & INVALID) == 0) {
-                    currentInfo = this.currentInfo;
-                }
-            }
-            if (currentInfo == null) {
-                currentInfo = createCurrentInfo(this,this.files.isEmpty() ? null : this.files.iterator().next(), filterListener, null);
-                synchronized (this) {
-                    if (this.currentInfo == null || (this.flags & INVALID) != 0) {
-                        this.currentInfo = currentInfo;
-                        this.flags&=~INVALID;
-                    }
-                    else {
-                        currentInfo = this.currentInfo;
-                    }
-                }
-            }
-            assert currentInfo != null;
+            long start = System.currentTimeMillis();            
             final JavaSource.Request request = currentRequest.getTaskToCancel();
             try {
                 if (request != null) {
                     request.task.cancel();
                 }            
-                this.javacLock.lock();
+                this.javacLock.lock();                                
                 try {
+                    CompilationInfo currentInfo = null;
+                    synchronized (this) {
+                        if (this.currentInfo != null &&  (this.flags & INVALID) == 0) {
+                            currentInfo = this.currentInfo;
+                        }
+                    }
+                    if (currentInfo == null) {
+                        currentInfo = createCurrentInfo(this,this.files.isEmpty() ? null : this.files.iterator().next(), filterListener, null);
+                        synchronized (this) {
+                            if (this.currentInfo == null || (this.flags & INVALID) != 0) {
+                                this.currentInfo = currentInfo;
+                                this.flags&=~INVALID;
+                            }
+                            else {
+                                currentInfo = this.currentInfo;
+                            }
+                        }
+                    }
+                    assert currentInfo != null;                    
                     WorkingCopy copy = new WorkingCopy (currentInfo);
                     task.run (copy);
                     List<Difference> diffs = copy.getChanges();
