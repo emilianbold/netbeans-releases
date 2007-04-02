@@ -161,7 +161,6 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.versioning.util</friend>
                 <friend>org.netbeans.modules.subversion</friend>
                 <friend>org.netbeans.modules.localhistory</friend>
-                <package>org.netbeans.modules.versioning</package>
                 <package>org.netbeans.modules.versioning.spi</package>
             </friend-packages>
         </data>

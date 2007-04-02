@@ -35,9 +35,9 @@ import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.OriginalContent;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.modules.versioning.VersioningManager;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 
@@ -310,7 +310,7 @@ public class Subversion {
      * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise
      */ 
     public boolean isManaged(File file) {
-        return VersioningManager.getInstance().getOwner(file) instanceof SubversionVCS && !SvnUtils.isPartOfSubversionMetadata(file);
+        return VersioningSupport.getOwner(file) instanceof SubversionVCS && !SvnUtils.isPartOfSubversionMetadata(file);
     }
 
     public void versionedFilesChanged() {

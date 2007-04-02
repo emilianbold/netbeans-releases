@@ -34,7 +34,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTop
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.OriginalContent;
-import org.netbeans.modules.versioning.VersioningManager;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -379,7 +379,7 @@ public class CvsVersioningSystem {
      * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise
      */ 
     boolean isManaged(File file) {
-        return VersioningManager.getInstance().getOwner(file) instanceof CVS && !Utils.isPartOfCVSMetadata(file);
+        return VersioningSupport.getOwner(file) instanceof CVS && !Utils.isPartOfCVSMetadata(file);
     }
 
     public void versionedFilesChanged() {

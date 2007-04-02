@@ -54,11 +54,6 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     private final FilesystemInterceptor filesystemInterceptor;
 
     /**
-     * Manager of Versioning Output components.
-     */
-    private final VersioningOutputManager outputManager = new VersioningOutputManager();
-    
-    /**
      * Holds all registered versioning systems.
      */
     private final Collection<VersioningSystem> versioningSystems = new ArrayList<VersioningSystem>(2);
@@ -237,10 +232,6 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }        
     }
     
-    public VersioningOutputManager getOutputManager() {
-        return outputManager;
-    }
-
     public void resultChanged(LookupEvent ev) {
         Lookup.Result<VersioningSystem> result = (Lookup.Result<VersioningSystem>) ev.getSource();
         refreshVersioningSystems(result.allInstances());

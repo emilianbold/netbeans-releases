@@ -20,8 +20,7 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.update;
 
 import org.netbeans.modules.versioning.system.cvss.*;
-import org.netbeans.modules.versioning.VersioningManager;
-import org.netbeans.modules.versioning.VersioningOutputManager;
+import org.netbeans.modules.versioning.util.VersioningOutputManager;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.DefaultFileInfoContainer;
@@ -205,7 +204,7 @@ public class UpdateExecutor extends ExecutorSupport {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 UpdateResults results = new UpdateResults(toRefresh, cmd.getGlobalOptions().getCVSRoot(), contextDisplayName);
-                VersioningOutputManager vom = VersioningManager.getInstance().getOutputManager();
+                VersioningOutputManager vom = VersioningOutputManager.getInstance();
                 vom.addComponent(cmd.getGlobalOptions().getCVSRoot() + "-UpdateExecutor", results); // NOI18N
             }
         });
