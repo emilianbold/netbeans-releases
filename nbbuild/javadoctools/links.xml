@@ -123,3 +123,4 @@ Microsystems, Inc. All Rights Reserved.
 <link href="${javadoc.docs.org-netbeans-modules-java-j2seproject}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-modules-java-j2seproject"/>
 <link href="${javadoc.docs.org-netbeans-modules-java-source}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-source"/>
 <link href="${javadoc.docs.org-netbeans-api-visual}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-visual"/>
+<link href="${javadoc.docs.org-netbeans-modules-editor-settings-storage}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-editor-settings-storage"/>
