@@ -259,6 +259,9 @@ public class JavaScript {
             Collection c = Semantic.getGlobalIds(doc);
             result.addAll (c);
             Semantic.Info info = Semantic.getInfo(doc);
+            if (info == null) {
+                return null;
+            }
             c = info.getScopeIds(path);
             result.addAll (c);
             return result;
