@@ -32,7 +32,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.uml.common.ui.SaveNotifierYesNo;
 import org.openide.NotifyDescriptor;
-
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -52,7 +51,6 @@ import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 import org.openide.cookies.PrintCookie;
 import org.openide.util.NbBundle;
-
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
@@ -83,20 +81,22 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaPropertyKind;
 import org.netbeans.modules.uml.core.support.Debug;
-import org.netbeans.modules.uml.drawingarea.dataobject.DiagramXmlDataObject;
+import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
+import org.netbeans.modules.uml.drawingarea.dataobject.DiagramDataObject;
 import org.netbeans.modules.uml.project.ui.nodes.AbstractModelElementNode;
 import org.netbeans.modules.uml.project.ui.nodes.UMLModelElementNode;
 import org.netbeans.modules.uml.palette.PaletteSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node.Cookie;
+import org.openide.windows.CloneableTopComponent;
 
 
 /**
  *
  * @author Trey Spiva
  */
-public class DiagramTopComponent extends TopComponent
+public class DiagramTopComponent extends CloneableTopComponent
         implements IDrawingAreaSelectionEventsSink,
         IDrawingAreaEventsSink, IDrawingAreaAddNodeEventsSink
 {
@@ -104,7 +104,7 @@ public class DiagramTopComponent extends TopComponent
     transient private String m_PreferredID = ""; // NOI18N
     transient private LocalUMLModelElementNode node = null;
     
-    transient private DiagramXmlDataObject diagramDO;
+    transient private DiagramDataObject diagramDO;
     
     private boolean bCancelSaveDialog = false;
     private boolean projectClosing = false;
@@ -113,7 +113,7 @@ public class DiagramTopComponent extends TopComponent
     transient private boolean isHidden = true;
     
     private final static String SPACE_STAR = " *";
-
+    
     DispatchHelper helper = new DispatchHelper();
     private DiagramChangeListener listener = new DiagramChangeListener();
     
@@ -139,32 +139,6 @@ public class DiagramTopComponent extends TopComponent
         initialize();
     }
     
-    /**
-     * @param arg0
-     */
-    // Praveen: I dont see this method being called.
-    // Still adding code to display the palette
-    public DiagramTopComponent(Lookup lookup, String filename)
-    {
-        super(lookup);
-        initializeUI();
-        loadDrawingArea(filename);
-        initialize();
-    }
-    
-    // Praveen: I dont see this method being called.
-    // Still adding code to display the palette
-    public DiagramTopComponent(
-            Lookup lookup,
-            INamespace owener,
-            String name,
-            int kind)
-    {
-        super(lookup);
-        initializeUI();
-        loadDrawingArea(owener, name, kind);
-        initialize();
-    }
     
     private void initialize()
     {
@@ -196,30 +170,41 @@ public class DiagramTopComponent extends TopComponent
     }
     
     
-    private DiagramXmlDataObject getDiagramDO()
+    private DiagramDataObject getDiagramDO()
     {
         if (diagramDO == null)
         {
-            String dacFilename = getDrawingAreaControl().getFilename();
-            
+            String file = getDrawingAreaControl().getFilename();   
+            String etld = file;
+            String etlp = file;
             try
             {
-                if (dacFilename != null && !dacFilename.equals(""))
+                if (file != null && !file.equals(""))
                 {
-                    File file = new File(dacFilename);
-                    
-                    if (file != null)
+                    int index = file.lastIndexOf(".");
+                    if (index > -1)
                     {
-                        if (!file.exists())
-                            file.createNewFile();
-                        FileObject fileObj = FileUtil.toFileObject(file);
-                        
-                        if (fileObj != null)
-                            diagramDO = (DiagramXmlDataObject) DataObject.find(fileObj);
+                        etlp = file.substring(0, index) +
+                                FileExtensions.DIAGRAM_PRESENTATION_EXT;
+                        etld = file.substring(0, index) +
+                                FileExtensions.DIAGRAM_LAYOUT_EXT;
                     }
+                    
+                    File etlpF = new File(etlp);
+                    File etldF = new File(etld);
+                    
+                    
+                    if (!etlpF.exists())
+                        etlpF.createNewFile();
+                    if (!etldF.exists())
+                        etldF.createNewFile();
+                    
+                    FileObject etlpFO = FileUtil.toFileObject(etlpF);
+
+                    if (etlpFO != null)
+                        diagramDO = (DiagramDataObject) DataObject.find(etlpFO);
                 }
-            }
-            
+            }   
             catch (Exception ex)
             {
                 ex.printStackTrace();
@@ -255,14 +240,14 @@ public class DiagramTopComponent extends TopComponent
     public void loadDrawingArea(INamespace namespace, String name, int kind)
     {
         ADDrawingAreaControl retVal = null;
-        // Fixed issue 96474. 
-        // Modified to call addControl() before calling mControl.initializeNewDiagram(namespace, name, kind). 
+        // Fixed issue 96474.
+        // Modified to call addControl() before calling mControl.initializeNewDiagram(namespace, name, kind).
         // This is because mControl needs to be set to this DiagramTopComponent object
         // before it is referred in a later code to avoid NPE.
         
-//        mControl = createNewDiagram(namespace, name, kind);
-//        setDiagramProperties(mControl);
-//        addControl();
+        //        mControl = createNewDiagram(namespace, name, kind);
+        //        setDiagramProperties(mControl);
+        //        addControl();
         try
         {
             mControl = new ADDrawingAreaControl();
@@ -276,7 +261,7 @@ public class DiagramTopComponent extends TopComponent
         {
             t.printStackTrace();
         }
-
+        
     }
     
     /**
@@ -351,9 +336,9 @@ public class DiagramTopComponent extends TopComponent
     private void addSaveCookie()
     {
         Node[] nodes = getActivatedNodes();
-        if (nodes != null && 
-            nodes.length > 0 && 
-            nodes[0] instanceof LocalUMLModelElementNode) 
+        if (nodes != null &&
+                nodes.length > 0 &&
+                nodes[0] instanceof LocalUMLModelElementNode)
         {
             ((LocalUMLModelElementNode)nodes[0]).addSaveCookie();
         }
@@ -499,18 +484,18 @@ public class DiagramTopComponent extends TopComponent
         if (!getDrawingAreaControl().getIsDirty())
             return true;
         
-        DiagramXmlDataObject obj = getDiagramDO();
+        DiagramDataObject obj = getDiagramDO();
         if (obj != null)
         {
-            // Fixes Issue 96133.  The problem is that NetBeans is calling 
-            // canClose more than one time (I do not know why).  However if the 
+            // Fixes Issue 96133.  The problem is that NetBeans is calling
+            // canClose more than one time (I do not know why).  However if the
             // user said do not save the first time, the diagram will still be
             // marked as dirty.  So we will try to save again the second time.
-            // Therefore the dialog will be displayed again.  
+            // Therefore the dialog will be displayed again.
             //
             // However when the user says to not save, we remove the SaveCookie
             // from the DataObject.  So, check if the save cookie is present.
-            // If the save cookie is not present, we can not save anyway.  So, 
+            // If the save cookie is not present, we can not save anyway.  So,
             // let the user close the diagram.
             if(obj.getCookie(SaveCookie.class) == null)
                 return true;
@@ -577,32 +562,32 @@ public class DiagramTopComponent extends TopComponent
         
         switch (saveAction)
         {
-            case RESULT_YES:
-                SaveCookie cookie = (SaveCookie) getDiagramDO().getCookie(SaveCookie.class);
-                try
-                {
-                    if (cookie != null)
-                        cookie.save();
-                }
-                catch (IOException e)
-                {
-                    ErrorManager.getDefault().notify(e);
-                }
-                break;
-                
-            case RESULT_NO:
-                DiagramXmlDataObject obj = getDiagramDO();
-                if (obj != null)
-                {
-                    obj.removeSaveCookie();
-                    obj.setModified(false);
-                }
-                removeSaveCookie();
-                break;
-                
-            case RESULT_CANCEL:
-                safeToClose = false;
-                break;
+        case RESULT_YES:
+            SaveCookie cookie = (SaveCookie) getDiagramDO().getCookie(SaveCookie.class);
+            try
+            {
+                if (cookie != null)
+                    cookie.save();
+            }
+            catch (IOException e)
+            {
+                ErrorManager.getDefault().notify(e);
+            }
+            break;
+            
+        case RESULT_NO:
+            DiagramDataObject obj = getDiagramDO();
+            if (obj != null)
+            {
+                obj.removeSaveCookie();
+                obj.setModified(false);
+            }
+            removeSaveCookie();
+            break;
+            
+        case RESULT_CANCEL:
+            safeToClose = false;
+            break;
         }
         
         return safeToClose;
@@ -616,7 +601,7 @@ public class DiagramTopComponent extends TopComponent
     private int saveDiagram()
     {
         String prefVal = ProductHelper.getPreferenceManager()
-        .getPreferenceValue("Default", "PromptToSaveDiagram"); // NOI18N
+                .getPreferenceValue("Default", "PromptToSaveDiagram"); // NOI18N
         
         // if Prompt to Save Diagram pref is set to No, then auto-save
         // without prompting to ask
@@ -671,7 +656,7 @@ public class DiagramTopComponent extends TopComponent
         getDrawingAreaControl().setFocus();
         
         TopComponentGroup group = WindowManager.getDefault()
-        .findTopComponentGroup("modeling-diagrams"); // NOI18N
+                .findTopComponentGroup("modeling-diagrams"); // NOI18N
         
         if (group != null)
         {
@@ -715,7 +700,7 @@ public class DiagramTopComponent extends TopComponent
         super.componentHidden();
         isHidden = true;
         TopComponentGroup group = WindowManager.getDefault()
-        .findTopComponentGroup("modeling-diagrams"); // NOI18N
+                .findTopComponentGroup("modeling-diagrams"); // NOI18N
         
         if (group != null)
         {
@@ -1039,36 +1024,36 @@ public class DiagramTopComponent extends TopComponent
             
             switch (saveDiagram())
             {
-                case RESULT_YES:
-                    // everything is good, diagram saved, proceed with rename
-                    return;
-                    
-                case RESULT_NO:
-                case RESULT_CANCEL:
-                    // modified diagram not saved by user
-                    // when the user clicked "No" on the Save dialog, this
-                    //  results in the diagram being set to not dirty, but in
-                    //  this case we just want to leave it dirty and prevent
-                    //  the rename from happening
-                    getDrawingAreaControl().setIsDirty(true);
-                    
-                    // prevent rename from happening
-                    cell.setContinue(false);
-                    
-                    // the user just changed the name
-                    // in the property sheet, and even though they said
-                    // No or Cancel to the Save diagram dialog, the Save is
-                    // aborted, and the rename for the tree node and diagram tab
-                    // is aborted, but the property sheet property will keep the
-                    // new value, but it should revert back to the old value.
-                    // refreshing the property sheet makes it revert back.
-                    SwingUtilities.invokeLater(new Runnable()
+            case RESULT_YES:
+                // everything is good, diagram saved, proceed with rename
+                return;
+                
+            case RESULT_NO:
+            case RESULT_CANCEL:
+                // modified diagram not saved by user
+                // when the user clicked "No" on the Save dialog, this
+                //  results in the diagram being set to not dirty, but in
+                //  this case we just want to leave it dirty and prevent
+                //  the rename from happening
+                getDrawingAreaControl().setIsDirty(true);
+                
+                // prevent rename from happening
+                cell.setContinue(false);
+                
+                // the user just changed the name
+                // in the property sheet, and even though they said
+                // No or Cancel to the Save diagram dialog, the Save is
+                // aborted, and the rename for the tree node and diagram tab
+                // is aborted, but the property sheet property will keep the
+                // new value, but it should revert back to the old value.
+                // refreshing the property sheet makes it revert back.
+                SwingUtilities.invokeLater(new Runnable()
+                {
+                    public void run()
                     {
-                        public void run()
-                        {
-                            refreshPropertySet();
-                        }
-                    });
+                        refreshPropertySet();
+                    }
+                });
             }
         }
     }
@@ -1159,25 +1144,25 @@ public class DiagramTopComponent extends TopComponent
     public void addSelectedActionCallbacks()
     {
         ((CallbackSystemAction) SystemAction.get(CopyAction.class))
-        .setActionPerformer(new DiagramCopyCookie());
+                .setActionPerformer(new DiagramCopyCookie());
         
         ((CallbackSystemAction) SystemAction.get(CutAction.class))
-        .setActionPerformer(new DiagramCutCookie());
+                .setActionPerformer(new DiagramCutCookie());
         
         ((CallbackSystemAction) SystemAction.get(DeleteAction.class))
-        .setActionPerformer(new DeletePerformer());
+                .setActionPerformer(new DeletePerformer());
     }
     
     public void removeSelectedActionCallbacks()
     {
         ((CallbackSystemAction) SystemAction.get(CopyAction.class))
-        .setActionPerformer(null);
+                .setActionPerformer(null);
         
         ((CallbackSystemAction) SystemAction.get(CutAction.class))
-        .setActionPerformer(null);
+                .setActionPerformer(null);
         
         ((CallbackSystemAction) SystemAction.get(DeleteAction.class))
-        .setActionPerformer(null);
+                .setActionPerformer(null);
     }
     
     public void addBasicActionCallbacks()
@@ -1355,7 +1340,7 @@ public class DiagramTopComponent extends TopComponent
             if (evt.getPropertyName().equals(ADDrawingAreaControl.DIRTYSTATE))
             {
                 boolean modified = ((Boolean)evt.getNewValue()).booleanValue();
-                DiagramXmlDataObject dobj = getDiagramDO();
+                DiagramDataObject dobj = getDiagramDO();
                 if (modified)
                 {
                     dobj.addSaveCookie();
