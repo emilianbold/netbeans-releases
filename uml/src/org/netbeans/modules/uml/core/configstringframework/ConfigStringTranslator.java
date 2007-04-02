@@ -670,9 +670,9 @@ public class ConfigStringTranslator implements IConfigStringTranslator {
             addToMap("PSK_RTELEMENT_MULTIPLICITY_HLP", "IDS_STRING608");
             addToMap("PSK_RTELEMENT_PROJECT_HLP","IDS_STRING1416");
             addToMap("PSK_RTELEMENT_RANGE_HLP", "IDS_STRING609");
-			addToMap("PSK_RTELEMENT_PARAMETERABLEELEMENT_HLP","IDS_STRING1930");
-			addToMap("PSK_RTELEMENT_ENUMERATION_HLP","IDS_STRING1931");
-			addToMap("PSK_RTELEMENT_ENUMERATIONLITERAL_HLP","IDS_STRING1932");
+            addToMap("PSK_RTELEMENT_PARAMETERABLEELEMENT_HLP","IDS_STRING1930");
+            addToMap("PSK_RTELEMENT_ENUMERATION_HLP","IDS_STRING1931");
+            addToMap("PSK_RTELEMENT_ENUMERATIONLITERAL_HLP","IDS_STRING1932");
             addToMap("PSK_NOATTRPREFIX", "IDS_STRING594");
             addToMap("PSK_NOATTRPREFIX_HLP", "IDS_STRING595");
             addToMap("PSK_CAPONACCESSORS", "IDS_STRING650");
@@ -1296,6 +1296,9 @@ public class ConfigStringTranslator implements IConfigStringTranslator {
             // source file artifact property
             addToMap("PSK_SOURCE_FILE_ARTIFACTS", "IDS_STRING2050");
             addToMap("PSK_SOURCE_FILE_ARTIFACTS_HLP", "IDS_STRING2051");
+            
+            // open previous diagrams on project loading
+            addToMap("PSK_OPENPROJECTDIAGRAMS_HLP", "IDS_STRING2053");
             
             // Add the colors and fonts
             addColorsAndFontsToMap();
