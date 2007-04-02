@@ -47,6 +47,7 @@ public class CustomizerConfigManager extends javax.swing.JPanel {
             this.vcs = new VisualConfigSupport(
                     jListConfigs,
                     jButtonAddConfig,
+                    jButtonAddMore,
                     jButtonRename,
                     jButtonRemoveConfig,
                     jButtonDuplicate,
@@ -71,6 +72,7 @@ public class CustomizerConfigManager extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jListConfigs = new javax.swing.JList();
         jButtonAddConfig = new javax.swing.JButton();
+        jButtonAddMore = new javax.swing.JButton();
         jButtonDuplicate = new javax.swing.JButton();
         jButtonRename = new javax.swing.JButton();
         jButtonRemoveConfig = new javax.swing.JButton();
@@ -110,6 +112,15 @@ public class CustomizerConfigManager extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 5, 12);
         add(jButtonAddConfig, gridBagConstraints);
         jButtonAddConfig.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerConfigManager.class, "ACSD_CfgManager_Add")); // NOI18N
+
+        jButtonAddMore.setMnemonic(NbBundle.getMessage(CustomizerConfigManager.class, "MNM_CustConfigs_AddMore").charAt(0));
+        jButtonAddMore.setText(NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_AddMore")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
+        add(jButtonAddMore, gridBagConstraints);
 
         jButtonDuplicate.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerConfigManager.class).getString("MNM_CustConfigs_Duplicate").charAt(0));
         jButtonDuplicate.setText(NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_Duplicate")); // NOI18N
@@ -168,6 +179,7 @@ public class CustomizerConfigManager extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel configsLabel;
     private javax.swing.JButton jButtonAddConfig;
+    private javax.swing.JButton jButtonAddMore;
     private javax.swing.JButton jButtonDuplicate;
     private javax.swing.JButton jButtonRemoveConfig;
     private javax.swing.JButton jButtonRename;

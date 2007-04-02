@@ -36,11 +36,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.mobility.project.ui.wizard.ConfigurationsSelectionPanel;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.DialogDisplayer;
@@ -60,6 +63,7 @@ import org.openide.util.Utilities;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.UserConfigurationTemplatesProvider;
+import org.netbeans.modules.mobility.project.ui.wizard.ConfigurationsSelectionPanelGUI;
 
 
 /** Handles adding, removing, editing and ordering of configs.
@@ -72,6 +76,7 @@ public final class VisualConfigSupport {
     
     final JList configurationList;
     final JButton addConfigButton;
+    final JButton addMoreButton;
     final JButton renameConfigButton;
     final JButton removeConfigButton;
     final JButton duplicateButton;
@@ -81,7 +86,7 @@ public final class VisualConfigSupport {
     
     J2MEProjectProperties properties;
     
-    public VisualConfigSupport(JList configurationList, JButton addConfigButton, JButton renameConfigButton, JButton removeConfigButton, JButton duplicateButton, JButton saveButton) {
+    public VisualConfigSupport(JList configurationList, JButton addConfigButton, JButton addMoreButton, JButton renameConfigButton, JButton removeConfigButton, JButton duplicateButton, JButton saveButton) {
         // Remember all controls
         this.configurationList = configurationList;
         this.configurationModel = new DefaultListModel();
@@ -89,6 +94,7 @@ public final class VisualConfigSupport {
         this.configurationList.setCellRenderer( new ConfigurationCellRenderer() );
         
         this.addConfigButton = addConfigButton;
+        this.addMoreButton = addMoreButton;
         this.renameConfigButton = renameConfigButton;
         this.removeConfigButton = removeConfigButton;
         this.duplicateButton = duplicateButton;
@@ -99,6 +105,7 @@ public final class VisualConfigSupport {
         
         // On all buttons
         addConfigButton.addActionListener( csl );
+        addMoreButton.addActionListener( csl );
         renameConfigButton.addActionListener( csl );
         removeConfigButton.addActionListener( csl );
         duplicateButton.addActionListener( csl );
@@ -155,6 +162,42 @@ public final class VisualConfigSupport {
             configurationModel.addElement(cfg);
             configurationList.setSelectedValue(cfg, true);
             createFromTemplate(properties, newName, ncp.getTemplate());
+            fireActionPerformed();
+        }
+        
+    }
+    
+    protected void addMoreConfigs( ) {
+        final ProjectConfiguration cfgs[] = getConfigurationItems();
+        final HashSet<String> allNames = new HashSet<String>(cfgs.length);
+        for (int i=0; i<cfgs.length; i++) {
+            allNames.add(cfgs[i].getDisplayName());
+        }
+        final ConfigurationsSelectionPanelGUI ncp = new ConfigurationsSelectionPanelGUI(allNames);
+        final ErrorPanel ep = new ErrorPanel();
+        final JPanel p = new JPanel(new BorderLayout());
+        p.add(ncp, BorderLayout.CENTER);
+        p.add(ep, BorderLayout.SOUTH);
+        final DialogDescriptor dd = new DialogDescriptor(p, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_AddConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
+        ncp.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent arg0) {
+                boolean valid = ncp.isValid();
+                dd.setValid(valid);
+                ep.setErrorMessage(valid ? null : NbBundle.getMessage(ConfigurationsSelectionPanel.class, "ERR_CfgSelPanel_NameCollision"));//NOI18N
+            }
+        });
+        if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
+            for (ConfigurationTemplateDescriptor tmp : ncp.getSelectedTemplates()) {
+                final String newName =  tmp.getCfgName();
+                final ProjectConfiguration cfg = new ProjectConfiguration() {
+                    public String getDisplayName() {
+                        return newName;
+                    }
+                };
+                configurationModel.addElement(cfg);
+                configurationList.setSelectedValue(cfg, true);
+                createFromTemplate(properties, newName, tmp);
+            }
             fireActionPerformed();
         }
         
@@ -459,6 +502,8 @@ public final class VisualConfigSupport {
             
             if ( source == addConfigButton ) {
                 addNewConfig();
+            } else if ( source == addMoreButton ) {
+                addMoreConfigs();
             } else if ( source == renameConfigButton ) {
                 renameElement();
             } else if ( source == removeConfigButton ) {

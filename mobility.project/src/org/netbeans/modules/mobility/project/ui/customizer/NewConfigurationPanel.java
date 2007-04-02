@@ -150,6 +150,10 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, P
             errorPanel.setErrorBundleMessage("ERR_AddCfg_NameExists"); //NOI18N
             return false;
         }
+        if (getTemplate() == null) {
+            errorPanel.setErrorBundleMessage("ERR_AddCfg_SelectTmp"); //NOI18N
+            return false;
+        };
         errorPanel.setErrorBundleMessage(null);
         return true;
     }
@@ -170,6 +174,7 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, P
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
+        changedUpdate(null);
         final String s = jTextFieldName.getText();
         if (s.length() == 0 || s.equals(oldName)) {
             Node[] nodes = manager.getSelectedNodes();
@@ -186,7 +191,7 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, P
             Node[] n = (Node[])evt.getNewValue();
             if (n.length > 1) throw new PropertyVetoException("Mutiselection is not alloved", evt); //NOI18N
             if (n.length == 0) return;
-            if (n[0].getLookup().lookup(ConfigurationTemplateDescriptor.class) == null) new PropertyVetoException("Only configuration templates selection allowed", evt); //NOI18N
+            if (n[0].getLookup().lookup(ConfigurationTemplateDescriptor.class) == null) throw new PropertyVetoException("Only configuration templates selection allowed", evt); //NOI18N
         }
     }
     

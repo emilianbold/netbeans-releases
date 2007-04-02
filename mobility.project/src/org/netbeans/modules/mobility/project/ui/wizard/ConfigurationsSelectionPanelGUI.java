@@ -27,6 +27,7 @@ package org.netbeans.modules.mobility.project.ui.wizard;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JPanel;
@@ -37,6 +38,7 @@ import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.CategoryDescriptor;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.Descriptor;
+import org.openide.DialogDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.TreeTableView;
 import org.openide.nodes.AbstractNode;
@@ -58,11 +60,17 @@ public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerM
     private static final String TEMPLATE_FILEOBJECT_PROPERTY = "template_fileobject"; //NOI18N
     private final ExplorerManager manager = new ExplorerManager();
     private final TreeTableView treeView;
+    private final Set<String> bannedNames;
     private Set<ConfigurationTemplateDescriptor> selection = new HashSet();
     private HashSet<ChangeListener> listeners = new HashSet();
     
     /** Creates new form ConfigurationsSelectionPanelGUI */
     public ConfigurationsSelectionPanelGUI() {
+        this(Collections.EMPTY_SET);
+    }
+    
+    public ConfigurationsSelectionPanelGUI(Set<String> bannedNames) {
+        this.bannedNames = bannedNames;
         initComponents();
         treeView = new TreeTableView();
         jLabel1.setLabelFor(treeView);
@@ -142,14 +150,14 @@ public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerM
     }
     
     public boolean isValid() {
-        HashSet<String> names = new HashSet();
+        HashSet<String> names = new HashSet(bannedNames);
         for (ConfigurationTemplateDescriptor cfg : selection) {
             if (!names.add(cfg.getCfgName())) return false;
         }
         return true; 
     }
     
-    public ExplorerManager getExplorerManager() {
+     public ExplorerManager getExplorerManager() {
         return manager;
     }
     
