@@ -704,7 +704,8 @@ public class ComplexTypeDerivationsReader {
             //no clue what kind of obj we got
             n.set(AnalysisConstants.XAM_COMPONENT, null);
         
-        n.set(AnalysisConstants.OPENIDE_NODE, displayNode  );
+        //We no longer have a ide Node to represent the usage component
+        //n.set(AnalysisConstants.OPENIDE_NODE, displayNode  );
         n.setInt(AnalysisConstants.FILE_GROUP, fileGroupNumber);
         n.set(AnalysisConstants.JAVA_AWT_IMAGE,( (ImageIcon)displayNode.getIcon()).getImage());
         
@@ -746,20 +747,8 @@ public class ComplexTypeDerivationsReader {
             Node parent = null;
             if( !(files.contains(fo)) ) {
                 Node fileNode = createFileNode(graph, queryComponent, fo, queryNode, ++fileGroupNumber);
-
-              // create a special edge from the file node to the query node
-              //  that will be visible when the file node is collapsed
-              //  This edge uses the default prefuse renderer, e.g.,
-              //    a small solid arrow head
-              //  When the file node is expanded, this edge will be
-              //  hidden.  See FindUsagesFocusControl (double click)
-                  Edge fileEdge = graph.addEdge(fileNode,queryNode);
-                  fileEdge.setString(AnalysisConstants.EDGE_TYPE, AnalysisConstants.FILE_EDGE_TYPE);
-                  fileEdge.setInt(AnalysisConstants.FILE_GROUP, fileGroupNumber);
-
-                  files.add(fo);
-                  parent = fileNode;
-                  fileNodes.put(fo, fileNode);
+                parent = fileNode;
+                fileNodes.put(fo, fileNode);
             } else {
                 parent = fileNodes.get(fo);
             }
@@ -771,6 +760,11 @@ public class ComplexTypeDerivationsReader {
                 Node pn = null;
                 
                 Object userObject = leaf.getUserObject();
+                
+                //we dont want to draw grap beyond the file
+                if( (userObject instanceof FileObject) ){
+                    break;
+                }
                                 
                 if(componentsInGraph.contains(userObject)){
                     //there's already a node for this
