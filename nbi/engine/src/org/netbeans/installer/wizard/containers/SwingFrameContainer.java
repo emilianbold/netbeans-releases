@@ -35,9 +35,16 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiFrame;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -57,7 +64,55 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     private SwingUi           currentUi;
     private WizardContentPane contentPane;
     
+    private int frameWidth;
+    private int frameHeight;
+    private File frameIcon;
+    
     public SwingFrameContainer() {
+        super();
+        
+        if (System.getProperty(WIZARD_FRAME_WIDTH_PROPERTY) != null) {
+            try {
+                frameWidth = Integer.parseInt(
+                        System.getProperty(WIZARD_FRAME_WIDTH_PROPERTY));
+            } catch (NumberFormatException e) {
+                ErrorManager.notifyWarning(
+                        "Could not load the defined property", e);
+            }
+        } else {
+            frameWidth = DEFAULT_WIZARD_FRAME_WIDTH;
+        }
+        
+        if (System.getProperty(WIZARD_FRAME_HEIGHT_PROPERTY) != null) {
+            try {
+                frameHeight = Integer.parseInt(
+                        System.getProperty(WIZARD_FRAME_HEIGHT_PROPERTY));
+            } catch (NumberFormatException e) {
+                ErrorManager.notifyWarning(
+                        "Could not load the defined property", e);
+            }
+        } else {
+            frameHeight = DEFAULT_WIZARD_FRAME_HEIGHT;
+        }
+        
+        if (System.getProperty(WIZARD_FRAME_ICON_URI_PROPERTY) != null) {
+            try {
+                frameIcon = FileProxy.getInstance().getFile(
+                        System.getProperty(WIZARD_FRAME_ICON_URI_PROPERTY));
+            } catch (DownloadException e) {
+                ErrorManager.notifyWarning(
+                        "Could not download wizard icon", e);
+            }
+        } else {
+            try {
+                frameIcon = FileProxy.getInstance().getFile(
+                        DEFAULT_WIZARD_FRAME_ICON_URI);
+            } catch (DownloadException e) {
+                ErrorManager.notifyWarning(
+                        "Could not download wizard icon", e);
+            }
+        }
+        
         initComponents();
     }
     
@@ -155,6 +210,15 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                 }
             }
         });
+        
+        setSize(frameWidth, frameHeight);
+        
+        try {
+            setIconImage(new ImageIcon(frameIcon.toURI().toURL()).getImage());
+        } catch (MalformedURLException e) {
+            ErrorManager.notifyWarning(
+                    "Could not set wizard icon", e);
+        }
         
         contentPane = new WizardContentPane();
         
@@ -407,4 +471,20 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             //});
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String WIZARD_FRAME_WIDTH_PROPERTY =
+            "nbi.wizard.ui.swing.frame.width";
+    public static final String WIZARD_FRAME_HEIGHT_PROPERTY =
+            "nbi.wizard.ui.swing.frame.height";
+    public static final String WIZARD_FRAME_ICON_URI_PROPERTY =
+            "nbi.wizard.ui.swing.frame.icon";
+    
+    public static final int DEFAULT_WIZARD_FRAME_WIDTH =
+            DEFAULT_FRAME_WIDTH;
+    public static final int DEFAULT_WIZARD_FRAME_HEIGHT =
+            DEFAULT_FRAME_HEIGHT;
+    public static final String DEFAULT_WIZARD_FRAME_ICON_URI =
+            DEFAULT_FRAME_ICON_URI;
 }

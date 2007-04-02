@@ -30,5 +30,4 @@
         class="org.netbeans.installer.wizard.components.sequences.MainSequence"/>
     <component 
         class="org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction"/>
-    
 </wizard>

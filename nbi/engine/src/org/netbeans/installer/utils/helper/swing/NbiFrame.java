@@ -25,9 +25,15 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.exceptions.DownloadException;
+import org.netbeans.installer.utils.helper.ExtendedUri;
 
 /**
  *
@@ -38,16 +44,21 @@ public class NbiFrame extends JFrame {
     // Instance
     private int frameWidth;
     private int frameHeight;
-    private URL frameIcon;
+    private File frameIcon;
     
     private NbiFrameContentPane contentPane;
     
     public NbiFrame() {
         super();
         
-        frameWidth  = DEFAULT_FRAME_WIDTH;
+        frameWidth = DEFAULT_FRAME_WIDTH;
         frameHeight = DEFAULT_FRAME_HEIGHT;
-        frameIcon   = DEFAULT_FRAME_ICON;
+        
+        try {
+            frameIcon = FileProxy.getInstance().getFile(DEFAULT_FRAME_ICON_URI);
+        } catch (DownloadException e) {
+            ErrorManager.notifyWarning("Cannot download frame icon", e);
+        }
         
         initComponents();
     }
@@ -81,7 +92,12 @@ public class NbiFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         
         setSize(frameWidth, frameHeight);
-        setIconImage(new ImageIcon(frameIcon).getImage());
+        
+        try {
+            setIconImage(new ImageIcon(frameIcon.toURI().toURL()).getImage());
+        } catch (MalformedURLException e) {
+            ErrorManager.notifyWarning("Cannot load frame icon", e);
+        }
         
         // content pane
         contentPane = new NbiFrameContentPane();
@@ -125,13 +141,18 @@ public class NbiFrame extends JFrame {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final int DEFAULT_FRAME_WIDTH  = 650;
-    public static final int DEFAULT_FRAME_HEIGHT = 500;
-    public static final URL DEFAULT_FRAME_ICON   = NbiFrame.class.
-            getClassLoader().
-            getResource("org/netbeans/installer/wizard/wizard-icon.png");
+    public static final int DEFAULT_FRAME_WIDTH  = 
+            650;
+    public static final int DEFAULT_FRAME_HEIGHT = 
+            500;
+    public static final String DEFAULT_FRAME_ICON_URI = 
+            ExtendedUri.RESOURCE_SCHEME + 
+            ":org/netbeans/installer/utils/helper/swing/frame-icon.png";
     
-    public static final String WIZARD_FRAME_WIDTH_PROPERTY  = "nbi.ui.swing.frame.width";
-    public static final String WIZARD_FRAME_HEIGHT_PROPERTY = "nbi.ui.swing.frame.height";
-    public static final String WIZARD_FRAME_ICON_PROPERTY   = "nbi.ui.swing.frame.icon";
+    public static final String FRAME_WIDTH_PROPERTY = 
+            "nbi.ui.swing.frame.width";
+    public static final String FRAME_HEIGHT_PROPERTY = 
+            "nbi.ui.swing.frame.height";
+    public static final String FRAME_ICON_URI_PROPERTY = 
+            "nbi.ui.swing.frame.icon.uri";
 }

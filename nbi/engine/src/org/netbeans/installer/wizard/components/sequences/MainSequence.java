@@ -37,8 +37,8 @@ import org.netbeans.installer.wizard.components.actions.UninstallAction;
 import org.netbeans.installer.wizard.components.panels.PostCreateBundleSummaryPanel;
 import org.netbeans.installer.wizard.components.panels.PreCreateBundleSummaryPanel;
 import org.netbeans.installer.wizard.components.panels.LicensesPanel;
-import org.netbeans.installer.wizard.components.panels.netbeans.NbPostInstallSummaryPanel;
-import org.netbeans.installer.wizard.components.panels.netbeans.NbPreInstallSummaryPanel;
+import org.netbeans.installer.wizard.components.panels.PostInstallSummaryPanel;
+import org.netbeans.installer.wizard.components.panels.PreInstallSummaryPanel;
 
 /**
  *
@@ -47,11 +47,11 @@ import org.netbeans.installer.wizard.components.panels.netbeans.NbPreInstallSumm
 public class MainSequence extends WizardSequence {
     private DownloadConfigurationLogicAction downloadConfigurationLogicAction;
     private LicensesPanel licensesPanel;
-    private NbPreInstallSummaryPanel nbPreInstallSummaryPanel;
+    private PreInstallSummaryPanel preInstallSummaryPanel;
     private UninstallAction uninstallAction;
     private DownloadInstallationDataAction downloadInstallationDataAction;
     private InstallAction installAction;
-    private NbPostInstallSummaryPanel nbPostInstallSummaryPanel;
+    private PostInstallSummaryPanel postInstallSummaryPanel;
     private PreCreateBundleSummaryPanel preCreateBundleSummaryPanel;
     private CreateBundleAction createBundleAction;
     private CreateNativeLauncherAction createNativeLauncherAction;
@@ -62,11 +62,11 @@ public class MainSequence extends WizardSequence {
     public MainSequence() {
         downloadConfigurationLogicAction = new DownloadConfigurationLogicAction();
         licensesPanel = new LicensesPanel();
-        nbPreInstallSummaryPanel = new NbPreInstallSummaryPanel();
+        preInstallSummaryPanel = new PreInstallSummaryPanel();
         uninstallAction = new UninstallAction();
         downloadInstallationDataAction = new DownloadInstallationDataAction();
         installAction = new InstallAction();
-        nbPostInstallSummaryPanel = new NbPostInstallSummaryPanel();
+        postInstallSummaryPanel = new PostInstallSummaryPanel();
         preCreateBundleSummaryPanel = new PreCreateBundleSummaryPanel();
         createBundleAction = new CreateBundleAction();
         createNativeLauncherAction = new CreateNativeLauncherAction();
@@ -105,7 +105,7 @@ public class MainSequence extends WizardSequence {
                 }
             }
             
-            addChild(nbPreInstallSummaryPanel);
+            addChild(preInstallSummaryPanel);
             
             if (toUninstall.size() > 0) {
                 addChild(uninstallAction);
@@ -116,7 +116,7 @@ public class MainSequence extends WizardSequence {
                 addChild(installAction);
             }
             
-            addChild(nbPostInstallSummaryPanel);
+            addChild(postInstallSummaryPanel);
             break;
         case CREATE_BUNDLE:
             addChild(preCreateBundleSummaryPanel);

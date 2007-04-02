@@ -93,22 +93,38 @@ public class Components extends HttpServlet {
                 
                 productMapping.put(i, productsUids.size() - 1);
             }
-            out.println("components_uids = new Array(\n    \"" + StringUtils.asString(productsUids, "\", \n    \"") + "\");");
-            out.println();
-            out.println("components_versions = new Array(\n    \"" + StringUtils.asString(productsVersions, "\", \n    \"") + "\");");
-            out.println();
-            out.println("components_display_names = new Array(\n    \"" + StringUtils.asString(productsDisplayNames, "\", \n    \"") + "\");");
-            out.println();
-            out.println("components_download_sizes = new Array(\n    " + StringUtils.asString(productsDownloadSizes, ", \n    ") + ");");
-            out.println();
-            out.println("components_platforms = new Array(");
-            for (int i = 0; i < productsPlatforms.size(); i++) {
-                List<Platform> platforms = productsPlatforms.get(i);
-                out.println("    new Array(\"" + StringUtils.asString(platforms, "\", \"") + "\")"  + (i < productsPlatforms.size() - 1 ? "," : ""));
+            out.println("components_uids = new Array();");
+            for (int i = 0; i < productsUids.size(); i++) {
+                out.println("    components_uids[" + i + "] = \"" + productsUids.get(i) + "\";");
             }
-            out.println(");");
             out.println();
-            out.println("components_properties = new Array(\n    " + StringUtils.asString(productsProperties, ", \n    ") + ");");
+            out.println("components_versions = new Array();");
+            for (int i = 0; i < productsVersions.size(); i++) {
+                out.println("    components_versions[" + i + "] = \"" + productsVersions.get(i) + "\";");
+            }
+            out.println();
+            out.println("components_display_names = new Array();");
+            for (int i = 0; i < productsDisplayNames.size(); i++) {
+                out.println("    components_display_names[" + i + "] = \"" + productsDisplayNames.get(i) + "\";");
+            }
+            out.println();
+            out.println("components_download_sizes = new Array();");
+            for (int i = 0; i < productsDownloadSizes.size(); i++) {
+                out.println("    components_download_sizes[" + i + "] = " + productsDownloadSizes.get(i) + ";");
+            }
+            out.println();
+            out.println("components_platforms = new Array();");
+            for (int i = 0; i < productsPlatforms.size(); i++) {
+                out.println("    components_platforms[" + i + "] = new Array();");
+                for (int j = 0; j < productsPlatforms.get(i).size(); j++) {
+                    out.println("        components_platforms[" + i + "][" + j + "] = \"" + productsPlatforms.get(i).get(j) + "\";");
+                }
+            }
+            out.println();
+            out.println("components_properties = new Array();");
+            for (int i = 0; i < productsProperties.size(); i++) {
+                out.println("    components_properties[" + i + "] = " + productsProperties.get(i) + ";");
+            }
             out.println();
             
             List<Integer> default_group_components = new LinkedList<Integer>();
@@ -138,21 +154,33 @@ public class Components extends HttpServlet {
             }
             
             if (groups_components.size() > 0) {
-                out.println("groups_components = new Array(");
-                out.println("    new Array(\n    " + StringUtils.asString(default_group_components, ", ") + "),");
-                for (int i = 0; i < groups_components.size(); i++) {
-                    List<Integer> components = groups_components.get(i);
-                    
-                    out.println("    new Array(" + StringUtils.asString(components, ", ") + ")" + (i < groups_components.size() - 1 ? "," : ""));
+                out.println("groups_components = new Array();");
+                out.println("    groups_components[0] = new Array();");
+                for (int j = 0; j < default_group_components.size(); j++) {
+                    out.println("        groups_components[0][" + j + "] = " + default_group_components.get(j) + ";");
                 }
-                out.println(");");
+                for (int i = 0; i < groups_components.size(); i++) {
+                    out.println("    groups_components[" + (i + 1) + "] = new Array();");
+                    for (int j = 0; j < groups_components.get(i).size(); j++) {
+                        out.println("        groups_components[" + (i + 1) + "][" + j + "] = " + groups_components.get(i).get(j) + ";");
+                    }
+                }
                 out.println();
-                out.println("groups_display_names = new Array(\n    \"\", \n    \"" + StringUtils.asString(groups_display_names, "\", \n    \"") + "\");");
+                out.println("groups_display_names = new Array();");
+                out.println("    groups_display_names[0] = \"\";");
+                for (int i = 0; i < groups_display_names.size(); i++) {
+                    out.println("    groups_display_names[" + (i + 1) + "] = " + groups_display_names.get(i) + ";");
+                }
                 out.println();
             } else {
-                out.println("groups_components = new Array(\n    new Array(" + StringUtils.asString(default_group_components, ", ") + ")\n);");
+                out.println("groups_components = new Array();");
+                out.println("    groups_components[0] = new Array();");
+                for (int j = 0; j < default_group_components.size(); j++) {
+                    out.println("        groups_components[0][" + j + "] = " + default_group_components.get(j) + ";");
+                }
                 out.println();
-                out.println("groups_display_names = new Array(\n    \"\"\n);");
+                out.println("groups_display_names = new Array();");
+                out.println("    groups_display_names[0] = \"\";");
                 out.println();
             }
             

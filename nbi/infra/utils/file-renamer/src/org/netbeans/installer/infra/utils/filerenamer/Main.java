@@ -40,8 +40,8 @@ public class Main {
             if (source.isFile()) {
                 System.out.println(source);
                 
-                final String name   = source.getName();
-                final File   target = new File(
+                final String name = source.getName();
+                final File target = new File(
                         source.getParentFile(), 
                         name.replace(token, replacement));
                 

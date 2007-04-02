@@ -495,7 +495,7 @@
         
         <!-- copy the sources, applying the selected filters -->
         <copy todir="${work.dir}/${cvs.module}/${cvs.path}" verbose="true">
-            <fileset dir="${sources.dir}/${cvs.path}">
+            <fileset dir="${sources.dir}/${cvs.module}/${cvs.path}">
                 <include name="**/*.*"/>
                 <exclude name="**/nbproject/private/*.*"/>
                 <exclude name="build/**/*.*"/>
@@ -684,7 +684,8 @@
         <exec executable="${ant.executable}" 
               dir="${cvs.dir}/${nbproject.path}" 
               failonerror="true"
-              failifexecutionfails="true">
+              failifexecutionfails="true"
+              errorproperty="error.property">
             <arg value="clean"/>
             <arg value="compile"/>
             
