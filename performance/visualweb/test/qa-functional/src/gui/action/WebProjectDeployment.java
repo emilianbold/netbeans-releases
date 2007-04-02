@@ -97,8 +97,8 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
         projectMenu = proj.callPopup();
     }
 
-    public ComponentOperator open() {
-        projectMenu.pushMenu(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.project.jsfproject.ui.Bundle", "LBL_RedeployAction_Name"));
+    public ComponentOperator open() {        
+        projectMenu.pushMenu(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RedeployAction_Name"));
 
         VWPUtilities.waitForPendingBackgroundTasks();
         MainWindowOperator.getDefault().waitStatusText("Finished building " + targetProject + " (run-deploy)"); // NOI18N
