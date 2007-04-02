@@ -205,7 +205,7 @@ final class JavadocHintProvider implements CancellableTask<CompilationInfo> {
         } else if (sourceLevel.startsWith("1.1")) {
             return SourceVersion.RELEASE_1;
         } else if (sourceLevel.startsWith("1.0")) {
-            return SourceVersion.RELEASE_1;
+            return SourceVersion.RELEASE_0;
         }
         
         return SourceVersion.latest();
