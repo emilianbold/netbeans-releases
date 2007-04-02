@@ -370,7 +370,7 @@ public class PrettyJspWriter extends ResponseWriter {
         if (stringValue.startsWith("javascript:")) {
             HtmlUtils.writeAttribute(writer, buffer, stringValue);
         } else {
-            HtmlUtils.writeURL(writer, null, stringValue, encoding, null);
+            HtmlUtils.writeURL(writer, stringValue, encoding, null);
         }
 
         writer.write("\"");

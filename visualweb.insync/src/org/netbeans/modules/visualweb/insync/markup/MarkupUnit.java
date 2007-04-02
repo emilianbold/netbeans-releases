@@ -874,7 +874,7 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
         StringWriter sw = new StringWriter();
         try {
             // WriteURL signature changed in JSF1.2-02-b04
-            com.sun.faces.util.HtmlUtils.writeURL(sw, null, path, null, null);
+            com.sun.faces.util.HtmlUtils.writeURL(sw, path, null, null);
         } catch (java.io.IOException ex) {
             ErrorManager.getDefault().notify(ex);
             return path;
