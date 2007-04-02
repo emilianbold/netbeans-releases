@@ -122,3 +122,4 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-modules-java-source" value="${javadoc.web.root}/org-netbeans-modules-java-source"/>
 <property name="javadoc.docs.org-netbeans-api-visual" value="${javadoc.web.root}/org-netbeans-api-visual"/>
 <property name="javadoc.docs.org-netbeans-modules-editor-settings-storage" value="${javadoc.web.root}/org-netbeans-modules-editor-settings-storage"/>
+<property name="javadoc.docs.org-netbeans-modules-editor-guards" value="${javadoc.web.root}/org-netbeans-modules-editor-guards"/>
