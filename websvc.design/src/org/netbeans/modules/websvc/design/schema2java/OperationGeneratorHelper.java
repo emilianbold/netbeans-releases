@@ -109,9 +109,13 @@ public class OperationGeneratorHelper {
         Types types = definitions.getTypes();
         int counter = 0;
 
-        String messageNameBase = operationName;
         String messageName = operationName+"Message"; //NOI18N
         String partName = operationName+"Part"; //NOI18N
+        String paramTypeName = operationName+"Type"; //NOI18N
+        String responseTypeName = operationName+"ResponseType"; //NOI18N
+        String responseElementName = operationName+"Response"; //NOI18N
+        String responseMessageName = operationName+"ResponseMessage"; //NOI18N
+        String responsePartName = operationName+"ResponsePart"; //NOI18N
         
         try {
             wsdlModel.startTransaction();
@@ -130,7 +134,7 @@ public class OperationGeneratorHelper {
                 Schema schema = it.next();
                 SchemaModel schemaModel = schema.getModel();
                 GlobalComplexType complexType = schemaModel.getFactory().createGlobalComplexType();
-                complexType.setName(operationName+"Type");
+                complexType.setName(paramTypeName);
                 Sequence seq = schemaModel.getFactory().createSequence();
                 complexType.setDefinition(seq);
                 schema.addComplexType(complexType);
@@ -146,15 +150,30 @@ public class OperationGeneratorHelper {
                 schema.addElement(paramElement);
                 
                 if(returnType != null){
+                    GlobalComplexType responseComplexType = schemaModel.getFactory().createGlobalComplexType();
+                    responseComplexType.setName(responseTypeName); //NOI18N
+                    Sequence seq1 = schemaModel.getFactory().createSequence();
+                    responseComplexType.setDefinition(seq1);
+                    schema.addComplexType(responseComplexType);
+                    
                     if (returnType instanceof GlobalType) {
-                        returnElement = schemaModel.getFactory().createGlobalElement();
-                        returnElement.setName(operationName+"_return");
+                        LocalElement el = schemaModel.getFactory().createLocalElement();                     
                         NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)returnType, GlobalType.class);
-                        returnElement.setType(typeRef);
-                        schema.addElement(returnElement);
+                        el.setName("result"); //NOI18N
+                        el.setType(typeRef);
+                        seq1.appendContent(el);
                     } else if (returnType instanceof GlobalElement) {
-                        returnElement=(GlobalElement)returnType;
+                        ElementReference el = schemaModel.getFactory().createElementReference();                  
+                        NamedComponentReference<GlobalElement> typeRef = schema.createReferenceTo((GlobalElement)returnType, GlobalElement.class);
+                        el.setRef(typeRef);
+                        seq1.appendContent(el);
                     }
+                    
+                    returnElement = schemaModel.getFactory().createGlobalElement();
+                    returnElement.setName(responseElementName);
+                    NamedComponentReference<GlobalType> responseTypeRef = schema.createReferenceTo((GlobalType)responseComplexType, GlobalType.class);
+                    returnElement.setType(responseTypeRef);
+                    schema.addElement(returnElement);
                 }
             }
             
@@ -182,9 +201,9 @@ public class OperationGeneratorHelper {
             Message outputMessage=null;
             if (returnElement!=null) {
                 outputMessage = factory.createMessage();
-                outputMessage.setName(operationName + "Response"); //NOI18N
+                outputMessage.setName(responseMessageName);
                 Part outpart = factory.createPart();
-                outpart.setName("result"); //NOI18N
+                outpart.setName(responsePartName);
                 NamedComponentReference<GlobalElement> outref = outpart.createSchemaReference(returnElement, GlobalElement.class);
                 outpart.setElement(outref);
                 outputMessage.addPart(outpart);
@@ -194,7 +213,7 @@ public class OperationGeneratorHelper {
             if (outputMessage!=null) {
                 Output output = factory.createOutput();
                 NamedComponentReference<Message> outputRef = output.createReferenceTo(outputMessage, Message.class);
-                output.setName(operationName + "Response");
+                output.setName(responseElementName);
                 output.setMessage(outputRef);
                 operation.setOutput(output);
             }
