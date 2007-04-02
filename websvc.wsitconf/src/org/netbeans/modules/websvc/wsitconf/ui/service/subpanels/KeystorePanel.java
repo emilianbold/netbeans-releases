@@ -317,7 +317,7 @@ public class KeystorePanel extends JPanel {
     private void loadkeysButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadkeysButtonActionPerformed
         boolean success = reloadAliases();
         if (!success) {
-            DialogDisplayer.getDefault().notify(
+            DialogDisplayer.getDefault().notifyLater(
                 new NotifyDescriptor.Message(NbBundle.getMessage(KeystorePanel.class, "MSG_WrongPassword"   //NOI18N
                 )));
         }
