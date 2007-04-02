@@ -336,6 +336,7 @@ public class J2eeProjectHelper {
     
     public File getSunDD() {
         if (sunDD == null) {
+/*todo vlv
             switch (getProjectType()) {
                 case WEB:
                     sunDD = getProvider().getDeploymentConfigurationFile(
@@ -352,6 +353,7 @@ public class J2eeProjectHelper {
                 default:
                     break;
             }
+*/
         }
         
         return sunDD;
