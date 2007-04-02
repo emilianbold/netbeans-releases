@@ -276,9 +276,9 @@ final class CloseButtonTabbedPane extends JTabbedPane {
             Rectangle r = getCloseButtonBoundsAt(pressedCloseButtonIndex);
             repaint(r.x, r.y, r.width + 2, r.height + 2);
 
-            JComponent c = (JComponent)
-                getComponentAt(pressedCloseButtonIndex);
-            setToolTipTextAt(pressedCloseButtonIndex, c.getToolTipText());
+            JComponent c = _getJComponentAt(pressedCloseButtonIndex);
+            if( c != null )
+                setToolTipTextAt(pressedCloseButtonIndex, c.getToolTipText());
         }
 
         pressedCloseButtonIndex = index;
@@ -300,9 +300,9 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         && mouseOverCloseButtonIndex < getTabCount()) {
             Rectangle r = getCloseButtonBoundsAt(mouseOverCloseButtonIndex);
             repaint(r.x, r.y, r.width + 2, r.height + 2);
-            JComponent c =  (JComponent)
-                getComponentAt(mouseOverCloseButtonIndex);
-            setToolTipTextAt(mouseOverCloseButtonIndex, c.getToolTipText());
+            JComponent c = _getJComponentAt(mouseOverCloseButtonIndex);
+            if( c != null )
+                setToolTipTextAt(mouseOverCloseButtonIndex, c.getToolTipText());
         }
 
         mouseOverCloseButtonIndex = index;
@@ -316,6 +316,11 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         }
     }
 
+    private JComponent _getJComponentAt( int tabIndex ) {
+        Component c = getComponentAt( tabIndex );
+        return c instanceof JComponent ? (JComponent)c : null;
+    }
+    
     private void fireCloseRequest(Component c) {
         firePropertyChange(PROP_CLOSE, null, c);
     }
