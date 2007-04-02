@@ -13,9 +13,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.jws.WebParam.Mode;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.SharedClassObject;
 
 /**
  *
@@ -65,7 +70,7 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
         {"int","int"},
         {},
         {"java.lang.String","java.lang.String"},
-        {"java.lang.String"}
+        {"add.foo.Foo"}
     };
     private static final Object[][] PARAM_MODES_1={
         {Mode.IN,Mode.IN},
@@ -90,12 +95,30 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
     }
  
     protected void setUp() throws Exception {
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
+        
         // workaround for JavaSource class
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         dataDir = FileUtil.toFileObject(getDataDir());
+            
+        ClassPathProvider cpp = new ClassPathProvider() {
+            public ClassPath findClassPath(FileObject file, String type) {
+                if (type == ClassPath.SOURCE)
+                    return ClassPathSupport.createClassPath(new FileObject[] {dataDir});
+                    if (type == ClassPath.COMPILE)
+                        return ClassPathSupport.createClassPath(new FileObject[0]);
+                    //if (type == ClassPath.BOOT)
+                    //    return createClassPath(System.getProperty("sun.boot.class.path"));
+                    return null;
+            }
+        };
+        
+        SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {loader, cpp});
+        
         events=new ArrayList<String[]>();
     }
-
+    
     protected void tearDown() throws Exception {
     }
     

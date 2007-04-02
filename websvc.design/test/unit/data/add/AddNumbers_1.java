@@ -13,6 +13,7 @@ import javax.jws.Oneway;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import add.foo.Foo;
 
 /**
  *
@@ -42,10 +43,10 @@ public class AddNumbers_1 {
     /**
      * Non Web service operation
      */
-    @WebMethod()
-    public String hello(String name) {
+    @WebMethod(operationName="hello")
+    public String hello(Foo foo) {
         // TODO write your implementation code here:
-        return "hello "+name;
+        return "hello "+foo.getName();
     }
 
     /**
@@ -56,6 +57,4 @@ public class AddNumbers_1 {
     public void send(@WebParam(name = "message")
                      String str, String to) {
     }
-    
-    
 }
