@@ -521,6 +521,13 @@ public final class JPDAThreadImpl implements JPDAThread {
         } catch (ObjectCollectedException ex) {
         } catch (IncompatibleThreadStateException e) {
             ErrorManager.getDefault().notify(e);
+        } catch (com.sun.jdi.InternalException iex) {
+            String msg = "Thread '"+threadReference.name()+
+                         "': status = "+threadReference.status()+
+                         ", is suspended = "+threadReference.isSuspended()+
+                         ", suspend count = "+threadReference.suspendCount()+
+                         ", is at breakpoint = "+threadReference.isAtBreakpoint();
+            ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(iex, msg));
         }
         return null;
     }
@@ -553,6 +560,13 @@ public final class JPDAThreadImpl implements JPDAThread {
         } catch (ObjectCollectedException ex) {
         } catch (IncompatibleThreadStateException e) {
             ErrorManager.getDefault().notify(e);
+        } catch (com.sun.jdi.InternalException iex) {
+            String msg = "Thread '"+threadReference.name()+
+                         "': status = "+threadReference.status()+
+                         ", is suspended = "+threadReference.isSuspended()+
+                         ", suspend count = "+threadReference.suspendCount()+
+                         ", is at breakpoint = "+threadReference.isAtBreakpoint();
+            ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(iex, msg));
         }
         return new ObjectVariable [0];
     }
