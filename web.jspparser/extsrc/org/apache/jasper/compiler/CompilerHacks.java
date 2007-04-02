@@ -63,11 +63,10 @@ public class CompilerHacks {
     
     private void setupCompiler() throws JasperException {
         if (comp == null) {
-            //comp = ctxt.createCompiler(false);
-            comp = ctxt.createParser();
+            comp = ctxt.createCompiler();
             setErrDispatcherInCompiler(comp, new ErrorDispatcher(false));
             setPageInfoInCompiler(comp, new HackPageInfo(new BeanRepository(
-                ctxt.getClassLoader(), comp.getErrorDispatcher()), ctxt.getJspFile()));
+                ctxt.getClassLoader(), comp.getErrorDispatcher()), ""));
         }
     }
     

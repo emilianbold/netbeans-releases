@@ -28,7 +28,6 @@ import javax.servlet.jsp.*;
 import javax.servlet.jsp.tagext.*;
 import javax.xml.parsers.*;
 import org.apache.jasper.*;
-import org.apache.jasper.compiler.JspProperty;
 import org.openide.ErrorManager;
 
 
@@ -90,7 +89,7 @@ public class GetParseData {
             //   errDispatcher));
 
             JspConfig jspConfig = options.getJspConfig();
-            JspProperty jspProperty =
+            JspConfig.JspProperty jspProperty =
                             jspConfig.findJspProperty(ctxt.getJspFile());
 
             /*

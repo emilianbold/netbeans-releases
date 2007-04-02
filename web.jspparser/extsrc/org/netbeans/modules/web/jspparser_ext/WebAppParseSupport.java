@@ -45,7 +45,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.ErrorManager;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
@@ -225,7 +224,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         URL helpurl;
         boolean isSystemJar;
         
-        
         if (libDir != null) {
             Enumeration libDirKids = libDir.getChildren(false);
             while (libDirKids.hasMoreElements()) {
@@ -305,15 +303,14 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         if (files == null)
             files = new File[0];
         
-        URL urls[] = new URL[files.length + systemJars.size() + 1];
+        URL urls[] = new URL[files.length + systemJars.size()];
         try {
             for (int i = 0; i < files.length; i++) {
                 urls[i] = files[i].toURI().toURL();
             }
             iter = systemJars.iterator();
-            for (int i = files.length; i < urls.length - 1; i++)
+            for (int i = files.length; i < urls.length; i++)
                 urls[i] = (URL)iter.next();
-            urls[urls.length-1] = InstalledFileLocator.getDefault().locate("modules/ext/glassfish-jspparser.jar", null, false).toURI().toURL();
         } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
         }
@@ -581,10 +578,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 mappingsF.setAccessible(true);
                 // Before new parsing, the old mappings in the TldLocationCache has to be cleared. Else there are
                 // stored the old mappings.
-                mappings = (Map)mappingsF.get(lc);
-                // the mapping doesn't have to be initialized yet
-                if(mappings != null)
-                    mappings.clear();
+                ((Hashtable)mappingsF.get(lc)).clear();
                 
                 Thread compThread = new WebAppParseSupport.InitTldLocationCacheThread(lc);
                 compThread.setContextClassLoader(waContextClassLoader);
@@ -596,7 +590,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
                 
-                // obtain the current mappings after parsing. 
                 mappings = (Map)mappingsF.get(lc);
                 //------------------------- construct the cache -----------------------------
                 // Obtain all files, which were parsed and store the lastchange time to the cache.
@@ -781,13 +774,10 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     // JasperException - usual
                     // ArrayIndexOutOfBoundsException - see issue 20919
                     // Throwable - see issue 21169, related to Tomcat bug 7124
-// TODO has to be returned back to track all errors.                     
-//                    ErrorManager.getDefault().annotate(e, NbBundle.getMessage(WebAppParseSupport.class, "MSG_errorDuringJspParsing"));
-//                    if (parserDebugLevel > 0) {
-//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-//                    }
-                    System.out.println("callTomcatParserError:");
-                    e.printStackTrace(System.out);
+                    ErrorManager.getDefault().annotate(e, NbBundle.getMessage(WebAppParseSupport.class, "MSG_errorDuringJspParsing"));
+                    if (parserDebugLevel > 0) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    }
                     JspParserAPI.ErrorDescriptor error = constructErrorDescriptor(e, wmRoot, jspFile);
                     resultRef.result = new JspParserAPI.ParseResult(nbPageInfo, nbNodes, new JspParserAPI.ErrorDescriptor[] {error});
                 } 
@@ -848,8 +838,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     
     
     private static JspParserAPI.ErrorDescriptor constructErrorDescriptor(Throwable e, FileObject wmRoot, FileObject jspPage) {
-        System.out.println("constructErrorDescriptor: ");
-        e.printStackTrace(System.out);
         JspParserAPI.ErrorDescriptor error = null;
         try {
             error = constructJakartaErrorDescriptor(wmRoot, jspPage, e);
