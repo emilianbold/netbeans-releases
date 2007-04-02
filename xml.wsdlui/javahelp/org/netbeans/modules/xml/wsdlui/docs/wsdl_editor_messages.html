@@ -28,42 +28,38 @@
   To rename all occurrences in associated XSD, WSDL, and BPEL files as well, 
   right-click the component node and choose Refactor &gt; Rename.</p>
 
+
+
 <p><b>To create a message:</b></p>
 
-<ul>
+<ol>
   <li>In the WSDL view, right-click the Messages node and choose Add Message. <br>
-    A message node appears. The message contains a default part.</li>
-</ul>
-
-<p><b>To change the name of a message:</b></p>
-
-<ol>
+    A message node appears. The message contains one part. The part's type of content is undefined.</li>
   <li>If the Properties window is not visible, choose Window &gt; Properties.</li>
-  <li>Select the message node.</li>
-  <li>Set the Name property to the new name.</li>
-</ol>
-
-<p><b>To change the properties of a part:</b></p>
-
-<ol>
-  <li>If the Properties window is not visible, choose Window &gt; Properties.</li>
-  <li>Select the part node.</li>
-  <li>Set the Name property to the new name. 
-    Be sure to enter a descriptive name, such as <tt>searchInput</tt> or <tt>resultOutput</tt>.</li>
   <li>The Element or Type property specifies the type of content. 
     To set the value, click the ellipsis (...) button. 
     The Element or Type dialog box enables you to select any of the built-in types in W3C XML Schema. 
-    If you added an inline schema or imported a schema, then you can select a type from the schema.</li>
+    If you added an inline schema or imported a schema, then you can select an element or type from the schema.</li>
 </ol>
 
-<p><b>To add a part to an existing message:</b></p>
+<p><b>To add a part to a message:</b></p>
 
 <ul>
   <li>Right-click the message node and choose Add &gt; Part. <br>
-    A part node appears.</li>
+    A part node appears. The type of content is undefined.</li>
 </ul>
 
-<p><b>To remove a message or part:</b></p>
+
+
+<p><b>To change the name of a message or part:</b></p>
+
+<ol>
+  <li>If the Properties window is not visible, choose Window &gt; Properties.</li>
+  <li>Select the message or part node.</li>
+  <li>Set the Name property to the new name.</li>
+</ol>
+
+<p><b>To delete a message or part:</b></p>
 
 <ol>
   <li>Select the message or part node.</li>
