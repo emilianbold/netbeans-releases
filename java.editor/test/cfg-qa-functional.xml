@@ -28,7 +28,8 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>               
                 <include name="java_editor_actions/JavaEditorActionsTestSuite.class"/>                
                 <include name="java_smart_bracket/SmartBracketTestSuite.class"/>
-                <include name="java_smart_enter/SmartEnterTestSuite.class"/>               
+                <include name="java_smart_enter/SmartEnterTestSuite.class"/>
+                <include name="java_code_folding/JavaCodeFoldingTestSuite.class"/>            
             </patternset>
         </testset>
     </testbag>
@@ -56,6 +57,14 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/java/editor/completion/*CCTests.class"/>		
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="completiongui,all" name="Completion GUI tests" compiler="qa-functional-compiler-completion" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/java/editor/completiongui/*Test.class"/>		
             </patternset>
         </testset>
     </testbag>
