@@ -77,7 +77,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         WAIT_AFTER_OPEN=15000;
         docname = "JSFPage"; //NOI18N
         doccategory = "Web"; //NOI18N
-        doctype =" Visual Web JSF Page"; //NOI18N
+        doctype ="Visual Web JSF Page"; //NOI18N
 	docfolder = "web";
 	suffix = ".jsp";
         index = 1;
