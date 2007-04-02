@@ -34,23 +34,24 @@ import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
 import java.net.URL;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.jsp.tagext.TagLibraryInfo;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
-
 import org.openide.filesystems.FileObject;
-
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.text.CloneableEditorSupport;
 
+//import org.apache.jasper.Constants;
 /**
  * Simple <code>ServletContext</code> implementation without
  * HTTP-specific methods.
@@ -59,17 +60,22 @@ import org.openide.text.CloneableEditorSupport;
  */
 
 public class ParserServletContext implements ServletContext {
-
-
+    
+    public static final String JSP_TAGLIBRARY_CACHE = "com.sun.jsp.taglibraryCache";
+    public static final String JSP_TAGFILE_JAR_URLS_CACHE =
+            "com.sun.jsp.tagFileJarUrlsCache";
+    
+    private static final Logger LOGGER = Logger.getLogger(ParserServletContext.class.getName());
+    
     // ----------------------------------------------------- Instance Variables
-
-
+    
+    
     /**
      * Servlet context attributes.
      */
     protected Hashtable<String, Object> myAttributes;
-
-
+    
+    
     /**
      * The base FileObject (document root) for this context.
      */
@@ -78,140 +84,150 @@ public class ParserServletContext implements ServletContext {
     
     protected JspParserAPI.WebModule myWm;
     
-    /** If true, takes the data from the editor; otherwise 
+    /** If true, takes the data from the editor; otherwise
      * from the disk.
      */
     protected boolean useEditorVersion;
     
     
     // ----------------------------------------------------------- Constructors
-
-
+    
+    
     /**
      * Create a new instance of this ServletContext implementation.
      *
      * @param wmRoot Resource base FileObject
-     * @param wm JspParserAPI.WebModule in which we are parsing the file - this is used to 
+     * @param wm JspParserAPI.WebModule in which we are parsing the file - this is used to
      *    find the editor for objects which are open in the editor
      */
     public ParserServletContext(FileObject wmRoot, JspParserAPI.WebModule wm, boolean useEditor) {
-
+        
         myAttributes = new Hashtable<String, Object>();
         this.wmRoot = wmRoot;
         this.myWm = wm;
         this.useEditorVersion = useEditor;
+        
+        setAttribute(
+                JSP_TAGLIBRARY_CACHE,
+                new ConcurrentHashMap<String, TagLibraryInfo>());
+        
+        setAttribute(
+                JSP_TAGFILE_JAR_URLS_CACHE,
+                new ConcurrentHashMap<String, URL>());
     }
-
-
+    
+    
     // --------------------------------------------------------- Public Methods
-
-
+    
+    
     /**
      * Return the specified context attribute, if any.
      *
      * @param name Name of the requested attribute
      */
     public Object getAttribute(String name) {
+        LOGGER.fine("getAttribute("+name+")");
         return myAttributes.get(name);
     }
-
-
+    
+    
     /**
      * Return an enumeration of context attribute names.
      */
     public Enumeration<String> getAttributeNames() {
-
+        
         return myAttributes.keys();
-
+        
     }
-
-
+    
+    
     /**
      * Return the servlet context for the specified path.
      *
      * @param uripath Server-relative path starting with '/'
      */
     public ServletContext getContext(String uripath) {
-
+        
         return (null);
-
+        
     }
-
-
+    
+    
     /**
      * Return the specified context initialization parameter.
      *
      * @param name Name of the requested parameter
      */
     public String getInitParameter(String name) {
-
+        
         return (null);
-
+        
     }
-
-
+    
+    
     /**
      * Return an enumeration of the names of context initialization
      * parameters.
      */
     public Enumeration getInitParameterNames() {
-
+        
         return (new Vector().elements());
-
+        
     }
-
-
+    
+    
     /**
      * Return the Servlet API major version number.
      */
     public int getMajorVersion() {
-
+        
         return (2);
-
+        
     }
-
-
+    
+    
     /**
      * Return the MIME type for the specified filename.
      *
      * @param file Filename whose MIME type is requested
      */
     public String getMimeType(String file) {
-
+        
         return (null);
-
+        
     }
-
-
+    
+    
     /**
      * Return the Servlet API minor version number.
      */
     public int getMinorVersion() {
-
+        
         return (3);
-
+        
     }
-
-
+    
+    
     /**
      * Return a request dispatcher for the specified servlet name.
      *
      * @param name Name of the requested servlet
      */
     public RequestDispatcher getNamedDispatcher(String name) {
-
+        
         return (null);
-
+        
     }
-
-    /** Returns a FileObject representation of the specified context-relative 
+    
+    /** Returns a FileObject representation of the specified context-relative
      * virtual path.
      */
     protected FileObject getResourceAsObject(String path) {
+        LOGGER.fine("getResourceAsObject(" + path + ")");
         return ContextUtil.findRelativeFileObject(wmRoot, path);
     }
     
-
+    
     /**
      * Return the real path for the specified context-relative
      * virtual path.
@@ -219,7 +235,7 @@ public class ParserServletContext implements ServletContext {
      * @param path The context-relative virtual path to resolve
      */
     public String getRealPath(String path) {
-        
+        LOGGER.fine("getRealPath(" + path + ")");
         if (!path.startsWith("/")) {
             return (null);
         }
@@ -233,20 +249,20 @@ public class ParserServletContext implements ServletContext {
         
         return null;
     }
-            
-            
+    
+    
     /**
      * Return a request dispatcher for the specified context-relative path.
      *
      * @param path Context-relative path for which to acquire a dispatcher
      */
     public RequestDispatcher getRequestDispatcher(String path) {
-
+        
         return (null);
-
+        
     }
-
-
+    
+    
     /**
      * Return a URL object of a resource that is mapped to the
      * specified context-relative path.
@@ -257,20 +273,21 @@ public class ParserServletContext implements ServletContext {
      *  not properly formed
      */
     public URL getResource(String path) throws MalformedURLException {
-
+        
+        LOGGER.fine("getResource("+path+")");
         if (!path.startsWith("/"))
             throw new MalformedURLException(NbBundle.getMessage(ParserServletContext.class,
-                "EXC_PathMustStartWithSlash", path));
+                    "EXC_PathMustStartWithSlash", path));
         
         FileObject fo = getResourceAsObject(path);
         if (fo == null) {
             return null;
         }
         return URLMapper.findURL(fo, URLMapper.EXTERNAL);
-
+        
     }
-
-
+    
+    
     /**
      * Return an InputStream allowing access to the resource at the
      * specified context-relative path.
@@ -278,13 +295,13 @@ public class ParserServletContext implements ServletContext {
      * @param path Context-relative path of the desired resource
      */
     public InputStream getResourceAsStream(String path) {
-
+        LOGGER.fine("getResourceAsStream(" + path + ")");
         // first try from the opened editor - if fails read from file
         if (myWm != null) {
             FileObject fo = getResourceAsObject(path);
             if ((fo != null) && (useEditorVersion)) {
                 // reading from the editor
-                InputStream result = myWm.getEditorInputStream (fo);
+                InputStream result = myWm.getEditorInputStream(fo);
                 if (result != null) {
                     return result;
                 }
@@ -296,18 +313,17 @@ public class ParserServletContext implements ServletContext {
             URL url = getResource(path);
             if (url == null) {
                 return null;
-            }
-            else {
+            } else {
                 return url.openStream();
             }
         } catch (Throwable t) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
             return (null);
         }
-
+        
     }
     
-
+    
     /**
      * Return the set of resource paths for the "directory" at the
      * specified context path.
@@ -315,7 +331,8 @@ public class ParserServletContext implements ServletContext {
      * @param path Context-relative base path
      */
     public Set<String> getResourcePaths(String path) {
-
+        
+        LOGGER.fine("getResourcePaths("+path+")");
         Set<String> thePaths = new HashSet<String>();
         if (!path.endsWith("/"))
             path += "/";
@@ -334,20 +351,20 @@ public class ParserServletContext implements ServletContext {
                 thePaths.add(path + theFiles[i] + "/");
         }
         return thePaths;
-
+        
     }
-
-
+    
+    
     /**
      * Return descriptive information about this server.
      */
     public String getServerInfo() {
-
+        
         return ("NB.ParserServletContext/1.0");
-
+        
     }
-
-
+    
+    
     /**
      * Return a null reference for the specified servlet name.
      *
@@ -356,58 +373,58 @@ public class ParserServletContext implements ServletContext {
      * @deprecated This method has been deprecated with no replacement
      */
     public Servlet getServlet(String name) throws ServletException {
-
+        
         return (null);
-
+        
     }
-
-
+    
+    
     /**
      * Return the name of this servlet context.
      */
     public String getServletContextName() {
-
+        
         return (getServerInfo());
-
+        
     }
-
-
+    
+    
     /**
      * Return an empty enumeration of servlet names.
      *
      * @deprecated This method has been deprecated with no replacement
      */
     public Enumeration getServletNames() {
-
+        
         return (new Vector().elements());
-
+        
     }
-
-
+    
+    
     /**
      * Return an empty enumeration of servlets.
      *
      * @deprecated This method has been deprecated with no replacement
      */
     public Enumeration getServlets() {
-
+        
         return (new Vector().elements());
-
+        
     }
-
-
+    
+    
     /**
      * Log the specified message.
      *
      * @param message The message to be logged
      */
     public void log(String message) {
-
+        
         ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, message);
-
+        
     }
-
-
+    
+    
     /**
      * Log the specified message and exception.
      *
@@ -417,12 +434,12 @@ public class ParserServletContext implements ServletContext {
      * @deprecated Use log(String,Throwable) instead
      */
     public void log(Exception exception, String message) {
-
+        
         log(message, exception);
-
+        
     }
-
-
+    
+    
     /**
      * Log the specified message and exception.
      *
@@ -430,25 +447,25 @@ public class ParserServletContext implements ServletContext {
      * @param exception The exception to be logged
      */
     public void log(String message, Throwable exception) {
-
+        
         ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, message);
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exception);
         
     }
-
-
+    
+    
     /**
      * Remove the specified context attribute.
      *
      * @param name Name of the attribute to remove
      */
     public void removeAttribute(String name) {
-
+        LOGGER.fine("removeAttribute("+name+")");
         myAttributes.remove(name);
-
+        
     }
-
-
+    
+    
     /**
      * Set or replace the specified context attribute.
      *
@@ -456,14 +473,14 @@ public class ParserServletContext implements ServletContext {
      * @param value Corresponding attribute value
      */
     public void setAttribute(String name, Object value) {
-
+        LOGGER.fine("setAttribute("+name+", "+value+")");
         myAttributes.put(name, value);
-
+        
     }
-
-
+    
+    
     public String getContextPath(){
         return "";
     }
-
+    
 }
