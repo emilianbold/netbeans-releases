@@ -20,6 +20,7 @@
 package gui.window;
 
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -31,19 +32,19 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
     private PaletteComponentOperator palette;
     private WebFormDesignerOperator surface;
     
-    private static final String dlgName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitle"); //Select Page Fragment
+    private static String dlgName, menuCmd;
     
     /** Creates a new instance of PageFragmentBoxDialog */
     public PageFragmentBoxDialog(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=5000;          
+        WAIT_AFTER_OPEN=5000;
     }
     
     public PageFragmentBoxDialog(String testName,String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=5000;          
+        WAIT_AFTER_OPEN=5000;
     }
     
     public void prepare() {
@@ -52,20 +53,25 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
     }
     
     public ComponentOperator open() {
-        String menuCmd = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitleEllipse"); // Select Page Fragment...
         log("::menu cmd = "+menuCmd);
         surface.pushPopupMenu(menuCmd, 60, 60);
-                
+        
         return new NbDialogOperator(dlgName);
     }
     
     protected void initialize() {
         log("::initialize");
-        PaletteComponentOperator.invoke();
-        addPFBComponent();
-        prepareCloseBoxDialog();        
-    }
+        
+        dlgName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitle"); //Select Page Fragment
+        menuCmd = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitleEllipse"); // Select Page Fragment...
+        
+        // PaletteComponentOperator.invoke();
+        new ActionNoBlock("Window|Palette",null).perform(); // NOI18N
 
+        addPFBComponent();
+        prepareCloseBoxDialog();
+    }
+    
     private void prepareCloseBoxDialog() {
         NbDialogOperator boxDialog = new NbDialogOperator(dlgName);
         waitNoEvent(1000);
@@ -84,15 +90,15 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
     
     protected void shutdown() {
         log("::shutdown");
-        surface.closeDiscard(); 
-    }    
+        surface.closeDiscard();
+    }
     
     public void close() {
-        super.close();        
+        super.close();
     }
     
     public static void main(String[] args) {
-       junit.textui.TestRunner.run(new PageFragmentBoxDialog("measureTime","Add Page Fragment Box Dialog open time")); 
+        junit.textui.TestRunner.run(new PageFragmentBoxDialog("measureTime","Add Page Fragment Box Dialog open time"));
     }
     
 }
