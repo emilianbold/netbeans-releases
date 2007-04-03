@@ -13,12 +13,11 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.javacvs;
 
-import javax.swing.JTextField;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.modules.javacvs.actions.MergeAction;
@@ -35,25 +34,31 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  * <br>
  * Usage:<br>
  * <pre>
- *      Node node = new Node(new SourcePackagesNode("MyProject"), "mypackage|MyFile");
- *      MergeChangesFromBranchOperator mcfbo = MergeChangesFromBranchOperator.invoke(node);
- *      mcfbo.mergeFromBranch();
- *      BrowseTagsOperator bto = mcfbo.browseMergeFromBranch();
- *      bto.selectPath("HEAD");
- *      bto.ok();
- *      // or mcfbo.setMergeFromBranch("mybranch");
- *      mcfbo.checkMergeAfterTag(true);
- *      bto = mcfbo.browseMergeAfterTag();
- *      bto.selectTag("myTag");
- *      bto.ok();
- *      // or mcfbo.setMergeAfterTag("myTag");
- *      mcfbo.checkTagAfterMerge(true);
- *      bto = mcfbo.browseTagAfterMerge();
- *      bto.selectTag("myTagAfterMerge");
- *      bto.ok();
- *      // or mcfbo.setTagAfterMerge("myTagAfterMerge");
- *      mcfbo.merge();
- *</pre>
+ *       Node node = new Node(new SourcePackagesNode("MyProject"), "mypackage|MyFile");
+ *       MergeChangesFromBranchOperator mcfbo = MergeChangesFromBranchOperator.invoke(node);
+ *       mcfbo.mergeFromTag();
+ *       BrowseTagsOperator bto = mcfbo.browseStartingFromTag();
+ *       bto.selectPath("HEAD");
+ *       bto.ok();
+ *       // or mcfbo.setStartingFromTag("mytag");
+ *       mcfbo.mergeUntilBranchHead();
+ *       bto = mcfbo.browseBranchHead();
+ *       bto.selectBranch("mybranch");
+ *       bto.ok();
+ *       // or mcfbo.setBranchHead("myBranch");
+ *       mcfbo.mergeUntilTag();
+ *       bto = mcfbo.browseUntilTag();
+ *       bto.selectTag("myTag");
+ *       bto.ok();
+ *       // or mcfbo.setUntilTag("myTag");
+ *       mcfbo.mergeTrunkHead();
+ *       mcfbo.checkTagAfterMerge(true);
+ *       bto = mcfbo.browseTagName();
+ *       bto.selectTag("mytag");
+ *       bto.ok();
+ *       // or mcfbo.setTagName("myTagAfterMerge");
+ *       mcfbo.merge();
+ * </pre>
  *
  * @see BrowseTagsOperator
  * @see org.netbeans.jellytools.modules.javacvs.actions.MergeAction
@@ -86,20 +91,22 @@ public class MergeChangesFromBranchOperator extends NbDialogOperator {
         return invoke(new Node[] {node});
     }
     
-    private JLabelOperator _lblCurrentWorkingBranch;
-    private JTextFieldOperator _txtCurrentWorkingBranch;
-    private JRadioButtonOperator _rbMergeFromTrunk;
-    private JRadioButtonOperator _rbMergeFromBranch;
-    private JTextFieldOperator _txtMergeFromBranch;
-    private JButtonOperator _btBrowseMergeFromBranch;
-    private JCheckBoxOperator _cbMergeOnlyChangesMadeAfterTag;
-    private JLabelOperator _lblTagName;
-    private JTextFieldOperator _txtMergeAfterTag;
-    private JButtonOperator _btBrowseMergeAfterTag;
-    private JCheckBoxOperator _cbTagBranch_nameBranchAfterMerge;
-    private JLabelOperator _lblTagName2;
-    private JTextFieldOperator _txtTagAfterMerge;
-    private JButtonOperator _btBrowseTagAfterMerge;
+    private JLabelOperator _lblWorkingBranch;
+    private JTextFieldOperator _txtWorkingBranch;
+    private JRadioButtonOperator _rbBranchingPoint;
+    private JRadioButtonOperator _rbStartingFromTag;
+    private JTextFieldOperator _txtStartingFromTag;
+    private JButtonOperator _btBrowseStartingFromTag;
+    private JRadioButtonOperator _rbTrunkHead;
+    private JRadioButtonOperator _rbBranchHead;
+    private JTextFieldOperator _txtBranchHead;
+    private JButtonOperator _btBrowseBranchHead;
+    private JRadioButtonOperator _rbUntilTag;
+    private JTextFieldOperator _txtTagName; 
+    private JTextFieldOperator _txtUntilTag;
+    private JButtonOperator _btBrowseUntilTag;
+    private JCheckBoxOperator _cbTagAfterMerge;
+    private JButtonOperator _btBrowseTagName;
     private JButtonOperator _btMerge;
     
     
@@ -107,167 +114,184 @@ public class MergeChangesFromBranchOperator extends NbDialogOperator {
     // Subcomponents definition part
     //******************************
     
-    /** Tries to find "Current Working Branch:" JLabel in this dialog.
+    /** Tries to find "Merge Changes Into Working Branch:" JLabel in this dialog.
      * @return JLabelOperator
      */
-    public JLabelOperator lblCurrentWorkingBranch() {
-        if (_lblCurrentWorkingBranch==null) {
-            _lblCurrentWorkingBranch = new JLabelOperator(this, Bundle.getStringTrimmed(
+    public JLabelOperator lblWorkingBranch() {
+        if (_lblWorkingBranch==null) {
+            _lblWorkingBranch = new JLabelOperator(this, Bundle.getStringTrimmed(
                     "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
-                    "CTL_MergeBranchForm_CurrentBranch"));
+                    "MergePanel.jLabel1.text"));
         }
-        return _lblCurrentWorkingBranch;
+        return _lblWorkingBranch;
     }
     
-    /** Tries to find null JTextField in this dialog.
+    /** Tries to find "Merge Changes Into Working Branch:" JTextField in this dialog.
      * @return JTextFieldOperator
      */
-    public JTextFieldOperator txtCurrentWorkingBranch() {
-        if (_txtCurrentWorkingBranch==null) {
-            _txtCurrentWorkingBranch = new JTextFieldOperator(
-                    (JTextField)lblCurrentWorkingBranch().getLabelFor());
+    public JTextFieldOperator txtWorkingBranch() {
+        if (_txtWorkingBranch == null) {
+            _txtWorkingBranch = new JTextFieldOperator(this, 1);
         }
-        return _txtCurrentWorkingBranch;
+        return _txtWorkingBranch;
     }
     
-    /** Tries to find "Merge from Trunk" JRadioButton in this dialog.
-     * @return JRadioButtonOperator
+    /** Tries to find "Branching Point / Branch Root" JRadioButton in this dialog.
+     * @return Branching Point / Branch Root JRadioButtonOperator
      */
-    public JRadioButtonOperator rbMergeFromTrunk() {
-        if (_rbMergeFromTrunk==null) {
-            _rbMergeFromTrunk = new JRadioButtonOperator(this, Bundle.getStringTrimmed(
-                    "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
-                    "CTL_MergeBranchForm_MergeFromTrunk"));
+    public JRadioButtonOperator rbBranchingPoint() {
+        if (_rbBranchingPoint==null) {
+            _rbBranchingPoint = new JRadioButtonOperator(this, Bundle.getStringTrimmed(
+                    "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle", 
+                    "MergePanel.rbFromBranchRoot.text"));
         }
-        return _rbMergeFromTrunk;
+        return _rbBranchingPoint;
     }
     
-    /** Tries to find "Merge from Branch" JRadioButton in this dialog.
-     * @return JRadioButtonOperator
+    /** Tries to find "Tag / Revision" JRadioButton in Starting From section of this dialog.
+     * @return "Tag / Revision" JRadioButtonOperator
      */
-    public JRadioButtonOperator rbMergeFromBranch() {
-        if (_rbMergeFromBranch==null) {
-            _rbMergeFromBranch = new JRadioButtonOperator(this, Bundle.getStringTrimmed(
-                    "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
-                    "CTL_MergeBranchForm_MergeFromBranch"));
+    public JRadioButtonOperator rbStartingFromTag() {
+        if (_rbStartingFromTag == null) {
+            _rbStartingFromTag = new JRadioButtonOperator(this, Bundle.getStringTrimmed(
+                    "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle", 
+                    "MergePanel.rbFromTag.text"));
         }
-        return _rbMergeFromBranch;
+        return _rbStartingFromTag;
     }
     
-    /** Tries to find null JTextField in this dialog.
-     * @return JTextFieldOperator
+    /** Tries to find "Tag / Revision" JTextField in in Starting From section of this dialog.
+     * @return "Tag / Revision" JTextFieldOperator
      */
-    public JTextFieldOperator txtMergeFromBranch() {
-        if (_txtMergeFromBranch==null) {
-            _txtMergeFromBranch = new JTextFieldOperator(this, 1);
+    public JTextFieldOperator txtStartingFromTag() {
+        if (_txtStartingFromTag == null) {
+            _txtStartingFromTag = new JTextFieldOperator(this, 2);
         }
-        return _txtMergeFromBranch;
+        return _txtStartingFromTag;
     }
     
-    /** Tries to find "Browse..." JButton in this dialog.
+    /** Tries to find "Browse..." JButton in in Starting From section of this dialog.
      * @return JButtonOperator
      */
-    public JButtonOperator btBrowseMergeFromBranch() {
-        if (_btBrowseMergeFromBranch==null) {
-            _btBrowseMergeFromBranch = new JButtonOperator(this, Bundle.getStringTrimmed(
-                    "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
-                    "CTL_MergeBranchForm_Browse"));
-        }
-        return _btBrowseMergeFromBranch;
-    }
-    
-    /** Tries to find "Merge Only Changes Made after Tag" JCheckBox in this dialog.
-     * @return JCheckBoxOperator
-     */
-    public JCheckBoxOperator cbMergeOnlyChangesMadeAfterTag() {
-        if (_cbMergeOnlyChangesMadeAfterTag==null) {
-            _cbMergeOnlyChangesMadeAfterTag = new JCheckBoxOperator(this,
-                    Bundle.getStringTrimmed(
-                    "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
-                    "CTL_MergeBranchForm_UseMergeTag"));
-        }
-        return _cbMergeOnlyChangesMadeAfterTag;
-    }
-    
-    /** Tries to find "Tag Name:" JLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblTagName() {
-        if (_lblTagName==null) {
-            _lblTagName = new JLabelOperator(this, Bundle.getStringTrimmed(
-                    "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
-                    "CTL_BranchForm_BaseTagName"));
-        }
-        return _lblTagName;
-    }
-    
-    /** Tries to find null JTextField in this dialog.
-     * @return JTextFieldOperator
-     */
-    public JTextFieldOperator txtMergeAfterTag() {
-        if (_txtMergeAfterTag==null) {
-            _txtMergeAfterTag = new JTextFieldOperator(this, 2);
-        }
-        return _txtMergeAfterTag;
-    }
-    
-    /** Tries to find "Browse..." JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btBrowseMergeAfterTag() {
-        if (_btBrowseMergeAfterTag==null) {
-            _btBrowseMergeAfterTag = new JButtonOperator(this, Bundle.getStringTrimmed(
+    public JButtonOperator btBrowseStartingFromTag() {
+        if (_btBrowseStartingFromTag == null) {
+            _btBrowseStartingFromTag = new JButtonOperator(this, Bundle.getStringTrimmed(
                     "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
                     "CTL_MergeBranchForm_Browse"), 1);
         }
-        return _btBrowseMergeAfterTag;
+        return _btBrowseStartingFromTag;
     }
     
-    /** Tries to find "Tag "branch_name" Branch after Merge" JCheckBox in this dialog.
-     * @return JCheckBoxOperator
+    /** Tries to find "Trunk HEAD" JRadioButton in Until section of this dialog.
+     * @return "Trunk HEAD" JRadioButtonOperator
      */
-    public JCheckBoxOperator cbTagAfterMerge() {
-        if (_cbTagBranch_nameBranchAfterMerge==null) {
-            _cbTagBranch_nameBranchAfterMerge = new JCheckBoxOperator(this,
-                    Bundle.getStringTrimmed(
+    public JRadioButtonOperator rbTrunkHead() {
+        if (_rbTrunkHead == null) {
+            _rbTrunkHead = new JRadioButtonOperator(this, Bundle.getStringTrimmed(
                     "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
-                    "CTL_MergeBranchForm_TagAfterMerge_Branch"));
+                    "MergePanel.rbToHEAD.text"));
         }
-        return _cbTagBranch_nameBranchAfterMerge;
+        return _rbTrunkHead;
     }
     
-    /** Tries to find "Tag Name:" JLabel in this dialog.
-     * @return JLabelOperator
+    /** Tries to find "Branch Head" JRadioButton in Until section of this dialog.
+     * @return "Branch Head" JRadioButtonOperator
      */
-    public JLabelOperator lblTagName2() {
-        if (_lblTagName2==null) {
-            _lblTagName2 = new JLabelOperator(this, Bundle.getStringTrimmed(
+    public JRadioButtonOperator rbBranchHead() {
+        if (_rbBranchHead == null) {
+            _rbBranchHead = new JRadioButtonOperator(this, Bundle.getStringTrimmed(
                     "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
-                    "CTL_BranchForm_BaseTagName"), 1);
+                    "MergePanel.rbToBranchHead.text"));
         }
-        return _lblTagName2;
+        return _rbBranchHead;
+    }
+ 
+    /** Tries to find "Branch Head" JTextField in in Until section of this dialog.
+     * @return "Branch Head" JTextFieldOperator
+     */
+    public JTextFieldOperator txtBranchHead() {
+        if (_txtBranchHead == null) {
+            _txtBranchHead = new JTextFieldOperator(this, 4);
+        }
+        return _txtBranchHead;
     }
     
-    /** Tries to find null JTextField in this dialog.
+    /** Tries to find "Browse..." JButton in Until Branch Head section of this dialog.
+     * @return JButtonOperator
+     */
+    public JButtonOperator btBrowseBranchHead() {
+        if (_btBrowseBranchHead == null) {
+            _btBrowseBranchHead = new JButtonOperator(this, Bundle.getStringTrimmed(
+                    "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
+                    "CTL_MergeBranchForm_Browse"), 2);
+        }
+        return _btBrowseBranchHead;
+    }
+    
+    /** Tries to find "Tag / Revision" JRadioButton in Until section of this dialog.
+     * @return "Tag / Revision" JRadioButtonOperator
+     */
+    public JRadioButtonOperator rbUntilTag() {
+        if (_rbUntilTag == null) {
+            _rbUntilTag = new JRadioButtonOperator(this, Bundle.getStringTrimmed(
+                    "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
+                    "MergePanel.rbToTag.text"), 1);
+        }
+        return _rbUntilTag;
+    }
+ 
+    /** Tries to find "Tag Name" JTextField in this dialog.
+     * @return "Tag Name" JTextFieldOperator
+     */
+    public JTextFieldOperator txtTagName() {
+        if (_txtTagName == null) {
+            _txtTagName = new JTextFieldOperator(this, 0);
+        }
+        return _txtTagName;
+    }
+    
+    /** Tries to find "Tag / Revision" JTextField in Until section of this dialog.
      * @return JTextFieldOperator
      */
-    public JTextFieldOperator txtTagAfterMerge() {
-        if (_txtTagAfterMerge==null) {
-            _txtTagAfterMerge = new JTextFieldOperator(this, 3);
+    public JTextFieldOperator txtUntilTag() {
+        if (_txtUntilTag == null) {
+            _txtUntilTag = new JTextFieldOperator(this, 3);
         }
-        return _txtTagAfterMerge;
+        return _txtUntilTag;
     }
     
     /** Tries to find "Browse..." JButton in this dialog.
      * @return JButtonOperator
      */
-    public JButtonOperator btBrowseTagAfterMerge() {
-        if (_btBrowseTagAfterMerge==null) {
-            _btBrowseTagAfterMerge = new JButtonOperator(this, Bundle.getStringTrimmed(
+    public JButtonOperator btBrowseUntilTag() {
+        if (_btBrowseUntilTag==null) {
+            _btBrowseUntilTag = new JButtonOperator(this, Bundle.getStringTrimmed(
                     "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
-                    "CTL_MergeBranchForm_Browse"), 2);
+                    "CTL_MergeBranchForm_Browse"), 3);
         }
-        return _btBrowseTagAfterMerge;
+        return _btBrowseUntilTag;
+    }
+    
+    /** Tries to find "Tag "branch_name" after Merge" JCheckBox in this dialog.
+     * @return JCheckBoxOperator
+     */
+    public JCheckBoxOperator cbTagAfterMerge() {
+        if (_cbTagAfterMerge==null) {
+            _cbTagAfterMerge = new JCheckBoxOperator(this);
+        }
+        return _cbTagAfterMerge;
+    }
+    
+    /** Tries to find "Browse..." JButton in this dialog.
+     * @return JButtonOperator
+     */
+    public JButtonOperator btBrowseTagName() {
+        if (_btBrowseTagName == null) {
+            _btBrowseTagName = new JButtonOperator(this, Bundle.getStringTrimmed(
+                    "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
+                    "MergePanel.browseAfterMergeTag.text"), 0);
+        }
+        return _btBrowseTagName;
     }
     
     /** Tries to find "Merge" JButton in this dialog.
@@ -287,109 +311,128 @@ public class MergeChangesFromBranchOperator extends NbDialogOperator {
     // Low-level functionality definition part
     //****************************************
     
-    /** gets text for txtCurrentWorkingBranch
+    /** Gets working branch name.
+     * @return Working branch name.
+     */
+    public String getWorkingBranch() {
+        return txtWorkingBranch().getText();
+    }
+    
+    /** clicks on "Branching Point" JRadioButton
+     */
+    public void mergeFromBranchingPoint() {
+        rbBranchingPoint().push();
+    }
+    
+    /** clicks on "Tag / Revision" JRadioButton in Starting From Section
+     */
+    public void mergeFromTag() {
+        rbStartingFromTag().push();
+    }
+    
+    /** clicks on "Trunk HEAD" JRadioButton in Until section
+     */
+    public void mergeTrunkHead() {
+        rbTrunkHead().push();
+    }
+    
+    /** clicks on "Branch Head" JRadioButton in Until section. */
+    public void mergeUntilBranchHead() {
+        rbBranchHead().push();
+    }
+    
+    /** clicks on "Tag / Revision" JRadioButton in Until section. */
+    public void mergeUntilTag() {
+        rbUntilTag().push();
+    }
+
+    /** gets text for "Tag / Revision" in Starting From Section
      * @return String text
      */
-    public String getCurrentWorkingBranch() {
-        return txtCurrentWorkingBranch().getText();
+    public String getStartingFromTag() {
+        return txtStartingFromTag().getText();
     }
     
-    /** clicks on "Merge from Trunk" JRadioButton
-     */
-    public void mergeFromTrunk() {
-        rbMergeFromTrunk().push();
-    }
-    
-    /** clicks on "Merge from Branch" JRadioButton
-     */
-    public void mergeFromBranch() {
-        rbMergeFromBranch().push();
-    }
-    
-    /** gets text for txtMergeFromBranch
-     * @return String text
-     */
-    public String getMergeFromBranch() {
-        return txtMergeFromBranch().getText();
-    }
-    
-    /** sets text for txtMergeFromBranch
+    /** sets text for "Tag / Revision" in Starting From Section
      * @param text String text
      */
-    public void setMergeFromBranch(String text) {
-        txtMergeFromBranch().clearText();
-        txtMergeFromBranch().typeText(text);
+    public void setStartingFromTag(String text) {
+        txtStartingFromTag().setText(text);
     }
     
     /** clicks on "Browse..." JButton and returns BrowseTagsOperator
      * @return BrowseTagsOperator instance
      */
-    public BrowseTagsOperator browseMergeFromBranch() {
-        btBrowseMergeFromBranch().pushNoBlock();
+    public BrowseTagsOperator browseStartingFromTag() {
+        btBrowseStartingFromTag().pushNoBlock();
         return new BrowseTagsOperator();
     }
     
-    /** checks or unchecks given JCheckBox
-     * @param state boolean requested state
-     */
-    public void checkMergeAfterTag(boolean state) {
-        if (cbMergeOnlyChangesMadeAfterTag().isSelected()!=state) {
-            cbMergeOnlyChangesMadeAfterTag().push();
-        }
-    }
-    
-    /** gets text for txtMergeAfterTag
+    /** gets text for "Branch Head" in Until section
      * @return String text
      */
-    public String getMergeAfterTag() {
-        return txtMergeAfterTag().getText();
+    public String getBrancHead() {
+        return txtBranchHead().getText();
     }
     
-    /** sets text for txtMergeAfterTag
+    /** sets text for "Branch Head" in Until section
      * @param text String text
      */
-    public void setMergeAfterTag(String text) {
-        txtMergeAfterTag().clearText();
-        txtMergeAfterTag().typeText(text);
+    public void setBranchHead(String text) {
+        txtBranchHead().setText(text);
     }
     
-    /** clicks on "Browse..." JButtonand returns BrowseTagsOperator
+    /** clicks on "Browse..." JButton Branch Head and returns BrowseTagsOperator
      * @return BrowseTagsOperator instance
      */
-    public BrowseTagsOperator browseMergeAfterTag() {
-        btBrowseMergeAfterTag().pushNoBlock();
+    public BrowseTagsOperator browseBranchHead() {
+        btBrowseBranchHead().pushNoBlock();
+        return new BrowseTagsOperator();
+    }    
+    
+    /** gets text for "Tag / Revision" in Until section
+     * @return String text
+     */
+    public String getUntilTag() {
+        return txtUntilTag().getText();
+    }
+    
+    /** sets text for "Tag / Revision" in Until section
+     * @param text String text
+     */
+    public void setUntilTag(String text) {
+        txtUntilTag().setText(text);
+    }
+    
+    /** clicks on "Browse..." JButton "Until Tag / Revision" and returns BrowseTagsOperator
+     * @return BrowseTagsOperator instance
+     */
+    public BrowseTagsOperator browseUntilTag() {
+        btBrowseUntilTag().pushNoBlock();
         return new BrowseTagsOperator();
     }
     
-    /** checks or unchecks given JCheckBox
+    /** checks or unchecks "Tag After Merge" checkbox
      * @param state boolean requested state
      */
     public void checkTagAfterMerge(boolean state) {
-        if (cbTagAfterMerge().isSelected()!=state) {
+        if (cbTagAfterMerge().isSelected() != state) {
             cbTagAfterMerge().push();
         }
     }
     
-    /** gets text for txtTagAfterMerge
-     * @return String text
+    /** Sets text for "Tag Name" text field.
+     * @param text text
      */
-    public String getTagAfterMerge() {
-        return txtTagAfterMerge().getText();
-    }
-    
-    /** sets text for txtTagAfterMerge
-     * @param text String text
-     */
-    public void setTagAfterMerge(String text) {
-        txtTagAfterMerge().clearText();
-        txtTagAfterMerge().typeText(text);
+    public void setTagName(String text) {
+        txtTagName().setText(text);
     }
     
     /** clicks on "Browse..." JButton and returns BrowseTagsOperator
      * @return BrowseTagsOperator instance
      */
-    public BrowseTagsOperator browseTagAfterMerge() {
-        btBrowseTagAfterMerge().pushNoBlock();
+    public BrowseTagsOperator browseTagName() {
+        btBrowseTagName().pushNoBlock();
         return new BrowseTagsOperator();
     }
     
@@ -408,20 +451,16 @@ public class MergeChangesFromBranchOperator extends NbDialogOperator {
      * Performs verification of MergeChangesFromBranchOperator by accessing all its components.
      */
     public void verify() {
-        lblCurrentWorkingBranch();
-        txtCurrentWorkingBranch();
-        rbMergeFromTrunk();
-        rbMergeFromBranch();
-        txtMergeFromBranch();
-        btBrowseMergeFromBranch();
-        cbMergeOnlyChangesMadeAfterTag();
-        lblTagName();
-        txtMergeAfterTag();
-        btBrowseMergeAfterTag();
+        lblWorkingBranch();
+        txtWorkingBranch();
+        rbBranchingPoint();
+        rbStartingFromTag();
+        txtStartingFromTag();
+        btBrowseStartingFromTag();
+        txtUntilTag();
+        btBrowseUntilTag();
         cbTagAfterMerge();
-        lblTagName2();
-        txtTagAfterMerge();
-        btBrowseTagAfterMerge();
+        btBrowseTagName();
         btMerge();
     }
 }
