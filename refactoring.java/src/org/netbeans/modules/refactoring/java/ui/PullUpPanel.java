@@ -111,14 +111,14 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 public void cancel() {
                 }
                 
-                public void run(CompilationController parameter) throws Exception {
-                    parameter.toPhase(JavaSource.Phase.RESOLVED);
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(JavaSource.Phase.RESOLVED);
                     // retrieve supertypes (will be used in the combo)
-                    Collection<Element> supertypes = RetoucheUtils.getSuperTypes((TypeElement)handle.resolveElement(parameter), parameter);
+                    Collection<Element> supertypes = RetoucheUtils.getSuperTypes((TypeElement)handle.resolveElement(controller), controller);
                     MemberInfo[] minfo = new MemberInfo[supertypes.size()];
                     int i=0;
                     for (Element e: supertypes) {
-                        minfo[i++] = new MemberInfo(ElementHandle.create(e), UiUtils.getHeader(e, parameter, UiUtils.PrintPart.NAME), UiUtils.getDeclarationIcon(e));
+                        minfo[i++] = new MemberInfo(e, controller);
                     }
                     
                     // *** initialize combo
@@ -150,7 +150,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                             // make the checkbox checked (even if "Make Abstract" is not set)
                             // for non-static methods if the target type is an interface
                             MemberInfo object = (MemberInfo) table.getModel().getValueAt(row, 1);
-                            if (object.member.getKind()== ElementKind.METHOD) {
+                            if (object.getKind()== ElementKind.METHOD) {
                                 //todo:
 //                                if ((targetType.member.getKind() == ElementKind.INTERFACE && !Modifier.isStatic((object.mgetModifiers())) || Modifier.isAbstract(((Method) object).getModifiers())) {
 //                                    value = Boolean.TRUE;
@@ -209,7 +209,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 public void run(CompilationController parameter) throws Exception {
                     
                     // remeber if the target type is an interface (will be used in the loop)
-                    boolean targetIsInterface = targetType.member.getKind() == ElementKind.INTERFACE;
+                    boolean targetIsInterface = targetType.getKind() == ElementKind.INTERFACE;
                     // go through all rows of a table and collect selected members
                     for (int i = 0; i < members.length; i++) {
                         // if the current row is selected, create MemberInfo for it and
@@ -376,10 +376,10 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                         //                    map.put(ifcName, new Object[] {Boolean.FALSE, ifcName, null});
                         //                }
                         // collect fields, methods and inner classes
-                        List<? extends Element> features = classes[i].member.resolve(info).getEnclosedElements();
+                        List<? extends Element> features = classes[i].getElementHandle().resolve(info).getEnclosedElements();
                         int j = 0;
                         for (Element e:features) {
-                            MemberInfo mi = MemberInfo.createInfo(info, e);
+                            MemberInfo mi = new MemberInfo(e, info);
                             map.put(mi, new Object[] {Boolean.FALSE, mi, (e.getKind() == ElementKind.METHOD) ? Boolean.FALSE : null});
                         }
                     }
@@ -490,7 +490,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                             List classes = new ArrayList();
                             // add source type (it is always included)
                             Element e = refactoring.getSourceType().resolveElement(info);
-                            MemberInfo m = MemberInfo.createInfo(info, e);
+                            MemberInfo m = new MemberInfo(e, info);
                             classes.add(m);
                             //TODO:
                             //                for (int i = 0; i < supertypes.length; i++) {

@@ -19,6 +19,7 @@
 package org.netbeans.modules.refactoring.java.api;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.swing.Icon;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -31,56 +32,37 @@ import org.netbeans.api.java.source.UiUtils;
  * @author Jan Becicka
  */
 public final class MemberInfo {
-    public final ElementHandle member;
-    public final boolean makeAbstract;
+    private ElementHandle member;
     private String htmlText;
     private Icon icon;
-    
-    /** Creates a new instance of MemberInfo describing a method.
-     * @param method Method to be pulled up.
-     * @param makeAbstract Indicates whether the method should be made abstract
-     *              in the supertype.
-     */
-    public MemberInfo(ElementHandle method, boolean makeAbstract, String htmlText, Icon icon) {
-        this.member = method;
-        this.makeAbstract = makeAbstract;
-        this.htmlText = htmlText;
-        this.icon = icon;
-    }
     
     /** Creates a new instance of MemberInfo describing a field
      * to be pulled up.
      * @param field Field to be pulled up.
      */
-    public MemberInfo(ElementHandle innerClass, String htmlText, Icon icon) {
-        this(innerClass, false, htmlText, icon);
+    private MemberInfo(ElementHandle member, String htmlText, Icon icon) {
+        this.member = member;
+        this.htmlText = htmlText;
+        this.icon = icon;
+    }
+    
+    public ElementHandle getElementHandle() {
+        return member;
     }
     
     public String getHtmlText() {
         return htmlText;
     }
-    
-    public static MemberInfo createInfo(CompilationController c, Element el) {
-        return new MemberInfo(ElementHandle.create(el), UiUtils.getHeader(el, c, UiUtils.PrintPart.NAME), UiUtils.getDeclarationIcon(el));
+
+    public MemberInfo(Element el, CompilationController c) {
+        this(ElementHandle.create(el), UiUtils.getHeader(el, c, UiUtils.PrintPart.NAME), UiUtils.getDeclarationIcon(el));
     }
-    
+
     public Icon getIcon() {
         return icon;
     }
     
-    //        /** Creates a new instance of MemberInfo describing a field
-    //         * to be pulled up.
-    //         * @param field Field to be pulled up.
-    //         */
-    //        public MemberInfo(Field field) {
-    //            this(field, false);
-    //        }
-    //
-    //        /** Creates a new instance of MemberInfo describing an interface name
-    //         * from the implements clause that should be pulled up.
-    //         * @param interfaceName Interface name to be pulled up.
-    //         */
-    //        public MemberInfo(MultipartId interfaceName) {
-    //            this(interfaceName, false);
-    //        }
+    public ElementKind getKind() {
+        return member.getKind();
+    }
 }

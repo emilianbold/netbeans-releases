@@ -595,7 +595,7 @@ public class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
             assert el != null;
             Tree trees[] = new Tree[refactoring.getMembers().length];
             for (int i = 0; i < refactoring.getMembers().length; i++) {
-                Element method = refactoring.getMembers()[i].member.resolve(compiler);
+                Element method = refactoring.getMembers()[i].getElementHandle().resolve(compiler);
                 trees[i] = SourceUtils.treeFor(compiler, method);
             }
             

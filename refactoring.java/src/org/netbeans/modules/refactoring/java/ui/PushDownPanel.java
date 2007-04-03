@@ -98,12 +98,12 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
             public void cancel() {
             }
             
-            public void run(CompilationController parameter) throws Exception {
-                parameter.toPhase(JavaSource.Phase.RESOLVED);
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.RESOLVED);
                 List<MemberInfo> l = new ArrayList();
-                Element sourceTypeElement = handle.resolveElement(parameter);
+                Element sourceTypeElement = handle.resolveElement(controller);
                 for (Element m: sourceTypeElement.getEnclosedElements()) {
-                    l.add(new MemberInfo(ElementHandle.create(m), UiUtils.getHeader(m, parameter, UiUtils.PrintPart.NAME), UiUtils.getDeclarationIcon(m)));
+                    l.add(new MemberInfo(m,controller));
                     //l.addAll(refactoring.getSourceType().getInterfaceNames());
                 }
                 
@@ -114,7 +114,7 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                     //if (o instanceof JavaClass || o instanceof Method || o instanceof Field || o instanceof MultipartId) {
                         allMembers[i][0] = selectedMembers.contains(o) ? Boolean.TRUE : Boolean.FALSE;
                         allMembers[i][1] = o;
-                        allMembers[i][2] = o.member.getKind()==ElementKind.METHOD? Boolean.FALSE : null;
+                        allMembers[i][2] = o.getKind()==ElementKind.METHOD? Boolean.FALSE : null;
                         i++;
                     //}
                 }

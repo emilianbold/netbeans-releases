@@ -109,7 +109,7 @@ public class PullUpRefactoringUI implements RefactoringUI {
      * to the refactoring object.
      */
     private void captureParameters() {
-        refactoring.setTargetType(panel.getTargetType().member);
+        refactoring.setTargetType(panel.getTargetType().getElementHandle());
         refactoring.setMembers(panel.getMembers());
     }
     
