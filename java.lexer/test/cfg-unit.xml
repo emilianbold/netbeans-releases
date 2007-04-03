@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src"/>
     </testbag>
 
-    <executor name="code" antfile="../../../nbbuild/templates/xtest-unit.xml" target="run-unit-test"/>
+    <executor name="code" antfile="../../../nbbuild/templates/xtest-unit.xml" target="run-unit-test" default="true"/>
     
     <compiler name="unit-compiler" antfile="../../../nbbuild/templates/xtest-unit.xml" target="default-compiler" default="true"/>
     
