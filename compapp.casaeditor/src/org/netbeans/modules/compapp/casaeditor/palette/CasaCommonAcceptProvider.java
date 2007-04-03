@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.compapp.casaeditor.palette;
 
+import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -43,6 +44,7 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
     private Image mIconImage = null;
     private String mIconLable;
     private Rectangle mSceneBounds;
+    private Dimension mIconOriginalSize;
     
     public CasaCommonAcceptProvider(CasaModelGraphScene scene) {
         mScene = scene;
@@ -56,36 +58,68 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
     
     public void acceptFinished() {
         mScene.getDragLayer().removeChildren();
+        mIconOriginalSize = null;
         mIconImage = null;
     }   
     
     public void acceptStarted(Transferable t) {
-        mSceneBounds = mScene.getClientArea().getBounds();
+        mSceneBounds = mScene.getBounds();
         populateIconInfo(t);
     }
     
     public void positionIcon(Widget widget, Point point, ConnectorState state) {
         boolean bValue = state == ConnectorState.REJECT ? false : true;
-        if (mScene.getDragLayer().getChildren().size() > 0) {
-            if(mSceneBounds == null) {
-                mSceneBounds = mScene.getClientArea().getBounds();
+        if(!bValue) {
+            if (mScene.getDragLayer().getChildren().size() > 0) {
+                mScene.getDragLayer().removeChildren();
+                mIconOriginalSize = null;
             }
-            IconNodeWidget iconNodeWidget = (IconNodeWidget) mScene.getDragLayer().getChildren().get(0);
-            iconNodeWidget.setImage(bValue ? mIconImage : null);
-            iconNodeWidget.setLabel(bValue ? mIconLable : null);
-            iconNodeWidget.setPreferredLocation(widget.convertLocalToScene(point));
-            
-            if(bValue) {
-                Point scenePoint = widget.convertLocalToScene(point);
-                Rectangle visibleRect = new Rectangle(scenePoint.x, scenePoint.y, 10,iconNodeWidget.getBounds().height);    //A margin
+            return;
+        }
+        if(mSceneBounds == null) {
+            mSceneBounds = mScene.getBounds();
+        }
+        
+        Point curPoint = widget.convertLocalToScene(point);
+        IconNodeWidget iconNodeWidget = null;
+        Dimension newDimension = new Dimension(0,0);
+
+        if (mScene.getDragLayer().getChildren().size() < 1) {
+            iconNodeWidget = new IconNodeWidget(mScene);
+        } else {
+            iconNodeWidget = (IconNodeWidget) mScene.getDragLayer().getChildren().get(0);
+        }
+
+        iconNodeWidget.setImage(bValue ? mIconImage : null);
+        iconNodeWidget.setLabel(bValue ? mIconLable : null);
+
+        if(iconNodeWidget != null && iconNodeWidget.getBounds() != null) {
+            Rectangle iconBounds = iconNodeWidget.getBounds();
+
+            if(mIconOriginalSize == null) {
+                mIconOriginalSize = new Dimension(iconNodeWidget.getBounds().width, iconNodeWidget.getBounds().height);
+            }
+            newDimension = new Dimension(mIconOriginalSize.width, mIconOriginalSize.height);
                 
-                if(visibleRect.y <= mSceneBounds.getBounds().height - iconNodeWidget.getBounds().height) { //Dont go beyond screen height!
-                    mScene.getView().scrollRectToVisible(visibleRect);
-                }
+            if(curPoint.x + mIconOriginalSize.width > mSceneBounds.width) {
+                newDimension.width = mSceneBounds.width - curPoint.x;
+            } 
+            if(curPoint.y + mIconOriginalSize.height > mSceneBounds.height) {
+                newDimension.height = mSceneBounds.height - curPoint.y;
             }
+            iconNodeWidget.setPreferredSize(newDimension);
+            iconNodeWidget.setPreferredLocation(curPoint);
+
+        }
+        if (mScene.getDragLayer().getChildren().size() < 1) {
+            iconNodeWidget.setPreferredLocation(new Point(-1210,-1210));
+            mScene.getDragLayer().addChild(iconNodeWidget);
+        } else {
+            Rectangle visibleRect = new Rectangle(curPoint.x, curPoint.y,newDimension.width,newDimension.height); 
+            mScene.getView().scrollRectToVisible(visibleRect);
         }
     }
-    
+
     public ConnectorState isAcceptable (Widget widget, Point point, Transferable transferable){
         return ConnectorState.REJECT;
     }
@@ -129,12 +163,6 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
                 mIconLable += Constants.STRING_EXTENSION;
             }
             mIconImage = node.getIcon(BeanInfo.ICON_COLOR_16x16);
-            // DnD from palette
-            IconNodeWidget iconNodeWidget = new IconNodeWidget(mScene);
-            iconNodeWidget.setOpaque(false);
-            if(mScene.getDragLayer().getChildren().size() < 1) {
-                mScene.getDragLayer().addChild(iconNodeWidget);
-            }
             bExtracted = true;
         }
         return bExtracted;
