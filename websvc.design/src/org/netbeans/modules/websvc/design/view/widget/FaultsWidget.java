@@ -24,7 +24,7 @@ import java.awt.Image;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -38,24 +38,22 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
     private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/fault.png"); // NOI18N   
 
-    private Operation operation;
+    private MethodModel method;
     private transient ImageLabelWidget headerLabelWidget;
     private transient Widget tabComponent;
 
     /** 
      * Creates a new instance of OperationWidget 
      * @param scene
-     * @param operation  
+     * @param method  
      */
-    public FaultsWidget(Scene scene, Operation operation) {
+    public FaultsWidget(Scene scene, MethodModel method) {
         super(scene,GAP,BORDER_COLOR);
-        this.operation = operation;
+        this.method = method;
         createContent();
     }
     
     private void createContent() {
-        if (operation==null) return;
-        
         getHeaderWidget().setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 

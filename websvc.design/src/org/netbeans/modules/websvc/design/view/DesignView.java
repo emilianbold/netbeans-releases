@@ -37,10 +37,8 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
+import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
-import org.netbeans.modules.websvc.design.util.Util;
-import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -51,7 +49,7 @@ import org.openide.filesystems.FileObject;
 public class DesignView extends JPanel  {
     private FileObject implementationClass;
     private Service service;
-    private WSDLModel wsdlModel;
+    private ServiceModel serviceModel;
     /** Manages the state of the widgets and corresponding objects. */
     private Scene scene;
     /** Manages the zoom level. */
@@ -67,7 +65,7 @@ public class DesignView extends JPanel  {
         
         this.service = service;
         this.implementationClass = implementationClass;
-        this.wsdlModel = getWSDLModel();
+        this.serviceModel = ServiceModel.getServiceModel(implementationClass);
         
         scene = new Scene();
         zoomer = new ZoomManager(scene);
@@ -85,7 +83,7 @@ public class DesignView extends JPanel  {
                 LayoutFactory.SerialAlignment.JUSTIFY, 16));
         mMainLayer.addChild(contentWidget);
         //add operations widget
-        operationsWidget = new OperationsWidget(scene,service,implementationClass, wsdlModel);
+        operationsWidget = new OperationsWidget(scene,service,implementationClass, serviceModel);
         contentWidget.addChild(operationsWidget);
         
         JComponent sceneView = scene.createView();
@@ -130,21 +128,6 @@ public class DesignView extends JPanel  {
         super.requestFocusInWindow();
         // Ensure the graph widgets have the focus.
         return scene.getView().requestFocusInWindow();
-    }
-    
-    private WSDLModel getWSDLModel(){
-        String localWsdlUrl = service.getLocalWsdlFile();
-        if (localWsdlUrl!=null) { //WS from e
-            JAXWSSupport support = JAXWSSupport.getJAXWSSupport(implementationClass);
-            if (support!=null) {
-                FileObject localWsdlFolder = support.getLocalWsdlFolderForService(service.getName(),false);
-                if (localWsdlFolder!=null) {
-                    FileObject localWsdl = localWsdlFolder.getFileObject(localWsdlUrl);
-                    return localWsdl==null?null:Util.getWSDLModel(localWsdl,true);
-                }
-            }
-        }
-        return null;
     }
     
     private void addConfigurationPanel(){

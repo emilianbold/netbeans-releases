@@ -19,10 +19,7 @@
 
 package org.netbeans.modules.websvc.design.view.widget;
 
-import java.util.Collections;
-import org.netbeans.modules.xml.wsdl.model.Input;
-import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 
 /**
  *
@@ -30,24 +27,20 @@ import org.netbeans.modules.xml.wsdl.model.Part;
  */
 public class ParametersTableModel implements TableModel{
     
-    private transient Input input;
+    private transient MethodModel method;
     
     
     /**
      *
-     * @param input
+     * @param method
      */
-    public ParametersTableModel(Input input) {
-        this.input = input;
+    public ParametersTableModel(MethodModel method) {
+        this.method = method;
         
     }
     
     public int getRowCount() {
-        Message message = null;
-        if(input!=null && input.getMessage()!=null && ((message=input.getMessage().get())!=null)) {
-            return message.getParts().size();
-        }
-        return 0;
+        return method.getParams().size();
     }
     
     public int getColumnCount() {
@@ -57,9 +50,9 @@ public class ParametersTableModel implements TableModel{
     public String getColumnName(int columnIndex) {
         switch(columnIndex) {
         case 0:
-            return "Part Name";
+            return "Parameter Name";
         case 1:
-            return "Part Element or Type";
+            return "Parameter Type";
         default:
             throw new IllegalArgumentException("");
         }
@@ -68,7 +61,7 @@ public class ParametersTableModel implements TableModel{
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         switch(columnIndex) {
         case 0:
-            return true;
+            return false;
         case 1:
             return false;
         default:
@@ -78,15 +71,11 @@ public class ParametersTableModel implements TableModel{
     
     public String getValueAt(int rowIndex, int columnIndex) {
         if (rowIndex>=0 && rowIndex<getRowCount()) {
-            Part part = Collections.list(Collections.enumeration(
-                    input.getMessage().get().getParts())).get(rowIndex);
             switch(columnIndex) {
             case 0:
-                return part.getName();
+                return method.getParams().get(rowIndex).getName();
             case 1:
-                String parameter = (part.getElement()!=null?""+part.getElement().getQName():
-                    part.getType()!=null?""+part.getType().getQName():"");
-                return parameter;
+                return method.getParams().get(rowIndex).getParamType();
             default:
                 throw new IllegalArgumentException("");
             }
@@ -96,16 +85,9 @@ public class ParametersTableModel implements TableModel{
     
     public void setValueAt(String aValue, int rowIndex, int columnIndex) {
         if (rowIndex>=0 && rowIndex<getRowCount()) {
-            Part part = Collections.list(Collections.enumeration(
-                    input.getMessage().get().getParts())).get(rowIndex);
             switch(columnIndex) {
             case 0:
-                if(!part.getName().equals(aValue)) {
-                    part.getModel().startTransaction();
-                    part.setName(aValue);
-                    part.getModel().endTransaction();
-                }
-                break;
+                throw new IllegalArgumentException("");
             case 1:
                 throw new IllegalArgumentException("");
             default:

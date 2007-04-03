@@ -21,8 +21,6 @@ package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
 import java.awt.Image;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JToolBar;
@@ -32,11 +30,11 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
+import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
+import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
 import org.netbeans.modules.websvc.design.view.actions.AddOperationAction;
-import org.netbeans.modules.xml.wsdl.model.Operation;
-import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -45,15 +43,14 @@ import org.openide.util.Utilities;
  *
  * @author Ajit Bhate
  */
-public class OperationsWidget extends AbstractTitledWidget 
-        implements PropertyChangeListener{
+public class OperationsWidget extends AbstractTitledWidget {
     
     private static final Color BORDER_COLOR = new Color(180,180,255);
     private static final int GAP = 16;
     private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/operation.png"); // NOI18N   
 
-    private transient WSDLModel wsdlModel;
+    private transient ServiceModel serviceModel;
     private transient Action addAction;
 
     private transient Widget contentWidget;
@@ -67,13 +64,33 @@ public class OperationsWidget extends AbstractTitledWidget
      * @param scene 
      * @param service 
      * @param implementationClass 
-     * @param wsdlModel 
+     * @param serviceModel 
      */
-    public OperationsWidget(Scene scene, Service service, FileObject implementationClass, WSDLModel wsdlModel) {
+    public OperationsWidget(Scene scene, Service service, FileObject implementationClass, ServiceModel serviceModel) {
         super(scene,GAP,BORDER_COLOR);
-        this.wsdlModel = wsdlModel;
+        this.serviceModel = serviceModel;
+        serviceModel.addServiceChangeListener(new ServiceChangeListener() {
+
+            public void propertyChanged(String propertyName, String oldValue,
+                    String newValue) {
+                System.out.println("receieved propertychangeevent for propertyName="+propertyName);
+            }
+            
+            public void operationAdded(MethodModel method) {
+                contentWidget.addChild(new OperationWidget(getScene(),method));
+                updateHeaderLabel();
+            }
+            
+            public void operationRemoved(MethodModel method) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            public void operationChanged(MethodModel method) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+        });
         addAction = new AddOperationAction(service, implementationClass);
-        addAction.addPropertyChangeListener(this);
         addAction.putValue(Action.SMALL_ICON, new ImageIcon(IMAGE));
         getActions().addAction(ActionFactory.createPopupMenuAction(
                 new DesignViewPopupProvider(new Action [] {
@@ -83,7 +100,7 @@ public class OperationsWidget extends AbstractTitledWidget
     }
     
     private void createContent() {
-        if (wsdlModel==null) return;
+        if (serviceModel==null) return;
         
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
@@ -106,12 +123,11 @@ public class OperationsWidget extends AbstractTitledWidget
         contentWidget = new Widget(getScene());
         contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
-        for(PortType portType:wsdlModel.getDefinitions().getPortTypes()) {
-            for(Operation operation:portType.getOperations()) {
+        if(serviceModel.getOperations()!=null) {
+            for(MethodModel operation:serviceModel.getOperations()) {
                 contentWidget.addChild(new OperationWidget(getScene(),operation));
             }
         }
-        
         if(isExpanded()) {
             expandWidget();
         } else {
@@ -120,10 +136,7 @@ public class OperationsWidget extends AbstractTitledWidget
     }
 
     private void updateHeaderLabel() {
-        int noOfOperations = 0;
-        for(PortType portType:wsdlModel.getDefinitions().getPortTypes()) {
-            noOfOperations += portType.getOperations().size();
-        }
+        int noOfOperations = serviceModel.getOperations()==null?0:serviceModel.getOperations().size();
         headerLabelWidget.setComment("("+noOfOperations+")");
     }
 
@@ -141,7 +154,7 @@ public class OperationsWidget extends AbstractTitledWidget
     }
 
     public Object hashKey() {
-        return wsdlModel==null?null:wsdlModel.getDefinitions().getName();
+        return serviceModel==null?null:serviceModel.getServiceName();
     }
     
     /**
@@ -154,14 +167,4 @@ public class OperationsWidget extends AbstractTitledWidget
         toolbar.add(addAction);
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        String property = evt.getPropertyName();
-        Object source = evt.getSource();
-        Object newValue = evt.getNewValue();
-        if(property.equals(AddOperationAction.PROPERTY_OPERATION_ADDED) &&
-                source==addAction && newValue instanceof Operation) {
-            contentWidget.addChild(new OperationWidget(getScene(),(Operation)newValue));
-            updateHeaderLabel();
-        }
-    }
 }

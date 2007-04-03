@@ -25,8 +25,7 @@ import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.xml.wsdl.model.Input;
-import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -40,7 +39,7 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
     private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/input.png"); // NOI18N   
 
-    private transient Input input;
+    private transient MethodModel method;
 
     private transient Widget contentWidget;
     private transient Widget buttons;
@@ -54,11 +53,11 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
     /** 
      * Creates a new instance of OperationWidget 
      * @param scene 
-     * @param operation 
+     * @param method 
      */
-    public ParametersWidget(Scene scene, Input input) {
+    public ParametersWidget(Scene scene, MethodModel method) {
         super(scene,GAP,BORDER_COLOR);
-        this.input = input;
+        this.method = method;
         createContent();
     }
     
@@ -69,10 +68,9 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
         contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
         int noOfParams = 0;
-        Message message = null;
-        if(input!=null && input.getMessage()!=null && ((message=input.getMessage().get())!=null)) {
-            noOfParams = message.getParts().size();
-            model = new ParametersTableModel(input);
+        if(!method.getParams().isEmpty()) {
+            noOfParams = method.getParams().size();
+            model = new ParametersTableModel(method);
             parameterTable = new TableWidget(getScene(),model);
             contentWidget.addChild(parameterTable);
         } else {
@@ -113,7 +111,7 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
     }
 
     public Object hashKey() {
-        return input==null?null:input.getName()+"_Parameters";
+        return method==null?null:method.getOperationName()+"_Parameters";
     }
     
     public String getTitle() {

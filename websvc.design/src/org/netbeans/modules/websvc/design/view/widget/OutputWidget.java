@@ -24,7 +24,7 @@ import java.awt.Image;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.xml.wsdl.model.Output;
+import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -38,18 +38,18 @@ public class OutputWidget extends AbstractTitledWidget implements TabWidget{
     private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/output.png"); // NOI18N   
 
-    private Output output;
+    private MethodModel method;
     private transient ImageLabelWidget headerLabelWidget;
     private transient Widget tabComponent;
 
     /** 
      * Creates a new instance of OperationWidget 
      * @param scene 
-     * @param output  
+     * @param method  
      */
-    public OutputWidget(Scene scene, Output output) {
+    public OutputWidget(Scene scene, MethodModel method) {
         super(scene,GAP,BORDER_COLOR);
-        this.output = output;
+        this.method = method;
         createContent();
     }
     
@@ -57,9 +57,9 @@ public class OutputWidget extends AbstractTitledWidget implements TabWidget{
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
         getHeaderWidget().setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
-        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, output==null?
+        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, method.getReturnType()==null?
                 NbBundle.getMessage(OperationWidget.class, "LBL_ReturnTypeNone"): 
-                NbBundle.getMessage(OperationWidget.class, "LBL_ReturnType", output.getName()), 
+                NbBundle.getMessage(OperationWidget.class, "LBL_ReturnType", method.getReturnType()), 
                 null);
        getHeaderWidget().addChild(headerLabelWidget);
     }
@@ -78,9 +78,9 @@ public class OutputWidget extends AbstractTitledWidget implements TabWidget{
 
     public Widget getComponentWidget() {
         if(tabComponent==null) {
-            tabComponent = new ImageLabelWidget(getScene(), IMAGE, output==null?
+            tabComponent = new ImageLabelWidget(getScene(), IMAGE, method.getReturnType()==null?
                 NbBundle.getMessage(OperationWidget.class, "LBL_ReturnTypeNone"): 
-                NbBundle.getMessage(OperationWidget.class, "LBL_ReturnType", output.getName()), 
+                NbBundle.getMessage(OperationWidget.class, "LBL_ReturnType", method.getReturnType()), 
                 null);
         }
         return tabComponent;

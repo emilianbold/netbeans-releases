@@ -34,8 +34,8 @@ import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
-import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -55,7 +55,7 @@ public class OperationWidget extends AbstractTitledWidget {
     private static final Image IMAGE_NOTIFICATION  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/notification_operation.png"); // NOI18N   
 
-    private Operation operation;
+    private MethodModel operation;
     
     private transient Widget contentWidget;
     private transient Widget buttons;
@@ -76,7 +76,7 @@ public class OperationWidget extends AbstractTitledWidget {
      * @param scene
      * @param operation
      */
-    public OperationWidget(Scene scene, Operation operation) {
+    public OperationWidget(Scene scene, MethodModel operation) {
         super(scene,GAP,BORDER_COLOR);
         this.operation=operation;
         getActions().addAction(ActionFactory.createPopupMenuAction(
@@ -90,17 +90,17 @@ public class OperationWidget extends AbstractTitledWidget {
 
         String typeOfOperation ="";
         Image image = null;
-        if(operation.getOutput()==null) {
+        if(operation.isOneWay()) {
             typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_OneWay");
             image = IMAGE_ONE_WAY;
-        } else if (operation.getInput()!=null) {
+        } else if (!operation.getParams().isEmpty()) {
             typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_RequestResponse");
             image = IMAGE_REQUEST_RESPONSE;
         } else {
             typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_Notification");
             image = IMAGE_NOTIFICATION;
         }
-        headerLabelWidget = new ImageLabelWidget(getScene(), image, operation.getName(), 
+        headerLabelWidget = new ImageLabelWidget(getScene(), image, operation.getOperationName(), 
                 "("+typeOfOperation+")");
         getHeaderWidget().addChild(headerLabelWidget);
 
@@ -116,8 +116,8 @@ public class OperationWidget extends AbstractTitledWidget {
 
         listWidget = new Widget(getScene());
         listWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
-        inputWidget = new ParametersWidget(getScene(),operation.getInput());
-        outputWidget = new OutputWidget(getScene(),operation.getOutput());
+        inputWidget = new ParametersWidget(getScene(),operation);
+        outputWidget = new OutputWidget(getScene(),operation);
         faultWidget = new FaultsWidget(getScene(),operation);
         descriptionWidget = new LabelWidget(getScene(),"description");
         listWidget.addChild(inputWidget);
@@ -168,7 +168,7 @@ public class OperationWidget extends AbstractTitledWidget {
     }
 
     public Object hashKey() {
-        return operation==null?null:operation.getName();
+        return operation==null?null:operation.getOperationName();
     }
 
     private boolean isTabbedView() {
