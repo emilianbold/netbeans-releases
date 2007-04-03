@@ -63,10 +63,9 @@ public class OperationsWidget extends AbstractTitledWidget {
      * Creates a new instance of OperationWidget 
      * @param scene 
      * @param service 
-     * @param implementationClass 
      * @param serviceModel 
      */
-    public OperationsWidget(Scene scene, Service service, FileObject implementationClass, ServiceModel serviceModel) {
+    public OperationsWidget(Scene scene, Service service, ServiceModel serviceModel) {
         super(scene,GAP,BORDER_COLOR);
         this.serviceModel = serviceModel;
         serviceModel.addServiceChangeListener(new ServiceChangeListener() {
@@ -79,6 +78,7 @@ public class OperationsWidget extends AbstractTitledWidget {
             public void operationAdded(MethodModel method) {
                 contentWidget.addChild(new OperationWidget(getScene(),method));
                 updateHeaderLabel();
+                getScene().validate();
             }
             
             public void operationRemoved(MethodModel method) {
@@ -90,7 +90,7 @@ public class OperationsWidget extends AbstractTitledWidget {
             }
             
         });
-        addAction = new AddOperationAction(service, implementationClass);
+        addAction = new AddOperationAction(service, serviceModel.getImplementationClass());
         addAction.putValue(Action.SMALL_ICON, new ImageIcon(IMAGE));
         getActions().addAction(ActionFactory.createPopupMenuAction(
                 new DesignViewPopupProvider(new Action [] {

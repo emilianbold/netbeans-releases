@@ -124,7 +124,12 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
 
     public Widget getComponentWidget() {
         if(tabComponent==null) {
-            tabComponent = new TableWidget(getScene(),model); 
+            if(model!=null) {
+                tabComponent = new TableWidget(getScene(),model); 
+            } else {
+                tabComponent = new LabelWidget(getScene(),
+                    NbBundle.getMessage(OperationWidget.class, "LBL_InputNone"));
+            }
         }
         return tabComponent;
     }

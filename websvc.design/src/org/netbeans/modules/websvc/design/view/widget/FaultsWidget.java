@@ -22,6 +22,7 @@ package org.netbeans.modules.websvc.design.view.widget;
 import java.awt.Color;
 import java.awt.Image;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
@@ -39,7 +40,14 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
             ("org/netbeans/modules/websvc/design/view/resources/fault.png"); // NOI18N   
 
     private MethodModel method;
+
+    private transient Widget contentWidget;
+    private transient Widget buttons;
     private transient ImageLabelWidget headerLabelWidget;
+    
+    private transient TableModel model;
+    private transient TableWidget faultTable;
+    
     private transient Widget tabComponent;
 
     /** 
@@ -54,17 +62,56 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
     }
     
     private void createContent() {
-        getHeaderWidget().setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
+        contentWidget = new Widget(getScene());
+        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
+
+        int noOfParams = 0;
+        if(!method.getFaults().isEmpty()) {
+            noOfParams = method.getFaults().size();
+            model = new FaultsTableModel(method);
+            faultTable = new TableWidget(getScene(),model);
+            contentWidget.addChild(faultTable);
+        } else {
+            contentWidget.addChild(new LabelWidget(getScene(),
+                    NbBundle.getMessage(OperationWidget.class, "LBL_FaultsNone")));
+        }
         headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, 
                 NbBundle.getMessage(OperationWidget.class, "LBL_Faults"), 
-                "To be implemented");
+                "("+noOfParams+")");
         getHeaderWidget().addChild(headerLabelWidget);
+
+        buttons = new Widget(getScene());
+        buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 8));
+
+        buttons.addChild(getExpanderWidget());
+
+        getHeaderWidget().addChild(buttons);
+
+        if(isExpanded()) {
+            expandWidget();
+        } else {
+            collapseWidget();
+        }
     }
 
-    protected boolean isExpandable() {
-        return false;
+    protected void collapseWidget() {
+        if(contentWidget.getParentWidget()!=null) {
+            removeChild(contentWidget);
+            repaint();
+        }
+    }
+
+    protected void expandWidget() {
+        if(contentWidget.getParentWidget()==null) {
+            addChild(contentWidget);
+        }
+    }
+
+    public Object hashKey() {
+        return method==null?null:method.getOperationName()+"_Faults";
     }
 
     public String getTitle() {
@@ -77,9 +124,12 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
 
     public Widget getComponentWidget() {
         if(tabComponent==null) {
-            tabComponent = new ImageLabelWidget(getScene(), IMAGE, 
-                NbBundle.getMessage(OperationWidget.class, "LBL_Faults"), 
-                "To be implemented");
+            if(model!=null) {
+                tabComponent = new TableWidget(getScene(),model); 
+            } else {
+                tabComponent = new LabelWidget(getScene(),
+                    NbBundle.getMessage(OperationWidget.class, "LBL_FaultsNone"));
+            }
         }
         return tabComponent;
     }

@@ -34,15 +34,16 @@ import org.netbeans.modules.websvc.core._RetoucheUtil;
 import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
 import org.netbeans.modules.websvc.design.util.Util;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -52,8 +53,6 @@ import org.openide.util.NbBundle;
 public class AddOperationAction extends AbstractAction {
     
     
-    public static final String PROPERTY_OPERATION_ADDED = "operation-added";
-
     private FileObject implementationClass;
     private Service service;
     private File wsdlFile;
@@ -104,7 +103,7 @@ public class AddOperationAction extends AbstractAction {
                         List<ReferenceableSchemaComponent> faultTypes = panel.getFaultTypes();
                         Operation operation = generatorHelper.addWsOperation(wsdlModel, generatorHelper.getPortTypeName(implementationClass),
                                 operationName, parameterTypes, returnType, faultTypes);
-                        generatorHelper.generateJavaArtifacts(service, implementationClass, operationName);
+                        generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, operationName);
                         
                         //TODO:this will go away when the recopying of the changed wsdls and schemas
                         //from the src/conf to the WEB-INF/wsdl directory is done in the build script.
@@ -117,7 +116,6 @@ public class AddOperationAction extends AbstractAction {
                         }catch(IOException e){
                             ErrorManager.getDefault().notify(e);
                         }
-                        AddOperationAction.this.firePropertyChange(PROPERTY_OPERATION_ADDED,null,operation);
                     }
                 }
             });
@@ -135,6 +133,16 @@ public class AddOperationAction extends AbstractAction {
                 ErrorManager.getDefault().notify(ex);
             }
         }
+        //save the changes so events will be fired
+        try {
+            DataObject dobj = DataObject.find(implementationClass);
+            if(dobj.isModified()) {
+                SaveCookie cookie = dobj.getCookie(SaveCookie.class);
+                if(cookie!=null) cookie.save();
+            }
+        } catch (IOException ex) {
+        }
+        
     }
     
 }

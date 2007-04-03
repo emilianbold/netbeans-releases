@@ -66,6 +66,10 @@ public class ServiceModel {
         return new ServiceModel(implClass);
     }
 
+    public FileObject getImplementationClass() {
+        return implementationClass;
+    }
+
     public String getName() {
         return name;
     }

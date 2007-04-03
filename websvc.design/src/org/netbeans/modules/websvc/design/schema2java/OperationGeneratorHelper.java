@@ -324,12 +324,12 @@ public class OperationGeneratorHelper {
      * generate WsdlModel to find information about the new operation
      * add new menthod to implementation class
      */
-    public void generateJavaArtifacts(org.netbeans.modules.websvc.api.jaxws.project.config.Service service,
+    public void generateJavaArtifacts(String serviceName,
             final FileObject implementationClass, final String operationName) {
         Project project = FileOwnerQuery.getOwner(implementationClass);
-        invokeWsImport(project,service);
+        invokeWsImport(project,serviceName);
         try {
-            WsdlModeler modeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlFile.toURL());
+            WsdlModeler modeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlFile.toURI().toURL());
             modeler.generateWsdlModel(new WsdlModelListener() {
                 public void modelCreated(WsdlModel wsdlModel) {
                     MethodGenerator generator = new MethodGenerator(wsdlModel,implementationClass);
@@ -414,14 +414,13 @@ public class OperationGeneratorHelper {
         return jaxwssupport.getLocalWsdlFolderForService(serviceName, false);
     }
     
-    private void invokeWsImport(Project project, org.netbeans.modules.websvc.api.jaxws.project.config.Service service) {
+    private void invokeWsImport(Project project, final String serviceName) {
         if (project!=null) {
             FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
             try {
-                String name = service.getName();
                 ExecutorTask wsimportTask =
                         ActionUtils.runTarget(buildImplFo,
-                        new String[]{"wsimport-service-clean-"+name,"wsimport-service-"+name},null); //NOI18N
+                        new String[]{"wsimport-service-clean-"+serviceName,"wsimport-service-"+serviceName},null); //NOI18N
                 wsimportTask.waitFinished();
             } catch (IOException ex) {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());

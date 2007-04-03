@@ -59,6 +59,8 @@ public class DesignView extends JPanel  {
     private OperationsWidget operationsWidget;
     /**
      * Creates a new instance of GraphView.
+     * @param service 
+     * @param implementationClass 
      */
     public DesignView(Service service, FileObject implementationClass) {
         super(new BorderLayout());
@@ -83,7 +85,7 @@ public class DesignView extends JPanel  {
                 LayoutFactory.SerialAlignment.JUSTIFY, 16));
         mMainLayer.addChild(contentWidget);
         //add operations widget
-        operationsWidget = new OperationsWidget(scene,service,implementationClass, serviceModel);
+        operationsWidget = new OperationsWidget(scene,service, serviceModel);
         contentWidget.addChild(operationsWidget);
         
         JComponent sceneView = scene.createView();
