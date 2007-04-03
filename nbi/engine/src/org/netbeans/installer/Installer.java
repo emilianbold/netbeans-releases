@@ -330,17 +330,17 @@ public class Installer implements FinishHandler {
                     
                     Locale targetLocale = null;
                     switch (valueParts.length) {
-                    case 1:
-                        targetLocale = new Locale(valueParts[0]);
-                        break;
-                    case 2:
-                        targetLocale = new Locale(valueParts[0], valueParts[1]);
-                        break;
-                    case 3:
-                        targetLocale = new Locale(valueParts[0], valueParts[1], valueParts[2]);
-                        break;
-                    default:
-                        ErrorManager.notifyWarning("Invalid parameter command line argument \"--locale\". Should be \"<language>[_<country>[_<variant>]]\".");
+                        case 1:
+                            targetLocale = new Locale(valueParts[0]);
+                            break;
+                        case 2:
+                            targetLocale = new Locale(valueParts[0], valueParts[1]);
+                            break;
+                        case 3:
+                            targetLocale = new Locale(valueParts[0], valueParts[1], valueParts[2]);
+                            break;
+                        default:
+                            ErrorManager.notifyWarning("Invalid parameter command line argument \"--locale\". Should be \"<language>[_<country>[_<variant>]]\".");
                     }
                     
                     if (targetLocale != null) {
@@ -651,15 +651,20 @@ public class Installer implements FinishHandler {
             LogManager.log("... total entries : " + entries.length);
             for(int i=0;i<entries.length;i++) {
                 String name = entries[i];
-                if(name.length() > 0 && !name.startsWith(EngineResources.DATA_DIRECTORY)) {
-                    jos.putNextEntry(new JarEntry(name));
-                    if(!name.endsWith(StringUtils.FORWARD_SLASH)) {
-                        StreamUtils.transferData(ResourceUtils.getResource(name), jos);
+                if(name.length() > 0) {
+                    String dataDir = EngineResources.DATA_DIRECTORY +
+                            StringUtils.FORWARD_SLASH;
+                    if(!name.startsWith(dataDir) || // all except "data/""
+                            name.equals(dataDir) || // "data/"
+                            name.equals(dataDir + EngineResources.ENGINE_PROPERTIES)) { // "data/engine.properties"
+                        jos.putNextEntry(new JarEntry(name));
+                        if(!name.endsWith(StringUtils.FORWARD_SLASH)) {
+                            StreamUtils.transferData(ResourceUtils.getResource(name), jos);
+                        }
                     }
                 }
             }
             LogManager.log("... adding content list and some other stuff");
-            jos.putNextEntry(new JarEntry(EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH));
             
             jos.putNextEntry(new JarEntry(EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH +
                     "registry.xml"));
