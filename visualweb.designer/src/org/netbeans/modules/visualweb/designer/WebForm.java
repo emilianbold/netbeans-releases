@@ -1992,9 +1992,9 @@ public class WebForm implements Designer {
 //        htmlDomProvider.syncModel();
 //    }
 
-    boolean isSourceDirty() {
-        return htmlDomProvider.isSourceDirty();
-    }
+//    boolean isSourceDirty() {
+//        return htmlDomProvider.isSourceDirty();
+//    }
 
 //    Transferable copyBeans(DesignBean[] beans) {
 //        return htmlDomProvider.copyBeans(beans);
