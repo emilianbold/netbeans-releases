@@ -293,7 +293,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-source-zips" depends="init" description="Builds source zips for maven repository inclusion.">
       <pathconvert property="modules.fullpath" >
           <path>
-              <dirset dir="${nb_all}" includes="${config.modules.stable}" />
+              <dirset dir="${nb_all}" includes="${config.modules.stable},${config.fixedmodules.stable}" />
           </path>
           <mapper type="identity" />
       </pathconvert>
