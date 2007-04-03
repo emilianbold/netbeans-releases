@@ -32,6 +32,8 @@ public class MethodModel {
     private String returnType;
     private List<ParamModel> params;
     private boolean oneWay;
+    private String javadoc;
+    private List<FaultModel> faults;
     
     /** Creates a new instance of MethodModel */
     MethodModel(String operationName) {
@@ -80,6 +82,22 @@ public class MethodModel {
     void setOneWay(boolean oneWay) {
         this.oneWay = oneWay;
     }
+
+    public String getJavadoc() {
+        return javadoc;
+    }
+    
+    void setJavadoc(String javadoc) {
+        this.javadoc=javadoc;
+    }
+    
+    public List<FaultModel> getFaults() {
+        return faults;
+    }
+    
+    void setFaults(List<FaultModel> faults) {
+        this.faults=faults;
+    }
     
     public boolean isEqualTo(MethodModel model) {
         if (!operationName.equals(model.operationName)) return false;
@@ -89,6 +107,10 @@ public class MethodModel {
         if (params.size()!=model.params.size()) return false;
         for(int i = 0;i<params.size();i++) {
             if (!params.get(i).isEqualTo(model.params.get(i))) return false;
+        }
+        if (faults.size()!=model.faults.size()) return false;
+        for(int i = 0;i<faults.size();i++) {
+            if (!faults.get(i).isEqualTo(model.faults.get(i))) return false;
         }
         return true;
     }

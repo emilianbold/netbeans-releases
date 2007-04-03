@@ -52,6 +52,12 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
         {Mode.IN}
     };
     
+    private static final Object[][] FAULTS={
+        {},
+        {"add.foo.FooException", "java.lang.Exception"},
+        {}
+    };
+    
     private static final String NAME_1="AddNumbers";
     private static final String SERVICE_NAME_1="AddNumbers";
     private static final String PORT_NAME_1="AddNumbersPort";
@@ -143,12 +149,18 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
                 assertEquals(OP_ONE_WAY[i], op.isOneWay());
                 List<ParamModel> params = op.getParams();
                 int j=0;
-                    for (ParamModel param:params) {
-                        assertEquals(PARAM_NAMES[i][j], param.getName());
-                        assertEquals(PARAM_TYPES[i][j], param.getParamType());
-                        assertEquals(PARAM_MODES[i][j], param.getMode());
-                        j++;
-                    }
+                for (ParamModel param:params) {
+                    assertEquals(PARAM_NAMES[i][j], param.getName());
+                    assertEquals(PARAM_TYPES[i][j], param.getParamType());
+                    assertEquals(PARAM_MODES[i][j], param.getMode());
+                    j++;
+                }
+                List<FaultModel> faults = op.getFaults();
+                j=0;
+                for (FaultModel fault:faults) {
+                    assertEquals(FAULTS[i][j], fault.getFaultType());
+                    j++;
+                }
                 i++;
             }
             // testing merge

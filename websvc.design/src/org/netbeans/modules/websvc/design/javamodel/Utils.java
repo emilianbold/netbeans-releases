@@ -201,8 +201,21 @@ public class Utils {
             TypeElement element = (TypeElement)((DeclaredType)returnType).asElement();
             methodModel.setReturnType(element.getQualifiedName().toString());
         } else { // for primitive types
-            methodModel.setReturnType(methodEl.getReturnType().toString());
+            methodModel.setReturnType(returnType.toString());
         }
+        
+        // populate faults
+        List<? extends TypeMirror> faultTypes = methodEl.getThrownTypes();
+        List<FaultModel> faults = new ArrayList<FaultModel>();
+        for (TypeMirror faultType:faultTypes) {
+            if (faultType.getKind() == TypeKind.DECLARED) {
+                TypeElement faultEl = (TypeElement)((DeclaredType)faultType).asElement();
+                faults.add(new FaultModel(faultEl.getQualifiedName().toString()));
+            } else {
+                faults.add(new FaultModel(faultType.toString()));
+            }
+        }
+        methodModel.setFaults(faults);
         
         // populate params
         List<? extends VariableElement> paramElements = methodEl.getParameters();
@@ -222,7 +235,7 @@ public class Utils {
             TypeElement element = (TypeElement)((DeclaredType)type).asElement();
             paramModel.setParamType(element.getQualifiedName().toString());
         } else { // for primitive type
-            paramModel.setParamType(paramEl.asType().toString());
+            paramModel.setParamType(type.toString());
         }
         TypeElement paramAnotationEl = controller.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
         List<? extends AnnotationMirror> methodAnnotations = paramEl.getAnnotationMirrors();

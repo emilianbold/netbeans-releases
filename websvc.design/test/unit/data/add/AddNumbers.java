@@ -13,6 +13,7 @@ import javax.jws.Oneway;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import add.foo.FooException;
 
 /**
  *
@@ -34,7 +35,7 @@ public class AddNumbers {
      * Web service operation
      */
     @WebMethod(operationName="echo-operation")
-    public String echo() {
+    public String echo() throws FooException {
         // TODO write your implementation code here:
         return "hello";
     }
