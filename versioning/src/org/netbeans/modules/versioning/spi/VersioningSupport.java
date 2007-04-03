@@ -23,6 +23,8 @@ import org.netbeans.modules.versioning.VersioningManager;
 import java.io.File;
 
 /**
+ * Collection of utility methods for Versioning systems implementors. 
+ * 
  * @author Maros Sandor
  */
 public class VersioningSupport {

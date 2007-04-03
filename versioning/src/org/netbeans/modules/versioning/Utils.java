@@ -19,14 +19,20 @@
 package org.netbeans.modules.versioning;
 
 import org.openide.util.RequestProcessor;
+import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.spi.FlatFolder;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 
 import javax.swing.*;
 import java.io.File;
+import java.util.*;
 
 /**
  * Utilities for Versioning SPI classes. 
@@ -40,6 +46,33 @@ public class Utils {
      */
     private static final RequestProcessor vcsBlockingRequestProcessor = new RequestProcessor("Versioning long tasks", 1);
 
+    /**
+     * Constructs a VCSContext out of a Lookup, basically taking all Nodes inside. 
+     * Nodes are converted to Files based on their nature. 
+     * For example Project Nodes are queried for their SourceRoots and those roots become the root files of this context.
+     * 
+     * @param lookup a lookup
+     * @return VCSContext containing nodes from Lookup
+     */ 
+    public static VCSContext contextForLookup(Lookup lookup) {
+        Lookup.Result<Node> result = lookup.lookup(new Lookup.Template<Node>(Node.class));
+        Collection<? extends Node> nodes = result.allInstances();
+        return VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
+    }
+        
+    public static VCSContext contextForFileObjects(Set<FileObject> files) {
+        Set<File> roots = new HashSet<File>(files.size());
+        if (files instanceof NonRecursiveFolder) {
+            FileObject folder = ((NonRecursiveFolder) files).getFolder();
+            roots.add(new FlatFolder(FileUtil.toFile(folder).getAbsolutePath()));
+        } else {
+            for (FileObject fo : files) {
+                roots.add(FileUtil.toFile(fo));
+            }
+        }
+        return VCSContext.forFiles(roots);
+    }
+    
     /**
      * Tests for ancestor/child file relationsip.
      * 

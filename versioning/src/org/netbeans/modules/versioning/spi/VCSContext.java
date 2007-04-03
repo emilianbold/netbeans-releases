@@ -62,20 +62,6 @@ public final class VCSContext {
     private final Set<File> exclusions;
 
     /**
-     * Constructs a VCSContext out of a Lookup, basically taking all Nodes inside. 
-     * Nodes are converted to Files based on their nature. 
-     * For example Project Nodes are queried for their SourceRoots and those roots become the root files of this context.
-     * 
-     * @param lookup a lookup
-     * @return VCSContext containing nodes from Lookup
-     */ 
-    public static VCSContext forLookup(Lookup lookup) {
-        Lookup.Result<Node> result = lookup.lookup(new Lookup.Template<Node>(Node.class));
-        Collection<? extends Node> nodes = result.allInstances();
-        return VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
-    }
-    
-    /**
      * Constructs a VCSContext out of a set of files. These files are later available via getRootFiles().
      * 
      * @param rootFiles set of Files
@@ -88,7 +74,15 @@ public final class VCSContext {
     /**
      * Initializes the context from array of nodes (typically currently activated nodes).
      * Nodes are converted to Files based on their nature. 
-     * For example Project Nodes are queried for their SourceRoots and those roots become the root files of this context.
+     * For example Project Nodes are queried for their SourceRoots and those roots become root files of this context and
+     * exclusions list is constructed using sourceRoot.contains() queries.
+     * 
+     * Nodes' lookups are examined in the following way (the first applied rule wins):
+     * - if there's a File, the File is added to set of root files
+     * - if there's a Project, project's source roots of type Sources.TYPE_GENERIC are added to set of root files and
+     *   all direct children that do not belong to the project (sg.contains() == false) are added to set of exclusions
+     * - if there's a FileObject, it is added to set of root files
+     * - if there's a DataObject, all dao.files() are added to set of root files 
      * 
      * @param nodes array of Nodes
      * @return VCSContext containing nodes and corresponding files they represent
@@ -123,19 +117,6 @@ public final class VCSContext {
         return ctx;
     }
     
-    public static VCSContext forFileObjects(Set<FileObject> files) {
-        Set<File> roots = new HashSet<File>(files.size());
-        if (files instanceof NonRecursiveFolder) {
-            FileObject folder = ((NonRecursiveFolder) files).getFolder();
-            roots.add(new FlatFolder(FileUtil.toFile(folder).getAbsolutePath()));
-        } else {
-            for (FileObject fo : files) {
-                roots.add(FileUtil.toFile(fo));
-            }
-        }
-        return VCSContext.forFiles(roots);
-    }
-    
     /**
      * Tests whether the given file represents a flat folder (eg a java package), that is a folder 
      * that contains only its direct children.
@@ -166,17 +147,21 @@ public final class VCSContext {
     }
 
     /**
-     * Retrieves set of files/folders that are excluded from this context.
+     * Retrieves set of files/folders that are excluded from this context. Exclusions are files or folders that
+     * are descendants of a root folder and should NOT be a part of a versioning operation. For example, an CVS/Update command
+     * run on a project that contains a subproject should not touch any files in the subproject. Therefore the VCSContext for
+     * the action would contain one root file (the project's root) and one exclusion (subproject root).
      * 
-     * @return Set<File> set of Files that are not part of (are excluded from) this context
+     * @return Set<File> set of files and folders that are not part of (are excluded from) this context. 
+     * All their descendands are excluded too.
      */ 
     public Set<File> getExclusions() {
         return exclusions;
     }
 
     /**
-     * Determines whether the supplied File is contained in this context. In other words, the file must be either a root file
-     * or be a child under some root file and also must NOT be a child of some excluded file. 
+     * Determines whether the supplied File is contained in this context. In other words, the file must be either a root file/folder
+     * or be a descendant of a root folder and also must NOT be an excluded file/folder or be a descendant of an excluded folder. 
      * 
      * @param file a File to test
      * @return true if this context contains the supplied file, false otherwise 

@@ -32,6 +32,10 @@ import java.util.*;
  * - annotations (coloring, actions)
  * - file system handler
  * - diff provider
+ * 
+ * Versioning system registration is done via META-INF/services (default Lookup). Create a file named
+ * "org.netbeans.modules.versioning.spi.VersioningSystem" and place it inside your module's META-INF/services folder. 
+ * The file should only contain one the name of your VS implementation class, eg "org.mymodule.MyVersioningSystem".  
  *
  * @author Maros Sandor
  */

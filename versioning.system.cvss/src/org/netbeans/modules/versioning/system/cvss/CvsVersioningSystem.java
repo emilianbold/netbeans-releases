@@ -714,22 +714,18 @@ public class CvsVersioningSystem {
             super(working);
         }
 
-        protected void getOriginalFiles(File destination, Set<File> files) throws Exception {
-            for (File file : files) {
-                // TODO: it is not easy to tell whether the file is not yet versioned OR some real error occurred   
-                File original = VersionsCache.getInstance().getRemoteFile(file, VersionsCache.REVISION_BASE, null, true);
-                if (original == null) throw new IOException("Unable to get BASE revision of " + file);
+        public void getOriginalFile(File originalFile, File file) throws Exception {
+            // TODO: it is not easy to tell whether the file is not yet versioned OR some real error occurred   
+            File original = VersionsCache.getInstance().getRemoteFile(file, VersionsCache.REVISION_BASE, null, true);
+            if (original == null) throw new IOException("Unable to get BASE revision of " + file);
 
-                File daoFile = new File(destination, file.getName());
-                daoFile.deleteOnExit();
-                org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(daoFile), new FileInputStream(original)); 
-            }
+            org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original)); 
         }
 
         public void versioningEvent(VersioningEvent event) {
             if (FileStatusCache.EVENT_FILE_STATUS_CHANGED == event.getId()) {
                 File eventFile = (File) event.getParams()[0];
-                if (eventFile.equals(workingCopy)) {
+                if (eventFile.equals(getWorkingCopy())) {
                     support.firePropertyChange(PROP_CONTENT_CHANGED, null, null);
                 }
             }

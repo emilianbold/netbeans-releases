@@ -32,7 +32,11 @@ import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.VersioningManager;
+import org.netbeans.modules.versioning.Utils;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.filesystems.*;
 import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
@@ -679,7 +683,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             if (originalContent == null || originalContentBuffer != null && originalContentBufferSerial == serial) return;
             originalContentBufferSerial = serial;
 
-            Reader r = originalContent.getText();
+            Reader r = getText(originalContent);
             if (r == null) {
                 originalContentBuffer = null;
                 return;
@@ -694,6 +698,64 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             }
         }
     }
+
+    /**
+     * Gets the original content of the working copy. This method is typically only called after the OriginalContent
+     * object is created and once for every property change event. 
+     * 
+     * @param oc current OriginalContent
+     * @return Reader original content of the working copy or null if the original content is not available
+     */ 
+    private Reader getText(OriginalContent oc) {
+        FileObject fo = FileUtil.toFileObject(oc.getWorkingCopy());
+        if (fo == null) return null;
+        
+        File tempFolder = Utils.getTempFolder();
+        
+        Set<File> filesToCheckout = new HashSet<File>(2);
+        filesToCheckout.add(oc.getWorkingCopy());
+        DataObject dao = null;
+        try {
+            dao = DataObject.find(fo);
+            Set<FileObject> fileObjects = dao.files();
+            for (FileObject fileObject : fileObjects) {
+                File file = FileUtil.toFile(fileObject);
+                filesToCheckout.add(file);
+            }
+        } catch (DataObjectNotFoundException e) {
+            // no dataobject, never mind
+        }
+
+        try {
+            for (File file : filesToCheckout) {
+                File originalFile = new File(tempFolder, file.getName());
+                oc.getOriginalFile(originalFile, file);
+            }
+            return createReader(new File(tempFolder, oc.getWorkingCopy().getName()));
+        } catch (Exception e) {
+            // let providers raise errors when they feel appropriate
+            return null;
+        } finally {
+            Utils.deleteRecursively(tempFolder);
+        }
+    }
+    
+    private Reader createReader(File file) {
+        try {
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            DataObject dao = DataObject.find(fo);
+            EditorCookie ec = dao.getCookie(EditorCookie.class);
+            Document doc = ec.openDocument();
+            return new StringReader(doc.getText(0, doc.getLength()));
+        } catch (Exception e) {
+            // something's wrong, read the file from disk
+        }
+        try {
+            return new FileReader(file);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }    
     
     private class SidebarStreamSource extends StreamSource {
 

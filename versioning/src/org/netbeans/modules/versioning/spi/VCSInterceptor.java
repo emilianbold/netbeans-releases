@@ -42,7 +42,7 @@ public abstract class VCSInterceptor {
      * Notifies the interceptor that the file or folder is about to be deleted. The interceptor MUST NOT delete
      * the file here.
      * 
-     * @param file file to be deleted
+     * @param file a file or an empty folder to be deleted
      * @return true if this interceptor wants to handle this operation (doDelete will be called), false otherwise
      */
     public boolean beforeDelete(File file) {
@@ -54,7 +54,7 @@ public abstract class VCSInterceptor {
      * may decide to either delete the file or leave it intact. In case it does not want to delete the file, it should
      * just return without doing anything.
      * 
-     * @param file a file or an empty folder to delete
+     * @param file a file or an empty folder to delete; the interceptor will never be asked to delete a non-empty folder
      * @throws IOException if the delete operation failed
      */
     public void doDelete(File file) throws IOException {
@@ -76,7 +76,7 @@ public abstract class VCSInterceptor {
      * Notifies the interceptor that the file or folder is about to be moved. The interceptor MUST NOT move
      * the file here.
      * 
-     * @param from the file to be moved
+     * @param from the file or folder to be moved
      * @param to destination of the file being moved
      * @return true if this interceptor wants to handle this operation (doMove will be called), false otherwise
      */
@@ -87,7 +87,7 @@ public abstract class VCSInterceptor {
     /**
      * Called if beforeMove() returns true and delegates the move operation to this interceptor.
      * 
-     * @param from the file to be moved
+     * @param from the file or folder to be moved
      * @param to destination of the file being moved
      * @throws IOException if the move operation failed
      */

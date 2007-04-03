@@ -64,7 +64,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         VCSAnnotator an = vs.getVCSAnnotator();
         if (an == null) return null;
 
-        VCSContext context = VCSContext.forFileObjects(files);
+        VCSContext context = Utils.contextForFileObjects(files);
         return an.annotateIcon(icon, context);
     }
 
@@ -76,7 +76,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         VCSAnnotator an = vs.getVCSAnnotator();
         if (an == null) return null;
 
-        VCSContext context = VCSContext.forFileObjects(files);
+        VCSContext context = Utils.contextForFileObjects(files);
         return an.annotateName(name, context);
     }
 
@@ -130,7 +130,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
 
         public Action createContextAwareInstance(Lookup actionContext) {
-            return new RealVersioningSystemActions(system, VCSContext.forLookup(actionContext));
+            return new RealVersioningSystemActions(system, Utils.contextForLookup(actionContext));
         }
 
         public void setVersioninSystem(VersioningSystem system) {
