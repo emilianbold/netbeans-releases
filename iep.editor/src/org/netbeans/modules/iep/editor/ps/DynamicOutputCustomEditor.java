@@ -48,7 +48,7 @@ import org.openide.util.NbBundle;
  * @author Bing Lu
  */
 public class DynamicOutputCustomEditor extends DefaultCustomEditor {
-    private static final Logger mLog = Logger.getLogger(StaticIOCustomEditor.class.getName());
+    private static final Logger mLog = Logger.getLogger(DynamicOutputCustomEditor.class.getName());
     
     /** Creates a new instance of StaticIOCustomEditor */
     public DynamicOutputCustomEditor() {
