@@ -214,6 +214,7 @@ private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
 private void contButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_contButtonActionPerformed
     dialogDesc.setValue(DialogDescriptor.CONTINUE);
+    nbDir.setInstallDir(new File(dirTextField.getText()));
     setVisible(false);
 }//GEN-LAST:event_contButtonActionPerformed
 
@@ -227,7 +228,6 @@ private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         File file = chooser.getSelectedFile();
         // XXX do validation of entered userdir ???
         dirTextField.setText(file.getAbsolutePath());
-        nbDir.setInstallDir(file);
     }
 }//GEN-LAST:event_browseButtonActionPerformed
     

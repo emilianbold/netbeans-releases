@@ -80,25 +80,25 @@ public class SavedProjects {
     }
     
     public static class OneProject {
-    
+        
         private File folder;
-    
+        
         public OneProject(File dir) {
             folder = dir;
         }
-    
+        
         public String getProjectName() {
             return folder.getName();
         }
-    
+        
         public String getProjectPath() {
             return folder.getAbsolutePath();
         }
-    
+        
         public String toString() {
             return folder.getAbsolutePath();
         }
-    
+        
     }
     
 }
