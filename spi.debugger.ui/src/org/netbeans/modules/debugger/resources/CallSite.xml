@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     description_key='HINT_CALLSITE'
     localizing_bundle='org.netbeans.modules.debugger.resources.Bundle'
     visible='true'
-    glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/CallSite.gif'
+    glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/CallSite.png'
     highlight='0xE7E1EF'
     type='line'
 />
