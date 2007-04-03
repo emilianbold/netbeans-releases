@@ -360,9 +360,13 @@ public final class JPDAThreadImpl implements JPDAThread {
     }
     
     public void popFrames(StackFrame sf) throws IncompatibleThreadStateException {
-        threadReference.popFrames(sf);
-        cleanCachedFrames();
-        setReturnVariable(null); // Clear the return var
+        try {
+            threadReference.popFrames(sf);
+            cleanCachedFrames();
+            setReturnVariable(null); // Clear the return var
+        } catch (ObjectCollectedException ex) {
+            throw new IncompatibleThreadStateException("Thread died.");
+        }
     }
     
     /**
@@ -458,7 +462,11 @@ public final class JPDAThreadImpl implements JPDAThread {
     public void notifySuspended() {
         Boolean suspendedToFire = null;
         synchronized (this) {
-            suspendCount = threadReference.suspendCount();
+            try {
+                suspendCount = threadReference.suspendCount();
+            } catch (ObjectCollectedException ocex) {
+                return ; // The thread is gone
+            }
             if (!suspended && isThreadSuspended()) {
                 suspended = true;
                 suspendedToFire = Boolean.TRUE;
@@ -503,7 +511,11 @@ public final class JPDAThreadImpl implements JPDAThread {
      * @return monitor this thread is waiting on
      */
     public ObjectVariable getContendedMonitor () {
-        if (!threadReference.virtualMachine().canGetCurrentContendedMonitor()) {
+        try {
+            if (!threadReference.virtualMachine().canGetCurrentContendedMonitor()) {
+                return null;
+            }
+        } catch (ObjectCollectedException ocex) {
             return null;
         }
         try {
@@ -538,8 +550,12 @@ public final class JPDAThreadImpl implements JPDAThread {
      * @return monitors owned by this thread
      */
     public ObjectVariable[] getOwnedMonitors () {
-        if (!threadReference.virtualMachine().canGetOwnedMonitorInfo()) {
-            return new ObjectVariable[0];
+        try {
+            if (!threadReference.virtualMachine().canGetOwnedMonitorInfo()) {
+                return new ObjectVariable[0];
+            }
+        } catch (ObjectCollectedException ocex) {
+            return new ObjectVariable [0];
         }
         try {
             List l;
