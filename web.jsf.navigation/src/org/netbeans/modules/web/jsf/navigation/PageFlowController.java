@@ -248,6 +248,10 @@ public class PageFlowController {
         
         view.clearGraph();
         
+        if ( !pageName2Node.isEmpty() ) {
+            System.out.println("pageName2Node is not empty as expected.");
+        }
+        
         FacesConfig facesConfig = configModel.getRootComponent();
         
         if( facesConfig == null ) {
@@ -579,8 +583,26 @@ public class PageFlowController {
         }
         
         public void fileRenamed(FileRenameEvent fe) {
-            System.out.println("File Rename Event: " + fe);
+            /* fileRenamed should not modify the faces-config because it should
+             * be up to refactoring to do this. If that is the case, FacesModelPropertyChangeListener
+             * should reload it.  
+             * WARNING: Will get setup twice.*/
+            FileObject fileObj = fe.getFile();
+            
+            if( fileObj.isFolder() ){
+                //I may still need to modify display names.
+                return;
+            }
+            String pageDisplayName = fileObj.getNameExt();
+            //In this case we don't need to update webfiles since no files is being added or removed.
+            PageFlowNode node = pageName2Node.get(pageDisplayName);
+            if( node != null ) {
+                setupGraph();
+                view.layoutSceneImmediately();
+            }
+            
         }
+        
         public void fileFolderCreated(FileEvent fe) {
             fe.getFile().addFileChangeListener(fcl);
         }

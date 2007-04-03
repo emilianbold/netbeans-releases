@@ -146,5 +146,6 @@
                 <package>org.netbeans.modules.web.jsf.navigation</package>
             </friend-packages>
         </data>
+        <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit4"/>
     </configuration>
 </project>

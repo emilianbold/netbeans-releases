@@ -20,8 +20,11 @@ package org.netbeans.modules.web.jsf.navigation.graph;
 
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.AbstractQueue;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.web.jsf.navigation.PageFlowController;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.LinkCreateProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
@@ -38,7 +41,11 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import javax.swing.BorderFactory;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -125,6 +132,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         gglayout.setChecker(true);
         
         sceneLayout = LayoutFactory.createSceneGraphLayout(this, gglayout);
+        sceneLayout.invokeLayout();
         
         getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
             public void edit(Widget widget) {
@@ -178,10 +186,10 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         }
     }
     
-//    public boolean replacePageFlowNode( PageFlowNode oldNode, PageFlowNode newNode ){
-//        VMDNodeWidget widget = (VMDNodeWidget) findWidget(oldNode);
-//        widget.
-//    }
+    //    public boolean replacePageFlowNode( PageFlowNode oldNode, PageFlowNode newNode ){
+    //        VMDNodeWidget widget = (VMDNodeWidget) findWidget(oldNode);
+    //        widget.
+    //    }
     
     /**
      * Implements attaching a widget to a node. The widget is VMDNodeWidget and has object-hover, select, popup-menu and move actions.
@@ -213,12 +221,58 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         nodeWidget.getActions().addAction(selectAction);
         nodeWidget.getActions().addAction(moveAction);
         nodeWidget.setMinimized(true);
+        nodeWidget.setPreferredLocation(getPreferredNodePosition(nodeWidget));
+        
         //        nodeWidget.getActions().addAction(createActionMap());
         //        nodeWidget.getActions ().addAction (popupGraphAction);
         //        imageWidget.getActions().addAction(connectAction);
         
         return nodeWidget;
     }
+    
+    private static final int VERTICAL_SEPARATION = 100;
+    private static final int HORIZONTAL_SEPARATION = 200;
+    private static final int BORDER_OFFSET=50;
+    private Map<VMDNodeWidget,Point> nodeWidget2Point = new HashMap<VMDNodeWidget,Point>();
+    private int VMDNodeNumber = 0;
+    
+   
+    
+    private Point getPreferredNodePosition(VMDNodeWidget widget) {
+        Rectangle bounds =  this.getMaximumBounds();
+        System.out.println("Bounds: " + bounds);
+//        int maxColumn = bounds.x/HORIZONTAL_SEPARATION;
+        Rectangle visibleRect = tc.getVisibleRect();
+        int maxColumn = (visibleRect.width - BORDER_OFFSET)/ HORIZONTAL_SEPARATION;
+        
+        /* If the window is too small, then just set it to 3. */
+        if( maxColumn < 3 ){
+            maxColumn = 3;
+        }
+        Point testPoint = null;
+        Collection<PageFlowNode> pages = getNodes();
+        int i = pages.size(); //Node location number
+        int column = (i/maxColumn);
+        int row = (i)%maxColumn;
+        int verticalPosition = (column * VERTICAL_SEPARATION);
+        int horizontalPosition = (row * HORIZONTAL_SEPARATION);
+        testPoint = new Point(horizontalPosition + BORDER_OFFSET,verticalPosition + BORDER_OFFSET);
+        VMDNodeNumber++;
+        return testPoint;
+    }
+    
+    
+    private Queue emptyPositions = new LinkedList();
+    
+    @Override
+    protected void detachNodeWidget(org.netbeans.modules.web.jsf.navigation.PageFlowController.PageFlowNode node,
+                                    Widget widget) {
+//        Point p = widget.getPreferredLocation();
+//        if ( (p.getX() - BORDER_OFFSET) %
+        super.detachNodeWidget(node, widget);
+        
+    }
+
     
     
     private static class DefaultAnchorWidget extends ImageWidget{
@@ -241,9 +295,9 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     
     
     /**
-     * 
-     * @param pageNode 
-     * @return 
+     *
+     * @param pageNode
+     * @return
      */
     public PinNode getDefaultPin( PageFlowNode pageNode ){
         Collection<PinNode> pins = getNodePins(pageNode);
@@ -259,7 +313,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
      * Implements attaching a widget to a pin. The widget is VMDPinWidget and has object-hover and select action.
      * The the node id ends with "#default" then the pin is the default pin of a node and therefore it is non-visual.
      * @param node the node
-     * @param pinNode 
+     * @param pinNode
      * @return the widget attached to the pin, null, if it is a default pin
      */
     protected Widget attachPinWidget(PageFlowNode node, PinNode pinNode) {
@@ -427,7 +481,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
             }
             
             ((LabelWidget)widget).setLabel(newName);
-                
+            
         }
     }
     
@@ -460,9 +514,9 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
                 pageNode.setName(text);
                 newName = pageNode.getDisplayName();
                 
-//                if( oldName != newName ) {
-//                    renamePin(pageNode, oldName + "pin", newName + "pin");
-//                }
+                //                if( oldName != newName ) {
+                //                    renamePin(pageNode, oldName + "pin", newName + "pin");
+                //                }
                 
                 ((LabelWidget) widget).setLabel(newName);
                 validate();
@@ -473,54 +527,54 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         
     }
     
-//    private void renamePin( Node pageNode, PinNode oldPinName, PinNode newPinName ){
-//        assert pageNode != null;
-//        assert oldPinName != null;
-//        assert newPinName != null;
-//        
-//        Collection<NavigationCaseNode> navSourceCases;
-//        Collection<NavigationCaseNode> navTargetCases;
-//        
-//        if( oldPinName.equals(newPinName) ){
-//            //Don't do anything if they have the same name.
-//            return;
-//        }
-//        
-//        
-//        //Workaround: http://www.netbeans.org/issues/show_bug.cgi?id=98742 
-//        try {
-//            navSourceCases = findPinEdges(oldPinName, true, false);
-//        } catch(NullPointerException npe) {
-//            npe.printStackTrace();
-//            System.err.println("Null Pointer Caught: ");
-//            System.err.println("http://www.netbeans.org/issues/show_bug.cgi?id=98742");
-//            navSourceCases = new ArrayList();
-//        }
-//        
-//        //Workaround: http://www.netbeans.org/issues/show_bug.cgi?id=98742 
-//        try {
-//            navTargetCases = findPinEdges(oldPinName, false, true);
-//        } catch(NullPointerException npe) {
-//            npe.printStackTrace();
-//            System.err.println("Null Pointer Caught: ");
-//            System.err.println("http://www.netbeans.org/issues/show_bug.cgi?id=98742");
-//            navTargetCases = new ArrayList();
-//        }        
-//        
-//        removePin(oldPinName);
-//        addPin(pageNode, newPinName);
-//        
-//        //Doing this to make sure the associate pins are taken care of.
-//        for( NavigationCaseNode navSourceCase : navSourceCases){
-//            attachEdgeSourceAnchor(navSourceCase, oldPinName, newPinName);
-//        }
-//        
-//        for( NavigationCaseNode navTargetCase : navTargetCases){
-//            attachEdgeTargetAnchor(navTargetCase, oldPinName, newPinName);
-//        }
-//        
-//        
-//    }
+    //    private void renamePin( Node pageNode, PinNode oldPinName, PinNode newPinName ){
+    //        assert pageNode != null;
+    //        assert oldPinName != null;
+    //        assert newPinName != null;
+    //
+    //        Collection<NavigationCaseNode> navSourceCases;
+    //        Collection<NavigationCaseNode> navTargetCases;
+    //
+    //        if( oldPinName.equals(newPinName) ){
+    //            //Don't do anything if they have the same name.
+    //            return;
+    //        }
+    //
+    //
+    //        //Workaround: http://www.netbeans.org/issues/show_bug.cgi?id=98742
+    //        try {
+    //            navSourceCases = findPinEdges(oldPinName, true, false);
+    //        } catch(NullPointerException npe) {
+    //            npe.printStackTrace();
+    //            System.err.println("Null Pointer Caught: ");
+    //            System.err.println("http://www.netbeans.org/issues/show_bug.cgi?id=98742");
+    //            navSourceCases = new ArrayList();
+    //        }
+    //
+    //        //Workaround: http://www.netbeans.org/issues/show_bug.cgi?id=98742
+    //        try {
+    //            navTargetCases = findPinEdges(oldPinName, false, true);
+    //        } catch(NullPointerException npe) {
+    //            npe.printStackTrace();
+    //            System.err.println("Null Pointer Caught: ");
+    //            System.err.println("http://www.netbeans.org/issues/show_bug.cgi?id=98742");
+    //            navTargetCases = new ArrayList();
+    //        }
+    //
+    //        removePin(oldPinName);
+    //        addPin(pageNode, newPinName);
+    //
+    //        //Doing this to make sure the associate pins are taken care of.
+    //        for( NavigationCaseNode navSourceCase : navSourceCases){
+    //            attachEdgeSourceAnchor(navSourceCase, oldPinName, newPinName);
+    //        }
+    //
+    //        for( NavigationCaseNode navTargetCase : navTargetCases){
+    //            attachEdgeTargetAnchor(navTargetCase, oldPinName, newPinName);
+    //        }
+    //
+    //
+    //    }
     
     
 }

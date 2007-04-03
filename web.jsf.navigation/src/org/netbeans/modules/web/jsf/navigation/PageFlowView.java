@@ -109,12 +109,14 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
             //            } catch ( DataObjectNotFoundException donfe) {
             //                donfe.printStackTrace();
             //            }
-            PaletteController paletteController = getPaletteController();
-            if (paletteController == null) {
+            
+            /* Temporarily Removing Palette */
+//            PaletteController paletteController = getPaletteController();
+//            if (paletteController == null) {
                 lookup = new ProxyLookup(new Lookup[] {superLookup});
-            } else {
-                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] { paletteController})});
-            }
+//            } else {
+//                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] { paletteController})});
+//            }
             
             lookupWRef = new WeakReference<Lookup>(lookup);
         }
@@ -196,7 +198,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public void layoutSceneImmediately() {
-        scene.layoutSceneImmediately();
+//        scene.layoutSceneImmediately();
     }
     
     
