@@ -411,6 +411,9 @@ A widget placement is resolved by a layout associated to its parent widget. The 
 <p>
 The <code>LabelWidget</code> represents a single line text. You can manipulate with the text using <code>getLabel</code> and <code>setLabel</code> methods or using a constructor parameter. The widget is not-opaque by default and uses foreground, background and font properties for rendering. The text could be aligned to the left (by default), right or center within the widget. The widget origin is a point on the left side of the baseline of the text.
 
+<p>
+Since version 2.1 the LabelWidget allows rendering vertical labels. It can be set by calling <code>LabelWidget.setOrientation</code> method. Default value is <code>LabelWidget.Orientation.NORMAL</code> which renders labels horizontally. The other value is <code>LabelWidget.Orientation.ROTATE_90</code> which makes the label to render vertically.
+
 <a name="ImageWidget">
 <h3>ImageWidget</h3>
 

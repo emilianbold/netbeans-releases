@@ -28,6 +28,8 @@ import java.util.logging.Logger;
 public final class GeomUtil {
 
     public static final Logger LOG = Logger.getLogger ("org.netbeans.api.visual"); // NOI18N 
+    
+    public static final double M_PI_2 = Math.PI / 2;
 
     private GeomUtil () {
     }

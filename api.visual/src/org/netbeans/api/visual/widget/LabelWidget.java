@@ -21,6 +21,7 @@ package org.netbeans.api.visual.widget;
 import org.netbeans.modules.visual.util.GeomUtil;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -45,10 +46,19 @@ public class LabelWidget extends Widget {
     public enum VerticalAlignment {
         TOP, BOTTOM, CENTER, BASELINE
     }
+    
+    /**
+     * The text orientation
+     * @since 2.1
+     */
+    public enum Orientation {
+        NORMAL, ROTATE_90//, ROTATE_180, ROTATE_270, MIRROR, MIRROR_ROTATE_90, MIRROR_ROTATE_180, MIRROR_ROTATE_270
+    }
 
     private String label;
     private Alignment alignment = Alignment.LEFT;
     private VerticalAlignment verticalAlignment = VerticalAlignment.BASELINE;
+    private Orientation orientation = Orientation.NORMAL;
     private boolean paintAsDisabled;
 
     /**
@@ -126,6 +136,25 @@ public class LabelWidget extends Widget {
     }
 
     /**
+     * Gets a text orientation.
+     * @return the text orientation
+     * @since 2.1
+     */
+    public Orientation getOrientation() {
+        return orientation;
+    }
+
+    /**
+     * Sets a text orientation.
+     * @param orientation the text orientation
+     * @since 2.1
+     */
+    public void setOrientation(Orientation orientation) {
+        this.orientation = orientation;
+        revalidate();
+    }
+
+    /**
      * Returns whether the label is painted as disabled.
      * @return true, if the label is painted as disabled
      */
@@ -154,7 +183,15 @@ public class LabelWidget extends Widget {
         Graphics2D gr = getGraphics ();
         FontMetrics fontMetrics = gr.getFontMetrics (getFont ());
         Rectangle2D stringBounds = fontMetrics.getStringBounds (label, gr);
-        return GeomUtil.roundRectangle (stringBounds);
+        Rectangle rectangle = GeomUtil.roundRectangle (stringBounds);
+        switch (orientation) {
+            case NORMAL:
+                return rectangle;
+            case ROTATE_90:
+                return new Rectangle (rectangle.y, - rectangle.x - rectangle.width, rectangle.height, rectangle.width);
+            default:
+                throw new IllegalStateException ();
+        }
     }
 
     /**
@@ -170,52 +207,112 @@ public class LabelWidget extends Widget {
         Rectangle clientArea = getClientArea ();
 
         int x;
-        switch (alignment) {
-            case BASELINE:
-                x = 0;
+        int y;
+
+        switch (orientation) {
+            case NORMAL:
+
+                switch (alignment) {
+                    case BASELINE:
+                        x = 0;
+                        break;
+                    case LEFT:
+                        x = clientArea.x;
+                        break;
+                    case CENTER:
+                        x = clientArea.x + (clientArea.width - fontMetrics.stringWidth (label)) / 2;
+                        break;
+                    case RIGHT:
+                        x = clientArea.x + clientArea.width - fontMetrics.stringWidth (label);
+                        break;
+                    default:
+                        return;
+                }
+
+                switch (verticalAlignment) {
+                    case BASELINE:
+                        y = 0;
+                        break;
+                    case TOP:
+                        y = clientArea.y + fontMetrics.getAscent ();
+                        break;
+                    case CENTER:
+                        y = clientArea.y + (clientArea.height + fontMetrics.getAscent () - fontMetrics.getDescent ()) / 2;
+                        break;
+                    case BOTTOM:
+                        y = clientArea.y + clientArea.height - fontMetrics.getDescent ();
+                        break;
+                    default:
+                        return;
+                }
+
                 break;
-            case LEFT:
-                x = clientArea.x;
-                break;
-            case CENTER:
-                x = clientArea.x + (clientArea.width - fontMetrics.stringWidth (label)) / 2;
-                break;
-            case RIGHT:
-                x = clientArea.x + clientArea.width - fontMetrics.stringWidth (label);
+            case ROTATE_90:
+
+                switch (alignment) {
+                    case BASELINE:
+                        x = 0;
+                        break;
+                    case LEFT:
+                        x = clientArea.x + fontMetrics.getAscent ();
+                        break;
+                    case CENTER:
+                        x = clientArea.x + (clientArea.width + fontMetrics.getAscent () - fontMetrics.getDescent ()) / 2;
+                        break;
+                    case RIGHT:
+                        x = clientArea.x + clientArea.width - fontMetrics.getDescent ();
+                        break;
+                    default:
+                        return;
+                }
+
+                switch (verticalAlignment) {
+                    case BASELINE:
+                        y = 0;
+                        break;
+                    case TOP:
+                        y = clientArea.y + fontMetrics.stringWidth (label);
+                        break;
+                    case CENTER:
+                        y = clientArea.y + (clientArea.height + fontMetrics.stringWidth (label)) / 2;
+                        break;
+                    case BOTTOM:
+                        y = clientArea.y + clientArea.height;
+                        break;
+                    default:
+                        return;
+                }
+
                 break;
             default:
                 return;
         }
 
-        int y;
-        switch (verticalAlignment) {
-            case BASELINE:
-                y = 0;
+        AffineTransform previousTransform = gr.getTransform ();
+        gr.translate (x, y);
+        switch (orientation) {
+            case NORMAL:
                 break;
-            case TOP:
-                y = clientArea.y + fontMetrics.getAscent ();
-                break;
-            case CENTER:
-                y = clientArea.y + (clientArea.height + fontMetrics.getAscent () - fontMetrics.getDescent ()) / 2;
-                break;
-            case BOTTOM:
-                y = clientArea.y + fontMetrics.getAscent () + clientArea.height - fontMetrics.getDescent ();
+            case ROTATE_90:
+                gr.rotate (- GeomUtil.M_PI_2);
                 break;
             default:
-                return;
+                throw new IllegalStateException ();
         }
 
         Paint background = getBackground ();
         if (paintAsDisabled  &&  background instanceof Color) {
             Color color = ((Color) background);
             gr.setColor (color.brighter ());
-            gr.drawString (label, x + 1, y + 1);
+            gr.drawString (label, 1, 1);
             gr.setColor (color.darker ());
-            gr.drawString (label, x, y);
+            gr.drawString (label, 0, 0);
         } else {
             gr.setColor (getForeground ());
-            gr.drawString (label, x, y);
+            gr.drawString (label, 0, 0);
         }
+        
+        gr.setTransform(previousTransform);
     }
 
 }
