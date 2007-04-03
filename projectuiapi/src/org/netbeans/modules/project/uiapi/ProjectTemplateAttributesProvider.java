@@ -43,8 +43,8 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
             DataObject template, DataFolder target, String name) {
         
         Project prj = FileOwnerQuery.getOwner(target.getPrimaryFile());
+        Map<String, Object> all = null;
         if (prj != null) {
-            Map<String, Object> all = null;
             for (CreateFromTemplateAttributesProvider attrs : prj.getLookup().lookupAll(CreateFromTemplateAttributesProvider.class)) {
                 Map<String, ? extends Object> m = attrs.attributesFor(template, target, name);
                 if (m != null) {
@@ -54,10 +54,9 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
                     all.putAll(m);
                 }
             }
-            return checkProjectLicense(all);
         }
         
-        return null;
+        return checkProjectLicense(all);
     }
     
     private static Map<String, ? extends Object> checkProjectLicense(Map<String, Object> m) {
