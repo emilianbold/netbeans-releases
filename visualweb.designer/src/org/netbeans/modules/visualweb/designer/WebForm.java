@@ -2027,9 +2027,9 @@ public class WebForm implements Designer {
 //        htmlDomProvider.setModelActivated(activated);
 //    }
 
-    UndoRedo getUndoManager() {
-        return htmlDomProvider.getUndoManager();
-    }
+//    UndoRedo getUndoManager() {
+//        return htmlDomProvider.getUndoManager();
+//    }
 
     public boolean isModelBusted() {
         return htmlDomProvider.isModelBusted();
