@@ -1,7 +1,7 @@
 package @@PACKAGENAME@@;
 
 import java.io.Serializable;
-import org.openide.ErrorManager;
+import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -67,14 +67,14 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
     public static synchronized @@TEMPLATENAME@@TopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
-                    "Cannot find MyWindow component. It will not be located properly in the window system.");
+            Logger.getLogger(@@TEMPLATENAME@@TopComponent.class.getName()).warning(
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
             return getDefault();
         }
         if (win instanceof @@TEMPLATENAME@@TopComponent) {
             return (@@TEMPLATENAME@@TopComponent)win;
         }
-        ErrorManager.getDefault().log(ErrorManager.WARNING,
+        Logger.getLogger(@@TEMPLATENAME@@TopComponent.class.getName()).warning(
                 "There seem to be multiple components with the '" + PREFERRED_ID +
                 "' ID. That is a potential source of errors and unexpected behavior.");
         return getDefault();
