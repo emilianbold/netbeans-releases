@@ -52,7 +52,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
@@ -65,7 +64,7 @@ import org.openidex.search.SearchInfoFactory;
  * @author Petr Hrebejk
  */
 public class ProjectsRootNode extends AbstractNode {
-    
+
     static final int PHYSICAL_VIEW = 0;
     static final int LOGICAL_VIEW = 1;
         
@@ -125,22 +124,21 @@ public class ProjectsRootNode extends AbstractNode {
         ProjectChildren ch = (ProjectChildren)getChildren();
         
         if ( ch.type == LOGICAL_VIEW ) {
-            Node[] nodes = ch.getNodes( true );
             // Speed up search in case we have an owner project - look in its node first.
             Project ownerProject = FileOwnerQuery.getOwner(target);
             for (int lookOnlyInOwnerProject = (ownerProject != null) ? 0 : 1; lookOnlyInOwnerProject < 2; lookOnlyInOwnerProject++) {
-                for (int i = 0; i < nodes.length; i++) {
-                    Project p = (Project) nodes[i].getLookup().lookup(Project.class);
-                    assert p != null : "Should have had a Project in lookup of " + nodes[i];
+                for (Node node : ch.getNodes(true)) {
+                    Project p = node.getLookup().lookup(Project.class);
+                    assert p != null : "Should have had a Project in lookup of " + node;
                     if (lookOnlyInOwnerProject == 0 && p != ownerProject) {
                         continue; // but try again (in next outer loop) as a fallback
                     }
-                    LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
+                    LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
                     if (lvp != null) {
                         // XXX (cf. #63554): really should be calling this on DataObject usually, since
                         // DataNode does *not* currently have a FileObject in its lookup (should it?)
                         // ...but it is not clear who has implemented findPath to assume FileObject!
-                        Node selectedNode = lvp.findPath(nodes[i], target);
+                        Node selectedNode = lvp.findPath(node, target);
                         if (selectedNode != null) {
                             return selectedNode;
                         }
@@ -151,12 +149,11 @@ public class ProjectsRootNode extends AbstractNode {
             
         }
         else if ( ch.type == PHYSICAL_VIEW ) {
-            Node[] nodes = ch.getNodes( true );
-            for( int i = 0; i < nodes.length; i++  ) {
+            for (Node node : ch.getNodes(true)) {
                 // XXX could do similar optimization as for LOGICAL_VIEW; every nodes[i] must have some Project in its lookup
-                PhysicalView.PathFinder pf = (PhysicalView.PathFinder)nodes[i].getLookup().lookup( PhysicalView.PathFinder.class );
+                PhysicalView.PathFinder pf = node.getLookup().lookup(PhysicalView.PathFinder.class);
                 if ( pf != null ) {
-                    Node n = pf.findPath( nodes[i], target );
+                    Node n = pf.findPath(node, target);
                     if ( n != null ) {
                         return n;
                     }
@@ -311,11 +308,10 @@ public class ProjectsRootNode extends AbstractNode {
             super( n,
                    null,                //default children
                    addSearchInfo
-                   ? new ProxyLookup( new Lookup[] {
+                   ? new ProxyLookup(
                          n.getLookup(),
                          Lookups.singleton(alwaysSearchableSearchInfo(SearchInfoFactory
-                                            .createSearchInfoBySubnodes(n))),
-                    })
+                                            .createSearchInfoBySubnodes(n))))
                    : n.getLookup() );
             OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         }
@@ -346,7 +342,7 @@ public class ProjectsRootNode extends AbstractNode {
         }
 
         private boolean isMain() {
-            Project p = (Project)getLookup().lookup( Project.class );
+            Project p = getLookup().lookup(Project.class);
             return p != null && OpenProjectList.getDefault().isMainProject( p );
         }
         
