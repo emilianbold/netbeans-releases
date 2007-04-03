@@ -21,12 +21,12 @@ package org.netbeans.modules.compapp.casaeditor.nodes.actions;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -38,17 +38,17 @@ import org.openide.util.Utilities;
 public class BuildAction extends AbstractAction {
     
     private static final Image ICON_IMAGE = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/nodes/resources/BuildProject.png");
+            "org/netbeans/modules/compapp/casaeditor/nodes/resources/BuildProject.png"); // NOI18N
     
     private WeakReference mReference;
     
     
     public BuildAction(CasaWrapperModel model) {
         super(
-                NbBundle.getMessage(BuildAction.class, "TXT_Build"),
+                NbBundle.getMessage(BuildAction.class, "TXT_Build"), // NOI18N
                 new ImageIcon(ICON_IMAGE));
         mReference = new WeakReference(model);
-    }    
+    }
     
     public void actionPerformed(ActionEvent e) {
         CasaWrapperModel model = (CasaWrapperModel) mReference.get();
@@ -57,8 +57,8 @@ public class BuildAction extends AbstractAction {
                 Project jbiProject = model.getJBIProject();
                 ActionProvider actionProvider =
                         (ActionProvider) jbiProject.getLookup().lookup(ActionProvider.class);
-                actionProvider.invokeAction(ActionProvider.COMMAND_BUILD, null);
-            } catch (IOException ex) {
+                actionProvider.invokeAction(JbiProjectConstants.COMMAND_JBIBUILD, null);
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
