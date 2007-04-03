@@ -157,6 +157,8 @@ public class RaveFacesContext extends FacesContext {
      */
     public void resetApplication() {
         try {
+            
+            setCurrentInstance(this);
                        
             // Set the ExternalContext in the ThreadLocal storage. The
             // ApplicationAssociate looks for this and throws an exception
