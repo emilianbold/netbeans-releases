@@ -43,12 +43,10 @@ import com.tomsawyer.drawing.TSDNode;
 import com.tomsawyer.editor.TSEGraph;
 import com.tomsawyer.editor.TSENode;
 import com.tomsawyer.editor.command.TSEAddNodeCommand;
-import com.tomsawyer.editor.ui.TSENodeUI;
 import com.tomsawyer.graph.TSNode;
-//import com.tomsawyer.util.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
-//import com.tomsawyer.util.TSPoint;
 import com.tomsawyer.drawing.geometry.TSPoint;
+import java.util.List;
 
 
 /**
@@ -61,7 +59,7 @@ public class ADDiagramAddInterfaceTool extends ADAddNodeEdgeTool  {
 	}
 	
 	private TSENode m_createdPortNode = null;
-	private boolean connectedEdge = false;
+	
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.diagramtools.ADCreateEdgeState#getObject(java.awt.event.MouseEvent)
 	 */
@@ -262,24 +260,28 @@ public class ADDiagramAddInterfaceTool extends ADAddNodeEdgeTool  {
     */
    public void cancelAction()
    {
-      if (m_createdPortNode != null && connectedEdge == false &&
-		m_createdPortNode instanceof IETNode)
+      if (m_createdPortNode != null &&
+            m_createdPortNode instanceof IETNode)
       {
-			IETNode etNode = (IETNode)m_createdPortNode;
-			etNode.invalidate();
-			etNode.delete();
-			m_createdPortNode = null;
+         IETNode etNode = (IETNode) m_createdPortNode;
+         // Check if the port node has any edge connected to and from other nodes.  
+         // If not, delete the port.
+         
+         List portEdges = etNode.getEdges();
+         if ( portEdges == null  || portEdges.size() == 0)
+         {
+            etNode.invalidate();
+            etNode.delete();
+            m_createdPortNode = null;
+         }
       }
-      
-		connectedEdge = false;
       super.cancelAction();
    }
 
-	protected void postConnectEdge()
-	{
-		super.postConnectEdge();
-		connectedEdge = true;
-	}
+   protected void postConnectEdge()
+   {
+      super.postConnectEdge();
+   }
 
 
    /* (non-Javadoc)
