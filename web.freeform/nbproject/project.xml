@@ -224,6 +224,9 @@ Microsystems, Inc. All Rights Reserved.
                     <test-dependency>
                         <code-name-base>org.openide.options</code-name-base>
                     </test-dependency>
+                    <test-dependency>
+                      <code-name-base>org.netbeans.libs.freemarker</code-name-base>
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>
