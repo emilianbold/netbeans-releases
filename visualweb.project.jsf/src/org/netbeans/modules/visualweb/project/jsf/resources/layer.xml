@@ -30,14 +30,10 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="raveSeparator1.instance/org-netbeans-modules-visualweb-project-jsf-actions-ImportAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-visualweb-project-jsf-actions-ImportAction.instance"/>
             <attr name="org-netbeans-modules-visualweb-project-jsf-actions-ImportAction.instance/Separator2.instance" boolvalue="true"/>
-        </folder>  <!-- File -->
-       
-        <folder name="Tools">
-            <file name="org-netbeans-modules-visualweb-project-jsf-actions-ProjectTemplateManagerAction.instance"/>
         </folder>
     </folder>
 
-    <!-- The following definition is needed for the framework approach. -->
+    <!-- The following definition is for the framework. -->
     <folder name="j2ee">
         <folder name="webtier">
             <folder name="framework">
@@ -56,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Templates">
-        <!-- The following templates are needed for the framework approach. -->
+        <!-- The following templates are for the framework. -->
         <folder name="JSP_Servlet">
             <attr name="JSP.jsp/Page.jsp" boolvalue="true"/>
             <file name="Page.jsp" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/Page.jsp.template">
