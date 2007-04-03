@@ -907,18 +907,18 @@ public class WebForm implements Designer {
 //        return (RaveElement)body;
 //    }
 
-    /**
-     * Clears the HTML DOM associated with the source JSPX DOM
-     * returned by {@link getDom}.
-     * @param html A DocumentFragment which represents a rendered
-     * view of the JSPX DOM.
-     */
-    public void clearHtml() {
-//        this.html = null;
-//        this.body = null; // force new search
-//        InSyncService.getProvider().clearHtmlForMarkupFile(getModel().getMarkupFile());
-        htmlDomProvider.clearHtml();
-    }
+//    /**
+//     * Clears the HTML DOM associated with the source JSPX DOM
+//     * returned by {@link getDom}.
+//     * @param html A DocumentFragment which represents a rendered
+//     * view of the JSPX DOM.
+//     */
+//    public void clearHtml() {
+////        this.html = null;
+////        this.body = null; // force new search
+////        InSyncService.getProvider().clearHtmlForMarkupFile(getModel().getMarkupFile());
+//        htmlDomProvider.clearHtml();
+//    }
 
 //    public MarkupUnit getMarkup() {
 //        return getModel().getMarkupUnit();

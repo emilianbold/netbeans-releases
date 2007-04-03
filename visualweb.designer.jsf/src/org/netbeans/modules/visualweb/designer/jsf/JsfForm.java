@@ -1246,7 +1246,8 @@ public class JsfForm {
     }
     
     public /*private*/ void clearHtml() {
-        htmlDomProvider.clearHtml();
+//        htmlDomProvider.clearHtml();
+        getFacesModel().clearHtml();
     }
     
     public DataObject getJspDataObject() {

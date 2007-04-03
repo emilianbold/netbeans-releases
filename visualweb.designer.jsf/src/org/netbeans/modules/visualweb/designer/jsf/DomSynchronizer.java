@@ -1110,7 +1110,8 @@ FacesDndSupport.UpdateSuspender {
     private void processRefresh() {
         // XXX Revise this method, it might be meaningless here now.
 //        webform.clearHtml();
-        jsfForm.getHtmlDomProvider().clearHtml();
+//        jsfForm.getHtmlDomProvider().clearHtml();
+        jsfForm.clearHtml();
 
         // Intentional side-effect -- cause re-generation of html dom
         DocumentFragment html = jsfForm.getHtmlDomProvider().getHtmlDocumentFragment();
