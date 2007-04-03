@@ -21,7 +21,6 @@ package org.netbeans.modules.visualweb.designer.jsf.ui;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.ErrorPanel;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Point;
@@ -359,8 +358,11 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //                } else {
 //                    ((RenderErrorPanel)comp).updateErrors();
 //                }
-                if (comp instanceof ErrorPanel) {
-                    ((ErrorPanel)comp).updateErrors();
+//                if (comp instanceof ErrorPanel) {
+//                    ((ErrorPanel)comp).updateErrors();
+//                }
+                if (comp instanceof JsfForm.ErrorPanel) {
+                    ((JsfForm.ErrorPanel)comp).updateErrors();
                 }
             }
 
@@ -2108,7 +2110,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        }
 //    } // End of DesignerComplibListener
     
-    private static class ErrorPanelCallbackImpl implements HtmlDomProvider.ErrorPanelCallback {
+    private static class ErrorPanelCallbackImpl implements JsfForm.ErrorPanelCallback {
 //        private final WebForm webForm;
 //        private final JsfForm jsfForm;
 //        private final Designer designer;

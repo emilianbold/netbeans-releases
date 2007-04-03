@@ -55,8 +55,10 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
+import org.netbeans.modules.visualweb.designer.jsf.ui.ErrorPanelImpl;
 import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
 import org.netbeans.modules.visualweb.designer.jsf.ui.NotAvailableMultiViewElement;
+import org.netbeans.modules.visualweb.designer.jsf.ui.RenderErrorPanelImpl;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.Unit;
 import org.netbeans.modules.visualweb.insync.Util;
@@ -1305,9 +1307,36 @@ public class JsfForm {
         return htmlDomProvider.hasRenderingErrors();
     }
     
-    public JComponent getErrorPanel(HtmlDomProvider.ErrorPanelCallback errorPanelCallback) {
-        return (JComponent)htmlDomProvider.getErrorPanel(errorPanelCallback);
-    } 
+    public JComponent getErrorPanel(ErrorPanelCallback errorPanelCallback) {
+//        return (JComponent)htmlDomProvider.getErrorPanel(errorPanelCallback);
+        FacesModel facesModel = getFacesModel();
+        if (facesModel.isBusted()) {
+            return new ErrorPanelImpl(facesModel, facesModel.getErrors(), errorPanelCallback);
+        } else {
+            return new RenderErrorPanelImpl(facesModel, errorPanelCallback, new RenderErrorPanelImpl.RenderFailureProvider() {
+                public Exception getRenderFailureException() {
+                    return JsfForm.this.getRenderFailureException();
+                }
+                public MarkupDesignBean getRenderFailureComponent() {
+                    return JsfForm.this.getRenderFailureComponent();
+                }
+            });
+        }
+    }
+
+    // XXX
+    public interface ErrorPanel {
+        public void updateErrors();
+    } // End of  ErrorPanel.
+    // XXX Hack for the impls. Ged rid of this.
+    public interface ErrorPanelCallback {
+        public void updateTopComponentForErrors();
+        public void setRenderFailureShown(boolean shown);
+//        public Exception getRenderFailure();
+//        public MarkupDesignBean getRenderFailureComponent();
+        public void handleRefresh(boolean showErrors);
+    } // End of ErrorPanelCallback.
+
     
     public boolean isSourceDirty() {
 //        return htmlDomProvider.isSourceDirty();

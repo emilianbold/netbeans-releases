@@ -56,6 +56,7 @@ import javax.xml.parsers.DocumentBuilder;
 
 import org.netbeans.api.diff.Diff;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -72,9 +73,11 @@ import org.w3c.tidy.Tidy;
 
 import org.xml.sax.EntityResolver;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.ErrorPanelCallback;
 import org.netbeans.modules.visualweb.insync.ParserAnnotation;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
+
+
+// XXX Moved from designer/ErrorPanel.
 
 
 // XXX Moved from designer/ErrorPanel.
@@ -90,12 +93,12 @@ import org.netbeans.modules.visualweb.insync.models.FacesModel;
  * @author  Tor Norbye
  */
 public class ErrorPanelImpl extends JPanel
-implements org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.ErrorPanel {
+implements JsfForm.ErrorPanel {
     private ParserAnnotation[] errors;
     private DefaultListModel model;
 //    private WebForm webform;
     private final FacesModel facesModel;
-    private final ErrorPanelCallback errorPanelCallback;
+    private final JsfForm.ErrorPanelCallback errorPanelCallback;
     private ParserAnnotation activated = null;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -111,7 +114,7 @@ implements org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.ErrorPane
 
     /** Creates new form ErrorPanel */
     public ErrorPanelImpl(/*WebForm webform,*/FacesModel facesModel, final ParserAnnotation[] errors,
-            ErrorPanelCallback errorPanelCallback) {
+    JsfForm.ErrorPanelCallback errorPanelCallback) {
 //        if(DesignerUtils.DEBUG) {
 //            DesignerUtils.debugLog(getClass().getName() + "()");
 //        }

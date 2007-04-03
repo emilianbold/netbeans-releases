@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.visualweb.designer.jsf.ui;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.ErrorPanel;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.ErrorPanelCallback;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import java.awt.Color;
@@ -30,7 +28,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.openide.util.NbBundle;
+
+
+// XXX Moved from designer/RenderErrorPanel.
 
 
 // XXX Moved from designer/RenderErrorPanel.
@@ -45,10 +47,10 @@ import org.openide.util.NbBundle;
  *
  * @author  Tor Norbye
  */
-public class RenderErrorPanelImpl extends JPanel implements ActionListener, ErrorPanel {
+public class RenderErrorPanelImpl extends JPanel implements ActionListener, JsfForm.ErrorPanel {
 //    private WebForm webform;
     private final FacesModel facesModel;
-    private final ErrorPanelCallback errorPanelCallback;
+    private final JsfForm.ErrorPanelCallback errorPanelCallback;
     private final RenderFailureProvider renderFailureProvider;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -62,7 +64,7 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, Erro
     // End of variables declaration//GEN-END:variables
 
     /** Creates new form ErrorPanel */
-    public RenderErrorPanelImpl(/*WebForm webform*/FacesModel facesModel, ErrorPanelCallback errorPanelCallback, RenderFailureProvider renderFailureProvider) {
+    public RenderErrorPanelImpl(/*WebForm webform*/FacesModel facesModel, JsfForm.ErrorPanelCallback errorPanelCallback, RenderFailureProvider renderFailureProvider) {
 //        this.webform = webform;
         this.facesModel = facesModel;
         this.errorPanelCallback = errorPanelCallback;
