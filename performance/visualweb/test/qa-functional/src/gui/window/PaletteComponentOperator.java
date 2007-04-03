@@ -27,7 +27,9 @@ import org.netbeans.jellytools.actions.Action;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -53,7 +55,21 @@ public class PaletteComponentOperator extends TopComponentOperator {
         } catch (TimeoutExpiredException te) {
             throw new JemmyException("Cannot perform Window|Palette menu command");
         }
-        return new PaletteComponentOperator();
+        PaletteComponentOperator pal = null;
+        
+        Timeouts times = JemmyProperties.getCurrentTimeouts();
+        long waiter_timeout_old = times.getTimeout("Waiter.WaitingTime");
+        times.setTimeout("Waiter.WaitingTime",90000);
+        
+        try {
+            pal = new PaletteComponentOperator();
+        } catch (TimeoutExpiredException te) {
+            times.setTimeout("Waiter.WaitingTime",waiter_timeout_old);
+            throw new JemmyException("Cannot find Palette");
+        }
+        
+        times.setTimeout("Waiter.WaitingTime",waiter_timeout_old);
+        return pal;
     }
     /**
      * expands selected category node in palette
