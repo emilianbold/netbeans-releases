@@ -20,7 +20,6 @@
  */
 package org.netbeans.installer.wizard.components.actions;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -81,17 +81,17 @@ public class CreateBundleAction extends WizardAction {
         long started = System.currentTimeMillis();
         LogManager.log("[bundle] ... initializing registry and required products");
         final Registry registry = Registry.getInstance();
-        final RegistryFilter filter = 
+        final RegistryFilter filter =
                 new SubTreeFilter(registry.getProductsToInstall());
         final List<Product> products = registry.queryProducts(filter);
         final List<Group> groups = registry.queryGroups(filter);
         
-        final int percentageChunk = 
+        final int percentageChunk =
                 Progress.COMPLETE / (products.size() + groups.size());
-        final int percentageLeak = 
+        final int percentageLeak =
                 Progress.COMPLETE % (products.size() + groups.size());
         
-        final String targetPath = 
+        final String targetPath =
                 System.getProperty(Registry.CREATE_BUNDLE_PATH_PROPERTY);
         final File targetFile = new File(targetPath);
         
@@ -140,37 +140,39 @@ public class CreateBundleAction extends WizardAction {
             output.putNextEntry(new JarEntry(
                     EngineResources.DATA_DIRECTORY + "/"));
             
-            // transfer the engine files list and engine properties
-            final String engineProperties = 
-                    Registry.SUGGEST_INSTALL_PROPERTY + "=true\n";
             
+            // transfer the engine files list
             output.putNextEntry(new JarEntry(
                     EngineResources.ENGINE_CONTENTS_LIST));
             StreamUtils.transferData(
-                    ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST), 
+                    ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST),
                     output);
             
+            // load default engine properties and set all components to be installed by default
+            Properties engineProps = new Properties();
+            engineProps.load(ResourceUtils.getResource(EngineResources.ENGINE_PROPERTIES));
+            engineProps.setProperty(Registry.SUGGEST_INSTALL_PROPERTY,
+                    StringUtils.EMPTY_STRING + true);
             output.putNextEntry(new JarEntry(
                     EngineResources.ENGINE_PROPERTIES));
-            StreamUtils.transferData(
-                    new ByteArrayInputStream(engineProperties.getBytes(StringUtils.ENCODING_UTF8)),
-                    output);
+            engineProps.store(output, null);
+            
             
             progress.addPercentage(percentageLeak);
             LogManager.log("[bundle] ... adding " + products.size() + " products");
             for (Product product: products) {
                 // check for cancel status
-                if (canceled) return; 
+                if (canceled) return;
                 
                 progress.setDetail(
                         "Adding " + product.getDisplayName() + "...");
                 LogManager.log("[bundle] ... adding product : " + product.getDisplayName());
                 
                 final List<Platform> platforms = product.getPlatforms();
-                final String entryPrefix = 
-                        EngineResources.DATA_DIRECTORY + "/" + 
-                        product.getUid() + "/" + 
-                        product.getVersion() + "/" + 
+                final String entryPrefix =
+                        EngineResources.DATA_DIRECTORY + "/" +
+                        product.getUid() + "/" +
+                        product.getVersion() + "/" +
                         StringUtils.asString(product.getPlatforms(), " ");
                 final String uriPrefix =
                         FileProxy.RESOURCE_SCHEME_PREFIX +
@@ -181,30 +183,30 @@ public class CreateBundleAction extends WizardAction {
                 
                 // create the required directories structure
                 output.putNextEntry(new JarEntry(
-                        EngineResources.DATA_DIRECTORY + "/" + 
+                        EngineResources.DATA_DIRECTORY + "/" +
                         product.getUid() + "/"));
                 output.putNextEntry(new JarEntry(
-                        EngineResources.DATA_DIRECTORY + "/" + 
-                        product.getUid() + "/" + 
-                        product.getVersion() + "/" + 
+                        EngineResources.DATA_DIRECTORY + "/" +
+                        product.getUid() + "/" +
+                        product.getVersion() + "/" +
                         StringUtils.asString(product.getPlatforms(), " ") + "/"));
                 output.putNextEntry(new JarEntry(
-                        EngineResources.DATA_DIRECTORY + "/" + 
-                        product.getUid() + "/" + 
-                        product.getVersion() + "/" + 
-                        StringUtils.asString(product.getPlatforms(), " ") + "/" + 
+                        EngineResources.DATA_DIRECTORY + "/" +
+                        product.getUid() + "/" +
+                        product.getVersion() + "/" +
+                        StringUtils.asString(product.getPlatforms(), " ") + "/" +
                         "logic" + "/"));
                 output.putNextEntry(new JarEntry(
-                        EngineResources.DATA_DIRECTORY + "/" + 
-                        product.getUid() + "/" + 
-                        product.getVersion() + "/" + 
-                        StringUtils.asString(product.getPlatforms(), " ") + "/" + 
+                        EngineResources.DATA_DIRECTORY + "/" +
+                        product.getUid() + "/" +
+                        product.getVersion() + "/" +
+                        StringUtils.asString(product.getPlatforms(), " ") + "/" +
                         "data" + "/"));
                 
                 // transfer the icon
                 output.putNextEntry(new JarEntry(entryPrefix + "/icon.png"));
                 StreamUtils.transferFile(
-                        new File(product.getIconUri().getLocal()), 
+                        new File(product.getIconUri().getLocal()),
                         output);
                 
                 // correct the local uri for the icon, so it gets saved correctly in
@@ -215,13 +217,13 @@ public class CreateBundleAction extends WizardAction {
                 final List<ExtendedUri> logicUris = product.getLogicUris();
                 for (int i = 0; i < logicUris.size(); i++) {
                     // check for cancel status
-                    if (canceled) return; 
+                    if (canceled) return;
                     
                     // transfer the file
                     output.putNextEntry(new JarEntry(
                             entryPrefix + "/logic/logic," + (i + 1) + ".jar"));
                     StreamUtils.transferFile(
-                            new File(logicUris.get(i).getLocal()), 
+                            new File(logicUris.get(i).getLocal()),
                             output);
                     
                     // delete the downloaded file
@@ -236,13 +238,13 @@ public class CreateBundleAction extends WizardAction {
                 final List<ExtendedUri> dataUris = product.getDataUris();
                 for (int i = 0; i < dataUris.size(); i++) {
                     // check for cancel status
-                    if (canceled) return; 
+                    if (canceled) return;
                     
                     // transfer the file
                     output.putNextEntry(new JarEntry(
                             entryPrefix + "/data/data," + (i + 1) + ".jar"));
                     StreamUtils.transferFile(
-                            new File(dataUris.get(i).getLocal()), 
+                            new File(dataUris.get(i).getLocal()),
                             output);
                     
                     // delete the downloaded file
@@ -263,9 +265,9 @@ public class CreateBundleAction extends WizardAction {
             LogManager.log("[bundle] ... adding " + groups.size() + " groups");
             for (Group group: groups) {
                 // check for cancel status
-                if (canceled) return; 
+                if (canceled) return;
                 
-                // we should skip the registry root, as it is a somewhat artificial 
+                // we should skip the registry root, as it is a somewhat artificial
                 // node and does not have any meaning
                 if (group.equals(registry.getRegistryRoot())) {
                     continue;
@@ -274,8 +276,8 @@ public class CreateBundleAction extends WizardAction {
                 progress.setDetail(
                         "Adding " + group.getDisplayName() + "...");
                 LogManager.log("[bundle] ... adding group : " + group.getDisplayName());
-                final String entryPrefix = 
-                        EngineResources.DATA_DIRECTORY + "/" + 
+                final String entryPrefix =
+                        EngineResources.DATA_DIRECTORY + "/" +
                         group.getUid();
                 final String uriPrefix =
                         FileProxy.RESOURCE_SCHEME_PREFIX +
@@ -284,13 +286,13 @@ public class CreateBundleAction extends WizardAction {
                 
                 // create the required directories structure
                 output.putNextEntry(new JarEntry(
-                        EngineResources.DATA_DIRECTORY + "/" + 
+                        EngineResources.DATA_DIRECTORY + "/" +
                         group.getUid() + "/"));
                 
                 // transfer the icon
                 output.putNextEntry(new JarEntry(entryPrefix + "/icon.png"));
                 StreamUtils.transferFile(
-                        new File(group.getIconUri().getLocal()), 
+                        new File(group.getIconUri().getLocal()),
                         output);
                 
                 // correct the local uri for the icon, so it gets saved correctly in
@@ -302,7 +304,7 @@ public class CreateBundleAction extends WizardAction {
             }
             
             // check for cancel status
-            if (canceled) return; 
+            if (canceled) return;
             
             // serialize the registry: get the document and save it to the jar file
             output.putNextEntry(new JarEntry(
@@ -310,7 +312,7 @@ public class CreateBundleAction extends WizardAction {
             XMLUtils.saveXMLDocument(
                     registry.getRegistryDocument(filter, false, true, true), output);
             
-            // finally perform some minor cleanup to avoid errors later in the main 
+            // finally perform some minor cleanup to avoid errors later in the main
             // registry finalization - we set the local uri to be null, to avoid
             // cleanup attempts (they would fail, as the local uris now look like
             // resource:<...>
