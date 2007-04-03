@@ -91,7 +91,7 @@ public class ImportUITest extends JellyTestCase {
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
         } finally {
-            JemmyProperties.setCurrentTimeout("CDialogWaiter.WaitDialogTimeout", timeout);
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout);
         }
 
         try {
