@@ -22,6 +22,12 @@ import add.foo.FooException;
 @WebService()
 public class AddNumbers {
 
+    /**
+     * add Method
+     * @param x first number
+     * @param y second number
+     * @return SUM of 2 numbers
+     */    
     @WebMethod
     public int add(@WebParam(name = "x")
                    int x,
@@ -33,6 +39,7 @@ public class AddNumbers {
 
     /**
      * Web service operation
+     * @return echo text
      */
     @WebMethod(operationName="echo-operation")
     public String echo() throws FooException {
@@ -48,9 +55,6 @@ public class AddNumbers {
         return "hello";
     }
 
-    /**
-     * Web service operation
-     */
     @WebMethod
     @Oneway
     public void send(@WebParam(name = "message")

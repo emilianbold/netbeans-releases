@@ -22,7 +22,13 @@ import add.foo.FooException;
  */
 @WebService(name="AddNumbers", serviceName="AddNumbers", targetNamespace="http://www.netbeans.org/tests/AddNumbersTest")
 public class AddNumbers_1 {
-
+    
+    /**
+     * add Method
+     * @param x first number
+     * @param y second number
+     * @return SUM of 2 numbers
+     */  
     @WebMethod
     public int add(@WebParam(name = "x")
                    int x,
@@ -34,6 +40,7 @@ public class AddNumbers_1 {
 
     /**
      * Web service operation
+     * @return echo text
      */
     @WebMethod(operationName="echo-operation")
     public String echo() throws FooException {
@@ -42,7 +49,7 @@ public class AddNumbers_1 {
     }
     
     /**
-     * Non Web service operation
+     * Web service operation
      */
     @WebMethod(operationName="hello")
     public String hello(Foo foo) {
@@ -50,9 +57,6 @@ public class AddNumbers_1 {
         return "hello "+foo.getName();
     }
 
-    /**
-     * Web service operation
-     */
     @WebMethod
     @Oneway
     public void send(@WebParam(name = "message")
