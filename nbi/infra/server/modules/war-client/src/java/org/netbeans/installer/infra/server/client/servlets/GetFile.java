@@ -36,12 +36,13 @@ public class GetFile extends HttpServlet {
             final String path = request.getParameter("file");
             
             final File file = manager.getFile(registry, path);
+            final String filename = file.getName();
             
             response.setContentType(
                     "application/octet-stream");
             response.setHeader(
                     "Content-Disposition",
-                    "attachment; filename=" + file.getName());
+                    "attachment; filename=" + filename);
             response.setHeader(
                     "Last-Modified",
                     StringUtils.httpFormat(new Date(file.lastModified())));
@@ -49,81 +50,7 @@ public class GetFile extends HttpServlet {
                     "Accept-Ranges",
                     "bytes");
             
-            RandomAccessFile input = null;
-            OutputStream output = null;
-            try {
-                output = response.getOutputStream();
-                input = new RandomAccessFile(file, "r");
-                
-                final String range = request.getHeader("Range");
-                if (range == null) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    
-                    input.seek(0);
-                    
-                    response.setHeader(
-                            "Content-Length",
-                            Long.toString(file.length()));
-                    
-                    StreamUtils.transferData(input, output);
-                } else {
-                    Matcher matcher = Pattern.compile("^bytes=([0-9]*)-([0-9]*)$").matcher(range);
-                    
-                    if (!matcher.find()) {
-                        response.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
-                        return;
-                    } else {
-                        long start = -1;
-                        long finish = -1;
-                        
-                        if (!matcher.group(1).equals("")) {
-                            start = Long.parseLong(matcher.group(1));
-                        }
-                        
-                        if (!matcher.group(2).equals("")) {
-                            finish = Long.parseLong(matcher.group(2));
-                        }
-                        
-                        if ((start != -1) && 
-                                (finish != -1) && 
-                                ((start > finish) || (finish > file.length()))) {
-                            response.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
-                            return;
-                        }
-                        
-                        response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-                        
-                        if (start == -1) {
-                            start = file.length() - finish;
-                            finish = -1;
-                        }
-                        
-                        input.seek(start);
-                        
-                        long length = (finish == -1 ? file.length() - start : finish - start) + 1;
-                        
-                        response.setHeader("Content-Length", Long.toString(length));
-                        response.setHeader("Content-Range", "bytes " + start + "-" + (finish == -1 ? file.length() - 1 : finish) + "/" + file.length());
-                        
-                        if (finish == -1) {
-                            StreamUtils.transferData(input, output);
-                        } else {
-                            StreamUtils.transferData(input, output, finish - start + 1);
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                e.printStackTrace();
-                e.printStackTrace(response.getWriter());
-            } finally {
-                if (input != null) {
-                    input.close();
-                }
-                if (output != null) {
-                    output.close();
-                }
-            }
+            Utils.transfer(request, response, file);
         } catch (ManagerException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             e.printStackTrace();

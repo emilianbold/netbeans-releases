@@ -10,13 +10,11 @@ import java.net.URLEncoder;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
-import javax.naming.InitialContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.netbeans.installer.infra.server.ejb.Manager;
-import org.netbeans.installer.infra.server.ejb.ManagerBean;
 import org.netbeans.installer.infra.server.ejb.ManagerException;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.Group;
@@ -26,6 +24,13 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.helper.Platform;
+
+import static org.netbeans.installer.utils.helper.Platform.WINDOWS;
+import static org.netbeans.installer.utils.helper.Platform.LINUX;
+import static org.netbeans.installer.utils.helper.Platform.SOLARIS_X86;
+import static org.netbeans.installer.utils.helper.Platform.SOLARIS_SPARC;
+import static org.netbeans.installer.utils.helper.Platform.MACOS_X_X86;
+import static org.netbeans.installer.utils.helper.Platform.MACOS_X_PPC;
 
 /**
  *
@@ -53,28 +58,29 @@ public class CreateBundle extends HttpServlet {
             
             Platform platform = SystemUtils.getCurrentPlatform();
             if (userAgent.contains("Windows")) {
-                platform = Platform.WINDOWS;
+                platform = WINDOWS;
             }
             if (userAgent.contains("PPC Mac OS")) {
-                platform = Platform.MACOS_X_PPC;
+                platform = MACOS_X_PPC;
             }
             if (userAgent.contains("Intel Mac OS")) {
-                platform = Platform.MACOS_X_X86;
+                platform = MACOS_X_X86;
             }
             if (userAgent.contains("Linux")) {
-                platform = Platform.LINUX;
+                platform = LINUX;
             }
             if (userAgent.contains("SunOS i86pc")) {
-                platform = Platform.SOLARIS_X86;
+                platform = SOLARIS_X86;
             }
             if (userAgent.contains("SunOS sun4u")) {
-                platform = Platform.SOLARIS_SPARC;
+                platform = SOLARIS_SPARC;
             }
             
             
             if (request.getParameter("platform") != null) {
                 try {
-                    platform = StringUtils.parsePlatform(request.getParameter("platform"));
+                    platform = StringUtils.parsePlatform(
+                            request.getParameter("platform"));
                 } catch (ParseException e) {
                     e.printStackTrace(out);
                 }
@@ -130,34 +136,42 @@ public class CreateBundle extends HttpServlet {
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            String[] registries = request.getParameterValues("registry");
-            String[] components = request.getParameterValues("component");
-            Platform platform = StringUtils.parsePlatform(request.getParameter("platform"));
+            final String[] registries = 
+                    request.getParameterValues("registry");
+            final String[] components = 
+                    request.getParameterValues("component");
+            final Platform platform = 
+                    StringUtils.parsePlatform(request.getParameter("platform"));
             
-            File bundle = manager.createBundle(platform, registries, components);
+            final File file = 
+                    manager.createBundle(platform, registries, components);
             
             String filename = "";
             for (String name: components) {
                 filename += name.substring(0, name.indexOf(",")) + "_";
             }
-            filename += platform.toString() + 
-                    (platform == Platform.WINDOWS ? ".exe" : 
-                        ((platform == Platform.MACOS_X_PPC || platform == Platform.MACOS_X_X86) ? 
-                            ".command" : 
-                            ".sh"));
+            filename += platform.toString();
+            if (platform == WINDOWS) {
+                filename += ".exe";
+            } else if (platform == MACOS_X_PPC || platform == MACOS_X_X86) {
+                filename += ".command";
+            } else {
+                filename += ".sh";
+            }
             
-            final InputStream  input  = new FileInputStream(bundle);
-            final OutputStream output = response.getOutputStream();
+            response.setContentType(
+                    "application/octet-stream");
+            response.setHeader(
+                    "Content-Disposition",
+                    "attachment; filename=" + filename);
+            response.setHeader(
+                    "Last-Modified",
+                    StringUtils.httpFormat(new Date(file.lastModified())));
+            response.setHeader(
+                    "Accept-Ranges",
+                    "bytes");
             
-            response.setContentType("application/octet-stream");
-            response.setHeader("Content-Length", Long.toString(bundle.length()));
-            response.setHeader("Content-Disposition", "attachment; filename=" + filename);
-            response.setHeader("Last-Modified", StringUtils.httpFormat(new Date(bundle.lastModified())));
-            
-            StreamUtils.transferData(input, output);
-            
-            input.close();
-            output.close();
+            Utils.transfer(request, response, file);
         } catch (ParseException e) {
             e.printStackTrace(response.getWriter());
         } catch (ManagerException e) {
