@@ -45,7 +45,7 @@
         <property name="build.classes.dir.real" value="${build.ear.classes.dir}"/>
         <property name="build.web.dir.real" value="${build.ear.web.dir}"/>
     </target>
-    <target name="-do-init" depends="-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property, -do-ear-init">
+    <target name="-do-init" depends="-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property,-do-ear-init">
         <webproject1:property name="platform.home" value="platforms.${platform.active}.home"/>
         <webproject1:property name="platform.bootcp" value="platforms.${platform.active}.bootclasspath"/>
         <webproject1:property name="platform.compiler" value="platforms.${platform.active}.compile"/>
@@ -339,7 +339,23 @@
             <fileset excludes="${build.web.excludes}" dir="${web.docbase.dir}"/>
         </copy>
     </target>
-    <target name="-do-compile" depends="init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest" if="have.sources">
+    <target name="-rest-pre-compile" if="rest.support.on">
+        <mkdir dir="${build.generated.dir}/rest-gen"/>
+        <apt fork="true" debug="true" verbose="true" includeJavaRuntime="yes" destdir="${build.classes.dir.real}" preprocessdir="${build.generated.dir}/rest-gen">
+            <bootclasspath path="${j2ee.platform.classpath}"/>
+            <classpath>
+                <path path="${javac.classpath}"/>
+                <path path="${j2ee.platform.classpath}"/>
+                <pathelement location="${build.web.dir}/WEB-INF/classes"/>
+            </classpath>
+            <src location="${src.dir}"/>
+            <include name="**/*.java"/>
+        </apt>
+        <copy todir="${build.classes.dir}">
+            <fileset dir="${src.dir}" excludes="**/*.java"/>
+        </copy>
+    </target>
+    <target name="-do-compile" depends="init, deps-jar, -pre-pre-compile, -pre-compile, -rest-pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest" if="have.sources">
         <webproject2:javac destdir="${build.classes.dir.real}"/>
         <copy todir="${build.classes.dir.real}">
             <fileset dir="${src.dir}" excludes="${build.classes.excludes}"/>
@@ -573,6 +589,10 @@
     <target name="run-main" depends="init,compile-single">
         <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
         <webproject1:java classname="${run.class}"/>
+    </target>
+    <target name="test-restbeans" if="do.rest" depends="run-deploy,-init-display-browser">
+        <replace file="${restbeans.test.file}" token="${base.url.token}" value="${client.url}"/>
+        <nbbrowse url="${restbeans.test.url}"/>
     </target>
     <!--
                 DEBUGGING SECTION

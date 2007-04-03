@@ -3,12 +3,9 @@ package org.netbeans.installer.infra.server.client.servlets;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
@@ -20,7 +17,8 @@ import org.netbeans.installer.infra.server.ejb.ManagerException;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.Platform;
 
 /**
@@ -33,35 +31,72 @@ public class Components extends HttpServlet {
     private Manager manager;
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        List<String> fixed = Arrays.asList("nb-ide");
-        List<String> standard = Arrays.asList("nb-ide", "glassfish");
-        List<String> selected = Arrays.asList("nb-xml", "nb-soa", "nb-identity", "glassfish", "openesb", "sjsam");
+        final List<String> fixed = Arrays.asList(
+                "nb-ide");
+        final List<String> standard = Arrays.asList(
+                "nb-ide",
+                "glassfish");
+        final List<String> selected = Arrays.asList(
+                "nb-xml",
+                "nb-soa",
+                "nb-identity",
+                "glassfish",
+                "openesb",
+                "sjsam");
+        final Map<String, List<String>> desires =
+                new HashMap<String, List<String>>();
+        desires.put("nb-visualweb", Arrays.asList("glassfish"));
+        
+        final Map<String, String> comments =
+                new HashMap<String, String>();
+        comments.put("jdk", "WTF!T!&!&");
         
         try {
             response.setContentType("text/javascript; charset=UTF-8");
-            PrintWriter out = response.getWriter();
+            final PrintWriter out = response.getWriter();
             
-            Registry registry = manager.loadRegistry("NetBeans 6.0");
+            final Registry registry = manager.loadRegistry("NetBeans 6.0");
             
-            List<Product> products = registry.getProducts();
-            List<Group> groups = registry.getGroups();
+            final List<Product> products = registry.getProducts();
+            final List<Group> groups = registry.getGroups();
             
-            Map<Integer, Integer> productMapping = new HashMap<Integer, Integer>();
+            final Map<Integer, Integer> productMapping =
+                    new HashMap<Integer, Integer>();
             
-            List<String> productsUids = new LinkedList<String>();
-            List<String> productsVersions = new LinkedList<String>();
-            List<String> productsDisplayNames = new LinkedList<String>();
-            List<String> productsDownloadSizes = new LinkedList<String>();
-            List<List<Platform>> productsPlatforms = new LinkedList<List<Platform>>();
-            List<String> productsProperties = new LinkedList<String>();
+            final List<String> productUids =
+                    new LinkedList<String>();
+            final List<String> productVersions =
+                    new LinkedList<String>();
+            final List<String> productDisplayNames =
+                    new LinkedList<String>();
+            final List<String> productDownloadSizes =
+                    new LinkedList<String>();
+            final List<List<Platform>> productPlatforms =
+                    new LinkedList<List<Platform>>();
+            final List<String> productProperties =
+                    new LinkedList<String>();
+            final List<List<List<Integer>>> productRequirements =
+                    new LinkedList<List<List<Integer>>>();
+            final List<List<Integer>> productDesires =
+                    new LinkedList<List<Integer>>();
+            final List<String> productComments =
+                    new LinkedList<String>();
+            
+            final List<Integer> defaultGroupProducts =
+                    new LinkedList<Integer>();
+            final List<List<Integer>> groupProducts =
+                    new LinkedList<List<Integer>>();
+            final List<String> groupDisplayNames =
+                    new LinkedList<String>();
+            
             for (int i = 0; i < products.size(); i++) {
                 final Product product = products.get(i);
                 
                 boolean existingFound = false;
-                for (int j = 0; j < productsUids.size(); j++) {
-                    if (productsUids.get(j).equals(product.getUid()) &&
-                            productsVersions.get(j).equals(product.getVersion().toString())) {
-                        productsPlatforms.get(j).addAll(product.getPlatforms());
+                for (int j = 0; j < productUids.size(); j++) {
+                    if (productUids.get(j).equals(product.getUid()) &&
+                            productVersions.get(j).equals(product.getVersion().toString())) {
+                        productPlatforms.get(j).addAll(product.getPlatforms());
                         productMapping.put(i, j);
                         existingFound = true;
                         break;
@@ -72,12 +107,13 @@ public class Components extends HttpServlet {
                     continue;
                 }
                 
-                long size = (long) Math.ceil(((double) product.getDownloadSize()) / 1024. / 1024.);
-                productsUids.add(product.getUid());
-                productsVersions.add(product.getVersion().toString());
-                productsDisplayNames.add(product.getDisplayName());
-                productsDownloadSizes.add(Long.toString(size));
-                productsPlatforms.add(product.getPlatforms());
+                long size = (long) Math.ceil(
+                        ((double) product.getDownloadSize()) / 1024. / 1024.);
+                productUids.add(product.getUid());
+                productVersions.add(product.getVersion().toString());
+                productDisplayNames.add(product.getDisplayName());
+                productDownloadSizes.add(Long.toString(size));
+                productPlatforms.add(product.getPlatforms());
                 
                 String properties = "PROPERTY_NONE";
                 if (fixed.contains(product.getUid())) {
@@ -89,98 +125,174 @@ public class Components extends HttpServlet {
                 if (selected.contains(product.getUid())) {
                     properties += " | PROPERTY_SELECTED";
                 }
-                productsProperties.add(properties);
+                productProperties.add(properties);
                 
-                productMapping.put(i, productsUids.size() - 1);
-            }
-            out.println("components_uids = new Array();");
-            for (int i = 0; i < productsUids.size(); i++) {
-                out.println("    components_uids[" + i + "] = \"" + productsUids.get(i) + "\";");
-            }
-            out.println();
-            out.println("components_versions = new Array();");
-            for (int i = 0; i < productsVersions.size(); i++) {
-                out.println("    components_versions[" + i + "] = \"" + productsVersions.get(i) + "\";");
-            }
-            out.println();
-            out.println("components_display_names = new Array();");
-            for (int i = 0; i < productsDisplayNames.size(); i++) {
-                out.println("    components_display_names[" + i + "] = \"" + productsDisplayNames.get(i) + "\";");
-            }
-            out.println();
-            out.println("components_download_sizes = new Array();");
-            for (int i = 0; i < productsDownloadSizes.size(); i++) {
-                out.println("    components_download_sizes[" + i + "] = " + productsDownloadSizes.get(i) + ";");
-            }
-            out.println();
-            out.println("components_platforms = new Array();");
-            for (int i = 0; i < productsPlatforms.size(); i++) {
-                out.println("    components_platforms[" + i + "] = new Array();");
-                for (int j = 0; j < productsPlatforms.get(i).size(); j++) {
-                    out.println("        components_platforms[" + i + "][" + j + "] = \"" + productsPlatforms.get(i).get(j) + "\";");
-                }
-            }
-            out.println();
-            out.println("components_properties = new Array();");
-            for (int i = 0; i < productsProperties.size(); i++) {
-                out.println("    components_properties[" + i + "] = " + productsProperties.get(i) + ";");
-            }
-            out.println();
-            
-            List<Integer> default_group_components = new LinkedList<Integer>();
-            for (int i = 0; i < productsUids.size(); i++) {
-                default_group_components.add(Integer.valueOf(i));
+                List<List<Integer>> requirements = new LinkedList<List<Integer>>();
+                productRequirements.add(requirements);
+                
+                List<Integer> currentDesires = new LinkedList<Integer>();
+                productDesires.add(currentDesires);
+                
+                productComments.add("");
+                
+                productMapping.put(i, productUids.size() - 1);
             }
             
-            List<List<Integer>> groups_components = new LinkedList<List<Integer>>();
-            List<String> groups_display_names = new LinkedList<String>();
-            for (Group group: groups) {
-                if (group.getUid().equals("")) {
-                    continue;
+            for (int i = 0; i < products.size(); i++) {
+                final int index = productMapping.get(i);
+                final Product product = products.get(i);
+                
+                List<List<Integer>> requirements = productRequirements.get(index);
+                for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+                    List<Integer> requireeIds = new LinkedList<Integer>();
+                    requirements.add(requireeIds);
+                    for (Product requiree: registry.getProducts(requirement)) {
+                        requireeIds.add(
+                                productMapping.get(products.indexOf(requiree)));
+                    }
                 }
                 
-                List<Integer> group_components = new LinkedList<Integer>();
-                for (int i = 0; i < products.size(); i++) {
-                    if (group.isAncestor(products.get(i))) {
-                        if (!group_components.contains(Integer.valueOf(productMapping.get(i)))) {
-                            group_components.add(Integer.valueOf(productMapping.get(i)));
-                            default_group_components.remove(Integer.valueOf(productMapping.get(i)));
+                List<Integer> currentDesires = productDesires.get(index);
+                productDesires.set(index, currentDesires);
+                if (desires.get(product.getUid()) != null) {
+                    for (String uid: desires.get(product.getUid())) {
+                        for (Product desiree: products) {
+                            if (desiree.getUid().equals(uid)) {
+                                int indexOf = productMapping.get(products.indexOf(desiree));
+                                if (!currentDesires.contains(indexOf)) {
+                                    currentDesires.add(indexOf);
+                                }
+                            }
                         }
                     }
                 }
                 
-                groups_components.add(group_components);
-                groups_display_names.add(group.getDisplayName());
+                if (comments.get(product.getUid()) != null) {
+                    productComments.set(index, comments.get(product.getUid()));
+                }
             }
             
-            if (groups_components.size() > 0) {
-                out.println("groups_components = new Array();");
-                out.println("    groups_components[0] = new Array();");
-                for (int j = 0; j < default_group_components.size(); j++) {
-                    out.println("        groups_components[0][" + j + "] = " + default_group_components.get(j) + ";");
+            out.println("product_uids = new Array();");
+            for (int i = 0; i < productUids.size(); i++) {
+                out.println("    product_uids[" + i + "] = \"" + productUids.get(i) + "\";");
+            }
+            out.println();
+            
+            out.println("product_versions = new Array();");
+            for (int i = 0; i < productVersions.size(); i++) {
+                out.println("    product_versions[" + i + "] = \"" + productVersions.get(i) + "\";");
+            }
+            out.println();
+            
+            out.println("product_display_names = new Array();");
+            for (int i = 0; i < productDisplayNames.size(); i++) {
+                out.println("    product_display_names[" + i + "] = \"" + productDisplayNames.get(i) + "\";");
+            }
+            out.println();
+            
+            out.println("product_download_sizes = new Array();");
+            for (int i = 0; i < productDownloadSizes.size(); i++) {
+                out.println("    product_download_sizes[" + i + "] = " + productDownloadSizes.get(i) + ";");
+            }
+            out.println();
+            
+            out.println("product_platforms = new Array();");
+            for (int i = 0; i < productPlatforms.size(); i++) {
+                out.println("    product_platforms[" + i + "] = new Array();");
+                for (int j = 0; j < productPlatforms.get(i).size(); j++) {
+                    out.println("        product_platforms[" + i + "][" + j + "] = \"" + productPlatforms.get(i).get(j) + "\";");
                 }
-                for (int i = 0; i < groups_components.size(); i++) {
-                    out.println("    groups_components[" + (i + 1) + "] = new Array();");
-                    for (int j = 0; j < groups_components.get(i).size(); j++) {
-                        out.println("        groups_components[" + (i + 1) + "][" + j + "] = " + groups_components.get(i).get(j) + ";");
+            }
+            out.println();
+            
+            out.println("product_properties = new Array();");
+            for (int i = 0; i < productProperties.size(); i++) {
+                out.println("    product_properties[" + i + "] = " + productProperties.get(i) + ";");
+            }
+            out.println();
+            
+            out.println("product_requirements = new Array();");
+            for (int i = 0; i < productRequirements.size(); i++) {
+                out.println("    product_requirements[" + i + "] = new Array();");
+                for (int j = 0; j < productRequirements.get(i).size(); j++) {
+                    out.println("        product_requirements[" + i + "][" + j + "] = new Array();");
+                    for (int k = 0; k < productRequirements.get(i).get(j).size(); k++) {
+                        out.println("            product_requirements[" + i + "][" + j + "][" + k + "] = " + productRequirements.get(i).get(j).get(k) + ";");
+                    }
+                }
+            }
+            
+            out.println("product_desires = new Array();");
+            for (int i = 0; i < productDesires.size(); i++) {
+                out.println("    product_desires[" + i + "] = new Array();");
+                for (int j = 0; j < productDesires.get(i).size(); j++) {
+                    out.println("        product_desires[" + i + "][" + j + "] = " + productDesires.get(i).get(j) + ";");
+                }
+            }
+            out.println();
+            
+            out.println("product_comments = new Array();");
+            for (int i = 0; i < productComments.size(); i++) {
+                out.println("    product_comments[" + i + "] = \"" + productComments.get(i) + "\";");
+            }
+            out.println();
+            
+            
+            for (int i = 0; i < productUids.size(); i++) {
+                defaultGroupProducts.add(Integer.valueOf(i));
+            }
+            
+            for (Group group: groups) {
+                // skip the registry root
+                if (group.getUid().equals("")) {
+                    continue;
+                }
+                
+                List<Integer> components = new LinkedList<Integer>();
+                for (int i = 0; i < products.size(); i++) {
+                    if (group.isAncestor(products.get(i))) {
+                        Integer index = Integer.valueOf(productMapping.get(i));
+                        if (!components.contains(index)) {
+                            components.add(index);
+                            defaultGroupProducts.remove(index);
+                        }
+                    }
+                }
+                
+                groupProducts.add(components);
+                groupDisplayNames.add(group.getDisplayName());
+            }
+            
+            if (groupProducts.size() > 0) {
+                out.println("group_products = new Array();");
+                out.println("    group_products[0] = new Array();");
+                for (int j = 0; j < defaultGroupProducts.size(); j++) {
+                    out.println("        group_products[0][" + j + "] = " + defaultGroupProducts.get(j) + ";");
+                }
+                for (int i = 0; i < groupProducts.size(); i++) {
+                    out.println("    group_products[" + (i + 1) + "] = new Array();");
+                    for (int j = 0; j < groupProducts.get(i).size(); j++) {
+                        out.println("        group_products[" + (i + 1) + "][" + j + "] = " + groupProducts.get(i).get(j) + ";");
                     }
                 }
                 out.println();
-                out.println("groups_display_names = new Array();");
-                out.println("    groups_display_names[0] = \"\";");
-                for (int i = 0; i < groups_display_names.size(); i++) {
-                    out.println("    groups_display_names[" + (i + 1) + "] = " + groups_display_names.get(i) + ";");
+                
+                out.println("group_display_names = new Array();");
+                out.println("    group_display_names[0] = \"\";");
+                for (int i = 0; i < groupDisplayNames.size(); i++) {
+                    out.println("    group_display_names[" + (i + 1) + "] = \"" + groupDisplayNames.get(i) + "\";");
                 }
                 out.println();
             } else {
-                out.println("groups_components = new Array();");
-                out.println("    groups_components[0] = new Array();");
-                for (int j = 0; j < default_group_components.size(); j++) {
-                    out.println("        groups_components[0][" + j + "] = " + default_group_components.get(j) + ";");
+                out.println("group_products = new Array();");
+                out.println("    group_products[0] = new Array();");
+                for (int j = 0; j < defaultGroupProducts.size(); j++) {
+                    out.println("        group_products[0][" + j + "] = " + defaultGroupProducts.get(j) + ";");
                 }
                 out.println();
-                out.println("groups_display_names = new Array();");
-                out.println("    groups_display_names[0] = \"\";");
+                
+                out.println("group_display_names = new Array();");
+                out.println("    group_display_names[0] = \"\";");
                 out.println();
             }
             
@@ -200,12 +312,12 @@ public class Components extends HttpServlet {
         processRequest(request, response);
     }
     
-    //            groups_components = new Array(
+    //            group_products = new Array(
     //                new Array(0, 1, 2),
     //                new Array(3, 4)
     //            );
     //
-    //            groups_display_names = new Array(
+    //            group_display_names = new Array(
     //                "",
     //                "Runtimes"
     //            );
