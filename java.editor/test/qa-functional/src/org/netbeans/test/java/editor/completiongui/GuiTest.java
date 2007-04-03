@@ -62,7 +62,8 @@ public class GuiTest extends EditorTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        openDefaultProject();
+        openProject("java_editor_test");
+        //openDefaultProject();
     }
     
     @Override

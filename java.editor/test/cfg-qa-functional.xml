@@ -68,6 +68,14 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+
+    <testbag testattribs="gencode,all" name="Generate Code Tests" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/java/editor/codegeneration/CreateConstructor.class"/>		
+            </patternset>
+        </testset>
+    </testbag>
     
     <testbag testattribs="devel" name="Testcases under development" compiler="qa-functional-compiler-completion">
         <testset dir="qa-functional/src">
