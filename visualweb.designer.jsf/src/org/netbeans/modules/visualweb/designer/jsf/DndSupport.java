@@ -275,9 +275,11 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
         // XXX This should be decided by the parent bean.
         // I.e. appropriate api is missing.
         // XXX This shouldn't be here resolved, but in the parent bean.
-        if (jsfForm.getHtmlDomProvider().isBraveheartPage()) {
+//        if (jsfForm.getHtmlDomProvider().isBraveheartPage()) {
+        if (jsfForm.isBraveheartPage()) {
             return com.sun.rave.web.ui.component.ImageComponent.class.getName(); // NOI18N
-        } else if (jsfForm.getHtmlDomProvider().isWoodstockPage()) {
+//        } else if (jsfForm.getHtmlDomProvider().isWoodstockPage()) {
+        } else if (jsfForm.isWoodstockPage()) {
             // Use woodstock ImageComponent component
             return com.sun.webui.jsf.component.ImageComponent.class.getName(); // NOI18N
         } else {

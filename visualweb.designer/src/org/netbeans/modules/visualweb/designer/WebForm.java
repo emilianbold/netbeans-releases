@@ -993,13 +993,13 @@ public class WebForm implements Designer {
 //        return CssProvider.getValueService().isGridValue(cssValue);
 //    }
     
-    public boolean isBraveheartPage() {
-        return htmlDomProvider.isBraveheartPage();
-    }
+//    public boolean isBraveheartPage() {
+//        return htmlDomProvider.isBraveheartPage();
+//    }
     
-    public boolean isWoodstockPage() {
-        return htmlDomProvider.isWoodstockPage();
-    }
+//    public boolean isWoodstockPage() {
+//        return htmlDomProvider.isWoodstockPage();
+//    }
     
 //    /**
 //     * Return the mapper responsible for converting coordinates to

@@ -1890,6 +1890,15 @@ public class JsfForm {
         }
         return false;
     }
+
+    
+    public boolean isBraveheartPage() {
+        return Util.isBraveheartPage(getJspDom());
+    }
+
+    public boolean isWoodstockPage() {
+        return Util.isWoodstockPage(getJspDom());
+    }
     
 }
 
