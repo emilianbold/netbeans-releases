@@ -1213,7 +1213,8 @@ public class JsfForm {
     }
     
     public /*private*/ void syncModel() {
-        htmlDomProvider.syncModel();
+//        htmlDomProvider.syncModel();
+        getFacesModel().sync();
     }
     
     public void setModelActivated(boolean activated) {
