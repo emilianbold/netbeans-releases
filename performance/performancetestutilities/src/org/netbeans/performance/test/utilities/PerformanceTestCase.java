@@ -26,6 +26,7 @@ import java.lang.ref.WeakReference;
 
 import java.util.HashMap;
 import java.util.Map;
+import junit.framework.AssertionFailedError;
 
 import org.netbeans.jellytools.JellyTestCase;
 
@@ -156,10 +157,14 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     /** Use order just for indentify first and next run, not specific run order */
     public boolean useTwoOrderTypes = true;
     
+    /** Group identification for traced refs that do not have special category. */
+    private Object DEFAULT_REFS_GROUP = new Object();
+    
     /** Set of references to traced object that ought to be GCed after tests runs
      * and their informational messages.
      */
-    private static Map<Reference<Object>, String> tracedRefs = new HashMap<Reference<Object>, String>();
+    private static Map<Object, Map<Reference<Object>, String>> tracedRefs = 
+            new HashMap<Object, Map<Reference<Object>, String>>();
 
     /**
      * Creates a new instance of PerformanceTestCase
@@ -577,9 +582,14 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * @link #testGC
      * @param message informantion message associated with object
      * @param object traced object
+     * @param group mark grouping more refrenced together to test them at once or <CODE>null</CODE>
      */
-    protected void reportReference( String message, Object object ) {
-        tracedRefs.put(new WeakReference<Object>(object), message);
+    protected void reportReference( String message, Object object, Object group ) {
+        Object g = group == null? DEFAULT_REFS_GROUP: group;
+        if (!tracedRefs.containsKey(g)) {
+            tracedRefs.put(g, new HashMap<Reference<Object>, String>());
+        }
+        tracedRefs.get(g).put(new WeakReference<Object>(object), message);
     }
     
     /** Generic test case checking if all objects registered with 
@@ -589,14 +599,31 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * It is supposed that this method will be added to a suite
      * typically at the end.
      */
-    public void testGC() throws Exception {
+    protected void runTestGC(Object group) throws Exception {
+        Object g = group == null? DEFAULT_REFS_GROUP: group;
         try {
-            for (Map.Entry<Reference<Object>, String> entry: tracedRefs.entrySet()) {
-                assertGC(entry.getValue(), entry.getKey());
+            AssertionFailedError afe = null;
+            for (Map.Entry<Reference<Object>, String> entry: tracedRefs.get(g).entrySet()) {
+                try {
+                    assertGC(entry.getValue(), entry.getKey());
+                }
+                catch (AssertionFailedError e) {
+                    if (afe != null) {
+                        Throwable t = e;
+                        while (t.getCause() != null) {
+                            t = t.getCause();
+                        }
+                        t.initCause(afe);
+                    }
+                    afe = e;
+                }
+            }
+            if (afe != null) {
+                throw afe;
             }
         }
         finally {
-            tracedRefs.clear();
+            tracedRefs.get(g).clear();
         }
     }
     

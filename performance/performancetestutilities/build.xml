@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
                deprecation="${build.compiler.deprecation}" 
                debug="${build.compiler.debug}"
                destdir="${performance.testutilities.dist.build.dir}"
-               source="1.5">
+               source="1.5" target="1.5">
 	    <compilerarg line="-Xlint:unchecked"/>
             <classpath>
                 <path refid="testutilities.classpath"/>
