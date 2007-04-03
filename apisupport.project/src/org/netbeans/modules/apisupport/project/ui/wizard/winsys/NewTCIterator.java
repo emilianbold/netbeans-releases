@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
@@ -143,7 +144,7 @@ final class NewTCIterator extends BasicWizardIterator {
         final String packageName = model.getPackageName();
         final String mode = model.getMode();
         
-        HashMap replaceTokens = new HashMap();
+        Map<String,String> replaceTokens = new HashMap<String,String>();
         replaceTokens.put("@@TEMPLATENAME@@", name);//NOI18N
         replaceTokens.put("@@PACKAGENAME@@", packageName);//NOI18N
         replaceTokens.put("@@MODE@@", mode); //NOI18N
@@ -189,6 +190,7 @@ final class NewTCIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N
+        fileChanges.add(fileChanges.addModuleDependency("org.jdesktop.layout")); //NOI18N
         
         // x. generate java classes
         final String tcName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
@@ -221,7 +223,7 @@ final class NewTCIterator extends BasicWizardIterator {
                              template, replaceTokens, null, null));
         
         fileChanges.add(fileChanges.layerModifications(new CreateActionEntryOperation(name + "Action", packageName), // NOI18N
-                                                       Collections.EMPTY_SET));
+                                                       Collections.<String>emptySet()));
         String bundlePath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, "", "Bundle.properties"); //NOI18N
         fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "Action",  // NOI18N
                                 NbBundle.getMessage(NewTCIterator.class, "LBL_TemplateActionName", name))); //NOI18N
