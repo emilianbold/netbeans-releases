@@ -2023,9 +2023,9 @@ public class WebForm implements Designer {
         htmlDomProvider.readUnlock();
     }
 
-    void setModelActivated(boolean activated) {
-        htmlDomProvider.setModelActivated(activated);
-    }
+//    void setModelActivated(boolean activated) {
+//        htmlDomProvider.setModelActivated(activated);
+//    }
 
     UndoRedo getUndoManager() {
         return htmlDomProvider.getUndoManager();

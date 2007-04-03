@@ -1289,7 +1289,8 @@ public class JsfForm {
     }
     
     public UndoRedo getUndoManager() {
-        return htmlDomProvider.getUndoManager();
+//        return htmlDomProvider.getUndoManager();
+        return getFacesModel().getUndoManager();
     }
     
     public int computeActions(Element componentRootElement, Transferable transferable) {
