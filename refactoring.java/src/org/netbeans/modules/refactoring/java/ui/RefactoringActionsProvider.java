@@ -104,13 +104,13 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         if (pkg[0]!= null)
                             return new RenameRefactoringUI(pkg[0], newName);
                         else
-                            return new RenameRefactoringUI(selectedElements[0], newName, handles.iterator().next(), cinfo.get());
+                            return new RenameRefactoringUI(selectedElements[0], newName, handles==null||handles.isEmpty()?null:handles.iterator().next(), cinfo.get());
                     }
                     else 
                         if (pkg[0]!= null)
                             return new RenameRefactoringUI(pkg[0]);
                         else
-                            return new RenameRefactoringUI(selectedElements[0], handles.iterator().next(), cinfo.get());
+                            return new RenameRefactoringUI(selectedElements[0], handles==null||handles.isEmpty()?null:handles.iterator().next(), cinfo==null?null:cinfo.get());
                 }
             }.run();
         }
