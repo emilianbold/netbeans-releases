@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
 public class SelectPanel extends JPanel implements SharedConstants {
     private static final Logger mLog = Logger.getLogger(SelectPanel.class.getName());
     private static String[] SQL_TYPE_NAMES = new String[] {
-        SQL_TYPE_BIT,
+//        SQL_TYPE_BIT,
 //        SQL_TYPE_TINYINT,
 //        SQL_TYPE_SMALLINT,
         SQL_TYPE_INTEGER,
