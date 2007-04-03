@@ -82,6 +82,21 @@ is the proper place.
 
     <changes>
 
+        <change id="JumpList-final">
+            <summary>Making JumpList final</summary>
+            <version major="1" minor="13"/>
+            <date day="2" month="4" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="incompatible" semantic="compatible" />
+            <description>
+                <p>
+                    The JumpList was never meant to be subclassed or instantialized
+                    even though the class did not prevent it. It is now final with
+                    private constructor; the same for JumpList.Entry class.
+                </p>
+            </description>
+        </change>
+        
         <change id="draw-layers-disabled">
             <summary>Deprecating the use of <code>DrawLayer</code></summary>
             <version major="1" minor="12"/>
