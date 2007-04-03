@@ -18,12 +18,8 @@
  */
 package org.netbeans.modules.bpel.refactoring;
 
-import java.beans.BeanInfo;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
-
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -31,11 +27,9 @@ import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
-
 import org.netbeans.modules.xml.xam.Component;
 
-import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.editors.api.nodes.FactoryAccess;
+import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 
 /**
@@ -47,7 +41,6 @@ final class Element
 {
   Element(Component component) {
     myComponent = component;
-    myNode = FactoryAccess.getRefactoringNodeFactory().createNode(component);
   }
 
   public Lookup getLookup() {
@@ -67,7 +60,7 @@ final class Element
   }
 
   public String getText() {
-    return myNode.getName();
+    return RefactorUtil.getName(myComponent);
   }
 
   public String getText(boolean isLogical) {
@@ -75,17 +68,11 @@ final class Element
   }
 
   public String getDisplayText() {
-    String text = myNode.getHtmlDisplayName();
-
-    if (text == null) {
-      // todo r
-      return "!!!!! === RefactoringNodeFactory returns null === !!!!!"; // NOI18N
-    }
-    return text;
+    return RefactorUtil.getHtmlName(myComponent);
   }
 
   public Icon getIcon() {
-    return new ImageIcon(myNode.getIcon(BeanInfo.ICON_COLOR_16x16));
+    return RefactorUtil.getIcon(myComponent);
   }
 
   public PositionBounds getPosition() {
@@ -93,7 +80,7 @@ final class Element
   }
        
   public void openInEditor() {
-    Util.goToSource((BpelEntity) myComponent); // todo m
+    Util.goToSource(myComponent);
   }
 
   public Object getUserObject() {
@@ -103,6 +90,5 @@ final class Element
   public void showPreview() {}
   public void performChange() {}
 
-  private Node myNode; // todo r
   private Component myComponent;
 }
