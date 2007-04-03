@@ -222,6 +222,7 @@ public abstract class GraphScene<N, E> extends ObjectScene {
      * @return the collection of edges
      */
     public final Collection<E> findNodeEdges (N node, boolean allowOutputEdges, boolean allowInputEdges) {
+        assert isNode (node) : "Node " + node + " does not exist in the scene";
         ArrayList<E> list = new ArrayList<E> ();
         if (allowInputEdges)
             list.addAll (nodeInputEdges.get (node));
@@ -237,6 +238,8 @@ public abstract class GraphScene<N, E> extends ObjectScene {
      * @return the collection of edges with the specified source and target nodes
      */
     public final Collection<E> findEdgesBetween (N sourceNode, N targetNode) {
+        assert isNode (sourceNode) : "Source node " + sourceNode + " is not in the scene";
+        assert isNode (targetNode) : "Target node " + targetNode + " is not in the scene";
         HashSet<E> list = new HashSet<E> ();
         List<E> inputEdges = nodeInputEdges.get (targetNode);
         List<E> outputEdges = nodeOutputEdges.get (sourceNode);

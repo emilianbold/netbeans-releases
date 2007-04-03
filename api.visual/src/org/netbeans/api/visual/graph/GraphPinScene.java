@@ -232,7 +232,7 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
     /**
      * Returns a collection of pins that are assigned to a specified node
      * @param node the node
-     * @return the collection of pins
+     * @return the collection of pins; null if node does not exist in the scene
      */
     public final Collection<P> getNodePins (N node) {
         if (node == null)
@@ -307,6 +307,7 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
      * @return the collection of edges
      */
     public final Collection<E> findPinEdges (P pin, boolean allowOutputEdges, boolean allowInputEdges) {
+        assert isPin (pin) : "Pin " + pin + " is not in the scene";
         ArrayList<E> list = new ArrayList<E> ();
         if (allowInputEdges)
             list.addAll (pinInputEdges.get (pin));
@@ -315,7 +316,15 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
         return list;
     }
 
+    /**
+     * Returns a collection of edges that are between a source and a target pin.
+     * @param sourcePin the source pin
+     * @param targetPin the target pin
+     * @return the collection of edges
+     */
     public final Collection<E> findEdgesBetween (P sourcePin, P targetPin) {
+        assert isPin (sourcePin) : "Source pin " + sourcePin + " is not in the scene";
+        assert isPin (targetPin) : "Target pin " + targetPin + " is not in the scene";
         HashSet<E> list = new HashSet<E> ();
         List<E> inputEdges = pinInputEdges.get (targetPin);
         List<E> outputEdges = pinOutputEdges.get (sourcePin);
