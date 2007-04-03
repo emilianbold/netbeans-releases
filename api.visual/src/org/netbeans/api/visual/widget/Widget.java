@@ -1080,7 +1080,7 @@ public class Widget {
             if (opaque)
                 paintBackground ();
 
-            border.paint (gr, new Rectangle (bounds));
+            paintBorder ();
 
             if (checkClipping) {
                 Insets insets = border.getInsets ();
@@ -1109,6 +1109,14 @@ public class Widget {
             gr.fillRect (bounds.x, bounds.y, bounds.width, bounds.height);
         else
             gr.fillRect (bounds.x + insets.left, bounds.y + insets.top, bounds.width - insets.left - insets.right, bounds.height - insets.top - insets.bottom);
+    }
+
+    /**
+     * Called to paint the widget border itself only using the Graphics2D instance acquired from Scene.getGraphics method.
+     * @since 2.1
+     */
+    protected void paintBorder () {
+        border.paint (getGraphics (), new Rectangle (bounds));
     }
 
     /**
