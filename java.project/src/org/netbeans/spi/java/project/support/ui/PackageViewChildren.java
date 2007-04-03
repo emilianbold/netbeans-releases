@@ -45,7 +45,6 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -74,6 +73,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -1097,10 +1097,10 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     
     final class NoFoldersDataFilter implements ChangeListener, ChangeableDataFilter {
         
-        EventListenerList ell = new EventListenerList();        
+        private final ChangeSupport cs = new ChangeSupport(this);
         
         public NoFoldersDataFilter() {
-            VisibilityQuery.getDefault().addChangeListener( this );
+            VisibilityQuery.getDefault().addChangeListener(WeakListeners.change(this, VisibilityQuery.getDefault()));
         }
                 
         public boolean acceptDataObject(DataObject obj) {                
@@ -1109,24 +1109,15 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         }
         
         public void stateChanged( ChangeEvent e) {            
-            Object[] listeners = ell.getListenerList();     
-            ChangeEvent event = null;
-            for (int i = listeners.length-2; i>=0; i-=2) {
-                if (listeners[i] == ChangeListener.class) {             
-                    if ( event == null) {
-                        event = new ChangeEvent( this );
-                    }
-                    ((ChangeListener)listeners[i+1]).stateChanged( event );
-                }
-            }
+            cs.fireChange();
         }        
     
         public void addChangeListener( ChangeListener listener ) {
-            ell.add( ChangeListener.class, listener );
+            cs.addChangeListener(listener);
         }        
                         
         public void removeChangeListener( ChangeListener listener ) {
-            ell.remove( ChangeListener.class, listener );
+            cs.removeChangeListener(listener);
         }
         
     }

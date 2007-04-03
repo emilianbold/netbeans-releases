@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1007,6 +1009,18 @@ public class PackageViewTest extends NbTestCase {
         g.nonsense();
         assertTree("Test{a{good{man{is{hard{to{Find.java}}}}}}, museum{of{bad{Art.java}}}, net{pond{aquafowl{UglyDuckling.java}}}}", n);
     }
+
+    public void testMemoryLeak() throws Exception { // #99804
+        FileObject r = FileUtil.createMemoryFileSystem().getRoot();
+        FileUtil.createData(r, "some/pkg/Clazz.java");
+        SourceGroup g = new SimpleSourceGroup(r);
+        assertTree("TestGroup{s.pkg{Clazz.java}}", PackageView.createPackageView(g));
+        Reference<?> ref = new WeakReference<Object>(g);
+        r = null;
+        g = null;
+        assertGC("can collect source group", ref);
+    }
+
     private static void assertTree(String expected, Node n) {
         assertEquals(expected, printTree(n).replace('[', '{').replace(']', '}'));
     }
