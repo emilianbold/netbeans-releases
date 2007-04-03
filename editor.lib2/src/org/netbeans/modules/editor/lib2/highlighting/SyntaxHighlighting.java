@@ -36,6 +36,7 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
@@ -103,13 +104,70 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             version++;
         }
 
+        if (LOG.isLoggable(Level.FINEST)) {
+            StringBuilder sb = new StringBuilder();
+            TokenSequence<? extends TokenId> ts = hierarchy.tokenSequence();
+            
+            sb.append("\n"); //NOI18N
+            sb.append("Tokens after change: <" + evt.affectedStartOffset() + ", " + evt.affectedEndOffset() + ">\n"); //NOI18N
+            dumpSequence(ts, sb);
+            sb.append("--------------------------------------------\n\n"); //NOI18N
+            
+            LOG.finest(sb.toString());
+        }
+        
         fireHighlightsChange(evt.affectedStartOffset(), evt.affectedEndOffset());
+//        fireHighlightsChange(0, Integer.MAX_VALUE);
     }
 
     // ----------------------------------------------------------------------
     //  Private implementation
     // ----------------------------------------------------------------------
 
+    private void dumpSequence(TokenSequence<? extends TokenId> seq, StringBuilder sb) {
+        for(seq.moveStart(); seq.moveNext(); ) {
+            TokenSequence<? extends TokenId> emSeq = seq.embedded();
+            if (emSeq != null) {
+                dumpSequence(emSeq, sb);
+            } else {
+                Token<? extends TokenId> token = seq.token();
+                sb.append("<"); //NOI18N
+                sb.append(String.format("%3s", seq.offset())).append(", "); //NOI18N
+                sb.append(String.format("%3s", seq.offset() + token.length())).append(", "); //NOI18N
+                sb.append(String.format("%+3d", token.length())).append("> : "); //NOI18N
+                sb.append(tokenId(token)).append(" : '"); //NOI18N
+                sb.append(tokenText(token));
+                sb.append("'\n"); //NOI18N
+            }
+        }
+    }
+    
+    private String tokenId(Token<? extends TokenId> token) {
+        TokenId tokenId = token.id();
+        return String.format("%20s.%-15s", tokenId.getClass().getSimpleName(), tokenId.name()); //NOI18N
+    }
+    
+    private String tokenText(Token<? extends TokenId> token) {
+        CharSequence text = token.text();
+        StringBuilder sb = new StringBuilder(text.length());
+        
+        for(int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            if (Character.isISOControl(ch)) {
+                switch (ch) {
+                case '\n' : sb.append("\\n"); //NOI18N
+                case '\t' : sb.append("\\t"); //NOI18N
+                case '\r' : sb.append("\\r"); //NOI18N
+                default : sb.append("\\").append(Integer.toOctalString(ch)); //NOI18N
+                }
+            } else {
+                sb.append(ch);
+            }
+        }
+        
+        return sb.toString();
+    }
+    
     private final class HSImpl implements HighlightsSequence {
         
         private static final int S_NORMAL = 1;
