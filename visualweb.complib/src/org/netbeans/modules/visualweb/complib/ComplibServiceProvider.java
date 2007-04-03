@@ -75,6 +75,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -392,7 +393,7 @@ public class ComplibServiceProvider implements ComplibService {
         }
     }
 
-    private static final File userComplibsDir = new File(IdeUtil
+    private static final File complibsToInstallDir = new File(IdeUtil
             .getNetBeansInstallDirectory(), "complibs_to_install"); // NO18N
 
     private static final String COMPLIB_EXTENSION = "complib"; // NOI18N
@@ -403,6 +404,12 @@ public class ComplibServiceProvider implements ComplibService {
 
     private PropertyChangeSupport pceListeners = new PropertyChangeSupport(this);
 
+    /** Root directory in userDir where complib state is stored */
+    private File complibStateDir;
+
+    /** Scope object where user imported complib files live */
+    private Scope userScope;
+
     public static ComplibServiceProvider getInstance() {
         return (ComplibServiceProvider) Lookup.getDefault().lookup(
                 ComplibService.class);
@@ -410,9 +417,13 @@ public class ComplibServiceProvider implements ComplibService {
 
     /**
      * This should only be called once via ComplibService Lookup.
+     * 
+     * @throws IOException
      */
-    public ComplibServiceProvider() {
-        installNewComplibPackages(userComplibsDir);
+    public ComplibServiceProvider() throws IOException {
+        initState();
+
+        installNewComplibPackages(complibsToInstallDir);
 
         // Get initial set of open projects
         Project[] projectsArray = OpenProjects.getDefault().getOpenProjects();
@@ -460,6 +471,42 @@ public class ComplibServiceProvider implements ComplibService {
                 });
     }
 
+    /**
+     * Init directory where most of the state about this NetBeans "complib"
+     * module is kept. It lives in the NetBeans system filesystem.
+     * 
+     * @throws IOException
+     */
+    private void initState() throws IOException {
+        File root = FileUtil.toFile(Repository.getDefault()
+                .getDefaultFileSystem().getRoot());
+        complibStateDir = new File(root, getCodeNameBase());
+        if (!complibStateDir.exists() && !complibStateDir.mkdirs()) {
+            throw new IOException("Unable to create dir: " + complibStateDir);
+        }
+
+        File userInstallDir = new File(complibStateDir, "installed-complibs");
+        if (!userInstallDir.isDirectory()) {
+            // Try to migrate installed complibs from old to new location
+            String userDir = System.getProperty("netbeans.user"); // NOI18N
+            if (userDir != null) {
+                File oldInstallDir = new File(userDir, "complibs"); // NOI18N
+                if (oldInstallDir.exists()) {
+                    // Do Library defs in projects still need to be migrated?
+                    IdeUtil.copyFileRecursive(oldInstallDir, userInstallDir);
+
+                    // Try to remove the old directory
+                    if (!IdeUtil.deleteRecursive(oldInstallDir)) {
+                        IdeUtil.logWarning("Unable to remove directory: "
+                                + oldInstallDir);
+                    }
+                }
+            }
+        }
+
+        userScope = Scope.createScope(userInstallDir);
+    }
+
     private void initSharedComplibs(HashSet<Project> projects) {
         for (Project project : projects) {
             // Load in shared complib info used by this project
@@ -489,11 +536,15 @@ public class ComplibServiceProvider implements ComplibService {
                 try {
                     Scope scope = Scope.getScopeForProject(project);
                     Set<ExtensionComplib> projectComplibs = scope.getComplibs();
-                    ensureProjectComplibsOnPalette(projectComplibs);
+                    ensureProjectComplibsAreInstalled(projectComplibs);
 
                     // Init library defs and refs for each complib
                     for (ExtensionComplib projectComplib : projectComplibs) {
-                        addLibraryDefsAndRefs(project, projectComplib);
+                        ExtensionComplib userComplib = userScope
+                                .getExistingComplib(projectComplib);
+                        if (userComplib != null) {
+                            addLibraryDefsAndRefs(project, userComplib);
+                        }
                     }
                 } catch (IOException e) {
                     IdeUtil.logError(e);
@@ -519,11 +570,11 @@ public class ComplibServiceProvider implements ComplibService {
      * 
      * @param projectComplibs
      */
-    private void ensureProjectComplibsOnPalette(
+    private void ensureProjectComplibsAreInstalled(
         Set<ExtensionComplib> projectComplibs) {
         ArrayList<ExtensionComplib> al = new ArrayList<ExtensionComplib>();
         for (ExtensionComplib projectComplib : projectComplibs) {
-            if (!Scope.USER.contains(projectComplib)) {
+            if (!userScope.contains(projectComplib)) {
                 al.add(projectComplib);
             }
         }
@@ -558,7 +609,8 @@ public class ComplibServiceProvider implements ComplibService {
      * public so that NetBeans can access it.
      */
     public static class LibraryLocalizationBundle extends ListResourceBundle {
-        // TODO Bundle needs to be persisted
+        // TODO Bundle needs to be persisted to somewhere accessible to the
+        // NetBeans system classloader
         private static HashMap<String, String[]> l10nMap = new HashMap<String, String[]>();
 
         static void add(String key, String value) {
@@ -580,17 +632,16 @@ public class ComplibServiceProvider implements ComplibService {
      * complib.
      * 
      * @param project
-     * @param prjCompLib
+     * @param complib
      * @throws IOException
      */
-    private void addLibraryDefsAndRefs(Project project,
-        ExtensionComplib prjCompLib) throws IOException {
+    private void addLibraryDefsAndRefs(Project project, ExtensionComplib complib)
+            throws IOException {
         String localizingBundle = LibraryLocalizationBundle.class.getName();
 
         // Derive unique name and description for global NB Library Defs.
-        String libName = deriveUniqueLibraryName(project, prjCompLib);
-        String projectName = project.getProjectDirectory().getName();
-        String description = projectName + " " + prjCompLib.getVersionedTitle();
+        String libName = complib.getDirectoryBaseName();
+        String description = complib.getVersionedTitle();
 
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
         if (libDef == null) {
@@ -603,11 +654,10 @@ public class ComplibServiceProvider implements ComplibService {
             // Use the name of the library as a key for the description
             LibraryLocalizationBundle.add(libName, description);
 
-            List<URL> rtPath = fileListToUrlList(prjCompLib.getRuntimePath());
-            List<URL> dtPath = fileListToUrlList(prjCompLib.getDesignTimePath());
-            List<URL> javadocPath = fileListToUrlList(prjCompLib
-                    .getJavadocPath());
-            List<URL> sourcePath = fileListToUrlList(prjCompLib.getSourcePath());
+            List<URL> rtPath = fileListToUrlList(complib.getRuntimePath());
+            List<URL> dtPath = fileListToUrlList(complib.getDesignTimePath());
+            List<URL> javadocPath = fileListToUrlList(complib.getJavadocPath());
+            List<URL> sourcePath = fileListToUrlList(complib.getSourcePath());
             libDef = JsfProjectUtils.createComponentLibrary(libName, libName,
                     localizingBundle,
                     rtPath, sourcePath, javadocPath, dtPath);
@@ -675,11 +725,8 @@ public class ComplibServiceProvider implements ComplibService {
     }
 
     private String deriveUniqueLibraryName(Project project,
-        ExtensionComplib projectComplib) {
-        // Library name should only contain chars that are safe for a file.
-        String projectName = project.getProjectDirectory().getName();
-        return IdeUtil.removeWhiteSpace(projectName + "_"
-                + projectComplib.getDirectoryBaseName());
+        ExtensionComplib complib) {
+        return complib.getDirectoryBaseName();
     }
 
     private List<URL> fileListToUrlList(List<File> path)
@@ -712,7 +759,7 @@ public class ComplibServiceProvider implements ComplibService {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 // TODO Need to have modified timestamp per complib
-                long scopeLastModified = Scope.USER.getLastModified();
+                long scopeLastModified = userScope.getLastModified();
 
                 FileObject complibFo = FileUtil.toFileObject(dir);
                 FileObject[] children = complibFo.getChildren();
@@ -748,7 +795,7 @@ public class ComplibServiceProvider implements ComplibService {
         ArrayList<Complib> complibs = new ArrayList<Complib>();
         // TODO resurrect notion of built-in component libraries
         // complibs.add(BuiltInComplib.getInstance());
-        complibs.addAll(Scope.USER.getComplibs());
+        complibs.addAll(userScope.getComplibs());
         return complibs;
     }
 
@@ -766,7 +813,7 @@ public class ComplibServiceProvider implements ComplibService {
         // }
 
         // Check user scope
-        Set<ExtensionComplib> complibs = Scope.USER.getComplibs();
+        Set<ExtensionComplib> complibs = userScope.getComplibs();
         for (ExtensionComplib complib : complibs) {
             if (complib.getIdentifier().equals(id)) {
                 return complib;
@@ -802,7 +849,7 @@ public class ComplibServiceProvider implements ComplibService {
     public ExtensionComplib installComplibPackage(ComplibPackage pkg)
             throws ComplibException, IOException {
         // Install pkg to user scope
-        Scope scope = Scope.USER;
+        Scope scope = userScope;
         Identifier identifer = pkg.getIdentifer();
 
         removeExistingInstalledComplib(identifer);
@@ -838,7 +885,7 @@ public class ComplibServiceProvider implements ComplibService {
     private void installProjectComplib(ExtensionComplib projectComplib)
             throws ComplibException, IOException {
         // Install to user scope
-        Scope scope = Scope.USER;
+        Scope scope = userScope;
         Identifier identifer = projectComplib.getIdentifier();
 
         removeExistingInstalledComplib(identifer);
@@ -852,29 +899,6 @@ public class ComplibServiceProvider implements ComplibService {
         JavaHelpStorage.installComplibHelp(newComplib);
         fireAddableComplibsChanged(scope);
     }
-
-    // TODO Remove
-    // /**
-    // * Install complib help into system.
-    // *
-    // * @param complib
-    // */
-    // private void xinstallComplibHelp(ExtensionComplib complib) {
-    // URL hsUrl = HelpSet.findHelpSet(complib.getClassLoader(), complib
-    // .getHelpSetFile());
-    // try {
-    // HelpSet helpSet = new HelpSet(complib.getClassLoader(), hsUrl);
-    // if (helpSet == null) {
-    // IdeUtil
-    // .logError("Unable to access HelpSet file for component library: "
-    // + complib.getHelpSetFile());
-    // }
-    // HelpSetProvider.setHelpSets(helpSet);
-    // } catch (HelpSetException e) {
-    // IdeUtil.logWarning("Unable to add HelpSet for component library: "
-    // + complib, e);
-    // }
-    // }
 
     /**
      * Replace any existing installed complib with the same identifier
@@ -981,8 +1005,8 @@ public class ComplibServiceProvider implements ComplibService {
         }
 
         // Remove from user scope
-        Scope.USER.remove(complib);
-        fireAddableComplibsChanged(Scope.USER);
+        userScope.remove(complib);
+        fireAddableComplibsChanged(userScope);
     }
 
     /**
@@ -1127,7 +1151,7 @@ public class ComplibServiceProvider implements ComplibService {
                 }
 
                 // At this point, identifiers are equal
-                if (scope.getTimeStamp(iComplib) >= Scope.USER
+                if (scope.getTimeStamp(iComplib) >= userScope
                         .getTimeStamp(userDirExtComplib)) {
                     // Existing complib exists and is newer than the expanded
                     // userDirExtComplib so do nothing
@@ -1191,8 +1215,8 @@ public class ComplibServiceProvider implements ComplibService {
         ExtensionComplib projectComplib = scope
                 .installComplib(userDirExtComplib);
         fireAddableComplibsChanged(scope);
-        addLibraryDefsAndRefs(project, projectComplib);
-        installProjectResources(projectComplib, project);
+        addLibraryDefsAndRefs(project, userDirExtComplib);
+        installProjectResources(userDirExtComplib, project);
         return projectComplib;
     }
 
@@ -1315,7 +1339,7 @@ public class ComplibServiceProvider implements ComplibService {
         ArrayList<ExtensionComplib> newerComplibs = new ArrayList<ExtensionComplib>();
         ArrayList<ExtensionComplib> olderComplibs = new ArrayList<ExtensionComplib>();
         ExtensionComplib sameVersionComplib = null;
-        Set<ExtensionComplib> userComplibs = Scope.USER.getComplibs();
+        Set<ExtensionComplib> userComplibs = userScope.getComplibs();
         for (ExtensionComplib iComplib : userComplibs) {
             Identifier iId = iComplib.getIdentifier();
             if (iId.getNamespaceUri().equals(thisNamespace)) {
@@ -1370,7 +1394,7 @@ public class ComplibServiceProvider implements ComplibService {
                 .equals(JsfProjectUtils.getJ2eePlatformVersion(project));
 
         HashSet<ExtensionComplib> result = new HashSet<ExtensionComplib>(
-                Scope.USER.getComplibs());
+                userScope.getComplibs());
 
         Set<ExtensionComplib> prjComplibs = getComplibsForProject(project);
         for (Iterator iter = result.iterator(); iter.hasNext();) {
@@ -1863,5 +1887,15 @@ public class ComplibServiceProvider implements ComplibService {
                 + " Shared Component Library";
         String libName = IdeUtil.removeWhiteSpace(description);
         return new LibraryDescriptor(libName, description);
+    }
+
+    /**
+     * Returns the NetBeans module code name base.
+     * 
+     * @return
+     */
+    String getCodeNameBase() {
+        // Code name base should be the same as the package name of this class
+        return this.getClass().getPackage().getName();
     }
 }

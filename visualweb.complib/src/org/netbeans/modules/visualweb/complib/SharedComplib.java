@@ -28,4 +28,9 @@ public class SharedComplib extends ExtensionComplib {
         super(absoluteLibDir);
     }
 
+    @Override
+    public String toString() {
+        return getVersionedTitle() + " - " + super.toString();
+    }
+
 }

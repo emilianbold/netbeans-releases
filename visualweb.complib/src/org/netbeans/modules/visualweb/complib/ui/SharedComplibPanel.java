@@ -36,6 +36,7 @@ import org.netbeans.modules.visualweb.complib.IdeUtil;
 import org.netbeans.modules.visualweb.complib.SharedComplib;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
@@ -109,6 +110,11 @@ public class SharedComplibPanel extends javax.swing.JPanel {
                 return options[i];
             }
         });
+        
+        // Set a default selection
+        if (options.length > 0) {
+            optionsJList.setSelectedIndex(0);
+        }
     }
 
     /**
@@ -284,8 +290,15 @@ public class SharedComplibPanel extends javax.swing.JPanel {
         updateSharedComplibList();
     }                                      
 
-    private void addActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addActionPerformed
+    private void addActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_addActionPerformed
         ProjectWrapper pw = (ProjectWrapper) optionsJList.getSelectedValue();
+        if (pw == null) {
+            addErrorMessage("Select a Shared Component Library");
+            return;
+        } else {
+            clearStatusMessage();
+        }
+
         Project project = pw.getProject();
         try {
             csp.addSharedComplibProject(project);
@@ -294,7 +307,7 @@ public class SharedComplibPanel extends javax.swing.JPanel {
             IdeUtil.logError(e);
         }
         updateSharedComplibList();
-    }//GEN-LAST:event_addActionPerformed
+    }// GEN-LAST:event_addActionPerformed
 
     private void updateSharedComplibList() {
         /*
@@ -349,10 +362,8 @@ public class SharedComplibPanel extends javax.swing.JPanel {
         String title = NbBundle.getMessage(SharedComplibPanel.class,
                 "sharedComplib.dialogTitle"); // NOI18N
         JButton closeButton = new JButton();
-        String msg = org.openide.util.NbBundle.getMessage(
-                SharedComplibPanel.class, "sharedComplib.closeButton");
-        closeButton.setText(msg);
-        closeButton.getAccessibleContext().setAccessibleDescription(msg);
+        Mnemonics.setLocalizedText(closeButton, NbBundle.getMessage(
+                SharedComplibPanel.class, "sharedComplib.closeButton"));
 
         Object[] options = new Object[] { closeButton };
         DialogDescriptor descriptor = new DialogDescriptor(this, title, true,

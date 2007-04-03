@@ -302,6 +302,29 @@ public class IdeUtil {
     }
 
     /**
+     * Deletes all files and subdirectories under dir. Returns true if all
+     * deletions were successful. If a deletion fails, the method stops
+     * attempting to delete and returns false.
+     * 
+     * @param dir
+     * @return
+     */
+    public static boolean deleteRecursive(File dir) {
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteRecursive(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+
+        // The directory is now empty so delete it
+        return dir.delete();
+    }
+
+    /**
      * Possibly make a copy of a file to workaround a problem on Windows where a
      * jar file can be locked and not allow the user to remove it. The tradeoff
      * is that the file will be copied which may take time for large files. A

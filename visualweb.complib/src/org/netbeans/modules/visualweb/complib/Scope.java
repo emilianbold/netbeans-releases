@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Comment;
@@ -38,23 +39,18 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
-
 /**
  * This class handles the persistence of complibs in different installation
  * scopes. Conceptually there is a USER scope, a SYSTEM scope (to be
  * implemented), and a scope for each project. Maintains sets of
  * ExtensionComplib-s per scope and also maintains a list of directories in an
  * XML file.
- *
+ * 
  * @author Edwin Goei
  */
 class Scope {
     /** Relative path from project lib directory */
     private static final String PATH_PROJECT_SCOPE_COMPLIB = "complibs"; // NOI18N
-
-    /** Relative path from rave -userdir */
-    private static final String PATH_USER_SCOPE_COMPLIB = "complibs"; // NOI18N
 
     private static final String LIBRARY_INDEX_FILENAME = "index.xml"; // NOI18N
 
@@ -63,33 +59,6 @@ class Scope {
     private static final String DIRECTORY_NAME_ATTR = "name"; // NOI18N
 
     private static final String VALID_DIRECTORY_LIST = "valid-directory-list"; // NOI18N
-
-    public static final Scope USER;
-    // public static Scope SYSTEM;
-    static {
-        Scope tmpUserScope = null;
-        try {
-            String userDir = System.getProperty("netbeans.user"); // NOI18N
-            if (userDir == null) {
-                throw new FileNotFoundException("-userDir not found: " // NOI18N
-                        + userDir);
-            }
-            File userInstallDir = new File(userDir, PATH_USER_SCOPE_COMPLIB);
-            tmpUserScope = new Scope(userInstallDir);
-
-            // TODO At some point there may be a system-wide Scope. Determine a
-            // system-wide complib dir location
-            // new File(System.getProperty("netbeans.home")));
-            // File sampleEjbDir =
-            // InstalledFileLocator.getDefault().locate(".", null, false );
-            // // NOI18N
-            // SYSTEM = new Scope(new File("/")); //NOI18N
-        } catch (Exception e) {
-            assert false;
-            IdeUtil.logError(e);
-        }
-        USER = tmpUserScope;
-    }
 
     /** Cache which maps installHome to Scope objects */
     private static WeakHashMap<File, Scope> registry = new WeakHashMap<File, Scope>();
@@ -107,18 +76,19 @@ class Scope {
      * @param installHome
      *            directory that contains index file and all expanded complib
      *            dirs in this scope
-     * @throws FileNotFoundException
-     *             if installHome is not valid, eg. if it does not exist and
-     *             cannot be created.
      */
-    private Scope(File installHome) throws FileNotFoundException {
+    private Scope(File installHome) {
         this.installHome = installHome;
         loadComplibs();
     }
 
+    public static Scope createScope(File installHome) {
+        return new Scope(installHome);
+    }
+
     /**
      * Factory method to get a unique Scope object for a Project
-     *
+     * 
      * @param project
      * @return
      * @throws IOException
@@ -348,7 +318,8 @@ class Scope {
     }
 
     /**
-     * Returns an existing complib in this scope with a matching complib Id
+     * Returns an existing complib in this scope with a matching complib Id or
+     * null.
      * 
      * @param complib
      * @return

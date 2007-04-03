@@ -626,18 +626,28 @@ class ComplibManifest {
         if (rbBaseName.length() != 0) {
             // Attribute was specified or defaulted
             try {
-                rb = ResourceBundle.getBundle(rbBaseName, Locale.getDefault(),
-                        resourceClassLoader);
-            } catch (MissingResourceException mre) {
-                // @since NetBeans 6 Visual Web
-                // If not found, then try looking in the META-INF/ directory
-                if (!rbBaseName.startsWith(RESOURCE_BUNDLE_PREFIX)) {
-                    rb = ResourceBundle.getBundle(RESOURCE_BUNDLE_PREFIX
-                            + rbBaseName, Locale.getDefault(),
-                            resourceClassLoader);
+                /*
+                 * As a workaround for the NB ProxyClassLoader warning, look for
+                 * the bundle under META-INF first and then go look starting at
+                 * the top level as usual.
+                 * 
+                 * @since NetBeans 6 Visual Web
+                 */
+                if (rbBaseName.indexOf(".") == -1) {
+                    try {
+                        rb = ResourceBundle.getBundle(RESOURCE_BUNDLE_PREFIX
+                                + rbBaseName, Locale.getDefault(),
+                                resourceClassLoader);
+                    } catch (MissingResourceException mre) {
+                        rb = ResourceBundle.getBundle(rbBaseName, Locale
+                                .getDefault(), resourceClassLoader);
+                    }
+                } else {
+                    rb = ResourceBundle.getBundle(rbBaseName, Locale
+                            .getDefault(), resourceClassLoader);
                 }
             } catch (RuntimeException e) {
-                // Warn user and default to using no resource bundle
+                // Fallback: warn user and default to using no resource bundle
                 IdeUtil.logWarning(e);
                 rb = emptyResourceBundle;
             }
