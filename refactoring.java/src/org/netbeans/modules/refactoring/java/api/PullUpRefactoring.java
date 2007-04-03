@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.refactoring.java.api;
 
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.Lookup;
@@ -30,7 +31,7 @@ public final class PullUpRefactoring extends AbstractRefactoring {
     private static final MemberInfo[] EMPTY_MEMBERS = new MemberInfo[0];
 
     // parameters of the refactoring
-    private TreePathHandle targetType;
+    private ElementHandle targetType;
     private MemberInfo[] members;
     
     /** Creates a new instance of PullUpRefactoring 
@@ -54,14 +55,14 @@ public final class PullUpRefactoring extends AbstractRefactoring {
     /** Returns target supertype to pull members up to.
      * @return Target supertype or null if no target supertype is set.
      */
-    public TreePathHandle getTargetType() {
+    public ElementHandle getTargetType() {
         return targetType;
     }
 
     /** Sets target supertype to pull members up to.
      * @param targetType Target supertype.
      */
-    public void setTargetType(TreePathHandle targetType) {
+    public void setTargetType(ElementHandle targetType) {
         this.targetType = targetType;
     }
 

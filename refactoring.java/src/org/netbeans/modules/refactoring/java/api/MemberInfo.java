@@ -18,9 +18,13 @@
  */
 package org.netbeans.modules.refactoring.java.api;
 
+import javax.lang.model.element.Element;
 import javax.swing.Icon;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.UiUtils;
 
 /**
  *
@@ -54,6 +58,10 @@ public final class MemberInfo {
     
     public String getHtmlText() {
         return htmlText;
+    }
+    
+    public static MemberInfo createInfo(CompilationController c, Element el) {
+        return new MemberInfo(ElementHandle.create(el), UiUtils.getHeader(el, c, UiUtils.PrintPart.NAME), UiUtils.getDeclarationIcon(el));
     }
     
     public Icon getIcon() {

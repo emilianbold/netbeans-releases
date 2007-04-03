@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.lang.model.element.Element;
@@ -297,18 +298,28 @@ public class RetoucheUtils {
     
     public static Collection<Element> getSuperTypes(TypeElement type, CompilationInfo info) {
         Collection<Element> result = new HashSet();
-        result.add(typeToElement(type.getSuperclass(), info));
-        result.addAll(typesToElements(type.getInterfaces(), info));
+        LinkedList<TypeElement> l = new LinkedList();
+        l.add(type);
+        while (!l.isEmpty()) {
+            TypeElement t = l.removeFirst();
+            Element superClass = typeToElement(t.getSuperclass(), info);
+            if (superClass!=null) {
+                result.add(superClass);
+                l.addLast((TypeElement)superClass);
+            }
+            Collection<TypeElement> interfaces = typesToElements(type.getInterfaces(), info);
+            result.addAll(interfaces);
+            l.addAll(interfaces);
+        }
         return result;
-        
     }
     
-    public static Element typeToElement(TypeMirror type, CompilationInfo info) {
-        return info.getTypes().asElement(type);
+    public static TypeElement typeToElement(TypeMirror type, CompilationInfo info) {
+        return (TypeElement) info.getTypes().asElement(type);
     }
     
-    private static Collection<Element> typesToElements(Collection<? extends TypeMirror> types, CompilationInfo info) {
-        Collection<Element> result = new HashSet();
+    private static Collection<TypeElement> typesToElements(Collection<? extends TypeMirror> types, CompilationInfo info) {
+        Collection<TypeElement> result = new HashSet();
         for (TypeMirror tm : types) {
             result.add(typeToElement(tm, info));
         }

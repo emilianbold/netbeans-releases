@@ -21,9 +21,17 @@ package org.netbeans.modules.refactoring.java.ui;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
@@ -45,6 +53,8 @@ import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
+import org.netbeans.modules.refactoring.java.api.MemberInfo;
+import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
@@ -52,7 +62,7 @@ import org.openide.util.NbBundle;
 
 /** UI panel for collecting refactoring parameters.
  *
- * @author Martin Matula
+ * @author Martin Matula, Jan Becicka
  */
 public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     // helper constants describing columns in the table of members
@@ -65,9 +75,9 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     private final TableModel tableModel;
     // pre-selected members (comes from the refactoring action - the elements
     // that should be pre-selected in the table of members)
-    private Set selectedMembers;
+    private Set<MemberInfo> selectedMembers;
     // target type to move the members to
-    private TreePathHandle targetType;
+    private MemberInfo targetType;
     // data for the members table (first dimension - rows, second dimension - columns)
     // the columns are: 0 = Selected (true/false), 1 = Member (Java element), 2 = Make Abstract (true/false)
     private Object[][] members = new Object[0][0];
@@ -78,7 +88,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
      *      (determined by which nodes the action was invoked on - e.g. if it was
      *      invoked on a method, the method will be pre-selected to be pulled up)
      */
-    public PullUpPanel(PullUpRefactoring refactoring, Set selectedMembers, final ChangeListener parent) {
+    public PullUpPanel(PullUpRefactoring refactoring, Set<MemberInfo> selectedMembers, final ChangeListener parent) {
         this.refactoring = refactoring;
         this.tableModel = new TableModel();
         this.selectedMembers = selectedMembers;
@@ -139,14 +149,14 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                             // make the checkbox checked (even if "Make Abstract" is not set)
                             // for non-static methods if the target type is an interface
-                            Object object = table.getModel().getValueAt(row, 1);
-                            //TODO:
-//                            if (object instanceof Method) {
-//                                if ((targetType.isInterface() && !Modifier.isStatic(((Method) object).getModifiers())) || Modifier.isAbstract(((Method) object).getModifiers())) {
+                            MemberInfo object = (MemberInfo) table.getModel().getValueAt(row, 1);
+                            if (object.member.getKind()== ElementKind.METHOD) {
+                                //todo:
+//                                if ((targetType.member.getKind() == ElementKind.INTERFACE && !Modifier.isStatic((object.mgetModifiers())) || Modifier.isAbstract(((Method) object).getModifiers())) {
 //                                    value = Boolean.TRUE;
 //                                }
-//                            }
-                            // the super method automatically makes sure the checkbox is not visible if the
+                            }
+                            //`the super method automatically makes sure the checkbox is not visible if the
                             // "Make Abstract" value is null (which holds for non-methods)
                             // and that the checkbox is disabled if the cell is not editable (which holds for
                             // static methods all the time and for all methods in case the target type is an interface
@@ -180,7 +190,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
      * of target type.
      * @return Target type.
      */
-    public TreePathHandle getTargetType() {
+    public MemberInfo getTargetType() {
         return targetType;
     }
     
@@ -188,33 +198,38 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
      * @return Descriptors of members to be pulled up.
      */
     public MemberInfo[] getMembers() {
-//        List list = new ArrayList();
-//        // remeber if the target type is an interface (will be used in the loop)
-//        boolean targetIsInterface = targetType.isInterface();
-//        // go through all rows of a table and collect selected members
-//        for (int i = 0; i < members.length; i++) {
-//            // if the current row is selected, create MemberInfo for it and
-//            // add it to the list of selected members
-//            if (members[i][0].equals(Boolean.TRUE)) {
-//                Object element = members[i][1];
-//                Object member;
-//                if (element instanceof Field) {
-//                    member = new PullUpRefactoring.MemberInfo((Field) element);
-//                } else if (element instanceof JavaClass) {
-//                    member = new PullUpRefactoring.MemberInfo((JavaClass) element);
-//                } else if (element instanceof MultipartId) {
-//                    member = new PullUpRefactoring.MemberInfo((MultipartId) element);
-//                } else {
-//                    // for methods the makeAbstract is always set to true if the
-//                    // target type is an interface
-//                    member = new PullUpRefactoring.MemberInfo((Method) element, targetIsInterface || ((Boolean) members[i][2]).booleanValue());
-//                }
-//                list.add(member);
-//            }
-//        }
-//        // return the array of selected members
-//        return (PullUpRefactoring.MemberInfo[]) list.toArray(new PullUpRefactoring.MemberInfo[list.size()]);
-        return new MemberInfo[0];
+        final List list = new ArrayList();
+        final TreePathHandle handle = refactoring.getSourceType();
+        JavaSource source = JavaSource.forFileObject(handle.getFileObject());
+        try {
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                
+                public void run(CompilationController parameter) throws Exception {
+                    
+                    // remeber if the target type is an interface (will be used in the loop)
+                    boolean targetIsInterface = targetType.member.getKind() == ElementKind.INTERFACE;
+                    // go through all rows of a table and collect selected members
+                    for (int i = 0; i < members.length; i++) {
+                        // if the current row is selected, create MemberInfo for it and
+                        // add it to the list of selected members
+                        if (members[i][0].equals(Boolean.TRUE)) {
+                            MemberInfo element = (MemberInfo) members[i][1];
+                            Object member;
+                            //                                // for methods the makeAbstract is always set to true if the
+                            //                                // target type is an interface
+                            //                                member = new PullUpRefactoring.MemberInfo((Method) element, targetIsInterface || ((Boolean) members[i][2]).booleanValue());
+                            list.add(element);
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ioe) {
+            throw (RuntimeException) new RuntimeException().initCause(ioe);
+        }
+        // return the array of selected members
+        return (MemberInfo[]) list.toArray(new MemberInfo[list.size()]);
     }
     
     // --- GENERATED CODE ------------------------------------------------------
@@ -328,87 +343,108 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
         }
         
 
-//        /** Method called by target type combo box model when the selection changes
-//         * (i.e. when the selected target type changes).
-//         * Updates table rows based on the change (all members from the source type
-//         * up to the direct subtypes of the target type need to be displayed).
-//         * @param classes Classes the members of which should be displayed (these are all classes
-//         *      that are supertypes of source type (including the source type) and at the same time subtypes
-//         *      of the target type (excluding the target type).
-//         */
-//        void update(JavaClass[] classes) {
-//            Map map = new HashMap();
-//            // go through the passed classes, collect all members from them and
-//            // create a map mapping a member to an array of java.lang.Object representing
-//            // a future table row corresponding to that member
-//            for (int i = 0; i < classes.length; i++) {
-//                // collect interface names
-//                for (Iterator it = classes[i].getInterfaceNames().iterator(); it.hasNext();) {
-//                    Object ifcName = it.next();
-//                    map.put(ifcName, new Object[] {Boolean.FALSE, ifcName, null});
-//                }
-//                // collect fields, methods and inner classes
-//                Object[] features = classes[i].getFeatures().toArray();
-//                for (int j = 0; j < features.length; j++) {
-//                    if (features[j] instanceof JavaClass || features[j] instanceof Field || features[j] instanceof Method) {
-//                        map.put(features[j], new Object[] {Boolean.FALSE, features[j], (features[j] instanceof Method) ? Boolean.FALSE : null});
-//                    }
-//                }
-//            }
-//            // select some members if applicable
-//            if (selectedMembers != null) {
-//                // if the collection of pre-selected members is not null
-//                // this is the first creation of the table data ->
-//                // -> select the members from the selectedMembers collection
-//                for (Iterator it = selectedMembers.iterator(); it.hasNext();) {
-//                    Object[] value = (Object[]) map.get(it.next());
-//                    if (value != null) {
-//                        value[0] = Boolean.TRUE;
-//                    }
-//                }
-//                selectedMembers = null;
-//            } else {
-//                // this is not the first update of the table content ->
-//                // -> select elements that were selected before the update
-//                // (if they will still be present in the table)
-//                for (int i = 0; i < members.length; i++) {
-//                    Object[] value = (Object[]) map.get(members[i][1]);
-//                    if (value != null) {
-//                        map.put(value[1], members[i]);
-//                    }
-//                }
-//            }
-//            
-//            // TODO: remove overrides, since they cannot be pulled up
-//            
-//            // the members are collected
-//            // now, create a tree map (to sort them) and create the table data
-//            TreeMap treeMap = new TreeMap(new Comparator() {
-//                public int compare(Object o1, Object o2) {
-//                    NamedElement ne1 = (NamedElement) o1, ne2 = (NamedElement) o2;
-//                    // elements are sorted primarily by their class name
-//                    int result = ne1.getClass().getName().compareTo(ne2.getClass().getName());
-//                    if (result == 0) {
-//                        // then by their display text
-//                        result = UIUtilities.getDisplayText(ne1).compareTo(UIUtilities.getDisplayText(ne2));
-//                    }
-//                    if (result == 0) {
-//                        // then the mofid is compared (to not take two non-identical
-//                        // elements as equals)
-//                        result = ne1.refMofId().compareTo(ne2.refMofId());
-//                    }
-//                    return result;
-//                }
-//            });
-//            treeMap.putAll(map);
-//            members = new Object[treeMap.size()][];
-//            int i = 0;
-//            for (Iterator it = treeMap.values().iterator(); it.hasNext(); i++) {
-//                members[i] = (Object[]) it.next();
-//            }
-//            // fire event to repaint the table
-//            this.fireTableDataChanged();
-//        }
+        /** Method called by target type combo box model when the selection changes
+         * (i.e. when the selected target type changes).
+         * Updates table rows based on the change (all members from the source type
+         * up to the direct subtypes of the target type need to be displayed).
+         * @param classes Classes the members of which should be displayed (these are all classes
+         *      that are supertypes of source type (including the source type) and at the same time subtypes
+         *      of the target type (excluding the target type).
+         */
+        void update(final MemberInfo[] classes) {
+            JavaSource source = JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
+            try {
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                
+                public void run(CompilationController info) {
+                    try {
+                        info.toPhase(JavaSource.Phase.RESOLVED);
+                    } catch (IOException ioe) {
+                        throw (RuntimeException) new RuntimeException().initCause(ioe);
+                    }
+                    Map map = new HashMap();
+                    // go through the passed classes, collect all members from them and
+                    // create a map mapping a member to an array of java.lang.Object representing
+                    // a future table row corresponding to that member
+                    for (int i = 0; i < classes.length; i++) {
+                        // collect interface names
+                        //TODO:
+                        //                for (Iterator it = classes[i].getInterfaceNames().iterator(); it.hasNext();) {
+                        //                    Object ifcName = it.next();
+                        //                    map.put(ifcName, new Object[] {Boolean.FALSE, ifcName, null});
+                        //                }
+                        // collect fields, methods and inner classes
+                        List<? extends Element> features = classes[i].member.resolve(info).getEnclosedElements();
+                        int j = 0;
+                        for (Element e:features) {
+                            MemberInfo mi = MemberInfo.createInfo(info, e);
+                            map.put(mi, new Object[] {Boolean.FALSE, mi, (e.getKind() == ElementKind.METHOD) ? Boolean.FALSE : null});
+                        }
+                    }
+                    // select some members if applicable
+                    if (selectedMembers != null) {
+                        // if the collection of pre-selected members is not null
+                        // this is the first creation of the table data ->
+                        // -> select the members from the selectedMembers collection
+                        for (Iterator it = selectedMembers.iterator(); it.hasNext();) {
+                            Object[] value = (Object[]) map.get(it.next());
+                            if (value != null) {
+                                value[0] = Boolean.TRUE;
+                            }
+                        }
+                        selectedMembers = null;
+                    } else {
+                        // this is not the first update of the table content ->
+                        // -> select elements that were selected before the update
+                        // (if they will still be present in the table)
+                        for (int i = 0; i < members.length; i++) {
+                            Object[] value = (Object[]) map.get(members[i][1]);
+                            if (value != null) {
+                                map.put(value[1], members[i]);
+                            }
+                        }
+                    }
+                    
+                    // TODO: remove overrides, since they cannot be pulled up
+                    
+                    // the members are collected
+                    // now, create a tree map (to sort them) and create the table data
+                    TreeMap treeMap = new TreeMap(new Comparator() {
+                        public int compare(Object o1, Object o2) {
+                            return ((MemberInfo) o1).getHtmlText().compareTo(((MemberInfo) o2).getHtmlText());
+                            
+//TODO:
+//                            NamedElement ne1 = (NamedElement) o1, ne2 = (NamedElement) o2;
+//                            // elements are sorted primarily by their class name
+//                            int result = ne1.getClass().getName().compareTo(ne2.getClass().getName());
+//                            if (result == 0) {
+//                                // then by their display text
+//                                result = UIUtilities.getDisplayText(ne1).compareTo(UIUtilities.getDisplayText(ne2));
+//                            }
+//                            if (result == 0) {
+//                                // then the mofid is compared (to not take two non-identical
+//                                // elements as equals)
+//                                result = ne1.refMofId().compareTo(ne2.refMofId());
+//                            }
+//                            return result;
+                        }
+                    });
+                    treeMap.putAll(map);
+                    members = new Object[treeMap.size()][];
+                    int i = 0;
+                    for (Iterator it = treeMap.values().iterator(); it.hasNext(); i++) {
+                        members[i] = (Object[]) it.next();
+                    }
+                }
+            }, true);
+            } catch (IOException ioe) {
+                throw (RuntimeException) new RuntimeException().initCause(ioe);
+            }
+            // fire event to repaint the table
+            this.fireTableDataChanged();
+        }
     }
 
     /** Model for combo box for choosing target type.
@@ -432,30 +468,50 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
          * update the table content with changed set of members.
          * @param anItem Class selected to be the target.
          */
-        public void setSelectedItem(Object anItem) {
-//            if (targetType != anItem) {
-//                targetType = (TreePathHandle) anItem;
-//                // must fire this (according to the ComboBoxModel interface contract)
-//                fireContentsChanged(this, -1, -1);
-//                // compute the classes (they must be superclasses of source type - including it -
-//                // and subtypes of target type)
-//                List classes = new ArrayList();
-//                // add source type (it is always included)
-//                classes.add(refactoring.getSourceType());
-//                for (int i = 0; i < supertypes.length; i++) {
-//                    // add the other subtypes of the target type
-//                    if (!supertypes[i].equals(targetType) && supertypes[i].isSubTypeOf(targetType)) {
-//                        classes.add(supertypes[i]);
-//                    }
-//                }
-//                // update the table
-//                tableModel.update((JavaClass[]) classes.toArray(new JavaClass[classes.size()]));
-//            }
+        public void setSelectedItem(final Object anItem) {
+            JavaSource source = JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
+            try {
+                source.runUserActionTask(new CancellableTask<CompilationController>() {
+                    public void cancel() {
+                    }
+                    
+                    public void run(CompilationController info) {
+                        try {
+                            info.toPhase(JavaSource.Phase.RESOLVED);
+                        } catch (IOException ioe) {
+                            throw (RuntimeException) new RuntimeException().initCause(ioe);
+                        }
+                        if (targetType != anItem) {
+                            targetType = ((MemberInfo) anItem);
+                            // must fire this (according to the ComboBoxModel interface contract)
+                            fireContentsChanged(this, -1, -1);
+                            // compute the classes (they must be superclasses of source type - including it -
+                            // and subtypes of target type)
+                            List classes = new ArrayList();
+                            // add source type (it is always included)
+                            Element e = refactoring.getSourceType().resolveElement(info);
+                            MemberInfo m = MemberInfo.createInfo(info, e);
+                            classes.add(m);
+                            //TODO:
+                            //                for (int i = 0; i < supertypes.length; i++) {
+                            //                    // add the other subtypes of the target type
+                            //                    if (!supertypes[i].equals(targetType) && supertypes[i].isSubTypeOf(targetType)) {
+                            //                        classes.add(supertypes[i]);
+                            //                    }
+                            //                }
+                            // update the table
+                            //                tableModel.update((MemberInfo[]) classes.toArray(new MemberInfo[classes.size()]));
+                            tableModel.update((MemberInfo[]) classes.toArray(new MemberInfo[classes.size()]));
+                        }
+                    }
+                }, true);
+            } catch (IOException ioe) {
+                throw (RuntimeException) new RuntimeException().initCause(ioe);
+            }
         }
 
         public Object getSelectedItem() {
-            return getElementAt(0);
-            //return targetType;
+            return targetType;
         }
 
         public Object getElementAt(int index) {
