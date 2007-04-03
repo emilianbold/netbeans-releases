@@ -22,12 +22,14 @@ package org.netbeans.modules.sun.manager.jbi.actions;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
 import org.netbeans.modules.sun.manager.jbi.nodes.Uninstallable;
+import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -152,8 +154,19 @@ public abstract class UninstallAction extends NodeAction {
         public JMenuItem getPopupPresenter() {
             JMenu result = new JMenu(
                     NbBundle.getMessage(ShutdownAction.class, "LBL_Advanced"));  // NOI18N
-            result.add(new JMenuItem(SystemAction.get(ShutdownAction.Force.class)));
-            result.add(new JMenuItem(this));
+            
+            //result.add(new JMenuItem(SystemAction.get(ShutdownAction.Force.class)));            
+            Action forceShutdownAction = SystemAction.get(ShutdownAction.Force.class);
+            JMenuItem forceShutdownMenuItem = new JMenuItem();
+            Actions.connect(forceShutdownMenuItem, forceShutdownAction, false);
+            result.add(forceShutdownMenuItem);
+            
+            //result.add(new JMenuItem(this));
+            Action forceUninstallAction = SystemAction.get(UninstallAction.Force.class);
+            JMenuItem forceUninstallMenuItem = new JMenuItem();
+            Actions.connect(forceUninstallMenuItem, forceUninstallAction, false);
+            result.add(forceUninstallMenuItem);
+            
             return result;
         }        
         
