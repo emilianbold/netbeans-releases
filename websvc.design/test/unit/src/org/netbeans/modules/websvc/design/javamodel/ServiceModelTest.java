@@ -51,8 +51,14 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
         {},
         {Mode.IN}
     };
-    
+
     private static final Object[][] FAULTS={
+        {},
+        {"FooException", "Exception"},
+        {}
+    };
+    
+    private static final Object[][] FAULT_TYPES={
         {},
         {"add.foo.FooException", "java.lang.Exception"},
         {}
@@ -158,7 +164,8 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
                 List<FaultModel> faults = op.getFaults();
                 j=0;
                 for (FaultModel fault:faults) {
-                    assertEquals(FAULTS[i][j], fault.getFaultType());
+                    assertEquals(FAULTS[i][j], fault.getName());
+                    assertEquals(FAULT_TYPES[i][j], fault.getFaultType());
                     j++;
                 }
                 i++;

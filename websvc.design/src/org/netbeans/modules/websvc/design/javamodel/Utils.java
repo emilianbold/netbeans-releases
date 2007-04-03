@@ -208,12 +208,17 @@ public class Utils {
         List<? extends TypeMirror> faultTypes = methodEl.getThrownTypes();
         List<FaultModel> faults = new ArrayList<FaultModel>();
         for (TypeMirror faultType:faultTypes) {
+            FaultModel faultModel = new FaultModel();
             if (faultType.getKind() == TypeKind.DECLARED) {
                 TypeElement faultEl = (TypeElement)((DeclaredType)faultType).asElement();
-                faults.add(new FaultModel(faultEl.getQualifiedName().toString()));
+                faultModel.setFaultType(faultEl.getQualifiedName().toString());
             } else {
-                faults.add(new FaultModel(faultType.toString()));
+                faultModel.setFaultType(faultType.toString());
             }
+            String fullyQualifiedName = faultModel.getFaultType();
+            int index = fullyQualifiedName.lastIndexOf("."); //NOI18N
+            faultModel.setName(index>=0?fullyQualifiedName.substring(index+1):fullyQualifiedName);
+            faults.add(faultModel);
         }
         methodModel.setFaults(faults);
         
