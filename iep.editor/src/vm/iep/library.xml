@@ -173,12 +173,12 @@ type CDATA #REQUIRED
         <component_type name="TableInput" icon="tableInputx16.png" title="IEP.Input.TableInput.title" description="IEP.Input.TableInput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
-                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.StaticIOCustomEditor"/>
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TableInputCustomEditor"/>
                 <property name="type" default="i18n.IEP.Input.TableInput.title"/>
                 <property name="outputType" default="i18n.IEP.IOType.table"/>
                 <property name="outputSchemaId" required="true"/>
                 <property name="isSchemaOwner" default="true"/>
-                <property name="isGlobal" default="false" access="&RW;"/>
+                <property name="isGlobal" default="true" access="&R;"/>
                 <property name="globalId" default="" access="&RW;"/>
                 <property name="palette" default="input"/>
             </property_group>
@@ -217,7 +217,7 @@ type CDATA #REQUIRED
         <component_type name="TableOutput"  icon="tableOutputx16.png" title="IEP.Output.TableOutput.title" description="IEP.Output.TableOutput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
-                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.StaticIOCustomEditor"/>
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TableOutputCustomEditor"/>
                 <property name="type" default="i18n.IEP.Output.TableOutput.title"/>
                 <property name="inputType" default="i18n.IEP.IOType.relation"/>
                 <property name="isGlobal" default="false" access="&RW;"/>
