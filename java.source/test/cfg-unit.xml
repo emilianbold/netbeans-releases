@@ -64,6 +64,7 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/netbeans/modules/java/source/parsing/FileManagerTest.class" />
 
                 <exclude name="org/netbeans/api/java/source/gen/BrokenSourceTest.class"/>
+                <exclude name="org/netbeans/api/java/source/gen/AddMethodToIntfcTemplate.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -118,7 +119,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="single" executor="unit-executor" name="modifying sources">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/api/java/source/gen/ConstructorTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/AddMethodToIntfcTemplate.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -155,5 +156,5 @@ Microsystems, Inc. All Rights Reserved.
     
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
-    
+
 </mconfig>

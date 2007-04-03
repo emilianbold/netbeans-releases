@@ -94,7 +94,15 @@ public abstract class GeneratorTest extends NbTestCase {
             }
         };
         SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {loader, cpp});
+        
+        SourceUtilsTestUtil.prepareTest(
+                new String[] {
+                    "org/netbeans/modules/java/project/layer.xml", 
+                    "org/netbeans/modules/project/ui/resources/layer.xml"
+                },
+                new Object[] {loader, cpp}
+        );
+        
         JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
