@@ -79,11 +79,8 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
         if(mSceneBounds == null) {
             mSceneBounds = mScene.getBounds();
         }
-        
-        Point curPoint = widget.convertLocalToScene(point);
-        IconNodeWidget iconNodeWidget = null;
-        Dimension newDimension = new Dimension(0,0);
 
+        IconNodeWidget iconNodeWidget = null;
         if (mScene.getDragLayer().getChildren().size() < 1) {
             iconNodeWidget = new IconNodeWidget(mScene);
         } else {
@@ -95,7 +92,9 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
 
         if(iconNodeWidget != null && iconNodeWidget.getBounds() != null) {
             Rectangle iconBounds = iconNodeWidget.getBounds();
-
+            Dimension newDimension = new Dimension(0,0);
+            Point curPoint = widget.convertLocalToScene(point);
+            
             if(mIconOriginalSize == null) {
                 mIconOriginalSize = new Dimension(iconNodeWidget.getBounds().width, iconNodeWidget.getBounds().height);
             }
@@ -110,14 +109,14 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
             iconNodeWidget.setPreferredSize(newDimension);
             iconNodeWidget.setPreferredLocation(curPoint);
 
+            Rectangle visibleRect = new Rectangle(curPoint.x, curPoint.y,newDimension.width,newDimension.height); 
+            mScene.getView().scrollRectToVisible(visibleRect);
+            
         }
         if (mScene.getDragLayer().getChildren().size() < 1) {
             iconNodeWidget.setPreferredLocation(new Point(-1210,-1210));
             mScene.getDragLayer().addChild(iconNodeWidget);
-        } else {
-            Rectangle visibleRect = new Rectangle(curPoint.x, curPoint.y,newDimension.width,newDimension.height); 
-            mScene.getView().scrollRectToVisible(visibleRect);
-        }
+        } 
     }
 
     public ConnectorState isAcceptable (Widget widget, Point point, Transferable transferable){
