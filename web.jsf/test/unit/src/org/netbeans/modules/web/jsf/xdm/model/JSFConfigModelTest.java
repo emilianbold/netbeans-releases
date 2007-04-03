@@ -400,4 +400,10 @@ public class JSFConfigModelTest extends NbTestCase {
         assertEquals("Count of Icons ", 2, rule.getIcons().size());
     }
     
+    public void testManagedBeanScopeOrdering() throws Exception{
+        assertTrue(ManagedBean.Scope.REQUEST.compareTo(ManagedBean.Scope.SESSION) < 0);
+        assertTrue(ManagedBean.Scope.SESSION.compareTo(ManagedBean.Scope.APPLICATION) < 0);
+        assertTrue(ManagedBean.Scope.APPLICATION.compareTo(ManagedBean.Scope.NONE) < 0);
+    }
+    
 }
