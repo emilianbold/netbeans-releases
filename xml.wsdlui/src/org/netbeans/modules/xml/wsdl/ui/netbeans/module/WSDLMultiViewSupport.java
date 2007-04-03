@@ -114,8 +114,7 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
                 }
             }
             TopComponent activeTC = TopComponent.getRegistry().getActivated();
-            ShowCookie showCookie = (ShowCookie) activeTC.getLookup().lookup(
-                    ShowCookie.class);
+            ShowCookie showCookie = activeTC.getLookup().lookup(ShowCookie.class);
             ResultItem resultItem = null;
             if (parameters != null && parameters.length != 0) {
                 for (Object o : parameters) {
@@ -154,8 +153,7 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
                         getMultiviewActive()) &&
                         getActiveComponents().contains(component)) {
                     TopComponent activeTC = TopComponent.getRegistry().getActivated();
-                    WSDLDataObject wdobj = (WSDLDataObject) activeTC.getLookup().
-                            lookup(WSDLDataObject.class);
+                    WSDLDataObject wdobj = activeTC.getLookup().lookup(WSDLDataObject.class);
                     return wdobj != dobj;
                 }
                 return true;
@@ -212,18 +210,30 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
     }
 
     public PrintProvider getPrintProvider() {
-        TopComponent component = TopComponent.getRegistry().getActivated();
-        Lookup lookup = component.getLookup();
-        DataObject dobj = (DataObject) lookup.lookup(DataObject.class);
-        if (dobj == this.dobj) {
-            PrintProviderCookie cookie = (PrintProviderCookie) lookup.lookup(
-                    PrintProviderCookie.class);
-            // Avoid looping forever by ensuring we find a provider that
-            // is not ourselves.
-            if (cookie != null && cookie != this) {
-                return cookie.getPrintProvider();
+        TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
+        MultiViewHandler mvh = MultiViews.findMultiViewHandler(tc);
+
+        if (mvh == null) {
+            return null;
+        }
+
+        MultiViewPerspective mvp = mvh.getSelectedPerspective();
+        if (mvp.preferredID().equals(WSDLTreeViewMultiViewDesc.PREFERRED_ID)) {
+            return null;
+        } else if (mvp.preferredID().equals(WSDLDesignMultiViewDesc.PREFERRED_ID)) {
+            Lookup lookup = tc.getLookup();
+            DataObject dataObject = lookup.lookup(DataObject.class);
+            if (dataObject == this.dobj) {
+                PrintProviderCookie cookie = lookup.lookup(
+                        PrintProviderCookie.class);
+                // Avoid looping forever by ensuring we find a provider that
+                // is not ourselves.
+                if (cookie != null && cookie != this) {
+                    return cookie.getPrintProvider();
+                }
             }
         }
+        
         return null;
     }
 
@@ -251,14 +261,13 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
         TopComponent activeTC = TopComponent.getRegistry().getActivated();
         Collection<Component> activeComponents = Collections.emptySet();
         for (Node node : activeTC.getActivatedNodes()) {
-            GetComponentCookie cake = (GetComponentCookie) node.
-                    getCookie(GetComponentCookie.class);
+            GetComponentCookie cake = node.getCookie(GetComponentCookie.class);
             Component component = null;
             if (cake != null) {
                 component = cake.getComponent();
             }
             if (component == null) {
-                component = (Component) node.getLookup().lookup(Component.class);
+                component = node.getLookup().lookup(Component.class);
             }
             if (component != null) {
                 if (activeComponents.isEmpty()) {

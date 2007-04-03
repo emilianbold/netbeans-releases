@@ -64,7 +64,7 @@ public class DummyDefinitionsNode extends FilterNode implements Node.Cookie {
             keys.add(new DummyInnerSchemaNode(original));
             Node[] children = original.getChildren().getNodes();
             for (Node child : children) {
-                if (child.getCookie(FolderNode.class) != null) {
+                if (child.getCookie(FolderNode.class) != null || child.getCookie(TypesNode.class) != null) {
                     keys.add(child);
                 }
             }
@@ -78,7 +78,7 @@ public class DummyDefinitionsNode extends FilterNode implements Node.Cookie {
             super(original, new FilterNode.Children(original) {
                 @Override
                 protected Node[] createNodes(Node n) {
-                    if (n.getCookie(FolderNode.class) != null) {
+                    if (n.getCookie(FolderNode.class) != null || n.getCookie(TypesNode.class) != null) {
                         return new Node[] {};
                     }
                     return super.createNodes(n);

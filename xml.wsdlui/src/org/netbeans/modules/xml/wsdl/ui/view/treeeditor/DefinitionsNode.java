@@ -181,6 +181,18 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode {
         return false;
     }
 
+    
+    /*
+     * For purpose of column view, definition node doesnt have any child nodes other 
+     * than folder nodes and type node (which is considered as folder node).
+     * (non-Javadoc)
+     * @see org.netbeans.modules.xml.wsdl.ui.view.treeeditor.WSDLElementNode#getChildCount()
+     */
+    @Override
+    public int getChildCount() {
+        return 0;
+    }
+    
     protected void updateDisplayName() {
         Definitions defs = (Definitions) getWSDLComponent();
         String name = defs.getTargetNamespace();
