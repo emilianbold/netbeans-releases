@@ -147,71 +147,14 @@ is divided into following sections:
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-core.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform6/core/org-openide-filesystems.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform6/lib/org-openide-util.jar"/>
-                    
-                    <!--
-                    <pathelement location="${netbeans1.home}/xmltools1/modules/org-netbeans-modules-xslt-model.jar"/>
-                    <pathelement location="${netbeans1.home}/ide7/modules/org-netbeans-modules-xml-xam.jar"/>
-                    <pathelement location="${netbeans1.home}/ide7/modules/org-netbeans-modules-xml-schema-model.jar"/>
-                    <pathelement location="${netbeans1.home}/ide7/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-                    <pathelement location="${netbeans1.home}/platform6/lib/org-openide-util.jar"/>
-                    <pathelement location="${netbeans1.home}/platform6/modules/org-openide-loaders.jar"/>
-                    <pathelement location="${netbeans1.home}/xmltools1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-                    <pathelement location="${netbeans1.home}/ide7/modules/org-apache-xml-resolver.jar"/>
-                    <pathelement location="${netbeans1.home}/ide7/modules/org-netbeans-modules-xml-retriever.jar"/>
-                    <pathelement location="${netbeans1.home}/ide7/modules/ext/resolver-1_1_nb.jar"/>
-                    -->
-
-
                 </path>
                 
                 <taskdef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.GenerateJBIDescriptorTask">
                     <classpath refid="ant.task.classpath.models"/>
                 </taskdef>        
-
-<!-- TO DO add                
-                <taskdef name="generate-jbi-descriptors" classname="com.stc.anttasks.GenerateJBIDescriptors">
-                        <classpath path="${{module.install.dir}}/com-stc-projects-xsltpro.jar"/>
-                </taskdef>
-                <taskdef name="generate-deployment-path" classname="com.stc.anttasks.DeployJBIArtifacts">
-                        <classpath path="${{module.install.dir}}/com-stc-projects-xsltpro.jar:${{netbeans.home}}\..\ide5\modules\autoload\ext\xerces-2.6.2.jar;${{netbeans.home}}\..\ide5\modules\autoload\ext\xml-commons-dom-ranges-1.0.b2.jar"/>
-                </taskdef>
--->
-                
-                <!-- path id="ant.task.classpath.validation">
-            
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-core.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-project.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-xslt-project.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-xam.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-schema-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform6/lib/org-openide-util.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform6/modules/org-openide-loaders.jar"/>                       
-                    <pathelement location="${{netbeans.home}}/../xmltools1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-                    <pathelement location="${{netbeans.home}}/../xmltools1/modules/org-netbeans-modules-xml-xpath.jar"/>
-                    <pathelement location="${{netbeans.home}}/../xmltools1/modules/ext/jxpath/jxpath1.1.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-apache-xml-resolver.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-retriever.jar"/>      
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/ext/resolver-1_1_nb.jar"/>            
-            
-            
-                </path>        
-                <taskdef name="XsltProjectValidate" classname="org.netbeans.modules.xslt.project.anttasks.ValidateXSLTProjectTask">
-                    <classpath refid="ant.task.classpath.validation"/>
-                </taskdef-->
-
-                <!--
-                <taskdef name="generate-portmap-descriptors" classname="org.netbeans.modules.bpel.project.anttasks.GeneratePortmapDescriptors">
-                <classpath refid="ant.task.classpath" />
-                </taskdef>
-                -->
-                
-                
             </target>
 
             <target name="init">
-                <!-- //B20050104                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-javac,init-macrodef-nbjpda,init-macrodef-debug,init-taskdefs</xsl:attribute> -->
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-taskdefs</xsl:attribute>
             </target>
             

@@ -140,7 +140,7 @@ Microsystems, Inc. All Rights Reserved.
             </target>
 
             <target name="init-taskdefs"   if="from.commandline">
-		
+        
                 <!-- we need to seperate bpel model into standalone jars so that we
                 can use them in ant tasks. for now we need to add the jars of this modules 
                 -->
@@ -153,14 +153,14 @@ Microsystems, Inc. All Rights Reserved.
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>                       
-                    <pathelement location="${{netbeans.home}}/../xmltools1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/> 
                     <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/> 
             
                 </path>
                 <path id="ant.task.classpath.validation">
-        	
+            
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-core.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-project.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
@@ -170,9 +170,9 @@ Microsystems, Inc. All Rights Reserved.
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>                       
-                    <pathelement location="${{netbeans.home}}/../xmltools1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-                    <pathelement location="${{netbeans.home}}/../xmltools1/modules/org-netbeans-modules-xml-xpath.jar"/>
-                    <pathelement location="${{netbeans.home}}/../xmltools1/modules/ext/jxpath/jxpath1.1.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xml-xpath.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa1/modules/ext/jxpath/jxpath1.1.jar"/>
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/>      
                     <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/>            
@@ -420,7 +420,7 @@ Microsystems, Inc. All Rights Reserved.
                 <validate-project buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" buildDependentProjectDir="${{basedir}}/${{build.dir}}/dependentProjectFiles" />
                 -->
                 <BpelProjectValidate buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" buildDependentProjectDir="${{basedir}}/${{build.dir}}/dependentProjectFiles" classpathRef="ant.task.classpath.validation" allowBuildWithError="${{allow.build.with.error}}"/>    
-				
+                
                 <xsl:comment> copy all files from project source directory to build directory. </xsl:comment>
                 <copy todir="${{build.dir}}" preservelastmodified="true" >
                     <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd, **/*.xsl, **/*.xslt" dir="${{src.dir}}"/>
