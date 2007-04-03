@@ -69,7 +69,6 @@ import org.netbeans.modules.visualweb.complib.PaletteUtil.Item;
 import org.netbeans.modules.visualweb.complib.PaletteUtil.Palette;
 import org.netbeans.modules.visualweb.complib.ui.ComplibsRootNode;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
-import org.netbeans.modules.visualweb.project.jsf.api.LibraryDefinition;
 import org.netbeans.spi.palette.PaletteFilter;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
