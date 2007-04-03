@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/test/cvsmodule/UpdateErrorTest.class"/>
                 <!-- newly added test -->
                 <include name="org/netbeans/test/cvsmodule/BranchCreationAndSwitchTest.class"/>
-                <include name="org/netbeans/test/cvsmodule/ExportPatchAndDiffTest.class"/>
+                <!--<include name="org/netbeans/test/cvsmodule/ExportPatchAndDiffTest.class"/>-->
                 <include name="org/netbeans/test/cvsmodule/IgnoreUnignoreTest.class"/>
                 <include name="org/netbeans/test/cvsmodule/ResolveConflictsAndRevertTest.class"/>
                 <include name="org/netbeans/test/cvsmodule/ShowAnnotationsAndSearchHistoryTest.class"/>
