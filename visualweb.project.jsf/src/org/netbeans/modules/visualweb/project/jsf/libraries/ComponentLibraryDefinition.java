@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.visualweb.project.jsf.libraries;
 
-import org.netbeans.modules.visualweb.project.jsf.api.LibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider;
 
 import java.io.IOException;
@@ -27,9 +26,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
@@ -56,10 +57,10 @@ public class ComponentLibraryDefinition extends LibraryDefinition {
     public static Library create(   String name,
                                     String description,
                                     String localizingBundle,
-                                    List /* <URL> */ classPaths,
-                                    List /* <URL> */ sources,
-                                    List /* <URL> */ javadocs,
-                                    List /* <URL> */ designtimes) throws IOException {
+                                    List<URL> classPaths,
+                                    List<URL> sources,
+                                    List<URL> javadocs,
+                                    List<URL> designtimes) throws IOException {
         LibraryImplementation impl = LibrariesSupport.createLibraryImplementation(ComponentLibraryTypeProvider.LIBRARY_TYPE, ComponentLibraryTypeProvider.VOLUME_TYPES);
         impl.setName (name);
         impl.setDescription (description);
@@ -93,17 +94,9 @@ public class ComponentLibraryDefinition extends LibraryDefinition {
             impl.setContent("visual-web-designtime", a);  // NOI18N
         }
                 
-        addLibrary(impl);
-        
-        Library[] libs = LibraryManager.getDefault().getLibraries();
-        Library lib = null;
-        
-        for (int i = 0; i < libs.length && lib == null; i++) {
-            if (libs[i].getName().equals(name)) {
-                lib = libs[i];
-            }
-        }
-        
+        Library lib = LibraryFactory.createLibrary(impl);
+        LibraryManager.getDefault().addLibrary(lib);
+
         return lib;
     }    
 
@@ -125,12 +118,11 @@ public class ComponentLibraryDefinition extends LibraryDefinition {
     public static Library update(   String name, 
                                     String description,
                                     String localizingBundle,
-                                    List /* <URL> */ classPaths, 
-                                    List /* <URL> */ sources, 
-                                    List /* <URL> */ javadocs, 
-                                    List /* <URL> */ designtimes) throws IOException {
+                                    List<URL> classPaths, 
+                                    List<URL> sources, 
+                                    List<URL> javadocs, 
+                                    List<URL> designtimes) throws IOException {
         remove(name);
         return create(name, description, localizingBundle, classPaths, sources, javadocs, designtimes);
     }
-
 }

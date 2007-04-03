@@ -21,6 +21,7 @@ package org.netbeans.modules.visualweb.project.jsf.api;
 
 import org.netbeans.modules.visualweb.project.jsf.JsfProjectTemplateJakarta;
 import org.netbeans.modules.visualweb.project.jsf.actions.ImportFileAction;
+import org.netbeans.modules.visualweb.project.jsf.libraries.LibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.J2SELibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.ComponentLibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.JsfProjectLibrary;
@@ -1339,9 +1340,9 @@ public class JsfProjectUtils {
             String name,
             String description,
             String localizingBundle,
-            List /* <URL> */ classPaths,
-            List /* <URL> */ sources,
-            List /* <URL> */ javadocs) throws IOException {
+            List<URL> classPaths,
+            List<URL> sources,
+            List<URL> javadocs) throws IOException {
         return J2SELibraryDefinition.create(name, description, localizingBundle, classPaths, sources, javadocs);
     }
     
@@ -1349,10 +1350,10 @@ public class JsfProjectUtils {
             String name,
             String description,
             String localizingBundle,
-            List /* <URL> */ classPaths,
-            List /* <URL> */ sources,
-            List /* <URL> */ javadocs,
-            List /* <URL> */ designtimes) throws IOException {
+            List<URL> classPaths,
+            List<URL> sources,
+            List<URL> javadocs,
+            List<URL> designtimes) throws IOException {
         return ComponentLibraryDefinition.create(name, description, localizingBundle, classPaths, sources, javadocs, designtimes);
     }
     

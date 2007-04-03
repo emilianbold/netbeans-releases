@@ -19,16 +19,16 @@
 
 package org.netbeans.modules.visualweb.project.jsf.libraries;
 
-import org.netbeans.modules.visualweb.project.jsf.api.LibraryDefinition;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
@@ -38,16 +38,6 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
  * @author Po-Ting Wu
  */
 public class J2SELibraryDefinition extends LibraryDefinition {
-    public static final String LIBRARY_TYPE = "j2se";       //NOI18N
-    public static final String VOLUME_TYPE_CLASSPATH = "classpath";       //NOI18N
-    public static final String VOLUME_TYPE_SRC = "src";       //NOI18N
-    public static final String VOLUME_TYPE_JAVADOC = "javadoc";       //NOI18N
-    public static final String[] VOLUME_TYPES = new String[] {
-        VOLUME_TYPE_CLASSPATH,
-        VOLUME_TYPE_SRC,
-        VOLUME_TYPE_JAVADOC,
-    };
-
     /**
      * Create a library definition with specified resources.
      * @param name Internal name of the library from which the library definition file name will be derived as
@@ -65,10 +55,12 @@ public class J2SELibraryDefinition extends LibraryDefinition {
     public static Library create(   String name,
                                     String description,
                                     String localizingBundle,
-                                    List /* <URL> */ classPaths,
-                                    List /* <URL> */ sources,
-                                    List /* <URL> */ javadocs) throws IOException {
-        LibraryImplementation impl = LibrariesSupport.createLibraryImplementation(LIBRARY_TYPE, VOLUME_TYPES);
+                                    List<URL> classPaths,
+                                    List<URL> sources,
+                                    List<URL> javadocs) throws IOException {
+        LibraryManager libraryManager = LibraryManager.getDefault();
+        LibraryImplementation impl = LibrariesSupport.getLibraryTypeProvider("j2se").createLibrary();
+
         impl.setName (name);
         impl.setDescription (description);
         impl.setLocalizingBundle (localizingBundle);
@@ -94,17 +86,9 @@ public class J2SELibraryDefinition extends LibraryDefinition {
             impl.setContent("javadoc", a);  // NOI18N
         }
 
-        addLibrary(impl);
+        Library lib = LibraryFactory.createLibrary(impl);
+        libraryManager.addLibrary(lib);
 
-        Library[] libs = LibraryManager.getDefault().getLibraries();
-        Library lib = null;
-        
-        for (int i = 0; i < libs.length && lib == null; i++) {
-            if (libs[i].getName().equals(name)) {
-                lib = libs[i];
-            }
-        }
-        
         return lib;
     }    
 
@@ -126,9 +110,9 @@ public class J2SELibraryDefinition extends LibraryDefinition {
     public static Library update(   String name, 
                                     String description,
                                     String localizingBundle,
-                                    List /* <URL> */ classPaths, 
-                                    List /* <URL> */ sources, 
-                                    List /* <URL> */ javadocs) throws IOException {
+                                    List<URL> classPaths, 
+                                    List<URL> sources, 
+                                    List<URL> javadocs) throws IOException {
         remove(name);
         return create(name, description, localizingBundle, classPaths, sources, javadocs);
     }
