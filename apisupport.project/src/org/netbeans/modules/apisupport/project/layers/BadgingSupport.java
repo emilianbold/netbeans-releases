@@ -30,6 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -69,7 +71,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
     private ClassPath classpath;
     private final FileSystem fs;
     private final FileChangeListener fileChangeListener;
-    private final List<FileStatusListener> listeners = new ArrayList();
+    private final List<FileStatusListener> listeners = new ArrayList<FileStatusListener>();
     
     public BadgingSupport(FileSystem fs) {
         this.fs = fs;
@@ -174,9 +176,17 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
     private static String getInstanceLabel(FileObject fo) {
         try {
             // First try to load it in current IDE, as this handles most platform cases OK.
-            InstanceCookie ic = (InstanceCookie) DataObject.find(fo).getCookie(InstanceCookie.class);
+            InstanceCookie ic = DataObject.find(fo).getCookie(InstanceCookie.class);
             if (ic != null) {
-                Object o = ic.instanceCreate();
+                Object o;
+                Logger fslogger = Logger.getLogger("org.openide.filesystems"); // NOI18N
+                Level oldLevel = fslogger.getLevel();
+                fslogger.setLevel(Level.OFF); // #99744
+                try {
+                    o = ic.instanceCreate();
+                } finally {
+                    fslogger.setLevel(oldLevel);
+                }
                 if (o instanceof Action) {
                     String name = (String) ((Action) o).getValue(Action.NAME);
                     if (name != null) {
