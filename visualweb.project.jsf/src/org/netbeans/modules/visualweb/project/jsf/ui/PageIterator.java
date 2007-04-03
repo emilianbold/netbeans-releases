@@ -175,8 +175,7 @@ public class PageIterator implements TemplateWizard.Iterator {
 
         // Java EE 5 / JSF 1.2 project needs different template
         if (J2eeModule.JAVA_EE_5.equals(JsfProjectUtils.getJ2eePlatformVersion(project))) {
-            // XXX should use Jsf12Apps/$NAME.$EXT instead of JsfApps/$NAME12.$EXT after disable the old project type
-            String name = "Templates/JsfApps/" + template.getName() + "12." + template.getExt();
+            String name = "Templates/Jsf12Apps/" + template.getName() + "." + template.getExt();
             FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(name);
             if (fo != null) {
                 template = fo;
