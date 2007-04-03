@@ -1231,7 +1231,8 @@ public class JsfForm {
     }
     
     public void setModelActivated(boolean activated) {
-        htmlDomProvider.setModelActivated(activated);
+//        htmlDomProvider.setModelActivated(activated);
+        getFacesModel().setActivated(activated);
     }
     
     boolean isModelValid() {
