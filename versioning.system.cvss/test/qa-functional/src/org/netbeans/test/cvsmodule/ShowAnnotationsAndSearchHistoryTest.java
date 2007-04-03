@@ -93,8 +93,19 @@ public class ShowAnnotationsAndSearchHistoryTest extends JellyTestCase {
     }
     
     public void testCheckOutProject() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        try {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+        } finally {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
+        }
+        
+        timeout = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
+        try {
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
+        } finally {
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout);
+        }
         TestKit.closeProject(projectName);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
