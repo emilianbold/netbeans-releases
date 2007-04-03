@@ -40,7 +40,6 @@ import javax.swing.text.Position;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.modules.editor.lib2.ComponentUtils;
 import org.netbeans.modules.editor.lib2.DocUtils;
-import org.netbeans.modules.editor.lib2.DocumentsJumpList;
 import org.netbeans.modules.editor.lib2.DocumentsRegistry;
 import org.netbeans.modules.editor.lib2.highlighting.BlockHighlighting;
 import org.netbeans.modules.editor.lib2.highlighting.Factory;
@@ -519,7 +518,6 @@ public final class EditorFindSupport {
                 }
                 if (blk != null) {
                     selectText(c, blk[0], blk[1], back);
-                    DocumentsJumpList.checkAddEntry();
                     String msg = exp + NbBundle.getBundle(EditorFindSupport.class).getString(FOUND_LOCALE)
                                  + ' ' + DocUtils.debugPosition(c.getDocument(), blk[0]);
                     if (blk[2] == 1) { // wrap was done
