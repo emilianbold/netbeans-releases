@@ -431,9 +431,7 @@ public class WindowsNativeUtils extends NativeUtils {
                 
                 if (registry.keyExists(section, rootKey)) {
                     registry.setStringValue(section, rootKey, name, value, expand);
-                    if(scope == EnvironmentScope.ALL_USERS) {
-                        notifyEnvironmentChanged0();                        
-                    }
+                    notifyEnvironmentChanged0();                        
                 } else {
                     LogManager.log(ErrorLevel.WARNING, 
                             "Root envonment key doesn`t exist. " +
