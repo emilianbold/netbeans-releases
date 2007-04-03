@@ -121,9 +121,6 @@ public class CasaDesignView {
             }
         });
 
-        /* This AdjustmentListener may not be required because now DnD
-         * doesn't grow the screen as the visible feedback icon
-         * shrinks to fit in the available screen.
         AdjustmentListener scrollAdjuster = new AdjustmentListener() {
             public void adjustmentValueChanged(AdjustmentEvent e) {
                 if (
@@ -150,7 +147,6 @@ public class CasaDesignView {
         // left by the scrollbars if the scrollbars disappear.
         mScroller.getHorizontalScrollBar().addAdjustmentListener(scrollAdjuster);
         mScroller.getVerticalScrollBar().addAdjustmentListener(scrollAdjuster);
-         */
     }
     
     private void setupActions() {
