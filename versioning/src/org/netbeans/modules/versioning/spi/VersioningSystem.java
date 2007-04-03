@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.versioning.spi;
 
+import org.netbeans.modules.versioning.VersioningManager;
+
 import java.io.File;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -36,36 +38,49 @@ import java.util.*;
 public abstract class VersioningSystem {
 
     /**
-     * Indicates to the Versioning manager that the layout of versioned files may have changed. Previously unversioned 
-     * files became versioned, versioned files became unversioned or the versioning system for some files changed.
-     * The manager will flush any caches that may be holding such information.  
-     * A versioning system usually needs to fire this after an Import action. 
-     */
-    public static final String PROP_VERSIONED_ROOTS = "null VCS.VersionedFilesChanged";
-
-    /**
-     * The NEW value is a Set of Files whose versioning status changed. This event is used to re-annotate files, re-fetch
-     * original content of files and generally refresh all components that are connected to these files.
-     */
-    public static final String PROP_STATUS_CHANGED = "Set<File> VCS.StatusChanged";
-
-    /**
-     * Used to signal the Versioning manager that some annotations changed. Note that this event is NOT required in case
-     * the status of the file changes in which case annotations are updated automatically. Use this event to force annotations
-     * refresh in special cases, for example when the format of annotations changes.
-     * Use null as new value to force refresh of all annotations.
-     */
-    public static final String PROP_ANNOTATIONS_CHANGED = "Set<File> VCS.AnnotationsChanged";
-    
-    protected final PropertyChangeSupport support = new PropertyChangeSupport(this);
-
-    /**
      * Short name of the versioning system, it will be used as popup menu label, label in tooltips, etc.
-     * Examples: CVS, Subversion, Mercurial, Teamware, SourceSafe, VSS, Clearcase, Local History
-     * 
-     * @return String short display name of the versioning system.
+     * Examples: CVS, Subversion, Mercurial, Teamware, SourceSafe, VSS, Clearcase, Local History.
+     * @see #getProperty(String) 
+     * @see #putProperty(String, Object)  
      */
-    public abstract String getDisplayName();
+    public static final String PROP_DISPLAY_NAME = "String VCS.DisplayName";
+
+    /**
+     * Short name of the versioning system, it will be used as menu label and it should define a mnemonic key.
+     * Examples: &CVS, &Subversion, &Mercurial, &Teamware, &SourceSafe, &VSS, &Clearcase, Local &History.
+     * @see #getProperty(String) 
+     * @see #putProperty(String, Object)  
+     */
+    public static final String PROP_MENU_LABEL = "String VCS.MenuLabel";
+    
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+
+    private final Map<String, Object> properties = Collections.synchronizedMap(new HashMap<String, Object>());
+    
+    /**
+     * Gets a general property of a Versioning system.
+     * 
+     * @param key property key
+     * @return Object property value, may be null
+     * @see #PROP_DISPLAY_NAME  
+     * @see #PROP_MENU_LABEL  
+     */
+    public final Object getProperty(String key) {
+        return properties.get(key);
+    }
+
+    /**
+     * Sets a general property of a Versioning system.
+     * 
+     * @param key property key, must NOT be null
+     * @param value property value, may be null
+     * @see #PROP_DISPLAY_NAME  
+     * @see #PROP_MENU_LABEL  
+     */
+    protected final void putProperty(String key, Object value) {
+        if (key == null) throw new IllegalArgumentException("Property name is null");
+        properties.put(key, value);
+    }
     
     /**
      * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
@@ -140,7 +155,7 @@ public abstract class VersioningSystem {
      * @param files set of files whose annotations changed or null if the change affects all files 
      */ 
     protected final void fireAnnotationsChanged(Set<File> files) {
-        support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, files);
+        support.firePropertyChange(VersioningManager.EVENT_ANNOTATIONS_CHANGED, null, files);
     }
     
     /**
@@ -149,7 +164,7 @@ public abstract class VersioningSystem {
      * @param files set of files whose status changed or null if all files changed status 
      */ 
     protected final void fireStatusChanged(Set<File> files) {
-        support.firePropertyChange(PROP_STATUS_CHANGED, null, files);
+        support.firePropertyChange(VersioningManager.EVENT_STATUS_CHANGED, null, files);
     }
 
     /**
@@ -157,7 +172,7 @@ public abstract class VersioningSystem {
      * (those files were imported into repository).
      */ 
     protected final void fireVersionedFilesChanged() {
-        support.firePropertyChange(PROP_VERSIONED_ROOTS, null, null);
+        support.firePropertyChange(VersioningManager.EVENT_VERSIONED_ROOTS, null, null);
     }
     
     /**

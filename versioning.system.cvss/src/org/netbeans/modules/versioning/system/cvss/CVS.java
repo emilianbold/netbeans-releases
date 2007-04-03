@@ -39,15 +39,13 @@ import java.util.prefs.PreferenceChangeListener;
 public class CVS extends VersioningSystem implements VersioningListener, PreferenceChangeListener {
 
     public CVS() {
+        putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(CVS.class, "CTL_CVS_DisplayName"));
+        putProperty(PROP_MENU_LABEL, NbBundle.getMessage(CVS.class, "CTL_CVS_MainMenu"));
         CvsVersioningSystem.getInstance().addVersioningListener(this);
         CvsVersioningSystem.getInstance().getStatusCache().addVersioningListener(this);
         CvsModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
     
-    public String getDisplayName() {
-        return NbBundle.getMessage(CVS.class, "CTL_CVS_MainMenu");
-    }
-
     /**
      * Returns the topmost parent folder of the given file that is managed by this versioning system.
      * 

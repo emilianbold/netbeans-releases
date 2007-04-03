@@ -39,6 +39,29 @@ import java.beans.PropertyChangeEvent;
  */
 public class VersioningManager implements PropertyChangeListener, LookupListener {
     
+    /**
+     * Indicates to the Versioning manager that the layout of versioned files may have changed. Previously unversioned 
+     * files became versioned, versioned files became unversioned or the versioning system for some files changed.
+     * The manager will flush any caches that may be holding such information.  
+     * A versioning system usually needs to fire this after an Import action. 
+     */
+    public static final String EVENT_VERSIONED_ROOTS = "null VCS.VersionedFilesChanged";
+
+    /**
+     * The NEW value is a Set of Files whose versioning status changed. This event is used to re-annotate files, re-fetch
+     * original content of files and generally refresh all components that are connected to these files.
+     */
+    public static final String EVENT_STATUS_CHANGED = "Set<File> VCS.StatusChanged";
+
+    /**
+     * Used to signal the Versioning manager that some annotations changed. Note that this event is NOT required in case
+     * the status of the file changes in which case annotations are updated automatically. Use this event to force annotations
+     * refresh in special cases, for example when the format of annotations changes.
+     * Use null as new value to force refresh of all annotations.
+     */
+    public static final String EVENT_ANNOTATIONS_CHANGED = "Set<File> VCS.AnnotationsChanged";
+
+    
     private static VersioningManager instance;
 
     public static synchronized VersioningManager getInstance() {
@@ -241,13 +264,13 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * Versioning status or other parameter changed. 
      */
     public void propertyChange(PropertyChangeEvent evt) {
-        if (VersioningSystem.PROP_STATUS_CHANGED.equals(evt.getPropertyName())) {
+        if (EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
             Set<File> files = (Set<File>) evt.getNewValue();
             VersioningAnnotationProvider.instance.refreshAnnotations(files);
-        } else if (VersioningSystem.PROP_ANNOTATIONS_CHANGED.equals(evt.getPropertyName())) {
+        } else if (EVENT_ANNOTATIONS_CHANGED.equals(evt.getPropertyName())) {
             Set<File> files = (Set<File>) evt.getNewValue();
             VersioningAnnotationProvider.instance.refreshAnnotations(files);
-        } else if (VersioningSystem.PROP_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
+        } else if (EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
             flushFileOwnerCache();
             refreshDiffSidebars();
         }

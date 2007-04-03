@@ -88,7 +88,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
     private JMenu createVersioningSystemPopup(VersioningSystem owner, Node[] nodes) {
         VCSAnnotator an = owner.getVCSAnnotator();
         if (an == null) return null;
-        JMenu menu = new JMenu(owner.getDisplayName());
+        JMenu menu = new JMenu(Utils.getDisplayName(owner));
         VCSContext ctx = VCSContext.forNodes(nodes);
         Action [] actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
         JComponent [] items = new JComponent[actions.length];

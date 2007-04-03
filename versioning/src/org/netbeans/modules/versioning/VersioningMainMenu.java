@@ -75,7 +75,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
         
         Collections.sort(systems, new Comparator<VersioningSystem>() {
             public int compare(VersioningSystem a, VersioningSystem b) {
-                return a.getDisplayName().compareTo(b.getDisplayName());
+                return Utils.getDisplayName(a).compareTo(Utils.getDisplayName(b));
             }
         });
 
@@ -102,7 +102,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
 
     private JMenu createVersioningSystemMenu(final VersioningSystem system, final VCSContext ctx) {
         final JMenu menu = new JMenu();
-        Mnemonics.setLocalizedText(menu, "&" + system.getDisplayName());
+        Mnemonics.setLocalizedText(menu, Utils.getMenuLabel(system));
         menu.addMenuListener(new MenuListener() {
             public void menuSelected(MenuEvent e) {
                 if (menu.getItemCount() != 0) return;

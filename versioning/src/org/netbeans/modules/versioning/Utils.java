@@ -23,6 +23,7 @@ import org.openide.util.actions.Presenter;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
 
 import javax.swing.*;
 import java.io.File;
@@ -108,5 +109,13 @@ public class Utils {
      */
     public static RequestProcessor.Task createTask(Runnable runnable) {
         return vcsBlockingRequestProcessor.create(runnable);
+    }
+
+    public static String getDisplayName(VersioningSystem system) {
+        return (String) system.getProperty(VersioningSystem.PROP_DISPLAY_NAME);
+    }
+
+    public static String getMenuLabel(VersioningSystem system) {
+        return (String) system.getProperty(VersioningSystem.PROP_MENU_LABEL);
     }
 }

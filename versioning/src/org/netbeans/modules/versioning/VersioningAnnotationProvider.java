@@ -118,7 +118,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         private VersioningSystem system;
 
         public String getName() {
-            return system.getDisplayName();
+            return Utils.getDisplayName(system);
         }
 
         public HelpCtx getHelpCtx() {
@@ -144,7 +144,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         private final VCSContext context;
 
         public RealVersioningSystemActions(VersioningSystem system, VCSContext context) {
-            super(system.getDisplayName());
+            super(Utils.getDisplayName(system));
             this.system = system;
             this.context = context;
         }
@@ -162,7 +162,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             private boolean popupContructed;
 
             public VersioningSystemMenuItem() {
-                Mnemonics.setLocalizedText(this, system.getDisplayName());
+                Mnemonics.setLocalizedText(this, Utils.getDisplayName(system));
             }
 
             public void setSelected(boolean selected) {

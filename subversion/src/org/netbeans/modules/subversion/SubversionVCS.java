@@ -39,13 +39,11 @@ import java.beans.PropertyChangeEvent;
 public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
 
     public SubversionVCS() {
+        putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_DisplayName"));
+        putProperty(PROP_MENU_LABEL, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_MainMenu"));
         Subversion.getInstance().getStatusCache().addVersioningListener(this);
         Subversion.getInstance().addPropertyChangeListener(this);
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_MainMenu");
     }
 
     public File getTopmostManagedParent(File file) {
