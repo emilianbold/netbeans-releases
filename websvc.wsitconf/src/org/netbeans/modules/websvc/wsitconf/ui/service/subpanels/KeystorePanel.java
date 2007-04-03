@@ -37,6 +37,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 /**
  *
@@ -168,11 +169,19 @@ public class KeystorePanel extends JPanel {
         inSync = false;
     }
 
-    private void enableDisable() {        
-        //these depend on jsr109 state
-        keystoreLocationButton.setEnabled(!jsr109);
-        keystoreLocationLabel.setEnabled(!jsr109);
-        keystoreLocationTextField.setEnabled(!jsr109);
+    private void enableDisable() {
+        
+        boolean storeLocKnown = false;
+        
+        String storeLoc = getServerStoreLocation();
+        if ((storeLoc != null) && !(storeLoc.equals(""))) {
+            storeLocKnown = true;
+        }
+        
+        //these depend on jsr109 stateand whether location of the store is known or not
+        keystoreLocationButton.setEnabled(!jsr109 || !storeLocKnown);
+        keystoreLocationLabel.setEnabled(!jsr109 || !storeLocKnown);
+        keystoreLocationTextField.setEnabled(!jsr109 || !storeLocKnown);
     }
     
     private String getServerStoreLocation() {
@@ -180,6 +189,12 @@ public class KeystorePanel extends JPanel {
         J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
         if (mp != null) {
             String sID = mp.getServerInstanceID();
+            
+            InstanceProperties ip = mp.getInstanceProperties();
+            if ("".equals(ip.getProperty("LOCATION"))) {
+                return "";
+            }
+            
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
             File[] keyLocs = null;
             keyLocs = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_KEYSTORE);

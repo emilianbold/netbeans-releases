@@ -37,6 +37,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 /**
  *
@@ -158,6 +159,12 @@ public class TruststorePanel extends JPanel {
         J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
         if (mp != null) {
             String sID = mp.getServerInstanceID();
+
+            InstanceProperties ip = mp.getInstanceProperties();
+            if ("".equals(ip.getProperty("LOCATION"))) {              //NOI18N
+                return "";
+            }
+            
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
             File[] keyLocs = null;
             keyLocs = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_TRUSTSTORE);
@@ -169,10 +176,18 @@ public class TruststorePanel extends JPanel {
     }
     
     private void enableDisable() {        
-        //these depend on jsr109 state
-        storeLocationButton.setEnabled(!jsr109);
-        storeLocationLabel.setEnabled(!jsr109);
-        storeLocationTextField.setEnabled(!jsr109);
+        
+        boolean storeLocKnown = false;
+        
+        String storeLoc = getServerStoreLocation();
+        if ((storeLoc != null) && !(storeLoc.equals(""))) {
+            storeLocKnown = true;
+        }
+        
+        //these depend on jsr109 stateand whether location of the store is known or not
+        storeLocationButton.setEnabled(!jsr109 || !storeLocKnown);
+        storeLocationLabel.setEnabled(!jsr109 || !storeLocKnown);
+        storeLocationTextField.setEnabled(!jsr109 || !storeLocKnown);
     }
     
     /** This method is called from within the constructor to
