@@ -19,6 +19,7 @@
 
 package gui.action;
 
+import java.io.File;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -36,6 +37,8 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author  mmirilovic@netbeans.org
  */
 public class CreateProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+    
+    private static final Object PROJECT_REFS = new Object();
     
     private NewProjectNameLocationStepOperator wizard_location;
     
@@ -126,8 +129,19 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
     }
     
     public void close(){
+        if (index != repeat) { // ignore last round tha reports LRU caches
+            Object /* Project */ prj = ProjectSupport.openProject(
+                    System.getProperty("xtest.tmpdir")+"/"+"createdProjects"+File.separatorChar+project_name);
+            reportReference("Project "+project_name+" from CreateProject test", prj, PROJECT_REFS);
+        }
         ProjectSupport.closeProject(project_name);
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+    }
+    
+    /** Tests if created and later dclosed projects can be GCed from memory.
+     */
+    public void testGC() throws Exception {
+        runTestGC(PROJECT_REFS);
     }
     
     public static void main(java.lang.String[] args) {

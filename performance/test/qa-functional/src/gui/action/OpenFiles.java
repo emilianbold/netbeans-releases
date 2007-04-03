@@ -19,6 +19,10 @@
 
 package gui.action;
 
+import java.awt.Component;
+import java.awt.Container;
+import javax.swing.JEditorPane;
+import javax.swing.text.Document;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -32,6 +36,8 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
  * @author  mmirilovic@netbeans.org
  */
 public class OpenFiles extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+    
+    private static final Object EDITOR_REFS = new Object();
     
     /** Node to be opened/edited */
     public static Node openNode ;
@@ -130,6 +136,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     
     public void close(){
         if (testedComponentOperator != null) {
+            hookEditorDocument(testedComponentOperator.getSource());
             ((EditorOperator)testedComponentOperator).closeDiscard();
         } else {
             throw new Error("no component to close");
@@ -137,8 +144,31 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     }
     
     protected void shutdown(){
+        testedComponentOperator = null; // allow GC of editor and documents
         EditorOperator.closeDiscardAll();
         repaintManager().setOnlyEditor(false);
+    }
+    
+    private void hookEditorDocument(Component comp) {
+        if (comp instanceof Container) {
+            Container cont = (Container)comp;
+            for (Component c: cont.getComponents()) {
+                hookEditorDocument(c);
+            }
+            if ("org.openide.text.QuietEditorPane".equals(comp.getClass().getName())) {
+                JEditorPane pane = (JEditorPane)comp;
+                Document doc = pane.getDocument();
+                if (doc != null)
+                    reportReference("Editor document from test "+getName(), doc, EDITOR_REFS);
+            }
+        }
+    }
+    
+    /** Tests if created and later dclosed projects can be GCed from memory.
+     */
+    public void testGC() throws Exception {
+        Thread.sleep(60*1000);
+        runTestGC(EDITOR_REFS);
     }
     
 }

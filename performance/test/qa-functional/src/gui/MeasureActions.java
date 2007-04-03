@@ -142,6 +142,8 @@ public class MeasureActions  {
         
         //TODO    suite.addTest(new AddToFavorites("testAddToFavoritesFolders", "Add to Favorites folders"));
 */        
+        suite.addTest(new OpenFiles("testGC", "GC of opened editors"));
+        suite.addTest(new CreateProject("testGC", "GC of created projects"));
         
         return suite;
     }
