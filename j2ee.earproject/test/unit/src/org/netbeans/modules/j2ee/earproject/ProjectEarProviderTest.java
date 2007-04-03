@@ -34,20 +34,20 @@ import org.openide.filesystems.FileUtil;
  * @author Martin Krauskopf
  */
 public class ProjectEarProviderTest extends NbTestCase {
-    
+
     private String serverID;
-    
+
     public ProjectEarProviderTest(String testName) {
         super(testName);
     }
-    
+
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
         serverID = TestUtil.registerSunAppServer(this);
     }
-    
-    public void testFindEar() throws Exception {
+
+    public void testFindEarJavaEE() throws Exception {
         File earDirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
         String j2eeLevel = J2eeModule.JAVA_EE_5;
@@ -58,8 +58,23 @@ public class ProjectEarProviderTest extends NbTestCase {
         assertNotNull("Ear found", Ear.getEar(earDirFO));
         assertNotNull("Ear found", Ear.getEar(earDirFO.getFileObject("src")));
         assertNotNull("Ear found", Ear.getEar(earDirFO.getFileObject("src/conf")));
+        assertNull("DD should not exist", earDirFO.getFileObject("src/conf/application.xml"));
+        assertNull("not Ear for parent", Ear.getEar(earDirFO.getParent()));
+    }
+
+    public void testFindEarJ2EE() throws Exception {
+        File earDirF = new File(getWorkDir(), "testEA");
+        String name = "Test EnterpriseApplication";
+        String j2eeLevel = J2eeModule.J2EE_14;
+        String ejbName = "testEA-ejb";
+        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel, serverID);
+        FileObject earDirFO = FileUtil.toFileObject(earDirF);
+        Project createdEjbJarProject = ProjectManager.getDefault().findProject(earDirFO);
+        assertNotNull("Ear found", Ear.getEar(earDirFO));
+        assertNotNull("Ear found", Ear.getEar(earDirFO.getFileObject("src")));
+        assertNotNull("Ear found", Ear.getEar(earDirFO.getFileObject("src/conf")));
         assertNotNull("Ear found", Ear.getEar(earDirFO.getFileObject("src/conf/application.xml")));
         assertNull("not Ear for parent", Ear.getEar(earDirFO.getParent()));
     }
-    
+
 }

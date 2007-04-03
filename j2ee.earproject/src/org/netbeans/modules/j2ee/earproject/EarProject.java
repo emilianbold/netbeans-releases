@@ -457,8 +457,8 @@ public final class EarProject implements Project, AntProjectListener, FileChange
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/XML/XMLWizard", // NOI18N
-            "Templates/Other/Folder" // NOI18N
+            "Templates/J2EE/ApplicationXml",                // NOI18N
+            "deployment-descriptor",                // NOI18N
         };
         public String[] getRecommendedTypes() {
             return TYPES;

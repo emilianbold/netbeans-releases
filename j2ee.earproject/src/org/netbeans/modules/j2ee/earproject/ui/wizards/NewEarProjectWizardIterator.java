@@ -40,6 +40,7 @@ import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.EarProjectType;
 import org.netbeans.modules.j2ee.earproject.ui.FoldersListSettings;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
@@ -135,9 +136,11 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         if (null != earProject) {
             Application app = null;
             try {
-                app = DDProvider.getDefault().getDDRoot(earProject.getAppModule().getDeploymentDescriptor());
+                app = earProject.getAppModule().getApplication();
                 app.setDisplayName(name);
-                app.write(earProject.getAppModule().getDeploymentDescriptor());
+                if (EarProjectUtil.isDDWritable(earProject)) {
+                    app.write(earProject.getAppModule().getDeploymentDescriptor());
+                }
             } catch (IOException ioe) {
                 ErrorManager.getDefault().log(ioe.getLocalizedMessage());
             }

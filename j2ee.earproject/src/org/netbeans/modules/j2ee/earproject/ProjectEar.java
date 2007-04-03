@@ -27,11 +27,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -52,17 +50,18 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
-import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.util.WeakListeners;
 
 /**
@@ -85,6 +84,8 @@ public final class ProjectEar extends J2eeApplicationProvider
     
     private PropertyChangeSupport propertyChangeSupport;
     private J2eeApplication j2eeApplication;
+    /* application reference for JAVA EE 5 only (if application.xml doesn't exist)  */
+    private Application application;
     
     ProjectEar (EarProject project) { // ], AntProjectHelper helper) {
         this.project = project;
@@ -92,20 +93,20 @@ public final class ProjectEar extends J2eeApplicationProvider
         helper.getStandardPropertyEvaluator().addPropertyChangeListener(this);
     }
     
+    /**
+     * Get the file object for deployment descriptor of EAR project.
+     * <b>Important note:</b> This method can return <code>null</code> (which is also default for JAVA EE 5).
+     * <p>
+     * This method should be used <b>only</b> when model is needed for writing.
+     * @return deployment descriptor or <code>null</null> when <i>application.xml</i>
+     *         doesn't exists.
+     */
     public FileObject getDeploymentDescriptor() {
-        FileObject dd = null;
         FileObject metaInf = getMetaInf();
         if (metaInf != null) {
-            dd = metaInf.getFileObject(FILE_DD);
-            if (dd == null) {
-                try {
-                    dd = EarProjectGenerator.setupDD(J2eeModule.JAVA_EE_5, metaInf, project);
-                } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-                }
-            }
+            return metaInf.getFileObject(FILE_DD);
         }
-        return dd;
+        return null;
     }
     
     public FileObject getMetaInf() {
@@ -164,21 +165,83 @@ public final class ProjectEar extends J2eeApplicationProvider
     }
 
     public RootInterface getDeploymentDescriptor (String location) {
-        if (! J2eeModule.APP_XML.equals(location)) {
+        if (!J2eeModule.APP_XML.equals(location)) {
             return null;
         }
         
         return getApplication();
     }
 
-    private Application getApplication () {
+    /**
+     * Get the metadata model of EAR project. The model is taken from deployment descriptor
+     * (<i>application.xml</i>) if it exists or is created on demand.
+     * <p>
+     * This method should be used whenever model is needed for reading or listening to changes
+     * but <b>not for writing</b>.
+     * @return metadata model.
+     */
+    public Application getApplication() {
         try {
-            return DDProvider.getDefault ().getDDRoot (getDeploymentDescriptor ());
-        } catch (IOException e) {
-            ErrorManager.getDefault ().log (e.getLocalizedMessage ());
-        }
-        return null;
+            // does application.xml exist?
+            if (EarProjectUtil.isDDCompulsory(project)
+                    || EarProjectUtil.isDDWritable(project)) {
+                // for JAVA EE 5 application.xml doesn't have to exist but can be generated on demand
+                //   - so free resources if this is the case
+                if (!EarProjectUtil.isDDCompulsory(project)) {
+                    synchronized (this) {
+                        if (application != null) {
+                            application = null;
+                        }
+                    }
+                }
+                return getDDFromFile();
+            }
 
+            // application.xml doesn't exist
+            return setupDDFromVirtual();
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        
+        // maybe exception?
+        return null;
+    }
+    
+    private Application getDDFromFile() throws IOException {
+        FileObject dd = getDeploymentDescriptor();
+        if (dd == null) {
+            dd = EarProjectGenerator.setupDD(project.getJ2eePlatformVersion(), getMetaInf(), project);
+        }
+        return DDProvider.getDefault().getDDRoot(dd);
+    }
+    
+    // FIXME remove this after andrei's metadata model will be finished
+    private synchronized Application setupDDFromVirtual() throws IOException {
+        // application.xml exists?
+        if (EarProjectUtil.isDDWritable(project)) {
+            return getApplication();
+        }
+        // model already created
+        if (application != null) {
+            return application;
+        }
+        
+        // create model
+        FileObject template = Repository.getDefault().getDefaultFileSystem().findResource(
+                "org-netbeans-modules-j2ee-earproject/ear-5.xml"); // NOI18N
+        assert template != null;
+        
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject dd = FileUtil.copyFile(template, root, "application"); // NOI18N
+
+        application = DDProvider.getDefault().getDDRoot(dd);
+        application.setDisplayName(ProjectUtils.getInformation(project).getDisplayName());
+        EarProjectProperties epp = project.getProjectProperties();
+        for (VisualClassPathItem vcpi : epp.getJarContentAdditional()) {
+            epp.addItemToAppDD(application, vcpi);
+        }
+        
+        return application;
     }
     
     public EjbChangeDescriptor getEjbChanges (long timestamp) {

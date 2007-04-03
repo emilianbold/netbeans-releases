@@ -188,7 +188,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
         
         EditableProperties ep = TestUtil.loadProjectProperties(testEAFO);
         assertNull("app.client not set", ep.getProperty(EarProjectProperties.APPLICATION_CLIENT));
-        assertEquals("client.module.uri is set to war", "testEA-war.war", ep.getProperty(EarProjectProperties.CLIENT_MODULE_URI));
+        assertEquals("client.module.uri is set to war", "testEA-war", ep.getProperty(EarProjectProperties.CLIENT_MODULE_URI));
         EarProjectTest.openProject((EarProject) ProjectManager.getDefault().findProject(testEAFO));
         
         doTestThatEJBWasAddedToWebAndAC(testEAWebFO, testEAClientFO); // #74123

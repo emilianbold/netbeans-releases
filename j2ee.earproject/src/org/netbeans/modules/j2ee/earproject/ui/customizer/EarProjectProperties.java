@@ -68,6 +68,7 @@ import org.netbeans.modules.j2ee.earproject.BrokenProjectSupport;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.UpdateHelper;
+import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
@@ -297,12 +298,7 @@ public final class EarProjectProperties {
     
     /** <strong>Package private for unit test only</strong>. */
     void updateContentDependency(Set<VisualClassPathItem> oldContent, Set<VisualClassPathItem> newContent) {
-        Application app = null;
-        try {
-            app = DDProvider.getDefault().getDDRoot(earProject.getAppModule().getDeploymentDescriptor());
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().log(ioe.getLocalizedMessage());
-        }
+        Application app = earProject.getAppModule().getApplication();
         
         Set<VisualClassPathItem> deleted = new HashSet(oldContent);
         deleted.removeAll(newContent);
@@ -310,7 +306,7 @@ public final class EarProjectProperties {
         added.removeAll(oldContent);
         
         //do not update the file if there is no change
-       boolean same = true;
+        boolean same = true;
         if(deleted.size() == added.size()) {
             Iterator<VisualClassPathItem> deletedIterator = deleted.iterator();
             Iterator<VisualClassPathItem> addedIterator = added.iterator();
@@ -328,7 +324,7 @@ public final class EarProjectProperties {
         }
         
         boolean saveNeeded = false;
-        if (null != app && !same) {
+        if (!same) {
             // delete the old entries out of the application
             for (VisualClassPathItem vcpi : deleted) {
                 removeItemFromAppDD(app,vcpi);
@@ -346,7 +342,7 @@ public final class EarProjectProperties {
                 saveNeeded = true;
             }
         }
-        if (saveNeeded) {
+        if (saveNeeded && EarProjectUtil.isDDWritable(earProject)) {
             try {
                 app.write(earProject.getAppModule().getDeploymentDescriptor());
             } catch (IOException ioe) {
@@ -653,46 +649,54 @@ public final class EarProjectProperties {
     }
 
     /**
-     * Acquires modules form the earproject's deployment descriptor.
+     * @see #getApplicationSubprojects(Object)
      */
-    Module[] getApplicationModules() {
-        Module mods[] = null;
-        try {
-            Application app = DDProvider.getDefault().getDDRoot(
-                    earProject.getAppModule().getDeploymentDescriptor());
-            mods = app.getModule();
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().log(ioe.getLocalizedMessage());
+    List<Project> getApplicationSubprojects() {
+        return getApplicationSubprojects(null);
+    }
+
+    /**
+     * Acquires modules (in the form of projects) from "JAVA EE Modules" not from the deployment descriptor (application.xml).
+     * <p>
+     * The reason is that for JAVA EE 5 the deployment descriptor is not compulsory.
+     * @param moduleType the type of module, see {@link J2eeModule J2eeModule constants}. 
+     *                   If it is <code>null</code> then all modules are returned.
+     * @return list of EAR project subprojects.
+     */
+    List<Project> getApplicationSubprojects(Object moduleType) {
+        List<VisualClassPathItem> vcpis = earProject.getProjectProperties().getJarContentAdditional();
+        List<Project> projects = new ArrayList<Project>(vcpis.size());
+        for (VisualClassPathItem vcpi : vcpis) {
+            Object obj = vcpi.getObject();
+            if (!(obj instanceof AntArtifact)) {
+                continue;
+            }
+            Project vcpiProject = ((AntArtifact) obj).getProject();
+            J2eeModuleProvider jmp = vcpiProject.getLookup().lookup(J2eeModuleProvider.class);
+            if (jmp == null) {
+                continue;
+            }
+            if (moduleType == null) {
+                projects.add(vcpiProject);
+            } else if (moduleType.equals(jmp.getJ2eeModule().getModuleType())) {
+                projects.add(vcpiProject);
+            }
         }
-        if (mods == null) {
-            mods = new Module[0];
-        }
-        return mods;
+        return projects;
     }
     
     public String[] getWebUris() {
-        Module mods[] = getApplicationModules();
         Set<String> result = new TreeSet<String>();
-        for (int i = 0; i < mods.length; i++) {
-            Web w = mods[i].getWeb();
-            if (w != null) {
-                result.add(w.getWebUri());
-            }
+        for (Project p : getApplicationSubprojects(J2eeModule.WAR)) {
+            result.add(ProjectUtils.getInformation(p).getDisplayName());
         }
         return result.toArray(new String[result.size()]);
     }
     
     public String[] getAppClientUris() {
-        Module mods[] = getApplicationModules();
         Set<String> result = new TreeSet<String>();
-        for (int i = 0; i < mods.length; i++) {
-            if (mods[i].getJava() != null) {
-                String jarName = mods[i].getJava();
-                String name = jarName.endsWith(".jar") // NOI18N
-                        ? jarName.substring(0, jarName.length() - 4) : jarName;
-                // application client module
-                result.add(name);
-            }
+        for (Project p : getApplicationSubprojects(J2eeModule.CLIENT)) {
+            result.add(ProjectUtils.getInformation(p).getDisplayName());
         }
         return result.toArray(new String[result.size()]);
     }

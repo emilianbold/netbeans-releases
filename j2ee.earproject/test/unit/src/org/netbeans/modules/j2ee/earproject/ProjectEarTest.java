@@ -36,19 +36,19 @@ import org.openide.filesystems.FileUtil;
  * @author Martin Krauskopf
  */
 public class ProjectEarTest extends NbTestCase {
-    
+
     private String serverID;
-    
+
     public ProjectEarTest(String testName) {
         super(testName);
     }
-    
+
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
         serverID = TestUtil.registerSunAppServer(this);
     }
-    
+
     public void testModuleAddition() throws Exception {
         // testing project
         File earDirF = new File(getWorkDir(), "testEA");
@@ -60,7 +60,7 @@ public class ProjectEarTest extends NbTestCase {
         FileObject earDirFO = FileUtil.toFileObject(earDirF);
         FileObject ejbProjectFO = earDirFO.getFileObject("testEA-ejb");
         assertNotNull(ejbProjectFO);
-        
+
         File earDirAnotherF = new File(getWorkDir(), "testEA-another");
         NewEarProjectWizardIteratorTest.generateEARProject(earDirAnotherF, name, j2eeLevel,
                 serverID, null, null, null, null, null, null);
@@ -72,12 +72,10 @@ public class ProjectEarTest extends NbTestCase {
         if (ear != null) {
             ear.addEjbJarModule(createdEjbJarProject.getAPIEjbJar());
         }
-        
+
         EarProject earProject = (EarProject) ProjectManager.getDefault().findProject(earDirAnotherFO);
-        Application app = DDProvider.getDefault().getDDRoot(
-                earProject.getAppModule().getDeploymentDescriptor());
+        Application app = earProject.getAppModule().getApplication();
         assertSame("ejb added modules", 1, app.getModule().length);
-        
     }
-    
+
 }

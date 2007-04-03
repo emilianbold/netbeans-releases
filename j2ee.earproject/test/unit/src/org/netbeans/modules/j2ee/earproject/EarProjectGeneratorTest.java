@@ -41,9 +41,9 @@ import org.xml.sax.InputSource;
  * @author vkraemer
  */
 public class EarProjectGeneratorTest extends NbTestCase {
-    
+
     private String serverID;
-    
+
     private static final String[] CREATED_FILES = {
         "build.xml",
         "nbproject/build-impl.xml",
@@ -53,7 +53,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
         "nbproject/private/private.properties",
         "src/conf/application.xml"
     };
-    
+
     private static final String[] CREATED_FILES_EXT_SOURCES = {
         "build.xml",
         "nbproject/build-impl.xml",
@@ -62,7 +62,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
         "nbproject/project.properties",
         "nbproject/private/private.properties",
     };
-    
+
     private static final String[] CREATED_PROPERTIES = {
         "build.classes.excludes",
         "build.dir",
@@ -89,7 +89,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
         "resource.dir",
         "source.root",
     };
-    
+
     private static final String[] CREATED_PROPERTIES_EXT_SOURCES = {
         "build.classes.excludes",
         "build.dir",
@@ -117,21 +117,47 @@ public class EarProjectGeneratorTest extends NbTestCase {
         //        when the project is created from ex. sources. Bug or not???
         "source.root",
     };
-    
+
     public EarProjectGeneratorTest(String name) {
         super(name);
     }
-    
+
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
         serverID = TestUtil.registerSunAppServer(this);
     }
-    
-    public void testCreateProject() throws Exception {
+
+    public void testCreateProjectJavaEE5() throws Exception {
         File prjDirF = new File(getWorkDir(), "EARProject");
         AntProjectHelper aph = EarProjectGenerator.createProject(prjDirF, "test-project",
                 J2eeModule.JAVA_EE_5, serverID, "1.5");
+        assertNotNull(aph);
+        FileObject prjDirFO = aph.getProjectDirectory();
+        for (String file : CREATED_FILES) {
+            FileObject fo = prjDirFO.getFileObject(file);
+            if ("src/conf/application.xml".equals(file)) {
+                // deployment descriptor should not exist
+                assertNull(file + " file/folder should not exist", fo);
+            } else {
+                assertNotNull(file + " file/folder should exist", fo);
+            }
+        }
+        EditableProperties props = aph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        @SuppressWarnings("unchecked")
+        List createdProperties = new ArrayList(props.keySet());
+        for (String property : CREATED_PROPERTIES) {
+            assertNotNull(property + " property cannot be found in project.properties", props.getProperty(property));
+            createdProperties.remove(property);
+        }
+        assertEquals("Found unexpected property: " + createdProperties,
+                CREATED_PROPERTIES.length, props.keySet().size());
+    }
+
+    public void testCreateProjectJ2EE14() throws Exception {
+        File prjDirF = new File(getWorkDir(), "EARProject");
+        AntProjectHelper aph = EarProjectGenerator.createProject(prjDirF, "test-project",
+                J2eeModule.J2EE_14, serverID, "1.4");
         assertNotNull(aph);
         FileObject prjDirFO = aph.getProjectDirectory();
         for (String file : CREATED_FILES) {
@@ -147,7 +173,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
         assertEquals("Found unexpected property: " + createdProperties,
                 CREATED_PROPERTIES.length, props.keySet().size());
     }
-    
+
     public void testImportProject() throws Exception {
         File prjDirF = new File(getWorkDir(), "EARProject");
         AntProjectHelper helper = EarProjectGenerator.importProject(prjDirF, prjDirF,
@@ -173,7 +199,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
         assertEquals("Found unexpected property: " + createdProperties,
                 CREATED_PROPERTIES_EXT_SOURCES.length, props.keySet().size() - extFileRefCount);
     }
-    
+
     public void testProjectNameIsSet() throws Exception { // #73930
         File prjDirF = new File(getWorkDir(), "EARProject");
         EarProjectGenerator.createProject(prjDirF, "test-project",
@@ -190,7 +216,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
         });
         assertEquals("project name is set in the build.xml", "test-project", projectName);
     }
-    
+
     public void testProjectNameIsEscaped() throws Exception {
         final File prjDirF = new File(getWorkDir(), "EARProject");
         EarProjectGenerator.createProject(prjDirF, "test project",
@@ -216,5 +242,5 @@ public class EarProjectGeneratorTest extends NbTestCase {
         });
         assertEquals("project name is escaped in build-impl.xml", "test_project-impl", buildImplXmlProjectName);
     }
-    
+
 }

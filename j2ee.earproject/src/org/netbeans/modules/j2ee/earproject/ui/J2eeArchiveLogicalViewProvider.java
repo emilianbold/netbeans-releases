@@ -475,6 +475,8 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
             List<Action> actions = new ArrayList<Action>();
             actions.addAll(specialActions);
+            actions.add(CommonProjectActions.newFileAction());
+            actions.add(null);
             actions.addAll(Arrays.asList(new Action[] {
                 null,
                 ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N

@@ -44,6 +44,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
@@ -101,7 +102,7 @@ public final class EarProjectGenerator {
     /**
      * Creates a new empty Enterprise Application project.
      *
-     * @param dir the top-level directory (need not yet exist but if it does it must be empty)
+     * @param prjDir the top-level directory (need not yet exist but if it does it must be empty)
      * @param name the code name for the project
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
@@ -203,7 +204,9 @@ public final class EarProjectGenerator {
                         for (int k = 0; k < m.length; k++) {
                             app.removeModule(m[k]);
                         }
-                        app.write(earProject.getAppModule().getDeploymentDescriptor());
+                        if (EarProjectUtil.isDDWritable(earProject)) {
+                            app.write(earProject.getAppModule().getDeploymentDescriptor());
+                        }
                         // notify the user here....
                         DialogDisplayer.getDefault().notify(
                                 new NotifyDescriptor.Message(NbBundle.getMessage(EarProjectGenerator.class, "MESSAGE_CheckContextRoots"),
@@ -385,17 +388,50 @@ public final class EarProjectGenerator {
     
     static FileObject setupDD(final String j2eeLevel, final FileObject docBase,
             final EarProject earProject) throws IOException {
+        return setupDD(j2eeLevel, docBase, earProject, false);
+    }
+
+    /**
+     * Generate deployment descriptor (<i>application.xml</i>) if needed or forced (applies for JAVA EE 5).
+     * <p>
+     * For J2EE 1.4 or older the deployment descriptor is always generated if missing.
+     * For JAVA EE 5 it is only generated if missing and forced as well.
+     * @param j2eeLevel J2EE level, see {@link J2eeModule J2eeModule constants}.
+     * @param docBase Configuration directory.
+     * @param earProject EAR project instance.
+     * @param force if <code>true</code> <i>application.xml</i> is generated even if it's not needed
+     *              (applies only for JAVA EE 5).
+     * @return {@link FileObject} of the deployment descriptor or <code>null</code>.
+     * @throws java.io.IOException if any error occurs.
+     */
+    public static FileObject setupDD(final String j2eeLevel, final FileObject docBase,
+            final EarProject earProject, boolean force) throws IOException {
         FileObject dd = docBase.getFileObject(ProjectEar.FILE_DD);
         if (dd != null) {
             return dd; // already created
         }
         FileObject template = null;
-        if (J2eeModule.J2EE_14.equals(j2eeLevel)) {
+        if (EarProjectUtil.isDDCompulsory(earProject)) {
             template = Repository.getDefault().getDefaultFileSystem().findResource(
                     "org-netbeans-modules-j2ee-earproject/ear-1.4.xml"); // NOI18N
         } else if (J2eeModule.JAVA_EE_5.equals(j2eeLevel)) {
-            template = Repository.getDefault().getDefaultFileSystem().findResource(
-                    "org-netbeans-modules-j2ee-earproject/ear-5.xml"); // NOI18N
+            if (force) {
+                template = Repository.getDefault().getDefaultFileSystem().findResource(
+                        "org-netbeans-modules-j2ee-earproject/ear-5.xml"); // NOI18N
+            } else {
+                String newLine = System.getProperty("line.separator");
+                /*StringBuilder sb = new StringBuilder();
+                for (StackTraceElement ste : new RuntimeException().getStackTrace()) {
+                    sb.append("\t");
+                    sb.append(ste.toString());
+                    sb.append(newLine);
+                }*/
+
+                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                        "Deployment descriptor (application.xml) is not compulsory for JAVA EE 5." + newLine
+                        + "If it's *really* needed, set force param to true." + newLine
+                        /*+ sb.toString()*/);
+            }
         } else {
             assert false : "Unknown j2eeLevel: " + j2eeLevel;
         }

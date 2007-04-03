@@ -48,8 +48,8 @@ public class EarProviderTest extends NbTestCase {
     public void testPathsAreReturned() throws Exception {
         File f = new File(getDataDir().getAbsolutePath(), "projects/EnterpriseApplication1");
         Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
-        // XXX should not cast a Project
-        AntProjectHelper helper = ((EarProject) project).getAntProjectHelper();
+        EarProject earProject = project.getLookup().lookup(EarProject.class);
+        AntProjectHelper helper = earProject.getAntProjectHelper();
         
         // first ensure meta.inf exists
         String metaInf = helper.getStandardPropertyEvaluator().getProperty("meta.inf");
@@ -57,14 +57,18 @@ public class EarProviderTest extends NbTestCase {
         FileObject metaInfFO =helper.resolveFileObject(metaInf);
         assertNotNull(metaInfFO);
         
-        // ensuer application-client.xml exists
+        // ensure application-client.xml exists
         FileObject appXmlFO = metaInfFO.getFileObject(APPLICATION_XML);
         assertNotNull(appXmlFO);
         
         // ensure deployment descriptor file is returned
-        J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         File dcFile = provider.getJ2eeModule().getDeploymentConfigurationFile(APPLICATION_XML);
         assertEquals(FileUtil.toFile(metaInfFO.getFileObject(APPLICATION_XML)), dcFile);
+        
+        J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModule j2eeModule = jmp.getJ2eeModule();
+        assertNotNull(j2eeModule.getDeploymentDescriptor(J2eeModule.APP_XML));
     }
     
 }

@@ -105,11 +105,11 @@ public class EarProjectPropertiesTest extends NbTestCase {
         earProjectProperties = new EarProjectProperties(earProject, refHelper, new EarProjectType());
         assertNotNull("ear project properties should be created", earProjectProperties);
     }
-    
-    public void testPropertiesWithoutDD() throws Exception { // see #73751
+
+    public void testPropertiesWithoutDDJ2EE() throws Exception { // see #73751
         File proj = new File(getWorkDir(), "EARProject");
         AntProjectHelper aph = EarProjectGenerator.createProject(proj,
-                "test-project", J2eeModule.JAVA_EE_5, serverID, "1.5");
+                "test-project", J2eeModule.J2EE_14, serverID, "1.4");
         FileObject prjDirFO = aph.getProjectDirectory();
         // simulateing #73751
         prjDirFO.getFileObject("src/conf/application.xml").delete();
@@ -117,19 +117,38 @@ public class EarProjectPropertiesTest extends NbTestCase {
         AuxiliaryConfiguration aux = aph.createAuxiliaryConfiguration();
         ReferenceHelper refHelper = new ReferenceHelper(aph, aux, aph.getStandardPropertyEvaluator());
         EarProjectProperties epp = new EarProjectProperties((EarProject) p, refHelper, new EarProjectType());
-        assertNotNull("non-null application modules", epp.getApplicationModules());
+        assertNotNull("non-null application modules", epp.getApplicationSubprojects());
+    }
+
+    public void testPropertiesWithoutDDJavaEE() throws Exception {
+        File proj = new File(getWorkDir(), "EARProject");
+        AntProjectHelper aph = EarProjectGenerator.createProject(proj,
+                "test-project", J2eeModule.JAVA_EE_5, serverID, "1.5");
+        FileObject prjDirFO = aph.getProjectDirectory();
+        assertNull("application should not exist", prjDirFO.getFileObject("src/conf/application.xml"));
+        Project p = ProjectManager.getDefault().findProject(prjDirFO);
+        AuxiliaryConfiguration aux = aph.createAuxiliaryConfiguration();
+        ReferenceHelper refHelper = new ReferenceHelper(aph, aux, aph.getStandardPropertyEvaluator());
+        EarProjectProperties epp = new EarProjectProperties((EarProject) p, refHelper, new EarProjectType());
+        assertNotNull("non-null application modules", epp.getApplicationSubprojects());
     }
     
-    public void testPathInEARChanging() throws Exception { // see #76008
+    public void testPathInEARChangingJ2EE() throws Exception { // see #76008
+        testPathInEARChanging(J2eeModule.J2EE_14);
+    }
+    
+    public void testPathInEARChangingJavaEE() throws Exception { // see #76008
+        testPathInEARChanging(J2eeModule.JAVA_EE_5);
+    }
+    
+    private void testPathInEARChanging(String j2eeLevel) throws Exception { // see #76008
         File earDirF = new File(getWorkDir(), "testEA-1");
         String name = "Test EnterpriseApplication";
-        String j2eeLevel = J2eeModule.JAVA_EE_5;
         String ejbName = "testEA-ejb";
         NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel,
                 serverID, null, ejbName, null, null, null, null);
         EarProject earProject = (EarProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(earDirF));
-        Application app = DDProvider.getDefault().getDDRoot(
-                earProject.getAppModule().getDeploymentDescriptor());
+        Application app = earProject.getAppModule().getApplication();
         assertEquals("ejb path", "testEA-ejb.jar", app.getModule(0).getEjb());
         
         // simulate change through customizer

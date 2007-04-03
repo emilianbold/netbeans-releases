@@ -54,23 +54,37 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Martin Krauskopf
  */
 public class EarProjectTest extends NbTestCase {
-    
+
     private String serverID;
-    
+
     public EarProjectTest(String testName) {
         super(testName);
     }
-    
+
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
         serverID = TestUtil.registerSunAppServer(this);
     }
-    
-    public void testEarWithoutDDOpening() throws Exception { // #75586
+
+    // see testEarWithoutDDOpeningJ2EE()
+    public void testEarWithoutDDOpeningJavaEE() throws Exception {
         File prjDirF = new File(getWorkDir(), "TestEarProject_15");
         EarProjectGenerator.createProject(prjDirF, "test-project",
                 J2eeModule.JAVA_EE_5, serverID, "1.5");
+        File dirCopy = copyFolder(prjDirF);
+        File ddF = new File(dirCopy, "src/conf/application.xml");
+        assertFalse("has no deployment descriptor", ddF.isFile());
+        FileObject fo = FileUtil.toFileObject(dirCopy);
+        Project project = ProjectManager.getDefault().findProject(fo);
+        assertNotNull("project is found", project);
+        EarProjectTest.openProject((EarProject) project);
+    }
+
+    public void testEarWithoutDDOpeningJ2EE() throws Exception { // #75586
+        File prjDirF = new File(getWorkDir(), "TestEarProject_14");
+        EarProjectGenerator.createProject(prjDirF, "test-project",
+                J2eeModule.J2EE_14, serverID, "1.4");
         File dirCopy = copyFolder(prjDirF);
         File ddF = new File(dirCopy, "src/conf/application.xml");
         assertTrue("has deployment descriptor", ddF.isFile());
@@ -81,11 +95,33 @@ public class EarProjectTest extends NbTestCase {
         // tests #75586
         EarProjectTest.openProject((EarProject) project);
     }
-    
-    public void testThatMissingDDIsRegeneratedCorrectlyDuringOpening() throws Exception { // #81154
+
+    public void testThatMissingDDIsNotRegeneratedDuringOpeningJavaEE() throws Exception {
         File earDirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
         String j2eeLevel = J2eeModule.JAVA_EE_5;
+        String ejbName = "testEA-ejb";
+        String acName = "testEA-ac";
+        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel,
+                serverID, null, ejbName, acName, null, null, null);
+        File dirCopy = copyFolder(earDirF);
+        File ddF = new File(dirCopy, "src/conf/application.xml");
+        assertFalse("has no deployment descriptor", ddF.isFile());
+        FileObject fo = FileUtil.toFileObject(dirCopy);
+        Project project = ProjectManager.getDefault().findProject(fo);
+        assertNotNull("project is found", project);
+        EarProjectTest.openProject((EarProject) project);
+        assertFalse("deployment descriptor was regenerated", ddF.isFile());
+        
+        ProjectEar projectEar = project.getLookup().lookup(ProjectEar.class);
+        Application app = projectEar.getApplication();
+        assertSame("two modules", 2, app.sizeModule());
+    }
+
+    public void testThatMissingDDIsRegeneratedCorrectlyDuringOpeningJ2EE() throws Exception { // #81154
+        File earDirF = new File(getWorkDir(), "testEA");
+        String name = "Test EnterpriseApplication";
+        String j2eeLevel = J2eeModule.J2EE_14;
         String ejbName = "testEA-ejb";
         String acName = "testEA-ac";
         NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel,
@@ -104,7 +140,7 @@ public class EarProjectTest extends NbTestCase {
         Application app = DDProvider.getDefault().getDDRoot(FileUtil.toFileObject(ddF));
         assertSame("two modules", 2, app.getModule().length);
     }
-    
+
     public void testOpeningWihtoutPrivateMetadataAndSrcDirectory() throws Exception { // #83507
         File earDirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
@@ -123,12 +159,12 @@ public class EarProjectTest extends NbTestCase {
         assertNotNull("project is found", project);
         EarProjectTest.openProject((EarProject) project);
     }
-    
+
     public void testEarProjectIsGCed() throws Exception { // #83128
         File prjDirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
         String j2eeLevel = "1.4";
-        
+
         // creates a project we will use for the import
         NewEarProjectWizardIteratorTest.generateEARProject(prjDirF, name, j2eeLevel,
                 serverID, null, null, null, null, null, null);
@@ -143,7 +179,7 @@ public class EarProjectTest extends NbTestCase {
         earProject = null;
         assertGC("project cannot be garbage collected", wr);
     }
-    
+
     /**
      * Accessor method for those who wish to simulate open of a project and in
      * case of suite for example generate the build.xml.
@@ -153,13 +189,13 @@ public class EarProjectTest extends NbTestCase {
         assertNotNull("has an OpenedHook", hook);
         hook.projectOpened(); // protected but can use package-private access
     }
-    
+
     public static void closeProject(final EarProject p) {
         ProjectOpenedHookImpl hook = (ProjectOpenedHookImpl) p.getLookup().lookup(ProjectOpenedHook.class);
         assertNotNull("has an OpenedHook", hook);
         hook.projectClosed(); // protected but can use package-private access
     }
-    
+
     /**
      * Make a temporary copy of a whole folder into some new dir in the scratch area.
      * Stolen from ant/freeform.
@@ -176,7 +212,7 @@ public class EarProjectTest extends NbTestCase {
         doCopy(d, todir);
         return todir;
     }
-    
+
     private static void doCopy(File from, File to) throws IOException {
         if (from.isDirectory()) {
             if (from.getName().equals("CVS")) {
@@ -202,7 +238,7 @@ public class EarProjectTest extends NbTestCase {
             }
         }
     }
-    
+
     public static void validate(final File ddFile) throws Exception {
         SAXParserFactory f = (SAXParserFactory) Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance();
         if (f == null) {
@@ -229,14 +265,14 @@ public class EarProjectTest extends NbTestCase {
                     e.getSystemId() + ":" + e.getLineNumber() + ": " + e.getLocalizedMessage());
         }
     }
-    
+
     public static void validate(FileObject ddFO) throws Exception {
         Assert.assertNotNull(ddFO);
         File ddF = FileUtil.toFile(ddFO);
         Assert.assertNotNull(ddF);
         validate(ddF);
     }
-    
+
     private static final class Handler extends DefaultHandler {
         public void warning(SAXParseException e) throws SAXException {
             throw e;
@@ -248,5 +284,5 @@ public class EarProjectTest extends NbTestCase {
             throw e;
         }
     }
-    
+
 }
