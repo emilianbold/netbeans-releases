@@ -497,7 +497,7 @@ public class JSFClientGenerator {
                 ManagedBean mb = model.getFactory().createManagedBean();
                 mb.setManagedBeanName(managedBean);
                 mb.setManagedBeanClass(controllerClass);
-                mb.setManagedBeanScope("session");
+                mb.setManagedBeanScope(ManagedBean.Scope.SESSION);
                 config.addManagedBean(mb);
 
                 Converter cv = model.getFactory().createConverter();

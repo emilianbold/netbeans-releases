@@ -28,18 +28,12 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Sources;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Description;
-import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponentFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.WizardDescriptor;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
@@ -49,8 +43,6 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponentFactory;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
@@ -160,7 +152,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         
         bean.setManagedBeanName(getUniqueName(targetName, facesConfig));
         bean.setManagedBeanClass(className);
-        bean.setManagedBeanScope((String) wizard.getProperty(WizardProperties.SCOPE));
+        bean.setManagedBeanScope((ManagedBean.Scope) wizard.getProperty(WizardProperties.SCOPE));
         
         String description = (String) wizard.getProperty(WizardProperties.DESCRIPTION);
         if (description != null && description.length() > 0){

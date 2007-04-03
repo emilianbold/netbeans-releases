@@ -22,6 +22,7 @@ package org.netbeans.modules.web.jsf.dialogs;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
@@ -38,10 +39,18 @@ import org.openide.util.NbBundle;
 public class AddManagedBeanDialog extends javax.swing.JPanel implements ValidatingPanel {
     private JSFConfigDataObject config;
     private Hashtable existingBeans = null;
+    
+    private final DefaultComboBoxModel scopeModel = new DefaultComboBoxModel();
     /** Creates new form AddManagedBeanDialog */
     public AddManagedBeanDialog(JSFConfigDataObject config) {
         initComponents();
         this.config = config;
+        //initializing scope model
+        ManagedBean.Scope[] scopes = ManagedBean.Scope.values();
+        for (int i = 0; i < scopes.length; i++){
+            scopeModel.addElement(scopes[i]);
+        }
+        jComboBoxScope.setModel(scopeModel);
     }
 
     public javax.swing.text.JTextComponent[] getDocumentChangeComponents() {
@@ -140,7 +149,7 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(jLabelScope, gridBagConstraints);
 
-        jComboBoxScope.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "request", "session", "application", "none" }));
+        jComboBoxScope.setModel(scopeModel);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -226,8 +235,8 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
         return jTextFieldClass.getText();
     }
     
-    public String getScope(){
-        return (String)jComboBoxScope.getSelectedItem();
+    public ManagedBean.Scope getScope(){
+        return (ManagedBean.Scope)jComboBoxScope.getSelectedItem();
     }
     
     public String getDescription(){

@@ -64,12 +64,21 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
         setChildElementText(MANAGED_BEAN_CLASS, beanClass, JSFConfigQNames.MANAGED_BEAN_CLASS.getQName(getModel().getVersion()));
     }
     
-    public String getManagedBeanScope() {
-        return getChildElementText(JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getModel().getVersion()));
+    public ManagedBean.Scope getManagedBeanScope() {
+        String scopeText = getChildElementText(JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getModel().getVersion()));
+        scopeText = scopeText.trim().toUpperCase();
+        ManagedBean.Scope scope = null;
+        try{
+            scope = ManagedBean.Scope.valueOf(scopeText);
+        }
+        catch (IllegalArgumentException exception){
+            // do nothing. The value is wrong and the method should return null. 
+        }
+        return scope;
     }
     
-    public void setManagedBeanScope(String scope) {
-        setChildElementText(MANAGED_BEAN_SCOPE, scope, JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getModel().getVersion()));
+    public void setManagedBeanScope(ManagedBean.Scope scope) {
+        setChildElementText(MANAGED_BEAN_SCOPE, scope.toString(), JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getModel().getVersion()));
     }
     
     protected List<String> getSortedListOfLocalNames(){

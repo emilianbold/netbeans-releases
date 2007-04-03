@@ -76,7 +76,7 @@ public class JSFConfigModelTest extends NbTestCase {
         ManagedBean managedBean = managedBeans.iterator().next();
         assertEquals("ManagedBean name ", "usermanager", managedBean.getManagedBeanName());
         assertEquals("ManagedBean class ", "enterprise.jsf_jpa_war.UserManager", managedBean.getManagedBeanClass());
-        assertEquals("ManagedBean scope ", "request", managedBean.getManagedBeanScope());
+        assertEquals("ManagedBean scope ", ManagedBean.Scope.REQUEST, managedBean.getManagedBeanScope());
         //testing navigation rule
         Collection<NavigationRule> navigationRules = facesConfig.getNavigationRules();
         assertEquals("Number of navigation rules ", 1, navigationRules.size());

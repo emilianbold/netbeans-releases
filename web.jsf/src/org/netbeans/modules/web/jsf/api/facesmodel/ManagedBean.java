@@ -35,6 +35,29 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * @author Petr Pisl
  */
 public interface ManagedBean extends JSFConfigComponent, DescriptionGroup{
+    /**
+     * Defines the legal values for the &lt;managed-bean-scope&gt;
+     * element's body content, which includes all of the scopes
+     * normally used in a web application, plus the "none" value
+     * indicating that a created bean should not be stored into
+     * any scope.
+     */
+    public enum Scope{
+        REQUEST("request"),
+        SESSION("session"),
+        APPLICATION("application"),
+        NONE("none");
+        
+        private String scope;
+        
+        Scope(String scope){
+            this.scope = scope;
+        }
+        
+        public String toString(){
+            return scope;
+        }
+    }
     
     public static final String MANAGED_BEAN_NAME = JSFConfigQNames.MANAGED_BEAN_NAME.getLocalName();
     public static final String MANAGED_BEAN_CLASS = JSFConfigQNames.MANAGED_BEAN_CLASS.getLocalName();
@@ -46,7 +69,12 @@ public interface ManagedBean extends JSFConfigComponent, DescriptionGroup{
     String getManagedBeanClass();
     void setManagedBeanClass(String beanClass);
     
-    String getManagedBeanScope();
-    void setManagedBeanScope(String scope);
+    /**
+     * Obtaining scope for the managed bean
+     * @return The scope of the managed bean. If in the document is not supported value, then null
+     * is returned. 
+     */
+    ManagedBean.Scope getManagedBeanScope();
+    void setManagedBeanScope(ManagedBean.Scope scope);
     
 }
