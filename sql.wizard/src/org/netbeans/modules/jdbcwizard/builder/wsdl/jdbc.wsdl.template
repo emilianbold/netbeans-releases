@@ -45,7 +45,7 @@
         <operation name="insert">
             <jdbc:operation/>
             <input name="inputInsert">
-               <jdbc:input operationType="insert" numberOfRecords="1" paramOrder="specify param order" sql="insertQuery" PKName="testID" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>
+               <jdbc:input operationType="insert" numberOfRecords="1" paramOrder="specify param order" sql="insertQuery" PKName="testID" PollMilliSeconds="" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>
             </input>
 	    <output name="outputInsert">
                 <jdbc:output returnPartName="part"/>
@@ -54,19 +54,19 @@
 	 <operation name="update">
             <jdbc:operation/>
             <input name="inputUpdate">
-		<jdbc:input operationType="update" numberOfRecords="1" paramOrder="specify param order" sql="updateQuery" PKName="testID" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>		
+		<jdbc:input operationType="update" numberOfRecords="1" paramOrder="specify param order" sql="updateQuery" PKName="testID" PollMilliSeconds="" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>		
 	    </input>
         </operation>
 	 <operation name="delete">
             <jdbc:operation/>
             <input name="inputDelete">
-		<jdbc:input operationType="delete" numberOfRecords="1" paramOrder="specify param order" sql="deleteQuery" PKName="testID" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>		
+		<jdbc:input operationType="delete" numberOfRecords="1" paramOrder="specify param order" sql="deleteQuery" PKName="testID" PollMilliSeconds="" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>		
 	    </input>
         </operation>
 	 <operation name="find">
             <jdbc:operation/>
             <input name="inputFind">
-		<jdbc:input operationType="find" numberOfRecords="1" paramOrder="specify param order" sql="findQuery" PKName="testID" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>		
+		<jdbc:input operationType="find" numberOfRecords="1" paramOrder="specify param order" sql="findQuery" PKName="testID" PollMilliSeconds="" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>		
 	     </input>
             <output name="outputFind">
                 <jdbc:output returnPartName="part"/>
@@ -75,7 +75,7 @@
 	<operation name="pollrecords">
             <jdbc:operation/>
             <input name="inputPoll">
-		<jdbc:input operationType="poll" numberOfRecords="1" paramOrder="specify param order" sql="pollQuery" PKName="testID" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>		
+		<jdbc:input operationType="poll" numberOfRecords="1" paramOrder="specify param order" sql="pollQuery" PKName="testID" PollMilliSeconds="5000" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>		
 	    </input>
         </operation>
     </binding>

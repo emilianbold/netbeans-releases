@@ -40,6 +40,7 @@ package org.netbeans.modules.jdbcwizard.builder.xsd;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBColumn;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBTable;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.impl.DBColumnImpl;
+import org.netbeans.modules.jdbcwizard.builder.util.XMLCharUtil;
 
 import java.io.PrintWriter;
 import java.io.File;
@@ -123,7 +124,7 @@ public class XSDGenerator {
 
     public void generateSimpleXsd() throws Exception {
         this.generateXSDHeaders();
-        final Element aNode = this.addElementNode(this.ltbl.getName());
+        final Element aNode = this.addElementNode( XMLCharUtil.makeValidNCName(this.ltbl.getName()));
         this.mCurrentNode = aNode;
         this.createComplexTypesForTables(this.ltbl);
         this.serialize(this.mFileName);
@@ -132,7 +133,7 @@ public class XSDGenerator {
     public void generateRepeatXsd() throws Exception {
         this.generateXSDHeaders();
 
-        final String tableName = this.ltbl.getName();
+        final String tableName = XMLCharUtil.makeValidNCName( this.ltbl.getName());
         final String complexTypeName = tableName + "List";
         final Element aNode = this.addElementNode(tableName + "_List", complexTypeName);
         this.createComplexTypeRepeatElement(complexTypeName, tableName);
@@ -172,7 +173,7 @@ public class XSDGenerator {
     private void createComplexTypesForTables(final DBTable aTable) throws Exception {
         final List cols = aTable.getColumnList();
         Element aNode = null;
-        final String tableName = aTable.getName();
+        final String tableName =  XMLCharUtil.makeValidNCName(aTable.getName());
 
         aNode = this.mDoc.createElement(XSDGenerator.XSD_PREFIX + XSDGenerator.XSD_COMPLEX_TYPE);
         aNode.setAttribute(XSDGenerator.NAME_ATTR, tableName);

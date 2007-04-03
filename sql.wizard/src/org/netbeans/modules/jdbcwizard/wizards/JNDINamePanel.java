@@ -53,7 +53,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
+import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBColumn;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBTable;
+import org.netbeans.modules.jdbcwizard.builder.util.XMLCharUtil;
 import org.netbeans.modules.jdbcwizard.builder.wsdl.GenerateWSDL;
 import org.netbeans.modules.jdbcwizard.builder.xsd.XSDGenerator;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBConnectionDefinition;
@@ -187,7 +189,10 @@ public class JNDINamePanel extends javax.swing.JPanel implements WizardDescripto
                     while (it.hasNext()) {
                         final DBTable sTable = (DBTable) it.next();
                         if (sTable.isSelected()) {
-                            xsdGen.generate(sTable.getName(), targetFolderPath + File.separator + sTable.getName()
+                        	//Make the xsd file name as valid name
+                        	//Otherwise this will fail in "schemalocation" of the wsdl
+                        	// the reaso ins schemalocation in wsdl is NCName
+                            xsdGen.generate(sTable.getName(), targetFolderPath + File.separator + XMLCharUtil.makeValidNCName(sTable.getName())
                                     + JNDINamePanel.XSD_EXT, sTable);
                             selTable = sTable;
                         }
