@@ -28,6 +28,12 @@ import java.io.IOException;
  */
 public abstract class VCSInterceptor {
 
+    /**
+     * Protected constructor, does nothing.   
+     */
+    protected VCSInterceptor() {
+    }
+    
     // ==================================================================================================
     // DELETE
     // ==================================================================================================

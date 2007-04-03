@@ -45,7 +45,10 @@ import java.lang.ref.Reference;
  */
 public final class VCSContext {
     
-    public static final VCSContext Empty = new VCSContext(null, emptySet(), emptySet() );
+    /**
+     * VCSContext that contains no files.
+     */
+    public static final VCSContext EMPTY = new VCSContext(null, emptySet(), emptySet() );
 
     /**
      * Caching of current context for performance reasons, also see #72006.

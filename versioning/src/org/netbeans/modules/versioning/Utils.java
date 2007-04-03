@@ -100,6 +100,10 @@ public class Utils {
         file.delete();
     }
 
+    public static boolean isLocalHistory(VersioningSystem system) {
+        return system.getProperty(VersioningSystem.PROP_LOCALHISTORY_VCS) != null;
+    }
+    
     /**
      * Creates a task that will run in the Versioning RequestProcessor (with has throughput of 1). The runnable may take long
      * to execute (connet through network, etc).

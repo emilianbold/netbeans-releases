@@ -32,8 +32,16 @@ import java.awt.Image;
 public abstract class VCSAnnotator {
 
     /**
-     * Specifies destination of returned actions.
-     * @link #getActions
+     * Protected constructor, does nothing.   
+     */
+    protected VCSAnnotator() {
+    }
+    
+    /**
+     * Specifies destination of returned actions. Destination MainMenu means actions will be user to construct main
+     * application menu, PopupMenu means actions will be used to construct popup menus on projects, files and folders.
+     * 
+     * @ser #getActions
      */
     public enum ActionDestination { MainMenu, PopupMenu }; 
 

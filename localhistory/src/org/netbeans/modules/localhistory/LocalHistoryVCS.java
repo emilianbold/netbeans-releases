@@ -31,11 +31,12 @@ import org.openide.util.NbBundle;
  * 
  * @author Tomas Stupka
  */
-public class LocalHistoryVCS extends VersioningSystem implements org.netbeans.modules.versioning.spi.LocalHistory {
+public class LocalHistoryVCS extends VersioningSystem {
         
     public LocalHistoryVCS() {
         putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(LocalHistoryVCS.class, "CTL_DisplayName"));
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(LocalHistoryVCS.class, "CTL_MainMenuItem"));
+        putProperty(PROP_LOCALHISTORY_VCS, Boolean.TRUE);
     }
     
     public File getTopmostManagedParent(File file) {    

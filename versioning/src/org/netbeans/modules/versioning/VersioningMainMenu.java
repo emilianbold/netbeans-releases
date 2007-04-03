@@ -24,7 +24,6 @@ import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.spi.LocalHistory;
 
 import javax.swing.*;
 import javax.swing.event.MenuListener;
@@ -81,7 +80,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
 
         VersioningSystem localHistory = null;
         for (final VersioningSystem system : systems) {
-            if (system instanceof LocalHistory) {
+            if (Utils.isLocalHistory(system)) {
                 localHistory = system;
             } else {
                 JMenu menu = createVersioningSystemMenu(system, ctx);

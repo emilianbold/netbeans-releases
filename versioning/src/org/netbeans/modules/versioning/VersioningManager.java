@@ -20,7 +20,6 @@ package org.netbeans.modules.versioning;
 
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.spi.LocalHistory;
 import org.netbeans.modules.versioning.diff.DiffSidebarManager;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.openide.util.Lookup;
@@ -132,7 +131,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         assert localHistory == null;
         versioningSystems.addAll(systems);
         for (VersioningSystem system : versioningSystems) {
-            if (localHistory == null && system instanceof LocalHistory) {
+            if (localHistory == null && Utils.isLocalHistory(system)) {
                 localHistory = system;
             }
             system.addPropertyChangeListener(this);

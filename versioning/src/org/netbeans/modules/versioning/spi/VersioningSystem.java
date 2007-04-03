@@ -53,10 +53,28 @@ public abstract class VersioningSystem {
      */
     public static final String PROP_MENU_LABEL = "String VCS.MenuLabel";
     
+    /**
+     * Marker property for a Versioning system that operates in Local History mode. Local History is a special versioning
+     * system with these properties:
+     * 
+     * - there is only one local history module active at any one time, the first encoutered module wins
+     * - local history module is not exclusive with other regsitered 'normal' versioning systems. This means that 
+     *   filesystems events may be processed both by Local history module and by some other versioning system module
+     * 
+     * NOTE: Local History is implemented by default, use this only if you are writing a replacement module 
+     */
+    public static final String PROP_LOCALHISTORY_VCS = "Boolean VCS.LocalHistory";
+        
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     private final Map<String, Object> properties = Collections.synchronizedMap(new HashMap<String, Object>());
     
+    /**
+     * Protected constructor, does nothing.   
+     */
+    protected VersioningSystem() {
+    }
+
     /**
      * Gets a general property of a Versioning system.
      * 
@@ -176,11 +194,12 @@ public abstract class VersioningSystem {
     }
     
     /**
-     * Helper method to signal that status of a file changed. Status change event will refresh its annotations automatically.
+     * Helper method that calls fireStatusChanged(Collections.singleton(file)). 
      *  
-     * @param file a file whose status changed 
+     * @param file a file whose status changed
+     * @see #fireStatusChanged(java.util.Set)  
      */ 
     protected final void fireStatusChanged(File file) {
-        fireStatusChanged(new HashSet<File>(Arrays.asList(file)));
+        fireStatusChanged(Collections.singleton(file));
     }
 }
