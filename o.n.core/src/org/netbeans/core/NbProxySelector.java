@@ -84,10 +84,6 @@ public final class NbProxySelector extends ProxySelector {
                         int porti = Integer.parseInt(ports);
                         Proxy p = new Proxy (Proxy.Type.SOCKS,  new InetSocketAddress (hosts, porti));
                         res.add (p);
-                    } else {
-                        log.info ("Incomplete SOCKS Server [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
-                        log.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
-                        res.addAll (original.select (uri));
                     }
                 }
                 res.addAll (original.select (uri));
