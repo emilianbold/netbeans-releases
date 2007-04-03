@@ -47,16 +47,11 @@
             <fileset dir="${data.directory}">
                 <exclude name="soa${sources.params.2.value}"/>
                 <exclude name="soa${sources.params.2.value}/**"/>
-                <exclude name="xmltools1"/>
-                <exclude name="xmltools1/**"/>
             </fileset>
         </delete>
         
         <move todir="${data.directory}">
             <fileset dir="${data.directory}/soa${sources.params.2.value}">
-                <include name="**/*"/>
-            </fileset>
-            <fileset dir="${data.directory}/xmltools1">
                 <include name="**/*"/>
             </fileset>
         </move>
@@ -65,8 +60,6 @@
             <fileset dir="${data.directory}">
                 <include name="soa${sources.params.2.value}"/>
                 <include name="soa${sources.params.2.value}/**"/>
-                <include name="xmltools1"/>
-                <include name="xmltools1/**"/>
             </fileset>
         </delete>
     </target>
