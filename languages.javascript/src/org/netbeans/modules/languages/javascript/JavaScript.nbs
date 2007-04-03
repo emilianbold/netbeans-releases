@@ -403,6 +403,11 @@ COMPLETION:js_separator: {
     doNotUsePrefix:"true";
 }
 
+COMPLETION:js_comment: {
+    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems;
+    doNotUsePrefix:"true";
+}
+
 STORE:VariableDeclaration: {
     context:"Folder,Block";
     name:"$js_identifier$";
