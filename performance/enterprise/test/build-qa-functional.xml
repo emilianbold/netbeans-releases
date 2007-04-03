@@ -239,11 +239,17 @@
     <target name="copy_unzip_soa_project">
         <unzip src="${nbextra.dir}/qa/projectized/SOATestProject.zip" dest="${xtest.tmpdir}/"/>
     </target>
-    
+    <!-- Copy and unzip project BPELTestProject.zip from close source path, will be used for Performance tests -->
+    <target name="copy_unzip_bpel_project">
+        <unzip src="${nbextra.dir}/qa/projectized/BPELTestProject.zip" dest="${xtest.tmpdir}/"/>
+    </target>    
+
+
     <!-- Copy and unzip all Enteprise test projects from close source path, will be used for Performance tests -->
     <target name="copy_unzip_ent_test_projects">
         <antcall target="copy_unzip_j2ee_project"/>
         <antcall target="copy_unzip_soa_project"/>
+        <antcall target="copy_unzip_bpel_project"/>
     </target>
 
 </project>
