@@ -85,20 +85,33 @@ public class BuildNumberNbUml extends Task {
             final Matcher matcher = PATTERN.matcher(contents);
             
             if (matcher.find()) {
-                final String buildNumber = matcher.group(1);                // NOMAGI
+                String buildNumber = matcher.group(1);                      // NOMAGI
+                
+                getProject().setProperty(
+                        prefix + BUILD_NUMBER_REAL_SUFFIX,
+                        buildNumber);
                 
                 if (buildNumber.indexOf('_') == -1) {
                     getProject().setProperty(
                             prefix + BUILD_NUMBER_SUFFIX,
                             "20" + buildNumber + "00");                     // NOI18N
                 } else {
+                    final int index = buildNumber.indexOf('_');             // NOMAGI
+                    
+                    final String bnPrefix = 
+                            buildNumber.substring(0, index);                // NOMAGI
+                    final String bnSuffix = 
+                            buildNumber.substring(index + 1);               // NOMAGI
+                    
+                    buildNumber = 
+                            bnPrefix + 
+                            (bnSuffix.length() < 2 ? "0" : "") +     // NOI18N NOMAGI
+                            bnSuffix;
+                    
                     getProject().setProperty(
                             prefix + BUILD_NUMBER_SUFFIX,
-                            "20" + buildNumber.replace('_', '0'));   // NOI18N NOMAGI
+                            "20" + buildNumber);                     // NOI18N NOMAGI
                 }
-                getProject().setProperty(
-                        prefix + BUILD_NUMBER_REAL_SUFFIX,
-                        buildNumber);
             } else {
                 throw new BuildException(
                         "Cannot find build number");                        // NOI18N
