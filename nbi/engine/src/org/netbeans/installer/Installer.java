@@ -656,7 +656,7 @@ public class Installer implements FinishHandler {
                             StringUtils.FORWARD_SLASH;
                     if(!name.startsWith(dataDir) || // all except "data/""
                             name.equals(dataDir) || // "data/"
-                            name.equals(dataDir + EngineResources.ENGINE_PROPERTIES)) { // "data/engine.properties"
+                            name.equals(EngineResources.ENGINE_PROPERTIES)) { // "data/engine.properties"
                         jos.putNextEntry(new JarEntry(name));
                         if(!name.endsWith(StringUtils.FORWARD_SLASH)) {
                             StreamUtils.transferData(ResourceUtils.getResource(name), jos);
