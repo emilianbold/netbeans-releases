@@ -95,11 +95,12 @@ public final class NbProxySelector extends ProxySelector {
         } else if (ProxySettings.MANUAL_SET_PROXY == proxyType) {
             String protocol = uri.getScheme ();
             assert protocol != null : "Invalid scheme of uri " + uri + ". Scheme cannot be null!";
+            
+            // handling nonProxyHosts first
+            if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
+                res.add (Proxy.NO_PROXY);
+            }
             if (protocol.toLowerCase (Locale.US).startsWith("http")) {
-                // handling nonProxyHosts first
-                if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
-                    res.add (Proxy.NO_PROXY);
-                }
                 String hosts = ProxySettings.getHttpHost ();
                 String ports = ProxySettings.getHttpPort ();
                 if (ports != null && ports.length () > 0 && hosts.length () > 0) {
