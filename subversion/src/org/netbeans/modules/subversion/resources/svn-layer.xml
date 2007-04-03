@@ -90,6 +90,9 @@ Microsystems, Inc. All Rights Reserved.
              <file name="org-netbeans-modules-subversion-ui-properties-SvnPropertiesAction.instance">
                  <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction"/>
              </file>            
+            <file name="org-netbeans-modules-subversion-ui-lock-LockAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.lock.LockAction"/>
+            </file>
         </folder>
     </folder>
     <folder name="Menu"> 
@@ -220,6 +223,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="SvnPropertiesAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-properties-SvnPropertiesAction.instance"/>                    
                 </file>                 
+                <file name="LockAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-lock-LockAction.instance"/>
+                </file>
             </folder>
         </folder>
     </folder>

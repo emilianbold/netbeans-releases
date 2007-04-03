@@ -608,7 +608,11 @@ public class FileStatusCache implements ISVNNotifyListener {
                 System.err.println("\tprop: " + repositoryStatus.getRepositoryPropStatus()); // NOI18N
             }
         }
-
+        
+        if (status. getLockOwner() != null) {
+            remoteStatus = FileInformation.STATUS_LOCKED | remoteStatus;
+        }
+        
         if (SVNStatusKind.NONE.equals(pkind)) {
             // no influence
         } else if (SVNStatusKind.NORMAL.equals(pkind)) {
