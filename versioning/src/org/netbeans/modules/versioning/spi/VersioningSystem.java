@@ -102,15 +102,15 @@ public abstract class VersioningSystem {
     
     /**
      * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
-     * parent of the file that is still versioned.
+     * ancestor of the file that is still versioned.
      * For example (for CVS) if all your CVS checkouts are in a directory /home/johndoe/projects/cvscheckouts/... then for all files
      * that are under "cvscheckouts" directory and for the directory itselft this method should 
      * return "/home/johndoe/projects/cvscheckouts/" and for all other files return null.
      *  
      * @param file a file
-     * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
+     * @return File the file itself or one of its ancestors or null if the supplied file is NOT managed by this versioning system
      */
-    public File getTopmostManagedParent(File file) {
+    public File getTopmostManagedAncestor(File file) {
         return null;
     }
     

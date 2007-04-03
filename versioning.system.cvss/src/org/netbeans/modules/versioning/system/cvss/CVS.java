@@ -47,12 +47,12 @@ public class CVS extends VersioningSystem implements VersioningListener, Prefere
     }
     
     /**
-     * Returns the topmost parent folder of the given file that is managed by this versioning system.
+     * Returns the topmost ancestor folder of the given file that is managed by this versioning system.
      * 
      * @param file
      * @return null if this file is not managed by this versioning system or a topmpost File (folder) that is still versioned but its parent is not
      */
-    public File getTopmostManagedParent(File file) {
+    public File getTopmostManagedAncestor(File file) {
         return CvsVersioningSystem.getInstance().getTopmostManagedParent(file);
     }
 

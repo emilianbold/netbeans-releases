@@ -39,7 +39,7 @@ public class LocalHistoryVCS extends VersioningSystem {
         putProperty(PROP_LOCALHISTORY_VCS, Boolean.TRUE);
     }
     
-    public File getTopmostManagedParent(File file) {    
+    public File getTopmostManagedAncestor(File file) {    
         if(file == null) {
             return null;
         }                

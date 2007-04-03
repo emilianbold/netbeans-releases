@@ -46,7 +46,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
 
-    public File getTopmostManagedParent(File file) {
+    public File getTopmostManagedAncestor(File file) {
         return Subversion.getInstance().getTopmostManagedParent(file);
     }
 

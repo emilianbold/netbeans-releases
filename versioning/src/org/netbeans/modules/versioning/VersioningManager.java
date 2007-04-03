@@ -209,7 +209,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         File closestParent = null;
             for (VersioningSystem system : versioningSystems) {
                 if (system != localHistory) {    // currently, local history is never an owner of a file
-                    File topmost = system.getTopmostManagedParent(folder);                
+                    File topmost = system.getTopmostManagedAncestor(folder);                
                     if (topmost != null && (closestParent == null || Utils.isParentOrEqual(closestParent, topmost))) {
                         owner = system;
                         closestParent = topmost;
@@ -244,7 +244,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             return isManagedByLocalHistory ? localHistory : null;
         }
                 
-        boolean isManaged = localHistory.getTopmostManagedParent(folder) != null;            
+        boolean isManaged = localHistory.getTopmostManagedAncestor(folder) != null;            
         if (isManaged) {
             localHistoryFolders.put(folder, Boolean.TRUE);
             return localHistory;
