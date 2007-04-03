@@ -104,6 +104,7 @@ public class MethodModel {
         if (!returnType.equals(model.returnType)) return false;
         if (oneWay!=model.oneWay) return false;
         if (!Utils.isEqualTo(action, model.action)) return false;
+        if (!Utils.isEqualTo(javadoc, model.javadoc)) return false;
         if (params.size()!=model.params.size()) return false;
         for(int i = 0;i<params.size();i++) {
             if (!params.get(i).isEqualTo(model.params.get(i))) return false;

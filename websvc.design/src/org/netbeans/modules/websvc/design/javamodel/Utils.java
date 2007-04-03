@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.design.javamodel;
 
+import com.sun.javadoc.Doc;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ArrayList;
@@ -222,6 +223,10 @@ public class Utils {
         }
         methodModel.setFaults(faults);
         
+        // populate javadoc
+        Doc javadoc = controller.getElementUtilities().javaDocFor(methodEl);
+        if (javadoc!=null) methodModel.setJavadoc(javadoc.getRawCommentText());
+
         // populate params
         List<? extends VariableElement> paramElements = methodEl.getParameters();
         List<ParamModel> params = new ArrayList<ParamModel>();
