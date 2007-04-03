@@ -132,6 +132,14 @@ public class ShowLocalHistoryOperator extends TopComponentOperator {
         popupOperator.pushMenu(path);
     }
     
+    public int getVersionCount(){
+//        for needs of automated tests only!
+//        Assuming there is only [today] node and the rest are versions
+        treeTableHistory().selectCell(1, 0);      
+        return treeTableHistory().getRowCount()-1;
+    }
+          
+    
     //*****************************************
     // High-level functionality definition part
     //*****************************************

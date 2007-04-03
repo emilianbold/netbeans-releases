@@ -36,11 +36,13 @@ import java.io.PrintStream;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.localhistory.operators.ShowLocalHistoryOperator;
 import org.netbeans.test.localhistory.utils.TestKit;
 
@@ -99,6 +101,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
         
         new File(TMP_PATH).mkdirs();
         projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+        ProjectSupport.waitScanFinished();
         Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");    
         
         node.performPopupAction("Open");
@@ -110,5 +113,58 @@ public class LocalHistoryViewTest extends JellyTestCase {
         slho.verify();
         
         slho.performPopupAction(1, "Revert from History");
+        int versions=slho.getVersionCount();
+        assertEquals("1. Wrong number of versions!", 2, versions);
+        
+        slho.performPopupAction(2, "Delete from History");        
+        Thread.sleep(100);
+        versions=slho.getVersionCount();
+        assertEquals("2. Wrong number of versions!", 1, versions);
+        
+        eo.insert("// modification //", 11, 1);
+        eo.save();
+        
+        Thread.sleep(100);
+        versions=slho.getVersionCount();
+        assertEquals("2. Wrong number of versions!", 2, versions);
+        slho.close();
+        
+        TestKit.createNewPackage(PROJECT_NAME, "NewPackage");
+        TestKit.createNewElement(PROJECT_NAME, "NewPackage", "NewClass");
+        node = new Node(new SourcePackagesNode(PROJECT_NAME), "NewPackage|NewClass.java");
+        node.performPopupAction("Open");
+        eo = new EditorOperator("NewClass.java");
+        eo.deleteLine(5);
+        eo.insert(os_name, 12, 1);
+        eo.saveDocument();
+        String fileContent=eo.getText();
+        
+        slho = ShowLocalHistoryOperator.invoke(node);
+        Thread.sleep(100);
+        versions = slho.getVersionCount();
+        assertEquals("3. Wrong number of versions!", 1, versions);
+        slho.close();
+        node = new Node(new SourcePackagesNode(PROJECT_NAME), "NewPackage");
+        node.performPopupActionNoBlock("Delete");
+        NbDialogOperator dialog = new NbDialogOperator("Confirm Object Deletion");
+        dialog.yes();
+        node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
+        node.performPopupAction("Local History|Revert Deleted");
+
+        node = new Node(new SourcePackagesNode(PROJECT_NAME), "NewPackage|NewClass.java");
+        slho = ShowLocalHistoryOperator.invoke(node);        
+        Thread.sleep(100);        
+        versions = slho.getVersionCount();
+        assertEquals("3. Wrong number of versions!", 2, versions);
+        node.performPopupAction("Open");
+        eo = new EditorOperator("NewClass.java");
+        assertEquals("Content of file differs after revert!", fileContent, eo.getText());
+        eo.deleteLine(5);
+        eo.insert(os_name, 12, 1);
+        eo.save();        
+        Thread.sleep(100);
+        versions=slho.getVersionCount();
+        assertEquals("4. Wrong number of versions!", 3, versions);
+        
     }
 }
