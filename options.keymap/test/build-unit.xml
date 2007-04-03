@@ -19,22 +19,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<mconfig name="editor/options">
+<project name="core/options/keymap/test-unit" basedir="." default="all">
+    <import file="../../../../nbbuild/templates/xtest-unit.xml"/>
 
-    <testbag testattribs="unstable" executor="unit-executor" name="editor/options">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="**/*Test.class"/>
-            </patternset>
-        </testset>
-    </testbag>
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+    	
 
-    <testbag testattribs="empty" executor="unit-executor" name="editor/options">
-        <testset dir="unit/src">
-        </testset>
-    </testbag>
-
-    <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
-    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
-    
-</mconfig>
+</project>

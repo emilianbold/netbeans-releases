@@ -19,9 +19,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<mconfig name="editor/options">
+<mconfig name="core/options/keymap">
 
-    <testbag testattribs="unstable" executor="unit-executor" name="editor/options">
+    <testbag testattribs="stable" executor="unit-executor" name="core/options/keymap">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
@@ -29,12 +29,13 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="empty" executor="unit-executor" name="editor/options">
+
+    <testbag testattribs="empty" executor="unit-executor" name="core/options/keymap">
         <testset dir="unit/src">
         </testset>
     </testbag>
 
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
-    
 </mconfig>
+

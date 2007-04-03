@@ -20,44 +20,6 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
-    <folder name="Actions">
-        <folder name="Window">
-<!--
-           <file name="org-netbeans-modules-options-keymap-ExportIDEShortcutsAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.keymap.ExportShortcutsAction.getExportIDEShortcutsAction"/>
-            </file>
-            <file name="org-netbeans-modules-options-keymap-ExportEditorShortcutsAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.keymap.ExportShortcutsAction.getExportEditorShortcutsAction"/>
-            </file>
-            <file name="org-netbeans-modules-options-keymap-ExportIDEActionsAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.keymap.ExportShortcutsAction.getExportIDEActionsAction"/>
-            </file>
--->            
-            <file name="org-netbeans-modules-options-keymap-ExportShortcutsToHTMLAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.keymap.ExportShortcutsAction.getExportShortcutsToHTMLAction"/>
-            </file>
-        </folder>
-    </folder>
-    <folder name="Menu">
-        <folder name="File">
-<!-- 
-            <folder name="Export">
-                <file name="org-netbeans-modules-options-keymap-ExportIDEShortcutsAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-options-keymap-ExportIDEShortcutsAction.instance"/>
-                </file>
-                <file name="org-netbeans-modules-options-keymap-ExportEditorShortcutsAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-options-keymap-ExportEditorShortcutsAction.instance"/>
-                </file>
-                <file name="org-netbeans-modules-options-keymap-ExportIDEActionsAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-options-keymap-ExportIDEActionsAction.instance"/>
-                </file>
-                <file name="org-netbeans-modules-options-keymap-ExportShortcutsToHTMLAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-options-keymap-ExportShortcutsToHTMLAction.instance"/>
-                </file>
-            </folder>
--->            
-        </folder>
-    </folder>
     <folder name="OptionsDialog">
         <file name="General.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.options.general.GeneralOptions"/>
@@ -71,11 +33,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="instanceClass" stringvalue="org.netbeans.modules.options.colors.FontAndColors"/>
         </file>    
         <attr name="FontsAndColors.instance/Advanced.instance" boolvalue="true" />
-        <attr name="General.instance/Keymaps.instance" boolvalue="true" />
-        <file name="Keymaps.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.options.keymap.Keymap"/>
-        </file>    
-        <attr name="Keymaps.instance/Advanced.instance" boolvalue="true" />
+        <attr name="General.instance/Advanced.instance" boolvalue="true" />
         <folder name="PreviewExamples">
             <file name="Defaults" url="../colors/AllLanguagesExample"/>
         </folder>

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JComponent;
+import org.netbeans.beaninfo.editors.HtmlBrowser;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -49,9 +50,12 @@ public class EditorOptionsTest extends NbTestCase {
         IDEInitializer.setup (
             new String[] {
                 "org/netbeans/modules/options/editor/mf-layer.xml",
-                "org/netbeans/modules/defaults/mf-layer.xml"
+                "org/netbeans/modules/defaults/mf-layer.xml",
+                "org/netbeans/modules/options/keymap/mf-layer.xml"
             },
-            new Object[] {}
+            new Object[] {
+                new HtmlBrowser.FactoryEditor()
+            }
         );
     }
     
@@ -68,7 +72,7 @@ public class EditorOptionsTest extends NbTestCase {
         while (it.hasNext ()) {
             OptionsCategory oc = (OptionsCategory) it.next ();
             assertNotNull (oc.getCategoryName ());
-            assertNotNull (oc.getIconBase ());
+            assertNotNull (oc.getIcon());
             assertNotNull (oc.getTitle ());
         }
     }
