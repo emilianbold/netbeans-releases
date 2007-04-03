@@ -753,18 +753,18 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     void addGrip () {
         if (floatable) {
             /** Uses L&F's grip **/
-            String lAndF = UIManager.getLookAndFeel().getName();
-            //XXX should use getID() note getName() - Tim
+            String lfID = UIManager.getLookAndFeel().getID();
             JPanel dragarea = null;
-            if (lAndF.equals("Windows")) {
+            // #98888: recognize JGoodies L&F properly
+            if (lfID.endsWith("Windows")) {
                 if (isXPTheme()) {
                     dragarea = (JPanel) new ToolbarXP();
                 } else {
                     dragarea = (JPanel) new ToolbarGrip();
                 }
-            } else if (UIManager.getLookAndFeel().getID().equals("Aqua")) {
+            } else if (lfID.equals("Aqua")) {
                 dragarea = (JPanel) new ToolbarAqua();
-            } else if (UIManager.getLookAndFeel().getID().equals("GTK")) {
+            } else if (lfID.equals("GTK")) {
                 dragarea = (JPanel) new ToolbarGtk();
                 //setFloatable(true);
             } else {
