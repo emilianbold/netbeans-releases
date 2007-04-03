@@ -30,6 +30,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.visualweb.api.designer.Designer;
+import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.netbeans.modules.visualweb.extension.openide.loaders.SystemFileSystemSupport;
 import org.openide.awt.Actions;
 import org.openide.awt.UndoRedo;
@@ -46,25 +47,33 @@ public class JsfMultiViewElement implements MultiViewElement {
 
     private static final String PATH_TOOLBAR_FOLDER = "Designer/application/x-designer/Toolbars/Default"; // NOI18N
     
-    private final Designer designer;
+//    private final Designer designer;
+    private final JsfTopComponent jsfTopComponent;
     
     private JToolBar toolbar;
 
     
     /** Creates a new instance of DesignerMultiViewElement */
-    public JsfMultiViewElement(Designer designer) {
-        if (designer == null) {
-            throw new NullPointerException("The designer parameter is null!"); // NOI18N
-        }
-        this.designer = designer;
+    public JsfMultiViewElement(JsfForm jsfForm, Designer designer) {
+//        if (designer == null) {
+//            throw new NullPointerException("The designer parameter is null!"); // NOI18N
+//        }
+//        this.designer = designer;
+        jsfTopComponent = new JsfTopComponent(jsfForm, designer);
     }
 
     
+    public JsfTopComponent getJsfTopComponent() {
+        return jsfTopComponent;
+    }
+    
     public JComponent getVisualRepresentation() {
-        return designer.getVisualRepresentation();
+//        return designer.getVisualRepresentation();
+        return jsfTopComponent.getVisualRepresentation();
     }
 
     // XXX Moved from designer/../DesignerTopComp.
+    // TODO Move it to JsfTopComponent.
     public JComponent getToolbarRepresentation() {
 //        return designer.getToolbarRepresentation();
         if (toolbar == null) {
@@ -115,47 +124,58 @@ public class JsfMultiViewElement implements MultiViewElement {
     }
 
     public Action[] getActions() {
-        return designer.getActions();
+//        return designer.getActions();
+        return jsfTopComponent.getActions();
     }
 
     public Lookup getLookup() {
-        return designer.getLookup();
+//        return designer.getLookup();
+        return jsfTopComponent.getLookup();
     }
 
     public void componentOpened() {
-        designer.componentOpened();
+//        designer.componentOpened();
+        jsfTopComponent.componentOpened();
     }
 
     public void componentClosed() {
-        designer.componentClosed();
+//        designer.componentClosed();
+        jsfTopComponent.componentClosed();
     }
 
     public void componentShowing() {
-        designer.componentShowing();
+//        designer.componentShowing();
+        jsfTopComponent.componentShowing();
     }
 
     public void componentHidden() {
-        designer.componentHidden();
+//        designer.componentHidden();
+        jsfTopComponent.componentHidden();
     }
 
     public void componentActivated() {
-        designer.componentActivated();
+//        designer.componentActivated();
+        jsfTopComponent.componentActivated();
     }
 
     public void componentDeactivated() {
-        designer.componentDeactivated();
+//        designer.componentDeactivated();
+        jsfTopComponent.componentDeactivated();
     }
 
     public UndoRedo getUndoRedo() {
-        return designer.getUndoRedo();
+//        return designer.getUndoRedo();
+        return jsfTopComponent.getUndoRedo();
     }
 
     public void setMultiViewCallback(MultiViewElementCallback multiViewElementCallback) {
-        designer.setMultiViewCallback(multiViewElementCallback);
+//        designer.setMultiViewCallback(multiViewElementCallback);
+        jsfTopComponent.setMultiViewCallback(multiViewElementCallback);
     }
 
     public CloseOperationState canCloseElement() {
-        return designer.canCloseElement();
+//        return designer.canCloseElement();
+        return jsfTopComponent.canCloseElement();
     }
 
 }

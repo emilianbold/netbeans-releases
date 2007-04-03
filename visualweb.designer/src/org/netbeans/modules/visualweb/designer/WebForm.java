@@ -20,6 +20,9 @@ package org.netbeans.modules.visualweb.designer;
 
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.util.prefs.PreferenceChangeListener;
+import javax.swing.ActionMap;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocument;
@@ -40,6 +43,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -51,6 +55,7 @@ import javax.swing.Action;
 
 import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -108,7 +113,8 @@ public class WebForm implements Designer {
     
 //    protected FacesModel model;
     private SelectionManager selection;
-    private DesignerTopComp view;
+//    private DesignerTopComp view;
+
     
 //    private Document document;
 //    private final DomDocument domDocument = DesignerPaneBase.createDomDocument(this);
@@ -118,6 +124,8 @@ public class WebForm implements Designer {
 //    private CssLookup css;
     
     private final CellRendererPane rendererPane = new CellRendererPane();
+    
+    private final DesignerPane designerPane;
     
 //    private DocumentFragment html;
 //    private DomSynchronizer domSyncer;
@@ -196,6 +204,8 @@ public class WebForm implements Designer {
         }
         
         this.htmlDomProvider = htmlDomProvider;
+        
+        this.designerPane = new DesignerPane(this);
 //        associateModel(fo);
 //        init(fo);
     }
@@ -513,9 +523,8 @@ public class WebForm implements Designer {
 //        if (getMarkup() != null) {
 //            return "WebForm[" + getMarkup().getFileObject().getNameExt() + "]";
 //        }
-
-        return super.toString() + "[htmlDomProvider=" + htmlDomProvider + " ,selection=" + selection + ", view=" +
-        view + ", gridmode=" + isGridMode() + "]";
+        return super.toString() + "[htmlDomProvider=" + htmlDomProvider + " ,selection=" + selection
+                + ", designerPane=" + designerPane + ", gridmode=" + isGridMode() + "]";
     }
 
 //    /** Look up a webform for a given model */
@@ -684,19 +693,20 @@ public class WebForm implements Designer {
 ////        }
 //    }
 
-    /**
-     * Return the top component associated with the design view
-     */
-    public DesignerTopComp getTopComponent() {
-        if (view == null) {
-            view = new DesignerTopComp(this);
-        }
-
-        return view;
-    }
+//    /**
+//     * Return the top component associated with the design view
+//     */
+//    public DesignerTopComp getTopComponent() {
+//        if (view == null) {
+//            view = new DesignerTopComp(this);
+//        }
+//
+//        return view;
+//    }
 
     public DesignerPane getPane() {
-        return getTopComponent().getDesignerPane();
+//        return getTopComponent().getDesignerPane();
+        return designerPane;
     }
 
 //    public FacesModel getModel() {
@@ -1192,11 +1202,12 @@ public class WebForm implements Designer {
     }
     
     private void doUpdateComponentForErrors() {
-        if (getTopComponent().isShowing()) {
-            // In case some kind of rendering error happened
-            // Ugh... I need to track this differently!
-            getTopComponent().updateErrors();
-        }
+//        if (getTopComponent().isShowing()) {
+//            // In case some kind of rendering error happened
+//            // Ugh... I need to track this differently!
+//            getTopComponent().updateErrors();
+//        }
+        htmlDomProvider.tcUpdateErrors(this);
     }
     
 
@@ -1604,9 +1615,10 @@ public class WebForm implements Designer {
 
 //    public void contextChanged(DesignContext designContext) {
     private void designContextGenerationChanged() {
-        if (view != null) {
-            view.designContextGenerationChanged();
-        }
+//        if (view != null) {
+//            view.designContextGenerationChanged();
+//        }
+        htmlDomProvider.tcDesignContextGenerationChanged(this);
     }
 
 //    public void beanCreated(DesignBean designBean) {
@@ -1767,7 +1779,8 @@ public class WebForm implements Designer {
 //        getManager().inlineEdit(componentRootElements.toArray(new Element[componentRootElements.size()]));
         getManager().inlineEdit(componentRootElements);
         // XXX #6484250 To activate the window after drop.
-        getTopComponent().requestActive();
+//        getTopComponent().requestActive();
+        tcRequestActive();
     }
     // <<< DnD callbacks
 
@@ -1779,7 +1792,7 @@ public class WebForm implements Designer {
 //        destroy();
 //    }
 
-    void registerListeners() {
+    public void registerListeners() {
 //        htmlDomProviderListener = new HtmlDomProviderListener(this);
 //        htmlDomProvider.addHtmlDomProviderListener((HtmlDomProvider.HtmlDomProviderListener)WeakListeners.create(
 //                HtmlDomProvider.HtmlDomProviderListener.class, htmlDomProviderListener, htmlDomProvider));
@@ -1795,7 +1808,7 @@ public class WebForm implements Designer {
         }
     }
 
-    void unregisterListeners() {
+    public void unregisterListeners() {
         // XXX Or don't use weak listener, and remove it explicitely.
 //        htmlDomProviderListener = null;
         htmlDomProvider.removeHtmlDomProviderListener(htmlDomProviderListener);
@@ -1828,62 +1841,62 @@ public class WebForm implements Designer {
     }
     
     // >>> Designer impl
-    public JComponent getDesignerComponent() {
-        return getTopComponent();
-    }
+//    public JComponent getDesignerComponent() {
+//        return getTopComponent();
+//    }
 
     // XXX Temp after moved TopComponent impl out >>>
-    public JComponent getVisualRepresentation() {
-        return getTopComponent().getVisualRepresentation();
-    }
+//    public JComponent getVisualRepresentation() {
+//        return getTopComponent().getVisualRepresentation();
+//    }
 
 //    public JComponent getToolbarRepresentation() {
 //        return getTopComponent().getToolbarRepresentation();
 //    }
 
-    public Action[] getActions() {
-        return getTopComponent().getActions();
-    }
+//    public Action[] getActions() {
+//        return getTopComponent().getActions();
+//    }
 
-    public Lookup getLookup() {
-        return getTopComponent().getLookup();
-    }
+//    public Lookup getLookup() {
+//        return getTopComponent().getLookup();
+//    }
 
-    public void componentOpened() {
-        getTopComponent().componentOpened();
-    }
+//    public void componentOpened() {
+//        getTopComponent().componentOpened();
+//    }
 
-    public void componentClosed() {
-        getTopComponent().componentClosed();
-    }
+//    public void componentClosed() {
+//        getTopComponent().componentClosed();
+//    }
 
-    public void componentShowing() {
-        getTopComponent().componentShowing();
-    }
+//    public void componentShowing() {
+//        getTopComponent().componentShowing();
+//    }
 
-    public void componentHidden() {
-        getTopComponent().componentHidden();
-    }
+//    public void componentHidden() {
+//        getTopComponent().componentHidden();
+//    }
 
-    public void componentActivated() {
-        getTopComponent().componentActivated();
-    }
+//    public void componentActivated() {
+//        getTopComponent().componentActivated();
+//    }
 
-    public void componentDeactivated() {
-        getTopComponent().componentDeactivated();
-    }
+//    public void componentDeactivated() {
+//        getTopComponent().componentDeactivated();
+//    }
 
-    public UndoRedo getUndoRedo() {
-        return getTopComponent().getUndoRedo();
-    }
+//    public UndoRedo getUndoRedo() {
+//        return getTopComponent().getUndoRedo();
+//    }
 
-    public void setMultiViewCallback(MultiViewElementCallback multiViewElementCallback) {
-        getTopComponent().setMultiViewCallback(multiViewElementCallback);
-    }
+//    public void setMultiViewCallback(MultiViewElementCallback multiViewElementCallback) {
+//        getTopComponent().setMultiViewCallback(multiViewElementCallback);
+//    }
 
-    public CloseOperationState canCloseElement() {
-        return getTopComponent().canCloseElement();
-    }
+//    public CloseOperationState canCloseElement() {
+//        return getTopComponent().canCloseElement();
+//    }
 
     // XXX Temp after moved TopComponent impl out <<<
     // <<< Designer impl.
@@ -1964,16 +1977,16 @@ public class WebForm implements Designer {
         return htmlDomProvider.getDefaultParentComponent();
     }
 
-    JComponent getErrorPanel() {
-        HtmlDomProvider.ErrorPanel errorPanel = htmlDomProvider.getErrorPanel(new ErrorPanelCallbackImpl(this));
-        if (errorPanel instanceof JComponent) {
-            return (JComponent)errorPanel;
-        } else {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new IllegalStateException("The provided error panel is not of JComponent type, errorPanel=" + errorPanel)); // NOI18N
-            return null;
-        }
-    }
+//    JComponent getErrorPanel() {
+//        HtmlDomProvider.ErrorPanel errorPanel = htmlDomProvider.getErrorPanel(new ErrorPanelCallbackImpl(this));
+//        if (errorPanel instanceof JComponent) {
+//            return (JComponent)errorPanel;
+//        } else {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                    new IllegalStateException("The provided error panel is not of JComponent type, errorPanel=" + errorPanel)); // NOI18N
+//            return null;
+//        }
+//    }
 
     public void syncModel() {
         htmlDomProvider.syncModel();
@@ -2716,37 +2729,37 @@ public class WebForm implements Designer {
     } // End of DummyHtmlDomProviderService.
     
     
-    private static class ErrorPanelCallbackImpl implements HtmlDomProvider.ErrorPanelCallback {
-        private final WebForm webForm;
-        
-        public ErrorPanelCallbackImpl(WebForm webForm) {
-            this.webForm = webForm;
-        }
-        
-        public void updateTopComponentForErrors() {
-            webForm.getTopComponent().updateErrors();
-        }
-
-        public void setRenderFailureShown(boolean shown) {
-            webForm.setRenderFailureShown(shown);
-        }
-
-//        public Exception getRenderFailure() {
-//            return webForm.getRenderFailure();
+//    private static class ErrorPanelCallbackImpl implements HtmlDomProvider.ErrorPanelCallback {
+//        private final WebForm webForm;
+//        
+//        public ErrorPanelCallbackImpl(WebForm webForm) {
+//            this.webForm = webForm;
+//        }
+//        
+//        public void updateTopComponentForErrors() {
+//            webForm.getTopComponent().updateErrors();
 //        }
 //
-//        public MarkupDesignBean getRenderFailureComponent() {
-//            return webForm.getRenderFailureComponent();
+//        public void setRenderFailureShown(boolean shown) {
+//            webForm.setRenderFailureShown(shown);
 //        }
-
-        public void handleRefresh(boolean showErrors) {
-            // Continue from the error panel to the designview
-            webForm.getTopComponent().showErrors(showErrors);
-            // 6274302: See if the user has cleared the error
-//            webform.refresh(true);
-            webForm.refreshModel(true);
-        }
-    } // End of ErrorPanelCallbackImpl.
+//
+////        public Exception getRenderFailure() {
+////            return webForm.getRenderFailure();
+////        }
+////
+////        public MarkupDesignBean getRenderFailureComponent() {
+////            return webForm.getRenderFailureComponent();
+////        }
+//
+//        public void handleRefresh(boolean showErrors) {
+//            // Continue from the error panel to the designview
+//            webForm.getTopComponent().showErrors(showErrors);
+//            // 6274302: See if the user has cleared the error
+////            webform.refresh(true);
+//            webForm.refreshModel(true);
+//        }
+//    } // End of ErrorPanelCallbackImpl.
 
     public Box findBox(int x, int y) {
         return ModelViewMapper.findBox(getPane().getPageBox(), x, y);
@@ -2840,5 +2853,170 @@ public class WebForm implements Designer {
 
         return pos.isLaterThan(editableRegionStart) && pos.isEarlierThan(editableRegionEnd);
     }
+
     
+    public void finishInlineEditing(boolean cancel) {
+        getManager().finishInlineEditing(cancel);
+    }
+
+    public void invokeDeleteNextCharAction(ActionEvent evt) {
+        InlineEditor inlineEditor = getManager().getInlineEditor();
+        if (inlineEditor != null) {
+            inlineEditor.invokeDeleteNextCharAction(evt);
+        }
+    }
+
+    public Transferable inlineCopyText(boolean isCut) {
+        InlineEditor inlineEditor = getManager().getInlineEditor();
+        if (inlineEditor != null) {
+            return inlineEditor.copyText(isCut);
+        }
+        return null;
+    }
+
+    public Element getPrimarySelection() {
+        return getSelection().getPrimary();
+    }
+
+    public Element getSelectedContainer() {
+        return getSelection().getSelectedContainer();
+    }
+
+    public void setSelectedComponents(Element[] componentRootElements, boolean update) {
+        getSelection().selectComponents(componentRootElements, update);
+    }
+
+    public void clearSelection(boolean update) {
+        getSelection().clearSelection(update);
+    }
+
+    public void syncSelection(boolean update) {
+        getManager().syncSelection(update);
+        getSelection().syncSelection(update);
+    }
+
+    public void updateSelectedNodes() {
+        getSelection().updateNodes();
+    }
+
+    public void updateSelection() {
+        getSelection().updateSelection();
+    }
+
+    public Box getPageBox() {
+        return getPane().getPageBox();
+    }
+
+    public Point getCurrentPos() {
+        return getManager().getMouseHandler().getCurrentPos();
+    }
+
+    public void clearCurrentPos() {
+        getManager().getMouseHandler().clearCurrentPos();
+    }
+
+    public Element getPositionElement() {
+        return getSelection().getPositionElement();
+    }
+
+    public int getGridWidth() {
+        return getGridHandler().getGridWidth();
+    }
+
+    public int getGridHeight() {
+        return getGridHandler().getGridHeight();
+    }
+
+    public void addWeakPreferenceChangeListener(PreferenceChangeListener l) {
+        DesignerSettings.getInstance().addWeakPreferenceChangeListener(l);
+    }
+
+    public ActionMap getPaneActionMap() {
+        return getPane().getActionMap();
+    }
+
+    public void paneRequestFocus() {
+        getPane().requestFocus();
+    }
+
+    public JComponent createPaneComponent() {
+        return getPane();
+    }
+
+    public void updatePaneViewPort() {
+        getPane().updateViewport();
+    }
+
+    public boolean hasPaneCaret() {
+        return getPane().hasCaret();
+    }
+
+    public void setPaneCaret(DomPosition pos) {
+        getPane().setCaretDot(pos);
+    }
+
+    public void resetPanePageBox() {
+        getPane().getPaneUI().resetPageBox();
+    }
+
+    public void redoPaneLayout(boolean immediate) {
+        getPane().getPageBox().redoLayout(immediate);
+    }
+
+    public void performEscape() {
+        getManager().getMouseHandler().escape();
+    }
+
+    
+    // XXX
+    public void tcEnableCutCopyDelete() {
+        htmlDomProvider.tcEnableCutCopyDelete(this);
+    }
+    public void tcDisableCutCopyDelete() {
+        htmlDomProvider.tcDisableCutCopyDelete(this);
+    }
+    
+    public void tcSetActivatedNodes(org.openide.nodes.Node[] nodes) {
+        htmlDomProvider.tcSetActivatedNodes(this, nodes);
+    }
+    
+    public org.openide.nodes.Node[] tcGetActivatedNodes() {
+        return htmlDomProvider.tcGetActivatedNodes(this);
+    }
+    
+    public void tcRequestActive() {
+        htmlDomProvider.tcRequestActive(this);
+    }
+    
+    public void tcShowPopupMenu(int x, int y) {
+        htmlDomProvider.tcShowPopupMenu(this, x, y);
+    }
+    
+    public void tcShowPopupMenu(JPopupMenu popup, int x, int y) {
+        htmlDomProvider.tcShowPopupMenu(this, popup, x, y);
+    }
+    
+    public void tcShowPopupMenuForEvent(MouseEvent evt) {
+        htmlDomProvider.tcShowPopupMenuForEvent(this, evt);
+    }
+    
+    public boolean tcImportComponentData(JComponent comp, Transferable t) {
+        return htmlDomProvider.tcImportComponentData(this, comp, t);
+    }
+    
+    public Point tcGetPastePosition() {
+        return htmlDomProvider.tcGetPastePosition(this);
+    }
+    
+    public void tcRepaint() {
+        htmlDomProvider.tcRepaint(this);
+    }
+    
+    public boolean tcSeenEscape(ActionEvent evt) {
+        return htmlDomProvider.tcSeenEscape(this, evt);
+    }
+    
+    public void tcDeleteSelection() {
+        htmlDomProvider.tcDeleteSelection(this);
+    }
 }

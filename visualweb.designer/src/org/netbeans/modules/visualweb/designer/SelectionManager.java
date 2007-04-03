@@ -164,7 +164,8 @@ public class SelectionManager {
 
         if (update) {
             updateSelection();
-            webform.getTopComponent().disableCutCopyDelete(); // not true for paste
+//            webform.getTopComponent().disableCutCopyDelete(); // not true for paste
+            webform.tcDisableCutCopyDelete();
             webform.getPane().repaint();
         }
     }
@@ -189,7 +190,8 @@ public class SelectionManager {
         primary = null;
 
         updateSelectionImmediate();
-        webform.getTopComponent().disableCutCopyDelete(); // not true for paste
+//        webform.getTopComponent().disableCutCopyDelete(); // not true for paste
+        webform.tcDisableCutCopyDelete();
         webform.getPane().repaint();
     }
     
@@ -314,7 +316,8 @@ public class SelectionManager {
 
             // XXX why are we disabling cut copy paste? That depends on the
             // selection, doesn't it?
-            webform.getTopComponent().disableCutCopyDelete(); // not true for paste
+//            webform.getTopComponent().disableCutCopyDelete(); // not true for paste
+            webform.tcDisableCutCopyDelete();
         }
     }
 
@@ -406,7 +409,8 @@ public class SelectionManager {
 
         if (wasEmpty) {
             // Enable Cut, Copy, Delete
-            webform.getTopComponent().enableCutCopyDelete();
+//            webform.getTopComponent().enableCutCopyDelete();
+            webform.tcEnableCutCopyDelete();
         }
     }
 
@@ -500,7 +504,8 @@ public class SelectionManager {
 
 //        if (wasEmpty && (selected.size() == 0)) { // removed last component
         if (wasEmpty && selectedComponents.isEmpty()) { // removed last component
-            webform.getTopComponent().disableCutCopyDelete(); // not true for paste
+//            webform.getTopComponent().disableCutCopyDelete(); // not true for paste
+            webform.tcDisableCutCopyDelete();
         }
     }
 
@@ -741,7 +746,8 @@ public class SelectionManager {
 
 //        if (selected.size() > 0) {
         if (!selectedComponents.isEmpty()) {
-            webform.getTopComponent().enableCutCopyDelete();
+//            webform.getTopComponent().enableCutCopyDelete();
+            webform.tcEnableCutCopyDelete();
         }
 
         webform.getPane().repaint();
@@ -2062,7 +2068,7 @@ public class SelectionManager {
         releaseNodes();
 
         DataObject dobj = webform.getDataObject();
-        DesignerTopComp topcomp = webform.getTopComponent();
+//        DesignerTopComp topcomp = webform.getTopComponent();
 
 //        // Ensure that the tray is no longer appearing selected
 //        topcomp.clearTraySelection();
@@ -2094,7 +2100,8 @@ public class SelectionManager {
 //                topcomp.requestActive();
 //            }
 
-            DesignerUtils.setActivatedNodes(topcomp, nds);
+//            DesignerUtils.setActivatedNodes(topcomp, nds);
+            webform.tcSetActivatedNodes(nds);
             prevNodes = nds;
             
         } else {
@@ -2139,7 +2146,8 @@ public class SelectionManager {
             Node rootNode = webform.getRootBeanNode();
             nodes = rootNode == null ? new Node[0] : new Node[] {rootNode};
             
-            DesignerUtils.setActivatedNodes(topcomp, nodes);
+//            DesignerUtils.setActivatedNodes(topcomp, nodes);
+            webform.tcSetActivatedNodes(nodes);
 //            // XXX Why is this here? Why it should get active based on node setting?
 //            if (topcomp.isShowing()) {
 //                topcomp.requestActive();
@@ -2212,7 +2220,8 @@ public class SelectionManager {
             updateNodesImmediate();
         }
 
-        return webform.getTopComponent().getActivatedNodes();
+//        return webform.getTopComponent().getActivatedNodes();
+        return webform.tcGetActivatedNodes();
     }
 
     /** Return the primary selection, if any. The primary is the most recently

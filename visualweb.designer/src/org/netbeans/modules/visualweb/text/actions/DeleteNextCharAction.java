@@ -72,7 +72,8 @@ public class DeleteNextCharAction extends TextAction {
 //            if (caret == null) {
             if (!target.hasCaret()) {
                 if (!webform.getSelection().isSelectionEmpty()) {
-                    webform.getTopComponent().deleteSelection();
+//                    webform.getTopComponent().deleteSelection();
+                    webform.tcDeleteSelection();
                 }
 
                 return;

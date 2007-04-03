@@ -1074,7 +1074,8 @@ public class DesignerUtils {
 //            return s;
 //        }
 //    }
-    
+
+    // XXX Copy also in designer/jsf/../HtmlDomProviderImpl
     /** Thread-safe method to set the activated nodes of a TopComponent;
      * this can only be done from the event dispatch thread. If called
      * from another thread it will post a runnable on the event dispatch

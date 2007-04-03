@@ -89,7 +89,8 @@ public class CssBox implements Box {
 //    public static final int AUTO = Integer.MAX_VALUE - 1;
     public static final int AUTO = CssUtilities.AUTO;
 
-    public static final int UNINITIALIZED = Integer.MAX_VALUE - 2; // debugging
+//    public static final int UNINITIALIZED = Integer.MAX_VALUE - 2; // debugging
+    public static final int UNINITIALIZED = Box.UNINITIALIZED; // debugging
 
     /** XXX Very suspicious usage, see PageBox, and try to get rid of it.
       What a name? What it has to do with persistence? */

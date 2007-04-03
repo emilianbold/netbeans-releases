@@ -165,40 +165,41 @@ public class DndHandler /*extends TransferHandler*/ {
             // XXX What was before in SelectionTopComp.
             if (importFlavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
                 // XXX Handling of cut/copied bean. Needs to be improved/moved later.
-                SelectionTopComp selectionTopComp;
-                
-                if (comp instanceof SelectionTopComp) {
-                    selectionTopComp = (SelectionTopComp)comp;
-                } else {
-                    selectionTopComp = (SelectionTopComp)SwingUtilities.getAncestorOfClass(SelectionTopComp.class, comp);
-                }
-                
-                if (selectionTopComp == null) {
-                    // XXX
-                    return false;
-                }
-                
-//                DesignBean parent = selectionTopComp.getPasteParent();
-                Element parentComponentRootElement = selectionTopComp.getPasteParentComponent();
-//                MarkupPosition pos = selectionTopComp.getPasteMarkupPosition();
-                Point location = selectionTopComp.getPastePosition();
-//                DesignBean[] beans = selectionTopComp.pasteBeans(webform, t, parent, pos, location);
-//                Element[] componentRootElements = SelectionTopComp.pasteComponents(webform, t, parentComponentRootElement, location);
-                
-                if (location != null) {
-                    GridHandler gridHandler = webform.getGridHandler();
-                    location.x = gridHandler.snapX(location.x);
-                    location.y = gridHandler.snapY(location.y);
-                }
-                Element[] componentRootElements = webform.pasteComponents(t, parentComponentRootElement, location);
-
-//                if ((beans != null) && (beans.length > 0)) {
-//                    selectionTopComp.selectBeans(beans);
+//                SelectionTopComp selectionTopComp;
+//                
+//                if (comp instanceof SelectionTopComp) {
+//                    selectionTopComp = (SelectionTopComp)comp;
+//                } else {
+//                    selectionTopComp = (SelectionTopComp)SwingUtilities.getAncestorOfClass(SelectionTopComp.class, comp);
 //                }
-                if (componentRootElements.length > 0) {
-                    selectionTopComp.selectComponents(componentRootElements);
-                }
-                return true;
+//                
+//                if (selectionTopComp == null) {
+//                    // XXX
+//                    return false;
+//                }
+//                
+////                DesignBean parent = selectionTopComp.getPasteParent();
+//                Element parentComponentRootElement = selectionTopComp.getPasteParentComponent();
+////                MarkupPosition pos = selectionTopComp.getPasteMarkupPosition();
+//                Point location = selectionTopComp.getPastePosition();
+////                DesignBean[] beans = selectionTopComp.pasteBeans(webform, t, parent, pos, location);
+////                Element[] componentRootElements = SelectionTopComp.pasteComponents(webform, t, parentComponentRootElement, location);
+//                
+//                if (location != null) {
+//                    GridHandler gridHandler = webform.getGridHandler();
+//                    location.x = gridHandler.snapX(location.x);
+//                    location.y = gridHandler.snapY(location.y);
+//                }
+//                Element[] componentRootElements = webform.pasteComponents(t, parentComponentRootElement, location);
+//
+////                if ((beans != null) && (beans.length > 0)) {
+////                    selectionTopComp.selectBeans(beans);
+////                }
+//                if (componentRootElements.length > 0) {
+//                    selectionTopComp.selectComponents(componentRootElements);
+//                }
+//                return true;
+                return webform.tcImportComponentData(comp, t);
             } // TEMP
             
             Class rc = importFlavor.getRepresentationClass();
@@ -285,21 +286,22 @@ public class DndHandler /*extends TransferHandler*/ {
         // XXX
 //        if (dropPoint == null && insertPos == Position.NONE) {
         if (dropPoint == null && insertPos == DomPosition.NONE) {
-            DesignerTopComp designerTC;
-            if (comp instanceof DesignerTopComp) {
-                designerTC = (DesignerTopComp)comp;
-            } else {
-                designerTC = (DesignerTopComp)SwingUtilities.getAncestorOfClass(DesignerTopComp.class, comp);
-            }
-            
-            if (designerTC != null) {
-                dropPoint = designerTC.getPastePosition();
-                // XXX #6185935 There should be always a point specified.
-                if (dropPoint == null) {
-                    // By default, the left upper corner.
-                    dropPoint = new Point(0,0);
-                }
-            }
+//            DesignerTopComp designerTC;
+//            if (comp instanceof DesignerTopComp) {
+//                designerTC = (DesignerTopComp)comp;
+//            } else {
+//                designerTC = (DesignerTopComp)SwingUtilities.getAncestorOfClass(DesignerTopComp.class, comp);
+//            }
+//            
+//            if (designerTC != null) {
+//                dropPoint = designerTC.getPastePosition();
+//                // XXX #6185935 There should be always a point specified.
+//                if (dropPoint == null) {
+//                    // By default, the left upper corner.
+//                    dropPoint = new Point(0,0);
+//                }
+//            }
+            dropPoint = webform.tcGetPastePosition();
         }
 
         // Delay this operation so that the other listener, DesignerPane.

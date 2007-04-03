@@ -30,6 +30,7 @@ import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.event.DesignContextListener;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
+import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.visualweb.designer.jsf.text.DomDocumentImpl;
 //NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
@@ -45,15 +46,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.Project;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
+import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
+import org.netbeans.modules.visualweb.designer.jsf.ui.NotAvailableMultiViewElement;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
+import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
@@ -68,6 +74,7 @@ import org.w3c.dom.Node;
 
 /**
  * Represents JSF form. Something like WebForm before, but only the JSF specific part of it.
+ * TODO Factor out the maintaining of the maps into JsfFormManager.
  *
  * @author Peter Zavadsky
  * @author Tor Norbye (the original code copied from the old WebForm)
@@ -77,9 +84,11 @@ public class JsfForm {
     /** Weak <code>Map</code> between <code>FacesModel</code> and <code>JsfForm</code>. */
     private static final Map<FacesModel, JsfForm> facesModel2jsfForm = new WeakHashMap<FacesModel, JsfForm>();
 
-    /** Weak <code>Map</code> between <code>JsfForm</code> and <code>Designer</code>.
-     * TODO to make it map between <code>JsfForm</code> and <code><Designer>Set</code>. */
+    /** Weak <code>Map</code> between <code>JsfForm</code> and <code>Designer</code>. */
     private static final Map<JsfForm, Set<Designer>> jsfForm2designerSet = new WeakHashMap<JsfForm, Set<Designer>>();
+    
+    /** Weak <code>Marp</code> between <code>Designer</code> and <code>JsfMultiViewElement</code>. */
+    private static final Map<Designer, JsfMultiViewElement> designer2jsfMultiViewElement = new WeakHashMap<Designer, JsfMultiViewElement>();
 
 
     /** <code>FacesModel</code> associated with this JSF form. */
@@ -191,14 +200,14 @@ public class JsfForm {
         return jsfForm;
     }
     
-    public static Designer createDesigner(DataObject jsfJspDataObject) {
-        JsfForm jsfForm = JsfForm.getJsfForm(jsfJspDataObject);
-        if (jsfForm == null) {
-            return null;
-        }
-        
-        return createDesigner(jsfForm);
-    }
+//    public static Designer createDesigner(DataObject jsfJspDataObject) {
+//        JsfForm jsfForm = JsfForm.getJsfForm(jsfJspDataObject);
+//        if (jsfForm == null) {
+//            return null;
+//        }
+//        
+//        return createDesigner(jsfForm);
+//    }
 
     public /*private*/ static Designer[] findDesigners(JsfForm jsfForm) {
         Set<Designer> designerSet;
@@ -212,7 +221,7 @@ public class JsfForm {
         return designerSet == null ? new Designer[0] : designerSet.toArray(new Designer[designerSet.size()]);
     }
     
-    private static Designer createDesigner(JsfForm jsfForm) {
+    /*private*/ static Designer createDesigner(JsfForm jsfForm) {
         // TODO There should be always created new designer.
         Designer designer;
         synchronized (jsfForm2designerSet) {
@@ -226,6 +235,24 @@ public class JsfForm {
             jsfForm2designerSet.put(jsfForm, designerSet);
         }
         return designer;
+    }
+    
+    static MultiViewElement createMultiViewElement(JsfForm jsfForm, Designer designer) {
+        if (jsfForm == null || designer == null) {
+            return new NotAvailableMultiViewElement();
+        }
+        
+        JsfMultiViewElement jsfMultiViewElement = new JsfMultiViewElement(jsfForm, designer);
+        synchronized (designer2jsfMultiViewElement) {
+            designer2jsfMultiViewElement.put(designer, jsfMultiViewElement);
+        }
+        return jsfMultiViewElement;
+    }
+    
+    static JsfMultiViewElement findJsfMultiViewElementForDesigner(Designer designer) {
+        synchronized (designer2jsfMultiViewElement) {
+            return designer2jsfMultiViewElement.get(designer);
+        }
     }
     
     static Designer[] getDesigners(JsfForm jsfForm) {
@@ -604,7 +631,7 @@ public class JsfForm {
         getDomSynchronizer().requestRefresh();
     }
     
-    void refreshModel(boolean deep) {
+    public void refreshModel(boolean deep) {
         getFacesModel().refreshAndSyncNonPageBeans(deep);
         // XXX Moved from designer/../WebForm.
         externalDomProviderCache.flush();
@@ -782,7 +809,7 @@ public class JsfForm {
 //        removeJsfFormForDataObject(dobj);
 //    }
     
-    boolean isFragment() {
+    public boolean isFragment() {
         return isFragment;
     }
 
@@ -1071,7 +1098,7 @@ public class JsfForm {
 //        return Util.getWebPages(getFacesModel().getProject(), true, false);
 //    }
 
-    PaletteController getPaletteController() {
+    public PaletteController getPaletteController() {
         return paletteController;
     }
 
@@ -1185,23 +1212,27 @@ public class JsfForm {
         return domDocumentImpl;
     }
     
-    /*private*/ void syncModel() {
+    public /*private*/ void syncModel() {
         htmlDomProvider.syncModel();
+    }
+    
+    public void setModelActivated(boolean activated) {
+        htmlDomProvider.setModelActivated(activated);
     }
     
     boolean isModelValid() {
         return htmlDomProvider.isModelValid();
     }
     
-    boolean isModelBusted() {
+    public boolean isModelBusted() {
         return htmlDomProvider.isModelBusted();
     }
     
-    private void clearHtml() {
+    public /*private*/ void clearHtml() {
         htmlDomProvider.clearHtml();
     }
     
-    DataObject getJspDataObject() {
+    public DataObject getJspDataObject() {
         return htmlDomProvider.getJspDataObject();
     }
     
@@ -1237,6 +1268,54 @@ public class JsfForm {
         CENTER,
         RIGHT
     } // End of Alignment.
+    
+    public boolean canPasteTransferable(Transferable trans) {
+        return htmlDomProvider.canPasteTransferable(trans);
+    }
+    
+    public UndoRedo getUndoManager() {
+        return htmlDomProvider.getUndoManager();
+    }
+    
+    public int computeActions(Element componentRootElement, Transferable transferable) {
+        return htmlDomProvider.computeActions(componentRootElement, transferable);
+    }
+    
+    public void attachContext() {
+        htmlDomProvider.attachContext();
+    }
+    
+    public boolean hasRenderingErrors() {
+        return htmlDomProvider.hasRenderingErrors();
+    }
+    
+    public JComponent getErrorPanel(HtmlDomProvider.ErrorPanelCallback errorPanelCallback) {
+        return (JComponent)htmlDomProvider.getErrorPanel(errorPanelCallback);
+    } 
+    
+    public boolean isSourceDirty() {
+        return htmlDomProvider.isSourceDirty();
+    }
+    
+    public void dumpHtmlMarkupForNode(org.openide.nodes.Node node) {
+        htmlDomProvider.dumpHtmlMarkupForNode(node);
+    }
+    
+    public DocumentFragment getHtmlDomFragment() {
+        return htmlDomProvider.getHtmlDocumentFragment();
+    }
+    
+    public Element getDefaultParentComponent() {
+        return htmlDomProvider.getDefaultParentComponent();
+    }
+    
+    public Transferable copyComponents(Element[] componentRootElements) {
+        return htmlDomProvider.copyComponents(componentRootElements);
+    }
+    
+    public void deleteComponents(Element[] componentRootElements) {
+        getDomDocumentImpl().deleteComponents(componentRootElements);
+    }
     
 //    public boolean canDropDesignBeansAtNode(DesignBean[] designBeans, Node node) {
 //        DesignBean parent = null;
@@ -1502,7 +1581,7 @@ public class JsfForm {
 //    } // End of LocationImpl.
     
 
-    boolean hasCachedExternalFrames() {
+    public boolean hasCachedExternalFrames() {
         return externalDomProviderCache.size() > 0;
     }
     

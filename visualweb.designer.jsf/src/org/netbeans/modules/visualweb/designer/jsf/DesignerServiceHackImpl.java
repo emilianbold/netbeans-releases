@@ -33,6 +33,7 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
+import java.awt.Container;
 import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
 import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
@@ -45,15 +46,23 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.api.designer.Designer;
+import org.netbeans.modules.visualweb.designer.jsf.ui.JsfTopComponent;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -642,7 +651,17 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //
 //        // TODO -- additional flavor checking?
 //        return true;
-        return DesignerServiceHackProvider.canDrop(flavor);
+//        return DesignerServiceHackProvider.canDrop(flavor);
+        // Fish for the designer pane
+        JsfTopComponent dtc = findCurrent();
+
+        if (dtc == null) {
+            return false;
+        }
+
+        // TODO -- additional flavor checking?
+        return true;
+        
     }
 
     public void drop(Transferable transferable) {
@@ -658,8 +677,126 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //
 //        // Drop it
 //        dth.importData(pane, transferable);
-        DesignerServiceHackProvider.drop(transferable);
+//        DesignerServiceHackProvider.drop(transferable);
+        // Fish for the "current" designer pane
+        JsfTopComponent dtc = findCurrent();
+
+        if (dtc == null) {
+            return;
+        }
+
+//        DesignerPane pane = dtc.getWebForm().getPane();
+        JComponent pane = dtc.getPane();
+        TransferHandler dth = pane.getTransferHandler();
+
+        // Drop it
+        dth.importData(pane, transferable);
     }
+
+    /** For temporary use by getCurrentDesigner runnable */
+    private static transient TopComponent temptc;
+    
+    private static TopComponent getCurrentDesigner() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return findCurrent();
+        } else {
+            // FIXME This is incorrect, it can't work.
+            // If this can work only in AWT thread,
+            // then it should be required on the client to be called only in that
+            // thread and not pretend othwerise.
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            temptc = findCurrent();
+                        }
+                    });
+
+                return temptc;
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(e);
+
+                return null;
+            } finally {
+                temptc = null; // done after return value
+            }
+        }
+    }
+    
+    /**
+     * Attempt to locate the current design view in use; may return
+     * null if no designer is found.
+     */
+    private static JsfTopComponent findCurrent() {
+        // Fish for the designer pane
+        JsfTopComponent formView = null;
+
+        // Search through workspaces, then modes, then topcomponents
+        Set modes = WindowManager.getDefault().getModes();
+        Iterator it2 = modes.iterator();
+
+        while (it2.hasNext()) {
+            Mode m = (Mode)it2.next();
+            TopComponent[] tcs = m.getTopComponents();
+
+            if (tcs != null) {
+                for (int j = 0; j < tcs.length; j++) {
+                    if (!tcs[j].isShowing()) {
+                        continue;
+                    }
+
+                    // Go hunting for our DesignerTopComp
+                    JsfTopComponent comp = findDesigner(tcs[j], 0);
+
+                    if (comp != null) {
+                        if (comp.isShowing()) {
+                            return comp;
+                        }
+                    }
+                }
+            }
+
+            if (formView != null) {
+                break;
+            }
+        }
+
+        return formView;
+    }
+
+    /** Fish for a DesignerPane within a container hierarchy
+     */
+    private static JsfTopComponent findDesigner(Container c, int depth) {
+        if (c == null) {
+            return null;
+        }
+
+        // Only look slightly into the hiearchy since TopComponents should
+        // be near the top
+        if (depth == 4) {
+            return null;
+        }
+
+        depth++;
+
+        int n = c.getComponentCount();
+
+        for (int i = 0; i < n; i++) {
+            java.awt.Component child = c.getComponent(i);
+
+            if (child instanceof JsfTopComponent) {
+                return (JsfTopComponent)child;
+            } else if (child instanceof Container) {
+                JsfTopComponent result = findDesigner((Container)child, depth);
+
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+
+        return null;
+    }
+    
 
 //    public void registerTransferable(Transferable transferable) {
 ////        if(DesignerUtils.DEBUG) {
@@ -709,7 +846,17 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //        }
 //
 //        return tc.getWebForm().getMarkup().getFileObject();
-        return DesignerServiceHackProvider.getCurrentFile();
+//        return DesignerServiceHackProvider.getCurrentFile();
+        JsfTopComponent tc = (JsfTopComponent)getCurrentDesigner();
+
+//        if ((tc == null) || (tc.getWebForm().getMarkup() == null)) {
+        if (tc == null) {
+            return null;
+        }
+
+//        return tc.getWebForm().getMarkup().getFileObject();
+        DataObject jspDataObject = tc.getJspDataObject();
+        return jspDataObject == null ? null : jspDataObject.getPrimaryFile();
     }
 
     //    public static void testPreview() {

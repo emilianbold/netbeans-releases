@@ -22,8 +22,6 @@ package org.netbeans.modules.visualweb.api.designer;
 import java.awt.Graphics2D;
 import org.netbeans.modules.visualweb.designer.DesignerServiceHackProviderImpl;
 import java.awt.Image;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 import java.net.URL;
 import java.util.Map;
 
@@ -61,21 +59,21 @@ public final class DesignerServiceHackProvider {
         return DesignerServiceHackProviderImpl.getPageBoxPreviewImage(/*dobj,*/designer, width, height);
     }
 
-    public static boolean canDrop(DataFlavor flavor) {
-        return DesignerServiceHackProviderImpl.canDrop(flavor);
-    }
+//    public static boolean canDrop(DataFlavor flavor) {
+//        return DesignerServiceHackProviderImpl.canDrop(flavor);
+//    }
 
-    public static void drop(Transferable transferable) {
-        DesignerServiceHackProviderImpl.drop(transferable);
-    }
+//    public static void drop(Transferable transferable) {
+//        DesignerServiceHackProviderImpl.drop(transferable);
+//    }
 
 //    public static void registerTransferable(Transferable transferable) {
 //        DesignerServiceHackProviderImpl.registerTransferable(transferable);
 //    }
 
-    public static FileObject getCurrentFile() {
-        return DesignerServiceHackProviderImpl.getCurrentFile();
-    }
+//    public static FileObject getCurrentFile() {
+//        return DesignerServiceHackProviderImpl.getCurrentFile();
+//    }
 
 //    public static Object getTableInfo(MarkupDesignBean bean) {
     public static Object getTableInfo(Element componentRootElement) {

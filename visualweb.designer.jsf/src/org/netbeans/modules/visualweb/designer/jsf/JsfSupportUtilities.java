@@ -24,11 +24,14 @@ import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
 /**
@@ -57,8 +60,11 @@ public final class JsfSupportUtilities {
         return designers.length == 0 ? null : designers[0];
     }
 
-    public static Element getComponentRootElementForDesignBean(DesignBean bean) {
-        return HtmlDomProviderServiceImpl.getComponentRootElementForDesignBean(bean);
+    public static Element getComponentRootElementForDesignBean(DesignBean designBean) {
+        if (designBean instanceof MarkupDesignBean) {
+            return HtmlDomProviderImpl.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean);
+        }
+        return null;
     }
     
     public static JsfForm findJsfFormForDesignContext(DesignContext designContext) {
@@ -120,4 +126,37 @@ public final class JsfSupportUtilities {
         return Util.setDesignProperty(markupDesignBean, attribute, value);
     }
     
+    public static Element getParentComponent(Element componentRootElement) {
+        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+        if (markupDesignBean == null) {
+            return null;
+        }
+
+        DesignBean parent = markupDesignBean.getBeanParent();
+        return parent instanceof MarkupDesignBean ? getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent) : null;
+    }
+    
+    public /*private*/ static Element getComponentRootElementForMarkupDesignBean(MarkupDesignBean markupDesignBean) {
+        return getComponentRootElementForDesignBean(markupDesignBean);
+    }
+    
+    public static Element getComponentRootElementForElement(Element element) {
+        return getComponentRootElementForDesignBean(MarkupUnit.getMarkupDesignBeanForElement(element));
+    }
+    
+    public static Element getComponentRootElementFromNode(org.openide.nodes.Node node) {
+        DesignBean bean = (DesignBean)node.getLookup().lookup(DesignBean.class);
+        if (bean == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                new NullPointerException("No DesignBean for node=" + node)); // NOI18N
+            return null;
+        }
+
+        return bean instanceof MarkupDesignBean ? getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean) : null;
+    }
+    
+    public static Element findHtmlElementDescendant(DocumentFragment df) {
+        return Util.findDescendant(HtmlTag.HTML.name, df);
+    }
+
 }

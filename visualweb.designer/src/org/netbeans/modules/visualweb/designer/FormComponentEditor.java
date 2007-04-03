@@ -623,11 +623,12 @@ class FormComponentEditor extends InlineEditor {
 //            webform.getActions().createPopup((int)p.getX(), (int)p.getY(), inlineTextEditor, nodes,
 //                false, null);
 
-            // #6442386
-            DesignerTopComp designerTC = webform.getTopComponent();
-            Point p =
-                SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), designerTC);
-            designerTC.showPopupMenu(p.x, p.y);
+//            // #6442386
+//            DesignerTopComp designerTC = webform.getTopComponent();
+//            Point p =
+//                SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), designerTC);
+//            designerTC.showPopupMenu(p.x, p.y);
+            webform.tcShowPopupMenuForEvent(e);
         }
     }
 

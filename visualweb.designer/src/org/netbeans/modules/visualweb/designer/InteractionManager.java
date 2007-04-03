@@ -373,7 +373,8 @@ public class InteractionManager {
         }
 
         CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
-        webform.getTopComponent().requestActive();
+//        webform.getTopComponent().requestActive();
+        webform.tcRequestActive();
         startInlineEditing(componentRootElement, propertyName, box, true, true, null, false);
     }
     
@@ -412,7 +413,8 @@ public class InteractionManager {
                 sm.setSelected(componentRootElement, true);
             }
 
-            webform.getTopComponent().requestActive();
+//            webform.getTopComponent().requestActive();
+            webform.tcRequestActive();
             
             DesignerPane pane = webform.getPane();
             pane.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
@@ -1815,7 +1817,8 @@ public class InteractionManager {
                 if (isInsideBoxDecoration(overBox, e.getX(), e.getY())) {
                     showDecorationPopupMenu(overBox, e.getX(), e.getY());
                 } else {
-                    webform.getTopComponent().showPopupMenu(p.x, p.y);
+//                    webform.getTopComponent().showPopupMenu(p.x, p.y);
+                    webform.tcShowPopupMenu(p.x, p.y);
                 }
 // </actions from layer>
 
@@ -3104,7 +3107,8 @@ public class InteractionManager {
         JPopupMenu popup = Utilities.actionsToPopup(actions, decoration.getContext());
         
         // XXX Move somehow to the associated top component?
-        popup.show(webform.getTopComponent(), x, y);
+//        popup.show(webform.getTopComponent(), x, y);
+        webform.tcShowPopupMenu(popup, x, y);
     }
     
     /** Put the designer in inline-editing mode for the first

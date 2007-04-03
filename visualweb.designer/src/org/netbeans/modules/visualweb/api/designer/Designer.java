@@ -19,7 +19,13 @@
 
 package org.netbeans.modules.visualweb.api.designer;
 
+import java.awt.Point;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.io.PrintStream;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -36,33 +42,53 @@ import org.w3c.dom.Element;
  */
 public interface Designer {
 
-    public JComponent getDesignerComponent();
+//    public JComponent getDesignerComponent();
 
-    // XXX Temp after moved TopComponent impl out >>>
-    public JComponent getVisualRepresentation();
+//    // XXX Temp after moved TopComponent impl out >>>
+//    public JComponent getVisualRepresentation();
 //    public JComponent getToolbarRepresentation();
-    public Action[] getActions();
-    public Lookup getLookup();
-    public void componentOpened();
-    public void componentClosed();
-    public void componentShowing();
-    public void componentHidden();
-    public void componentActivated();
-    public void componentDeactivated();
-    public UndoRedo getUndoRedo();
-    public void setMultiViewCallback(MultiViewElementCallback multiViewElementCallback);
-    public CloseOperationState canCloseElement();
-    // XXX Temp after moved TopComponent impl out <<<
+//    public Action[] getActions();
+//    public Lookup getLookup();
+//    public void componentOpened();
+//    public void componentClosed();
+//    public void componentShowing();
+//    public void componentHidden();
+//    public void componentActivated();
+//    public void componentDeactivated();
+//    public UndoRedo getUndoRedo();
+//    public void setMultiViewCallback(MultiViewElementCallback multiViewElementCallback);
+//    public CloseOperationState canCloseElement();
+//    // XXX Temp after moved TopComponent impl out <<<
 
     public void startInlineEditing(Element componentRootElement, String propertyName);
+    public void finishInlineEditing(boolean cancel);
     public boolean isInlineEditing();
+    // XXX Hack
+    public void invokeDeleteNextCharAction(ActionEvent evt); 
+    // XXX
+    public Transferable inlineCopyText(boolean isCut);
 
     public void selectComponent(Element componentRootElement);
     public int getSelectedCount();
     /** Gets selected componets (component root elements). */
     public Element[] getSelectedComponents();
-    // XXX Suspicious?
+    // XXX Suspicious? Also pick up if not ready.
     public Element getPrimarySelectedComponent();
+    // XXX See above (this one doesn't pick up)
+    public Element getPrimarySelection();
+    
+    public Element getSelectedContainer();
+    
+    // XXX Modification, get rid of update parameter.
+    public void setSelectedComponents(Element[] componentRootElements, boolean update);
+    public void clearSelection(boolean update);
+            
+    // XXX Get rid of
+    public void syncSelection(boolean update);
+    // XXX Get rid of
+    public void updateSelectedNodes();
+    // XXX 
+    public void updateSelection();
 
 //    public enum Alignment {
 //        SNAP_TO_GRID,
@@ -85,6 +111,9 @@ public interface Designer {
     // >>> Boxes stuff
     /** Representing the individual box. Providing accessors (getters) only! */
     public interface Box {
+        // XXX Get rid of this. See CssBox.UNINITIALIZED.
+        public static final int UNINITIALIZED = Integer.MAX_VALUE - 2; // debugging
+        
         public Element getComponentRootElement();
         public Element getElement();
         
@@ -116,7 +145,11 @@ public interface Designer {
         public boolean isAbsolutelyPositioned();
         // XXX Very suspicious.
         public Box getPositionedBy();
+        
+        public void list(PrintStream outputStream, int indent);
     } // End of Box.
+    
+    public Box getPageBox();
     
     public Box findBox(int x, int y);
     // XXX Get rid of.
@@ -127,4 +160,50 @@ public interface Designer {
     public int snapX(int x, Box positionedBy);
     public int snapY(int y, Box positionedBy);
     // <<< Boxes stuff
+    
+    
+    public Point getCurrentPos();
+    public void clearCurrentPos();
+    public Element getPositionElement();
+    public int getGridWidth();
+    public int getGridHeight();
+    
+    // XXX Designer settings properties
+    /** show grid */
+    public static final String PROP_GRID_SHOW = "gridShow"; // NOI18N
+    public static final String PROP_GRID_SNAP = "gridSnap"; // NOI18N
+    public static final String PROP_GRID_WIDTH = "gridWidth"; // NOI18N
+    public static final String PROP_GRID_HEIGHT = "gridHeight"; // NOI18N
+    public static final String PROP_PAGE_SIZE = "pageSize"; // NOI18N
+    public static final String PROP_SHOW_DECORATIONS = "showDecorations"; // NOI18N
+    public static final String PROP_DEFAULT_FONT_SIZE = "defaultFontSize"; // NOI18N
+    // XXX Make not weak, and also add removal
+    public void addWeakPreferenceChangeListener(PreferenceChangeListener l);
+    
+    public void registerListeners();
+    public void unregisterListeners();
+    
+    public ActionMap getPaneActionMap();
+    public void paneRequestFocus();
+    // XXX This should be the designer itself.
+    public JComponent createPaneComponent();
+    // XXX Get rid of.
+    public void updatePaneViewPort();
+    
+    public boolean hasPaneCaret();
+    public void setPaneCaret(DomPosition pos);
+    
+    public void resetPanePageBox();
+    public void redoPaneLayout(boolean immediate);
+    
+    public void setRenderFailureShown(boolean shown);
+    public boolean isRenderFailureShown();
+//    public void updateErrors();
+//    public void showErrors(boolean on);
+    
+    public void updateGridMode();
+    
+    // XXX Get rid of this
+    public void performEscape();
+    
 }

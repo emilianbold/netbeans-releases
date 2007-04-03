@@ -33,30 +33,21 @@ import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.css2.TableBox;
 
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.Image;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
-import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 
 import org.apache.xerces.dom.DocumentImpl;
 import org.netbeans.modules.visualweb.api.designer.Designer;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -83,8 +74,8 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
 //     */
 //    private static final String[] FORM_MIME_TYPES = new String[] { "text/x-jsp" }; // NOI18N
 
-    /** For temporary use by getCurrentDesigner runnable */
-    private static transient TopComponent temptc;
+//    /** For temporary use by getCurrentDesigner runnable */
+//    private static transient TopComponent temptc;
 
     private DesignerServiceHackProviderImpl() {
     }
@@ -458,32 +449,32 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
 //         */
 //    }
 
-    public static boolean canDrop(DataFlavor flavor) {
-        // Fish for the designer pane
-        DesignerTopComp dtc = findCurrent();
+//    public static boolean canDrop(DataFlavor flavor) {
+//        // Fish for the designer pane
+//        DesignerTopComp dtc = findCurrent();
+//
+//        if (dtc == null) {
+//            return false;
+//        }
+//
+//        // TODO -- additional flavor checking?
+//        return true;
+//    }
 
-        if (dtc == null) {
-            return false;
-        }
-
-        // TODO -- additional flavor checking?
-        return true;
-    }
-
-    public static void drop(Transferable transferable) {
-        // Fish for the "current" designer pane
-        DesignerTopComp dtc = findCurrent();
-
-        if (dtc == null) {
-            return;
-        }
-
-        DesignerPane pane = dtc.getWebForm().getPane();
-        TransferHandler dth = pane.getTransferHandler();
-
-        // Drop it
-        dth.importData(pane, transferable);
-    }
+//    public static void drop(Transferable transferable) {
+//        // Fish for the "current" designer pane
+//        DesignerTopComp dtc = findCurrent();
+//
+//        if (dtc == null) {
+//            return;
+//        }
+//
+//        DesignerPane pane = dtc.getWebForm().getPane();
+//        TransferHandler dth = pane.getTransferHandler();
+//
+//        // Drop it
+//        dth.importData(pane, transferable);
+//    }
 
 //    public static void registerTransferable(Transferable transferable) {
 //        if(DesignerUtils.DEBUG) {
@@ -495,44 +486,44 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
 ////        DndHandler.setActiveTransferable(transferable);
 //    }
 
-    private static TopComponent getCurrentDesigner() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            return findCurrent();
-        } else {
-            // FIXME This is incorrect, it can't work.
-            // If this can work only in AWT thread,
-            // then it should be required on the client to be called only in that
-            // thread and not pretend othwerise.
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                        public void run() {
-                            temptc = findCurrent();
-                        }
-                    });
+//    private static TopComponent getCurrentDesigner() {
+//        if (SwingUtilities.isEventDispatchThread()) {
+//            return findCurrent();
+//        } else {
+//            // FIXME This is incorrect, it can't work.
+//            // If this can work only in AWT thread,
+//            // then it should be required on the client to be called only in that
+//            // thread and not pretend othwerise.
+//            try {
+//                SwingUtilities.invokeAndWait(new Runnable() {
+//                        public void run() {
+//                            temptc = findCurrent();
+//                        }
+//                    });
+//
+//                return temptc;
+//            } catch (Exception e) {
+//                ErrorManager.getDefault().notify(e);
+//
+//                return null;
+//            } finally {
+//                temptc = null; // done after return value
+//            }
+//        }
+//    }
 
-                return temptc;
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(e);
-
-                return null;
-            } finally {
-                temptc = null; // done after return value
-            }
-        }
-    }
-
-    public static FileObject getCurrentFile() {
-        DesignerTopComp tc = (DesignerTopComp)getCurrentDesigner();
-
-//        if ((tc == null) || (tc.getWebForm().getMarkup() == null)) {
-        if (tc == null) {
-            return null;
-        }
-
-//        return tc.getWebForm().getMarkup().getFileObject();
-        DataObject jspDataObject = tc.getWebForm().getJspDataObject();
-        return jspDataObject == null ? null : jspDataObject.getPrimaryFile();
-    }
+//    public static FileObject getCurrentFile() {
+//        DesignerTopComp tc = (DesignerTopComp)getCurrentDesigner();
+//
+////        if ((tc == null) || (tc.getWebForm().getMarkup() == null)) {
+//        if (tc == null) {
+//            return null;
+//        }
+//
+////        return tc.getWebForm().getMarkup().getFileObject();
+//        DataObject jspDataObject = tc.getWebForm().getJspDataObject();
+//        return jspDataObject == null ? null : jspDataObject.getPrimaryFile();
+//    }
 
     //    public static void testPreview() {
     //        DesignerService ds = DesignerService.getDefault();
@@ -960,80 +951,80 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
 //    }
     
     
-    /**
-     * Attempt to locate the current design view in use; may return
-     * null if no designer is found.
-     */
-    private static DesignerTopComp findCurrent() {
-        // Fish for the designer pane
-        DesignerTopComp formView = null;
-
-        // Search through workspaces, then modes, then topcomponents
-        Set modes = WindowManager.getDefault().getModes();
-        Iterator it2 = modes.iterator();
-
-        while (it2.hasNext()) {
-            Mode m = (Mode)it2.next();
-            TopComponent[] tcs = m.getTopComponents();
-
-            if (tcs != null) {
-                for (int j = 0; j < tcs.length; j++) {
-                    if (!tcs[j].isShowing()) {
-                        continue;
-                    }
-
-                    // Go hunting for our DesignerTopComp
-                    DesignerTopComp comp = findDesigner(tcs[j], 0);
-
-                    if (comp != null) {
-                        if (comp.isShowing()) {
-                            return comp;
-                        }
-                    }
-                }
-            }
-
-            if (formView != null) {
-                break;
-            }
-        }
-
-        return formView;
-    }
-
-    /** Fish for a DesignerPane within a container hierarchy
-     */
-    private static DesignerTopComp findDesigner(Container c, int depth) {
-        if (c == null) {
-            return null;
-        }
-
-        // Only look slightly into the hiearchy since TopComponents should
-        // be near the top
-        if (depth == 4) {
-            return null;
-        }
-
-        depth++;
-
-        int n = c.getComponentCount();
-
-        for (int i = 0; i < n; i++) {
-            java.awt.Component child = c.getComponent(i);
-
-            if (child instanceof DesignerTopComp) {
-                return (DesignerTopComp)child;
-            } else if (child instanceof Container) {
-                DesignerTopComp result = findDesigner((Container)child, depth);
-
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
-
-        return null;
-    }
+//    /**
+//     * Attempt to locate the current design view in use; may return
+//     * null if no designer is found.
+//     */
+//    private static DesignerTopComp findCurrent() {
+//        // Fish for the designer pane
+//        DesignerTopComp formView = null;
+//
+//        // Search through workspaces, then modes, then topcomponents
+//        Set modes = WindowManager.getDefault().getModes();
+//        Iterator it2 = modes.iterator();
+//
+//        while (it2.hasNext()) {
+//            Mode m = (Mode)it2.next();
+//            TopComponent[] tcs = m.getTopComponents();
+//
+//            if (tcs != null) {
+//                for (int j = 0; j < tcs.length; j++) {
+//                    if (!tcs[j].isShowing()) {
+//                        continue;
+//                    }
+//
+//                    // Go hunting for our DesignerTopComp
+//                    DesignerTopComp comp = findDesigner(tcs[j], 0);
+//
+//                    if (comp != null) {
+//                        if (comp.isShowing()) {
+//                            return comp;
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if (formView != null) {
+//                break;
+//            }
+//        }
+//
+//        return formView;
+//    }
+//
+//    /** Fish for a DesignerPane within a container hierarchy
+//     */
+//    private static DesignerTopComp findDesigner(Container c, int depth) {
+//        if (c == null) {
+//            return null;
+//        }
+//
+//        // Only look slightly into the hiearchy since TopComponents should
+//        // be near the top
+//        if (depth == 4) {
+//            return null;
+//        }
+//
+//        depth++;
+//
+//        int n = c.getComponentCount();
+//
+//        for (int i = 0; i < n; i++) {
+//            java.awt.Component child = c.getComponent(i);
+//
+//            if (child instanceof DesignerTopComp) {
+//                return (DesignerTopComp)child;
+//            } else if (child instanceof Container) {
+//                DesignerTopComp result = findDesigner((Container)child, depth);
+//
+//                if (result != null) {
+//                    return result;
+//                }
+//            }
+//        }
+//
+//        return null;
+//    }
 
     
 //    public float getBlockWidth(Element element) {

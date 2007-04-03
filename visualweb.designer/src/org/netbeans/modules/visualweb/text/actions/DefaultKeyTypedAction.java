@@ -81,7 +81,8 @@ public class DefaultKeyTypedAction extends TextAction {
                 // special handled there since the Escape key needs to be discovered
                 // during DND etc. in which case this action isn't active
                  */
-                if (!webform.getTopComponent().seenEscape(e.getWhen())) {
+//                if (!webform.getTopComponent().seenEscape(e.getWhen())) {
+                if (!webform.tcSeenEscape(e)) {
                     webform.getManager().getMouseHandler().escape();
                 }
 
