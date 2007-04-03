@@ -1333,7 +1333,16 @@ public class JsfForm {
     }
     
     public Transferable copyComponents(Element[] componentRootElements) {
-        return htmlDomProvider.copyComponents(componentRootElements);
+//        return htmlDomProvider.copyComponents(componentRootElements);
+        List<DesignBean> beans = new ArrayList<DesignBean>();
+        for (Element componentRootElement : componentRootElements) {
+            DesignBean bean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+            if (bean != null) {
+                beans.add(bean);
+            }
+        }
+        LiveUnit liveUnit = getFacesModel().getLiveUnit();
+        return liveUnit.copyBeans(beans.toArray(new DesignBean[beans.size()]));
     }
     
     public void deleteComponents(Element[] componentRootElements) {

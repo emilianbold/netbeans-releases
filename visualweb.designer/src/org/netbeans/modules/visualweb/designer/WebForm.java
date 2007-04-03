@@ -1999,9 +1999,9 @@ public class WebForm implements Designer {
 //    Transferable copyBeans(DesignBean[] beans) {
 //        return htmlDomProvider.copyBeans(beans);
 //    }
-    Transferable copyComponents(Element[] componentRootElements) {
-        return htmlDomProvider.copyComponents(componentRootElements);
-    }
+//    Transferable copyComponents(Element[] componentRootElements) {
+//        return htmlDomProvider.copyComponents(componentRootElements);
+//    }
 
 //    public HtmlDomProvider.WriteLock writeLock(String message) {
 //        return htmlDomProvider.writeLock(message);
