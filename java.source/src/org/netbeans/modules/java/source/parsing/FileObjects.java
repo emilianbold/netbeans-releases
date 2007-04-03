@@ -330,6 +330,19 @@ public class FileObjects {
     }            
     
     
+    public static void deleteRecursively (final File folder) {
+        assert folder != null;        
+        if (folder.isDirectory()) {
+            File[] children = folder.listFiles();
+            if (children != null) {
+                for (File file : children) {
+                    deleteRecursively(file);
+                }
+            }
+        }
+        folder.delete();
+    }
+    
     // Private methods ---------------------------------------------------------
     
     // Innerclasses ------------------------------------------------------------

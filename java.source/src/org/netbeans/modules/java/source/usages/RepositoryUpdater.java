@@ -1176,6 +1176,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         private void updateBinary (final URL file, final URL root) throws IOException {            
             CachingArchiveProvider.getDefault().clearArchive(root);                       
+            File cacheFolder = Index.getClassFolder(root);
+            FileObjects.deleteRecursively(cacheFolder);
             final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser();
             ba.analyse(root, handle);
         }                
