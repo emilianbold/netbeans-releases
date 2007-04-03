@@ -101,7 +101,7 @@ public class TestCatalogModel extends CatalogWriteModelImpl{
         if (documentPooling) {
             result = documentPool().get(fo);
         }
-        if (result != null) return result;
+        if (result != null) return result; 
         try {
             
             File file = FileUtil.toFile(fo);

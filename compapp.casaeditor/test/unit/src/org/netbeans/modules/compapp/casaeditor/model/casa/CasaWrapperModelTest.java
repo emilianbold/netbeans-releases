@@ -112,11 +112,15 @@ public class CasaWrapperModelTest extends TestCase {
         propertyListener = new PropertyListener();
         casaWrapperModel.addComponentListener(componentListener);
         casaWrapperModel.addPropertyChangeListener(propertyListener);
+        
+        TestCatalogModel.getDefault().setDocumentPooling(true);
     }
 
     protected void tearDown() throws Exception {
         casaWrapperModel.removePropertyChangeListener(propertyListener);
         casaWrapperModel.removeComponentListener(componentListener);
+        
+    TestCatalogModel.getDefault().setDocumentPooling(false);
     }
 
     /**
@@ -316,7 +320,7 @@ public class CasaWrapperModelTest extends TestCase {
         assertEquals("port1", consumes.getEndpointName());
         
         CasaEndpointRef provides = 
-                casaWrapperModel.getCasaEndpointRef(firstConnection, true);
+                casaWrapperModel.getCasaEndpointRef(firstConnection, false);
         assertEquals("partnerlinktyperole1_myRole", provides.getEndpointName());
     }
 
@@ -407,34 +411,43 @@ public class CasaWrapperModelTest extends TestCase {
     public void testCanConnect() {
         System.out.println("canConnect");
         
-        CasaEndpointRef endpointRef1 = null;
-        CasaEndpointRef endpointRef2 = null;
-        CasaWrapperModel instance = null;
+        CasaBindingComponentServiceUnit fileBCSU = 
+                casaWrapperModel.getBindingComponentServiceUnits().get(0);
+        CasaBindingComponentServiceUnit soapBCSU = 
+                casaWrapperModel.getBindingComponentServiceUnits().get(1);
+        CasaServiceEngineServiceUnit seSU = 
+                casaWrapperModel.getServiceEngineServiceUnits().get(0);
         
-        boolean expResult = true;
-        boolean result = instance.canConnect(endpointRef1, endpointRef2);
-        assertEquals(expResult, result);
+        CasaPort fileCasaPort = fileBCSU.getPorts().getPorts().get(0);
+        CasaPort soapCasaPort = soapBCSU.getPorts().getPorts().get(0);
         
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getUnConnectableReason method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
-     */
-    public void testGetUnConnectableReason() {
-        System.out.println("getUnConnectableReason");
+        CasaEndpointRef fileConsumes = fileCasaPort.getConsumes();
+        CasaEndpointRef fileProvides = fileCasaPort.getProvides(); 
+        CasaEndpointRef soapConsumes = soapCasaPort.getConsumes(); 
+        CasaEndpointRef soapProvides = soapCasaPort.getProvides();
+        CasaEndpointRef seProvides = seSU.getProvides().get(0);
         
-        CasaEndpointRef endpointRef1 = null;
-        CasaEndpointRef endpointRef2 = null;
-        CasaWrapperModel instance = null;
+        assertEquals(false, casaWrapperModel.canConnect(fileConsumes, fileConsumes));
+        assertEquals(false, casaWrapperModel.canConnect(seProvides, seProvides));
         
-        String expResult = "";
-        String result = instance.getUnConnectableReason(endpointRef1, endpointRef2);
-        assertEquals(expResult, result);
+        assertEquals(false, casaWrapperModel.canConnect(fileConsumes, fileProvides));
+        assertEquals(false, casaWrapperModel.canConnect(soapConsumes, soapProvides));
+        assertEquals(false, casaWrapperModel.canConnect(fileConsumes, soapProvides));
+        assertEquals(false, casaWrapperModel.canConnect(soapConsumes, fileProvides));
         
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertEquals(false, casaWrapperModel.canConnect(fileConsumes, seProvides));
+        assertEquals(false, casaWrapperModel.canConnect(soapConsumes, seProvides));
+        
+        CasaConnection firstConnection = 
+                casaWrapperModel.getCasaConnectionList(true).get(0);
+        CasaConnection secondConnection = 
+                casaWrapperModel.getCasaConnectionList(true).get(1);
+        
+        casaWrapperModel.removeConnection(firstConnection);
+        assertEquals(true, casaWrapperModel.canConnect(soapConsumes, seProvides));
+        
+        casaWrapperModel.removeConnection(secondConnection);
+        assertEquals(true, casaWrapperModel.canConnect(fileConsumes, seProvides));
     }
 
     /**
@@ -443,15 +456,7 @@ public class CasaWrapperModelTest extends TestCase {
     public void testGetCasaConnectionList() {
         System.out.println("getCasaConnectionList");
         
-        boolean includeDeleted = true;
-        CasaWrapperModel instance = null;
-        
-        List<CasaConnection> expResult = null;
-        List<CasaConnection> result = instance.getCasaConnectionList(includeDeleted);
-        assertEquals(expResult, result);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertEquals(2, casaWrapperModel.getCasaConnectionList(true).size());        
     }
 
     /**
@@ -477,17 +482,19 @@ public class CasaWrapperModelTest extends TestCase {
     public void testAddServiceEngineServiceUnit() {
         System.out.println("addServiceEngineServiceUnit");
         
-        boolean internal = true;
-        int x = 0;
-        int y = 0;
-        CasaWrapperModel instance = null;
+        assertEquals(1, casaWrapperModel.getServiceEngineServiceUnits().size());
         
-        CasaServiceEngineServiceUnit expResult = null;
-        CasaServiceEngineServiceUnit result = instance.addServiceEngineServiceUnit(internal, x, y);
-        assertEquals(expResult, result);
+        boolean internal = false;
+        int x = 100;
+        int y = 100;
         
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        CasaServiceEngineServiceUnit newSESU = 
+                casaWrapperModel.addServiceEngineServiceUnit(internal, x, y);
+        assertEquals(2, casaWrapperModel.getServiceEngineServiceUnits().size());
+        assertFalse(newSESU.isInternal());
+        assertTrue(newSESU.isUnknown());
+        assertEquals(x, newSESU.getX());
+        assertEquals(y, newSESU.getY());        
     }
 
     /**
@@ -824,23 +831,9 @@ public class CasaWrapperModelTest extends TestCase {
         
         Map<String, String> namespaces = casaWrapperModel.getNamespaces();
         
+        assertEquals(3, namespaces.size());
         assertEquals("http://enterprise.netbeans.org/bpel/SynchronousSample/SynchronousSample_1", namespaces.get("ns1"));
         assertEquals("http://localhost/SynchronousSample/SynchronousSample", namespaces.get("ns2"));
         assertEquals("http://whatever", namespaces.get("ns"));        
     }
-
-    /**
-     * Test of sync method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
-     */
-    public void testSync() throws Exception {
-        System.out.println("sync");
-        
-        CasaWrapperModel instance = null;
-        
-        instance.sync();
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-    
 }
