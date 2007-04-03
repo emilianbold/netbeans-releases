@@ -30,6 +30,7 @@ import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.event.DesignContextListener;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
+import com.sun.rave.designtime.markup.MarkupPosition;
 import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.visualweb.designer.jsf.text.DomDocumentImpl;
 //NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
@@ -58,6 +59,7 @@ import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
 import org.netbeans.modules.visualweb.designer.jsf.ui.NotAvailableMultiViewElement;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.Unit;
+import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
@@ -1172,7 +1174,17 @@ public class JsfForm {
     }
 
     public Element createComponent(String className, Node parent, Node before) {
-        return htmlDomProvider.createComponent(className, parent, before);
+//        return htmlDomProvider.createComponent(className, parent, before);
+        DesignBean designBean = createBean(className, parent, before);
+        return designBean instanceof MarkupDesignBean ? ((MarkupDesignBean)designBean).getElement() : null;
+    }
+    
+    // XXX Copy also in insync/FacesDnDSupport.
+    /*public*/ private DesignBean createBean(String className, Node parent, Node before) {
+        MarkupPosition pos = new MarkupPosition(parent, before);
+        DesignBean parentBean = /*FacesSupport.*/Util.findParentBean(parent);
+        LiveUnit unit = getFacesModel().getLiveUnit();
+        return unit.createBean(className, parentBean, pos);
     }
     
     public boolean moveComponent(Element componentRootElement, Node parentNode, Node before) {

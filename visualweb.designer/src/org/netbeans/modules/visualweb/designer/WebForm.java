@@ -1927,9 +1927,9 @@ public class WebForm implements Designer {
 //    public DesignBean createBean(String className, Node parent, Node before) {
 //        return htmlDomProvider.createBean(className, parent, before);
 //    }
-    public Element createComponent(String className, Node parent, Node before) {
-        return htmlDomProvider.createComponent(className, parent, before);
-    }
+//    public Element createComponent(String className, Node parent, Node before) {
+//        return htmlDomProvider.createComponent(className, parent, before);
+//    }
 
 
 //    public boolean isFormBean(DesignBean designBean) {
