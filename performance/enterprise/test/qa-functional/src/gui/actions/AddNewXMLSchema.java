@@ -22,18 +22,15 @@ package gui.actions;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.actions.NewFileAction;
-
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.ide.ProjectSupport;
 
+import org.netbeans.junit.ide.ProjectSupport;
+import java.io.File;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.Node;
 
 /**
  * Test Add New XML Schema
@@ -42,12 +39,9 @@ import org.netbeans.junit.ide.ProjectSupport;
  */
 public class AddNewXMLSchema extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    private NewProjectWizardOperator wizardP;
-    private NewFileWizardOperator wizard ;
-    private NewProjectNameLocationStepOperator wizard_location;
     private NewFileNameLocationStepOperator location;
-    private String category, project, project_name, project_type, docname, doctype, doccategory ;
     
+    private static String testProjectName = "BPELTestProject";    
     private int index;
     private int indexI;
     /**
@@ -71,77 +65,46 @@ public class AddNewXMLSchema extends org.netbeans.performance.test.utilities.Per
         WAIT_AFTER_OPEN=4000;
     }
     
-    public void testAddNewXMLSchema(){
-        doccategory = "XML";
-        doctype = "XML Schema";
-        docname = "XMLSchema";
-        category = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle","Templates/Project/SOA"); // "Service Oriented Architecture"
-        project = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle","Templates/Project/SOA/emptyBpelpro.xml"); // "BPEL Module"
-        project_type="BPELModule____";
-        index=1;
-        indexI=1;
-        doMeasurement();
-        
-    }
-    
    
     
     public void initialize(){
-//create bpel project
-       NewProjectWizardOperator wizardP = NewProjectWizardOperator.invoke();
-        wizardP.selectCategory(category);
-        wizardP.selectProject(project);
-        wizardP.next();
-        wizard_location = new NewProjectNameLocationStepOperator();
+        indexI=1;
         
-        String directory = System.getProperty("xtest.tmpdir")+"/"+"createdProjects";
-        log("================= Destination directory={"+directory+"}");
-      
-        new EventTool().waitNoEvent(1000);
-        wizard_location.txtProjectLocation().setText(directory);
-        
-        project_name = project_type + "_" + (index++);
-        log("================= Project name="+project_name+"}");
-        wizard_location.txtProjectName().setText("");
-        new EventTool().waitNoEvent(1000);
-        wizard_location.txtProjectName().typeText(project_name);
-        new EventTool().waitNoEvent(1000);
-        wizard_location.finish();
-//bpel end     
-
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
+        new CloseAllDocumentsAction().performAPI();
     }
     
     public void prepare(){
+        Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
+        Node doc = new Node(pNode,"Process Files");
+        doc.select();
 
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
-        wizard.selectCategory(doccategory);
-        wizard.selectFileType(doctype);
-	
+        wizard.selectCategory("XML"); //NOI18N
+        wizard.selectFileType("XML Schema"); //NOI18N
         wizard.next();
         
         new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
-        location.txtObjectName().setText(docname+"_"+(indexI++));
+        location.txtObjectName().setText("XMLSchema_"+(indexI++));
 
     }
     
     public ComponentOperator open(){
-//        wizard_location.finish();
        location.finish();
        return null;
     }
     
     public void close(){
-//       ProjectSupport.closeProject(project_name);
        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
 
     protected void shutdown() {
-        ProjectSupport.closeProject(project_name);
-//       new CloseAllDocumentsAction().performAPI();
+        ProjectSupport.closeProject(testProjectName);
+
     }   
     
     public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new AddNewXMLSchema("testAddNewXMLSchema"));
+        junit.textui.TestRunner.run(new AddNewXMLSchema("measureTime"));
     }
 }
