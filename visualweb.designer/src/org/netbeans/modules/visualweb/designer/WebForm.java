@@ -1988,9 +1988,9 @@ public class WebForm implements Designer {
 //        }
 //    }
 
-    public void syncModel() {
-        htmlDomProvider.syncModel();
-    }
+//    public void syncModel() {
+//        htmlDomProvider.syncModel();
+//    }
 
     boolean isSourceDirty() {
         return htmlDomProvider.isSourceDirty();

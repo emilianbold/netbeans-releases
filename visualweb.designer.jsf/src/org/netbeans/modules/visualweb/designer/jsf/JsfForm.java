@@ -57,6 +57,7 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
 import org.netbeans.modules.visualweb.designer.jsf.ui.NotAvailableMultiViewElement;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
+import org.netbeans.modules.visualweb.insync.Unit;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
@@ -1295,7 +1296,16 @@ public class JsfForm {
     } 
     
     public boolean isSourceDirty() {
-        return htmlDomProvider.isSourceDirty();
+//        return htmlDomProvider.isSourceDirty();
+        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
+        if (markupUnit != null) {
+            return markupUnit.getState() == Unit.State.SOURCEDIRTY;
+        } else {
+            // XXX #6478973 Model could be corrupted, until #6480764 is fixed.
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("The FacesModel is corrupted, its markup unit is null, facesModel=" + getFacesModel())); // NOI18N
+        }
+        return false;
     }
     
     public void dumpHtmlMarkupForNode(org.openide.nodes.Node node) {
