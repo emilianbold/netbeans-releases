@@ -47,6 +47,7 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import java.io.IOException;
@@ -59,6 +60,8 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -251,44 +254,38 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         if (srcRoot != null) {
             Project p = FileOwnerQuery.getOwner(srcRoot);
             if (p != null) {
-                Sources sources = ProjectUtils.getSources(p);
-                if (sources != null) {
-                    SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                    if ((sourceGroups != null) || (sourceGroups.length > 0)) {
-                        FileObject srcFolder = sourceGroups[0].getRootFolder();
-                        WSDLModel mainModel = WSITModelSupport.getMainClientModel(srcFolder);
-                        if (mainModel != null) {
-                            Collection<Import> imports = mainModel.getDefinitions().getImports();
-                            for (Import i : imports) {
-                                try {
-                                    WSDLModel importedModel = i.getImportedWSDLModel();
-                                    ModelSource importedms = importedModel.getModelSource();
-                                    FileObject importedfo = org.netbeans.modules.xml.retriever.catalog.Utilities.getFileObject(importedms);
-                                    mainModel.startTransaction();
-                                    if (createdFiles.contains(importedfo)) {
-                                        mainModel.getDefinitions().removeImport(i);
-                                    }
-                                    mainModel.endTransaction();
-                                    FileObject mainFO = Utilities.getFileObject(mainModel.getModelSource());
-                                    if (mainFO == null) {
-                                        logger.log(Level.INFO, "Cannot find fileobject in lookup for: " + model.getModelSource());
-                                    }
-                                    try {
-                                        DataObject mainDO = DataObject.find(mainFO);
-                                        if ((mainDO != null) && (mainDO.isModified())) {
-                                            SaveCookie wsdlSaveCookie = (SaveCookie)mainDO.getCookie(SaveCookie.class);
-                                            if(wsdlSaveCookie != null){
-                                                wsdlSaveCookie.save();
-                                            }
-                                            mainDO.setModified(false);
-                                        }
-                                    } catch (IOException ioe) {
-                                        // ignore - just don't do anything
-                                    }
-                                } catch (CatalogModelException ex) {
-                                    logger.log(Level.SEVERE, null, ex);
-                                }
+                FileObject clientConfigFolder = getClientConfigFolder(p);
+                WSDLModel mainModel = WSITModelSupport.getMainClientModel(clientConfigFolder);
+                if (mainModel != null) {
+                    Collection<Import> imports = mainModel.getDefinitions().getImports();
+                    for (Import i : imports) {
+                        try {
+                            WSDLModel importedModel = i.getImportedWSDLModel();
+                            ModelSource importedms = importedModel.getModelSource();
+                            FileObject importedfo = org.netbeans.modules.xml.retriever.catalog.Utilities.getFileObject(importedms);
+                            mainModel.startTransaction();
+                            if (createdFiles.contains(importedfo)) {
+                                mainModel.getDefinitions().removeImport(i);
                             }
+                            mainModel.endTransaction();
+                            FileObject mainFO = Utilities.getFileObject(mainModel.getModelSource());
+                            if (mainFO == null) {
+                                logger.log(Level.INFO, "Cannot find fileobject in lookup for: " + model.getModelSource());
+                            }
+                            try {
+                                DataObject mainDO = DataObject.find(mainFO);
+                                if ((mainDO != null) && (mainDO.isModified())) {
+                                    SaveCookie wsdlSaveCookie = (SaveCookie)mainDO.getCookie(SaveCookie.class);
+                                    if(wsdlSaveCookie != null){
+                                        wsdlSaveCookie.save();
+                                    }
+                                    mainDO.setModified(false);
+                                }
+                            } catch (IOException ioe) {
+                                // ignore - just don't do anything
+                            }
+                        } catch (CatalogModelException ex) {
+                            logger.log(Level.SEVERE, null, ex);
                         }
                     }
                 }
@@ -348,6 +345,54 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         }
     }
 
+    public static FileObject getClientConfigFolder(Project p) {
+        FileObject folder = null;
+        Sources sources = ProjectUtils.getSources(p);
+
+        J2eeModuleProvider mp = (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
+        if (mp == null) {
+            if (sources != null) {
+                SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                if ((sourceGroups != null) || (sourceGroups.length > 0)) {
+                    folder = sourceGroups[0].getRootFolder();
+                    if (folder != null) {
+                        folder = folder.getFileObject("META-INF");
+                    }
+                    if ((folder == null) || (!folder.isValid())) {
+                        try {
+                            folder = sourceGroups[0].getRootFolder().createFolder("META-INF");
+                        } catch (IOException ex) {
+                            //
+                        }
+                    }
+                }
+            }
+        }
+
+        WebModule wm = WebModule.getWebModule(p.getProjectDirectory());
+        EjbJar ejb = EjbJar.getEjbJar(p.getProjectDirectory());
+        if ((wm != null) || (ejb != null)) {
+            if (sources != null) {
+                SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                if ((sourceGroups != null) || (sourceGroups.length > 0)) {
+                    folder = sourceGroups[0].getRootFolder().getParent();
+                    if (folder != null) {
+                        folder = folder.getFileObject("conf");
+                    }
+                    if ((folder == null) || (!folder.isValid())) {
+                        try {
+                            folder = sourceGroups[0].getRootFolder().createFolder("conf");
+                        } catch (IOException ex) {
+                            logger.log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return folder;
+    }
+    
     private String getServerName(Project p) {
         J2eeModuleProvider mp = (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
         if (mp != null) {

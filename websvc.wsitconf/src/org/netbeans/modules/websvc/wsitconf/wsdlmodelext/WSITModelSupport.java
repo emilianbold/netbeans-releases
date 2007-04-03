@@ -32,14 +32,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.undo.UndoManager;
 import javax.xml.namespace.QName;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -150,14 +146,8 @@ public class WSITModelSupport {
 
         FileObject srcRoot = (FileObject) node.getLookup().lookup(FileObject.class);
         Project p = FileOwnerQuery.getOwner(srcRoot);
-        Sources sources = ProjectUtils.getSources(p);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
 
-        if ((sourceGroups == null) || (sourceGroups.length <= 0)) {
-            // TODO - display warning dialog
-            return null;
-        }
-        FileObject srcFolder = sourceGroups[0].getRootFolder();
+        FileObject srcFolder = WSITEditor.getClientConfigFolder(p);
 
         FileObject catalogfo = Utilities.getProjectCatalogFileObject(p);
         ModelSource catalogms = Utilities.getModelSource(catalogfo, false);
@@ -185,21 +175,33 @@ public class WSITModelSupport {
 
                 // import the model from client model
                 WSDLModel mainModel = getModelFromFO(mainConfigFO, true);
-
                 mainModel.startTransaction();
-                WSDLComponentFactory wcf = mainModel.getFactory();
+                try {
+                    WSDLComponentFactory wcf = mainModel.getFactory();
 
-                configFO = (FileObject)createdFiles.toArray()[1];
-                org.netbeans.modules.xml.wsdl.model.Import imp = wcf.createImport();
-                imp.setLocation((configFO).getNameExt());
-                
-                model = getModelFromFO(configFO, false);
-                imp.setNamespace(model.getDefinitions().getTargetNamespace());
-                Definitions def = mainModel.getDefinitions();
-                def.setName("mainclientconfig"); //NOI18N
-                def.addImport(imp);
+                    FileObject configName = Utilities.getFileObject(originalwsdlmodel.getModelSource());
+                    configFO = srcFolder.getFileObject(configName.getName(), CONFIG_WSDL_EXTENSION);
 
-                mainModel.endTransaction();
+                    boolean importFound = false;
+                    Collection<Import> imports = mainModel.getDefinitions().getImports();
+                    for (Import i : imports) {
+                        if (i.getLocation().equals(configFO.getNameExt())) {
+                            importFound = true;
+                            break;
+                        }
+                    }
+                    model = getModelFromFO(configFO, true);
+                    if (!importFound) {
+                        org.netbeans.modules.xml.wsdl.model.Import imp = wcf.createImport();
+                        imp.setLocation((configFO).getNameExt());
+                        imp.setNamespace(model.getDefinitions().getTargetNamespace());
+                        Definitions def = mainModel.getDefinitions();
+                        def.setName("mainclientconfig"); //NOI18N
+                        def.addImport(imp);
+                    }
+                } finally {
+                    mainModel.endTransaction();
+                }
                 
                 DataObject mainConfigDO = DataObject.find(mainConfigFO);
                 if ((mainConfigDO != null) && (mainConfigDO.isModified())) {
@@ -249,8 +251,11 @@ public class WSITModelSupport {
                 WSDLModel oldImportedModel = i.getImportedWSDLModel();
                 FileObject oldImportFO = Utilities.getFileObject(oldImportedModel.getModelSource());
                 newModel.startTransaction();
-                newImportsIt.next().setLocation(oldImportFO.getName() + "." + CONFIG_WSDL_EXTENSION);
-                newModel.endTransaction();
+                try {
+                    newImportsIt.next().setLocation(oldImportFO.getName() + "." + CONFIG_WSDL_EXTENSION);
+                } finally {
+                    newModel.endTransaction();
+                }
                 copyImports(oldImportedModel, srcFolder, createdFiles);
             }
         } catch (IOException e) {
@@ -398,100 +403,102 @@ public class WSITModelSupport {
                 if (d != null) {
                     
                     model.startTransaction();
-                    WSDLComponentFactory wcf = model.getFactory();
-                    QName serviceQName = JavaWsdlMapper.getServiceName(jc);
-                    String serviceLocalName = serviceQName.getLocalPart();
-                    String serviceTargetNamespace = serviceQName.getNamespaceURI();
+                    try {
+                        WSDLComponentFactory wcf = model.getFactory();
+                        QName serviceQName = JavaWsdlMapper.getServiceName(jc);
+                        String serviceLocalName = serviceQName.getLocalPart();
+                        String serviceTargetNamespace = serviceQName.getNamespaceURI();
 
-                    d.setName(serviceLocalName);
-                    d.setTargetNamespace(serviceTargetNamespace);
-                    
-                    // create service element and add it to definitions
-                    org.netbeans.modules.xml.wsdl.model.Service s = wcf.createService();
-                    s.setName(serviceLocalName);
-                    d.addService(s);
-                    
-                    // create port and add it to the service element
-                    org.netbeans.modules.xml.wsdl.model.Port port = wcf.createPort();
-                    QName portName = JavaWsdlMapper.getPortName(jc, serviceTargetNamespace);
-                    if (portName != null) {
-                        port.setName(portName.getLocalPart());
-                    }
-                    s.addPort(port);
-                    
-                    // create binding and add it to the service element
-                    org.netbeans.modules.xml.wsdl.model.Binding binding = wcf.createBinding();
-                    String bindingName = JavaWsdlMapper.getBindingName(jc, serviceTargetNamespace);
-                    binding.setName(bindingName);
-                    d.addBinding(binding);
-                    
-                    // attach binding to the port
-                    port.setBinding(binding.createReferenceTo(binding, org.netbeans.modules.xml.wsdl.model.Binding.class));
+                        d.setName(serviceLocalName);
+                        d.setTargetNamespace(serviceTargetNamespace);
 
-                    // create portType and add it to the definitions element
-                    org.netbeans.modules.xml.wsdl.model.PortType portType = wcf.createPortType();
-                    QName portTypeName = JavaWsdlMapper.getPortTypeName(jc);
-                    portType.setName(portTypeName.getLocalPart());
-                    d.addPortType(portType);
-                    
-                    // create operations and add them to the binding element
-                    List<String> bindingOperationNames = JavaWsdlMapper.getOperationNames(jc);
-                    for (String name : bindingOperationNames) {
-                        
-                        org.netbeans.modules.xml.wsdl.model.BindingOperation bindingOperation = wcf.createBindingOperation();
-                        bindingOperation.setName(name);
-                        binding.addBindingOperation(bindingOperation);
+                        // create service element and add it to definitions
+                        org.netbeans.modules.xml.wsdl.model.Service s = wcf.createService();
+                        s.setName(serviceLocalName);
+                        d.addService(s);
 
-                        org.netbeans.modules.xml.wsdl.model.Message inputMsg = wcf.createMessage();
-                        inputMsg.setName(name);
-                        d.addMessage(inputMsg);
+                        // create port and add it to the service element
+                        org.netbeans.modules.xml.wsdl.model.Port port = wcf.createPort();
+                        QName portName = JavaWsdlMapper.getPortName(jc, serviceTargetNamespace);
+                        if (portName != null) {
+                            port.setName(portName.getLocalPart());
+                        }
+                        s.addPort(port);
 
-                        org.netbeans.modules.xml.wsdl.model.Message outMsg = wcf.createMessage();
-                        outMsg.setName(name + "Response");                  //NOI18N
-                        d.addMessage(outMsg);
+                        // create binding and add it to the service element
+                        org.netbeans.modules.xml.wsdl.model.Binding binding = wcf.createBinding();
+                        String bindingName = JavaWsdlMapper.getBindingName(jc, serviceTargetNamespace);
+                        binding.setName(bindingName);
+                        d.addBinding(binding);
 
-                        org.netbeans.modules.xml.wsdl.model.RequestResponseOperation oper = wcf.createRequestResponseOperation();
-                        oper.setName(name);
-                        portType.addOperation(oper);
-                        
-                        List<String> faults = JavaWsdlMapper.getOperationFaults(jc, name);
-                        for (String faultstr : faults) {
-                            org.netbeans.modules.xml.wsdl.model.Message fMsg = wcf.createMessage();
-                            fMsg.setName(faultstr);
-                            d.addMessage(fMsg);
+                        // attach binding to the port
+                        port.setBinding(binding.createReferenceTo(binding, org.netbeans.modules.xml.wsdl.model.Binding.class));
 
-                            org.netbeans.modules.xml.wsdl.model.Fault fault = wcf.createFault();
-                            fault.setName(faultstr);
-                            oper.addFault(fault);
-                            fault.setMessage(fault.createReferenceTo(fMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
+                        // create portType and add it to the definitions element
+                        org.netbeans.modules.xml.wsdl.model.PortType portType = wcf.createPortType();
+                        QName portTypeName = JavaWsdlMapper.getPortTypeName(jc);
+                        portType.setName(portTypeName.getLocalPart());
+                        d.addPortType(portType);
+
+                        // create operations and add them to the binding element
+                        List<String> bindingOperationNames = JavaWsdlMapper.getOperationNames(jc);
+                        for (String name : bindingOperationNames) {
+
+                            org.netbeans.modules.xml.wsdl.model.BindingOperation bindingOperation = wcf.createBindingOperation();
+                            bindingOperation.setName(name);
+                            binding.addBindingOperation(bindingOperation);
+
+                            org.netbeans.modules.xml.wsdl.model.Message inputMsg = wcf.createMessage();
+                            inputMsg.setName(name);
+                            d.addMessage(inputMsg);
+
+                            org.netbeans.modules.xml.wsdl.model.Message outMsg = wcf.createMessage();
+                            outMsg.setName(name + "Response");                  //NOI18N
+                            d.addMessage(outMsg);
+
+                            org.netbeans.modules.xml.wsdl.model.RequestResponseOperation oper = wcf.createRequestResponseOperation();
+                            oper.setName(name);
+                            portType.addOperation(oper);
+
+                            List<String> faults = JavaWsdlMapper.getOperationFaults(jc, name);
+                            for (String faultstr : faults) {
+                                org.netbeans.modules.xml.wsdl.model.Message fMsg = wcf.createMessage();
+                                fMsg.setName(faultstr);
+                                d.addMessage(fMsg);
+
+                                org.netbeans.modules.xml.wsdl.model.Fault fault = wcf.createFault();
+                                fault.setName(faultstr);
+                                oper.addFault(fault);
+                                fault.setMessage(fault.createReferenceTo(fMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
+                            }
+
+                            org.netbeans.modules.xml.wsdl.model.Input input = wcf.createInput();
+                            oper.setInput(input);
+                            input.setMessage(input.createReferenceTo(inputMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
+
+                            org.netbeans.modules.xml.wsdl.model.Output out = wcf.createOutput();
+                            oper.setOutput(out);
+                            out.setMessage(out.createReferenceTo(outMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
+
+                            org.netbeans.modules.xml.wsdl.model.BindingOutput bindingOutput = wcf.createBindingOutput();
+                            bindingOperation.setBindingOutput(bindingOutput);
+                            org.netbeans.modules.xml.wsdl.model.BindingInput bindingInput = wcf.createBindingInput();
+                            bindingOperation.setBindingInput(bindingInput);
+
+                            //add faults
+                            List<String> operationFaults = JavaWsdlMapper.getOperationFaults(jc, name);
+                            for (String fault : operationFaults) {
+                                org.netbeans.modules.xml.wsdl.model.BindingFault bindingFault = wcf.createBindingFault();
+                                bindingFault.setName(fault);
+                                bindingOperation.addBindingFault(bindingFault);
+                            }
                         }
 
-                        org.netbeans.modules.xml.wsdl.model.Input input = wcf.createInput();
-                        oper.setInput(input);
-                        input.setMessage(input.createReferenceTo(inputMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
-
-                        org.netbeans.modules.xml.wsdl.model.Output out = wcf.createOutput();
-                        oper.setOutput(out);
-                        out.setMessage(out.createReferenceTo(outMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
-                       
-                        org.netbeans.modules.xml.wsdl.model.BindingOutput bindingOutput = wcf.createBindingOutput();
-                        bindingOperation.setBindingOutput(bindingOutput);
-                        org.netbeans.modules.xml.wsdl.model.BindingInput bindingInput = wcf.createBindingInput();
-                        bindingOperation.setBindingInput(bindingInput);
-
-                        //add faults
-                        List<String> operationFaults = JavaWsdlMapper.getOperationFaults(jc, name);
-                        for (String fault : operationFaults) {
-                            org.netbeans.modules.xml.wsdl.model.BindingFault bindingFault = wcf.createBindingFault();
-                            bindingFault.setName(fault);
-                            bindingOperation.addBindingFault(bindingFault);
-                        }
+                        // attach portType to the binding
+                        binding.setType(binding.createReferenceTo(portType, org.netbeans.modules.xml.wsdl.model.PortType.class));
+                    } finally {                    
+                        model.endTransaction();
                     }
-                    
-                    // attach portType to the binding
-                    binding.setType(binding.createReferenceTo(portType, org.netbeans.modules.xml.wsdl.model.PortType.class));
-                    
-                    model.endTransaction();
 
                     DataObject dO = DataObject.find(wsdlFO);
                     SaveCookie sc = (SaveCookie) dO.getCookie(SaveCookie.class);
@@ -507,18 +514,24 @@ public class WSITModelSupport {
     
     private static void removeTypes(WSDLModel model) {
         model.startTransaction();
-        Definitions d = model.getDefinitions();
-        Types t = d.getTypes();
-        if (t != null) {
-            t.getSchemas().retainAll(new Vector());
+        try {
+            Definitions d = model.getDefinitions();
+            Types t = d.getTypes();
+            if (t != null) {
+                t.getSchemas().retainAll(new Vector());
+            }
+        } finally {
+            model.endTransaction();
         }
-        model.endTransaction();
     }
     
     private static void removePolicies(WSDLModel model) {
         model.startTransaction();
-        removePolicyElements(model.getDefinitions());
-        model.endTransaction();
+        try {
+            removePolicyElements(model.getDefinitions());
+        } finally {
+            model.endTransaction();
+        }
     }
 
     public static boolean isServiceFromWsdl(Node node) {
