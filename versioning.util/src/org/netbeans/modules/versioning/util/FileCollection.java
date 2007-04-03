@@ -68,7 +68,7 @@ public class FileCollection {
      */
     public synchronized boolean contains(File file) {
         for (File element : storage) {
-            if (Utils.isParentOrEqual(element, file)) return true;
+            if (Utils.isAncestorOrEqual(element, file)) return true;
         }
         return false;
     }
@@ -82,8 +82,8 @@ public class FileCollection {
     public synchronized void add(File file) {
         for (Iterator<File> i = storage.iterator(); i.hasNext(); ) {
             File element = i.next();
-            if (Utils.isParentOrEqual(element, file)) return;
-            if (Utils.isParentOrEqual(file, element)) {
+            if (Utils.isAncestorOrEqual(element, file)) return;
+            if (Utils.isAncestorOrEqual(file, element)) {
                 i.remove();
             }
         }
@@ -98,7 +98,7 @@ public class FileCollection {
     public synchronized void remove(File file) {
         for (Iterator<File> i = storage.iterator(); i.hasNext(); ) {
             File element = i.next();
-            if (Utils.isParentOrEqual(element, file) || Utils.isParentOrEqual(file, element)) {
+            if (Utils.isAncestorOrEqual(element, file) || Utils.isAncestorOrEqual(file, element)) {
                 i.remove();
             }
         }

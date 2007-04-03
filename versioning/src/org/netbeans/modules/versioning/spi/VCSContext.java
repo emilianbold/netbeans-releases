@@ -183,9 +183,9 @@ public final class VCSContext {
      */ 
     public boolean contains(File file) {
         outter : for (File root : rootFiles) {
-            if (Utils.isParentOrEqual(root, file)) {
+            if (Utils.isAncestorOrEqual(root, file)) {
                 for (File excluded : exclusions) {
-                    if (Utils.isParentOrEqual(excluded, file)) {
+                    if (Utils.isAncestorOrEqual(excluded, file)) {
                         continue outter;
                     }
                 }

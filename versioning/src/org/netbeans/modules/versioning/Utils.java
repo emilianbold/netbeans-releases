@@ -41,18 +41,18 @@ public class Utils {
     private static final RequestProcessor vcsBlockingRequestProcessor = new RequestProcessor("Versioning long tasks", 1);
 
     /**
-     * Tests for parent/child file relationsip.
+     * Tests for ancestor/child file relationsip.
      * 
-     * @param parent supposed parent of the file
+     * @param ancestor supposed ancestor of the file
      * @param file a file
-     * @return true if parent is a parent folder of file OR both parameters are equal, false otherwise
+     * @return true if ancestor is an ancestor folder of file OR both parameters are equal, false otherwise
      */
-    public static boolean isParentOrEqual(File parent, File file) {
-        if (VCSContext.isFlat(parent)) {
-            return parent.equals(file) || parent.equals(file.getParentFile()) && !file.isDirectory();
+    public static boolean isAncestorOrEqual(File ancestor, File file) {
+        if (VCSContext.isFlat(ancestor)) {
+            return ancestor.equals(file) || ancestor.equals(file.getParentFile()) && !file.isDirectory();
         }
         for (; file != null; file = file.getParentFile()) {
-            if (file.equals(parent)) return true;
+            if (file.equals(ancestor)) return true;
         }
         return false;
     }

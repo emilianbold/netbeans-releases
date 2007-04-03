@@ -594,7 +594,7 @@ public class Annotator {
             } else {
                 for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
-                    if (Utils.isParentOrEqual(file, mf)) {
+                    if (Utils.isAncestorOrEqual(file, mf)) {
                         FileInformation info = (FileInformation) modifiedFiles.get(mf);
                         int status = info.getStatus();
                         if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) && file.equals(mf)) {
