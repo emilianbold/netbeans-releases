@@ -232,8 +232,12 @@ public class TargetsPanel extends javax.swing.JPanel {
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         int[] rows = jTable1.getSelectedRows();
-        for (int i=0; i<rows.length; i++) {
-            getTargetsModel().remove(rows[i]);
+        Vector rowsToRemove = new Vector();
+        for (int i=0; i<rows.length; i++) {            
+            rowsToRemove.add(getTargetsModel().get(rows[i]));
+        }
+        for (Object o : rowsToRemove) {
+            getTargetsModel().remove(o);
         }
         saveTargetsModel();
     }//GEN-LAST:event_removeButtonActionPerformed
