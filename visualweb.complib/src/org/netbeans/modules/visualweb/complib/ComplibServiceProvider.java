@@ -226,8 +226,7 @@ public class ComplibServiceProvider implements ComplibService {
 
         @Override
         public Action[] getCustomItemActions(Lookup item) {
-            // TODO Auto-generated method stub
-            return null;
+            return getCustomCategoryActions(item);
         }
 
         @Override
@@ -237,13 +236,11 @@ public class ComplibServiceProvider implements ComplibService {
 
         @Override
         public Action[] getImportActions() {
-            // TODO Auto-generated method stub
             return null;
         }
 
         @Override
         public Action getPreferredAction(Lookup item) {
-            // TODO Auto-generated method stub
             return null;
         }
 
