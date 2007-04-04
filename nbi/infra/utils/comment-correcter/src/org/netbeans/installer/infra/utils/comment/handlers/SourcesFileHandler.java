@@ -61,7 +61,8 @@ public class SourcesFileHandler extends BlockFileHandler {
         return file.getName().endsWith(".java") ||                          // NOI18N
                 file.getName().endsWith(".c") ||                            // NOI18N
                 file.getName().endsWith(".cpp") ||                          // NOI18N
-                file.getName().endsWith(".h");                              // NOI18N
+                file.getName().endsWith(".h") ||                            // NOI18N
+                file.getName().endsWith(".js");                             // NOI18N
     }
     
     /////////////////////////////////////////////////////////////////////////////////
