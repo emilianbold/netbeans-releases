@@ -46,6 +46,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.prefs.Preferences;
 
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
@@ -69,6 +70,7 @@ import org.netbeans.modules.visualweb.complib.PaletteUtil.Item;
 import org.netbeans.modules.visualweb.complib.PaletteUtil.Palette;
 import org.netbeans.modules.visualweb.complib.ui.ComplibsRootNode;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteFilter;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -96,6 +98,7 @@ import com.sun.rave.designtime.DisplayItem;
  * @author Edwin Goei
  */
 public class ComplibServiceProvider implements ComplibService {
+
     public static final String ADDABLE_COMPLIBS = "addableComplibs";
 
     /**
@@ -209,6 +212,41 @@ public class ComplibServiceProvider implements ComplibService {
                 return true;
             }
         }
+    }
+
+    private static class ComplibPaletteActions extends PaletteActions {
+
+        @Override
+        public Action[] getCustomCategoryActions(Lookup category) {
+            Project project = IdeUtil.getActiveProject();
+            Node complibsRootNode = ComplibServiceProvider.getInstance()
+                    .getComplibsRootNode(project);
+            return complibsRootNode.getActions(true);
+        }
+
+        @Override
+        public Action[] getCustomItemActions(Lookup item) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public Action[] getCustomPaletteActions() {
+            return null;
+        }
+
+        @Override
+        public Action[] getImportActions() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public Action getPreferredAction(Lookup item) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
     }
 
     /**
@@ -658,16 +696,14 @@ public class ComplibServiceProvider implements ComplibService {
             List<URL> javadocPath = fileListToUrlList(complib.getJavadocPath());
             List<URL> sourcePath = fileListToUrlList(complib.getSourcePath());
             libDef = JsfProjectUtils.createComponentLibrary(libName, libName,
-                    localizingBundle,
-                    rtPath, sourcePath, javadocPath, dtPath);
+                    localizingBundle, rtPath, sourcePath, javadocPath, dtPath);
         }
 
         // If needed, create new compile-time Library Ref
         if (!JsfProjectUtils.hasLibraryReference(project, libDef,
                 ClassPath.COMPILE)) {
             if (!JsfProjectUtils.addLibraryReferences(project,
-                    new Library[] { libDef },
-                    ClassPath.COMPILE)) {
+                    new Library[] { libDef }, ClassPath.COMPILE)) {
                 IdeUtil
                         .logError("Failed to add compile-time library reference to project: "
                                 + libDef.getName());
@@ -678,8 +714,7 @@ public class ComplibServiceProvider implements ComplibService {
         if (!JsfProjectUtils.hasLibraryReference(project, libDef,
                 ClassPath.EXECUTE)) {
             if (!JsfProjectUtils.addLibraryReferences(project,
-                    new Library[] { libDef },
-                    ClassPath.EXECUTE)) {
+                    new Library[] { libDef }, ClassPath.EXECUTE)) {
                 IdeUtil
                         .logError("Failed to add deploy library reference to project: "
                                 + libDef.getName());
@@ -705,15 +740,13 @@ public class ComplibServiceProvider implements ComplibService {
             if (JsfProjectUtils.hasLibraryReference(project, libDef,
                     ClassPath.COMPILE)) {
                 JsfProjectUtils.removeLibraryReferences(project,
-                        new Library[] { libDef },
-                        ClassPath.COMPILE);
+                        new Library[] { libDef }, ClassPath.COMPILE);
             }
 
             if (JsfProjectUtils.hasLibraryReference(project, libDef,
                     ClassPath.EXECUTE)) {
                 JsfProjectUtils.removeLibraryReferences(project,
-                        new Library[] { libDef },
-                        ClassPath.EXECUTE);
+                        new Library[] { libDef }, ClassPath.EXECUTE);
             }
 
             JsfProjectUtils.removeLibrary(libName);
@@ -1245,6 +1278,10 @@ public class ComplibServiceProvider implements ComplibService {
 
     public PaletteFilter createComplibPaletteFilter(Project project) {
         return new ComplibPaletteFilter(project);
+    }
+
+    public PaletteActions createComplibPaletteActions() {
+        return new ComplibPaletteActions();
     }
 
     public void addComplibListener(ComplibListener listener) {
@@ -1786,15 +1823,13 @@ public class ComplibServiceProvider implements ComplibService {
                 .getJavadocPath());
         List<URL> sourcePath = fileListToUrlList(sharedComplib.getSourcePath());
         libDef = JsfProjectUtils.createComponentLibrary(libName, libName,
-                localizingBundle,
-                rtPath, sourcePath, javadocPath, dtPath);
+                localizingBundle, rtPath, sourcePath, javadocPath, dtPath);
 
         // If needed, create new compile-time Library Ref
         if (!JsfProjectUtils.hasLibraryReference(project, libDef,
                 ClassPath.COMPILE)) {
             if (!JsfProjectUtils.addLibraryReferences(project,
-                    new Library[] { libDef },
-                    ClassPath.COMPILE)) {
+                    new Library[] { libDef }, ClassPath.COMPILE)) {
                 IdeUtil
                         .logError("Failed to add compile-time library reference to project: "
                                 + libDef.getName());
@@ -1805,8 +1840,7 @@ public class ComplibServiceProvider implements ComplibService {
         if (!JsfProjectUtils.hasLibraryReference(project, libDef,
                 ClassPath.EXECUTE)) {
             if (!JsfProjectUtils.addLibraryReferences(project,
-                    new Library[] { libDef },
-                    ClassPath.EXECUTE)) {
+                    new Library[] { libDef }, ClassPath.EXECUTE)) {
                 IdeUtil
                         .logError("Failed to add deploy library reference to project: "
                                 + libDef.getName());
@@ -1834,15 +1868,13 @@ public class ComplibServiceProvider implements ComplibService {
             if (JsfProjectUtils.hasLibraryReference(project, libDef,
                     ClassPath.COMPILE)) {
                 JsfProjectUtils.removeLibraryReferences(project,
-                        new Library[] { libDef },
-                        ClassPath.COMPILE);
+                        new Library[] { libDef }, ClassPath.COMPILE);
             }
 
             if (JsfProjectUtils.hasLibraryReference(project, libDef,
                     ClassPath.EXECUTE)) {
                 JsfProjectUtils.removeLibraryReferences(project,
-                        new Library[] { libDef },
-                        ClassPath.EXECUTE);
+                        new Library[] { libDef }, ClassPath.EXECUTE);
             }
 
             JsfProjectUtils.removeLibrary(libName);
