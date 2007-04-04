@@ -46,9 +46,6 @@ import java.util.List;
  */
 public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMinimizeAbility {
 
-    private static final Image IMAGE_EXPAND = Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-expand.png"); // NOI18N
-    private static final Image IMAGE_COLLAPSE = Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse.png"); // NOI18N
-
     private static final Color BORDER_CATEGORY_BACKGROUND = new Color (0xCDDDF8);
     private static final Border BORDER_MINIMIZE = BorderFactory.createRoundedBorder (2, 2, null, VMDNodeBorder.COLOR_BORDER);
     static final Color COLOR_SELECTED = new Color (0x748CC0);
@@ -89,7 +86,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         header.setLayout (LayoutFactory.createHorizontalFlowLayout (LayoutFactory.SerialAlignment.CENTER, 8));
         addChild (header);
 
-        minimizeWidget = new ImageWidget (scene, IMAGE_COLLAPSE);
+        minimizeWidget = new ImageWidget (scene, Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse.png"));
         minimizeWidget.setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
         minimizeWidget.setBorder (BORDER_MINIMIZE);
         minimizeWidget.getActions ().addAction (new ToggleMinimizedAction ());
@@ -169,7 +166,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
             if (widget != header  &&  widget != pinsSeparator) {
                 getScene ().getSceneAnimator ().animatePreferredBounds (widget, minimized  && isMinimizableWidget (widget) ? rectangle : null);
             }
-        minimizeWidget.setImage (minimized ? IMAGE_EXPAND : IMAGE_COLLAPSE);
+        minimizeWidget.setImage (minimized ? Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-expand.png") : Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse.png")); // NOI18N
     }
 
     /**

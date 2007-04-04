@@ -40,11 +40,6 @@ import java.awt.event.MouseEvent;
 // TODO - invalid calculation/checking showVertical and showHorizontal when view.preferredLocation has negative values
 public class ScrollWidget extends Widget {
 
-    private static final Image IMAGE_UP = Utilities.loadImage ("org/netbeans/modules/visual/resources/arrow-up.png"); // NOI18N
-    private static final Image IMAGE_DOWN = Utilities.loadImage ("org/netbeans/modules/visual/resources/arrow-down.png"); // NOI18N
-    private static final Image IMAGE_LEFT = Utilities.loadImage ("org/netbeans/modules/visual/resources/arrow-left.png"); // NOI18N
-    private static final Image IMAGE_RIGHT = Utilities.loadImage ("org/netbeans/modules/visual/resources/arrow-right.png"); // NOI18N
-
     private static final int BAR_VERTICAL_SIZE = 16;
     private static final int BAR_HORIZONTAL_SIZE = 16;
 
@@ -116,19 +111,19 @@ public class ScrollWidget extends Widget {
     }
 
     private Widget createUpArrow () {
-        return new ButtonWidget (getScene (), IMAGE_UP);
+        return new ButtonWidget (getScene (), Utilities.loadImage ("org/netbeans/modules/visual/resources/arrow-up.png")); // NOI18N
     }
 
     private Widget createDownArrow () {
-        return new ButtonWidget (getScene (), IMAGE_DOWN);
+        return new ButtonWidget (getScene (), Utilities.loadImage ("org/netbeans/modules/visual/resources/arrow-down.png")); // NOI18N
     }
 
     private Widget createLeftArrow () {
-        return new ButtonWidget (getScene (), IMAGE_LEFT);
+        return new ButtonWidget (getScene (), Utilities.loadImage ("org/netbeans/modules/visual/resources/arrow-left.png")); // NOI18N
     }
 
     private Widget createRightArrow () {
-        return new ButtonWidget (getScene (), IMAGE_RIGHT);
+        return new ButtonWidget (getScene (), Utilities.loadImage ("org/netbeans/modules/visual/resources/arrow-right.png")); // NOI18N
     }
 
     /**
