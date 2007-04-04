@@ -505,10 +505,10 @@ public class PageFlowController {
                 
                 Node tmpNode = new AbstractNode(Children.LEAF);
                 tmpNode.setName(pageDisplayName);
-                PageFlowNode newNode = createPageFlowNode(tmpNode);
-                
-                
-                view.replaceWidgetNode(oldNode, newNode);
+                oldNode.replaceWrappedNode(tmpNode);
+                view.resetNodeWidget(oldNode);  /* If I add a listener to PageFlowNode, then I won't have to do this*/
+//                PageFlowNode newNode = createPageFlowNode(tmpNode);                
+//                view.replaceWidgetNode(oldNode, newNode);
                 view.validateGraph();
                 
 //                view.createNode(node, null, null);

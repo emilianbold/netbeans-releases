@@ -20,6 +20,7 @@
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.Set;
@@ -27,7 +28,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
@@ -152,22 +155,36 @@ public class MapActionUtility {
                         if( myObject instanceof Node ) {
                             Node node = (Node)myObject;
                             if ( node.canDestroy() ){
-                                try                 {
-                                    node.destroy();
-                                } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
+                                
+                                 int i = JOptionPane.showConfirmDialog(null, "Would you like to delete this file too?", "Delete", JOptionPane.YES_NO_CANCEL_OPTION);
+                                 
+                                
+                                switch ( i ){
+                                case JOptionPane.YES_OPTION:
+                                    System.out.println("YOu Selected Yes.");
+                                    break;
+                                case JOptionPane.NO_OPTION:
+                                    System.out.println("YOu Selected no.");break;
+                                case JOptionPane.CANCEL_OPTION:                                 
+                                    System.out.println("You selected cancel");break;
                                 }
+                                //                                Object[] options = { "Option1", "Option2", "Option3" };
+                                //                                JOptionPane.showOptionDialog(null, "Delete Options", "Delete Options", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                                //                                                name = JOptionPane.showInputDialog("Select Page Name", name);
+                                
+                                //                                try                 {
+                                //                                    node.destroy();
+                                //                                } catch (IOException ex) {
+                                //                                    Exceptions.printStackTrace(ex);
+                                //                                }
                             }
                         }
                     }
                 }
-                
             }
-            
         }
     };
-    
-    
+
     
     
     public static Action handleNewWebForm = new AbstractAction() {
@@ -225,3 +242,4 @@ public class MapActionUtility {
     };
     
 }
+

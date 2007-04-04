@@ -306,15 +306,15 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         return widget;
     }
     
-    public void replaceWidgetNode( PageFlowNode oldNode, PageFlowNode newNode ) {
-        VMDNodeWidget widget = (VMDNodeWidget)findWidget(oldNode);
-        oldNode = newNode;
-        //        if ( widget != null ){
-        //            widget.setNodeName(newNode.getDisplayName());
-        //        }
-        removeObject(oldNode);
-        addObject(newNode, widget, widget.getChildren().get(0));
-    }
+//    public void replaceWidgetNode( PageFlowNode oldNode, PageFlowNode newNode ) {
+//        VMDNodeWidget widget = (VMDNodeWidget)findWidget(oldNode);
+//        oldNode = newNode;
+//        //        if ( widget != null ){
+//        //            widget.setNodeName(newNode.getDisplayName());
+//        //        }
+//        removeObject(oldNode);
+//        addObject(newNode, widget, widget.getChildren().get(0));
+//    }
     
     /**
      * Implements attaching a widget to an edge. the widget is ConnectionWidget and has object-hover, select and move-control-point actions.

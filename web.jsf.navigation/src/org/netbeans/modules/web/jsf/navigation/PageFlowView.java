@@ -67,10 +67,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     PageFlowView(JSFConfigEditorContext context){
         init();
         pfc = new PageFlowController( context,  this );
-        
         //        this(context, new InstanceContent());
-        
-        
     }
     
     
@@ -408,7 +405,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         scene.removeNodeWithEdges(node);
     }
     
-    public void replaceWidgetNode(PageFlowNode oldNode, PageFlowNode newNode) {
-        scene.replaceWidgetNode(oldNode, newNode);
+    public void resetNodeWidget( PageFlowNode node ){
+        //Reset the Node Name
+        ((VMDNodeWidget)scene.findWidget(node)).setNodeName(node.getDisplayName());        
     }
 }
