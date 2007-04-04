@@ -132,7 +132,8 @@ public final class CommentCorrecterTask extends Task {
                         fileset.getDirectoryScanner(getProject());
                 
                 for (String filename: scanner.getIncludedFiles()) {
-                    final File file = new File(fileset.getDir(), filename);
+                    final File file = 
+                            new File(fileset.getDir(getProject()), filename);
                     
                     log(file.getAbsolutePath());
                     

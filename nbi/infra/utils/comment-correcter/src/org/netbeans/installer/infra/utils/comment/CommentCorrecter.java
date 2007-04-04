@@ -26,6 +26,8 @@ import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.infra.utils.comment.handlers.FileHandler;
+import org.netbeans.installer.infra.utils.comment.handlers.HtmlFileHandler;
+import org.netbeans.installer.infra.utils.comment.handlers.JspFileHandler;
 import org.netbeans.installer.infra.utils.comment.handlers.MakefileFileHandler;
 import org.netbeans.installer.infra.utils.comment.handlers.PropertiesFileHandler;
 import org.netbeans.installer.infra.utils.comment.handlers.ShellFileHandler;
@@ -94,7 +96,7 @@ public final class CommentCorrecter {
             System.out.println(
                     "          which ot perform the correction");           // NOI18N
             System.out.println(
-                    "        * <text> is a path tothe file " +              // NOI18N
+                    "        * <text> is a path to the file " +             // NOI18N
                     "which contains the");                                  // NOI18N
             System.out.println(
                     "        * text of the comment");                       // NOI18N
@@ -137,6 +139,8 @@ public final class CommentCorrecter {
             instance.addHandler(new PropertiesFileHandler());
             instance.addHandler(new ShellFileHandler());
             instance.addHandler(new MakefileFileHandler());
+            instance.addHandler(new HtmlFileHandler());
+            instance.addHandler(new JspFileHandler());
         }
         
         return instance;

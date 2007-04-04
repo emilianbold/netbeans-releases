@@ -19,26 +19,26 @@
  */
 package org.netbeans.installer.infra.utils.comment.handlers;
 
-import java.io.File;
-import java.util.regex.Pattern;
 import org.netbeans.installer.infra.utils.comment.utils.Utils;
+import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * A {@link FileHandler} implementation capable of handling Java, C, C++ source and
- * header files.
+ * A {@link FileHandler} implementation capable of handling JSP documents.
  *
  * @author Kirill Sorokin
  */
-public class SourcesFileHandler extends BlockFileHandler {
+public class JspFileHandler extends BlockFileHandler {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     /**
-     * Creates a new instance of {@link SourcesFileHandler}. The constuctor
+     * Creates a new instance of {@link JspFileHandler}. The constuctor
      * simply falls back to the
      * {@link BlockFileHandler#BlockFileHandler(Pattern, String, String, String)}
-     * passing in the parameters relevant to source files.
+     * passing in the parameters relevant to JSP files.
      */
-    public SourcesFileHandler() {
+    public JspFileHandler() {
         super(COMMENT_PATTERN,
                 COMMENT_START,
                 COMMENT_PREFIX,
@@ -58,38 +58,56 @@ public class SourcesFileHandler extends BlockFileHandler {
             return false;
         }
         
-        return file.getName().endsWith(".java") ||                          // NOI18N
-                file.getName().endsWith(".c") ||                            // NOI18N
-                file.getName().endsWith(".cpp") ||                          // NOI18N
-                file.getName().endsWith(".h") ||                            // NOI18N
-                file.getName().endsWith(".js") ||                           // NOI18N
-                file.getName().endsWith(".css");                            // NOI18N
+        return file.getName().endsWith(".jsp") || // NOI18N
+                file.getName().endsWith(".jspx"); // NOI18N
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getCommentPosition() {
+        if (contents == null) {
+            throw new IllegalStateException(
+                    "The contents cache has not been intialized.");         // NOI18N
+        }
+        
+        final Matcher matcher = COMMENT_POSITION_PATTERN.matcher(contents);
+        if (matcher.find()) {
+            return contents.indexOf(matcher.group(1));
+        } else {
+            return 0;
+        }
     }
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
+    private static final Pattern COMMENT_POSITION_PATTERN = Pattern.compile(
+            "\\A\\s*(?:<\\?xml.*?\\?>)?\\s*(.*)",                           // NOI18N
+            Pattern.MULTILINE | Pattern.DOTALL);
+    
     /**
      * The regular expression pattern which matches the initial comment.
      */
     private static final Pattern COMMENT_PATTERN = Pattern.compile(
-            "\\A\\s*(/\\*.*?\\*/)",                                         // NOI18N
+            "\\A\\s*(?:<\\?xml.*?\\?>)?\\s*(<%--.*?--%>)",                  // NOI18N
             Pattern.MULTILINE | Pattern.DOTALL);
     
     /**
      * The comment opening string.
      */
     private static final String COMMENT_START =
-            "/*" + Utils.NL;                                                // NOI18N
+            "<%--" + Utils.NL;                                              // NOI18N
     
     /**
      * The prefix which should be used for each line in the comment.
      */
     private static final String COMMENT_PREFIX =
-            " * ";                                                          // NOI18N
+            "  ";                                                           // NOI18N
     
     /**
      * The comment closing string.
      */
     private static final String COMMENT_END =
-            " */";                                                          // NOI18N
+            "--%>";                                                         // NOI18N
 }
