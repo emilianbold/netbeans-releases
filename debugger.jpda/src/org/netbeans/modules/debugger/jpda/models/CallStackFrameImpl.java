@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,22 +29,32 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.This;
+import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.openide.ErrorManager;
 
 
 /**
 * Class representating one line of callstack.
 */
 public class CallStackFrameImpl implements CallStackFrame {
+    
+    private static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
+    static final boolean IS_JDK_160_02 = IS_JDK_16 && !System.getProperty("java.version").equals("1.6.0") &&
+                                                      !System.getProperty("java.version").equals("1.6.0_01");
     
     private StackFrame          sf;
     private int                 depth;
@@ -231,6 +241,136 @@ public class CallStackFrameImpl implements CallStackFrame {
         } catch (VMDisconnectedException ex) {
             return new LocalVariable [0];
         }
+    }
+    
+    public LocalVariable[] getMethodArguments() {
+        StackFrame sf = getStackFrame();
+        String url = debugger.getEngineContext().getURL(sf,
+                                                        getDefaultStratum());
+        List<Value> argValues = getArgumentValues(sf);
+        if (argValues == null) return null;
+        MethodArgument[] argumentNames = EditorContextBridge.getArguments(url, sf.location().lineNumber());
+        if (argumentNames == null) return null;
+        LocalVariable[] arguments = new LocalVariable[argumentNames.length];
+        for (int i = 0; i < arguments.length; i++) {
+            com.sun.jdi.Value value = argValues.get(i);
+            arguments[i] =
+                    new ArgumentVariable(debugger,
+                                         value,
+                                         argumentNames[i].getName(),
+                                         argumentNames[i].getType());
+        }
+        return arguments;
+    }
+    
+    List<LocalVariable> findOperationArguments(Operation operation) {
+        if (!IS_JDK_160_02) return null; // Can evaluate methods after pop since JDK 1.6.0_02
+        JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
+        JPDAThreadImpl thread = (JPDAThreadImpl) getThread();
+        synchronized (debuggerImpl.LOCK) {
+            synchronized (thread) {
+                ThreadReference tr = thread.getThreadReference();
+                com.sun.jdi.VirtualMachine vm = tr.virtualMachine();
+                com.sun.jdi.request.StepRequest step = vm.eventRequestManager().createStepRequest(
+                        tr,
+                        com.sun.jdi.request.StepRequest.STEP_LINE,
+                        com.sun.jdi.request.StepRequest.STEP_INTO);
+                step.addCountFilter(1);
+                step.setSuspendPolicy(com.sun.jdi.request.StepRequest.SUSPEND_EVENT_THREAD);
+                step.enable();
+                step.putProperty("silent", Boolean.TRUE);
+                final boolean[] stepDone = new boolean[] { false };
+                debugger.getOperator().register(step, new Executor() {
+                    public boolean exec(com.sun.jdi.event.Event event) {
+                        synchronized (stepDone) {
+                            stepDone[0] = true;
+                            stepDone.notify();
+                        }
+                        return false;
+                    }
+                });
+                tr.resume();
+                synchronized (stepDone) {
+                    if (!stepDone[0]) {
+                        try {
+                            stepDone.wait();
+                        } catch (InterruptedException iex) {}
+                    }
+                }
+                StackFrame sf = null;
+                List<com.sun.jdi.Value> arguments = null;
+                try {
+                    sf = tr.frames(0, 1).get(0);
+                    arguments = getArgumentValues(sf);
+                } catch (IncompatibleThreadStateException itsex) {
+                    ErrorManager.getDefault().notify(itsex);
+                    return null;
+                } finally {
+                    vm.eventRequestManager().deleteEventRequest(step);
+                    try {
+                        if (sf != null) {
+                            tr.popFrames(sf);
+                        }
+                    } catch (IncompatibleThreadStateException itsex) {
+                        ErrorManager.getDefault().notify(itsex);
+                        return null;
+                    }
+                }
+                if (arguments != null) {
+                    MethodArgument[] argumentNames;
+                    try {
+                        Session session = debugger.getSession();
+                        argumentNames =
+                            EditorContextBridge.getArguments(
+                                debuggerImpl.getEngineContext().getURL(tr.frames(0, 1).get(0),
+                                                                       session.getCurrentLanguage()),
+                                operation);
+                    } catch (IncompatibleThreadStateException itsex) {
+                        ErrorManager.getDefault().notify(itsex);
+                        return null;
+                    }
+                    if (argumentNames != null) {
+                        List<LocalVariable> argumentList = new ArrayList<LocalVariable>(arguments.size());
+                        for (int i = 0; i < arguments.size(); i++) {
+                            com.sun.jdi.Value value = arguments.get(i);
+                            argumentList.add(
+                                    new ArgumentVariable(debuggerImpl,
+                                                         value,
+                                                         argumentNames[i].getName(),
+                                                         //argumentNames[i].getType()));
+                                                         value.type().name()));
+                        }
+                        return argumentList;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    private static List<com.sun.jdi.Value> getArgumentValues(StackFrame sf) {
+        if (!IS_JDK_16) return null;
+        try {
+            java.lang.reflect.Method getArgumentValuesMethod = sf.getClass().getMethod("getArgumentValues"); // NOI18N
+            Object values = getArgumentValuesMethod.invoke(sf, new java.lang.Object[]{});
+            return (List<com.sun.jdi.Value>) values;
+        }
+        catch (IllegalAccessException ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
+        }
+        catch (IllegalArgumentException ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
+        }
+        catch (InvocationTargetException ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
+        }
+        catch (java.lang.NoSuchMethodException ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
+        }
+        catch (java.lang.SecurityException ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
+        }
+        return java.util.Collections.emptyList();
     }
     
     /**

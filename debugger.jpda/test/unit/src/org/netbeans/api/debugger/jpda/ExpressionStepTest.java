@@ -23,6 +23,8 @@ import java.util.List;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 
@@ -70,21 +72,25 @@ public class ExpressionStepTest extends NbTestCase {
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
                 30, 14,
-                "factorial"
+                "factorial",
+                null,
+                new Object[] { "10" }
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
                 31, 14,
                 "factorial",
-                new Object[] {"3628800"}
+                new Object[] {"3628800"},
+                new Object[] { "20" }
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
                 31, 30,
                 "factorial",
-                new Object[] {"2432902008176640000"}
+                new Object[] {"2432902008176640000"},
+                new Object[] { "30" }
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
@@ -111,14 +117,17 @@ public class ExpressionStepTest extends NbTestCase {
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
                 34, 20,
-                "m2"
+                "m2",
+                null,
+                new Object[] { "(int) x" }
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
                 34, 13,
                 "m1",
-                new Object[] {"-899453552"}
+                new Object[] {"-899453552"},
+                new Object[] { "exs.m2((int) x)" }
             );
             
             stepCheck (
@@ -211,14 +220,42 @@ public class ExpressionStepTest extends NbTestCase {
         Object[] returnValues
     ) {
         stepCheck(stepType, clsExpected, lineExpected, column, methodName);
-        List<Operation> ops = support.getDebugger ().getCurrentThread().getLastOperations();
-        assertEquals("Different count of last operations and expected return values.", returnValues.length, ops.size());
-        for (int i = 0; i < returnValues.length; i++) {
-            Variable rv = ops.get(i).getReturnValue();
-            if (rv != null) {
-                assertEquals("Bad return value", returnValues[i], rv.getValue());
+        if (returnValues != null) {
+            List<Operation> ops = support.getDebugger ().getCurrentThread().getLastOperations();
+            assertEquals("Different count of last operations and expected return values.", returnValues.length, ops.size());
+            for (int i = 0; i < returnValues.length; i++) {
+                Variable rv = ops.get(i).getReturnValue();
+                if (rv != null) {
+                    assertEquals("Bad return value", returnValues[i], rv.getValue());
+                }
             }
         }
     }
     
+    private void stepCheck (
+        Object stepType, 
+        String clsExpected, 
+        int lineExpected,
+        int column,
+        String methodName,
+        Object[] returnValues,
+        Object[] opArguments
+    ) {
+        stepCheck(stepType, clsExpected, lineExpected, column, methodName, returnValues);
+        Operation currentOp = support.getDebugger ().getCurrentThread().getCurrentOperation();
+        MethodArgument[] arguments = getContext().getArguments(
+                Utils.getURL(sourceRoot + "org/netbeans/api/debugger/jpda/testapps/ExpressionStepApp.java"),
+                currentOp);
+        assertEquals("Different count of operation arguments.", opArguments.length, arguments.length);
+        for (int i = 0; i < opArguments.length; i++) {
+            assertEquals("Bad method argument", opArguments[i], arguments[i].getName());
+        }
+    }
+    
+    private static EditorContext getContext () {
+        List l = DebuggerManager.getDebuggerManager ().lookup 
+            (null, EditorContext.class);
+        EditorContext context = (EditorContext) l.get (0);
+        return context;
+    }
 }

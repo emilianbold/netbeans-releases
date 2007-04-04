@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Micro//S ystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Micro//S ystems, Inc. Portions Copyright 1997-2007 Sun
  * Micro//S ystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.jpda;
@@ -30,6 +30,8 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
+import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 
 /**
@@ -259,6 +261,14 @@ public class EditorContextBridge {
      */
     public static String[] getImports (String url) {
         return getContext ().getImports (url);
+    }
+    
+    public static MethodArgument[] getArguments(String url, Operation operation) {
+        return getContext().getArguments(url, operation);
+    }
+
+    public static MethodArgument[] getArguments(String url, int methodLineNumber) {
+        return getContext().getArguments(url, methodLineNumber);
     }
 
     public static void addPropertyChangeListener (PropertyChangeListener l) {

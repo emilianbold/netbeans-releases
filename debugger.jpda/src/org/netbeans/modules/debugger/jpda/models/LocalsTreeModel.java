@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -140,7 +140,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 System.arraycopy(staticFields.toArray(), 0, fields, 1, staticFields.size());
                 return fields;
             } else
-            if ("lastOperations" == o) {
+            if ("lastOperations" == o) { // NOI18N
                 CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
                     getCurrentCallStackFrame ();
                 if (frame == null) {
@@ -155,6 +155,23 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     }
                 }
                 return lastOperationValues.toArray();
+            } else
+            if (o instanceof String && ((String) o).startsWith("operationArguments")) { // NOI18N
+                CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
+                    getCurrentCallStackFrame ();
+                if (frame == null) {
+                    return new Object[] {};
+                }
+                Operation currentOperation = frame.getThread().getCurrentOperation();
+                if (currentOperation == null) {
+                    return new Object[] {};
+                }
+                List<org.netbeans.api.debugger.jpda.LocalVariable> arguments = frame.findOperationArguments(currentOperation);//currentOperation.getArgumentValues();
+                if (arguments == null) {
+                    return new Object[] {};
+                } else {
+                    return arguments.toArray();
+                }
             } else
             throw new UnknownTypeException (o);
         } catch (VMDisconnectedException ex) {
@@ -255,8 +272,12 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 List<Operation> operations = frame.getThread().getLastOperations();
                 return operations.size();
             } else
-            throw new UnknownTypeException (node);
-        } catch (VMDisconnectedException ex) {
+            if (node instanceof String && ((String) node).startsWith("operationArguments")) { // NOI18N
+                // Performance, see issue #59058.
+                return Integer.MAX_VALUE;
+            } else
+                throw new UnknownTypeException (node);
+            } catch (VMDisconnectedException ex) {
         }
         return 0;
     }
@@ -273,6 +294,9 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             return true;
         if (o instanceof JPDAClassType) return false;
         if (o == "lastOperations") return false;
+        if (o instanceof String && ((String) o).startsWith("operationArguments")) { // NOI18N
+            return false;
+        }
         throw new UnknownTypeException (o);
     }
 
@@ -347,20 +371,19 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     haveLastOperations = false;
                 }
                 int retValShift = (haveLastOperations || returnVariable != null) ? 1 : 0;
+                Operation currentOperation = callStackFrame.getThread().getCurrentOperation();
+                int currArgShift = (currentOperation != null && CallStackFrameImpl.IS_JDK_160_02) ? 1 : 0;
+                int shift = retValShift + currArgShift;
                 if (thisR == null) {
                     ReferenceType classType = stackFrame.location().declaringType();
                     Object[] avs = null;
-                    try {
-                        avs = getLocalVariables (
-                            callStackFrame,
-                            stackFrame,
-                            Math.max (from - retValShift - 1, 0),
-                            Math.max (to - retValShift - 1, 0)
-                        );
-                    } catch (AbsentInformationException ex) {
-                        avs = new String [] {"NoInfo"};
-                    }
-                    Object[] result = new Object [avs.length + retValShift + 1];
+                    avs = getLocalVariables (
+                        callStackFrame,
+                        stackFrame,
+                        Math.max (from - shift - 1, 0),
+                        Math.max (to - shift - 1, 0)
+                    );
+                    Object[] result = new Object [avs.length + shift + 1];
                     if (from < 1 && retValShift > 0) {
                         if (returnVariable != null) {
                             result[0] = returnVariable;
@@ -368,25 +391,24 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                             result[0] = "lastOperations"; // NOI18N
                         }
                     }
-                    if (from < 1 + retValShift) {
-                        //result [0] = new ThisVariable (debugger, classType.classObject(), "");
-                        result[retValShift] = debugger.getClassType(classType);
+                    if (from < 1 && currArgShift > 0) {
+                        result[retValShift] = "operationArguments " + currentOperation.getMethodName(); // NOI18N
                     }
-                    System.arraycopy (avs, 0, result, 1 + retValShift, avs.length);
+                    if (from < 1 + shift) {
+                        //result [0] = new ThisVariable (debugger, classType.classObject(), "");
+                        result[shift] = debugger.getClassType(classType);
+                    }
+                    System.arraycopy (avs, 0, result, 1 + shift, avs.length);
                     return result;
                 } else {
                     Object[] avs = null;
-                    try {
-                        avs = getLocalVariables (
-                            callStackFrame,
-                            stackFrame,
-                            Math.max (from - retValShift - 1, 0),
-                            Math.max (to - retValShift - 1, 0)
-                        );
-                    } catch (AbsentInformationException ex) {
-                        avs = new Object[] {"NoInfo"};
-                    }
-                    Object[] result = new Object [avs.length + retValShift + 1];
+                    avs = getLocalVariables (
+                        callStackFrame,
+                        stackFrame,
+                        Math.max (from - shift - 1, 0),
+                        Math.max (to - shift - 1, 0)
+                    );
+                    Object[] result = new Object [avs.length + shift + 1];
                     if (from < 1 && retValShift > 0) {
                         if (returnVariable != null) {
                             result[0] = returnVariable;
@@ -394,10 +416,13 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                             result[0] = "lastOperations"; // NOI18N
                         }
                     }
-                    if (from < 1 + retValShift) {
-                        result[retValShift] = new ThisVariable (debugger, thisR, "");
+                    if (from < 1 && currArgShift > 0) {
+                        result[retValShift] = "operationArguments " + currentOperation.getMethodName(); // NOI18N
                     }
-                    System.arraycopy (avs, 0, result, 1 + retValShift, avs.length);
+                    if (from < 1 + shift) {
+                        result[shift] = new ThisVariable (debugger, thisR, "");
+                    }
+                    System.arraycopy (avs, 0, result, 1 + shift, avs.length);
                     return result;
                 }            
             } catch (InternalException ex) {
@@ -406,13 +431,21 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         } // synchronized
     }
     
-    org.netbeans.api.debugger.jpda.LocalVariable[] getLocalVariables (
+    private org.netbeans.api.debugger.jpda.LocalVariable[] getLocalVariables (
         final CallStackFrameImpl    callStackFrame, 
         final StackFrame            stackFrame,
         int                         from,
         int                         to
-    ) throws AbsentInformationException {
-        org.netbeans.api.debugger.jpda.LocalVariable[] locals = callStackFrame.getLocalVariables();
+    ) {
+        org.netbeans.api.debugger.jpda.LocalVariable[] locals;
+        try {
+            locals = callStackFrame.getLocalVariables();
+        } catch (AbsentInformationException aiex) {
+            locals = callStackFrame.getMethodArguments();
+        }
+        if (locals == null) {
+            locals = new org.netbeans.api.debugger.jpda.LocalVariable[] {};
+        }
         int n = locals.length;
         to = Math.min(n, to);
         from = Math.min(n, from);

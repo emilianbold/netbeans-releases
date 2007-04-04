@@ -326,8 +326,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             vm.redefineClasses (map);
 
             // update breakpoints
-            Session s = (Session) 
-                lookupProvider.lookupFirst (null, Session.class);
+            Session s = getSession();
             DebuggerEngine de = s.getEngineForLanguage ("Java");
             BreakpointsEngineListener bel = null;
             List lazyListeners = de.lookup(null, LazyActionsManagerListener.class);
@@ -363,6 +362,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
             
         }
+    }
+    
+    public Session getSession() {
+        return (Session) lookupProvider.lookupFirst (null, Session.class);
     }
     
     private Boolean canBeModified;

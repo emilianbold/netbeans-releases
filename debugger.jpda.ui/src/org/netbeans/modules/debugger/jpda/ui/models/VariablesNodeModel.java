@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -65,6 +65,8 @@ public class VariablesNodeModel implements NodeModel {
         "org/netbeans/modules/debugger/resources/watchesView/SuperVariable";
     public static final String RETURN =
         "org/netbeans/modules/debugger/jpda/resources/Filter";
+    public static final String EXPR_ARGUMENTS =
+        "org/netbeans/modules/debugger/jpda/resources/ExprArguments";
 
     
     private JPDADebugger debugger;
@@ -108,6 +110,9 @@ public class VariablesNodeModel implements NodeModel {
         if (o == "lastOperations") { // NOI18N
             return NbBundle.getMessage(VariablesNodeModel.class, "lastOperationsNode");
         }
+        if (o instanceof String && ((String) o).startsWith("operationArguments ")) { // NOI18N
+            return NbBundle.getMessage(VariablesNodeModel.class, "operationArgumentsNode", ((String) o).substring("operationArguments ".length()));
+        }
         String str = o.toString();
         if (str.startsWith("SubArray")) { // NOI18N
             int index = str.indexOf('-');
@@ -141,6 +146,9 @@ public class VariablesNodeModel implements NodeModel {
         }
         if (o == "lastOperations") { // NOI18N
             return NbBundle.getMessage(VariablesNodeModel.class, "MSG_LastOperations_descr");
+        }
+        if (o instanceof String && ((String) o).startsWith("operationArguments ")) { // NOI18N
+            return NbBundle.getMessage(VariablesNodeModel.class, "operationArgumentsNode_descr", ((String) o).substring("operationArguments ".length()));
         }
         String str = o.toString();
         if (str.startsWith("SubArray")) { // NOI18N
@@ -243,6 +251,7 @@ public class VariablesNodeModel implements NodeModel {
         if (o == "NoInfo") return ; // NOI18N
         if (o == "No current thread") return ; // NOI18N
         if (o == "lastOperations") return ; // NOI18N
+        if (o instanceof String && ((String) o).startsWith("operationArguments ")) return ; // NOI18N
         if (o instanceof JPDAClassType) return ;
         if (o instanceof ClassVariable) return ;
         if (o instanceof ReturnVariable) return ;
@@ -272,6 +281,9 @@ public class VariablesNodeModel implements NodeModel {
         }
         if (o instanceof ReturnVariable || o == "lastOperations") {
             return RETURN;
+        }
+        if (o instanceof String && ((String) o).startsWith("operationArguments ")) { // NOI18N
+            return EXPR_ARGUMENTS;
         }
         if (o.toString().startsWith("SubArray")) // NOI18N
             return LOCAL;

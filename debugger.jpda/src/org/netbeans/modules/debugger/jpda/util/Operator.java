@@ -146,6 +146,7 @@ public class Operator {
                          }
                      }
                      boolean resume = true, startEventOnly = true;
+                     boolean silent = false;
                      int suspendPolicy = eventSet.suspendPolicy();
                      boolean suspendedAll = suspendPolicy == EventRequest.SUSPEND_ALL;
                      JPDAThreadImpl suspendedThread = null;
@@ -155,6 +156,7 @@ public class Operator {
                          ThreadReference tref = null;
                          while (i.hasNext ()) {
                             Event e = i.nextEvent ();
+                            silent = Boolean.TRUE.equals(e.request ().getProperty ("silent"));
                             if (e instanceof LocatableEvent) {
                                 tref = ((LocatableEvent) e).thread();
                                 break;
@@ -169,7 +171,7 @@ public class Operator {
                                 tref = ((ThreadDeathEvent) e).thread();
                             }
                          }
-                         if (tref != null) {
+                         if (tref != null && !silent) {
                             suspendedThread = ((JPDAThreadImpl) debugger.getThread(tref));
                             suspendedThread.notifySuspended();
                          }
@@ -257,18 +259,18 @@ public class Operator {
                          logger.fine("  resume = "+resume+", startEventOnly = "+startEventOnly);
                      }
                      if (resume && (!startEventOnly)) {
-                         if (suspendedAll) {
-                             //TODO: Not really all can be suspended!
+                         if (!silent && suspendedAll) {
+                             //TODO: Not really all might be suspended!
                              debugger.notifyToBeResumedAll();
                          }
-                         if (suspendedThread != null) {
+                         if (!silent && suspendedThread != null) {
                              suspendedThread.notifyToBeResumed();
                          }
                          synchronized (resumeLock) {
                             eventSet.resume ();
                          }
                      }
-                     if (!resume) { // Check for multiply-suspended threads
+                     if (!silent && !resume) { // Check for multiply-suspended threads
                          synchronized (resumeLock) {
                              List<ThreadReference> threads = eventSet.virtualMachine().allThreads();
                              for (ThreadReference t : threads) {

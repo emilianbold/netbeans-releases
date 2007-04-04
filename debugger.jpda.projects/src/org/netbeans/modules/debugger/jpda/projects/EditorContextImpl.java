@@ -729,7 +729,7 @@ public class EditorContextImpl extends EditorContext {
          */
     }
         
-    
+    @Override
     public Operation[] getOperations(String url, final int lineNumber,
                                      final BytecodeProvider bytecodeProvider) {
         DataObject dataObject = getDataObject (url);
@@ -891,6 +891,88 @@ public class EditorContextImpl extends EditorContext {
             return -1;
         }
         return offset;
+    }
+    
+    @Override
+    public MethodArgument[] getArguments(String url, final Operation operation) {
+        DataObject dataObject = getDataObject (url);
+        if (dataObject == null) return null;
+        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
+        if (js == null) return null;
+        final MethodArgument args[][] = new MethodArgument[1][];
+        try {
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                public void run(CompilationController ci) throws Exception {
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        return;
+                    }
+                    int offset = operation.getMethodEndPosition().getOffset();
+                    Scope scope = ci.getTreeUtilities().scopeFor(offset);
+                    Element method = scope.getEnclosingMethod();
+                    if (method == null) {
+                        return ;
+                    }
+                    Tree methodTree = SourceUtils.treeFor(ci, method);
+                    CompilationUnitTree cu = ci.getCompilationUnit();
+                    MethodArgumentsScanner scanner =
+                            new MethodArgumentsScanner(offset, cu, ci.getTrees().getSourcePositions(), true,
+                                                       new OperationCreationDelegateImpl());
+                    args[0] = methodTree.accept(scanner, null);
+                    args[0] = scanner.getArguments();
+                }
+            },true);
+        } catch (IOException ioex) {
+            ErrorManager.getDefault().notify(ioex);
+            return null;
+        }
+        return args[0];
+    }
+    
+    @Override
+    public MethodArgument[] getArguments(String url, final int methodLineNumber) {
+        DataObject dataObject = getDataObject (url);
+        if (dataObject == null) return null;
+        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
+        if (js == null) return null;
+        EditorCookie ec = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+        if (ec == null) return null;
+        final StyledDocument doc;
+        try {
+            doc = ec.openDocument();
+        } catch (IOException ex) {
+            return null;
+        }
+        final int offset = findLineOffset(doc, methodLineNumber);
+        final MethodArgument args[][] = new MethodArgument[1][];
+        try {
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                public void run(CompilationController ci) throws Exception {
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        return;
+                    }
+                    Scope scope = ci.getTreeUtilities().scopeFor(offset);
+                    Element clazz = scope.getEnclosingClass();
+                    if (clazz == null) {
+                        return ;
+                    }
+                    Tree methodTree = SourceUtils.treeFor(ci, clazz);
+                    CompilationUnitTree cu = ci.getCompilationUnit();
+                    MethodArgumentsScanner scanner =
+                            new MethodArgumentsScanner(methodLineNumber, cu, ci.getTrees().getSourcePositions(), false,
+                                                       new OperationCreationDelegateImpl());
+                    args[0] = methodTree.accept(scanner, null);
+                    args[0] = scanner.getArguments();
+                }
+            },true);
+        } catch (IOException ioex) {
+            ErrorManager.getDefault().notify(ioex);
+            return null;
+        }
+        return args[0];
     }
     
     /**
