@@ -38,6 +38,7 @@ public class ErrorPanel extends javax.swing.JPanel {
     public ErrorPanel(RefactoringUI ui) {
         this.ui = ui;
         initComponents();
+        headLine.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         setPreferredSize(new Dimension(510, 200));
     }
     
