@@ -15,13 +15,6 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * MapActionUtility.java
- *
- * Created on March 19, 2007, 5:03 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
@@ -36,7 +29,6 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
