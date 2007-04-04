@@ -22,23 +22,24 @@ package org.netbeans.modules.vmd.screen.device;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
-import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
-import org.netbeans.modules.vmd.screen.ScreenViewController;
 import org.netbeans.modules.vmd.screen.ScreenAccessController;
+import org.netbeans.modules.vmd.screen.ScreenViewController;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
-import java.util.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -49,19 +50,26 @@ public class TopPanel extends JPanel {
     private static final Color COLOR_SELECTION_FILL = new Color (0x74, 0x8C, 0xC0, 128);
     private static final Color COLOR_SELECTION_DRAW = Color.BLACK;
 
+    private static final Color COLOR_HOVER_FILL = new Color (0xB9, 0xDF, 0xC0, 128);
+    private static final Color COLOR_HOVER_DRAW = Color.BLACK;
+
     private static final Image IMAGE_INJECT = Utilities.loadImage ("org/netbeans/modules/vmd/screen/resources/inject.png"); // NOI18N
 
     private DevicePanel devicePanel;
+
     private List<SelectionShape> selectionShapes = Collections.emptyList ();
 
-    private JComponent editedComponent;
-    private ScreenPropertyEditor editedEditor;
+    private Point lastHoverPoint = null;
+    private SelectionShape hoverShape = null;
+
+//    private JComponent editedComponent;
+//    private ScreenPropertyEditor editedEditor;
 
     public TopPanel (DevicePanel devicePanel) {
         this.devicePanel = devicePanel;
         setOpaque (false);
         
-        addMouseListener (new MouseAdapter() {
+        addMouseListener (new MouseListener() {
             public void mouseClicked (MouseEvent e) {
                 select (e);
                 if (e.getButton () == MouseEvent.BUTTON1  &&  e.getClickCount () == 2)
@@ -81,11 +89,24 @@ public class TopPanel extends JPanel {
                 if (e.isPopupTrigger ())
                     popupMenu (e);
             }
+
+            public void mouseEntered (MouseEvent e) {
+                hover (e);
+            }
+
+            public void mouseExited (MouseEvent e) {
+                hover (e);
+            }
+
         });
 
-        addMouseMotionListener (new MouseMotionAdapter () {
+        addMouseMotionListener (new MouseMotionListener() {
+            public void mouseDragged (MouseEvent e) {
+                hover (e);
+            }
+
             public void mouseMoved (MouseEvent e) {
-//                hover (e);
+                hover (e);
             }
         });
 
@@ -139,6 +160,15 @@ public class TopPanel extends JPanel {
             gr.drawImage (IMAGE_INJECT, rectangle.x + rectangle.width - 20, rectangle.y - 8, null);
             gr.translate (- shape.x, - shape.y);
         }
+
+        if (hoverShape != null) {
+            gr.translate (hoverShape.x, hoverShape.y);
+            gr.setColor (COLOR_HOVER_FILL);
+            gr.fill (hoverShape.shape);
+            gr.setColor (COLOR_HOVER_DRAW);
+            gr.draw (hoverShape.shape);
+            gr.translate (- hoverShape.x, - hoverShape.y);
+        }
     }
 
     public void reload () {
@@ -176,6 +206,25 @@ public class TopPanel extends JPanel {
                 document.setSelectedComponents (ScreenViewController.SCREEN_ID, component != null ? Collections.singleton (component) : Collections.<DesignComponent>emptySet ());
             }
         });
+    }
+
+    public void hover (final MouseEvent e) {
+        lastHoverPoint = e != null ? e.getPoint () : null;
+        final DesignDocument document = devicePanel.getController ().getDocument ();
+        if (lastHoverPoint != null  &&  document != null)
+            document.getTransactionManager ().writeAccess (new Runnable() {
+                public void run () {
+                    DesignComponent component = devicePanel.getDesignComponentAt (lastHoverPoint);
+                    ScreenDisplayPresenter presenter = component != null ? component.getPresenter (ScreenDisplayPresenter.class) : null;
+                    Shape shape = presenter != null ? presenter.getSelectionShape () : null;
+                    if (shape != null) {
+                        Point point = devicePanel.calculateTranslation (presenter.getView ());
+                        hoverShape = new SelectionShape (point.x, point.y, shape);
+                    } else
+                        hoverShape = null;
+                }
+            });
+        repaint ();
     }
 
     public boolean isAcceptable (final Point point, final Transferable transferable) {
