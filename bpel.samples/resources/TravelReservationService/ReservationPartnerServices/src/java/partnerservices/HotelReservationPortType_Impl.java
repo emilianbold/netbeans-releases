@@ -32,8 +32,8 @@ public class HotelReservationPortType_Impl implements partnerservices.HotelReser
     public void reserveHotel(javax.xml.soap.SOAPElement itinerary) throws
             java.rmi.RemoteException {
         
-        System.err.println("Enter HotelReservationPortType_Impl.reserveHotel");
-        System.err.println("Itinerary as SOAPElement: " + itinerary.toString() );
+//        System.err.println("Enter HotelReservationPortType_Impl.reserveHotel");
+//        System.err.println("Itinerary as SOAPElement: " + itinerary.toString() );
         String uniqueID = PartnerUtils.getUniqueID(itinerary);
         
         PartnerUtils.sendJMSMessageToReservationCallbackProviderDestination(

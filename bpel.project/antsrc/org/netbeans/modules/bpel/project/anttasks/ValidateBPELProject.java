@@ -190,7 +190,7 @@ public class ValidateBPELProject extends Task {
     }
     
     public boolean isFoundErrors() {
-    	return this.isFoundErrors;
+        return this.isFoundErrors;
     }
     
     /**
@@ -391,10 +391,10 @@ public class ValidateBPELProject extends Task {
         }
         
         private void logValidationErrors(File bpelFile, ResultItem resultItem) {
-        	
+            
                 int lineNumber = 0;
-		int columnNumber = 0;
-		String errorDescription = resultItem.getDescription();
+        int columnNumber = 0;
+        String errorDescription = resultItem.getDescription();
                 String msgType = resultItem.getType().name();
             Component component = resultItem.getComponents();
             File file = null;
@@ -446,7 +446,7 @@ public class ValidateBPELProject extends Task {
             msg.append(errorDescription);
 
 
-            System.out.println(msg.toString());            
+//            System.out.println(msg.toString());            
         }
         
         private void loadAndValidateExistingBusinessProcess(File bpelFile) throws BuildException {
@@ -454,9 +454,9 @@ public class ValidateBPELProject extends Task {
                     validateBPEL(bpelFile);
   
                 } catch (Throwable ex) {
-                        System.out.println("Validation has errors on "+bpelFile.getAbsolutePath());
+//                        System.out.println("Validation has errors on "+bpelFile.getAbsolutePath());
                         logger.log(Level.SEVERE, "Validation has errors on "+bpelFile.getAbsolutePath() );
-                        System.out.println("Error Message - "+ ex.getMessage());
+//                        System.out.println("Error Message - "+ ex.getMessage());
                         
                         if ( ex.getMessage() != null) {
                             logger.severe( ex.getMessage());

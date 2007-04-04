@@ -85,8 +85,8 @@ public class ReservationCallbackProviderBean implements MessageDrivenBean, Messa
             messageType = mapMessage.getString(MESSAGE_TYPE);
             uniqueID = mapMessage.getString(UNIQUE_ID);
             
-            System.out.println("Enter ReservationCallbackProviderBean.onMessage "  +
-                    messageType + "   uniqueID=" + uniqueID);
+//            System.out.println("Enter ReservationCallbackProviderBean.onMessage "  +
+//                    messageType + "   uniqueID=" + uniqueID);
             
             String soapStr = "";
             URL cbURL = null;
@@ -105,7 +105,7 @@ public class ReservationCallbackProviderBean implements MessageDrivenBean, Messa
                 vehicleCallbackURL = (String) ic.lookup("java:comp/env/VehicleCallbackURL");
                 hotelCallbackURL = (String) ic.lookup("java:comp/env/HotelCallbackURL");
             } catch (NamingException ne) {
-                System.out.println("Error getting callback URL's. Using defaults. Error:" + ne);
+//                System.out.println("Error getting callback URL's. Using defaults. Error:" + ne);
             }
             
             
@@ -126,62 +126,62 @@ public class ReservationCallbackProviderBean implements MessageDrivenBean, Messa
                 
             } else {
                 
-                System.out.println("In ReservationCallbackProviderBean.onMessage "  +
-                        messageType + " UNEXPECTED");
+//                System.out.println("In ReservationCallbackProviderBean.onMessage "  +
+//                        messageType + " UNEXPECTED");
                 return;
             }
             
             
             soapStr = soapStr.replaceAll("ENTER_ID_HERE", uniqueID);
-            System.out.println("  --------------  soap string sent back ---------------");
-            System.out.println(soapStr);
-            System.out.println("  --------------  soap string sent back ---------------");
+//            System.out.println("  --------------  soap string sent back ---------------");
+//            System.out.println(soapStr);
+//            System.out.println("  --------------  soap string sent back ---------------");
             
             sendSOAPMsg(cbURL, soapStr);
-            System.out.println("Exit ReservationCallbackProviderBean.onMessage ");
+//            System.out.println("Exit ReservationCallbackProviderBean.onMessage ");
             
             
         } catch( javax.jms.JMSException  jmse) {
             
-            System.err.println("JMSException in ReservationCallbackProviderBean.onMessage"  +
-                    jmse);
+//            System.err.println("JMSException in ReservationCallbackProviderBean.onMessage"  +
+//                    jmse);
             jmse.printStackTrace();
         }
         
         catch( SOAPException  soapE) {
             
-            System.err.println("SOAPException in ReservationCallbackProviderBean.onMessage"  +
-                    soapE);
+//            System.err.println("SOAPException in ReservationCallbackProviderBean.onMessage"  +
+//                    soapE);
             soapE.printStackTrace();
         } catch( RemoteException  re) {
             
-            System.err.println("RemoteException in ReservationCallbackProviderBean.onMessage"  +
-                    re);
+//            System.err.println("RemoteException in ReservationCallbackProviderBean.onMessage"  +
+//                    re);
             re.printStackTrace();
         } catch( IOException  ioe) {
             
-            System.err.println("IOException in ReservationCallbackProviderBean.onMessage"  +
-                    ioe);
+//            System.err.println("IOException in ReservationCallbackProviderBean.onMessage"  +
+//                    ioe);
             ioe.printStackTrace();
         } catch( ParserConfigurationException  pce) {
             
-            System.err.println("ParserConfigurationException in ReservationCallbackProviderBean.onMessage"  +
-                    pce);
+//            System.err.println("ParserConfigurationException in ReservationCallbackProviderBean.onMessage"  +
+//                    pce);
             pce.printStackTrace();
         } catch( SAXException  saxe) {
             
-            System.err.println("SAXException in ReservationCallbackProviderBean.onMessage"  +
-                    saxe);
+//            System.err.println("SAXException in ReservationCallbackProviderBean.onMessage"  +
+//                    saxe);
             saxe.printStackTrace();
         } catch( TransformerConfigurationException  tce) {
             
-            System.err.println("TransformerConfigurationException in ReservationCallbackProviderBean.onMessage"  +
-                    tce);
+//            System.err.println("TransformerConfigurationException in ReservationCallbackProviderBean.onMessage"  +
+//                    tce);
             tce.printStackTrace();
         } catch( TransformerException  te) {
             
-            System.err.println("TransformerException in ReservationCallbackProviderBean.onMessage"  +
-                    te);
+//            System.err.println("TransformerException in ReservationCallbackProviderBean.onMessage"  +
+//                    te);
             te.printStackTrace();
         }
     }
@@ -227,7 +227,7 @@ public class ReservationCallbackProviderBean implements MessageDrivenBean, Messa
             urlC.setRequestProperty("Content-Type", "text/xml");
             urlC.setRequestMethod("POST");
             os = urlC.getOutputStream();
-            System.out.println("Callback TRACE - in sendSOAPMsg msg =[" + msg + "]");
+//            System.out.println("Callback TRACE - in sendSOAPMsg msg =[" + msg + "]");
             os.write(msg.getBytes());
             os.flush();
             urlC.getResponseMessage();
@@ -236,8 +236,8 @@ public class ReservationCallbackProviderBean implements MessageDrivenBean, Messa
         }
         
         catch(MalformedURLException e) {
-            System.err.println("MalformedURLException in ReservationCallbackProviderBean.sendSOAPMsg"  +
-                    e);
+//            System.err.println("MalformedURLException in ReservationCallbackProviderBean.sendSOAPMsg"  +
+//                    e);
             e.printStackTrace();
             
         } finally {
@@ -245,7 +245,7 @@ public class ReservationCallbackProviderBean implements MessageDrivenBean, Messa
                 if(os != null)
                     os.close();
             } catch(Exception e) {
-                System.err.println("sendSOAPMsg "  +  e);
+//                System.err.println("sendSOAPMsg "  +  e);
             }
         }
     }

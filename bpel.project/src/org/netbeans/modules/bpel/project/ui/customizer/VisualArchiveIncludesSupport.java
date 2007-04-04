@@ -366,7 +366,7 @@ final class VisualArchiveIncludesSupport {
     private void updateModels(String jar, String uuid, String desc, String cid) {
         for (int i = 0, size = classpathModel.getRowCount(); i < size; i++) {
             VisualClassPathItem vi = (VisualClassPathItem) classpathModel.getValueAt(i, 0);
-            System.out.println(vi);
+//            System.out.println(vi);
         } //tbd temp add
     }
     

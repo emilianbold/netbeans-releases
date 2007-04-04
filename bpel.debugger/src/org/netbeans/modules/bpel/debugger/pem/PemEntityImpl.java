@@ -108,7 +108,7 @@ public abstract class PemEntityImpl implements PemEntity {
             //TODO:ugly hack for the runtime bug - make sure that if child is started
             //then it's parent is also started
             if (getState() == State.UNKNOWN && newState == State.STARTED) {
-                System.out.println("Have not received STARTED event for " + getPsmEntity().getXpath());
+//                System.out.println("Have not received STARTED event for " + getPsmEntity().getXpath());
                 setState(State.STARTED);
             }
             //end of hack

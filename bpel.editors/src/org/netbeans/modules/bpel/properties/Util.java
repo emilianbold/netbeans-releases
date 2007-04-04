@@ -385,7 +385,7 @@ public class Util {
         }
         propAliasQuery = propAlias.getQuery();
         if (propAliasQuery != null) {
-            System.out.println("propAliasQuery.setContent(queryValue) ");
+//            System.out.println("propAliasQuery.setContent(queryValue) ");
             propAliasQuery.setContent(queryValue);
         }
     }

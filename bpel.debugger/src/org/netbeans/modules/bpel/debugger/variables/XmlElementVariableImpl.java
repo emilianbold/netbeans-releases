@@ -53,9 +53,9 @@ public class XmlElementVariableImpl extends VariableSupport implements XmlElemen
                     myValue = new XmlElementValueImpl(element, this);
                 } else {
                     //TODO:handle this properly
-                    System.out.println("Was expecting an xml value for variable " +
-                            getName() + ", but couldn't parse the value: " +
-                            valueAsString);
+//                    System.out.println("Was expecting an xml value for variable " +
+//                            getName() + ", but couldn't parse the value: " +
+//                            valueAsString);
                 }
             }
         }

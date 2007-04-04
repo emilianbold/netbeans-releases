@@ -155,7 +155,7 @@ public class ProcessInstanceImpl implements ProcessInstance {
                     String varName = engineVarNames[i];
                     BPELVariable engineVar = engine.getVariable(varName);
                     if (engineVar == null) {
-                        System.out.println("engineVar is null for variable " + varName);
+//                        System.out.println("engineVar is null for variable " + varName);
                         continue;
                     }
                     if (engineVar.isWSDLMessage()) {

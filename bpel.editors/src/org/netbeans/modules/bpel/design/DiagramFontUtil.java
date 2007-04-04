@@ -56,7 +56,7 @@ public class DiagramFontUtil {
        
         //BAD HACK. I dont know how to determine
         if (multibyteLocales.contains(Locale.getDefault())){
-            System.out.println("changin font");
+//            System.out.println("changin font");
             font = new Font("sansserif", 
                     font.getStyle(),
                     font.getSize());

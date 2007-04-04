@@ -32,8 +32,8 @@ public class VehicleReservationPortType_Impl implements partnerservices.VehicleR
     public void reserveVehicle(javax.xml.soap.SOAPElement itinerary) throws
             java.rmi.RemoteException {
         
-        System.err.println("Enter VehicleReservationPortType_Impl.reserveVehicle");
-        System.err.println("Itinerary as SOAPElement: " + itinerary.toString() );        
+//        System.err.println("Enter VehicleReservationPortType_Impl.reserveVehicle");
+//        System.err.println("Itinerary as SOAPElement: " + itinerary.toString() );        
         String uniqueID = PartnerUtils.getUniqueID(itinerary);
         PartnerUtils.sendJMSMessageToReservationCallbackProviderDestination(
                 ReservationCallbackProviderBean.VEHICLE_RESERVATION, uniqueID);

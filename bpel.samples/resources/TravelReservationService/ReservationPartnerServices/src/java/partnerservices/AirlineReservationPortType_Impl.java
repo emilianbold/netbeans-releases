@@ -32,15 +32,15 @@ public class AirlineReservationPortType_Impl implements partnerservices.AirlineR
     public void reserveAirline(javax.xml.soap.SOAPElement itinerary) throws
             java.rmi.RemoteException {
         
-        System.err.println("Enter AirlineReservationPortType_Impl.reserveAirline");
-        System.err.println("Itinerary as SOAPElement: " + itinerary.toString() );
+//        System.err.println("Enter AirlineReservationPortType_Impl.reserveAirline");
+//        System.err.println("Itinerary as SOAPElement: " + itinerary.toString() );
         
         String uniqueID = PartnerUtils.getUniqueID(itinerary);
         
         PartnerUtils.sendJMSMessageToReservationCallbackProviderDestination(
                 ReservationCallbackProviderBean.AIRLINE_RESERVATION, uniqueID);
         
-        System.err.println("AirlineReservationPortType_Impl.reserveAirline after sendJMS");
+//        System.err.println("AirlineReservationPortType_Impl.reserveAirline after sendJMS");
         
     }
     

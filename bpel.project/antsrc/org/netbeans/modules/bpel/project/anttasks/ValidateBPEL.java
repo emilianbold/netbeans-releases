@@ -71,7 +71,7 @@ public class ValidateBPEL {
         //Collection col = validation.getValidationResult();
         for (Iterator itr = col.iterator(); itr.hasNext();) {
            ResultItem resultItem = (ResultItem) itr.next();
-           System.out.println(resultItem.getDescription());
+//           System.out.println(resultItem.getDescription());
         }
         return col;
     }

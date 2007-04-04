@@ -241,9 +241,9 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                 if (newPsmEntity == null) {
                     //reached a root and still didn't found appropriate parent?
                     //weired...
-                    System.out.println("Couldn't find parent entity for " +
-                            pemChild.getPsmEntity().getTag() + "(" +
-                            pemChild.getPsmEntity().getName() + ")");
+//                    System.out.println("Couldn't find parent entity for " +
+//                            pemChild.getPsmEntity().getTag() + "(" +
+//                            pemChild.getPsmEntity().getName() + ")");
                     return null;
                 }
                 PemEntityImpl newPemEntity = createEntity(newPsmEntity, myId, false);
@@ -267,9 +267,9 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
             if (parent != null) {
                 parent.addChild(pemEventHandlers);
             } else {
-                System.out.println("Couldn't find parent entity for " +
-                        pemEventHandlers.getPsmEntity().getTag() + "(" +
-                        pemEventHandlers.getPsmEntity().getName() + ")");
+//                System.out.println("Couldn't find parent entity for " +
+//                        pemEventHandlers.getPsmEntity().getTag() + "(" +
+//                        pemEventHandlers.getPsmEntity().getName() + ")");
             }
         }
         
@@ -281,7 +281,7 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                 //TODO:ugly hack to workaround a bug in the runtime -
                 //ingore duplicated STARTED events
                 if (pemParent.getPsmEntity() == psmEntity) {
-                    System.out.println("Duplicated STARTED event received for " + psmEntity.getXpath());
+//                    System.out.println("Duplicated STARTED event received for " + psmEntity.getXpath());
                     return;
                 }
                 //end of hack
@@ -371,9 +371,9 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                     return;
                 }
             }
-            System.out.println("Received 'Activity completed' event for " +
-                    psmEntity.getTag() + "(" + psmEntity.getName() + ") in frame " +
-                    myId + ", but it doesn't seem to be running");
+//            System.out.println("Received 'Activity completed' event for " +
+//                    psmEntity.getTag() + "(" + psmEntity.getName() + ") in frame " +
+//                    myId + ", but it doesn't seem to be running");
         }
         
         public Branch getParent() {

@@ -132,7 +132,7 @@ public class MoveUpBpelEntityAction extends BpelNodeAction {
         if (parent == null) {
             return;
         }
-        System.out.println("moveUpEntity - try to perform action...; ");
+//        System.out.println("moveUpEntity - try to perform action...; ");
 
         
         Callable performActionCall =  new Callable<Object> () {

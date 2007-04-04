@@ -39,7 +39,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class BpelAntLogger extends AntLogger {
 
-	public boolean interestedInSession(AntSession session) {
+    public boolean interestedInSession(AntSession session) {
         // Even if the initiating project is not a J2SEProject, suppress these messages.
         // However disable our tricks when running at VERBOSE or higher.
         return session.getVerbosity() <= AntEvent.LOG_INFO;
@@ -99,7 +99,7 @@ public class BpelAntLogger extends AntLogger {
             }
         }
         
-        System.out.println("BpelAntLogger "+ event.getMessage());
+//        System.out.println("BpelAntLogger "+ event.getMessage());
     }
 
     public void messageLogged(AntEvent event) {

@@ -522,7 +522,6 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     private void debugKeySet() {
         for( Iterator it = names2nodes.keySet().iterator(); it.hasNext(); ) {
             String k = (String)it.next();
-            System.out.println( "    " + k + " -> " +  names2nodes.get( k ) );
         }
     }
      */

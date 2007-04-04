@@ -100,8 +100,8 @@ public class PartnerUtils {
                 }
             }        
         } catch (Exception ex) {
-            System.out.println("Error in PartnerServices. Input itinerary is not +" +
-                    " as expected. Error retrieving the UniqueID" + ex);  // NOI18N
+//            System.out.println("Error in PartnerServices. Input itinerary is not +" +
+//                    " as expected. Error retrieving the UniqueID" + ex);  // NOI18N
         }
         return uniqueID;
         

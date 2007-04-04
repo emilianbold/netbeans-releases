@@ -1292,7 +1292,7 @@ public class DesignView extends JPanel implements
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent event) {
-            System.out.println("ExpandCurrentPatternAction");
+//            System.out.println("ExpandCurrentPatternAction");
             Pattern pattern = getSelectionModel().getSelectedPattern();
             if (pattern == null) return;
             if (!(pattern instanceof CollapsedPattern)) return;
@@ -1308,7 +1308,7 @@ public class DesignView extends JPanel implements
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent event) {
-            System.out.println("CollapseCurrentPatternAction");
+//            System.out.println("CollapseCurrentPatternAction");
             Pattern pattern = getSelectionModel().getSelectedPattern();
             if (pattern == null) return;
             if (pattern instanceof CollapsedPattern) return;

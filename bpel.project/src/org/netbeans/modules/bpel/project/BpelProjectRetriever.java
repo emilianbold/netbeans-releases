@@ -471,7 +471,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                            }
                        }
                    } else {
-                       System.out.println(" ALREADY DOWNLOADED!!"+importLocationLowerCase);
+//                       System.out.println(" ALREADY DOWNLOADED!!"+importLocationLowerCase);
                    }
                }
 
@@ -534,7 +534,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                                }
                            }
                        } else {
-                           System.out.println(" ALREADY DOWNLOADED!!"+importLocationLowerCase);
+//                           System.out.println(" ALREADY DOWNLOADED!!"+importLocationLowerCase);
                        }
                    }
                }
@@ -598,7 +598,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                        }
                    }
                }    else {
-                       System.out.println(" ALREADY DOWNLOADED!!"+importLocationLowerCase);
+//                       System.out.println(" ALREADY DOWNLOADED!!"+importLocationLowerCase);
                    }
            }
 
@@ -689,7 +689,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                                }
                            }
                    }    else {
-                           System.out.println(" ALREADY DOWNLOADED!!"+importLocationLowerCase);
+//                           System.out.println(" ALREADY DOWNLOADED!!"+importLocationLowerCase);
                        }
 
                }
