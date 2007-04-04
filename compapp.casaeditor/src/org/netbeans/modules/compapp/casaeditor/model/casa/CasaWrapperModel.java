@@ -96,7 +96,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_REMOVED = PROPERTY_PREFIX + "service_unit_removed"; // NOI18N
     
     private static final String CASA_WSDL_RELATIVE_LOCATION = "../jbiasa/";     // NOI18N
-    private static final String CASA_WSDL_FILENAME = "casa.wsdl";               // NOI18N
+//    private static final String CASA_WSDL_FILENAME = "casa.wsdl";               // NOI18N
     private static final String JBI_SERVICE_UNITS_DIR = "jbiServiceUnits";      // NOI18N
     private static final String DUMMY_PORTTYPE_NAME = "dummyCasaPortType";      // NOI18N
            
@@ -1083,7 +1083,7 @@ public class CasaWrapperModel extends CasaModelImpl {
      */
     public CasaPort addCasaPort(String componentName, int x, int y) {
         
-        // 1. Update casa.wsdl
+        // 1. Update casa wsdl
         WSDLModel casaWSDLModel = getCasaWSDLModel(true); 
         WSDLComponentFactory wsdlFactory = casaWSDLModel.getFactory();
         Definitions definitions = casaWSDLModel.getDefinitions();
@@ -1120,12 +1120,24 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         }
         
-        String portHref = CASA_WSDL_RELATIVE_LOCATION + CASA_WSDL_FILENAME +
+        String casaWSDLFileName = getCasaWSDLFileName();
+        String portHref = CASA_WSDL_RELATIVE_LOCATION + casaWSDLFileName +
                 "#xpointer(/definitions/service[@name='" + // NOI18N
                 newServiceName + "']/port[@name='" + newPortName + "'])"; // NOI18N
                 
         return addCasaPortToModel(componentName, 
                  newServiceName, newPortName, portHref, null, x, y);
+    }
+    
+    private String getCasaWSDLFileName() {
+        try {
+            Project jbiProject = getJBIProject();
+            return JbiProjectHelper.getJbiProjectName(jbiProject) + ".wsdl"; // NOI18N
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        
+        return null;
     }
     
     private JbiBindingInfo getBindingInfo(final Port port) {
@@ -1303,7 +1315,7 @@ public class CasaWrapperModel extends CasaModelImpl {
      * side effect. 
      *
      * If the casa port is defined in compapp, then the corresponding WSDL port 
-     * and binding in casa.wsdl are cleaned up.
+     * and binding in casa wsdl are cleaned up.
      *
      * @param casaPort          a casa port
      */
@@ -1359,13 +1371,13 @@ public class CasaWrapperModel extends CasaModelImpl {
             // 3. Delete dangling endpoint
             removeDanglingEndpoint(endpoint);
             
-            // 4. Clean up casa.wsdl
+            // 4. Clean up casa wsdl
             // Added invokeLater to fix a IllegalStateException from WSDL UI
             // temporarily.
             // To reproduce the problem:
             // (1) Use SynchSample
             // (2) Open CASA editor
-            // (3) Open casa.wsdl (this is the key step)
+            // (3) Open casa wsdl (this is the key step)
             // (4) Drop a WSDL port into CASA
             // (5) Make a connection from the WSDL port to BPEL SU's endpoint
             // (6) Delete the dropped WSDL port
@@ -1465,7 +1477,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         boolean endpointRemoved = removeDanglingEndpoint(endpoint);
         
         // Delete the corresponding Port, Binding and possibly Service element
-        // from casa.wsdl if applicable.
+        // from casa wsdl if applicable.
         if (endpointRemoved && casaPort != null && isDefinedInCompApp(casaPort)) {
             Port port = getLinkedWSDLPort(casaPort);
             
@@ -1648,7 +1660,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         
         List<DataObject> ret = new ArrayList<DataObject>();
         
-        // Get casa.wsdl
+        // Get casa wsdl
         WSDLModel casaWsdlModel = getCasaWSDLModel(false);
         if (casaWsdlModel != null) {
             DataObject dataObject = getDataObject(casaWsdlModel);
@@ -2079,13 +2091,15 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     private WSDLModel getCasaWSDLModel(boolean create) {
+        String casaWSDLFileName = getCasaWSDLFileName();
+        
         ModelSource modelSource = getModelSource();
         Lookup lookup = modelSource.getLookup();
         CatalogModel catalogModel = (CatalogModel) lookup.lookup(CatalogModel.class);
         FileObject fo = (FileObject) lookup.lookup(FileObject.class);
         URI uri = null;
         try {
-            uri = new URI(CASA_WSDL_RELATIVE_LOCATION + CASA_WSDL_FILENAME);
+            uri = new URI(CASA_WSDL_RELATIVE_LOCATION + casaWSDLFileName);
         } catch (URISyntaxException ex) {
             ex.printStackTrace();
         }
@@ -2100,7 +2114,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         if (wsdlModelSource == null && create) {
             FileObject casaWSDLDirFO = 
                     fo.getParent().getParent().getFileObject("jbiasa"); // NOI18N
-            File file = new File(FileUtil.toFile(casaWSDLDirFO), CASA_WSDL_FILENAME);
+            File file = new File(FileUtil.toFile(casaWSDLDirFO), casaWSDLFileName);
             createEmptyCasaWSDLFile(file);
             FileObject fileObject = FileUtil.toFileObject(file);
             // try again
@@ -2278,7 +2292,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                 // For WSDL port, we need to check both consumes and provides.
                 CasaPort casaPort = getCasaPort(endpointRef);
                 // Do not allow interface qname to be editable for wsdl port.
-                // This is to avoid problem updating casa.wsdl. Interface qname 
+                // This is to avoid problem updating casa wsdl. Interface qname 
                 // will be set automatically when connection is made.
                 if (casaPort != null 
                         /*&& getConnections(casaPort, false).size() > 0*/) {
@@ -2293,7 +2307,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     private boolean isDefinedInCompApp(final CasaPort casaPort) {
         CasaLink link = casaPort.getLink();
         String linkHref = link.getHref();
-        return linkHref.startsWith("../jbiasa/casa.wsdl#xpointer");
+        return linkHref.startsWith("../jbiasa/" + getCasaWSDLFileName() + "#xpointer");
     }
     
     /**
@@ -2338,7 +2352,7 @@ public class CasaWrapperModel extends CasaModelImpl {
      * To keep model integrity, the following side effects of this change 
      * could occur, if applicable: 
      * <UL>
-     * <LI> The name of the corresponding WSDL port in WSDL file (casa.wsdl) 
+     * <LI> The name of the corresponding WSDL port in WSDL file (casa wsdl) 
      * is updated;
      * <LI> The containing casa port's link href is updated.
      * </UL>
@@ -2362,8 +2376,8 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         }
         
-        // If the corresponding port is defined in casa.wsdl, 
-        // update the port name in casa.wsdl and also the xlink in casa.
+        // If the corresponding port is defined in casa wsdl, 
+        // update the port name in casa wsdl and also the xlink in casa.
         CasaPort casaPort = null;
         if (component instanceof CasaPort) {
             casaPort = (CasaPort) component;
@@ -2372,7 +2386,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
         if (casaPort != null) {
             Port port = getLinkedWSDLPort(casaPort);
-            // The port must be defined in casa.wsdl because otherwise 
+            // The port must be defined in casa wsdl because otherwise 
             // the endpoint is not editable.
             WSDLModel casaWSDLModel = port.getModel();
             casaWSDLModel.startTransaction();
@@ -2402,7 +2416,7 @@ public class CasaWrapperModel extends CasaModelImpl {
       
     /**
      * Sets the interface qname of an endpoint. Updates the corresponding WSDL
-     * Port, Binding and PortType if the endpoint is defined in casa.wsdl.
+     * Port, Binding and PortType if the endpoint is defined in casa wsdl.
      * This interface change might need to be cascadee to other connected 
      * endpoints.
      */
@@ -2425,11 +2439,11 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         }
         
-        // 2. Update casa.wsdl and casacade the interface change, if applicable.
+        // 2. Update casa wsdl and casacade the interface change, if applicable.
         CasaPort casaPort = getCasaPort(endpointRef);
         if (casaPort != null) {
             if (interfaceQName == null || interfaceQName.equals(new QName(""))) { // NOI18N
-                // Here we also need to clean up casa.wsdl:
+                // Here we also need to clean up casa wsdl:
                 Port port = getLinkedWSDLPort(casaPort);
                 WSDLModel casaWSDLModel = port.getModel();
                 casaWSDLModel.startTransaction();
