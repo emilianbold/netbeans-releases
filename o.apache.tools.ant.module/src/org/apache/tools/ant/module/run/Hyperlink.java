@@ -125,9 +125,9 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                         if (!line.isDeleted()) {
                             attachAsNeeded(line);
                             if (col1 == -1) {
-                                line.show(Line.SHOW_GOTO);
+                                line.show(Line.SHOW_REUSE);
                             } else {
-                                line.show(Line.SHOW_GOTO, col1 - 1);
+                                line.show(Line.SHOW_REUSE, col1 - 1);
                             }
                         }
                     } catch (IndexOutOfBoundsException ioobe) {

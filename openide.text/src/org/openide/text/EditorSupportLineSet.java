@@ -89,7 +89,9 @@ final class EditorSupportLineSet extends DocumentLine.Set {
                 editor = support.openAt(pos, column);
                 if (kind == SHOW_TOFRONT) editor.getComponent().toFront();
             }
-            editor.getComponent().requestActive();
+            if (kind != SHOW_TRY_SHOW) {
+                editor.getComponent().requestActive();
+            }
         }
 
         /** This method will be used for annotation of part of the text on the line.*/
