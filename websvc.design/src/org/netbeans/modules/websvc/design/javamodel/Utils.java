@@ -20,6 +20,7 @@
 package org.netbeans.modules.websvc.design.javamodel;
 
 import com.sun.javadoc.Doc;
+import com.sun.javadoc.Tag;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ArrayList;
@@ -226,7 +227,40 @@ public class Utils {
         
         // populate javadoc
         Doc javadoc = controller.getElementUtilities().javaDocFor(methodEl);
-        if (javadoc!=null) methodModel.setJavadoc(javadoc.getRawCommentText());
+        if (javadoc!=null) {
+            //methodModel.setJavadoc(javadoc.getRawCommentText());
+            JavadocModel javadocModel = new JavadocModel(javadoc.getRawCommentText());
+            // @param part
+            Tag[] paramTags = javadoc.tags("@param"); //NOI18N
+            List<String> paramJavadoc = new ArrayList<String>();
+            for (Tag paramTag:paramTags) {
+                paramJavadoc.add(paramTag.text());
+            }
+            javadocModel.setParamJavadoc(paramJavadoc);
+            
+            // @return part
+            Tag[] returnTags = javadoc.tags("@return"); //NOI18N
+            if (returnTags.length>0) {
+                javadocModel.setReturnJavadoc(returnTags[0].text());
+            }
+            // @throws part
+            Tag[] throwsTags = javadoc.tags("@throws"); //NOI18N
+            List<String> throwsJavadoc = new ArrayList<String>();
+            for (Tag throwsTag:throwsTags) {
+                throwsJavadoc.add(throwsTag.text());
+            }
+            javadocModel.setThrowsJavadoc(throwsJavadoc); 
+            
+            // rest part
+            Tag[] inlineTags = javadoc.inlineTags(); //NOI18N
+            List<String> inlineJavadoc = new ArrayList<String>();
+            for (Tag inlineTag:inlineTags) {
+                throwsJavadoc.add(inlineTag.text());
+            }
+            javadocModel.setInlineJavadoc(inlineJavadoc);
+            methodModel.setJavadoc(javadocModel);
+        }
+        
 
         // populate params
         List<? extends VariableElement> paramElements = methodEl.getParameters();
