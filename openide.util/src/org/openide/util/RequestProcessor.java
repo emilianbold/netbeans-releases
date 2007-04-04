@@ -20,7 +20,6 @@
 package org.openide.util;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -321,10 +320,9 @@ public final class RequestProcessor {
         synchronized (processorLock) {
             stopped = true;
 
-            Iterator it = processors.iterator();
-
-            while (it.hasNext())
-                ((Processor) it.next()).interrupt();
+            for (Processor p : processors) {
+                p.interrupt();
+            }
         }
     }
 
@@ -632,12 +630,15 @@ public final class RequestProcessor {
         }
 
         /** Current priority of the task.
-        */
+        * @return the priority level (see e.g. {@link Thread#NORM_PRIORITY}
+         */
         public int getPriority() {
             return priority;
         }
 
-        /** Changes the priority the task will be performed with. */
+        /** Changes the priority the task will be performed with. 
+         * @param priority the priority level (see e.g. {@link Thread#NORM_PRIORITY}
+         */
         public void setPriority(int priority) {
             if (this.priority == priority) {
                 return;
