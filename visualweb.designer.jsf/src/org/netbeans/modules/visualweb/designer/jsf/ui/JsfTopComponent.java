@@ -2176,5 +2176,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     public void nodeRemoved(org.w3c.dom.Node node, org.w3c.dom.Node parent) {
         designer.removeNode(node, parent);
     }
+    
+    public void nodeInserted(org.w3c.dom.Node node, org.w3c.dom.Node parent) {
+        designer.insertNode(node, parent);
+    }
     // JSF notifications <<<
 }

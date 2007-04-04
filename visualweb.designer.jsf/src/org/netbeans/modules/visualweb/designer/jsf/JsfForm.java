@@ -598,7 +598,8 @@ public class JsfForm {
     
     void nodeInserted(Node rendered, Node parent) {
 //        designer.nodeInserted(rendered, parent);
-        fireNodeInserted(rendered, parent);
+//        fireNodeInserted(rendered, parent);
+        notifyViewsNodeInserted(rendered, parent);
     }
     
     void updateErrorsInComponent() {
@@ -928,10 +929,16 @@ public class JsfForm {
         }
     }
 
-    private void fireNodeInserted(Node rendered, Node parent) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.nodeInserted(rendered, parent);
+//    private void fireNodeInserted(Node rendered, Node parent) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.nodeInserted(rendered, parent);
+//        }
+//    }
+    private void notifyViewsNodeInserted(Node node, Node parent) {
+        JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.nodeInserted(node, parent);
         }
     }
 

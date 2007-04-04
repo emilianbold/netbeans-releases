@@ -142,6 +142,10 @@ public class JsfMultiViewElement implements MultiViewElement {
     public void nodeRemoved(Node node, Node parent) {
         jsfTopComponent.nodeRemoved(node, parent);
     }
+    
+    public void nodeInserted(Node node, Node parent) {
+        jsfTopComponent.nodeInserted(node, parent);
+    }
     // JSF notifications <<<
             
 }
