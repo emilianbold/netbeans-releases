@@ -56,6 +56,8 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
+import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.designer.jsf.ui.ErrorPanelImpl;
 import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
 import org.netbeans.modules.visualweb.designer.jsf.ui.NotAvailableMultiViewElement;
@@ -1574,11 +1576,38 @@ public class JsfForm {
     }
     
     public void dumpHtmlMarkupForNode(org.openide.nodes.Node node) {
-        htmlDomProvider.dumpHtmlMarkupForNode(node);
+//        htmlDomProvider.dumpHtmlMarkupForNode(node);
+        DesignBean designBean = (DesignBean)node.getLookup().lookup(DesignBean.class);
+        if (designBean instanceof MarkupDesignBean) {
+            MarkupDesignBean markupDesignBean = (MarkupDesignBean)designBean;
+            Element sourceElement = markupDesignBean.getElement();
+            Element renderedElement = MarkupService.getRenderedElementForElement(sourceElement);
+            if (renderedElement == null || sourceElement == renderedElement) {
+                System.err.println("\nMarkup design bean not renderable, markup design bean=" + markupDesignBean); // NOI18N
+                dumpHtmlMarkupDesignBeanHtml();
+                return;
+            }
+            System.err.println("\nRendered markup design bean=" + markupDesignBean); // NOI18N
+            System.err.println(Util.getHtmlStream(renderedElement));
+        } else {
+            System.err.println("\nDesign bean not renderable, design bean=" + designBean); // NOI18N
+            dumpHtmlMarkupDesignBeanHtml();
+        }
     }
     
+    private void dumpHtmlMarkupDesignBeanHtml() {
+        DocumentFragment df = getHtmlDomFragment();
+        Element html = Util.findDescendant(HtmlTag.HTML.name, df);
+        if (html == null) {
+            return;
+        }
+        System.err.println("\nRendered html element markup design bean=" + MarkupUnit.getMarkupDesignBeanForElement(html)); // NOI18N
+        System.err.println(Util.getHtmlStream(html)); // NOI18N
+    }
+   
     public DocumentFragment getHtmlDomFragment() {
-        return htmlDomProvider.getHtmlDocumentFragment();
+//        return htmlDomProvider.getHtmlDocumentFragment();
+        return getFacesModel().getHtmlDomFragment();
     }
     
     public Element getDefaultParentComponent() {

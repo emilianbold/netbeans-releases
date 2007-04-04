@@ -2103,9 +2103,9 @@ public class WebForm implements Designer {
         return htmlDomProvider.createInlineEditorSupport(componentRootElement, propertyName);
     }
 
-    void dumpHtmlMarkupForNode(org.openide.nodes.Node node) {
-        htmlDomProvider.dumpHtmlMarkupForNode(node);
-    }
+//    void dumpHtmlMarkupForNode(org.openide.nodes.Node node) {
+//        htmlDomProvider.dumpHtmlMarkupForNode(node);
+//    }
 
     boolean canPasteTransferable(Transferable trans) {
         return htmlDomProvider.canPasteTransferable(trans);
