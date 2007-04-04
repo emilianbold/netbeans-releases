@@ -27,6 +27,7 @@ import java.io.Reader;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import javax.script.Bindings;
 import javax.script.ScriptContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -43,10 +44,12 @@ import org.openide.util.Exceptions;
 final class RsrcLoader extends Configuration implements TemplateLoader {
     private FileObject fo;
     private ScriptContext map;
+    private Bindings engineScope;
 
     RsrcLoader(FileObject fo, ScriptContext map) {
         this.fo = fo;
         this.map = map;
+        this.engineScope = map.getBindings(ScriptContext.ENGINE_SCOPE);
         setTemplateLoader(this);
     }
 
@@ -95,8 +98,11 @@ final class RsrcLoader extends Configuration implements TemplateLoader {
     }
 
     public TemplateModel getSharedVariable(String string) {
-        Object value = map == null ? null : map.getAttribute(string);
-        if (value == null || fo != null) {
+        Object value = map.getAttribute(string);
+        if (value == null) {
+            value = engineScope.get(string);
+        }
+        if (value == null && fo != null) {
             value = fo.getAttribute(string);
         }
         try {

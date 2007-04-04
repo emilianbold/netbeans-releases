@@ -71,11 +71,10 @@ class FreemarkerEngine extends AbstractScriptEngine {
         } else {
             out = ctx.getWriter();
         }
-        Bindings engineScope = ctx.getBindings(ScriptContext.ENGINE_SCOPE);
 
         try {
             Template template = new Template(fileName, reader, conf);
-            template.process(engineScope, out);
+            template.process(null, out);
             out.flush();
         } catch (Exception exp) {
             throw new ScriptException(exp);

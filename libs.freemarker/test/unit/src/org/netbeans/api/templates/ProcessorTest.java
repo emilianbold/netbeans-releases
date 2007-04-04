@@ -15,6 +15,7 @@
 */
 package org.netbeans.api.templates;
 
+import freemarker.ext.beans.BeansWrapper;
 import java.awt.Color;
 import java.awt.Panel;
 import java.io.IOException;
@@ -250,7 +251,24 @@ public class ProcessorTest extends TestCase {
                      "# Second Line\n";
         assertEquals(exp, w.toString());
     }
-    public void testMissingClassInfo() throws Exception {
+    public void testShowItIsPossibleToPassInBeansWrappedObject() throws Exception {
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject fo = FileUtil.createData(root, "simpleObject.txt");
+        OutputStream os = fo.getOutputStream();
+        String txt = "<#if (classInfo.getMethods().size() > 0) >The size is greater than 0.</#if>";
+        os.write(txt.getBytes());
+        os.close();       
+        
+        
+        StringWriter w = new StringWriter();
+                        
+        Map<String,Object> parameters = Collections.<String,Object>singletonMap(
+            "classInfo", BeansWrapper.getDefaultInstance().wrap(new ClassInfo())
+        );
+        apply(fo, w, parameters);
+        assertEquals("The size is greater than 0.", w.toString());
+    }
+    public void testMissingClassInfoSimple() throws Exception {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
         OutputStream os = fo.getOutputStream();
@@ -258,7 +276,6 @@ public class ProcessorTest extends TestCase {
         String txt = "<#if (classInfo.getMethodsCount() > 0) >The size is greater than 0.</#if>";
         os.write(txt.getBytes());
         os.close();       
-        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
         
         
         StringWriter w = new StringWriter();
