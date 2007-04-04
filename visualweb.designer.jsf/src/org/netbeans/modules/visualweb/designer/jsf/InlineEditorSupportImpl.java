@@ -28,7 +28,6 @@ import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.insync.faces.Entities;
-import org.netbeans.modules.visualweb.insync.live.DesignBeanNode;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.openide.ErrorManager;
 import org.w3c.dom.DocumentFragment;
@@ -45,12 +44,15 @@ import org.w3c.dom.events.Event;
  */
 class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
 
+    private final JsfForm jsfForm;
+    // XXX TODO Remove ref to htmlDomProviderImpl.
     private final HtmlDomProviderImpl htmlDomProviderImpl;
     private final MarkupDesignBean markupDesignBean;
     private final DesignProperty   designProperty;
     
     /** Creates a new instance of InlineEditorSupportImpl */
-    public InlineEditorSupportImpl(HtmlDomProviderImpl htmlDomProviderImpl, MarkupDesignBean markupDesignBean, DesignProperty designProperty) {
+    public InlineEditorSupportImpl(JsfForm jsfForm, HtmlDomProviderImpl htmlDomProviderImpl, MarkupDesignBean markupDesignBean, DesignProperty designProperty) {
+        this.jsfForm = jsfForm;
         this.htmlDomProviderImpl = htmlDomProviderImpl;
         this.markupDesignBean = markupDesignBean;
         this.designProperty = designProperty;
@@ -226,6 +228,11 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
         DocumentFragment fragment = htmlDomProviderImpl.renderHtmlForMarkupDesignBean(markupDesignBean);
         // XXX To get it into source document so it can work (Positions work only against source doc!).
         // TODO Change the positions to work over the rendered document, and also attach this fragment to the rendered doc.
-        return (DocumentFragment)htmlDomProviderImpl.getJsfForm().getJspDom().importNode(fragment, true);
+        fragment = (DocumentFragment)htmlDomProviderImpl.getJsfForm().getJspDom().importNode(fragment, true);
+        
+        // XXX Moved from designer/../AttributeInlineEditor
+        jsfForm.updateErrorsInComponent();
+        
+        return fragment;
    }
 }

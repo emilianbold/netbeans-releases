@@ -881,7 +881,10 @@ public class PageBox extends DocumentBox implements ChangeListener {
 //                DocumentFragment df = webform.renderHtmlForMarkupDesignBean(renderBean);
             
                 // XXX FIXME Is this correct here?
-                webform.updateErrorsInComponent();
+            // This was needless here:
+            // 1) the previously called getHtmlBody has this side effect.
+            // 2) there shouldn't be any component associated with this.
+//                webform.updateErrorsInComponent();
                 
 
                 if (df != null) {

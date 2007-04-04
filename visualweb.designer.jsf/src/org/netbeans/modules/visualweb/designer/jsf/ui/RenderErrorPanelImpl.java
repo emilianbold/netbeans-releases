@@ -49,7 +49,8 @@ import org.openide.util.NbBundle;
  */
 public class RenderErrorPanelImpl extends JPanel implements ActionListener, JsfForm.ErrorPanel {
 //    private WebForm webform;
-    private final FacesModel facesModel;
+//    private final FacesModel facesModel;
+    private final JsfForm jsfForm;
     private final JsfForm.ErrorPanelCallback errorPanelCallback;
     private final RenderFailureProvider renderFailureProvider;
 
@@ -64,9 +65,10 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, JsfF
     // End of variables declaration//GEN-END:variables
 
     /** Creates new form ErrorPanel */
-    public RenderErrorPanelImpl(/*WebForm webform*/FacesModel facesModel, JsfForm.ErrorPanelCallback errorPanelCallback, RenderFailureProvider renderFailureProvider) {
+    public RenderErrorPanelImpl(/*WebForm webform*/JsfForm jsfForm, JsfForm.ErrorPanelCallback errorPanelCallback, RenderFailureProvider renderFailureProvider) {
 //        this.webform = webform;
-        this.facesModel = facesModel;
+//        this.facesModel = facesModel;
+        this.jsfForm = jsfForm;
         this.errorPanelCallback = errorPanelCallback;
         this.renderFailureProvider = renderFailureProvider;
 
@@ -86,7 +88,7 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, JsfF
 
     public void updateErrors() {
 //        boolean missingBodyElement = webform.getHtmlBody(false) == null;
-        boolean missingBodyElement = facesModel.getHtmlBody() == null;
+        boolean missingBodyElement = jsfForm.getHtmlBody(false) == null;
         if (missingBodyElement) {
             jLabel3.setText(NbBundle.getMessage(RenderErrorPanelImpl.class, "LBL_MissingBodyElement"));
             textArea.setText(NbBundle.getMessage(RenderErrorPanelImpl.class, "TXT_MissingBodyElement"));
@@ -138,7 +140,7 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, JsfF
 //        // 6274302: See if the user has cleared the error
 ////        webform.refresh(true);
 //        webform.refreshModel(true);
-        errorPanelCallback.handleRefresh(facesModel.isBusted());
+        errorPanelCallback.handleRefresh(jsfForm.getFacesModel().isBusted());
     }
 
     /** This method is called from within the constructor to

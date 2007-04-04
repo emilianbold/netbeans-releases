@@ -344,9 +344,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
 //        if (SHOW_RENDER_ERRORS && (webform.hasRenderingErrors() || webform.getHtmlBody(false) == null)) {
 //            if (!webform.isRenderFailureShown()) {
-        if (SHOW_RENDER_ERRORS && (jsfForm.hasRenderingErrors() || jsfForm.getHtmlBody() == null)) {
+        if (SHOW_RENDER_ERRORS && (jsfForm.hasRenderingErrors() || jsfForm.getHtmlBody(false) == null)) {
 //            if (!webform.isRenderFailureShown()) {
-            if (!designer.isRenderFailureShown()) {
+            if (!jsfForm.isRenderFailureShown()) {
                 showErrors(true);
             }
         } else {
@@ -2132,7 +2132,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
         public void setRenderFailureShown(boolean shown) {
 //            webForm.setRenderFailureShown(shown);
-            jsfTC.designer.setRenderFailureShown(shown);
+            jsfTC.jsfForm.setRenderFailureShown(shown);
         }
 
 //        public Exception getRenderFailure() {

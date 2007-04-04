@@ -138,7 +138,7 @@ public class WebForm implements Designer {
 //    private boolean isPortlet;
 //    private WebForm contextPage;
 //    private Exception renderFailure;
-    private boolean renderFailureShown;
+//    private boolean renderFailureShown;
 //    private MarkupDesignBean renderFailureComponent;
     
     /** Maps elements to css boxes. */
@@ -867,30 +867,31 @@ public class WebForm implements Designer {
      * document
      */
     public Element getHtmlBody() {
-        return getHtmlBody(true);
+//        return getHtmlBody(true);
+        return htmlDomProvider.getHtmlBody();
     }
 
-    // XXX Helper method, see DesignerTopComp#updateErrors.
-    Element getHtmlBody(boolean updateErrors) {
-// <separation of models>
-//        if (body == null) {
-//            // XXX Initing by side effect.
-//            getHtmlDom(); // will set body too, if possible
+//    // XXX Helper method, see DesignerTopComp#updateErrors.
+//    Element getHtmlBody(boolean updateErrors) {
+//// <separation of models>
+////        if (body == null) {
+////            // XXX Initing by side effect.
+////            getHtmlDom(); // will set body too, if possible
+////        }
+////
+////        return body;
+//// ====
+////        return InSyncService.getProvider().getHtmlBodyForMarkupFile(getModel().getMarkupFile());
+//        Element bodyElement =  htmlDomProvider.getHtmlBody();
+//        
+//        // XXX #6472138 FIXME Is this correct here?
+//        if (updateErrors) {
+//            updateErrorsInComponent();
 //        }
-//
-//        return body;
-// ====
-//        return InSyncService.getProvider().getHtmlBodyForMarkupFile(getModel().getMarkupFile());
-        Element bodyElement =  htmlDomProvider.getHtmlBody();
-        
-        // XXX #6472138 FIXME Is this correct here?
-        if (updateErrors) {
-            updateErrorsInComponent();
-        }
-        
-        return bodyElement;
-// </separation of models>
-    }
+//        
+//        return bodyElement;
+//// </separation of models>
+//    }
 
 //    private static RaveElement findBody(Node node) {
 //        Element body = Util.findDescendant(HtmlTag.BODY.name, node);
@@ -1102,12 +1103,12 @@ public class WebForm implements Designer {
 //        return actions;
 //    }
 
-    /** Return true iff the webform has rendering problems associated with it */
-    public boolean hasRenderingErrors() {
-//        return renderFailureComponent != null;
-//        return getRenderFailureComponent() != null;
-        return htmlDomProvider.hasRenderingErrors();
-    }
+//    /** Return true iff the webform has rendering problems associated with it */
+//    public boolean hasRenderingErrors() {
+////        return renderFailureComponent != null;
+////        return getRenderFailureComponent() != null;
+//        return htmlDomProvider.hasRenderingErrors();
+//    }
 
 //    // XXX Very suspicious, revise it.
 //    /** Sets render failed values about a failure in rendering it to HTML.
@@ -1120,13 +1121,13 @@ public class WebForm implements Designer {
 //        htmlDomProvider.setRenderFailedValues(renderFailureComponent, renderFailureException);
 //    }
     
-    private void setRenderFailureValues() {
-        htmlDomProvider.setRenderFailureValues();
-    }
-    
-    private boolean hasRenderFailure() {
-        return htmlDomProvider.hasRenderFailure();
-    }
+//    private void setRenderFailureValues() {
+//        htmlDomProvider.setRenderFailureValues();
+//    }
+//    
+//    private boolean hasRenderFailure() {
+//        return htmlDomProvider.hasRenderFailure();
+//    }
 
 //    /** Return the exception associated with the current render failure for this page */
 //    public Exception getRenderFailure() {
@@ -1140,71 +1141,74 @@ public class WebForm implements Designer {
 //        return htmlDomProvider.getRenderFailureComponent();
 //    }
 
-    /** Return true iff the current render failure (returned by
-     * {@link #getRenderFailure} has been shown to the user yet
-     */
-    public boolean isRenderFailureShown() {
-        return renderFailureShown;
-    }
-
-    /** Record whether the current render failure (returned by
-     * {@link #getRenderFailure} has been shown to the user yet
-     */
-    public void setRenderFailureShown(boolean renderFailureShown) {
-        this.renderFailureShown = renderFailureShown;
-    }
-
-    /** XXX Moved from FacesSupport. Updates erros in the corresponding component.
-     * TODO Usage of this after renderHtml call is very suspicious, revise. */
-    public void updateErrorsInComponent() {
-//        FileObject markupFile = getModel().getMarkupFile();
-//// <missing designtime api>
-////        Exception renderFailure = facesunit.getRenderFailure();
-////        MarkupDesignBean renderFailureComponent =
-////            (MarkupDesignBean)facesunit.getRenderFailureComponent();
-//// ====
-//        Exception renderFailure = InSyncService.getProvider().getRenderFailure(markupFile);
-        
-//        Exception renderFailure = htmlDomProvider.getRenderFailure();
-////        MarkupDesignBean renderFailureComponent = (MarkupDesignBean)InSyncService.getProvider().getRenderFailureComponent(markupFile);
-//        MarkupDesignBean renderFailureComponent = htmlDomProvider.getRenderFailureMarkupDesignBean();
-//        
-//// </missing designtime api>
+//    /** Return true iff the current render failure (returned by
+//     * {@link #getRenderFailure} has been shown to the user yet
+//     */
+//    public boolean isRenderFailureShown() {
+////        return renderFailureShown;
+//        return htmlDomProvider.isRenderFailureShown();
+//    }
 //
-//        setRenderFailedValues(renderFailureComponent, renderFailure);
-        setRenderFailureValues();
+//    /** Record whether the current render failure (returned by
+//     * {@link #getRenderFailure} has been shown to the user yet
+//     */
+//    public void setRenderFailureShown(boolean renderFailureShown) {
+////        this.renderFailureShown = renderFailureShown;
+//        htmlDomProvider.setRenderFailureShown(renderFailureShown);
+//    }
 
-//        if (renderFailure == null) {
-        if (!hasRenderFailure()) {
-            // Since we had a successful render now, we should remember this such
-            // that if a rendering error happens again, we will show the errorpanel
-            setRenderFailureShown(false);
-        }
-
-        // XXX #6472138 Put into AWT.
-        updateComponentForErrors();
-    }
-    
-    private void updateComponentForErrors() {
-        if (EventQueue.isDispatchThread()) {
-            doUpdateComponentForErrors();
-        } else {
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    doUpdateComponentForErrors();
-                }
-            });
-        }
-    }
-    
-    private void doUpdateComponentForErrors() {
-//        if (getTopComponent().isShowing()) {
-//            // In case some kind of rendering error happened
-//            // Ugh... I need to track this differently!
-//            getTopComponent().updateErrors();
+    // XXX Moved to designer/jsf/../JsfForm.
+//    /** XXX Moved from FacesSupport. Updates erros in the corresponding component.
+//     * TODO Usage of this after renderHtml call is very suspicious, revise. */
+//    public void updateErrorsInComponent() {
+////        FileObject markupFile = getModel().getMarkupFile();
+////// <missing designtime api>
+//////        Exception renderFailure = facesunit.getRenderFailure();
+//////        MarkupDesignBean renderFailureComponent =
+//////            (MarkupDesignBean)facesunit.getRenderFailureComponent();
+////// ====
+////        Exception renderFailure = InSyncService.getProvider().getRenderFailure(markupFile);
+//        
+////        Exception renderFailure = htmlDomProvider.getRenderFailure();
+//////        MarkupDesignBean renderFailureComponent = (MarkupDesignBean)InSyncService.getProvider().getRenderFailureComponent(markupFile);
+////        MarkupDesignBean renderFailureComponent = htmlDomProvider.getRenderFailureMarkupDesignBean();
+////        
+////// </missing designtime api>
+////
+////        setRenderFailedValues(renderFailureComponent, renderFailure);
+//        setRenderFailureValues();
+//
+////        if (renderFailure == null) {
+//        if (!hasRenderFailure()) {
+//            // Since we had a successful render now, we should remember this such
+//            // that if a rendering error happens again, we will show the errorpanel
+//            setRenderFailureShown(false);
 //        }
-        htmlDomProvider.tcUpdateErrors(this);
-    }
+//
+//        // XXX #6472138 Put into AWT.
+//        updateComponentForErrors();
+//    }
+//    
+//    private void updateComponentForErrors() {
+//        if (EventQueue.isDispatchThread()) {
+//            doUpdateComponentForErrors();
+//        } else {
+//            EventQueue.invokeLater(new Runnable() {
+//                public void run() {
+//                    doUpdateComponentForErrors();
+//                }
+//            });
+//        }
+//    }
+//    
+//    private void doUpdateComponentForErrors() {
+////        if (getTopComponent().isShowing()) {
+////            // In case some kind of rendering error happened
+////            // Ugh... I need to track this differently!
+////            getTopComponent().updateErrors();
+////        }
+//        htmlDomProvider.tcUpdateErrors(this);
+//    }
     
 
     /**
@@ -2312,9 +2316,9 @@ public class WebForm implements Designer {
 //            webForm.nodeInserted(rendered, parent);
 //        }
 
-        public void updateErrorsInComponent() {
-            webForm.updateErrorsInComponent();
-        }
+//        public void updateErrorsInComponent() {
+//            webForm.updateErrorsInComponent();
+//        }
 
 //        public void updateGridMode() {
 //            webForm.updateGridMode();

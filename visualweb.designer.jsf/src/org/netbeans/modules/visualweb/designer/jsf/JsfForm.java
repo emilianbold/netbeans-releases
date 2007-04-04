@@ -31,6 +31,7 @@ import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.event.DesignContextListener;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.markup.MarkupPosition;
+import java.awt.EventQueue;
 import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.visualweb.designer.jsf.text.DomDocumentImpl;
 //NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
@@ -62,6 +63,7 @@ import org.netbeans.modules.visualweb.designer.jsf.ui.RenderErrorPanelImpl;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.Unit;
 import org.netbeans.modules.visualweb.insync.Util;
+import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
@@ -124,6 +126,8 @@ public class JsfForm {
     private Exception renderFailureException;
     // XXX Bad (old style) error handling.
     private MarkupDesignBean renderFailureComponent;
+    // XXX Bad (old style) error handling.
+    private boolean renderFailureShown;
     
     private final DomDocumentImpl domDocumentImpl = new DomDocumentImpl(this);
     
@@ -490,7 +494,7 @@ public class JsfForm {
         }
     }
     
-    FacesModel getFacesModel() {
+    public FacesModel getFacesModel() {
         synchronized (facesModel2jsfForm) {
             return facesModel;
         }
@@ -602,10 +606,63 @@ public class JsfForm {
         notifyViewsNodeInserted(rendered, parent);
     }
     
-    void updateErrorsInComponent() {
+    // XXX Moved from designer/../WebForm.
+    /** XXX Moved from FacesSupport. Updates erros in the corresponding component.
+     * TODO Usage of this after renderHtml call is very suspicious, revise. */
+    public void updateErrorsInComponent() {
 //        designer.updateErrorsInComponent();
-        fireUpdateErrorsInComponent();
+//        fireUpdateErrorsInComponent();
+        
+//        FileObject markupFile = getModel().getMarkupFile();
+//// <missing designtime api>
+////        Exception renderFailure = facesunit.getRenderFailure();
+////        MarkupDesignBean renderFailureComponent =
+////            (MarkupDesignBean)facesunit.getRenderFailureComponent();
+//// ====
+//        Exception renderFailure = InSyncService.getProvider().getRenderFailure(markupFile);
+        
+//        Exception renderFailure = htmlDomProvider.getRenderFailure();
+////        MarkupDesignBean renderFailureComponent = (MarkupDesignBean)InSyncService.getProvider().getRenderFailureComponent(markupFile);
+//        MarkupDesignBean renderFailureComponent = htmlDomProvider.getRenderFailureMarkupDesignBean();
+//        
+//// </missing designtime api>
+//
+//        setRenderFailedValues(renderFailureComponent, renderFailure);
+        updateRenderFailureValues();
+
+//        if (renderFailure == null) {
+        if (!hasRenderFailure()) {
+            // Since we had a successful render now, we should remember this such
+            // that if a rendering error happens again, we will show the errorpanel
+            setRenderFailureShown(false);
+        }
+
+        // XXX #6472138 Put into AWT.
+        updateComponentForErrors();
     }
+    
+    private void updateComponentForErrors() {
+        if (EventQueue.isDispatchThread()) {
+            doUpdateComponentForErrors();
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    doUpdateComponentForErrors();
+                }
+            });
+        }
+    }
+    
+    private void doUpdateComponentForErrors() {
+//        if (getTopComponent().isShowing()) {
+//            // In case some kind of rendering error happened
+//            // Ugh... I need to track this differently!
+//            getTopComponent().updateErrors();
+//        }
+//        htmlDomProvider.tcUpdateErrors(this);
+        notifyViewsUpdateErrors();
+    }
+    
     
     void updateGridMode() {
 //        designer.updateGridMode();
@@ -942,12 +999,12 @@ public class JsfForm {
         }
     }
 
-    private void fireUpdateErrorsInComponent() {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.updateErrorsInComponent();
-        }
-    }
+//    private void fireUpdateErrorsInComponent() {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.updateErrorsInComponent();
+//        }
+//    }
 
     private void fireUpdateGridMode(boolean gridMode) {
         HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
@@ -1021,6 +1078,13 @@ public class JsfForm {
 //            listener.designContextDeactivated(designContext);
 //        }
 //    }
+    
+    private void notifyViewsUpdateErrors() {
+        JsfMultiViewElement[] jsfMultiViewElements = JsfForm.findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.updateErrors();
+        }
+    }
 
     // XXX Hack to skip firing events if the generation is the same. Old code moved from designer.
     private long generationSeen = 0L;    
@@ -1190,9 +1254,40 @@ public class JsfForm {
         return projectJsfForms.toArray(new JsfForm[projectJsfForms.size()]);
     }
 
-    void setRenderFailureValues(MarkupDesignBean renderFailureComponent, Exception renderFailureException) {
+    private void updateRenderFailureValues() {
+        Exception failure = getRenderFailure();
+        MarkupDesignBean renderFailureComponent = getRenderFailureMarkupDesignBean();
+        setRenderFailureValues(renderFailureComponent, failure);
+    }
+    
+    private /*public*/ Exception getRenderFailure() {
+        FacesPageUnit facesPageUnit = getFacesModel().getFacesUnit();
+        if (facesPageUnit == null) {
+            return null;
+        }
+        return facesPageUnit.getRenderFailure();
+    }
+
+    private /*public*/ MarkupDesignBean getRenderFailureMarkupDesignBean() {
+        FacesPageUnit facesPageUnit = getFacesModel().getFacesUnit();
+        if (facesPageUnit == null) {
+            return null;
+        }
+        DesignBean designBean = facesPageUnit.getRenderFailureComponent();
+        if (designBean instanceof MarkupDesignBean) {
+            return (MarkupDesignBean)designBean;
+        } else {
+            return null;
+        }
+    }
+    
+    private void setRenderFailureValues(MarkupDesignBean renderFailureComponent, Exception renderFailureException) {
         this.renderFailureComponent = renderFailureComponent;
         this.renderFailureException = renderFailureException;
+    }
+    
+    private boolean hasRenderFailure() {
+        return getRenderFailureException() != null;
     }
 
     Exception getRenderFailureException() {
@@ -1213,18 +1308,31 @@ public class JsfForm {
     }
 
     public Element getHtmlBody() {
-        return htmlDomProvider.getHtmlBody();
+//        return htmlDomProvider.getHtmlBody();
+        return getHtmlBody(true);
     }
 
+    // XXX Side effect, updating errors, old code.
+    public Element getHtmlBody(boolean updateErrors) {
+        Element body = getFacesModel().getHtmlBody();
+        
+        // XXX #6472138 FIXME Is this correct here?
+        if (updateErrors) {
+            updateErrorsInComponent();
+        }
+        return body;
+    }
+    
     public Document getJspDom() {
 //        return htmlDomProvider.getJspDom();
         return getFacesModel().getJspDom();
     }
     
     Document getHtmlDom() {
-        return htmlDomProvider.getHtmlDom();
+//        return htmlDomProvider.getHtmlDom();
+        return getFacesModel().getHtmlDom();
     }
-
+    
     public Element createComponent(String className, Node parent, Node before) {
 //        return htmlDomProvider.createComponent(className, parent, before);
         DesignBean designBean = createBean(className, parent, before);
@@ -1355,7 +1463,8 @@ public class JsfForm {
     }
     
     public boolean hasRenderingErrors() {
-        return htmlDomProvider.hasRenderingErrors();
+//        return htmlDomProvider.hasRenderingErrors();
+        return getRenderFailureComponent() != null;
     }
     
     public JComponent getErrorPanel(ErrorPanelCallback errorPanelCallback) {
@@ -1364,7 +1473,7 @@ public class JsfForm {
         if (facesModel.isBusted()) {
             return new ErrorPanelImpl(facesModel, facesModel.getErrors(), errorPanelCallback);
         } else {
-            return new RenderErrorPanelImpl(facesModel, errorPanelCallback, new RenderErrorPanelImpl.RenderFailureProvider() {
+            return new RenderErrorPanelImpl(this, errorPanelCallback, new RenderErrorPanelImpl.RenderFailureProvider() {
                 public Exception getRenderFailureException() {
                     return JsfForm.this.getRenderFailureException();
                 }
@@ -1950,6 +2059,13 @@ public class JsfForm {
     public boolean isWoodstockPage() {
         return Util.isWoodstockPage(getJspDom());
     }
+
+    public void setRenderFailureShown(boolean shown) {
+        renderFailureShown = shown;
+    }
     
+    public boolean isRenderFailureShown() {
+        return renderFailureShown;
+    }
 }
 

@@ -310,8 +310,9 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //                    // XXX To get it into source document so it can work (Positions work only against source doc!).
 //                    fragment = (DocumentFragment)webform.getJspDom().importNode(fragment, true);
                     
-                    // XXX FIXME Is this correct here?
-                    webform.updateErrorsInComponent();
+//                    // XXX FIXME Is this correct here?
+                    // XXX Moving into designer/jsf/../InlineEditorSupport
+//                    webform.updateErrorsInComponent();
                     
 //                    facesPageUnit.setPreRendered(bean, fragment);
 //                    webform.setPrerenderedBean(bean, fragment);

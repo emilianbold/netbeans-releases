@@ -192,8 +192,8 @@ public interface Designer {
     public void resetPanePageBox();
     public void redoPaneLayout(boolean immediate);
     
-    public void setRenderFailureShown(boolean shown);
-    public boolean isRenderFailureShown();
+//    public void setRenderFailureShown(boolean shown);
+//    public boolean isRenderFailureShown();
 //    public void updateErrors();
 //    public void showErrors(boolean on);
     
