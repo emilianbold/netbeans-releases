@@ -45,15 +45,15 @@ import org.netbeans.lib.editor.util.GapList;
  * between offsets and raw offsets is following:
  * 
  * <ul>
- * <li>offset < offsetGapStart : rawOffset = offset</li>
- * <li>offset > offsetGapStart : rawOffset = offset + offsetGapLength
+ * <li>offset &lt; offsetGapStart : rawOffset = offset</li>
+ * <li>offset &gt; offsetGapStart : rawOffset = offset + offsetGapLength
  * </ul>
  * 
  * The equivalent formulas give a recipe for computing an offset from rawOffset:
  * 
  * <ul>
- * <li>rawOffset < offsetGapStart : offset = rawOffset</li>
- * <li>rawOffset > offsetGapStart : offset = rawOffset - offsetGapLength
+ * <li>rawOffset &lt; offsetGapStart : offset = rawOffset</li>
+ * <li>rawOffset &gt; offsetGapStart : offset = rawOffset - offsetGapLength
  * </ul>
  * 
  * When characteres are inserted at the position of the gap start
