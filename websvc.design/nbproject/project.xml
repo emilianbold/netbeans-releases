@@ -230,7 +230,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                <package>org.netbeans.modules.websvc.design.configuration</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
