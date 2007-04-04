@@ -61,7 +61,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-ReorderAction.instance"/>
             <file name="org-openide-actions-SaveAllAction.instance"/>
             <file name="org-openide-actions-SaveAction.instance"/>
-            <file name="org-openide-actions-SaveAsAction.instance"/>
+            <file name="org-openide-actions-SaveAsAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.actions.SaveAsAction.create"/>
+                <attr name="instanceClass" stringvalue="org.openide.util.ContextAwareAction"/>
+            </file>
             <file name="org-openide-actions-ToolsAction.instance"/>
             <file name="org-openide-actions-ViewAction.instance"/>
             <file name="org-openide-actions-NewTemplateAction.instance"/>
@@ -114,9 +117,11 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <attr name="Separator2.instance/org-openide-actions-SaveAction.instance" boolvalue="true"/>
             <file name="org-openide-actions-SaveAction.instance"/>
-            <attr name="org-openide-actions-SaveAction.instance/org-openide-actions-SaveAsAction.instance" boolvalue="true"/>
-            <file name="org-openide-actions-SaveAsAction.instance"/>
-            <attr name="org-openide-actions-SaveAsAction.instance/org-openide-actions-SaveAllAction.instance" boolvalue="true"/>
+            <attr name="org-openide-actions-SaveAction.instance/org-openide-actions-SaveAsAction.shadow" boolvalue="true"/>
+            <file name="org-openide-actions-SaveAsAction.shadow">
+                <attr name="originalFile" stringvalue="/Actions/System/org-openide-actions-SaveAsAction.instance"/>
+            </file>
+            <attr name="org-openide-actions-SaveAsAction.shadow/org-openide-actions-SaveAllAction.instance" boolvalue="true"/>
             <file name="org-openide-actions-SaveAllAction.instance"/>
             <attr name="org-openide-actions-SaveAllAction.instance/Separator3.instance" boolvalue="true"/>
             <file name="Separator3.instance">

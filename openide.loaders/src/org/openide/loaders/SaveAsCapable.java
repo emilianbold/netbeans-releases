@@ -24,6 +24,19 @@ import org.openide.filesystems.FileObject;
 
 /** 
  * Save document under a different file name and/or extension.
+ * 
+ * The default implementation is available in {@link org.openide.text.DataEditorSupport}. So if your
+ * editor support inherits from <code>DataEditorSupport</code> you can implement "Save As" feature
+ * for your documents by adding the following lines into your {@link DataObject}'s constructor:
+ * 
+ * 
+ <code><pre>
+        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs(FileObject folder, String fileName) throws IOException {
+                getDataEditorSupport().saveAs( folder, fileName );
+            }
+        });
+</pre></code>
  *
  * @since 6.3
  * @author S. Aubrecht
@@ -31,8 +44,9 @@ import org.openide.filesystems.FileObject;
 public interface SaveAsCapable {
     /** 
      * Invoke the save operation.
-     * @param newFileName File name to save to.
+     * @param folder Folder to save to.
+     * @param name New file name to save to.
      * @throws IOException if the object could not be saved
      */
-    void saveAs( FileObject newFileName ) throws IOException;
+    void saveAs( FileObject folder, String name ) throws IOException;
 }

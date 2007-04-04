@@ -354,32 +354,36 @@ public class DataEditorSupport extends CloneableEditorSupport {
     
     /**
      * Save the document under a new file name and/or extension.
-     * @param newFileName New location to save the DataObject to.
+     * @param folder New folder to save the DataObject to.
+     * @param fileName New file name to save the DataObject to.
      * @throws java.io.IOException If the operation failed
      * @since 6.3
      */
-    public void saveAs( FileObject newFileName ) throws IOException {
+    public void saveAs( FileObject folder, String fileName ) throws IOException {
         if( env instanceof Env ) {
             
-            FileObject newFolder = newFileName.getParent();
             //ask the user for a new file name to save to
-            String newExtension = newFileName.getExt();
+            String newExtension = FileUtil.getExtension( fileName );
             
             DataObject newDob = null;
             DataObject currentDob = getDataObject();
             if( !currentDob.isModified() || null == getDocument() ) {
                 //the document is not modified on disk, we copy/rename the file
-                DataFolder df = DataFolder.findFolder( newFolder );
-                //remove the target file if it already exists
-                newFileName.delete();
+                DataFolder df = DataFolder.findFolder( folder );
                 
-                newDob = DataObjectAccessor.DEFAULT.copyRename( currentDob, df, newFileName.getName(), newExtension );
+                FileObject newFile = folder.getFileObject(fileName);
+                if( null != newFile ) {
+                    //remove the target file if it already exists
+                    newFile.delete();
+                }
+                
+                newDob = DataObjectAccessor.DEFAULT.copyRename( currentDob, df, getFileNameNoExtension(fileName), newExtension );
             } else {
                 //the document is modified in editor, we need to save the editor kit instead
-                
-                saveDocumentAs( newFileName.getOutputStream() );
+                FileObject newFile = FileUtil.createData( folder, fileName );
+                saveDocumentAs( newFile.getOutputStream() );
                 currentDob.setModified( false );
-                newDob = DataObject.find( newFileName );
+                newDob = DataObject.find( newFile );
             }
             
             if( null != newDob ) {
@@ -394,6 +398,17 @@ public class DataEditorSupport extends CloneableEditorSupport {
             }
         }
     }
+    
+    private String getFileNameNoExtension(String fileName) {
+        int index = fileName.lastIndexOf("."); // NOI18N
+
+        if (index == -1) {
+            return fileName;
+        } else {
+            return fileName.substring(0, index);
+        }
+    }
+
     
     /** 
      * Save the document to a new file.
@@ -485,12 +500,6 @@ public class DataEditorSupport extends CloneableEditorSupport {
         */
         public Env (DataObject obj) {
             super (obj);
-            /*if( null == obj.getLookup().lookup( SaveAsCapable.class )
-                && obj instanceof MultiDataObject 
-                && obj.getLoader() instanceof UniFileLoader ) {
-                CookieSet cs = DataObjectAccessor.DEFAULT.getCookieSet( (MultiDataObject)obj );
-                cs.assign( SaveAsCapable.class, new SaveAsCapableImpl() );
-            }*/
         }
         
         /** Getter for the file to work on.
@@ -733,10 +742,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
         }
         
         private class SaveAsCapableImpl implements SaveAsCapable {
-            public void saveAs(FileObject newFileName) throws IOException {
+            public void saveAs(FileObject folder, String fileName) throws IOException {
                 CloneableOpenSupport cos = Env.super.findCloneableOpenSupport();
                 if (cos instanceof DataEditorSupport) {
-                    ((DataEditorSupport)cos).saveAs( newFileName );
+                    ((DataEditorSupport)cos).saveAs( folder, fileName );
                 }
             }
         }

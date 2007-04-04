@@ -193,6 +193,12 @@ public class XMLDataObject extends MultiDataObject {
         
         // set info for this file
         //getIP ().resolveInfo ();        #16045
+        cookies.assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs( FileObject folder, String fileName ) throws IOException {
+                XMLEditorSupport es = getCookie( XMLEditorSupport.class );
+                es.saveAs( folder, fileName );
+            }
+        });
     }
 
     /** Getter for info parser. Initializes the infoparser in "lazy" way so it is accessble even before

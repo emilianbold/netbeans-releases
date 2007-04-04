@@ -52,6 +52,14 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
     */
     DefaultDataObject (FileObject fo, MultiFileLoader loader) throws DataObjectExistsException {
         super (fo, loader);
+        final DefaultES des = getCookie( DefaultES.class );
+        if( null != des ) {
+            getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+                public void saveAs(FileObject folder, String fileName) throws IOException {
+                    des.saveAs( folder, fileName );
+                }
+            });
+        }
     }
  
     /* Creates node delegate.

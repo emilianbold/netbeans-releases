@@ -69,8 +69,8 @@ public class FormDataObject extends MultiDataObject {
         super(jfo, loader);
         formEntry = (FileEntry)registerEntry(ffo);
         getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
-            public void saveAs(FileObject newFileName) throws IOException {
-                getFormEditorSupport().saveAs( newFileName );
+            public void saveAs(FileObject folder, String fileName) throws IOException {
+                getFormEditorSupport().saveAs( folder, fileName );
             }
         });
     }

@@ -56,8 +56,8 @@ public final class JavaDataObject extends MultiDataObject {
     public JavaDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
-            public void saveAs( FileObject newFileName ) throws IOException {
-                createJavaEditorSupport().saveAs( newFileName );
+            public void saveAs( FileObject folder, String fileName ) throws IOException {
+                createJavaEditorSupport().saveAs( folder, fileName );
             }
         });
     }

@@ -82,9 +82,9 @@ public class DataEditorSupportSaveAsTest extends NbTestCase {
         MyEnv env = new MyEnv( obj );
         MyDataEditorSupport des = new MyDataEditorSupport( obj, env );
         
-        FileObject newFO = FileUtil.createData(fs.getRoot(), "otherFolder/newFile.newExt");
+        FileObject newFolder = FileUtil.createFolder(fs.getRoot(), "otherFolder");
         
-        des.saveAs( newFO );
+        des.saveAs( newFolder, "newFile.newExt" );
         
         DataObject newObj = DataObject.find(fs.findResource("otherFolder/newFile.newExt"));
         assertEquals( MyDataObject.class, newObj.getClass());
@@ -108,9 +108,9 @@ public class DataEditorSupportSaveAsTest extends NbTestCase {
         MyEnv env = new MyEnv( obj );
         MyDataEditorSupport des = new MyDataEditorSupport( obj, env );
         
-        FileObject newFO = FileUtil.createData(fs.getRoot(), "otherFolder/newFile.newExt");
+        FileObject newFolder = FileUtil.createFolder(fs.getRoot(), "otherFolder");
         
-        des.saveAs( newFO );
+        des.saveAs( newFolder, "newFile.newExt" );
         
         DataObject newObj = DataObject.find(fs.findResource("otherFolder/newFile.newExt"));
         assertEquals( MyDataObject.class, newObj.getClass());
@@ -123,53 +123,32 @@ public class DataEditorSupportSaveAsTest extends NbTestCase {
         assertEquals("new document was opened", 1, myObj.openCookieCalls);
     }
     
-    public void testEnvAddsSaveAsImpl() throws IOException {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileUtil.createData(fs.getRoot(), "someFolder/someFile.obj");
-        
-        DataObject obj = DataObject.find(fs.findResource("someFolder/someFile.obj"));
-        assertEquals( MyDataObject.class, obj.getClass());
-        assertTrue( "we need UniFileLoader", obj.getLoader() instanceof UniFileLoader );
-        
-        MyEnv env = new MyEnv( obj );
-        MyDataObject myObj = (MyDataObject)obj;
-        
-        assertNotNull("we have SaveAs support for default data objects with uni file loaders", myObj.getSaveAsImpl() );
-    }
-    
-    public void testNoSaveAsImpl() throws IOException {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileUtil.createData(fs.getRoot(), "someFolder/x.prima");
-        FileUtil.createData(fs.getRoot(), "someFolder/x.seconda");
-        
-        DataObject obj = DataObject.find(fs.findResource("someFolder/x.prima"));
-        assertEquals( MyMultiFileDataObject.class, obj.getClass());
-        assertEquals( "we need an object with MultiFileLoader", MyMultiFileLoader.class, obj.getLoader().getClass());
-        
-        MyEnv env = new MyEnv( obj );
-        
-        assertNull("there's no default SaveAs support for multi file loaders", obj.getLookup().lookup( SaveAsCapable.class ) );
-    }
-    
-//    public void testEnvOutputStreamTakesLock() throws Exception {
-//        DataEditorSupport.Env env = (DataEditorSupport.Env)support().desEnv();
-//        assertNull(env.fileLock);
-//        OutputStream stream = env.outputStream();
-//        assertNotNull(stream);
-//        stream.close();
-//        assertNotNull(env.fileLock);
-//        env.fileLock.releaseLock();
+//    public void testEnvAddsSaveAsImpl() throws IOException {
+//        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+//        FileUtil.createData(fs.getRoot(), "someFolder/someFile.obj");
+//        
+//        DataObject obj = DataObject.find(fs.findResource("someFolder/someFile.obj"));
+//        assertEquals( MyDataObject.class, obj.getClass());
+//        assertTrue( "we need UniFileLoader", obj.getLoader() instanceof UniFileLoader );
+//        
+//        MyEnv env = new MyEnv( obj );
+//        MyDataObject myObj = (MyDataObject)obj;
+//        
+//        assertNotNull("we have SaveAs support for default data objects with uni file loaders", myObj.getSaveAsImpl() );
 //    }
 //    
-//    public void testFileEncodingQuery () throws Exception {
-//        DES des = support();
-//        FileEncodingQueryImpl.getDefault().reset();
-//        StyledDocument doc = des.openDocument();
-//        assertEquals(des.getDataObject().getPrimaryFile(),FileEncodingQueryImpl.getDefault().getFile());
-//        FileEncodingQueryImpl.getDefault().reset();
-//        doc.insertString(doc.getLength(), " Added text.", null);
-//        des.saveDocument();        
-//        assertEquals(des.getDataObject().getPrimaryFile(),FileEncodingQueryImpl.getDefault().getFile());
+//    public void testNoSaveAsImpl() throws IOException {
+//        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+//        FileUtil.createData(fs.getRoot(), "someFolder/x.prima");
+//        FileUtil.createData(fs.getRoot(), "someFolder/x.seconda");
+//        
+//        DataObject obj = DataObject.find(fs.findResource("someFolder/x.prima"));
+//        assertEquals( MyMultiFileDataObject.class, obj.getClass());
+//        assertEquals( "we need an object with MultiFileLoader", MyMultiFileLoader.class, obj.getLoader().getClass());
+//        
+//        MyEnv env = new MyEnv( obj );
+//        
+//        assertNull("there's no default SaveAs support for multi file loaders", obj.getLookup().lookup( SaveAsCapable.class ) );
 //    }
     
     private static class MyDataEditorSupport extends DataEditorSupport {

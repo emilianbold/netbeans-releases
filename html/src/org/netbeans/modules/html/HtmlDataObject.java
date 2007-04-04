@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.html;
 
+import java.io.IOException;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileObject;
@@ -26,6 +27,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
@@ -49,6 +51,12 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         CookieSet set = getCookieSet();
         set.add(HtmlEditorSupport.class, this);
         set.add(ViewSupport.class, this);
+        set.assign(SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs( FileObject folder, String fileName ) throws IOException {
+                HtmlEditorSupport es = getCookie( HtmlEditorSupport.class );
+                es.saveAs( folder, fileName );
+            }
+        });
     }
 
     protected org.openide.nodes.Node createNodeDelegate () {

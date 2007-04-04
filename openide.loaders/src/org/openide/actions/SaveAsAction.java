@@ -37,6 +37,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -52,12 +53,13 @@ import org.openide.windows.WindowManager;
  * @since 6.3
  * @author S. Aubrecht
  */
-final public class SaveAsAction extends AbstractAction implements ContextAwareAction, LookupListener, PropertyChangeListener {
+final class SaveAsAction extends AbstractAction implements ContextAwareAction, LookupListener, PropertyChangeListener {
 
     private Lookup context;
     private Lookup.Result<SaveAsCapable> lkpInfo;
+    private boolean isEditorWindowActivated;
     
-    public SaveAsAction() {
+    private SaveAsAction() {
         this( Utilities.actionsGlobalContext() );
         TopComponent.getRegistry().addPropertyChangeListener( this );
     }
@@ -66,6 +68,14 @@ final public class SaveAsAction extends AbstractAction implements ContextAwareAc
         super( NbBundle.getMessage(DataObject.class, "CTL_SaveAsAction") ); //NOI18N
         this.context = context;
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+    }
+    
+    /**
+     * Method is called from XML layers to create action instance for the main menu/toolbar.
+     * @return Global instance for menu/toolbar
+     */
+    public static ContextAwareAction create() {
+        return new SaveAsAction();
     }
 
     void init() {
@@ -81,7 +91,7 @@ final public class SaveAsAction extends AbstractAction implements ContextAwareAc
         Lookup.Template<SaveAsCapable> tpl = new Lookup.Template<SaveAsCapable>(SaveAsCapable.class);
         lkpInfo = context.lookup (tpl);
         lkpInfo.addLookupListener(this);
-        resultChanged(null);
+        propertyChange(null);
     }
 
     public boolean isEnabled() {
@@ -96,41 +106,37 @@ final public class SaveAsAction extends AbstractAction implements ContextAwareAc
             SaveAsCapable saveAs = inst.iterator().next();
             File newFile = getNewFileName();
             if( null != newFile ) {
-                FileObject newFolder = FileUtil.toFileObject( newFile.getParentFile() );
-                FileObject newFileObj = FileUtil.toFileObject( newFile );
+                //create target folder if necessary    
+                FileObject newFolder = null;
                 try {
-                    if( null == newFileObj ) {
-                        String newFilename = getFileName( newFile );
-                        String newExtension = FileUtil.getExtension( newFile.getName() );
-                        newFileObj = newFolder.createData( newFilename, newExtension );
-                    }
-                    saveAs.saveAs( newFileObj );
+                    File targetFolder = newFile.getParentFile();
+                    if( null == targetFolder )
+                        throw new IOException(newFile.getAbsolutePath());
+                    newFolder = FileUtil.createFolder( targetFolder );
                 } catch( IOException ioE ) {
-                    Logger.getLogger( getClass().getName() ).log( 
-                            Level.WARNING, NbBundle.getMessage( DataObject.class, "MSG_SaveAsFailed" ), ioE ); //NOI18N
+                    NotifyDescriptor error = new NotifyDescriptor( 
+                            NbBundle.getMessage(DataObject.class, "MSG_CannotCreateTargetFolder"), //NOI18N
+                            NbBundle.getMessage(DataObject.class, "LBL_SaveAsTitle"), //NOI18N
+                            NotifyDescriptor.DEFAULT_OPTION,
+                            NotifyDescriptor.ERROR_MESSAGE,
+                            new Object[] {NotifyDescriptor.OK_OPTION},
+                            NotifyDescriptor.OK_OPTION );
+                    DialogDisplayer.getDefault().notify( error );
+                    return;
+                }
+                
+                try {
+                    saveAs.saveAs( newFolder, newFile.getName() );
+                } catch( IOException ioE ) {
+                    Exceptions.attachLocalizedMessage( ioE, NbBundle.getMessage( DataObject.class, "MSG_SaveAsFailed" ) );  //NOI18N
+                    Logger.getLogger( getClass().getName() ).log( Level.WARNING, null, ioE );
                 }
             }
         }
     }
     
-    /**
-     * Get the name part without the extension of the given file
-     * @param file
-     * @return name part of the given file
-     */
-    private static String getFileName( File file ) {
-        String fileName = file.getName();
-        int index = fileName.lastIndexOf( '.' );
-        if( index > 0 )
-            return fileName.substring( 0, index );
-        return fileName;
-    }
-
-
     public void resultChanged(LookupEvent ev) {
-        TopComponent tc = TopComponent.getRegistry().getActivated();
-        
-        setEnabled (null != lkpInfo && lkpInfo.allItems().size() != 0 && null != tc && WindowManager.getDefault().isEditorTopComponent( tc ) );
+        setEnabled (null != lkpInfo && lkpInfo.allItems().size() != 0 && isEditorWindowActivated );
     }
     
     /**
@@ -139,15 +145,17 @@ final public class SaveAsAction extends AbstractAction implements ContextAwareAc
      */
     private File getNewFileName() {
         File newFile = null;
-        FileObject currentFileObject = null;//((Env)env).getFile();
+        FileObject currentFileObject = getCurrentFileObject();
         if( null != currentFileObject )
             newFile = FileUtil.toFile( currentFileObject );
 
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle( NbBundle.getMessage(DataObject.class, "LBL_SaveAsTitle" ) ); //NOI18N
         chooser.setMultiSelectionEnabled( false );
-        if( null != newFile )
+        if( null != newFile ) {
             chooser.setSelectedFile( newFile );
+            FileUtil.preventFileChooserSymlinkTraversal( chooser, newFile.getParentFile() );
+        }
         File origFile = newFile;
         if( JFileChooser.APPROVE_OPTION != chooser.showSaveDialog( WindowManager.getDefault().getMainWindow() ) ) {
             return null;
@@ -156,23 +164,17 @@ final public class SaveAsAction extends AbstractAction implements ContextAwareAc
         if( null == newFile || newFile.equals( origFile ) )
             return null;
 
-        //create target folder if necessary    
-        File targetFolder = newFile.getParentFile();
-        if( !targetFolder.exists() )
-            targetFolder.mkdirs();
-        FileObject targetFileObjectFolder = FileUtil.toFileObject( targetFolder );
-        if( null == targetFileObjectFolder ) {
-            NotifyDescriptor error = new NotifyDescriptor( 
-                    NbBundle.getMessage(DataObject.class, "MSG_CannotCreateTargetFolder"), //NOI18N
-                    NbBundle.getMessage(DataObject.class, "LBL_SaveAsTitle"), //NOI18N
-                    NotifyDescriptor.DEFAULT_OPTION,
-                    NotifyDescriptor.ERROR_MESSAGE,
-                    new Object[] {NotifyDescriptor.OK_OPTION},
-                    NotifyDescriptor.OK_OPTION );
-            DialogDisplayer.getDefault().notify( error );
-            return null;
-        }
         return newFile;
+    }
+    
+    private FileObject getCurrentFileObject() {
+        TopComponent tc = TopComponent.getRegistry().getActivated();
+        if( null != tc ) {
+            DataObject dob = tc.getLookup().lookup( DataObject.class );
+            if( null != dob )
+                return dob.getPrimaryFile();
+        }
+        return null;
     }
 
     public Action createContextAwareInstance(Lookup actionContext) {
@@ -180,6 +182,10 @@ final public class SaveAsAction extends AbstractAction implements ContextAwareAc
     }
 
     public void propertyChange(PropertyChangeEvent arg0) {
+        TopComponent tc = TopComponent.getRegistry().getActivated();
+        
+        isEditorWindowActivated = null != tc && WindowManager.getDefault().isEditorTopComponent( tc );
+        
         resultChanged( null );
     }
 }
