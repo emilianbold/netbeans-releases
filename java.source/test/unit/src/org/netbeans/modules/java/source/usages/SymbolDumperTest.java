@@ -56,7 +56,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.SimpleAnnotationValueVisitor6;
-import junit.framework.TestSuite;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -65,7 +64,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
@@ -749,44 +747,44 @@ public class SymbolDumperTest extends NbTestCase {
         });
     }
     
-    public void testReadWriteAnnonymousInnerclasses1() throws Exception {
+    public void testReadWriteAnonymousInnerClasses1() throws Exception {
         performReadWrite("package test; public class test {public void testMethod() {new Runnable() {public void run(){}};}}\n", new Validator() {
             public void validate(CompilationInfo info, Element t) {
                 assertEquals(ElementKind.CLASS, t.getKind());
                 
                 JavacElements jels = (JavacElements) info.getElements();
                 
-                TypeElement annonymous = jels.getTypeElementByBinaryName("test.test$1");
+                TypeElement anonymous = jels.getTypeElementByBinaryName("test.test$1");
                 
                 assertEquals(1, ElementFilter.methodsIn(t.getEnclosedElements()).size());
                 
                 ExecutableElement ee = ElementFilter.methodsIn(t.getEnclosedElements()).get(0);
                 
-                assertEquals(ee, annonymous.getEnclosingElement());
+                assertEquals(ee, anonymous.getEnclosingElement());
                 
-                assertEquals("java.lang.Runnable", ((TypeElement) ((DeclaredType) annonymous.getInterfaces().get(0)).asElement()).getQualifiedName().toString());
+                assertEquals("java.lang.Runnable", ((TypeElement) ((DeclaredType) anonymous.getInterfaces().get(0)).asElement()).getQualifiedName().toString());
             }
         }, false);
     }
     
-    public void testReadWriteAnnonymousInnerclasses2() throws Exception {
+    public void testReadWriteAnonymousInnerClasses2() throws Exception {
         performReadWrite("package test; public class test {public void testMethod() {new Runnable() {public void run(){}}; new Runnable() {public void run(){}};}}\n", new Validator() {
             public void validate(CompilationInfo info, Element t) {
                 assertEquals(ElementKind.CLASS, t.getKind());
                 
                 JavacElements jels = (JavacElements) info.getElements();
                 
-                TypeElement annonymous = jels.getTypeElementByBinaryName("test.test$1");
+                TypeElement anonymous = jels.getTypeElementByBinaryName("test.test$1");
                 
-                assertEquals(1, annonymous.getInterfaces().size());
+                assertEquals(1, anonymous.getInterfaces().size());
                 
-                assertEquals("java.lang.Runnable", ((TypeElement) ((DeclaredType) annonymous.getInterfaces().get(0)).asElement()).getQualifiedName().toString());
+                assertEquals("java.lang.Runnable", ((TypeElement) ((DeclaredType) anonymous.getInterfaces().get(0)).asElement()).getQualifiedName().toString());
                 
-                annonymous = jels.getTypeElementByBinaryName("test.test$2");
+                anonymous = jels.getTypeElementByBinaryName("test.test$2");
                 
-                assertEquals(1, annonymous.getInterfaces().size());
+                assertEquals(1, anonymous.getInterfaces().size());
                 
-                assertEquals("java.lang.Runnable", ((TypeElement) ((DeclaredType) annonymous.getInterfaces().get(0)).asElement()).getQualifiedName().toString());
+                assertEquals("java.lang.Runnable", ((TypeElement) ((DeclaredType) anonymous.getInterfaces().get(0)).asElement()).getQualifiedName().toString());
             }
         }, false);
     }
@@ -798,11 +796,11 @@ public class SymbolDumperTest extends NbTestCase {
                 
                 JavacElements jels = (JavacElements) info.getElements();
                 
-                TypeElement annonymous = jels.getTypeElementByBinaryName("test.test$1Test");
+                TypeElement anonymous = jels.getTypeElementByBinaryName("test.test$1Test");
                 
-                assertEquals(1, annonymous.getInterfaces().size());
+                assertEquals(1, anonymous.getInterfaces().size());
                 
-                assertEquals("java.lang.Runnable", ((TypeElement) ((DeclaredType) annonymous.getInterfaces().get(0)).asElement()).getQualifiedName().toString());
+                assertEquals("java.lang.Runnable", ((TypeElement) ((DeclaredType) anonymous.getInterfaces().get(0)).asElement()).getQualifiedName().toString());
             }
         }, false);
     }
@@ -1129,7 +1127,7 @@ public class SymbolDumperTest extends NbTestCase {
             assertEquals(signatures.get("test"), newSig[0]);
     }
 
-    protected void performCompileAgainstSingature(String what, final String againstSignature) throws Exception {
+    protected void performCompileAgainstSignature(String what, final String againstSignature) throws Exception {
         FileSystem fs = FileUtil.createMemoryFileSystem();
         FileObject file2 = fs.getRoot().createData("test2.java");
         
@@ -1187,20 +1185,20 @@ public class SymbolDumperTest extends NbTestCase {
 //        System.err.println("newSig=" + newSig[0]);
     }
     
-    public void testNarazecka() throws Exception {
-        performTestNarazecka("package test; public class test {public void testMethod() {new Runnable() {public void run(){}};}}\n", "test.test$1");
+    public void testNarážečka() throws Exception {
+        performTestNarážečka("package test; public class test {public void testMethod() {new Runnable() {public void run(){}};}}\n", "test.test$1");
     }
     
-    public void testNarazecka2() throws Exception {
-        performTestNarazecka("package test; public class test<I, T> {private java.util.List<Snap> snaps; private class Snap {}}\n", "test.test$Snap");
+    public void testNarážečka2() throws Exception {
+        performTestNarážečka("package test; public class test<I, T> {private java.util.List<Snap> snaps; private class Snap {}}\n", "test.test$Snap");
     }
     
-    public void testNarazecka3() throws Exception {
-        performTestNarazecka("package test; public class test {private annotations.RequestProcessor.Task task; public static class O {}}\n", "test.test$O");
+    public void testNarážečka3() throws Exception {
+        performTestNarážečka("package test; public class test {private annotations.RequestProcessor.Task task; public static class O {}}\n", "test.test$O");
     }
     
-    public void testNarazecka4() throws Exception {
-        performTestNarazecka("package test;import java.util.Collection;" +
+    public void testNarážečka4() throws Exception {
+        performTestNarážečka("package test;import java.util.Collection;" +
                 "    abstract class Lookup {" +
                 "    public static final Lookup EMPTY = null;" +
                 "    private static Lookup defaultLookup;" +
@@ -1221,19 +1219,19 @@ public class SymbolDumperTest extends NbTestCase {
                 "}", "test.Lookup$Template");
     }
 
-    public void testNarazecka5() throws Exception {
-        performTestNarazecka("package test; public class test {private static Deleg cur; private static class Deleg extends test {}}\n", "test.test$Deleg");
+    public void testNarážečka5() throws Exception {
+        performTestNarážečka("package test; public class test {private static Deleg cur; private static class Deleg extends test {}}\n", "test.test$Deleg");
     }
     
-    public void testNarazecka6() throws Exception {
-        performTestNarazecka("package test; public class test {public final class Deleg {Deleg(Runnable r) {} Deleg(Runnable r, int x) {}}}\n", "test.test$Deleg");
+    public void testNarážečka6() throws Exception {
+        performTestNarážečka("package test; public class test {public final class Deleg {Deleg(Runnable r) {} Deleg(Runnable r, int x) {}}}\n", "test.test$Deleg");
     }
     
-    public void testNarazecka7() throws Exception {
-        performTestNarazecka("package test; public class test {public <T> Two<T> lookup(One<T> o){return null;} public static class One<T> {}public static class Two<T> {}}\n", "test.test$One");
+    public void testNarážečka7() throws Exception {
+        performTestNarážečka("package test; public class test {public <T> Two<T> lookup(One<T> o){return null;} public static class One<T> {}public static class Two<T> {}}\n", "test.test$One");
     }
     
-    private void performTestNarazecka(String what, final String innerclassName) throws Exception {
+    private void performTestNarážečka(String what, final String innerclassName) throws Exception {
         FileSystem fs = FileUtil.createMemoryFileSystem();
         FileObject file = fs.getRoot().createData("test.java");
         
