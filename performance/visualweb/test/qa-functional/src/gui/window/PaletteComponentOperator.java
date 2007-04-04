@@ -59,16 +59,20 @@ public class PaletteComponentOperator extends TopComponentOperator {
         
         Timeouts times = JemmyProperties.getCurrentTimeouts();
         long waiter_timeout_old = times.getTimeout("Waiter.WaitingTime");
-        times.setTimeout("Waiter.WaitingTime",90000);
+        long component_timeout_old = times.getTimeout("ComponentOperator.WaitComponentTimeout");
         
+        times.setTimeout("Waiter.WaitingTime",90000);
+        times.setTimeout("ComponentOperator.WaitComponentTimeout", 90000);
         try {
             pal = new PaletteComponentOperator();
         } catch (TimeoutExpiredException te) {
             times.setTimeout("Waiter.WaitingTime",waiter_timeout_old);
+            times.setTimeout("ComponentOperator.WaitComponentTimeout",component_timeout_old);
             throw new JemmyException("Cannot find Palette");
         }
         
         times.setTimeout("Waiter.WaitingTime",waiter_timeout_old);
+        times.setTimeout("ComponentOperator.WaitComponentTimeout",component_timeout_old);
         return pal;
     }
     /**
