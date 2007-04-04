@@ -29,6 +29,7 @@ import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
+import org.w3c.dom.Node;
 
 /**
  * Implemenation of JSF multiview element.
@@ -132,7 +133,11 @@ public class JsfMultiViewElement implements MultiViewElement {
     
     public void modelRefreshed() {
         jsfTopComponent.modelRefreshed();
-    }   
+    }
+    
+    public void nodeChanged(Node node, Node parent, boolean wasMove) {
+        jsfTopComponent.nodeChanged(node, parent, wasMove);
+    }
     // JSF notifications <<<
             
 }

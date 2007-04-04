@@ -1352,7 +1352,8 @@ public class WebForm implements Designer {
 //        getPane().getPaneUI().resetPageBox();
 //    }
 
-    public void nodeChanged(Node rendered, Node parent, boolean wasMove) {
+//    public void nodeChanged(Node rendered, Node parent, boolean wasMove) {
+    public void changeNode(Node rendered, Node parent, boolean wasMove) {
         PageBox pageBox = getPane().getPaneUI().getPageBox();
         pageBox.changed(rendered, parent, false);
     }
@@ -2297,9 +2298,9 @@ public class WebForm implements Designer {
 //            webForm.modelRefreshed();
 //        }
 
-        public void nodeChanged(Node rendered, Node parent, boolean wasMove) {
-            webForm.nodeChanged(rendered, parent, wasMove);
-        }
+//        public void nodeChanged(Node rendered, Node parent, boolean wasMove) {
+//            webForm.nodeChanged(rendered, parent, wasMove);
+//        }
 
         public void nodeRemoved(Node previouslyRendered, Node parent) {
             webForm.nodeRemoved(previouslyRendered, parent);

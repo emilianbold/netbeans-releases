@@ -29,6 +29,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * Interface representing the designer component.
@@ -202,4 +203,5 @@ public interface Designer {
     public void performEscape();
 
     public void resetAll();
+    public void changeNode(Node rendered, Node parent, boolean wasMove);
 }
