@@ -51,18 +51,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import javax.swing.Action;
 
 import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
-import org.netbeans.core.spi.multiview.CloseOperationState;
 
-import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
-import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
