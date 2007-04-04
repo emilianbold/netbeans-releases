@@ -368,6 +368,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
             if( configuration.getGenerateDataBinding()) {
                 off.write( "import org.netbeans.microedition.databinding.DataSet;\n" );
                 off.write( "import org.netbeans.microedition.databinding.DataBindingException;\n" );
+                off.write( "import org.netbeans.microedition.databinding.DataSource;\n" );
                 off.write( "\n" );
                 off.write( "public class " + name + " implements DataSet {\n" );
             } else {
@@ -426,6 +427,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                         off.write( "}\n" );
                     }
                 }
+                off.write( "throw new IllegalArgumentException( \"Invalid data item name \" + dataItemName );\n" );
                 off.write( "}\n" );
                 off.write( "\n" );
                 
@@ -447,6 +449,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                         off.write( "}\n" );
                     }
                 }
+                off.write( "throw new IllegalArgumentException( \"Invalid data item name \" + dataItemName );\n" );
                 off.write( "}\n" );
                 off.write( "\n" );
                 
@@ -490,6 +493,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                 off.write( "}\n" );
                 off.write( "\n" );
                 off.write( "public boolean isReadOnly(String dataItemName) {\n" );
+                off.write( "return false;\n" );
                 off.write( "}\n" );
                 off.write( "\n" );
                 off.write( "public void setOwningDataSource(DataSource ds) {\n" );
