@@ -2087,7 +2087,8 @@ public class JsfForm {
             Iterator it =
 //                DesignerService.getDefault().getWebPages(getProject(), true, false).iterator();
 //                    InSyncService.getProvider().getWebPages(getProject(), true, false).iterator();
-                    htmlDomProvider.getWebPageFileObjectsInThisProject().iterator();
+//                    htmlDomProvider.getWebPageFileObjectsInThisProject().iterator();
+                    Util.getWebPages(getFacesModel().getProject(), true, false).iterator();
 
             while (it.hasNext()) {
                 FileObject fo = (FileObject)it.next();

@@ -1413,11 +1413,11 @@ public class WebForm implements Designer {
         return htmlDomProvider.isRefreshPending();
     }
 
-//    public void attachContext(DesignContext context) {
-//        htmlDomProvider.attachContext(context);
-    public void attachContext() {
-        htmlDomProvider.attachContext();
-    }
+////    public void attachContext(DesignContext context) {
+////        htmlDomProvider.attachContext(context);
+//    public void attachContext() {
+//        htmlDomProvider.attachContext();
+//    }
     
 //    public void detachContext() {
 //        htmlDomProvider.detachContext();
