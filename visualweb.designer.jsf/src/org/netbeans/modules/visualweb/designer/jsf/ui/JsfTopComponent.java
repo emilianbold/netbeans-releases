@@ -2185,5 +2185,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     public void gridModeUpdated(boolean gridMode) {
         designer.setPaneGrid(gridMode);
     }
+    
+    public void documentReplaced() {
+        designer.detachDomDocument();
+    }
     // JSF notifications <<<
 }

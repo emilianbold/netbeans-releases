@@ -686,7 +686,8 @@ public class JsfForm {
     
     void documentReplaced() {
 //        designer.documentReplaced();
-        fireDocumentReplaced();
+//        fireDocumentReplaced();
+        notifyViewsDocumentReplaced();
     }
     
 //    public void clearHtml() {
@@ -1020,10 +1021,16 @@ public class JsfForm {
         }
     }
 
-    private void fireDocumentReplaced() {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.documentReplaced();
+//    private void fireDocumentReplaced() {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.documentReplaced();
+//        }
+//    }
+    private void notifyViewsDocumentReplaced() {
+        JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.documentReplaced();
         }
     }
 

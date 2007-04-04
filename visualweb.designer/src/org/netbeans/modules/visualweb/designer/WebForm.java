@@ -1381,7 +1381,8 @@ public class WebForm implements Designer {
 //        updatePaneGrid(htmlDomProvider.isGridMode());
 //    }
 
-    public void documentReplaced() {
+//    public void documentReplaced() {
+    public void detachDomDocument() {
         // Ensure that the caret is in the new DOM
         DesignerPane pane = getPane();
 
@@ -2328,9 +2329,9 @@ public class WebForm implements Designer {
 //            webForm.updatePaneGrid(gridMode);
 //        }
 
-        public void documentReplaced() {
-            webForm.documentReplaced();
-        }
+//        public void documentReplaced() {
+//            webForm.documentReplaced();
+//        }
 
         public void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
             webForm.showDropMatch(componentRootElement, regionElement, dropType);

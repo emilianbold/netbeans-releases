@@ -208,4 +208,6 @@ public interface Designer {
     public void insertNode(Node node, Node parent);
     
     public void setPaneGrid(boolean gridMode);
+    
+    public void detachDomDocument();
 }
