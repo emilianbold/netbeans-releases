@@ -21,11 +21,7 @@ package org.netbeans.modules.web.jsf.navigation.graph;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.AbstractQueue;
-import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.api.visual.graph.layout.UniversalGraph;
-import org.netbeans.modules.web.jsf.navigation.PageFlowController;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.LinkCreateProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
@@ -162,10 +158,6 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     }
     
     
-    private static final Image POINT_SHAPE_IMAGE = Utilities.loadImage("org/netbeans/modules/visual/resources/vmd-pin.png"); // NOI18N
-    private static final int PAGE_WIDGET_INDEX = 0;
-    private static final int DEFAULT_PIN_WIDGET_INDEX = 1;
-    
     private final LabelWidget malFormedLabel = new LabelWidget(this, "Mal Formed Event Received. - http://www.netbeans.org/issues/show_bug.cgi?id=98570");
     /**
      * To show a mal formed page.
@@ -206,7 +198,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         nodeWidget.setNodeName(node.getDisplayName());
         
         Widget header = nodeWidget.getHeader();
-        ImageWidget imageWidget = new DefaultAnchorWidget(this, POINT_SHAPE_IMAGE);
+        ImageWidget imageWidget = new DefaultAnchorWidget(this, Utilities.loadImage("org/netbeans/modules/visual/resources/vmd-pin.png"));
         imageWidget.getActions().addAction(connectAction);
         imageWidget.getActions().addAction(createWidgetHoverAction());
         header.addChild(imageWidget);
