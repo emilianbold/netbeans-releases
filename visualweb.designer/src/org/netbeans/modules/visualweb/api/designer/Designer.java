@@ -87,8 +87,9 @@ public interface Designer {
     public void syncSelection(boolean update);
     // XXX Get rid of
     public void updateSelectedNodes();
-    // XXX 
-    public void updateSelection();
+//    // XXX Get rid of
+////    public void updateSelection();
+//    public void updateNodes();
 
 //    public enum Alignment {
 //        SNAP_TO_GRID,

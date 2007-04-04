@@ -1554,7 +1554,8 @@ public class WebForm implements Designer {
             pane.getPaneUI().resetPageBox();
         }
 
-        getSelection().updateSelection(); // trigger refresh in CSS viewer for example
+//        getSelection().updateSelection(); // trigger refresh in CSS viewer for example
+        getSelection().updateNodes();
 
         if (pane != null) {
             pane.repaint();
@@ -2907,9 +2908,11 @@ public class WebForm implements Designer {
         getSelection().updateNodes();
     }
 
-    public void updateSelection() {
-        getSelection().updateSelection();
-    }
+////    public void updateSelection() {
+//    public void updateNodes() {
+////        getSelection().updateSelection();
+//        getSelection().updateNodes();
+//    }
 
     public Box getPageBox() {
         return getPane().getPageBox();

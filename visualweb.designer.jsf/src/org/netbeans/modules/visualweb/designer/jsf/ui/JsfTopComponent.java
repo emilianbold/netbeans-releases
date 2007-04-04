@@ -1889,7 +1889,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //            // XXX Updates outline selection!
 //            wf.getSelection().updateSelection();
 //        }
-        designer.updateSelection();
+//        designer.updateSelection();
+        designer.updateSelectedNodes();
     }
 
     /** Selects the navigator window. */

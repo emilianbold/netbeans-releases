@@ -149,7 +149,8 @@ public class SelectionManager {
 //        if ((selected == null) || (selected.size() == 0)) {
         if (selectedComponents.isEmpty()) {
             if (update) { // XXX why are we doing this? It should already be correct
-                updateSelection();
+//                updateSelection();
+                updateNodes();
 
                 // is a repaint needed?
             }
@@ -163,7 +164,8 @@ public class SelectionManager {
         primary = null;
 
         if (update) {
-            updateSelection();
+//            updateSelection();
+            updateNodes();
 //            webform.getTopComponent().disableCutCopyDelete(); // not true for paste
             webform.tcDisableCutCopyDelete();
             webform.getPane().repaint();
@@ -195,12 +197,12 @@ public class SelectionManager {
         webform.getPane().repaint();
     }
     
-    /** Update IDE to visually reflect the current selection */
-    public void updateSelection() {
-        updateNodes();
-        
-//        updateSelectionInOldOutline();
-    }
+//    /** Update IDE to visually reflect the current selection */
+//    public void updateSelection() {
+//        updateNodes();
+//        
+////        updateSelectionInOldOutline();
+//    }
     
     public void updateSelectionImmediate() {
         updateNodesImmediate();
@@ -312,7 +314,8 @@ public class SelectionManager {
         webform.getPane().repaint(); // XXX should this only be done for update=true?
 
         if (update) {
-            updateSelection();
+//            updateSelection();
+            updateNodes();
 
             // XXX why are we disabling cut copy paste? That depends on the
             // selection, doesn't it?
@@ -404,7 +407,8 @@ public class SelectionManager {
         leaf = sc.componentRootElement;
 
         if (update) {
-            updateSelection();
+//            updateSelection();
+            updateNodes();
         }
 
         if (wasEmpty) {
@@ -499,7 +503,8 @@ public class SelectionManager {
         }
 
         if (update) {
-            updateSelection();
+//            updateSelection();
+            updateNodes();
         }
 
 //        if (wasEmpty && (selected.size() == 0)) { // removed last component
@@ -742,7 +747,8 @@ public class SelectionManager {
             }
         }
 
-        updateSelection();
+//        updateSelection();
+        updateNodes();
 
 //        if (selected.size() > 0) {
         if (!selectedComponents.isEmpty()) {
@@ -803,7 +809,8 @@ public class SelectionManager {
             // The Marquee will call repaint
         }
 
-        updateSelection();
+//        updateSelection();
+        updateNodes();
 
         // XXX do I need to go and set copy selection here?
         pane.repaint();
@@ -1285,7 +1292,8 @@ public class SelectionManager {
                     }
 
                     if (update) {
-                        updateSelection();
+//                        updateSelection();
+                        updateNodes();
                     }
 
                     DesignerPane dp = webform.getPane();
