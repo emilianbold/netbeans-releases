@@ -197,7 +197,7 @@ public interface Designer {
 //    public void updateErrors();
 //    public void showErrors(boolean on);
     
-    public void updateGridMode();
+//    public void updateGridMode();
     
     // XXX Get rid of this
     public void performEscape();
@@ -206,4 +206,6 @@ public interface Designer {
     public void changeNode(Node node, Node parent, boolean wasMove);
     public void removeNode(Node node, Node parent);
     public void insertNode(Node node, Node parent);
+    
+    public void setPaneGrid(boolean gridMode);
 }

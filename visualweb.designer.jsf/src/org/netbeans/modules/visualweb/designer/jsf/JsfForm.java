@@ -666,10 +666,11 @@ public class JsfForm {
     
     void updateGridMode() {
 //        designer.updateGridMode();
-        fireUpdateGridMode(isGridMode());
+//        fireUpdateGridMode(isGridMode());
+        notifyViewsGridModeUpdated(isGridMode());
     }
     
-    boolean isGridMode() {
+    public boolean isGridMode() {
         Element body = getHtmlBody();
 
         if (body == null) {
@@ -1006,10 +1007,16 @@ public class JsfForm {
 //        }
 //    }
 
-    private void fireUpdateGridMode(boolean gridMode) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.gridModeUpdated(gridMode);
+//    private void fireUpdateGridMode(boolean gridMode) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.gridModeUpdated(gridMode);
+//        }
+//    }
+    private void notifyViewsGridModeUpdated(boolean gridMode) {
+        JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.gridModeUpdated(gridMode);
         }
     }
 

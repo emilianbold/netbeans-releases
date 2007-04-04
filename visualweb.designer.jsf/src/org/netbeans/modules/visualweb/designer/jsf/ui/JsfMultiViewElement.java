@@ -150,6 +150,10 @@ public class JsfMultiViewElement implements MultiViewElement {
     public void updateErrors() {
         jsfTopComponent.updateErrors();
     }
+    
+    public void gridModeUpdated(boolean gridMode) {
+        jsfTopComponent.gridModeUpdated(gridMode);
+    }
     // JSF notifications <<<
             
 }

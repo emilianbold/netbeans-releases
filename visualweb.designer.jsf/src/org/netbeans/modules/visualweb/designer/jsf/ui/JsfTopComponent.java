@@ -1068,7 +1068,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
 //        webform.setGridMode(html.getDocument().isGridMode());
 //        webform.updateGridMode();
-        designer.updateGridMode();
+//        designer.updateGridMode();
+            designer.setPaneGrid(jsfForm.isGridMode());
 
         // We cannot set the caret to the document position yet; we need
         // to do layout before the mapper functions work... This is done
@@ -2179,6 +2180,10 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     
     public void nodeInserted(org.w3c.dom.Node node, org.w3c.dom.Node parent) {
         designer.insertNode(node, parent);
+    }
+    
+    public void gridModeUpdated(boolean gridMode) {
+        designer.setPaneGrid(gridMode);
     }
     // JSF notifications <<<
 }

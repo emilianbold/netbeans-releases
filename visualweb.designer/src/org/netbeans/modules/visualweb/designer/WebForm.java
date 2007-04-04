@@ -950,7 +950,8 @@ public class WebForm implements Designer {
 //        // Gotta set the cursor to a pointer instead! How can I do
 //        // this in a PLAF agnostic way?
 //    }
-    private void updatePaneGrid(boolean gridMode) {
+//    private void updatePaneGrid(boolean gridMode) {
+    public void setPaneGrid(boolean gridMode) {
         DesignerPane pane = getPane();
         if (pane != null) {
             pane.setGridMode(gridMode);
@@ -1373,12 +1374,12 @@ public class WebForm implements Designer {
         getPane().getPaneUI().getPageBox().inserted(rendered, parent);
     }
     
-    public void updateGridMode() {
-//        setGridMode(getDocument().isGridMode()); // XXX
-//        setGridMode(isGridModeDocument());
-        // XXX
-        updatePaneGrid(htmlDomProvider.isGridMode());
-    }
+//    public void updateGridMode() {
+////        setGridMode(getDocument().isGridMode()); // XXX
+////        setGridMode(isGridModeDocument());
+//        // XXX
+//        updatePaneGrid(htmlDomProvider.isGridMode());
+//    }
 
     public void documentReplaced() {
         // Ensure that the caret is in the new DOM
@@ -2323,9 +2324,9 @@ public class WebForm implements Designer {
 //        public void updateGridMode() {
 //            webForm.updateGridMode();
 //        }
-        public void gridModeUpdated(boolean gridMode) {
-            webForm.updatePaneGrid(gridMode);
-        }
+//        public void gridModeUpdated(boolean gridMode) {
+//            webForm.updatePaneGrid(gridMode);
+//        }
 
         public void documentReplaced() {
             webForm.documentReplaced();
