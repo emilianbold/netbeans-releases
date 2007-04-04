@@ -322,7 +322,7 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
     private static void dumpInnerclasses(PrintWriter output, List<TypeElement> innerClasses) {
         for (TypeElement innerClass : innerClasses) {
             dumpName(output, innerClass.getSimpleName());
-            dumpFlags(output, ((Symbol)innerClass).flags_field & ~Flags.FROMCLASS);
+            dumpFlags(output, ((Symbol)innerClass).flags_field & ~ (Flags.FROMCLASS|Flags.UNATTRIBUTED));
         }
         output.append(';');
     }
