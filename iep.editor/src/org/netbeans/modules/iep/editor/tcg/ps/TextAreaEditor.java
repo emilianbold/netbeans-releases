@@ -85,8 +85,9 @@ public class TextAreaEditor extends TcgComponentNodePropertyEditor {
      *
      */
     private class Customizer extends TcgComponentNodePropertyCustomizer  {
-        
-        private JTextArea mTextArea = null;
+        // this is called after initialize(), so don't initialize it because
+        // mTextArea is already initialized in initialize()
+        private JTextArea mTextArea;  
         /**
          * Constructor
          */
