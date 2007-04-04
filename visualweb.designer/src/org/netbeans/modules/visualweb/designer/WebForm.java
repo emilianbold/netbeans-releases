@@ -1619,13 +1619,13 @@ public class WebForm implements Designer {
 //        }
 //    }
 
-//    public void contextChanged(DesignContext designContext) {
-    private void designContextGenerationChanged() {
-//        if (view != null) {
-//            view.designContextGenerationChanged();
-//        }
-        htmlDomProvider.tcDesignContextGenerationChanged(this);
-    }
+////    public void contextChanged(DesignContext designContext) {
+//    private void designContextGenerationChanged() {
+////        if (view != null) {
+////            view.designContextGenerationChanged();
+////        }
+//        htmlDomProvider.tcDesignContextGenerationChanged(this);
+//    }
 
 //    public void beanCreated(DesignBean designBean) {
 //        if (view != null) {
@@ -2365,9 +2365,9 @@ public class WebForm implements Designer {
 //            webForm.contextDeactivated(designContext);
 //        }
 
-        public void designContextGenerationChanged() {
-            webForm.designContextGenerationChanged();
-        }
+//        public void designContextGenerationChanged() {
+//            webForm.designContextGenerationChanged();
+//        }
 
 //        public void designBeanCreated(DesignBean designBean) {
 //            webForm.beanCreated(designBean);

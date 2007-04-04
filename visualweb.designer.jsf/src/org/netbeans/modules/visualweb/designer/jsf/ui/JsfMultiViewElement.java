@@ -175,6 +175,10 @@ public class JsfMultiViewElement implements MultiViewElement {
     public void inlineEditComponents(Element[] componentRootElements) {
         jsfTopComponent.inlineEditComponents(componentRootElements);
     }
+    
+    public void designContextGenerationChanged() {
+        jsfTopComponent.designContextGenerationChanged();
+    }
     // JSF notifications <<<
             
 }

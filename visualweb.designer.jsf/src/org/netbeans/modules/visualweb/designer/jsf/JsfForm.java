@@ -1139,6 +1139,13 @@ public class JsfForm {
             jsfMultiViewElement.updateErrors();
         }
     }
+    
+    private void notifyViewsDesignContextGenerationChanged() {
+        JsfMultiViewElement[] jsfMultiViewElements = JsfForm.findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.designContextGenerationChanged();
+        }
+    }
 
     // XXX Hack to skip firing events if the generation is the same. Old code moved from designer.
     private long generationSeen = 0L;    
@@ -1157,11 +1164,12 @@ public class JsfForm {
         }
         generationSeen = currentGeneration;
         
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-//            listener.designContextChanged(designContext);
-            listener.designContextGenerationChanged();
-        }
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+////            listener.designContextChanged(designContext);
+//            listener.designContextGenerationChanged();
+//        }
+        notifyViewsDesignContextGenerationChanged();
     }
 
 //    private void fireDesignBeanCreated(DesignBean designBean) {
