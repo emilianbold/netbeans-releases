@@ -22,6 +22,7 @@ package gui.window;
 import gui.Utilities;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.EditorOperator;
@@ -65,8 +66,8 @@ public class GotoLineDialog extends org.netbeans.performance.test.utilities.Perf
     
     public ComponentOperator open(){
         // press CTRL+G
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_G, KeyEvent.CTRL_MASK)).perform(editor);
-        return new NbDialogOperator("Go to Line");
+        new ActionNoBlock(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_G, KeyEvent.CTRL_MASK)).performShortcut(editor);
+        return new NbDialogOperator(TITLE); // NOI18N
     }
     
     public void shutdown(){
@@ -78,6 +79,7 @@ public class GotoLineDialog extends org.netbeans.performance.test.utilities.Perf
      * @param args arguments from command line
      */
     public static void main(String[] args) {
+        repeat = 3;
         junit.textui.TestRunner.run(new GotoLineDialog("measureTime"));
     }
     
