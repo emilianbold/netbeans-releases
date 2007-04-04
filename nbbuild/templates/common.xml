@@ -615,7 +615,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="${cluster}/update_tracking/${code.name.base.dashes}.xml"/>
     </target>
 
-    <target name="fix-dependencies" depends="basic-init" >
+    <target name="fix-dependencies" depends="basic-init" description="Removes unused compilation dependencies on other modules.">
         <property name="build.compiler.deprecation" value="false" />        
         <fixdependencies antfile="../../build.xml" buildtarget="netbeans" cleantarget="clean" failonerror="true" >
           <replace codenamebase="org.openide" addcompiletime="true" >
@@ -641,7 +641,7 @@ Microsystems, Inc. All Rights Reserved.
         </fixdependencies>
     </target>
     
-    <target name="fix-test-dependencies" depends="basic-init" description="It moves classpath for tests from project.properties to project.xml.">
+    <target name="fix-test-dependencies" depends="basic-init" description="Moves classpath for tests from project.properties to project.xml.">
             <fixtestdeps projectXml="nbproject/project.xml" 
                   propertiesFile="nbproject/project.properties"/>  
     </target>
