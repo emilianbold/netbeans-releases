@@ -2160,8 +2160,13 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     }
     
     
-    // JSF notifications >>
+    // JSF notifications >>>
     public void modelChanged() {
         designer.resetPanePageBox();
     }
+    
+    public void modelRefreshed() {
+        designer.resetAll();
+    }
+    // JSF notifications <<<
 }

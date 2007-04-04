@@ -200,5 +200,6 @@ public interface Designer {
     
     // XXX Get rid of this
     public void performEscape();
-    
+
+    public void resetAll();
 }

@@ -657,7 +657,8 @@ public class JsfForm {
         // XXX Moved from designer/../WebForm.
         externalDomProviderCache.flush();
         
-        fireModelRefreshed();
+//        fireModelRefreshed();
+        notifyViewsModelRefreshed();
     }
     
     public void refreshProject() {
@@ -886,10 +887,16 @@ public class JsfForm {
         }
     }
     
-    private void fireModelRefreshed() {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.modelRefreshed();
+//    private void fireModelRefreshed() {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.modelRefreshed();
+//        }
+//    }
+    private void notifyViewsModelRefreshed() {
+        JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.modelRefreshed();
         }
     }
 

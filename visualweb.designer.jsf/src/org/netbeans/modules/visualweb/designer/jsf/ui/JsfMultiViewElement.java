@@ -129,4 +129,10 @@ public class JsfMultiViewElement implements MultiViewElement {
     public void modelChanged() {
         jsfTopComponent.modelChanged();
     }
+    
+    public void modelRefreshed() {
+        jsfTopComponent.modelRefreshed();
+    }   
+    // JSF notifications <<<
+            
 }

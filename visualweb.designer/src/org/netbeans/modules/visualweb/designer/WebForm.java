@@ -1527,7 +1527,8 @@ public class WebForm implements Designer {
         }
     }
     
-    private void modelRefreshed() {
+//    private void modelRefreshed() {
+    public void resetAll() {
         getManager().finishInlineEditing(false);
 
         flushCaches();
@@ -2292,9 +2293,9 @@ public class WebForm implements Designer {
 //            webForm.modelChanged();
 //        }
         
-        public void modelRefreshed() {
-            webForm.modelRefreshed();
-        }
+//        public void modelRefreshed() {
+//            webForm.modelRefreshed();
+//        }
 
         public void nodeChanged(Node rendered, Node parent, boolean wasMove) {
             webForm.nodeChanged(rendered, parent, wasMove);
