@@ -163,6 +163,10 @@ public class JsfMultiViewElement implements MultiViewElement {
     public void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
         jsfTopComponent.showDropMatch(componentRootElement, regionElement, dropType);
     }
+    
+    public void clearDropMatch() {
+        jsfTopComponent.clearDropMatch();
+    }
     // JSF notifications <<<
             
 }

@@ -1746,7 +1746,7 @@ public class WebForm implements Designer {
         getPane().getDndHandler().showDropMatch(componentRootElement, regionElement, dropType);
     }
     
-    private void clearDropMatch() {
+    public void clearDropMatch() {
         getPane().getDndHandler().clearDropMatch();
     }
     
@@ -2337,9 +2337,9 @@ public class WebForm implements Designer {
 //            webForm.showDropMatch(componentRootElement, regionElement, dropType);
 //        }
         
-        public void clearDropMatch() {
-            webForm.clearDropMatch();
-        }
+//        public void clearDropMatch() {
+//            webForm.clearDropMatch();
+//        }
 
         public void select(/*DesignBean designBean*/ Element componentRootElement) {
 //            webForm.select(designBean);

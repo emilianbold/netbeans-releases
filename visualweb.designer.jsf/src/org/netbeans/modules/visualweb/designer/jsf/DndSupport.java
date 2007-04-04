@@ -488,7 +488,8 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
     }
     
     private void clearDropMatch() {
-        jsfForm.fireClearDropMatch();
+//        jsfForm.fireClearDropMatch();
+        jsfForm.clearDropMatch();
     }
 
     void importString(String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,

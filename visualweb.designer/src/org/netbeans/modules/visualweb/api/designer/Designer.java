@@ -212,4 +212,5 @@ public interface Designer {
     public void detachDomDocument();
     
     public void showDropMatch(Element componentRootElement, Element regionElement, int dropType);
+    public void clearDropMatch();
 }

@@ -694,6 +694,10 @@ public class JsfForm {
         notifyViewsShowDropMatch(componentRootElement, regionElement, dropType);
     }
     
+    void clearDropMatch() {
+        notifyViewsClearDropMatch();
+    }
+    
 //    public void clearHtml() {
 ////        InSyncServiceProvider.get().clearHtmlForMarkupFile(getFacesModel().getMarkupFile());
 //        getFacesModel().clearHtml();
@@ -1051,10 +1055,16 @@ public class JsfForm {
         }
     }
     
-    void fireClearDropMatch() {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.clearDropMatch();
+//    void fireClearDropMatch() {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.clearDropMatch();
+//        }
+//    }
+    private void notifyViewsClearDropMatch() {
+        JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.clearDropMatch();
         }
     }
 

@@ -2193,5 +2193,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     public void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
         designer.showDropMatch(componentRootElement, regionElement, dropType);
     }
+    
+    public void clearDropMatch() {
+        designer.clearDropMatch();
+    }
     // JSF notifications <<<
 }
