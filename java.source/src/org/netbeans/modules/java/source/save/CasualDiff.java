@@ -509,8 +509,12 @@ public class CasualDiff {
         copyTo(localPointer, localPointer = posHint);
         PositionEstimator est = EstimatorFactory.throwz(((MethodTree) oldT).getThrows(), ((MethodTree) newT).getThrows(), workingCopy);
         localPointer = diffList2(oldT.thrown, newT.thrown, posHint, est);
-        posHint = endPos(oldT) - 1;
-        localPointer = diffTree(oldT.body, newT.body, localPointer);
+        if (newT.body == null) {
+            localPointer = endPos(oldT.body);
+            printer.print(";");
+        } else {
+            localPointer = diffTree(oldT.body, newT.body, localPointer);
+        }
         //diffTree(oldT.defaultValue, newT.defaultValue);
         copyTo(localPointer, bounds[1]);
         return bounds[1];
