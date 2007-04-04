@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -108,6 +108,15 @@ public interface CallStackFrame {
      */
     public abstract LocalVariable[] getLocalVariables () 
     throws AbsentInformationException;
+    
+    /**
+     * Returns arguments of the current method (if any).
+     * @return The array of arguments or
+     *         <code>null</code> when it's not possible to retrieve the arguments.
+     *
+     * (Possible to uncomment if this method is necessary. We have the implementation.)
+    public abstract LocalVariable[] getMethodArguments();
+     */
 
     /**
      * Returns object reference this frame is associated with or null (

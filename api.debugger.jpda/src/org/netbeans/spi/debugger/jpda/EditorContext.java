@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Micro//S ystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Micro//S ystems, Inc. Portions Copyright 1997-2007 Sun
  * Micro//S ystems, Inc. All Rights Reserved.
  */
 package org.netbeans.spi.debugger.jpda;
@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 
 /**
@@ -306,6 +307,24 @@ public abstract class EditorContext {
     }
     
     /**
+     * Get a list of arguments to the given operation.
+     * @param url The URL of the source file with the operation
+     * @param operation The operation
+     */
+    public MethodArgument[] getArguments(String url, Operation operation) {
+        throw new UnsupportedOperationException("This method is not implemented.");
+    }
+    
+    /**
+     * Get a list of arguments passed to method located at the given line.
+     * @param url The URL of the source file
+     * @param methodLineNumber The line number of the method header
+     */
+    public MethodArgument[] getArguments(String url, int methodLineNumber) {
+        throw new UnsupportedOperationException("This method is not implemented.");
+    }
+    
+    /**
      * Adds a property change listener.
      *
      * @param l the listener to add
@@ -557,6 +576,65 @@ public abstract class EditorContext {
 
         public int hashCode() {
             return offset;
+        }
+        
+    }
+    
+    /**
+     * Representation of an argument to a method.
+     * @since 2.10
+     */
+    public static final class MethodArgument {
+        
+        private String name;
+        private String type;
+        private Position startPos;
+        private Position endPos;
+        
+        /**
+         * Creates a new argument.
+         * @param name The argument name
+         * @param type The declared type of the argument
+         * @param startPos Starting position of the argument in the source code
+         * @param endPos Ending position of the argument in the source code
+         */
+        public MethodArgument(String name, String type, Position startPos, Position endPos) {
+            this.name = name;
+            this.type = type;
+            startPos = startPos;
+            endPos = endPos;
+        }
+        
+        /**
+         * Get the name of this argument.
+         * @return The name.
+         */
+        public String getName() {
+            return name;
+        }
+        
+        /**
+         * Get the declared type of this argument.
+         * @return The declared type.
+         */
+        public String getType() {
+            return type;
+        }
+        
+        /**
+         * Get the starting position of this argument in the source code.
+         * @return The starting position.
+         */
+        public Position getStartPosition() {
+            return startPos;
+        }
+        
+        /**
+         * Get the ending position of this argument in the source code.
+         * @return The ending position.
+         */
+        public Position getEndPosition() {
+            return endPos;
         }
         
     }

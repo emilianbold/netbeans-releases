@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -465,6 +465,31 @@ Microsystems, Inc. All Rights Reserved.
         <class package="org.netbeans.spi.debugger.jpda" name="EditorContext" />
         <issue number="93842"/>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>API for retrieval of method arguments.</summary>
+        <version major="2" minor="10"/>
+        <date day="28" month="3" year="2007"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <p>
+               An access to method arguments in source code is necessary
+               for cases where we do not have full debug information.
+            </p>
+            <p>
+                Added methods:<br/>
+                <code>EditorContext.getArguments()</code>
+            </p>
+            <p>
+                Added classes:<br/>
+                <code>EditorContext.MethodArgument</code>
+            </p>
+        </description>
+        <class package="org.netbeans.spi.debugger.jpda" name="EditorContext" />
+        <issue number="99257"/>
+    </change>
+
 
 </changes>
 
