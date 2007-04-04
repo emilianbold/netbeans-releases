@@ -329,7 +329,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                 this.dbtype = DBMetaData.getDBType(this.selectedConnection.getJDBCConnection());
                 this.dbmodel = new DatabaseModelImpl(this.selectedConnection.getDisplayName(), def);
     
-    		    final String[][] tableList = DBMetaData.getTablesOnly("", "", "", false,connection);
+    		    final String[][] tableList = DBMetaData.getTablesOnly("", this.selectedConnection.getSchema(), "", false,connection);
     			String[] currTable = null;
     			List tableNamesList = new ArrayList();
                 if (tableList != null) {
