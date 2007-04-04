@@ -473,6 +473,9 @@ public class ResultSetPropertyResolver extends PropertyResolver {
                     public ResultSet getResultSet(Map map) {
                         return null;
                     }
+
+		    public void free() {
+		    }
                 }
                 ;
             case Types.BIGINT:

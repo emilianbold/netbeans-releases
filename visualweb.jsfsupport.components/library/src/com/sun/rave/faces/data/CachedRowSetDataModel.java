@@ -926,6 +926,9 @@ public class CachedRowSetDataModel extends DataModel {
                     public ResultSet getResultSet(Map map) {
                         return null;
                     }
+
+		    public void free() {
+		    }
                 }
                 ;
             case Types.BIGINT:

@@ -1219,6 +1219,9 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                     public ResultSet getResultSet(Map map) {
                         return null;
                     }
+
+		    public void free() {
+		    }
                 };
         } else if (className.equals("char[]")) { // NOI18N
                 return fakeData? new char[] { 'a', 'b', 'c', 'd', 'e'}: new char[0];
@@ -1473,6 +1476,9 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                     public ResultSet getResultSet(Map map) {
                         return null;
                     }
+
+		    public void free() {
+		    }
                 };
 
             case Types.BIGINT:
