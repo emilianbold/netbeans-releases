@@ -23,8 +23,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.languages.support.CompletionSupport;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
@@ -40,7 +43,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * 
  * @author Jan Jancura
  */
-public class LibrarySupport {
+public abstract class LibrarySupport {
 
     /**
      * Crates new Instance of LibrarySupport and reads library definition from give resource file.
@@ -48,18 +51,18 @@ public class LibrarySupport {
      * @param resourceName a name of resource file
      */
     public static LibrarySupport create (String resourceName) {
-        return new LibrarySupport (resourceName);
+        return new LibraryImpl (resourceName);
     }
-    
-    private String resourceName;
-    
-    private LibrarySupport (String resourceName) {
-        this.resourceName = resourceName;
+
+    /**
+     * Crates new Instance of LibrarySupport and reads library definition from give resource files.
+     * 
+     * @param resourceNames names of resource files
+     */
+    public static LibrarySupport create (List<String> resourceNames) {
+        return new DelegatingLibrarySupport (resourceNames);
     }
-    
-    
-    private Map<String,List<String>> keys = new HashMap<String,List<String>> ();
-    
+
     /**
      * Returns list of items for given context (e.g. list of static methods 
      * for fiven class name).
@@ -67,18 +70,9 @@ public class LibrarySupport {
      * @param context
      * @return list of items for given context
      */
-    public List<String> getItems (String context) {
-        List<String> k = keys.get (context);
-        if (k == null) {
-            Map<String,Map<String,String>> m = getItems ().get (context);
-            if (m == null) return null;
-            k = new ArrayList<String> (m.keySet ());
-            Collections.<String>sort (k);
-            k = Collections.<String>unmodifiableList (k);
-            keys.put (context, k);
-        }
-        return k;
-    }
+    public abstract List<String> getItems (String context);
+    
+    public abstract List<CompletionItem> getCompletionItems (String context);
     
     /**
      * Returns property for given item, context and property name.
@@ -87,40 +81,129 @@ public class LibrarySupport {
      * @param item an item
      * @param propertyName a name of property
      */
-    public String getProperty (String context, String item, String propertyName) {
-        Map<String,Map<String,String>> m = getItems ().get (context);
-        if (m == null) return null;
-        Map<String,String> m1 = m.get (item);
-        if (m1 == null) return null;
-        return m1.get (propertyName);
-    }
+    public abstract String getProperty (String context, String item, String propertyName);
     
     
-    // generics support methods ................................................
     
-    private Map<String,Map<String,Map<String,String>>> items;
-    
-    private Map<String,Map<String,Map<String,String>>> getItems () {
-        if (items == null)
-            try {
-                XMLReader reader = XMLUtil.createXMLReader ();
-                Handler handler = new Handler ();
-                reader.setEntityResolver (handler);
-                reader.setContentHandler (handler);
-                ClassLoader loader = (ClassLoader) Lookup.getDefault ().
-                    lookup (ClassLoader.class);
-                InputStream is = loader.getResourceAsStream (resourceName);
-                try {
-                    reader.parse (new InputSource (is));
-                } finally {
-                    is.close ();
-                }
-                items = handler.result;
-            } catch (Exception ex) {
-                ErrorManager.getDefault ().notify (ex);
-                items = Collections.<String,Map<String,Map<String,String>>> emptyMap ();
+    private static class LibraryImpl extends LibrarySupport {
+        
+        private String resourceName;
+
+        LibraryImpl (String resourceName) {
+            this.resourceName = resourceName;
+        }
+
+
+        private Map<String,List<String>> keys = new HashMap<String,List<String>> ();
+
+        public List<String> getItems (String context) {
+            List<String> k = keys.get (context);
+            if (k == null) {
+                Map<String,Map<String,String>> m = getItems ().get (context);
+                if (m == null) return null;
+                k = new ArrayList<String> (m.keySet ());
+                Collections.<String>sort (k);
+                k = Collections.<String>unmodifiableList (k);
+                keys.put (context, k);
             }
-        return items;
+            return k;
+        }
+    
+        public List<CompletionItem> getCompletionItems (String context) {
+            List<CompletionItem> result = new ArrayList<CompletionItem> ();
+            List<String> items = getItems (context);
+            if (items == null) return result;
+            Iterator<String> it = items.iterator ();
+            while (it.hasNext ()) {
+                String name =  it.next();
+                String description = getProperty 
+                    (context, name, "description");
+                String type = getProperty 
+                    (context, name, "type");
+                String color = "black";
+                String library = getProperty 
+                    (context, name, "library");
+                String icon = null;
+                if ("keyword".equals (type)) {
+                    color = "blue";
+                    icon = "/org/netbeans/modules/languages/resources/keyword.gif";
+                } else
+                if ("interface".equals (type)) {
+                    icon = "/org/netbeans/modules/languages/resources/class.gif";
+                } else
+                if ("attribute".equals (type)) {
+                    icon = "/org/netbeans/modules/languages/resources/variable.gif";
+                } else
+                if ("function".equals (type)) {
+                    icon = "/org/netbeans/modules/languages/resources/method.gif";
+                }
+                
+                if (description == null)
+                    result.add (CompletionSupport.createCompletionItem (
+                        name,
+                        "<html><b><font color=" + color + ">" + name + 
+                            "</font></b></html>",
+                        library,
+                        icon,
+                        2
+                    ));
+                else
+                    result.add (CompletionSupport.createCompletionItem (
+                        name,
+                        "<html><b><font color=" + color + ">" + name + 
+                            ": </font></b><font color=black> " + 
+                            description + "</font></html>",
+                        library,
+                        icon,
+                        2
+                    ));
+            }
+            return result;
+        }
+
+        /**
+         * Returns property for given item, context and property name.
+         * 
+         * @param context a context
+         * @param item an item
+         * @param propertyName a name of property
+         */
+        public String getProperty (String context, String item, String propertyName) {
+            Map<String,Map<String,String>> m = getItems ().get (context);
+            if (m == null) return null;
+            Map<String,String> m1 = m.get (item);
+            if (m1 == null) return null;
+            return m1.get (propertyName);
+        }
+
+
+        // generics support methods ................................................
+
+        // context>name>property>value
+        private Map<String,Map<String,Map<String,String>>> items;
+
+        private Map<String,Map<String,Map<String,String>>> getItems () {
+            if (items == null)
+                try {
+                    XMLReader reader = XMLUtil.createXMLReader ();
+                    Handler handler = new Handler ();
+                    reader.setEntityResolver (handler);
+                    reader.setContentHandler (handler);
+                    ClassLoader loader = (ClassLoader) Lookup.getDefault ().
+                        lookup (ClassLoader.class);
+                    InputStream is = loader.getResourceAsStream (resourceName);
+                    try {
+                        reader.parse (new InputSource (is));
+                    } finally {
+                        is.close ();
+                    }
+                    items = handler.result;
+                } catch (Exception ex) {
+                    ErrorManager.getDefault ().notify (ex);
+                    items = Collections.<String,Map<String,Map<String,String>>> emptyMap ();
+                }
+            return items;
+        }
     }
     
     static class Handler extends DefaultHandler {
@@ -157,8 +240,8 @@ public class LibrarySupport {
                             c = new HashMap<String,Map<String,String>> ();
                             result.put (context, c);
                         }
-                        if (c.containsKey (key))
-                            throw new IllegalArgumentException ("Key " + context + "-" + key + " already exists!");
+//                        if (c.containsKey (key))
+//                            throw new IllegalArgumentException ("Key " + context + "-" + key + " already exists!");
                         c.put (key, properties);
                         if (i < 0) break;
                         contexts = contexts.substring (i + 1);
@@ -173,6 +256,56 @@ public class LibrarySupport {
             return new InputSource (
                 new java.io.ByteArrayInputStream (new byte [0])
             );
+        }
+    }
+    
+    static class DelegatingLibrarySupport extends LibrarySupport {
+        
+        private List<LibrarySupport> libraries = new ArrayList<LibrarySupport> ();
+        
+        DelegatingLibrarySupport (
+            List<String> resources
+        ) {
+            Iterator<String> it = resources.iterator ();
+            while (it.hasNext ()) {
+                String resource =  it.next();
+                libraries.add (new LibraryImpl (resource));
+            }
+        }
+    
+        public List<String> getItems (String context) {
+            List<String> result = new ArrayList<String> ();
+            Iterator<LibrarySupport> it = libraries.iterator ();
+            while (it.hasNext ()) {
+                LibrarySupport librarySupport =  it.next();
+                result.addAll (librarySupport.getItems (context));
+            }
+            return result;
+        }
+    
+        public List<CompletionItem> getCompletionItems (String context) {
+            List<CompletionItem> result = new ArrayList<CompletionItem> ();
+            Iterator<LibrarySupport> it = libraries.iterator ();
+            while (it.hasNext ()) {
+                LibrarySupport librarySupport =  it.next();
+                result.addAll (librarySupport.getCompletionItems (context));
+            }
+            return result;
+        }
+
+        public String getProperty (
+            String context, 
+            String item,
+            String propertyName
+        ) {
+            Iterator<LibrarySupport> it = libraries.iterator ();
+            while (it.hasNext ()) {
+                LibrarySupport librarySupport =  it.next();
+                String result = librarySupport.getProperty (context, item, propertyName);
+                if (result != null) 
+                    return result;
+            }
+            return null;
         }
     }
 }

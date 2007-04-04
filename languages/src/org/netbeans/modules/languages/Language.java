@@ -42,6 +42,7 @@ import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.modules.languages.Language.TokenType;
@@ -566,7 +567,7 @@ public class Language {
 //        return m;
 //    }
 
-    public ASTNode parse (InputStream is, String sourceName) throws IOException, ParseException {
+    public ASTNode parse (InputStream is) throws IOException, ParseException {
         BufferedReader br = new BufferedReader (new InputStreamReader (is));
         StringBuilder sb = new StringBuilder ();
         String ln = br.readLine ();
@@ -580,7 +581,15 @@ public class Language {
             new StringInput (sb.toString ()),
             getSkipTokenTypes ()
         );
-        return getAnalyser ().read (ti, true);
+        ASTNode root = getAnalyser ().read (ti, true);
+        Feature astProperties = getFeature ("AST");
+        if (astProperties != null && root != null) {
+            return (ASTNode) astProperties.getValue (
+                "process", 
+                SyntaxContext.create (null, ASTPath.create (root))
+            );
+        }
+        return root;
     }
     
     void print () throws ParseException {
