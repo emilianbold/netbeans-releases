@@ -63,18 +63,14 @@ public final class AccessibilityQueryImpl implements AccessibilityQueryImplement
                             return true;
                         }
                     }
-                    return false;
                 } else {
                     Util.err.log(ErrorManager.WARNING, "Invalid project.xml for " + project);
                     return null;
                 }
             }
         }
-        FileObject testSrcDir = project.getTestSourceDirectory();
-        if (pkg == testSrcDir || FileUtil.isParentOf(testSrcDir, pkg)) {
-            return false;
-        }
-        return null;
+        // Everything else assumed to *not* be public.
+        return false;
     }
 
 }
