@@ -2192,7 +2192,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             out.write(NEWLINE);
             out.write("             targetNamespace=\"" + tns + "\""); // NOI18M
             out.write(NEWLINE);
-            out.write("             xmlns:myns=\"" + tns + "\""); // NOI18M
+            out.write("             xmlns:myns=\"" + tns + "\">"); // NOI18M
             out.write(NEWLINE);
             out.write("</definitions>"); // NOI18M
             out.write(NEWLINE);
