@@ -29,6 +29,7 @@ import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
@@ -157,6 +158,10 @@ public class JsfMultiViewElement implements MultiViewElement {
     
     public void documentReplaced() {
         jsfTopComponent.documentReplaced();
+    }
+    
+    public void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
+        jsfTopComponent.showDropMatch(componentRootElement, regionElement, dropType);
     }
     // JSF notifications <<<
             

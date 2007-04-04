@@ -483,7 +483,8 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
     }
     
     private void showDropMatch(Element componentRootElement, int dropType) {
-        jsfForm.fireShowDropMatch(componentRootElement, null, dropType);
+//        jsfForm.fireShowDropMatch(componentRootElement, null, dropType);
+        jsfForm.showDropMatch(componentRootElement, null, dropType);
     }
     
     private void clearDropMatch() {
@@ -597,7 +598,8 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
 //                jsfForm.designer.showDropMatch(dropInfo.getMarkupDesignBean(), dropInfo.getMarkupMouseRegion(), dropInfo.getDropType());
 //                jsfForm.fireShowDropMatch(dropInfo.getMarkupDesignBean(), dropInfo.getMarkupMouseRegion(), dropInfo.getDropType());
                 Element componentRootElement = HtmlDomProviderImpl.getComponentRootElementForMarkupDesignBean(dropInfo.getMarkupDesignBean());
-                jsfForm.fireShowDropMatch(componentRootElement, dropInfo.getRegionElement(), dropInfo.getDropType());
+//                jsfForm.fireShowDropMatch(componentRootElement, dropInfo.getRegionElement(), dropInfo.getDropType());
+                jsfForm.showDropMatch(componentRootElement, dropInfo.getRegionElement(), dropInfo.getDropType());
             } else if (FacesDndSupport.PROPERTY_SELECTED_DESIGN_BEAN.equals(evt.getPropertyName())) {
 //                jsfForm.designer.select((DesignBean)evt.getNewValue());
                 jsfForm.fireSelect((DesignBean)evt.getNewValue());

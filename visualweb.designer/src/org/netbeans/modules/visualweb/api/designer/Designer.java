@@ -210,4 +210,6 @@ public interface Designer {
     public void setPaneGrid(boolean gridMode);
     
     public void detachDomDocument();
+    
+    public void showDropMatch(Element componentRootElement, Element regionElement, int dropType);
 }

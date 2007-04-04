@@ -1742,7 +1742,7 @@ public class WebForm implements Designer {
     // <<< DnD
 
     // >>> DnD callbacks
-    private void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
+    public void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
         getPane().getDndHandler().showDropMatch(componentRootElement, regionElement, dropType);
     }
     
@@ -2333,9 +2333,9 @@ public class WebForm implements Designer {
 //            webForm.documentReplaced();
 //        }
 
-        public void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
-            webForm.showDropMatch(componentRootElement, regionElement, dropType);
-        }
+//        public void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
+//            webForm.showDropMatch(componentRootElement, regionElement, dropType);
+//        }
         
         public void clearDropMatch() {
             webForm.clearDropMatch();

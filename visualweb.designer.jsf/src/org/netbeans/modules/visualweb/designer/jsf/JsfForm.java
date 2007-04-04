@@ -690,6 +690,10 @@ public class JsfForm {
         notifyViewsDocumentReplaced();
     }
     
+    void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
+        notifyViewsShowDropMatch(componentRootElement, regionElement, dropType);
+    }
+    
 //    public void clearHtml() {
 ////        InSyncServiceProvider.get().clearHtmlForMarkupFile(getFacesModel().getMarkupFile());
 //        getFacesModel().clearHtml();
@@ -1034,10 +1038,16 @@ public class JsfForm {
         }
     }
 
-    void fireShowDropMatch(Element componentRootElement, Element regionElement, int dropType) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.showDropMatch(componentRootElement, regionElement, dropType);
+//    void fireShowDropMatch(Element componentRootElement, Element regionElement, int dropType) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.showDropMatch(componentRootElement, regionElement, dropType);
+//        }
+//    }
+    private void notifyViewsShowDropMatch(Element componentRootElement, Element regionElement, int dropType) {
+        JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.showDropMatch(componentRootElement, regionElement, dropType);
         }
     }
     

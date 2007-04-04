@@ -2189,5 +2189,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     public void documentReplaced() {
         designer.detachDomDocument();
     }
+    
+    public void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
+        designer.showDropMatch(componentRootElement, regionElement, dropType);
+    }
     // JSF notifications <<<
 }
