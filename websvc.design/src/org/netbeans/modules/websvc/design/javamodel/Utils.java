@@ -212,15 +212,33 @@ public class Utils {
         List<FaultModel> faults = new ArrayList<FaultModel>();
         for (TypeMirror faultType:faultTypes) {
             FaultModel faultModel = new FaultModel();
+            boolean faultFound=false;
             if (faultType.getKind() == TypeKind.DECLARED) {
                 TypeElement faultEl = (TypeElement)((DeclaredType)faultType).asElement();
+                TypeElement faultAnotationEl = controller.getElements().getTypeElement("javax.xml.ws.WebFault"); //NOI18N
+                List<? extends AnnotationMirror> faultAnnotations = faultEl.getAnnotationMirrors();
+                for (AnnotationMirror anMirror : faultAnnotations) {
+                    if (controller.getTypes().isSameType(faultAnotationEl.asType(), anMirror.getAnnotationType())) {
+                        Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                        for(ExecutableElement ex:expressions.keySet()) {
+                            if (ex.getSimpleName().contentEquals("name")) { //NOI18N
+                                faultModel.setName((String)expressions.get(ex).getValue());
+                                faultFound=true;
+                            } else if (ex.getSimpleName().contentEquals("targetNamespace")) { //NOI18N
+                                faultModel.setTargetNamespace((String)expressions.get(ex).getValue());
+                            }
+                        }
+                    }
+                }
                 faultModel.setFaultType(faultEl.getQualifiedName().toString());
             } else {
                 faultModel.setFaultType(faultType.toString());
             }
-            String fullyQualifiedName = faultModel.getFaultType();
-            int index = fullyQualifiedName.lastIndexOf("."); //NOI18N
-            faultModel.setName(index>=0?fullyQualifiedName.substring(index+1):fullyQualifiedName);
+            if (!faultFound) {
+                String fullyQualifiedName = faultModel.getFaultType();
+                int index = fullyQualifiedName.lastIndexOf("."); //NOI18N
+                faultModel.setName(index>=0?fullyQualifiedName.substring(index+1):fullyQualifiedName);
+            }
             faults.add(faultModel);
         }
         methodModel.setFaults(faults);

@@ -54,7 +54,7 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
 
     private static final Object[][] FAULTS={
         {},
-        {"FooException", "Exception"},
+        {"FooFault", "Exception"},
         {}
     };
     

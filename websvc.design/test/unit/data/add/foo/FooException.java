@@ -9,10 +9,12 @@
 
 package add.foo;
 
+import javax.xml.ws.WebFault;
 /**
  *
  * @author mkuchtiak
  */
+@WebFault(name="FooFault")
 public class FooException extends Exception {
 
 /** Creates a new instance of Foo */
