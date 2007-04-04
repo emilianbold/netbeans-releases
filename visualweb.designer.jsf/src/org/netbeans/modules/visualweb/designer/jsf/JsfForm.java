@@ -531,20 +531,20 @@ public class JsfForm {
         return getDomSynchronizer().isRefreshPending();
     }
     
-    void attachContext(DesignContext designContext) {
-////        getDomSynchronizer().attachContext(context);
-//        if (this.designContext == designContext) {
-//            return;
-//        }
-//        
-//        detachContext();
-//        this.designContext = designContext;
-//        
-//        if (designContext != null) {
-//            designContext.addDesignContextListener(designContextListener);
-//        }
-        updateDesignContextListening(designContext);
-    }
+//    private void attachContext(DesignContext designContext) {
+//////        getDomSynchronizer().attachContext(context);
+////        if (this.designContext == designContext) {
+////            return;
+////        }
+////        
+////        detachContext();
+////        this.designContext = designContext;
+////        
+////        if (designContext != null) {
+////            designContext.addDesignContextListener(designContextListener);
+////        }
+//        updateDesignContextListening(designContext);
+//    }
      
     private void updateDesignContextListening(DesignContext designContext) {
         // XXX By reassigning removing the previous listening -> weak listeners.
@@ -1523,8 +1523,14 @@ public class JsfForm {
     }
     
     public void attachContext() {
-        htmlDomProvider.attachContext();
+//        htmlDomProvider.attachContext();
+        DesignContext context = getFacesModel().getLiveUnit();
+        if (context != null) {
+//            attachContext(context);
+            updateDesignContextListening(context);
+        }
     }
+    
     
     public boolean hasRenderingErrors() {
 //        return htmlDomProvider.hasRenderingErrors();
