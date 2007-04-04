@@ -1358,7 +1358,8 @@ public class WebForm implements Designer {
         pageBox.changed(rendered, parent, false);
     }
 
-    public void nodeRemoved(Node previouslyRendered, Node parent) {
+//    public void nodeRemoved(Node previouslyRendered, Node parent) {
+    public void removeNode(Node previouslyRendered, Node parent) {
         PageBox pageBox = getPane().getPaneUI().getPageBox();
         pageBox.removed(previouslyRendered, parent);
     }
@@ -2302,9 +2303,9 @@ public class WebForm implements Designer {
 //            webForm.nodeChanged(rendered, parent, wasMove);
 //        }
 
-        public void nodeRemoved(Node previouslyRendered, Node parent) {
-            webForm.nodeRemoved(previouslyRendered, parent);
-        }
+//        public void nodeRemoved(Node previouslyRendered, Node parent) {
+//            webForm.nodeRemoved(previouslyRendered, parent);
+//        }
 
         public void nodeInserted(Node rendered, Node parent) {
             webForm.nodeInserted(rendered, parent);

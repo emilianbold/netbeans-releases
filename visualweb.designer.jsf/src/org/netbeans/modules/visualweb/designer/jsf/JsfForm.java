@@ -592,7 +592,8 @@ public class JsfForm {
     
     void nodeRemoved(Node previouslyRendered, Node parent) {
 //        designer.nodeRemoved(previouslyRendered, parent);
-        fireNodeRemoved(previouslyRendered, parent);
+//        fireNodeRemoved(previouslyRendered, parent);
+        notifyViewsNodeRemoved(previouslyRendered, parent);
     }
     
     void nodeInserted(Node rendered, Node parent) {
@@ -907,17 +908,23 @@ public class JsfForm {
 //            listener.nodeChanged(rendered, parent, wasMove);
 //        }
 //    }
-    private void notifyViewsNodeChanged(Node rendered, Node parent, boolean wasMove) {
+    private void notifyViewsNodeChanged(Node node, Node parent, boolean wasMove) {
         JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
         for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
-            jsfMultiViewElement.nodeChanged(rendered, parent, wasMove);
+            jsfMultiViewElement.nodeChanged(node, parent, wasMove);
         }
     }
 
-    private void fireNodeRemoved(Node previouslyRendered, Node parent) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.nodeRemoved(previouslyRendered, parent);
+//    private void fireNodeRemoved(Node previouslyRendered, Node parent) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.nodeRemoved(previouslyRendered, parent);
+//        }
+//    }
+    private void notifyViewsNodeRemoved(Node node, Node parent) {
+        JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.nodeRemoved(node, parent);
         }
     }
 
