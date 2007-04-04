@@ -143,8 +143,10 @@ public class NavigatorContent extends JPanel
                     tc.setActivatedNodes(filteredNodes);
                 }
             }
-        } else if(TopComponent.getRegistry().PROP_ACTIVATED.equals(property) &&
-                tc == TopComponent.getRegistry().getActivated()) {
+        } else if( tc != null &&
+                   getExplorerManager() != null &&
+                   TopComponent.getRegistry().PROP_ACTIVATED.equals(property) &&
+                   tc == TopComponent.getRegistry().getActivated()) {
             tc.setActivatedNodes(getExplorerManager().getSelectedNodes());
         }
     }
