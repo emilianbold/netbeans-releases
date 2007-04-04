@@ -437,7 +437,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 c.add(ColoringAttributes.STATIC);
             }
             
-            if (decl.getModifiers().contains(Modifier.ABSTRACT)) {
+            if (decl.getModifiers().contains(Modifier.ABSTRACT) && !decl.getKind().isInterface()) {
                 c.add(ColoringAttributes.ABSTRACT);
             }
             
@@ -558,6 +558,13 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 c = new ArrayList<ColoringAttributes>();
                 
                 addModifiers(decl, c);
+                
+                switch (decl.getKind()) {
+                    case CLASS: c.add(ColoringAttributes.CLASS); break;
+                    case INTERFACE: c.add(ColoringAttributes.INTERFACE); break;
+                    case ANNOTATION_TYPE: c.add(ColoringAttributes.ANNOTATION_TYPE); break;
+                    case ENUM: c.add(ColoringAttributes.ENUM); break;
+                }
             }
             
             if (c != null) {

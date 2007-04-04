@@ -13,15 +13,17 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.editor.semantic;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,35 +45,40 @@ import org.netbeans.editor.SettingsDefaults;
 public final class ColoringManager {
 
     private static final Map<ColoringAttributes, String> type2Coloring;
-    private static final List<ColoringAttributes> attributesInOrder = Arrays.asList(ColoringAttributes.UNUSED,
+    private static final List<ColoringAttributes> attributesInOrder = new ArrayList(Arrays.asList(            
+    ColoringAttributes.UNUSED,
+    ColoringAttributes.UNDEFINED,
 
     ColoringAttributes.ABSTRACT,
+    ColoringAttributes.STATIC,
+    ColoringAttributes.DEPRECATED,
 
+    ColoringAttributes.PRIVATE,
+    ColoringAttributes.PACKAGE_PRIVATE,
+    ColoringAttributes.PROTECTED,
+    ColoringAttributes.PUBLIC,
+            
     ColoringAttributes.FIELD,
     ColoringAttributes.LOCAL_VARIABLE,
     ColoringAttributes.PARAMETER,
     ColoringAttributes.METHOD,
     ColoringAttributes.CONSTRUCTOR,
     ColoringAttributes.CLASS,
-    ColoringAttributes.DEPRECATED,
-    ColoringAttributes.STATIC,
-
-    ColoringAttributes.PRIVATE,
-    ColoringAttributes.PACKAGE_PRIVATE,
-    ColoringAttributes.PROTECTED,
-    ColoringAttributes.PUBLIC,
+    ColoringAttributes.INTERFACE,
+    ColoringAttributes.ANNOTATION_TYPE,
+    ColoringAttributes.ENUM,
 
     ColoringAttributes.TYPE_PARAMETER_DECLARATION,
     ColoringAttributes.TYPE_PARAMETER_USE,
 
-    ColoringAttributes.UNDEFINED,
-
-    ColoringAttributes.MARK_OCCURRENCES);
+    ColoringAttributes.MARK_OCCURRENCES));
 
     private static final Font ITALIC = SettingsDefaults.defaultFont.deriveFont(Font.ITALIC);
     private static final Font BOLD = SettingsDefaults.defaultFont.deriveFont(Font.BOLD);
     
     static {
+        Collections.reverse(attributesInOrder);
+        
         type2Coloring = new HashMap<ColoringAttributes, String>();
         
         type2Coloring.put(ColoringAttributes.UNUSED, "mod-unused");
@@ -82,6 +89,9 @@ public final class ColoringManager {
         type2Coloring.put(ColoringAttributes.METHOD, "mod-method");
         type2Coloring.put(ColoringAttributes.CONSTRUCTOR, "mod-constructor");
         type2Coloring.put(ColoringAttributes.CLASS, "mod-class");
+        type2Coloring.put(ColoringAttributes.INTERFACE, "mod-interface");
+        type2Coloring.put(ColoringAttributes.ANNOTATION_TYPE, "mod-annotation-type");
+        type2Coloring.put(ColoringAttributes.ENUM, "mod-enum");
         type2Coloring.put(ColoringAttributes.DEPRECATED, "mod-deprecated");
         type2Coloring.put(ColoringAttributes.STATIC, "mod-static");
         

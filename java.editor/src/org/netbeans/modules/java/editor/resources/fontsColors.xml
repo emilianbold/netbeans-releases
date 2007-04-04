@@ -14,14 +14,12 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="java-annotation" foreColor="ff006f00" default="default"/>
-    
     <!-- JavaTokenId categories -->
     <fontcolor name="character" default="char"/>
     <fontcolor name="errors" default="error"/>
@@ -49,6 +47,9 @@ Microsystems, Inc. All Rights Reserved.
         <font style="bold" />
     </fontcolor>
     <fontcolor name="mod-class" />
+    <fontcolor name="mod-interface" />
+    <fontcolor name="mod-annotation-type" />
+    <fontcolor name="mod-enum" />
     <fontcolor name="mod-deprecated" strikeThrough="404040" />
     <fontcolor name="mod-static" >
         <font style="italic" />
