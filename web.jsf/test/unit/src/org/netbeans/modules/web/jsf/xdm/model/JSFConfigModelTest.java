@@ -340,43 +340,7 @@ public class JSFConfigModelTest extends NbTestCase {
         assertEquals("RealPage4.jsp", rule.getFromViewId());
     }
     
-    /**
-     * This test makes sure that from-outcome is always listed before to-view-id regardless of which was set first.
-     * @throws java.lang.Exception 
-     */
-    public void test98691() throws Exception {
-        JSFConfigModel model = Util.loadRegistryModel("faces-config-empty.xml");
-        FacesConfig facesConfig = model.getRootComponent();
-        
-        model.startTransaction();
-        NavigationRule newRule = model.getFactory().createNavigationRule();
-        newRule.setFromViewId("frompage.jsp");
-        NavigationCase newCase = model.getFactory().createNavigationCase();
-        
-        //When order is switched.
-        newCase.setToViewId("toPage.jsp");
-        newCase.setFromOutcome("fromoutcome");
-        
-        newRule.addNavigationCase(newCase);
-        facesConfig.addNavigationRule(newRule);
-        model.endTransaction();
-        model.sync();
-        
-        NodeList list = newCase.getPeer().getChildNodes();
-        
-        assertEquals(list.item(1).getNodeName(), "from-outcome");
-        assertEquals(list.item(3).getNodeName(), "to-view-id");
-        
-        //One more test to make sure that even if the outcome is reset, it is still listed as first.
-        model.startTransaction();
-        newCase.setFromOutcome("fromoutcome2");
-        model.endTransaction();
-        model.sync();
-        
-        NodeList list2 = newCase.getPeer().getChildNodes();        
-        assertEquals(list.item(1).getNodeName(), "from-outcome");
-        assertEquals(list.item(3).getNodeName(), "to-view-id");
-    }
+    
     
     public void testDescriptionGroup() throws Exception {
         JSFConfigModel model = Util.loadRegistryModel("faces-config-description.xml");

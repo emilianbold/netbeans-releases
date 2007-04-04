@@ -20,9 +20,7 @@
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
@@ -92,15 +90,33 @@ public abstract class JSFConfigComponentImpl extends AbstractDocumentComponent <
     protected void reorderChildren(){
         NodeList nodes = getPeer().getChildNodes();
         int length = nodes.getLength();
-        Integer[] indexes = new Integer[length];
         
-        for(int i = 0; i < length; i ++){
-            indexes[i] = new Integer(i);
+        Node node;
+        int orderNumber;
+        int lastRealOrderNumber = -1;
+        SortingItem[] sortingItems = new SortingItem[length];
+        for(int i = length-1; i > -1; i--){
+            node = nodes.item(i);
+            orderNumber = getSortedListOfLocalNames().indexOf(node.getLocalName());
+            if (orderNumber == -1){
+                if (lastRealOrderNumber == -1){
+                    orderNumber = getSortedListOfLocalNames().size()+1;
+                }
+                else {
+                    orderNumber = lastRealOrderNumber;
+                }
+            }
+            else {
+                lastRealOrderNumber = orderNumber;
+            }
+            sortingItems[i]= new SortingItem(i, orderNumber);
         }
-        Arrays.sort(indexes, 0 , indexes.length, new OrderComparator(getSortedListOfLocalNames(), nodes));
+        
+        Arrays.sort(sortingItems);
+        
         int[] newIndexes = new int[length];
         for (int i = 0; i < length; i++){
-            newIndexes[i] = indexes[i].intValue();
+            newIndexes[sortingItems[i].getOriginalIndex()] = i;
         }
         getModel().getAccess().reorderChildren(getPeer(), newIndexes, this);
     }
@@ -109,26 +125,40 @@ public abstract class JSFConfigComponentImpl extends AbstractDocumentComponent <
         return model.getDocument().createElementNS(jsfqname.getQName(model.getVersion()).getNamespaceURI(), jsfqname.getQualifiedName(model.getVersion()));
     }
     
-    private class OrderComparator implements Comparator<Integer>{
-        List<String> order;
-        NodeList nodes;
+    private class SortingItem implements Comparable<SortingItem>{
+        //index of the element, before sorting
+        int originalIndex;
+        //number, how it should be sorted
+        int orderNumber;
         
-        public OrderComparator(List<String> order, NodeList nodes){
-            this.order = order;
-            this.nodes = nodes;
+        
+        public SortingItem(int originalIndex, int orderNumber){
+            this.originalIndex = originalIndex;
+            this.orderNumber = orderNumber;
         }
         
-        public int compare(Integer arg0, Integer arg1) {
+        public int getOriginalIndex(){
+            return originalIndex;
+        }
+        
+        public void setOriginalIndex(int originalIndex){
+            this.originalIndex = originalIndex;
+        }
+        
+        public int getOrderNumber(){
+            return orderNumber;
+        }
+        
+        public void setOrderNumber(int orderNumber){
+            this.orderNumber = orderNumber;
+        }
+
+        public int compareTo(SortingItem item) {
             int result;
-            Node node0 = nodes.item(arg0);
-            Node node1 = nodes.item(arg1);
             
-            int possition0 = order.indexOf(node0.getLocalName());
-            int possition1 = order.indexOf(node1.getLocalName());
-            
-            if (possition0 == possition1){
+            if (orderNumber == item.getOrderNumber()){
                 result = 0;
-            } else if (possition0 < possition1){
+            } else if (orderNumber < item.getOrderNumber()){
                 result = -1;
             } else {
                 result = 1;
@@ -136,6 +166,5 @@ public abstract class JSFConfigComponentImpl extends AbstractDocumentComponent <
             return result;
         }
     }
-    
     
 }
