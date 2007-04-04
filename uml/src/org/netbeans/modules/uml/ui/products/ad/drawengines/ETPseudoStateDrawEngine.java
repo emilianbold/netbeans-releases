@@ -558,7 +558,6 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
       return bHorizontalJoin;
    }
    
-   
    public boolean setSensitivityAndCheck(String id, ContextMenuActionClass pClass)
    {
       boolean isReadOnly = isParentDiagramReadOnly();
@@ -670,10 +669,14 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
       // Fixed IZ=78636
       // Added an menu item to the context menu to change a join/merge node 
       // from vertical to horizontal and vice versa.
-      ContextMenuActionClass menuItem = (isHorizontalJoin() ?
-         createMenuAction(loadString("IDS_POPUP_STATE_TO_VERTICAL_JOIN"), "MBK_SHOW_VERTICAL_FORK") :
-         createMenuAction(loadString("IDS_POPUP_STATE_TO_HORIZONTAL_JOIN"), "MBK_SHOW_HORIZONTAL_FORK") );
-      manager.add(menuItem);
+      int nKind = getPseudostateKind();
+      if (nKind == IPseudostateKind.PK_JOIN )
+      {
+         ContextMenuActionClass menuItem = (isHorizontalJoin() ?
+            createMenuAction(loadString("IDS_POPUP_STATE_TO_VERTICAL_JOIN"), "MBK_SHOW_VERTICAL_FORK") :
+            createMenuAction(loadString("IDS_POPUP_STATE_TO_HORIZONTAL_JOIN"), "MBK_SHOW_HORIZONTAL_FORK") );
+         manager.add(menuItem);
+      }
    }
    
    /**

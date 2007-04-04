@@ -59,6 +59,8 @@ public class ETControlNodeDrawEngine extends ADNodeDrawEngine
    public static final long FLOW_FINAL_NODE_HEIGHT = 27;
    public static final long FLOW_FINAL_NODE_WIDTH = 27;
    private static final String HORIZONTAL = "Horizontal";  // NOI18N
+   private static int HORIZONTAL_FORK = 0;
+   private static int VERTICAL_FORK = 1;
 
    /**
     * 
@@ -512,6 +514,30 @@ public class ETControlNodeDrawEngine extends ADNodeDrawEngine
       return bIsHorizontal;
    }
 
+   protected int getForkKind()
+   {
+      int forkKind = -1;
+      
+      try
+      {
+         String currentMetaType = getMetaTypeOfElement();
+         if (currentMetaType.equals("ForkNode") || currentMetaType.equals("JoinNode") || currentMetaType.equals("JoinForkNode"))
+         {
+            if (this.getNodeUI() != null)
+            {
+               TSConstRect rect = getNodeUI().getBounds();
+               forkKind = (rect.getWidth() > rect.getHeight() ?
+                  this.HORIZONTAL_FORK : this.VERTICAL_FORK);
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+      return forkKind;
+   }
+   
    public boolean setSensitivityAndCheck(String id, ContextMenuActionClass pClass)
    {
       boolean isReadOnly = isParentDiagramReadOnly();
@@ -617,9 +643,13 @@ public class ETControlNodeDrawEngine extends ADNodeDrawEngine
       
       // Fixed IZ=78636
       // Added an menu item to the context menu to change a fork from vertical to horizontal and vice versa.
-      ContextMenuActionClass menuItem = (isHorizontalJoinOrMergeNode() ?
-         createMenuAction(loadString("IDS_POPUP_ACD_TO_VERTICAL_FORK"), "MBK_SHOW_VERTICAL_FORK") :
-         createMenuAction(loadString("IDS_POPUP_ACD_TO_HORIZONTAL_FORK"), "MBK_SHOW_HORIZONTAL_FORK") );
-      manager.add(menuItem);
+      int forkKind = getForkKind();
+      if (forkKind != -1)
+      {
+         ContextMenuActionClass menuItem =  (forkKind == this.HORIZONTAL_FORK ?
+            createMenuAction(loadString("IDS_POPUP_ACD_TO_VERTICAL_FORK"), "MBK_SHOW_VERTICAL_FORK") :
+            createMenuAction(loadString("IDS_POPUP_ACD_TO_HORIZONTAL_FORK"), "MBK_SHOW_HORIZONTAL_FORK") );
+         manager.add(menuItem);
+      }
    }
 }
