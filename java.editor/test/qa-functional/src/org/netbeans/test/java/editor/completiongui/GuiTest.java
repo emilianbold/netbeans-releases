@@ -104,6 +104,10 @@ public class GuiTest extends EditorTestCase {
                 System.out.println("Pattern: "+pattern);
                 System.out.println("-------");
                 System.out.println(text);
+                        
+                log("Pattern: "+pattern);
+                log("-------");
+                log(text);
                 
             }
             assertTrue("Expected text not found in editor",ok);
@@ -143,7 +147,7 @@ public class GuiTest extends EditorTestCase {
     }
     
     public void testAnonymousClass() {
-        String pattern  = ".*new Runnable\\(\\) \\{.*public void run\\(\\) \\{\n.*throw new UnsupportedOperationException\\(\"Not supported yet.\"\\);.*\\}.*\\}.*";
+        String pattern  = ".*new Runnable\\(\\) \\{.*public void run\\(\\) \\{.*throw new UnsupportedOperationException\\(\"Not supported yet.\"\\);.*\\}.*\\}.*";
         performCodeCompletion("TestSimpleCase","new Runnable", 10, 1, pattern, false);
     }
     
