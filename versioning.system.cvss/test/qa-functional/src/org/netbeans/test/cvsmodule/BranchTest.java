@@ -322,18 +322,19 @@ public class BranchTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         Node node = new Node(new SourcePackagesNode(projectName), pathToMain);
         MergeChangesFromBranchOperator mcbo = MergeChangesFromBranchOperator.invoke(node);
-        mcbo.mergeFromBranch();
+        mcbo.mergeFromTag();
         
         //browse 1.
         PseudoCvsServer cvss;
         InputStream in;
+        
         
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "browse_tags_branches.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
         
-        BrowseTagsOperator browseTags = mcbo.browseMergeFromBranch();
+        BrowseTagsOperator browseTags = mcbo.browseStartingFromTag();
         //Head node
         browseTags.selectPath("Head");
         //Tags node
@@ -358,8 +359,8 @@ public class BranchTest extends JellyTestCase {
         new Thread(cvss).start();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
         
-        mcbo.checkMergeAfterTag(true);
-        browseTags = mcbo.browseMergeAfterTag();
+        mcbo.mergeUntilBranchHead();
+        browseTags = mcbo.browseBranchHead();
         //Head node
         browseTags.selectPath("Head");
         //Tags node
@@ -385,7 +386,7 @@ public class BranchTest extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
         
         mcbo.checkTagAfterMerge(true);
-        browseTags = mcbo.browseTagAfterMerge();
+        browseTags = mcbo.browseTagName();
         //Head node
         browseTags.selectPath("Head");
         //Tags node
@@ -416,31 +417,46 @@ public class BranchTest extends JellyTestCase {
         
         //functionality of button
         //for radiobutton
-        mcbo.mergeFromTrunk();
-        assertFalse(mcbo.txtMergeFromBranch().isEnabled());
-        assertFalse(mcbo.btBrowseMergeFromBranch().isEnabled());
-        //
-        mcbo.mergeFromBranch();
-        assertTrue(mcbo.txtMergeFromBranch().isEnabled());
-        assertTrue(mcbo.btBrowseMergeFromBranch().isEnabled());
+        mcbo.mergeFromBranchingPoint();
+        assertFalse(mcbo.txtStartingFromTag().isEnabled());
+        assertFalse(mcbo.btBrowseStartingFromTag().isEnabled());
         
         //
-        mcbo.checkMergeAfterTag(false);
-        assertFalse(mcbo.txtMergeAfterTag().isEnabled());
-        assertFalse(mcbo.btBrowseMergeAfterTag().isEnabled());
-        //
-        mcbo.checkMergeAfterTag(true);
-        assertTrue(mcbo.txtMergeAfterTag().isEnabled());
-        assertTrue(mcbo.btBrowseMergeAfterTag().isEnabled());
+        mcbo.mergeTrunkHead();
+        assertFalse(mcbo.txtBranchHead().isEnabled());
+        assertFalse(mcbo.btBrowseBranchHead().isEnabled());
+        assertFalse(mcbo.txtUntilTag().isEnabled());
+        assertFalse(mcbo.btBrowseUntilTag().isEnabled());
         
         //
+        mcbo.mergeFromTag();
+        assertTrue(mcbo.txtStartingFromTag().isEnabled());
+        assertTrue(mcbo.btBrowseStartingFromTag().isEnabled());
+        
+        //
+        mcbo.mergeUntilBranchHead();
+        assertTrue(mcbo.txtBranchHead().isEnabled());
+        assertTrue(mcbo.btBrowseBranchHead().isEnabled());
+        assertFalse(mcbo.txtUntilTag().isEnabled());
+        assertFalse(mcbo.btBrowseUntilTag().isEnabled());
+      
+        //
+        mcbo.mergeUntilTag();
+        assertFalse(mcbo.txtBranchHead().isEnabled());
+        assertFalse(mcbo.btBrowseBranchHead().isEnabled());
+        assertTrue(mcbo.txtUntilTag().isEnabled());
+        assertTrue(mcbo.btBrowseUntilTag().isEnabled());
+      
+        //
+        mcbo.mergeUntilBranchHead();
         mcbo.checkTagAfterMerge(false);
-        assertFalse(mcbo.txtTagAfterMerge().isEnabled());
-        assertFalse(mcbo.btBrowseTagAfterMerge().isEnabled());
+        assertFalse(mcbo.txtTagName().isEnabled());
+        assertFalse(mcbo.btBrowseTagName().isEnabled());
         //
         mcbo.checkTagAfterMerge(true);
-        assertTrue(mcbo.txtTagAfterMerge().isEnabled());
-        assertTrue(mcbo.btBrowseTagAfterMerge().isEnabled());
+        assertTrue(mcbo.txtTagName().isEnabled());
+        assertTrue(mcbo.btBrowseTagName().isEnabled());
+        
         mcbo.cancel();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
