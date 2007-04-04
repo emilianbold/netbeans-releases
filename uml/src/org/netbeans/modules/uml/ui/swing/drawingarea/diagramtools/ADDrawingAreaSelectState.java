@@ -232,8 +232,6 @@ public class ADDrawingAreaSelectState extends TSESelectTool
     */
    public void onMouseMoved(MouseEvent event)
    {
-      this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
       // Let the super go first. It might activate a child state.
       super.onMouseMoved(event);
 
@@ -252,9 +250,6 @@ public class ADDrawingAreaSelectState extends TSESelectTool
           
           else {              
               //end JM
-              
-              this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-              
               IDrawEngine engine = objectUI.getDrawEngine();
               
               if (engine != null) {
