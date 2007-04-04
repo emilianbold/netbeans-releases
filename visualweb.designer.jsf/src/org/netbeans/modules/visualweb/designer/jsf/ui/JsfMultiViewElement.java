@@ -124,4 +124,9 @@ public class JsfMultiViewElement implements MultiViewElement {
         return jsfTopComponent.canCloseElement();
     }
 
+    
+    // JSF notifications >>>
+    public void modelChanged() {
+        jsfTopComponent.modelChanged();
+    }
 }

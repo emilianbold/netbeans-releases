@@ -2158,4 +2158,10 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     public DataObject getJspDataObject() {
         return jsfForm.getJspDataObject();
     }
+    
+    
+    // JSF notifications >>
+    public void modelChanged() {
+        designer.resetPanePageBox();
+    }
 }

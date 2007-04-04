@@ -242,6 +242,21 @@ public class JsfForm {
         return designer;
     }
     
+    private static JsfMultiViewElement[] findJsfMultiViewElements(JsfForm jsfForm) {
+        Designer[] designers = findDesigners(jsfForm);
+        
+        List<JsfMultiViewElement> jsfMultiViewElements = new ArrayList<JsfMultiViewElement>();
+        synchronized (designer2jsfMultiViewElement) {
+            for (Designer designer : designers) {
+                JsfMultiViewElement jsfMultiViewElement = designer2jsfMultiViewElement.get(designer);
+                if (jsfMultiViewElement != null) {
+                    jsfMultiViewElements.add(jsfMultiViewElement);
+                }
+            }
+        }
+        return jsfMultiViewElements.toArray(new JsfMultiViewElement[jsfMultiViewElements.size()]);
+    }
+    
     static MultiViewElement createMultiViewElement(JsfForm jsfForm, Designer designer) {
         if (jsfForm == null || designer == null) {
             return new NotAvailableMultiViewElement();
@@ -564,7 +579,8 @@ public class JsfForm {
     // XXX See DomSynchronizer
     void modelChanged() {
 //        designer.modelChanged();
-        fireModelChanged();
+//        fireModelChanged();
+        notifyViewsModelChanged();
     }
     
     void nodeChanged(Node rendered, Node parent, boolean wasMove) {
@@ -857,10 +873,16 @@ public class JsfForm {
         return htmlDomProviderListeners.toArray(new HtmlDomProvider.HtmlDomProviderListener[htmlDomProviderListeners.size()]);
     }
 
-    private void fireModelChanged() {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.modelChanged();
+//    private void fireModelChanged() {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.modelChanged();
+//        }
+//    }
+    private void notifyViewsModelChanged() {
+        JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.modelChanged();
         }
     }
     

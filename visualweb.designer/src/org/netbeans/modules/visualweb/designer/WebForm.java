@@ -1348,9 +1348,9 @@ public class WebForm implements Designer {
 
 //    //////
 //    // XXX See Designer interface.
-    public void modelChanged() {
-        getPane().getPaneUI().resetPageBox();
-    }
+//    public void modelChanged() {
+//        getPane().getPaneUI().resetPageBox();
+//    }
 
     public void nodeChanged(Node rendered, Node parent, boolean wasMove) {
         PageBox pageBox = getPane().getPaneUI().getPageBox();
@@ -2288,9 +2288,9 @@ public class WebForm implements Designer {
             this.webForm = webForm;
         }
         
-        public void modelChanged() {
-            webForm.modelChanged();
-        }
+//        public void modelChanged() {
+//            webForm.modelChanged();
+//        }
         
         public void modelRefreshed() {
             webForm.modelRefreshed();
