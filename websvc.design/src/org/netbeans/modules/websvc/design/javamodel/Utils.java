@@ -150,6 +150,7 @@ public class Utils {
                     
                     List<MethodModel> operations = new ArrayList<MethodModel>();
                     if (methods.size()==0) {
+                        serviceModel.operations=operations;
                         serviceModel.setStatus(ServiceModel.STATUS_INCORRECT_SERVICE);
                         return;
                     }
