@@ -75,6 +75,7 @@ public abstract class Line extends Annotatable implements Serializable {
      * Opens a new editor in case there is no such reusable editor
      * and marks it for editor reusal. 
      * @see #show(int) <code>show</code>
+     * @since org.openide.text 6.14
      */
     public final static int SHOW_REUSE = 4;
 
@@ -82,6 +83,7 @@ public abstract class Line extends Annotatable implements Serializable {
      * was not opened before. Similar to {@link #SHOW_REUSE) but ignores
      * currently reusable editor.
      * @see #show(int) <code>show</code>
+     * @since org.openide.text 6.14
      */
     public final static int SHOW_REUSE_NEW = 5;
 
