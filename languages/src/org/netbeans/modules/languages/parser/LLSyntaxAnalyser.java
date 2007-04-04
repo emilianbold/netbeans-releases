@@ -33,7 +33,9 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
@@ -254,6 +256,13 @@ public class LLSyntaxAnalyser {
         Language language = LanguagesManager.getDefault ().
             getLanguage (children.get (0).getMimeType ());
         ASTNode root = language.getAnalyser ().read (in, skipErrors);
+        Feature astProperties = language.getFeature ("AST");
+        if (astProperties != null) {
+            root = (ASTNode) astProperties.getValue (
+                "process", 
+                SyntaxContext.create (null, ASTPath.create (root))
+            );
+        }
         return ASTToken.create (
             token.getMimeType (),
             token.getType (),
