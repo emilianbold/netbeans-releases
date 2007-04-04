@@ -122,7 +122,7 @@ public class CompletionTest extends TestCase {
         ));
         
         JEditorPane editor = createTestComponent (l.getMimeType ());
-        ParserManager.get (editor.getDocument ());
+        ParserManager pm = ParserManager.get (editor.getDocument ());
         editor.getDocument ().insertString(editor.getDocument ().getLength (), " ", null);
         
         editor.setCaretPosition (27);

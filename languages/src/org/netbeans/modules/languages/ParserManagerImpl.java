@@ -22,13 +22,10 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTEvaluator;
@@ -41,12 +38,15 @@ import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.TokenInput;
+import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.LanguagesManager.LanguagesManagerListener;
+import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.parser.TokenInputUtils;
@@ -63,6 +63,7 @@ import org.openide.windows.TopComponent;
 public class ParserManagerImpl extends ParserManager {
 
     private Document                doc;
+    private TokenHierarchy          tokenHierarchy;
     private ASTNode                 ast = null;
     private ParseException          exception = null;
     private State                   state = State.NOT_PARSED;
@@ -73,8 +74,19 @@ public class ParserManagerImpl extends ParserManager {
     
     public ParserManagerImpl (Document doc) {
         this.doc = doc;
-        new DocListener (this, doc);
-        String mimeType = (String) doc.getProperty ("mimeType");
+        tokenHierarchy = TokenHierarchy.get (doc);
+        if (tokenHierarchy == null) {
+            // for tests only....
+            String mimeType = (String) doc.getProperty ("mimeType");
+            if (mimeType != null) {
+                doc.putProperty (
+                    org.netbeans.api.lexer.Language.class, 
+                    new SLanguageHierarchy (mimeType).language ()
+                );
+                tokenHierarchy = TokenHierarchy.get (doc);
+            }
+        }
+        new DocListener (this, tokenHierarchy);
     }
     
     public State getState () {
@@ -220,7 +232,7 @@ public class ParserManagerImpl extends ParserManager {
     private void parseAST () {
         try {
             setChange (State.PARSING, ast);
-            ast = parse (doc);
+            ast = parse ();
             if (ast == null) {
                 setChange (new ParseException ("ast is null?!"));
                 return;
@@ -260,28 +272,27 @@ public class ParserManagerImpl extends ParserManager {
         }
     }
     
-    private static ASTNode parse (Document doc) throws ParseException {
+    private ASTNode parse () throws ParseException {
         String mimeType = (String) doc.getProperty ("mimeType");
         Language l = LanguagesManager.getDefault ().
             getLanguage (mimeType);
         LLSyntaxAnalyser a = l.getAnalyser ();
         long start = System.currentTimeMillis ();
 
-        TokenInput input = createTokenInput (doc);
+        TokenInput input = createTokenInput ();
         long to = System.currentTimeMillis () - start;
         ASTNode n = a.read (input, true);
         System.out.println("parse " + doc.getProperty ("title") + " " + (System.currentTimeMillis () - start) + " " + to);
         return n;
     }
 
-    public static TokenInput createTokenInput (Document doc) {
+    public TokenInput createTokenInput () {
         try {
             if (doc instanceof NbEditorDocument)
                 ((NbEditorDocument) doc).readLock ();
-            TokenHierarchy th = TokenHierarchy.get (doc);
-            if (th == null) 
+            if (tokenHierarchy == null) 
                 return TokenInputUtils.create (Collections.<ASTToken>emptyList ());
-            TokenSequence ts = th.tokenSequence ();
+            TokenSequence ts = tokenHierarchy.tokenSequence ();
             return TokenInputUtils.create (getTokens (ts));
         } finally {
             if (doc instanceof NbEditorDocument)
@@ -373,13 +384,13 @@ public class ParserManagerImpl extends ParserManager {
     
     // innerclasses ............................................................
     
-    private static class DocListener implements DocumentListener, LanguagesManagerListener {
+    private static class DocListener implements TokenHierarchyListener, LanguagesManagerListener {
         
         private WeakReference<ParserManagerImpl> pmwr;
         
-        DocListener (ParserManagerImpl pm, Document doc) {
+        DocListener (ParserManagerImpl pm, TokenHierarchy hierarchy) {
             pmwr = new WeakReference<ParserManagerImpl> (pm);
-            doc.addDocumentListener (this);
+            hierarchy.addTokenHierarchyListener (this);
             LanguagesManager.getDefault ().addLanguagesManagerListener (this);
         }
         
@@ -389,24 +400,14 @@ public class ParserManagerImpl extends ParserManager {
             LanguagesManager.getDefault ().removeLanguagesManagerListener (this);
             return null;
         }
-        
-        public void insertUpdate (DocumentEvent e) {
-            ParserManagerImpl pm = getPM ();
-            if (pm == null) return;
-            pm.startParsing ();
-        }
-
-        public void removeUpdate (DocumentEvent e) {
-            ParserManagerImpl pm = getPM ();
-            if (pm == null) return;
-            pm.startParsing ();
-        }
-
-        public void changedUpdate (DocumentEvent e) {
-            getPM ();
-        }
 
         public void languageChanged (String mimeType) {
+            ParserManagerImpl pm = getPM ();
+            if (pm == null) return;
+            pm.startParsing ();
+        }
+    
+        public void tokenHierarchyChanged (TokenHierarchyEvent evt) {
             ParserManagerImpl pm = getPM ();
             if (pm == null) return;
             pm.startParsing ();

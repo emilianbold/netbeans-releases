@@ -53,11 +53,11 @@ public class NavigatorTest extends TestCase {
     
     public static final String TEST_MIME_TYPE="text/mt";
     
-    public NavigatorTest(String testName) {
+    public NavigatorTest (String testName) {
         super(testName);
     }
     
-    public void testAST1 () throws ParseException {
+    public void testAST1 () throws Exception {
         Language l = new Language (TEST_MIME_TYPE);
         l.addToken (null, "keyword", Pattern.create ("'if' | 'while' | 'function'"), null, null);
         l.addToken (null, "identifier", Pattern.create ("['a'-'z' '_']+"), null, null);
@@ -126,17 +126,11 @@ public class NavigatorTest extends TestCase {
         
         final JEditorPane pane = new JEditorPane ();
         
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    pane.setEditorKit(new LanguagesEditorKit(TEST_MIME_TYPE));
-                }
-            });
-        } catch (InvocationTargetException e) {
-            //e.printStackTrace();
-        } catch (InterruptedException e) {
-            //e.printStackTrace();
-        }
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                pane.setEditorKit(new LanguagesEditorKit(TEST_MIME_TYPE));
+            }
+        });
         
         NbEditorDocument doc = (NbEditorDocument)pane.getDocument();
         doc.putProperty ("mimeType", l.getMimeType ());
