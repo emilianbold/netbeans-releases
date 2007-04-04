@@ -43,7 +43,7 @@ public class MidpPaletteProvider implements PaletteProvider {
     public static final String CATEGORY_ELEMENTS = "elements"; // NOI18N
     public static final String CATEGORY_ITEMS = "items"; // NOI18N
     public static final String CATEGORY_PROCESS_FLOW = "flow"; // NOI18N
-    public static final String CATEGORY_RESOURCES = "resource"; // NOI18N
+    public static final String CATEGORY_RESOURCES = "resources"; // NOI18N
     public static final String CATEGORY_CUSTOM = "custom"; // NOI18N
 
     private String[] paletteCategories = {CATEGORY_DISPLAYABLES, CATEGORY_COMMANDS, CATEGORY_ELEMENTS,
