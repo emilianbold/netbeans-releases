@@ -235,8 +235,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule wm) {
         FileObject documentBase = wm.getDocumentBase();
         Project project = FileOwnerQuery.getOwner(documentBase);
-        String version = JsfProjectUtils.getProjectVersion(project);
-        return version != null && version.length() > 0;
+        return JsfProjectUtils.isJsfProject(project);
     }
     
     public static void createFile(FileObject target, String content, String encoding) throws IOException{

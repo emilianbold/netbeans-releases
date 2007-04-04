@@ -71,8 +71,7 @@ public class JSFNodeFactory implements NodeFactory {
         
         public List<String> keys() {
             List<String> result = new ArrayList<String>();
-            String version = JsfProjectUtils.getProjectVersion(project);
-            if (version != null && version.length() > 0) {
+            if (JsfProjectUtils.isJsfProject(project)) {
                 result.add(THEMES_FOLDER);
                 result.add(COMPONENT_LIBS);
                 result.add(DATASOURCE_REFS);

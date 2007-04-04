@@ -57,8 +57,7 @@ public class PagebeanPackagePanelGUI extends javax.swing.JPanel implements Docum
         }
         packageTextField.setText(packageName);
 
-        String version = JsfProjectUtils.getProjectVersion(project);
-        packageTextField.setEditable(version == null || version.length() == 0);
+        packageTextField.setEditable(!JsfProjectUtils.isJsfProject(project));
     }
 
     public String getPackageName() {

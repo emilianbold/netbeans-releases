@@ -125,6 +125,11 @@ public class JsfProjectUtils {
      * @param project Project to be checked
      */
     public static boolean isJsfProject(Project project) {
+        String version = getProjectVersion(project);
+        return version != null && version.length() > 0;
+    }
+
+    public static boolean isWebProject(Project project) {
         if (project == null) {
             return false;
         }
@@ -184,7 +189,7 @@ public class JsfProjectUtils {
     }
 
     public static String getProjectProperty(Project project, String propName) {
-        if (isJsfProject(project)) {
+        if (isWebProject(project)) {
             AuxiliaryConfiguration ac = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class);
             if (ac == null) {
                 return "";
@@ -263,7 +268,7 @@ public class JsfProjectUtils {
     }
     
     private static void putProjectProperty(Project project, String propName, String value, String oldval) {
-        if (isJsfProject(project)) {
+        if (isWebProject(project)) {
             AuxiliaryConfiguration ac = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class);
             if (ac == null) {
                 return;
@@ -303,7 +308,7 @@ public class JsfProjectUtils {
     }
     
     public static void addProjectPropertyListener(Project project, PropertyChangeListener listener) {
-        if (isJsfProject(project)) {
+        if (isWebProject(project)) {
             synchronized (propertyListeners) {
                 ArrayList projectListeners = (ArrayList) propertyListeners.get(project);
                 if (projectListeners == null) {
@@ -316,7 +321,7 @@ public class JsfProjectUtils {
     }
     
     public static void removeProjectPropertyListener(Project project, PropertyChangeListener listener) {
-        if (isJsfProject(project)) {
+        if (isWebProject(project)) {
             synchronized (propertyListeners) {
                 ArrayList projectListeners = (ArrayList) propertyListeners.get(project);
                 if (projectListeners != null) {
@@ -627,7 +632,7 @@ public class JsfProjectUtils {
     public static FileObject getPageBeanRoot(Project project) {
         if (project == null)
             return null;
-        if (!isJsfProject(project))
+        if (!isWebProject(project))
             return null;
         FileObject srcRoot = getSourceRoot(project);
         if (srcRoot == null)

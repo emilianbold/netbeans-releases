@@ -187,8 +187,7 @@ public class PageIterator implements TemplateWizard.Iterator {
         Set result = Collections.EMPTY_SET;
 
         // Visual Web framework is not initialized
-        String version = JsfProjectUtils.getProjectVersion(project);
-        if (version == null || version.length() == 0) {
+        if (!JsfProjectUtils.isJsfProject(project)) {
             List frameworks = WebFrameworkSupport.getFrameworkProviders();
             for (int i = 0; i < frameworks.size(); i++) {
                 WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
