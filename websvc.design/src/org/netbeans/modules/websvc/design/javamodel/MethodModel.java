@@ -29,7 +29,7 @@ public class MethodModel {
     
     private String operationName;
     private String action;
-    private String returnType;
+    private ResultModel result;
     private List<ParamModel> params;
     private boolean oneWay;
     private JavadocModel javadoc;
@@ -51,12 +51,12 @@ public class MethodModel {
         this.operationName=operationName;
     }
 
-    public String getReturnType() {
-        return returnType;
+    public ResultModel getResult() {
+        return result;
     }
 
-    void setReturnType(String returnType) {
-        this.returnType = returnType;
+    void setResult(ResultModel result) {
+        this.result = result;
     }
 
     public String getAction() {
@@ -101,7 +101,7 @@ public class MethodModel {
     
     public boolean isEqualTo(MethodModel model) {
         if (!operationName.equals(model.operationName)) return false;
-        if (!returnType.equals(model.returnType)) return false;
+        if (!result.isEqualTo(model.result)) return false;
         if (oneWay!=model.oneWay) return false;
         if (!Utils.isEqualTo(action, model.action)) return false;
         if (javadoc!=null) {

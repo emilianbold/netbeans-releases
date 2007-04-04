@@ -177,12 +177,16 @@ public class Utils {
     private static void populateOperation(CompilationController controller, ExecutableElement methodEl, MethodModel methodModel) {
         TypeElement methodAnotationEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
         TypeElement onewayAnotationEl = controller.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
+        TypeElement resultAnotationEl = controller.getElements().getTypeElement("javax.jws.WebResult"); //NOI18N
         List<? extends AnnotationMirror> methodAnnotations = methodEl.getAnnotationMirrors();
+        
+        ResultModel resultModel = new ResultModel();
+        
         boolean nameFound=false;
+        boolean resultNameFound=false;
         for (AnnotationMirror anMirror : methodAnnotations) {
             if (controller.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
-                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                               
+                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();                              
                 for(ExecutableElement ex:expressions.keySet()) {
                     if (ex.getSimpleName().contentEquals("operationName")) { //NOI18N
                         methodModel.setOperationName((String)expressions.get(ex).getValue());
@@ -192,20 +196,40 @@ public class Utils {
                     }
                 }
                 
+            } else if (controller.getTypes().isSameType(resultAnotationEl.asType(), anMirror.getAnnotationType())) {
+                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();                              
+                for(ExecutableElement ex:expressions.keySet()) {
+                    if (ex.getSimpleName().contentEquals("name")) { //NOI18N
+                        resultModel.setName((String)expressions.get(ex).getValue());
+                        resultNameFound=true;
+                    } else if (ex.getSimpleName().contentEquals("partName")) { //NOI18N
+                        resultModel.setPartName((String)expressions.get(ex).getValue());
+                    } else if (ex.getSimpleName().contentEquals("targetNamespace")) { //NOI18N
+                        resultModel.setTargetNamespace((String)expressions.get(ex).getValue());
+                    }
+                }
             } else if (controller.getTypes().isSameType(onewayAnotationEl.asType(), anMirror.getAnnotationType())) {
                 methodModel.setOneWay(true);
             }
         }
         if (!nameFound) methodModel.setOperationName(methodEl.getSimpleName().toString());
         
+        
         // Return type
-        TypeMirror returnType = methodEl.getReturnType();
-        if (returnType.getKind() == TypeKind.DECLARED) {
-            TypeElement element = (TypeElement)((DeclaredType)returnType).asElement();
-            methodModel.setReturnType(element.getQualifiedName().toString());
-        } else { // for primitive types
-            methodModel.setReturnType(returnType.toString());
+        if (!methodModel.isOneWay()) {
+            // set default result name
+            if (!resultNameFound) resultModel.setName("return"); //NOI18N
+            // set result type
+            TypeMirror returnType = methodEl.getReturnType();
+            if (returnType.getKind() == TypeKind.DECLARED) {
+                TypeElement element = (TypeElement)((DeclaredType)returnType).asElement();
+                resultModel.setResultType(element.getQualifiedName().toString());
+            } else { // for primitive types
+                resultModel.setResultType(returnType.toString());
+            }
         }
+        methodModel.setResult(resultModel);
+        
         
         // populate faults
         List<? extends TypeMirror> faultTypes = methodEl.getThrownTypes();

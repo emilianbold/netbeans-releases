@@ -57,9 +57,9 @@ public class OutputWidget extends AbstractTitledWidget implements TabWidget{
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
         getHeaderWidget().setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
-        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, method.getReturnType()==null?
+        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, method.isOneWay()?
                 NbBundle.getMessage(OperationWidget.class, "LBL_ReturnTypeNone"): 
-                NbBundle.getMessage(OperationWidget.class, "LBL_ReturnType", method.getReturnType()), 
+                NbBundle.getMessage(OperationWidget.class, "LBL_ReturnType", method.getResult().getResultType()), 
                 null);
        getHeaderWidget().addChild(headerLabelWidget);
     }
@@ -78,9 +78,9 @@ public class OutputWidget extends AbstractTitledWidget implements TabWidget{
 
     public Widget getComponentWidget() {
         if(tabComponent==null) {
-            tabComponent = new ImageLabelWidget(getScene(), IMAGE, method.getReturnType()==null?
+            tabComponent = new ImageLabelWidget(getScene(), IMAGE, method.isOneWay()?
                 NbBundle.getMessage(OperationWidget.class, "LBL_ReturnTypeNone"): 
-                NbBundle.getMessage(OperationWidget.class, "LBL_ReturnType", method.getReturnType()), 
+                NbBundle.getMessage(OperationWidget.class, "LBL_ReturnType", method.getResult().getResultType()), 
                 null);
         }
         return tabComponent;
