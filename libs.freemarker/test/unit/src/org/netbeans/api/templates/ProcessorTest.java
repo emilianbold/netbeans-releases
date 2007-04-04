@@ -250,6 +250,23 @@ public class ProcessorTest extends TestCase {
                      "# Second Line\n";
         assertEquals(exp, w.toString());
     }
+    public void testMissingClassInfo() throws Exception {
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject fo = FileUtil.createData(root, "simpleObject.txt");
+        OutputStream os = fo.getOutputStream();
+       // String txt = "<#if (classInfo.getMethods().size() > 0) >The size is greater than 0.</#if>";
+        String txt = "<#if (classInfo.getMethodsCount() > 0) >The size is greater than 0.</#if>";
+        os.write(txt.getBytes());
+        os.close();       
+        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+        
+        
+        StringWriter w = new StringWriter();
+                        
+        Map<String,ClassInfo> parameters = Collections.singletonMap("classInfo", new ClassInfo());
+        apply(fo, w, parameters);
+        assertEquals("The size is greater than 0.", w.toString());
+    }
     
     private static void apply(FileObject template, Writer w) throws Exception {
         apply(template, w, Collections.<String,Object>emptyMap());
