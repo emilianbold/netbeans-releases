@@ -61,7 +61,7 @@ import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
-import org.netbeans.modules.web.jsf.navigation.PageFlowController.PageFlowNode;
+import org.netbeans.modules.web.jsf.navigation.PageFlowNode;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.PinNode;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.MapActionUtility;
@@ -238,7 +238,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     private Queue emptyPositions = new LinkedList();
     
     @Override
-    protected void detachNodeWidget(org.netbeans.modules.web.jsf.navigation.PageFlowController.PageFlowNode node,
+    protected void detachNodeWidget(PageFlowNode node,
             Widget widget) {
         //        Point p = widget.getPreferredLocation();
         //        if ( (p.getX() - BORDER_OFFSET) %

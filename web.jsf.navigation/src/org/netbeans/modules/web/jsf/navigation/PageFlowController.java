@@ -70,8 +70,11 @@ public class PageFlowController {
     private Collection<FileObject> webFiles;
     
     private HashMap<NavigationCase,NavigationCaseNode> case2Node = new HashMap<NavigationCase,NavigationCaseNode>();
-    private  HashMap<String,PageFlowNode> pageName2Node = new HashMap<String,PageFlowNode>();
     
+    /**
+     * Temporarily Make Public for Work Around.
+     */
+    public HashMap<String,PageFlowNode> pageName2Node = new HashMap<String,PageFlowNode>();  //Should this be synchronized.
     
     private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
     
@@ -90,6 +93,7 @@ public class PageFlowController {
         setupGraph();
         view.layoutSceneImmediately();
     }
+    
     
     private PropertyChangeListener pcl;
     private FileChangeListener fcl;
@@ -307,6 +311,10 @@ public class PageFlowController {
         return pages;
     }
     
+    public PageFlowNode createPageFlowNode(Node node) {
+        return new PageFlowNode(this, node);
+    }
+    
     private void createAllProjectPageNodes(Collection<String> pagesInConfig) {
         
         
@@ -319,7 +327,7 @@ public class PageFlowController {
             PageFlowNode node = null;
             try {
                 //                                node = (DataNode)(DataObject.find(webFile)).getNodeDelegate();
-                node = new PageFlowNode((DataObject.find(webFile)).getNodeDelegate());
+                node = createPageFlowNode((DataObject.find(webFile)).getNodeDelegate());
                 view.createNode(node, null, null);
             } catch ( DataObjectNotFoundException ex ) {
                 ex.printStackTrace();
@@ -332,7 +340,7 @@ public class PageFlowController {
         for( String pageName : pages ){
             Node tmpNode = new AbstractNode(Children.LEAF);
             tmpNode.setName(pageName);
-            PageFlowNode node = new PageFlowNode(tmpNode);
+            PageFlowNode node = new PageFlowNode(this,tmpNode);
             //            Node node = new AbstractNode(Children.LEAF);
             //            node.setName(pageName);
             view.createNode(node, null, null);
@@ -370,7 +378,7 @@ public class PageFlowController {
                     donfe.printStackTrace();
                 }
             }
-            PageFlowNode node = new PageFlowNode(wrapNode);
+            PageFlowNode node = new PageFlowNode(this, wrapNode);
             view.createNode(node, null, null);
         }
     }
@@ -456,62 +464,7 @@ public class PageFlowController {
     }
     
     
-    /**
-     * A Filter Node for a given DataNode or non File Node.
-     */
-    public final class PageFlowNode extends FilterNode {
-        
-        
-        
-        /**
-         *
-         * @param original
-         */
-        public PageFlowNode( Node original ){
-            super(original, Children.LEAF);
-            pageName2Node.put(original.getDisplayName(), this);
-        }
-        
-        @Override
-        public void setName(String s) {
-            
-            String oldDisplayName = getDisplayName();
-            try {
-                super.setName(s);
-                pageName2Node.remove(oldDisplayName);
-                pageName2Node.put(getDisplayName(), this);
-                renamePageInModel(oldDisplayName, getDisplayName());
-            } catch (IllegalArgumentException iae ) {
-                iae.printStackTrace();
-                //                throw iae;
-            }
-            
-           
-        }
-        
-        /**
-         *
-         * @return
-         */
-        @Override
-        public boolean canRename() {
-            return true;
-        }
-        
-        @Override
-        public boolean canDestroy() {
-            return true;
-        }
-        
-        @Override
-        public void destroy() throws IOException {
-            super.destroy();
-            pageName2Node.remove(getDisplayName());
-        }
-        
-        
-    }
-    
+
     
     private class WebFolderListener extends FileChangeAdapter{
         
@@ -521,7 +474,7 @@ public class PageFlowController {
                 DataObject dataObj = DataObject.find(fileObj);
                 webFiles.add(fileObj);
                 if ( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ){
-                    PageFlowNode node = new PageFlowNode(dataObj.getNodeDelegate());
+                    PageFlowNode node = createPageFlowNode(dataObj.getNodeDelegate());
                     view.createNode(node, null, null);
                     view.validateGraph();
                 }
@@ -552,7 +505,7 @@ public class PageFlowController {
                 
                 Node tmpNode = new AbstractNode(Children.LEAF);
                 tmpNode.setName(pageDisplayName);
-                PageFlowNode newNode = new PageFlowNode(tmpNode);
+                PageFlowNode newNode = createPageFlowNode(tmpNode);
                 
                 
                 view.replaceWidgetNode(oldNode, newNode);
