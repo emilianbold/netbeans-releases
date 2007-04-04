@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.languages.javascript;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.ListIterator;
 import java.util.ListIterator;
@@ -79,6 +80,7 @@ import org.openide.cookies.LineCookie;
 public class JavaScript {
 
     private static final String DOC = "org/netbeans/modules/languages/javascript/Documentation.xml";
+    private static final String DOM = "org/netbeans/modules/languages/javascript/DOM.xml";
     private static final String MIME_TYPE = "text/javascript";
     
     private static Set regExp = new HashSet ();
@@ -286,11 +288,10 @@ public class JavaScript {
         }
         
         if (libraryContext != null) {
-            result.addAll (getFromLibrary (libraryContext, 1, "black"));
-            result.addAll (getFromLibrary ("member", 2, "black"));
+            result.addAll (getLibrary ().getCompletionItems (libraryContext));
+            result.addAll (getLibrary ().getCompletionItems ("member"));
         } else
-            result.addAll (getFromLibrary ("keyword", 2, "blue"));
-        result.addAll (getFromLibrary ("root",2, "black"));
+            result.addAll (getLibrary ().getCompletionItems ("root"));
         return result;
     }
     
@@ -299,91 +300,6 @@ public class JavaScript {
             if (!ts.movePrevious ()) return ts.token ();
         } while (ts.token ().id ().name ().endsWith ("whitespace"));
         return ts.token ();
-    }
-    
-    private static List getFromLibrary (
-        String context, 
-        int priority,
-        String color
-    ) {
-        List l = getLibrary ().getItems (context);
-        List result = new ArrayList ();
-        if (l == null) return result;
-        Iterator it = l.iterator ();
-        while (it.hasNext ()) {
-            String item = (String) it.next ();
-            String description = getLibrary ().getProperty 
-                (context, item, "description");
-            if (description == null) {
-                result.add (CompletionSupport.createCompletionItem (
-                    item,
-                    "<html><b><font color=" + color + ">" + item +  
-                        "</font></b></html>",
-                    "<html><b>" + item +  "</b></html>",
-                    null,
-                    priority
-                ));
-            } else {
-                result.add (CompletionSupport.createCompletionItem (
-                    item,
-                    "<html><b><font color=" + color + ">" + item + 
-                        ": </font></b><font color=black> " + 
-                        description + "</font></html>",
-                    "<html><b>" + item + ":  " + description + "</html>",
-                    null,
-                    priority
-                ));
-            }
-        }
-        return result;
-    }
-
-    private static List completionDescriptions;
-
-    public static List completionDescriptions (Context context) {
-        return completionItems (context);
-//        if (completionDescriptions == null) {
-//            List tags = completionItems (context);
-//            tags = completionItems;
-//            completionDescriptions = new ArrayList (tags.size ());
-//            Iterator it = tags.iterator ();
-//            while (it.hasNext ()) {
-//                String tag = (String) it.next ();
-//                String description = getLibrary ().getProperty 
-//                    ("keyword", tag, "description");
-//                if (description != null) {
-//                    completionDescriptions.add (
-//                        "<html><b><font color=blue>" + tag + 
-//                        ": </font></b><font color=black> " + 
-//                        description + "</font></html>"
-//                    );
-//                } else {
-//                    description = getLibrary ().getProperty 
-//                        ("root", tag, "description");
-//                    if (description == null) 
-//                        completionDescriptions.add (
-//                            "<html><b><font color=black>" + tag + 
-//                            "</font></b></html>"
-//                        );
-//                    else
-//                        completionDescriptions.add (
-//                            "<html><b><font color=black>" + tag + 
-//                            ": </font></b><font color=black> " + 
-//                            description + "</font></html>"
-//                        );
-//                }
-//            }
-//        }
-//        if (!(context instanceof SyntaxContext)) return completionDescriptions;
-//        ASTPath path = ((SyntaxContext) context).getASTPath ();
-//        ArrayList l = new ArrayList ();
-//        DatabaseManager databaseManager = DatabaseManager.getDefault ();
-//        Collection c = databaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
-//        l.addAll (c);
-//        c = databaseManager.getIds (DatabaseManager.FOLDER);
-//        l.addAll (c);
-//        l.addAll (completionDescriptions);
-//        return l;
     }
     
     
@@ -600,7 +516,9 @@ public class JavaScript {
     
     private static LibrarySupport getLibrary () {
         if (library == null)
-            library = LibrarySupport.create (DOC);
+            library = LibrarySupport.create (
+                Arrays.asList (new String[] {DOC, DOM})
+            );
         return library;
     }
 
