@@ -128,15 +128,23 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                 sqle.printStackTrace();
             }
             
-            String dsName = dbConnection.getSchema() + "_" + databaseProductName;
-            if (dbConnection.getSchema() == "")
-                dsName = dbConnection.getUser()  + dsName;
-            
+            String dsName = "dataSource";                        
             String driverClassName = dbConnection.getDriverClass();
             String url = dbConnection.getDatabaseURL();
             String validationQuery = null;
             String username = dbConnection.getUser();
             String password = dbConnection.getPassword();
+            String schema = dbConnection.getSchema();
+                       
+            if (schema.equals("")) {
+                if (databaseProductName.equals("MySQL") && url.lastIndexOf("?") == -1)
+                    dsName = url.substring(url.lastIndexOf("/") + 1, url.length()) + "_" + databaseProductName;
+                else if (databaseProductName.equals("MySQL")) {
+                    dsName = url.substring(url.lastIndexOf("/") + 1, url.lastIndexOf("?")) + "_" + databaseProductName;;
+                } else
+                    dsName = getTableName() + "_" + databaseProductName;
+            } else
+                dsName = dbConnection.getSchema() + "_" + databaseProductName; 
             
             DataSourceInfo dataSourceInfo = new DataSourceInfo(dsName, driverClassName, url, validationQuery, username, password);
                                     

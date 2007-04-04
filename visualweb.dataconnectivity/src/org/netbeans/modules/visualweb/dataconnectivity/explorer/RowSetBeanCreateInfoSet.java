@@ -85,6 +85,7 @@ public class RowSetBeanCreateInfoSet implements BeanCreateInfoSet {
     public Image  getLargeIcon()   { return null; }
     public Image  getSmallIcon()   { return null; }
     public String getHelpKey()     { return null; }
+    public String getTableName()   { return tableName; }
 
     public void setDataSourceInfo(DataSourceInfo dsi){
         dsInfo = dsi;
