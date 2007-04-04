@@ -126,7 +126,7 @@ public class SelectionManager {
     private boolean paintBeanIcon = false;
     int selectionViewPos = Integer.MAX_VALUE;
     private Timer refreshTimer;
-    private Node[] prevNodes = null;
+//    private Node[] prevNodes = null;
 
 //    /** When set, ignore selection requests */
 //    private boolean ignoreSelection;
@@ -2035,26 +2035,26 @@ public class SelectionManager {
         return refreshTimer != null;
     }
 
-    private void releaseNodes() {
-        // There is most likely a better way to do this Tor, its to allow me to get further with
-        // leaks.
-        if (prevNodes != null) {
-//            // Ensure that the property change listeners are cleared out.
-//            // We could consider using weak listeners too.
-//            for (int i = 0; i < prevNodes.length; i++) {
-//                if (prevNodes[i] instanceof DesignBeanNode) {
-//                    ((DesignBeanNode)prevNodes[i]).setDataObject(null);
-////                } else if (prevNodes[i] instanceof DocumentCompNode) {
-////                    ((DocumentCompNode)prevNodes[i]).setDataObject(null);
-//                } else {
-//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-//                            new IllegalStateException("Not expected node=" + prevNodes[i])); // NOI18N
-//                }
-//            }
-
-            prevNodes = null;
-        }
-    }
+//    private void releaseNodes() {
+//        // There is most likely a better way to do this Tor, its to allow me to get further with
+//        // leaks.
+//        if (prevNodes != null) {
+////            // Ensure that the property change listeners are cleared out.
+////            // We could consider using weak listeners too.
+////            for (int i = 0; i < prevNodes.length; i++) {
+////                if (prevNodes[i] instanceof DesignBeanNode) {
+////                    ((DesignBeanNode)prevNodes[i]).setDataObject(null);
+//////                } else if (prevNodes[i] instanceof DocumentCompNode) {
+//////                    ((DocumentCompNode)prevNodes[i]).setDataObject(null);
+////                } else {
+////                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+////                            new IllegalStateException("Not expected node=" + prevNodes[i])); // NOI18N
+////                }
+////            }
+//
+//            prevNodes = null;
+//        }
+//    }
 
     /**
      * Same as {@link updateNodes} but this request is processed immediately/synchronously
@@ -2065,7 +2065,7 @@ public class SelectionManager {
             refreshTimer = null;
         }
 
-        releaseNodes();
+//        releaseNodes();
 
         DataObject dobj = webform.getDataObject();
 //        DesignerTopComp topcomp = webform.getTopComponent();
@@ -2102,7 +2102,7 @@ public class SelectionManager {
 
 //            DesignerUtils.setActivatedNodes(topcomp, nds);
             webform.tcSetActivatedNodes(nds);
-            prevNodes = nds;
+//            prevNodes = nds;
             
         } else {
 // <>
@@ -2152,7 +2152,7 @@ public class SelectionManager {
 //            if (topcomp.isShowing()) {
 //                topcomp.requestActive();
 //            }
-            prevNodes = nodes;
+//            prevNodes = nodes;
 // </>
         }
         
