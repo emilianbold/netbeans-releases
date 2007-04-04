@@ -189,7 +189,7 @@ public class TreeFactory implements TreeMakerInt {
     public ClassTree Interface(ModifiersTree modifiers, 
                      CharSequence simpleName,
                      List<? extends TypeParameterTree> typeParameters,
-                     List<? extends ExpressionTree> extendsClauses,
+                     List<? extends Tree> extendsClauses,
                      List<? extends Tree> memberDecls) 
     {
         long flags = getBitFlags(modifiers.getFlags()) | Flags.INTERFACE;
@@ -205,7 +205,7 @@ public class TreeFactory implements TreeMakerInt {
     
     public ClassTree Enum(ModifiersTree modifiers, 
              CharSequence simpleName,
-             List<? extends ExpressionTree> implementsClauses,
+             List<? extends Tree> implementsClauses,
              List<? extends Tree> memberDecls) {
         long flags = getBitFlags(modifiers.getFlags()) | Flags.ENUM;
         return Class(flags, (com.sun.tools.javac.util.List<JCAnnotation>) modifiers.getAnnotations(), simpleName, Collections.<TypeParameterTree>emptyList(), null, implementsClauses, memberDecls);
@@ -1414,7 +1414,7 @@ public class TreeFactory implements TreeMakerInt {
                      CharSequence simpleName,
                      List<? extends TypeParameterTree> typeParameters,
                      Tree extendsClause,
-                     List<? extends ExpressionTree> implementsClauses,
+                     List<? extends Tree> implementsClauses,
                      List<? extends Tree> memberDecls) {
         ListBuffer<JCTypeParameter> typarams = new ListBuffer<JCTypeParameter>();
         for (TypeParameterTree t : typeParameters)

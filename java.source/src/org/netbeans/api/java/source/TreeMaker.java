@@ -234,7 +234,7 @@ public final class TreeMaker {
     public ClassTree Interface(ModifiersTree modifiers, 
              CharSequence simpleName,
              List<? extends TypeParameterTree> typeParameters,
-             List<? extends ExpressionTree> extendsClauses,
+             List<? extends Tree> extendsClauses,
              List<? extends Tree> memberDecls) {
         return delegate.Interface(modifiers, simpleName, typeParameters, extendsClauses, memberDecls);
     }
@@ -269,7 +269,7 @@ public final class TreeMaker {
      */
     public ClassTree Enum(ModifiersTree modifiers, 
              CharSequence simpleName,
-             List<? extends ExpressionTree> implementsClauses,
+             List<? extends Tree> implementsClauses,
              List<? extends Tree> memberDecls) {
         return delegate.Enum(modifiers, simpleName, implementsClauses, memberDecls);
     }
