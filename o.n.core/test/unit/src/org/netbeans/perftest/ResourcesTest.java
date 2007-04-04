@@ -19,7 +19,10 @@
 
 package org.netbeans.perftest;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +37,10 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import org.netbeans.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -139,6 +146,80 @@ public class ResourcesTest extends NbTestCase {
         if (!violations.isEmpty()) {
             StringBuilder msg = new StringBuilder();
             msg.append("Some JARs in IDE contains sparsely populated packages ("+violations.size()+"):\n");
+            for (Violation viol: violations) {
+                msg.append(viol.entry).append(" in ").append(viol.jarFile).append('\n');
+            }
+            fail(msg.toString());
+        }
+        //                    assertTrue (entry.toString()+" should have line number table", v.foundLineNumberTable());
+    }
+    
+    /** Historically we had problems with some images.
+     */
+    public void testImageCanBeRead() throws Exception {
+        ImageIO.setUseCache(false);
+        ImageReader PNG_READER = ImageIO.getImageReadersByMIMEType("image/png").next();
+        ImageReader GIF_READER = ImageIO.getImageReadersByMIMEType("image/gif").next();
+        
+        SortedSet<Violation> violations = new TreeSet<Violation>();
+        for (File f: org.netbeans.core.startup.Main.getModuleSystem().getModuleJars()) {
+            // check JAR files only
+            if (!f.getName().endsWith(".jar"))
+                continue;
+            
+            JarFile jar = new JarFile(f);
+            Enumeration<JarEntry> entries = jar.entries();
+            JarEntry entry;
+            BufferedImage img;
+            while (entries.hasMoreElements()) {
+                entry = entries.nextElement();
+                if (entry.isDirectory())
+                    continue;
+                
+                String name = entry.getName();
+                if (!name.endsWith(".gif")
+                        && !name.endsWith(".png")) {
+                    continue;
+                }
+                try {
+                    img = ImageIO.read(jar.getInputStream(entry));
+                }
+                catch (IOException ioe) {
+                    violations.add(new Violation(name, jar.getName(), " cannot be read"));
+                    continue;
+                }
+                // more aggressive way - use reader matching to file extension
+                if (name.endsWith(".png")) {
+                    ImageInputStream stream = ImageIO.createImageInputStream(jar.getInputStream(entry));
+                    ImageReadParam param = PNG_READER.getDefaultReadParam();
+                    try {
+                        PNG_READER.setInput(stream, true, true);
+                        img = PNG_READER.read(0, param);
+                    }
+                    catch (IOException ioe1) {
+                        violations.add(new Violation(name, jar.getName(), " is not PNG image"));
+                        continue;
+                    }
+                    stream.close();
+                }
+                else if (name.endsWith(".gif")) {
+                    ImageInputStream stream = ImageIO.createImageInputStream(jar.getInputStream(entry));
+                    ImageReadParam param = GIF_READER.getDefaultReadParam();
+                    try {
+                        GIF_READER.setInput(stream, true, true);
+                        img = GIF_READER.read(0, param);
+                    }
+                    catch (IOException ioe1) {
+                        violations.add(new Violation(name, jar.getName(), " is not GIF image"));
+                        continue;
+                    }
+                    stream.close();
+                }
+            }
+        }
+        if (!violations.isEmpty()) {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Some images in IDE have problems ("+violations.size()+"):\n");
             for (Violation viol: violations) {
                 msg.append(viol.entry).append(" in ").append(viol.jarFile).append('\n');
             }

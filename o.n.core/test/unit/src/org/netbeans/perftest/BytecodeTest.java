@@ -116,10 +116,15 @@ public class BytecodeTest extends NbTestCase {
             ||  "persistence-tool-support.jar".equals(f.getName())
             ||  "ini4j.jar".equals(f.getName())
             ||  "svnClientAdapter.jar".equals(f.getName())
-            ||  "lucene-core-2.0.0.jar".equals(f.getName())
+            ||  "lucene-core-2.1.0.jar".equals(f.getName())
             ||  "javac-impl.jar".equals(f.getName())
             ||  "java-parser.jar".equals(f.getName())) 
                 continue;
+            
+            // #97282 - profiler
+            if (f.getName().contains("profiler")) {
+                continue;
+            }
             
             JarFile jar = new JarFile(f);
             Enumeration<JarEntry> entries = jar.entries();
@@ -343,6 +348,12 @@ public class BytecodeTest extends NbTestCase {
                     || f.getName().endsWith("org-netbeans-modules-java-j2seproject.jar")
                     || f.getName().endsWith("org-netbeans-modules-java-platform.jar")
                     || f.getName().endsWith("org-netbeans-modules-j2ee-sun-ddui.jar")) {    // issue #96422
+                continue;
+            }
+            // #97283 - profiler
+            if (f.getName().contains("jfluid")
+            || f.getName().contains("profiler")
+                    ) {
                 continue;
             }
             JarFile jar = new JarFile(f);
