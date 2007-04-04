@@ -44,6 +44,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaModelImpl;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBindingInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.DeleteModuleAction;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
@@ -61,7 +62,6 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -101,7 +101,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     private static final String DUMMY_PORTTYPE_NAME = "dummyCasaPortType";      // NOI18N
            
     private static final String NEWLINE = System.getProperty("line.separator");
-    private static final String CASA_WSDL_TNS = "http://whatever"; 
+    private static final String CASA_WSDL_TNS_PREFIX = "http://enterprise.netbeans.org/casa/"; 
     
     private static JarCatalogModel acm = new JarCatalogModel();
     private static CatalogWriteModel catalogModel;
@@ -138,6 +138,9 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
         
         buildBindingComponentMaps();
+        
+        FileObject fo = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().findResource("Editors");
+        System.out.println(fo);
     }
         
     public void removePropertyChangeListener(final PropertyChangeListener pcl) {
@@ -832,8 +835,9 @@ public class CasaWrapperModel extends CasaModelImpl {
     
     private boolean isEndpointDefined(final CasaEndpointRef endpointRef) {
         QName interfaceQName = endpointRef.getInterfaceQName();
+        String casaWsdlTNS = getCasaWSDLTargetNamespace();
         return interfaceQName.getLocalPart().trim().length() > 0
-                && !interfaceQName.equals(new QName(CASA_WSDL_TNS, DUMMY_PORTTYPE_NAME)); // FIXME
+                && !interfaceQName.equals(new QName(casaWsdlTNS, DUMMY_PORTTYPE_NAME)); 
     }
     
     /**
@@ -2148,8 +2152,21 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
     }
     
+    private String getCasaWSDLTargetNamespace() {
+        String projName = "unknown";  // NOI18N
+        try {
+            Project jbiProject = getJBIProject();
+            projName = JbiProjectHelper.getJbiProjectName(jbiProject);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return CASA_WSDL_TNS_PREFIX + projName;
+    }
+    
     private void createEmptyCasaWSDLFile(File file) {
         try {
+            String tns = getCasaWSDLTargetNamespace();
+            
             BufferedWriter out = new BufferedWriter(new FileWriter(file));
             out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18M
             out.write(NEWLINE);
@@ -2159,11 +2176,9 @@ public class CasaWrapperModel extends CasaModelImpl {
             out.write(NEWLINE);
             out.write("             xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""); // NOI18M
             out.write(NEWLINE);
-            out.write("             targetNamespace=\"" + CASA_WSDL_TNS + "\""); // NOI18M
+            out.write("             targetNamespace=\"" + tns + "\""); // NOI18M
             out.write(NEWLINE);
-            out.write("             xmlns:myns=\"" + CASA_WSDL_TNS + "\""); // NOI18M
-            out.write(NEWLINE);
-            out.write("             name=\"casawsdl\">"); // NOI18M
+            out.write("             xmlns:myns=\"" + tns + "\""); // NOI18M
             out.write(NEWLINE);
             out.write("</definitions>"); // NOI18M
             out.write(NEWLINE);
