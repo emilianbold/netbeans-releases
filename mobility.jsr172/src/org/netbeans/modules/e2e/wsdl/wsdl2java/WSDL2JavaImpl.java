@@ -362,10 +362,17 @@ public class WSDL2JavaImpl implements WSDL2Java {
             OutputFileFormatter off = new OutputFileFormatter( outputFile );
             
             if( configuration.getPackageName() != null && !"".equals( configuration.getPackageName().trim())) {
-                off.write( "package " + configuration.getPackageName() + ";\t\t");
+                off.write( "package " + configuration.getPackageName() + ";\n");
             }
             off.write( "\n" );
-            off.write( "public class " + name + " {\n" );
+            if( configuration.getGenerateDataBinding()) {
+                off.write( "import org.netbeans.microedition.databinding.DataSet;\n" );
+                off.write( "import org.netbeans.microedition.databinding.DataBindingException;\n" );
+                off.write( "\n" );
+                off.write( "public class " + name + " implements DataSet {\n" );
+            } else {
+                off.write( "public class " + name + " {\n" );
+            }
             for( SchemaConstruct sc : type.getSubconstructs()) {
                 if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
                     Element sce = (Element) sc;
@@ -402,6 +409,92 @@ public class WSDL2JavaImpl implements WSDL2Java {
                     }
                 }
             }
+            off.write( "\n" );
+            
+            if( configuration.getGenerateDataBinding()) {
+                // getType
+                off.write( "public Class getType(String dataItemName) {\n" );
+                for( SchemaConstruct sc : type.getSubconstructs()) {
+                    if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
+                        Element sce = (Element) sc;
+                        String propertyName = sce.getName().getLocalPart();
+                        String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
+                        String propertyType = sce.getType().getName().getLocalPart();
+                        
+                        off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
+                        off.write( "return " + getWrapperTypeName( sce.getType()) + ".class;\n" );
+                        off.write( "}\n" );
+                    }
+                }
+                off.write( "}\n" );
+                off.write( "\n" );
+                
+                // getValue
+                off.write( "public Object getValue(String dataItemName) {\n" );
+                for( SchemaConstruct sc : type.getSubconstructs()) {
+                    if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
+                        Element sce = (Element) sc;
+                        String propertyName = sce.getName().getLocalPart();
+                        String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
+                        String propertyType = sce.getType().getName().getLocalPart();
+                        
+                        off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
+                        if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
+                            off.write( "return " + wrapPrimitiveType( sce.getType(), propertyVariableName ) + ";\n" );
+                        } else {
+                            off.write( "return " + propertyVariableName + ";\n" );
+                        }
+                        off.write( "}\n" );
+                    }
+                }
+                off.write( "}\n" );
+                off.write( "\n" );
+                
+                // setValue
+                off.write( "public void setValue(String dataItemName, Object value) throws DataBindingException {\n" );
+                for( SchemaConstruct sc : type.getSubconstructs()) {
+                    if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
+                        Element sce = (Element) sc;
+                        String propertyName = sce.getName().getLocalPart();
+                        String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
+                        String propertyType = sce.getType().getName().getLocalPart();
+                        
+                        off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
+                        if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
+                            off.write( propertyVariableName + " = " + unwrapPrimitiveType( sce, " value" ) + ";\n" );
+                        } else {
+                            off.write( propertyVariableName + " = (" + propertyType +") value;\n" );
+                        }
+                        off.write( "}\n" );
+                    }
+                }
+                off.write( "}\n" );
+                off.write( "\n" );
+                off.write( "public void setAsString(String dataItemName, String value) throws DataBindingException {\n" );
+                for( SchemaConstruct sc : type.getSubconstructs()) {
+                    if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
+                        Element sce = (Element) sc;
+                        String propertyName = sce.getName().getLocalPart();
+                        String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
+                        String propertyType = sce.getType().getName().getLocalPart();
+                        
+                        off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
+                        if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
+                            off.write( propertyVariableName + " = " + parsePrimitiveType( sce, "value" ) + ";\n" );
+                        } else {
+                            off.write( "throw new DataBindingException();" );
+                        }
+                        off.write( "}\n" );
+                    }
+                }
+                off.write( "}\n" );
+                off.write( "\n" );
+                off.write( "public boolean isReadOnly(String dataItemName) {\n" );
+                off.write( "}\n" );
+                off.write( "\n" );
+                off.write( "public void setOwningDataSource(DataSource ds) {\n" );
+                off.write( "}\n" );
+            }            
             off.write( "}\n" );
             off.close();
         }
@@ -482,7 +575,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                     off.write( "return null;\n" );
                         off.write( "}\n" );
                         off.write( "if (SESSION_MAINTAIN_PROPERTY.equals(name)) {\n" );
-                                    off.write( "return new java.lang.Boolean(false);\n" );
+                                    off.write( "return new Boolean(false);\n" );
                         off.write( "}\n" );
                         off.write( "throw new JAXRPCException(\"Stub does not recognize property: \" + name);\n" );
                         off.write( "}\n\n" );
@@ -864,19 +957,19 @@ public class WSDL2JavaImpl implements WSDL2Java {
     private String wrapPrimitiveType( Type type, String value ) {
         QName typeName = type.getName();
         if( SchemaConstants.TYPE_INT.equals( typeName )) {
-            return "new java.lang.Integer(" + value + ")";
+            return "new Integer(" + value + ")";
         } else if( SchemaConstants.TYPE_BOOLEAN.equals( typeName )) {
-            return "new java.lang.Boolean(" + value + ")";
+            return "new Boolean(" + value + ")";
         } else if( SchemaConstants.TYPE_BYTE.equals( typeName )) {
-            return "new java.lang.Byte(" + value + ")";
+            return "new Byte(" + value + ")";
         } else if( SchemaConstants.TYPE_DOUBLE.equals( typeName )) {
-            return "new java.lang.Double(" + value + ")";
+            return "new Double(" + value + ")";
         } else if( SchemaConstants.TYPE_FLOAT.equals( typeName )) {
-            return "new java.lang.Float(" + value + ")";
+            return "new Float(" + value + ")";
         } else if( SchemaConstants.TYPE_LONG.equals( typeName )) {
-            return "new java.lang.Long(" + value + ")";
+            return "new Long(" + value + ")";
         } else if( SchemaConstants.TYPE_SHORT.equals( typeName )) {
-            return "new java.lang.Short(" + value + ")";
+            return "new Short(" + value + ")";
         }
         
         return value;
@@ -887,19 +980,19 @@ public class WSDL2JavaImpl implements WSDL2Java {
         QName typeName = type.getName();
         String unwrapped;
         if( SchemaConstants.TYPE_INT.equals( typeName )) {
-            unwrapped = "(java.lang.Integer)";
+            unwrapped = "(Integer)";
         } else if( SchemaConstants.TYPE_BOOLEAN.equals( typeName )) {
-            unwrapped = "(java.lang.Boolean)";
+            unwrapped = "(Boolean)";
         } else if( SchemaConstants.TYPE_BYTE.equals( typeName )) {
-            unwrapped = "(java.lang.Byte)";
+            unwrapped = "(Byte)";
         } else if( SchemaConstants.TYPE_DOUBLE.equals( typeName )) {
-            unwrapped = "(java.lang.Double)";
+            unwrapped = "(Double)";
         } else if( SchemaConstants.TYPE_FLOAT.equals( typeName )) {
-            unwrapped = "(java.lang.Float)";
+            unwrapped = "(Float)";
         } else if( SchemaConstants.TYPE_LONG.equals( typeName )) {
-            unwrapped = "(java.lang.Long)";
+            unwrapped = "(Long)";
         } else if( SchemaConstants.TYPE_SHORT.equals( typeName )) {
-            unwrapped = "(java.lang.Short)";
+            unwrapped = "(Short)";
         } else {
             unwrapped = "(" + type.getJavaTypeName() + ")";
         }
@@ -925,6 +1018,31 @@ public class WSDL2JavaImpl implements WSDL2Java {
         return unwrapped;
     }
     
+    private String parsePrimitiveType( Element element, String value ) {
+        Type type = element.getType();
+        QName typeName = type.getName();
+        String parse = wrapPrimitiveType( type, value );
+        if( element.getMinOccurs() > 0 && !element.isNillable()) {
+            if( SchemaConstants.TYPE_INT.equals( typeName )) {
+                parse = "Integer.parseInt(" + value + ")";
+            } else if( SchemaConstants.TYPE_BOOLEAN.equals( typeName )) {
+                parse = "Boolean.parseBoolean(" + value + ")";
+            } else if( SchemaConstants.TYPE_BYTE.equals( typeName )) {
+                parse = "Byte.parseByte(" + value + ")";
+            } else if( SchemaConstants.TYPE_DOUBLE.equals( typeName )) {
+                parse = "Double.parseDouble(" + value + ")";
+            } else if( SchemaConstants.TYPE_FLOAT.equals( typeName )) {
+                parse = "Float.parseFloat(" + value + ")";
+            } else if( SchemaConstants.TYPE_LONG.equals( typeName )) {
+                parse = "Long.parseLong(" + value + ")";
+            } else if( SchemaConstants.TYPE_SHORT.equals( typeName )) {
+                parse = "Short.parseShort(" + value + ")";
+            }
+        }
+        
+        return parse;
+    }
+        
     private String getter( String variable ) {
         return "get" + variable.substring( 0, 1 ).toUpperCase() + variable.substring( 1 );
     }
@@ -1010,103 +1128,9 @@ public class WSDL2JavaImpl implements WSDL2Java {
             Element e = (Element)sc;
             qnames.add( e.getName());
             elements.add( e );
-//            if( Type.FLAVOR_SEQUENCE == e.getType().getFlavor()) {
-//                for( SchemaConstruct scc : e.getType().getSubconstructs()) {
-//                    traverseParameterTypes( scc, qnames, elements );
-//                }
-//            }
         }
     }
-    
-//    public void traverseReturnType( OutputFileFormatter off, String holderName, String result, Element element, int item ) {
-//        Type type = element.getType();
-//        if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
-//            String javaTypeName;
-//            if( element.getMinOccurs() == 0 || element.isNillable()) {
-//                javaTypeName = getWrapperTypeName( element.getType());
-//            } else {
-//                javaTypeName = type.getJavaTypeName();
-//            }
-//            if( element.getMaxOccurs() > 1 ) {
-//                off.write( javaTypeName + "[] " + result + ";\n" );
-//                off.write( "Object " + element.getName().getLocalPart() + "Obj = ((Object[]) " + holderName + ")[" + item + "];\n" );
-//                off.write( result + " = (" + javaTypeName + "[]) " + element.getName().getLocalPart() + "Obj;\n" );
-//            } else {
-//                off.write( javaTypeName + " " + result + ";\n" );
-//                off.write( "Object " + element.getName().getLocalPart() + "Obj = ((Object[]) " + holderName + ")[" + item + "];\n" );
-//                off.write( result + " = " + unwrapPrimitiveType( element, element.getName().getLocalPart() + "Obj" ) + ";\n" );
-//            }
-//        } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
-//            if( type.getSubconstructs().size() == 0 ) {
-////            } else if( type.getSubconstructs().size() == 1 ) {
-////                SchemaConstruct sc = type.getSubconstructs().get( 0 );
-////                if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-////                    Element sce = (Element) sc;
-////                    traverseReturnType( off, holderName, result, sce, 0 );
-////                }
-//            } else {
-//                if( element.getMaxOccurs() > 1 ) {                    
-//                    off.write( type.getName().getLocalPart() + "[] " + result + ";\n" );
-//                    String resultObj = element.getName().getLocalPart().substring( 0, 1 ).toLowerCase() + element.getName().getLocalPart().substring( 1 );
-//                    off.write( "Object[] " + resultObj + "Obj = (Object[]) ((Object[]) " + holderName + " ) [" + item + "];\n" );
-//                    off.write( "if( " + resultObj + "Obj == null ) {\n" );
-//                    off.write( result + " = null;\n" );
-//                    off.write( "} else {\n" );
-//                    off.write( "int " + result + "ArraySize = " + resultObj + "Obj.length;\n" );
-//                    off.write( result + " = new " + element.getName().getLocalPart() + "[" + result + "ArraySize];\n" );
-//                    off.write( "for( int " + result + "ArrayIndex = 0; " + result + "ArrayIndex < " + result + "ArraySize; " + result + "ArrayIndex++ ) {\n" );
-//                    off.write( "if( " + resultObj + "Obj[ " + result + "ArrayIndex ] == null ) {\n" );
-//                    off.write( result + "[ " + result + "ArrayIndex ] = null;\n" );
-//                    off.write( "} else {\n" );
-//                    off.write( result + "[ " + result + "ArrayIndex ] = new " + element.getName().getLocalPart() + "();\n" );
-//                    
-//                    int i = 0;
-//                    for( SchemaConstruct sc : type.getSubconstructs()) {
-//                        if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-//                            Element sce = (Element) sc;
-//
-//                            String variableName = sce.getName().getLocalPart();
-//                            traverseReturnType( off, resultObj + "Obj[ " + result + "ArrayIndex ]", result + "Obj_" + variableName, sce, i );
-//                            if( WSDL2Java.Configuration.TYPE_JAVA_BEANS == configuration.getGenerateType()) {
-//                                off.write( result + "[ " + result + "ArrayIndex ]." + setter( variableName ) + "( " + result + "Obj_" + variableName + " );\n" );
-//                            } else if( WSDL2Java.Configuration.TYPE_STRUCTURES == configuration.getGenerateType()) {
-//                                off.write( result + "[ " + result + "ArrayIndex ]." + variableName + " = " + result + "Obj_" + variableName + ";\n" );
-//                            }
-//                        }
-//                        i++;
-//                    }
-//                    off.write( "}\n" );
-//                    off.write( "}\n" );
-//                    off.write( "}\n" );
-//                    
-//                } else {
-//                    String typeName = type.getName() == null ? element.getName().getLocalPart() : type.getName().getLocalPart();
-//                    off.write( typeName + " " + result + ";\n" );
-//                    off.write( "Object[] " + result + "_" + typeName + "Obj = (Object[]) ((Object[]) " + holderName + " ) [" + item + "];\n" );
-//                    off.write( "if( " + result + "_" + typeName + "Obj == null ) {\n");
-//                    off.write( result + " = null;\n" );
-//                    off.write( "} else {\n" );
-//                    off.write( result + " = new " + typeName + "();\n" );
-//                    int i = 0;
-//                    for( SchemaConstruct sc : type.getSubconstructs()) {
-//                        if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-//                            Element sce = (Element) sc;
-//                            String variableName = sce.getName().getLocalPart();
-//                            traverseReturnType( off, result + "_" + typeName + "Obj", result + "Obj_" + variableName, sce, i );
-//                            if( WSDL2Java.Configuration.TYPE_JAVA_BEANS == configuration.getGenerateType()) {
-//                                off.write( result + "." + setter( variableName ) + "( " + result + "Obj_" + variableName + " );\n" );
-//                            } else if( WSDL2Java.Configuration.TYPE_STRUCTURES == configuration.getGenerateType()) {
-//                                off.write( result + "." + variableName + " = " + result + "Obj_" + variableName + ";\n" );
-//                            }
-//                        }
-//                        i++;
-//                    }
-//                    off.write( "}\n" );
-//                }
-//            }
-//        }        
-//    }
-    
+        
     public String getUniqueTypeName( QName name ) {
         Integer index = uniqueTypeName.get( name );
         if( index != null ) {

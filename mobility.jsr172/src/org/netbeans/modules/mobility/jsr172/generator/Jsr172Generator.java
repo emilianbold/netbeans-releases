@@ -101,7 +101,7 @@ public class Jsr172Generator {
             
             final String wsdlUrl = f.toURI().toString();
             System.err.println(" - WSDL url - " + wsdlUrl );
-            
+             
 //            System.setProperty( "http.proxyHost", "webcache.holland.sun.com" );
 //            System.setProperty( "http.proxyPort", "8080" );
                         
@@ -110,6 +110,11 @@ public class Jsr172Generator {
             config.setOutputDirectory( sg.getRootFolder().getPath());
             config.setPackageName( cd.getPackageName());
             WSDL2Java wsdl2java = WSDL2JavaFactory.getWSDL2Java( config );
+            
+            final Properties properties = configuration.getProperties();
+            if( properties.getProperty( "DataBinding" ) != null ) {
+                config.setGenerateDataBinding( properties.getProperty( "DataBinding" ).equals( "true" ));
+            }
             
             wsdl2java.generate();
 //            File tempFile = null;

@@ -25,17 +25,11 @@ package org.netbeans.modules.mobility.jsr172.multiview;
 
 
 import java.util.Properties;
-
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
-
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-
 import javax.swing.JComponent;
-
 import org.netbeans.modules.mobility.end2end.E2EDataObject;
-
 import org.netbeans.modules.mobility.end2end.client.config.ClientConfiguration;
-
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 
 
@@ -54,9 +48,9 @@ public class Jsr172ClientOptionsPanel extends SectionInnerPanel {
     private transient Properties properties;
     
     /** Creates new form ClientOptionsPanel */
-    public Jsr172ClientOptionsPanel( SectionView sectionView, E2EDataObject dataObject ) {
-        
+    public Jsr172ClientOptionsPanel( SectionView sectionView, E2EDataObject dataObject ) {        
         super( sectionView );
+        
         this.dataObject = dataObject;
         dataObject.addSaveCallback( new SaveCallbackImpl());
         initComponents();
@@ -65,8 +59,7 @@ public class Jsr172ClientOptionsPanel extends SectionInnerPanel {
     
     
     
-    private void initValues() {
-        
+    private void initValues() {        
         final Configuration config = dataObject.getConfiguration();
         final ClientConfiguration cc = config.getClientConfiguration();
         properties = cc.getProperties();
@@ -74,6 +67,11 @@ public class Jsr172ClientOptionsPanel extends SectionInnerPanel {
             cldc10.setSelected( false );
         } else {
             cldc10.setSelected( true );
+        }
+        if( "true".equals( properties.getProperty( "DataBinding" ))) {
+            dataBindingCheckBox.setSelected( true );
+        } else {
+            dataBindingCheckBox.setSelected( false );
         }
     }
     
@@ -117,6 +115,11 @@ public class Jsr172ClientOptionsPanel extends SectionInnerPanel {
             } else {
                 properties.setProperty( "cldc11", "false" );
             }
+            if( dataBindingCheckBox.isSelected()) {
+                properties.setProperty( "DataBinding", "true" );
+            } else {
+                properties.setProperty( "DataBinding", "false" );
+            }
         }
         
         public int hashCode() {
@@ -144,25 +147,23 @@ public class Jsr172ClientOptionsPanel extends SectionInnerPanel {
      *
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
-
     private void initComponents() {
-
         java.awt.GridBagConstraints gridBagConstraints;
+
         cldc10 = new javax.swing.JCheckBox();
+        dataBindingCheckBox = new javax.swing.JCheckBox();
+
         setLayout(new java.awt.GridBagLayout());
 
         cldc10.setBackground(new java.awt.Color(255, 255, 255));
-        cldc10.setText(org.openide.util.NbBundle.getMessage(Jsr172ClientOptionsPanel.class, "LABEL_Floating_Point_To_String"));
-        cldc10.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        cldc10.setText(org.openide.util.NbBundle.getMessage(Jsr172ClientOptionsPanel.class, "LABEL_Floating_Point_To_String")); // NOI18N
+        cldc10.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cldc10.setMargin(new java.awt.Insets(0, 0, 0, 0));
         cldc10.addActionListener(new java.awt.event.ActionListener() {
-
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cldc10ActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -172,9 +173,28 @@ public class Jsr172ClientOptionsPanel extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
         add(cldc10, gridBagConstraints);
 
-    }
+        dataBindingCheckBox.setBackground(new java.awt.Color(255, 255, 255));
+        dataBindingCheckBox.setText(org.openide.util.NbBundle.getMessage(Jsr172ClientOptionsPanel.class, "LABLE_DataBinding")); // NOI18N
+        dataBindingCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        dataBindingCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        dataBindingCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dataBindingCheckBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
+        add(dataBindingCheckBox, gridBagConstraints);
+    }// </editor-fold>//GEN-END:initComponents
 
-    // </editor-fold>//GEN-END:initComponents
+private void dataBindingCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataBindingCheckBoxActionPerformed
+    dataObject.setModified( true );
+}//GEN-LAST:event_dataBindingCheckBoxActionPerformed
     
     
     
@@ -185,6 +205,7 @@ public class Jsr172ClientOptionsPanel extends SectionInnerPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cldc10;
+    private javax.swing.JCheckBox dataBindingCheckBox;
     // End of variables declaration//GEN-END:variables
     
     

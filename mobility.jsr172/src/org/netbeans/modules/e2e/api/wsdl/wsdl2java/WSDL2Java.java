@@ -34,18 +34,21 @@ public interface WSDL2Java {
         
         public static final short TYPE_JAVA_BEANS   = 1;
         public static final short TYPE_STRUCTURES   = 2;
-
+        
         private String wsdlFileName;
         private String outputDirectory;
         private boolean overwriteExisting;
         private String packageName;
         private short generateType;
-                
+        
+        private boolean generateDataBinding;
+                        
         public Configuration() {
             generateType = TYPE_JAVA_BEANS;
 
             packageName = "";
-            overwriteExisting = true;            
+            overwriteExisting = true;
+            generateDataBinding = false;
         } 
         /**
          * Sets the wsdl file
@@ -91,7 +94,15 @@ public interface WSDL2Java {
 
         public short getGenerateType() {
             return generateType;
-        }        
+        }
+        
+        public void setGenerateDataBinding( boolean value ) {
+            this.generateDataBinding = value;
+        }
+        
+        public boolean getGenerateDataBinding() {
+            return generateDataBinding;
+        }
     }
     
     /**
