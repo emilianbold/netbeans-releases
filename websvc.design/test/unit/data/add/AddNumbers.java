@@ -13,6 +13,7 @@ import javax.jws.Oneway;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import javax.jws.WebResult;
 import add.foo.FooException;
 
 /**
@@ -29,6 +30,7 @@ public class AddNumbers {
      * @return SUM of 2 numbers
      */    
     @WebMethod
+    @WebResult(name="sum")
     public int add(@WebParam(name = "x")
                    int x,
                    @WebParam(name = "y")
@@ -60,6 +62,5 @@ public class AddNumbers {
     public void send(@WebParam(name = "message")
                      String str) {
     }
-    
     
 }

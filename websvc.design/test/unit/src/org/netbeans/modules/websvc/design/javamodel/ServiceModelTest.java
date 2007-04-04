@@ -34,7 +34,8 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
     private static final String PORT_NAME="AddNumbersPort";
     private static final int NUMBER_OF_METHODS =3;
     private static final String[] OP_NAMES={"add","echo-operation","send"};
-    private static final String[] OP_RETURN_TYPES={"int","java.lang.String","void"};
+    private static final String[] OP_RETURN_NAMES={"sum","return",null};
+    private static final String[] OP_RETURN_TYPES={"int","java.lang.String",null};
     private static final boolean[] OP_ONE_WAY={false,false,true};
     private static final String[][] PARAM_NAMES={
         {"x","y"},
@@ -70,7 +71,7 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
     private static final String TARGET_NAMESPACE_1="http://www.netbeans.org/tests/AddNumbersTest";
     private static final int NUMBER_OF_METHODS_1 =4;
     private static final String[] OP_NAMES_1={"add","echo-operation","send","hello"};
-    private static final String[] OP_RETURN_TYPES_1={"int","java.lang.String","void","java.lang.String"};
+    private static final String[] OP_RETURN_TYPES_1={"int","java.lang.String",null,"java.lang.String"};
     private static final boolean[] OP_ONE_WAY_1={false,false,true,false};
     private static final String[][] PARAM_NAMES_1={
         {"x","y"},
@@ -151,7 +152,9 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
             int i=0;
             for (MethodModel op:operations) {
                 assertEquals(OP_NAMES[i], op.getOperationName());
-                assertEquals(OP_RETURN_TYPES[i], op.getReturnType());
+                ResultModel result = op.getResult();
+                assertEquals(OP_RETURN_NAMES[i], result==null? null:result.getName());
+                assertEquals(OP_RETURN_TYPES[i], result==null? null:result.getResultType());
                 assertEquals(OP_ONE_WAY[i], op.isOneWay());
                 List<ParamModel> params = op.getParams();
                 int j=0;
@@ -215,7 +218,8 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
             i=0;
             for (MethodModel op:operations) {
                 assertEquals(OP_NAMES_1[i], op.getOperationName());
-                assertEquals(OP_RETURN_TYPES_1[i], op.getReturnType());
+                ResultModel result = op.getResult();
+                assertEquals(OP_RETURN_TYPES_1[i], result==null? null:result.getResultType());
                 assertEquals(OP_ONE_WAY_1[i], op.isOneWay());
                 List<ParamModel> params = op.getParams();
                 int j=0;
