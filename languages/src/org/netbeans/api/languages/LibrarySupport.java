@@ -99,7 +99,7 @@ public abstract class LibrarySupport {
         public List<String> getItems (String context) {
             List<String> k = keys.get (context);
             if (k == null) {
-                Map<String,Map<String,String>> m = getItems ().get (context);
+                Map<String,List<Map<String,String>>> m = getItems ().get (context);
                 if (m == null) return null;
                 k = new ArrayList<String> (m.keySet ());
                 Collections.<String>sort (k);
@@ -111,52 +111,55 @@ public abstract class LibrarySupport {
     
         public List<CompletionItem> getCompletionItems (String context) {
             List<CompletionItem> result = new ArrayList<CompletionItem> ();
-            List<String> items = getItems (context);
+            Map<String,List<Map<String,String>>> items = getItems ().get (context);
             if (items == null) return result;
-            Iterator<String> it = items.iterator ();
+            Iterator<String> it = items.keySet ().iterator ();
             while (it.hasNext ()) {
                 String name =  it.next();
-                String description = getProperty 
-                    (context, name, "description");
-                String type = getProperty 
-                    (context, name, "type");
-                String color = "black";
-                String library = getProperty 
-                    (context, name, "library");
-                String icon = null;
-                if ("keyword".equals (type)) {
-                    color = "blue";
-                    icon = "/org/netbeans/modules/languages/resources/keyword.gif";
-                } else
-                if ("interface".equals (type)) {
-                    icon = "/org/netbeans/modules/languages/resources/class.gif";
-                } else
-                if ("attribute".equals (type)) {
-                    icon = "/org/netbeans/modules/languages/resources/variable.gif";
-                } else
-                if ("function".equals (type)) {
-                    icon = "/org/netbeans/modules/languages/resources/method.gif";
+                List<Map<String,String>> items2 = items.get (name);
+                Iterator<Map<String,String>> it2 = items2.iterator ();
+                while (it2.hasNext()) {
+                    Map<String, String> properties =  it2.next();
+
+                    String description = properties.get ("description");
+                    String type = properties.get ("type");
+                    String color = "000000";
+                    String library = properties.get ("library");
+                    String icon = null;
+                    if ("keyword".equals (type)) {
+                        color = "000099";
+                        icon = "/org/netbeans/modules/languages/resources/keyword.jpg";
+                    } else
+                    if ("interface".equals (type)) {
+                        icon = "/org/netbeans/modules/languages/resources/class.gif";
+                    } else
+                    if ("attribute".equals (type)) {
+                        icon = "/org/netbeans/modules/languages/resources/variable.gif";
+                    } else
+                    if ("function".equals (type)) {
+                        icon = "/org/netbeans/modules/languages/resources/method.gif";
+                    }
+
+                    if (description == null)
+                        result.add (CompletionSupport.createCompletionItem (
+                            name,
+                            "<html><b><font color=#" + color + ">" + name + 
+                                "</font></b></html>",
+                            library,
+                            icon,
+                            2
+                        ));
+                    else
+                        result.add (CompletionSupport.createCompletionItem (
+                            name,
+                            "<html><b><font color=#" + color + ">" + name + 
+                                ": </font></b><font color=#000000> " + 
+                                description + "</font></html>",
+                            library,
+                            icon,
+                            2
+                        ));
                 }
-                
-                if (description == null)
-                    result.add (CompletionSupport.createCompletionItem (
-                        name,
-                        "<html><b><font color=" + color + ">" + name + 
-                            "</font></b></html>",
-                        library,
-                        icon,
-                        2
-                    ));
-                else
-                    result.add (CompletionSupport.createCompletionItem (
-                        name,
-                        "<html><b><font color=" + color + ">" + name + 
-                            ": </font></b><font color=black> " + 
-                            description + "</font></html>",
-                        library,
-                        icon,
-                        2
-                    ));
             }
             return result;
         }
@@ -169,20 +172,22 @@ public abstract class LibrarySupport {
          * @param propertyName a name of property
          */
         public String getProperty (String context, String item, String propertyName) {
-            Map<String,Map<String,String>> m = getItems ().get (context);
+            Map<String,List<Map<String,String>>> m = getItems ().get (context);
             if (m == null) return null;
-            Map<String,String> m1 = m.get (item);
-            if (m1 == null) return null;
-            return m1.get (propertyName);
+            List<Map<String,String>> l = m.get (item);
+            if (l == null) return null;
+            if (l.size () > 1)
+                throw new IllegalArgumentException ();
+            return l.get (0).get (propertyName);
         }
 
 
         // generics support methods ................................................
 
         // context>name>property>value
-        private Map<String,Map<String,Map<String,String>>> items;
+        private Map<String,Map<String,List<Map<String,String>>>> items;
 
-        private Map<String,Map<String,Map<String,String>>> getItems () {
+        private Map<String,Map<String,List<Map<String,String>>>> getItems () {
             if (items == null)
                 try {
                     XMLReader reader = XMLUtil.createXMLReader ();
@@ -200,7 +205,7 @@ public abstract class LibrarySupport {
                     items = handler.result;
                 } catch (Exception ex) {
                     ErrorManager.getDefault ().notify (ex);
-                    items = Collections.<String,Map<String,Map<String,String>>> emptyMap ();
+                    items = Collections.<String,Map<String,List<Map<String,String>>>> emptyMap ();
                 }
             return items;
         }
@@ -208,7 +213,8 @@ public abstract class LibrarySupport {
     
     static class Handler extends DefaultHandler {
         
-        Map<String,Map<String,Map<String,String>>> result = new HashMap<String,Map<String,Map<String,String>>> ();
+        //context>key>propertyname>propertyvalue
+        Map<String,Map<String,List<Map<String,String>>>> result = new HashMap<String,Map<String,List<Map<String,String>>>> ();
         
         public void startElement (
             String uri, 
@@ -235,14 +241,17 @@ public abstract class LibrarySupport {
                         int i = contexts.indexOf (',');
                         String context = i >= 0 ? 
                             contexts.substring (0, i).trim () : contexts;
-                        Map<String,Map<String,String>> c = result.get (context);
-                        if (c == null) {
-                            c = new HashMap<String,Map<String,String>> ();
-                            result.put (context, c);
+                        Map<String,List<Map<String,String>>> names = result.get (context);
+                        if (names == null) {
+                            names = new HashMap<String,List<Map<String,String>>> ();
+                            result.put (context, names);
                         }
-//                        if (c.containsKey (key))
-//                            throw new IllegalArgumentException ("Key " + context + "-" + key + " already exists!");
-                        c.put (key, properties);
+                        List<Map<String,String>> entries = names.get (key);
+                        if (entries == null) {
+                            entries = new ArrayList<Map<String,String>> ();
+                            names.put (key, entries);
+                        }
+                        entries.add (properties);
                         if (i < 0) break;
                         contexts = contexts.substring (i + 1);
                     }
