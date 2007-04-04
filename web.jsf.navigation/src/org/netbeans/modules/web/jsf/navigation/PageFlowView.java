@@ -13,15 +13,9 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * JSFTopComponent.java
- *
- * Created on February 8, 2007, 12:40 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 
 package org.netbeans.modules.web.jsf.navigation;
@@ -173,7 +167,6 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     //    private static final Image IMAGE_LIST = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/list_32.png"); // NOI18N
-    private static final Image IMAGE_LIST = null; // NOI18N
     
     /**
      *
@@ -219,7 +212,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         //            System.out.println("PageName : " + pageName);
         //        }
         String pageName = pageNode.getDisplayName();
-        widget.setNodeProperties(IMAGE_LIST, pageName, type, glyphs);
+        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
         scene.addPin(pageNode, new PinNode(pageNode));
         
         return widget;
