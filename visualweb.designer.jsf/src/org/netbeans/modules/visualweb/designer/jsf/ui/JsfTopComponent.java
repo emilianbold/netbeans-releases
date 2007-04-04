@@ -35,8 +35,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -45,6 +47,7 @@ import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -73,6 +76,9 @@ import org.openide.windows.WindowManager;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.netbeans.modules.visualweb.designer.jsf.JsfSupportUtilities;
 import org.netbeans.modules.visualweb.extension.openide.loaders.SystemFileSystemSupport;
+import org.openide.awt.Actions;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.actions.Presenter;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
@@ -1135,166 +1141,164 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         //}
     }
 
-    // XXX Moved to designer/jsf/../JsfMultiViewElement.
-//    private static final String PATH_TOOLBAR_FOLDER = "Designer/application/x-designer/Toolbars/Default"; // NOI18N
+    private static final String PATH_TOOLBAR_FOLDER = "Designer/application/x-designer/Toolbars/Default"; // NOI18N
 
-    // XXX Moved to designer/jsf/../JsfMultiViewElement.
-//    public JComponent getToolbarRepresentation() {
-//        if (toolbar == null) {
-//            // TODO -- Look at NbEditorToolBar in the editor - it does stuff
-//            // with the UI to get better Aqua and Linux toolbar
-//            toolbar = new JToolBar();
-//            toolbar.setFloatable(false);
-//            toolbar.setRollover(true);
-//            toolbar.setBorder(new EmptyBorder(0, 0, 0, 0));
-//
-////            ToolbarListener listener = new ToolbarListener();
-//
+    public JComponent getToolbarRepresentation() {
+        if (toolbar == null) {
+            // TODO -- Look at NbEditorToolBar in the editor - it does stuff
+            // with the UI to get better Aqua and Linux toolbar
+            toolbar = new JToolBar();
+            toolbar.setFloatable(false);
+            toolbar.setRollover(true);
+            toolbar.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+//            ToolbarListener listener = new ToolbarListener();
+
+            toolbar.addSeparator();
+//            previewButton =
+//                new JButton(new ImageIcon(Utilities.loadImage("org/netbeans/modules/visualweb/designer/preview.png"))); // NOI18N
+//            previewButton.addActionListener(listener);
+//            previewButton.setToolTipText(NbBundle.getMessage(DesignerTopComp.class, "PreviewAction"));
+//            toolbar.add(previewButton);
+            // XXX TODO For now adding only BrowserPreviewAction, but later all of them.
+//            Component[] comps = ToolBarInstancesProvider.getDefault().getToolbarComponentsForDesignerComponent(this);
+            Action[] actions = SystemFileSystemSupport.getActions(PATH_TOOLBAR_FOLDER);
+            Lookup context = getLookup();
+            for (int i = 0; i < actions.length; i++) {
+                Action action = actions[i];
+                if (action == null) {
+                    toolbar.addSeparator();
+                } else {
+                    if (action instanceof ContextAwareAction) {
+                        Action contextAwareAction = ((ContextAwareAction)action).createContextAwareInstance(context);
+                        if (contextAwareAction != null) {
+                            action = contextAwareAction;
+                        }
+                    }
+                    if (action instanceof Presenter.Toolbar) {
+                        Component tbp = ((Presenter.Toolbar)action).getToolbarPresenter();
+                        toolbar.add(tbp);
+                    } else {
+//                        toolbar.add(new Actions.ToolbarButton((Action)action));
+                        JButton toolbarButton = new JButton();
+                        Actions.connect(toolbarButton, (Action)action);
+                        toolbar.add(toolbarButton);
+                    }
+                }
+            }
+
+//            refreshButton =
+//                new JButton(new ImageIcon(Utilities.loadImage("org/netbeans/modules/visualweb/designer/refresh.png"))); // NOI18N
+//            refreshButton.addActionListener(listener);
+//            refreshButton.setToolTipText(NbBundle.getMessage(DesignerTopComp.class, "Refresh"));
+//            toolbar.add(refreshButton);
+
+//            showVfButton =
+//                new JToggleButton(new ImageIcon(Utilities.loadImage("org/netbeans/modules/visualweb/designer/vf.png")), // NOI18N
+//                    webform.getVirtualFormSupport().isEnabled());
+//            showVfButton.addActionListener(listener);
+//            showVfButton.setToolTipText(NbBundle.getMessage(DesignerTopComp.class, "ShowVF"));
+//            toolbar.add(showVfButton);
+
 //            toolbar.addSeparator();
-////            previewButton =
-////                new JButton(new ImageIcon(Utilities.loadImage("org/netbeans/modules/visualweb/designer/preview.png"))); // NOI18N
-////            previewButton.addActionListener(listener);
-////            previewButton.setToolTipText(NbBundle.getMessage(DesignerTopComp.class, "PreviewAction"));
-////            toolbar.add(previewButton);
-//            // XXX TODO For now adding only BrowserPreviewAction, but later all of them.
-////            Component[] comps = ToolBarInstancesProvider.getDefault().getToolbarComponentsForDesignerComponent(this);
-//            Action[] actions = SystemFileSystemSupport.getActions(PATH_TOOLBAR_FOLDER);
-//            Lookup context = getLookup();
-//            for (int i = 0; i < actions.length; i++) {
-//                Action action = actions[i];
-//                if (action == null) {
-//                    toolbar.addSeparator();
-//                } else {
-//                    if (action instanceof ContextAwareAction) {
-//                        Action contextAwareAction = ((ContextAwareAction)action).createContextAwareInstance(context);
-//                        if (contextAwareAction != null) {
-//                            action = contextAwareAction;
-//                        }
-//                    }
-//                    if (action instanceof Presenter.Toolbar) {
-//                        Component tbp = ((Presenter.Toolbar)action).getToolbarPresenter();
-//                        toolbar.add(tbp);
-//                    } else {
-////                        toolbar.add(new Actions.ToolbarButton((Action)action));
-//                        JButton toolbarButton = new JButton();
-//                        Actions.connect(toolbarButton, (Action)action);
-//                        toolbar.add(toolbarButton);
-//                    }
-//                }
-//            }
-//
-////            refreshButton =
-////                new JButton(new ImageIcon(Utilities.loadImage("org/netbeans/modules/visualweb/designer/refresh.png"))); // NOI18N
-////            refreshButton.addActionListener(listener);
-////            refreshButton.setToolTipText(NbBundle.getMessage(DesignerTopComp.class, "Refresh"));
-////            toolbar.add(refreshButton);
-//
-////            showVfButton =
-////                new JToggleButton(new ImageIcon(Utilities.loadImage("org/netbeans/modules/visualweb/designer/vf.png")), // NOI18N
-////                    webform.getVirtualFormSupport().isEnabled());
-////            showVfButton.addActionListener(listener);
-////            showVfButton.setToolTipText(NbBundle.getMessage(DesignerTopComp.class, "ShowVF"));
-////            toolbar.add(showVfButton);
-//
-////            toolbar.addSeparator();
-//
-////            toolbar.add(new TargetSizeCombo(webform));
-//            
-//            // Perhaps we could add a snap to grid toggle button here...
-//            // And value binding feedback stuff?
-//            // DEBUGGING SUPPORT
-//            //import java.awt.image.BufferedImage;
-//            //import org.openide.awt.HtmlBrowser.URLDisplayer;
-//            //import javax.imageio.ImageIO;
-//            //import javax.swing.CellRendererPane;
-//            //import javax.swing.JFrame;
-//            //import org.openide.windows.WindowManager;
-//            //import org.netbeans.modules.visualweb.css2.PageBox;
-//            //import java.io.File;
-//            //import java.awt.Graphics2D;
-//            //import java.net.URL;
-//            //import java.net.MalformedURLException;
-//            //import org.openide.ErrorManager;
-//            //import java.io.IOException;
-//            //            if (System.getProperty("designer.debug") != null) {
-//            //                toolbar.add(new AbstractAction("ShowLayout", null) {
-//            //                    public void actionPerformed(ActionEvent actionEvent) {
-//            //                        PageBox pageBox = webform.getSelection().getPageBox();
-//            //                        StringBuffer sb = new StringBuffer();
-//            //                        pageBox.printLayout(sb);
-//            //                        org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(new javax.swing.JScrollPane(new javax.swing.JTextArea(sb.toString()))));
-//            //
-//            //                    }
-//            //                });
-//            //
-//            //                toolbar.add(new AbstractAction("ShowHtml", null) {
-//            //                    public void actionPerformed(ActionEvent actionEvent) {
-//            //                        org.w3c.dom.Node node = webform.getDom().getRoot();
-//            //                        String s = FacesSupport.getHtmlStream(node);
-//            //                        org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(new javax.swing.JScrollPane(new javax.swing.JTextArea(s))));
-//            //                    }
-//            //                });
-//            //
-//            //                toolbar.add(new AbstractAction("SaveImage", null) {
-//            //                    public void actionPerformed(ActionEvent actionEvent) {
-//            //                        PageBox pageBox = webform.getSelection().getPageBox();
-//            //                        BufferedImage img2 = paintImage(pageBox);
-//            //                        showScreenshot(img2);
-//            //                    }
-//            //                    protected BufferedImage paintImage(PageBox pageBox) {
-//            //                        int w = pageBox.getWidth();
-//            //                        int h = pageBox.getHeight();
-//            //                        BufferedImage image = new BufferedImage(w, h,
-//            //                                                                BufferedImage.TYPE_INT_RGB);
-//            //                        Graphics2D g2 = image.createGraphics();
-//            //                        DesignerPane.clip.setBounds(0, 0, w, h);
-//            //                        DesignerPane.clipBr.x = w;
-//            //                        DesignerPane.clipBr.y = h;
-//            //                        pageBox.paint(g2);
-//            //                        g2.dispose();
-//            //                        return image;
-//            //                    }
-//            //                    protected void showScreenshot(BufferedImage bi) {
-//            //                        try {
-//            //                            File tmp = File.createTempFile("designer", ".png");
-//            //                            tmp.deleteOnExit();
-//            //                            saveImage(bi, tmp);
-//            //                            showScreenshot(tmp);
-//            //                        } catch (java.io.IOException ioe) {
-//            //                            ErrorManager.getDefault().notify(ioe);
-//            //                        }
-//            //                    }
-//            //
-//            //                    /** Save the given image to disk */
-//            //                    protected void saveImage(BufferedImage image, File file) {
-//            //                        try {
-//            //                            if (file.exists()) {
-//            //                                file.delete();
-//            //                            }
-//            //                            ImageIO.write(image, "png", file);
-//            //                        } catch (IOException e) {
-//            //                            System.err.println(e);
-//            //                        }
-//            //                    }
-//            //
-//            //                    protected void showScreenshot(File file) {
-//            //                        URL url;
-//            //                        try {
-//            //                            url = new URL("file:" + file.getPath()); // NOI18N
-//            //                        } catch (MalformedURLException e) {
-//            //                            // Can't show URL
-//            //                            ErrorManager.getDefault().notify(e);
-//            //                            return;
-//            //                        }
-//            //                        URLDisplayer.getDefault().showURL(url);
-//            //                    }
-//            //
-//            //                });
-//            //            }
-//        }
-//
-//        return toolbar;
-//    }
+
+//            toolbar.add(new TargetSizeCombo(webform));
+            
+            // Perhaps we could add a snap to grid toggle button here...
+            // And value binding feedback stuff?
+            // DEBUGGING SUPPORT
+            //import java.awt.image.BufferedImage;
+            //import org.openide.awt.HtmlBrowser.URLDisplayer;
+            //import javax.imageio.ImageIO;
+            //import javax.swing.CellRendererPane;
+            //import javax.swing.JFrame;
+            //import org.openide.windows.WindowManager;
+            //import org.netbeans.modules.visualweb.css2.PageBox;
+            //import java.io.File;
+            //import java.awt.Graphics2D;
+            //import java.net.URL;
+            //import java.net.MalformedURLException;
+            //import org.openide.ErrorManager;
+            //import java.io.IOException;
+            //            if (System.getProperty("designer.debug") != null) {
+            //                toolbar.add(new AbstractAction("ShowLayout", null) {
+            //                    public void actionPerformed(ActionEvent actionEvent) {
+            //                        PageBox pageBox = webform.getSelection().getPageBox();
+            //                        StringBuffer sb = new StringBuffer();
+            //                        pageBox.printLayout(sb);
+            //                        org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(new javax.swing.JScrollPane(new javax.swing.JTextArea(sb.toString()))));
+            //
+            //                    }
+            //                });
+            //
+            //                toolbar.add(new AbstractAction("ShowHtml", null) {
+            //                    public void actionPerformed(ActionEvent actionEvent) {
+            //                        org.w3c.dom.Node node = webform.getDom().getRoot();
+            //                        String s = FacesSupport.getHtmlStream(node);
+            //                        org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(new javax.swing.JScrollPane(new javax.swing.JTextArea(s))));
+            //                    }
+            //                });
+            //
+            //                toolbar.add(new AbstractAction("SaveImage", null) {
+            //                    public void actionPerformed(ActionEvent actionEvent) {
+            //                        PageBox pageBox = webform.getSelection().getPageBox();
+            //                        BufferedImage img2 = paintImage(pageBox);
+            //                        showScreenshot(img2);
+            //                    }
+            //                    protected BufferedImage paintImage(PageBox pageBox) {
+            //                        int w = pageBox.getWidth();
+            //                        int h = pageBox.getHeight();
+            //                        BufferedImage image = new BufferedImage(w, h,
+            //                                                                BufferedImage.TYPE_INT_RGB);
+            //                        Graphics2D g2 = image.createGraphics();
+            //                        DesignerPane.clip.setBounds(0, 0, w, h);
+            //                        DesignerPane.clipBr.x = w;
+            //                        DesignerPane.clipBr.y = h;
+            //                        pageBox.paint(g2);
+            //                        g2.dispose();
+            //                        return image;
+            //                    }
+            //                    protected void showScreenshot(BufferedImage bi) {
+            //                        try {
+            //                            File tmp = File.createTempFile("designer", ".png");
+            //                            tmp.deleteOnExit();
+            //                            saveImage(bi, tmp);
+            //                            showScreenshot(tmp);
+            //                        } catch (java.io.IOException ioe) {
+            //                            ErrorManager.getDefault().notify(ioe);
+            //                        }
+            //                    }
+            //
+            //                    /** Save the given image to disk */
+            //                    protected void saveImage(BufferedImage image, File file) {
+            //                        try {
+            //                            if (file.exists()) {
+            //                                file.delete();
+            //                            }
+            //                            ImageIO.write(image, "png", file);
+            //                        } catch (IOException e) {
+            //                            System.err.println(e);
+            //                        }
+            //                    }
+            //
+            //                    protected void showScreenshot(File file) {
+            //                        URL url;
+            //                        try {
+            //                            url = new URL("file:" + file.getPath()); // NOI18N
+            //                        } catch (MalformedURLException e) {
+            //                            // Can't show URL
+            //                            ErrorManager.getDefault().notify(e);
+            //                            return;
+            //                        }
+            //                        URLDisplayer.getDefault().showURL(url);
+            //                    }
+            //
+            //                });
+            //            }
+        }
+
+        return toolbar;
+    }
 
     public JComponent getVisualRepresentation() {
         return this;
