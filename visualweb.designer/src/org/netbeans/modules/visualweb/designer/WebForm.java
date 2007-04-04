@@ -105,7 +105,7 @@ public class WebForm implements Designer {
 
     private final HtmlDomProvider htmlDomProvider;
     
-    private final HtmlDomProvider.HtmlDomProviderListener htmlDomProviderListener = new HtmlDomProviderListener(this);
+//    private final HtmlDomProvider.HtmlDomProviderListener htmlDomProviderListener = new HtmlDomProviderListener(this);
     
 //    protected FacesModel model;
     private SelectionManager selection;
@@ -1805,9 +1805,9 @@ public class WebForm implements Designer {
 //        htmlDomProvider.addHtmlDomProviderListener((HtmlDomProvider.HtmlDomProviderListener)WeakListeners.create(
 //                HtmlDomProvider.HtmlDomProviderListener.class, htmlDomProviderListener, htmlDomProvider));
         
-        // XXX FIXME There are more calls then needed. This is a hack to avoid multiple registering.
-        htmlDomProvider.removeHtmlDomProviderListener(htmlDomProviderListener);
-        htmlDomProvider.addHtmlDomProviderListener(htmlDomProviderListener);
+//        // XXX FIXME There are more calls then needed. This is a hack to avoid multiple registering.
+//        htmlDomProvider.removeHtmlDomProviderListener(htmlDomProviderListener);
+//        htmlDomProvider.addHtmlDomProviderListener(htmlDomProviderListener);
                 
         DataObject jspDataObject = getJspDataObject();
         if (jspDataObject != null) {
@@ -1817,9 +1817,9 @@ public class WebForm implements Designer {
     }
 
     public void unregisterListeners() {
-        // XXX Or don't use weak listener, and remove it explicitely.
-//        htmlDomProviderListener = null;
-        htmlDomProvider.removeHtmlDomProviderListener(htmlDomProviderListener);
+//        // XXX Or don't use weak listener, and remove it explicitely.
+////        htmlDomProviderListener = null;
+//        htmlDomProvider.removeHtmlDomProviderListener(htmlDomProviderListener);
         
         jspDataObjectListener = null;
     }
@@ -2293,118 +2293,118 @@ public class WebForm implements Designer {
     }
     
     
-    private static class HtmlDomProviderListener implements HtmlDomProvider.HtmlDomProviderListener {
-        private final WebForm webForm;
-        
-        public HtmlDomProviderListener(WebForm webForm) {
-            this.webForm = webForm;
-        }
-        
-//        public void modelChanged() {
-//            webForm.modelChanged();
+//    private static class HtmlDomProviderListener implements HtmlDomProvider.HtmlDomProviderListener {
+//        private final WebForm webForm;
+//        
+//        public HtmlDomProviderListener(WebForm webForm) {
+//            this.webForm = webForm;
 //        }
-        
-//        public void modelRefreshed() {
-//            webForm.modelRefreshed();
-//        }
-
-//        public void nodeChanged(Node rendered, Node parent, boolean wasMove) {
-//            webForm.nodeChanged(rendered, parent, wasMove);
-//        }
-
-//        public void nodeRemoved(Node previouslyRendered, Node parent) {
-//            webForm.nodeRemoved(previouslyRendered, parent);
-//        }
-
-//        public void nodeInserted(Node rendered, Node parent) {
-//            webForm.nodeInserted(rendered, parent);
-//        }
-
-//        public void updateErrorsInComponent() {
-//            webForm.updateErrorsInComponent();
-//        }
-
-//        public void updateGridMode() {
-//            webForm.updateGridMode();
-//        }
-//        public void gridModeUpdated(boolean gridMode) {
-//            webForm.updatePaneGrid(gridMode);
-//        }
-
-//        public void documentReplaced() {
-//            webForm.documentReplaced();
-//        }
-
-//        public void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
-//            webForm.showDropMatch(componentRootElement, regionElement, dropType);
-//        }
-        
-//        public void clearDropMatch() {
-//            webForm.clearDropMatch();
-//        }
-
-//        public void select(/*DesignBean designBean*/ Element componentRootElement) {
-////            webForm.select(designBean);
-//            webForm.select(componentRootElement);
-//        }
-
-//        public void refreshForm(boolean deep) {
-//            webForm.refreshForm(deep);
-//        }
-
-//        public void inlineEdit(/*DesignBean[] designBeans*/ Element[] componentRootElements) {
-////            webForm.inlineEdit(designBeans);
-//            webForm.inlineEdit(componentRootElements);
-//        }
-
-//        public void designContextActivated(DesignContext designContext) {
-//            webForm.contextActivated(designContext);
-//        }
-
-//        public void designContextDeactivated(DesignContext designContext) {
-//            webForm.contextDeactivated(designContext);
-//        }
-
-//        public void designContextGenerationChanged() {
-//            webForm.designContextGenerationChanged();
-//        }
-
-//        public void designBeanCreated(DesignBean designBean) {
-//            webForm.beanCreated(designBean);
-//        }
-
-//        public void designBeanDeleted(DesignBean designBean) {
-//            webForm.beanDeleted(designBean);
-//        }
-
-//        public void designBeanMoved(DesignBean designBean, DesignBean designBean0, Position position) {
-//            webForm.beanMoved(designBean, designBean0, position);
-//        }
-
-//        public void designBeanContextActivated(DesignBean designBean) {
-//            webForm.beanContextActivated(designBean);
-//        }
-
-//        public void designBeanContextDeactivated(DesignBean designBean) {
-//            webForm.beanContextDeactivated(designBean);
-//        }
-
-//        public void designBeanNameChanged(DesignBean designBean, String string) {
-//            webForm.instanceNameChanged(designBean, string);
-//        }
-
-//        public void designBeanChanged(DesignBean designBean) {
-//            webForm.beanChanged(designBean);
-//        }
-
-//        public void designPropertyChanged(DesignProperty designProperty, Object object) {
-//            webForm.propertyChanged(designProperty, object);
-//        }
-
-//        public void designEventChanged(DesignEvent designEvent) {
-//            webForm.eventChanged(designEvent);
-//        }
-    } // End of HtmlDomProviderListener.
+//        
+////        public void modelChanged() {
+////            webForm.modelChanged();
+////        }
+//        
+////        public void modelRefreshed() {
+////            webForm.modelRefreshed();
+////        }
+//
+////        public void nodeChanged(Node rendered, Node parent, boolean wasMove) {
+////            webForm.nodeChanged(rendered, parent, wasMove);
+////        }
+//
+////        public void nodeRemoved(Node previouslyRendered, Node parent) {
+////            webForm.nodeRemoved(previouslyRendered, parent);
+////        }
+//
+////        public void nodeInserted(Node rendered, Node parent) {
+////            webForm.nodeInserted(rendered, parent);
+////        }
+//
+////        public void updateErrorsInComponent() {
+////            webForm.updateErrorsInComponent();
+////        }
+//
+////        public void updateGridMode() {
+////            webForm.updateGridMode();
+////        }
+////        public void gridModeUpdated(boolean gridMode) {
+////            webForm.updatePaneGrid(gridMode);
+////        }
+//
+////        public void documentReplaced() {
+////            webForm.documentReplaced();
+////        }
+//
+////        public void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
+////            webForm.showDropMatch(componentRootElement, regionElement, dropType);
+////        }
+//        
+////        public void clearDropMatch() {
+////            webForm.clearDropMatch();
+////        }
+//
+////        public void select(/*DesignBean designBean*/ Element componentRootElement) {
+//////            webForm.select(designBean);
+////            webForm.select(componentRootElement);
+////        }
+//
+////        public void refreshForm(boolean deep) {
+////            webForm.refreshForm(deep);
+////        }
+//
+////        public void inlineEdit(/*DesignBean[] designBeans*/ Element[] componentRootElements) {
+//////            webForm.inlineEdit(designBeans);
+////            webForm.inlineEdit(componentRootElements);
+////        }
+//
+////        public void designContextActivated(DesignContext designContext) {
+////            webForm.contextActivated(designContext);
+////        }
+//
+////        public void designContextDeactivated(DesignContext designContext) {
+////            webForm.contextDeactivated(designContext);
+////        }
+//
+////        public void designContextGenerationChanged() {
+////            webForm.designContextGenerationChanged();
+////        }
+//
+////        public void designBeanCreated(DesignBean designBean) {
+////            webForm.beanCreated(designBean);
+////        }
+//
+////        public void designBeanDeleted(DesignBean designBean) {
+////            webForm.beanDeleted(designBean);
+////        }
+//
+////        public void designBeanMoved(DesignBean designBean, DesignBean designBean0, Position position) {
+////            webForm.beanMoved(designBean, designBean0, position);
+////        }
+//
+////        public void designBeanContextActivated(DesignBean designBean) {
+////            webForm.beanContextActivated(designBean);
+////        }
+//
+////        public void designBeanContextDeactivated(DesignBean designBean) {
+////            webForm.beanContextDeactivated(designBean);
+////        }
+//
+////        public void designBeanNameChanged(DesignBean designBean, String string) {
+////            webForm.instanceNameChanged(designBean, string);
+////        }
+//
+////        public void designBeanChanged(DesignBean designBean) {
+////            webForm.beanChanged(designBean);
+////        }
+//
+////        public void designPropertyChanged(DesignProperty designProperty, Object object) {
+////            webForm.propertyChanged(designProperty, object);
+////        }
+//
+////        public void designEventChanged(DesignEvent designEvent) {
+////            webForm.eventChanged(designEvent);
+////        }
+//    } // End of HtmlDomProviderListener.
     
 
     /** Dummy impl of <code>HtmlDomProviderService</code>. */

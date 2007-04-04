@@ -114,7 +114,7 @@ public class JsfForm {
     private final boolean isFragment;
     private final boolean isPortlet;
 
-    private final EventListenerList listenerList = new EventListenerList();
+//    private final EventListenerList listenerList = new EventListenerList();
 
     private final PaletteController paletteController;
 
@@ -929,28 +929,28 @@ public class JsfForm {
 //        }
 //    }
 
-    void addHtmlDomProviderListener(HtmlDomProvider.HtmlDomProviderListener l) {
-        listenerList.add(HtmlDomProvider.HtmlDomProviderListener.class, l);
-    }
-
-    void removeHtmlDomProviderListener(HtmlDomProvider.HtmlDomProviderListener l) {
-        listenerList.remove(HtmlDomProvider.HtmlDomProviderListener.class, l);
-    }
+//    void addHtmlDomProviderListener(HtmlDomProvider.HtmlDomProviderListener l) {
+//        listenerList.add(HtmlDomProvider.HtmlDomProviderListener.class, l);
+//    }
+//
+//    void removeHtmlDomProviderListener(HtmlDomProvider.HtmlDomProviderListener l) {
+//        listenerList.remove(HtmlDomProvider.HtmlDomProviderListener.class, l);
+//    }
     
-    private HtmlDomProvider.HtmlDomProviderListener[] getHtmlDomProviderListeners() {
-        // Guaranteed to return a non-null array
-        Object[] listeners = listenerList.getListenerList();
-        
-        List<HtmlDomProvider.HtmlDomProviderListener> htmlDomProviderListeners = new ArrayList<HtmlDomProvider.HtmlDomProviderListener>();
-        // Process the listeners last to first, notifying
-        // those that are interested in this event
-        for (int i = listeners.length-2; i>=0; i-=2) {
-            if (listeners[i] == HtmlDomProvider.HtmlDomProviderListener.class) {
-                htmlDomProviderListeners.add((HtmlDomProvider.HtmlDomProviderListener)listeners[i+1]);
-            }          
-        }
-        return htmlDomProviderListeners.toArray(new HtmlDomProvider.HtmlDomProviderListener[htmlDomProviderListeners.size()]);
-    }
+//    private HtmlDomProvider.HtmlDomProviderListener[] getHtmlDomProviderListeners() {
+//        // Guaranteed to return a non-null array
+//        Object[] listeners = listenerList.getListenerList();
+//        
+//        List<HtmlDomProvider.HtmlDomProviderListener> htmlDomProviderListeners = new ArrayList<HtmlDomProvider.HtmlDomProviderListener>();
+//        // Process the listeners last to first, notifying
+//        // those that are interested in this event
+//        for (int i = listeners.length-2; i>=0; i-=2) {
+//            if (listeners[i] == HtmlDomProvider.HtmlDomProviderListener.class) {
+//                htmlDomProviderListeners.add((HtmlDomProvider.HtmlDomProviderListener)listeners[i+1]);
+//            }          
+//        }
+//        return htmlDomProviderListeners.toArray(new HtmlDomProvider.HtmlDomProviderListener[htmlDomProviderListeners.size()]);
+//    }
 
 //    private void fireModelChanged() {
 //        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
