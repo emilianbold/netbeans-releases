@@ -49,9 +49,10 @@ public final class ColoringManager {
     ColoringAttributes.UNUSED,
     ColoringAttributes.UNDEFINED,
 
+    ColoringAttributes.DEPRECATED,
+    
     ColoringAttributes.ABSTRACT,
     ColoringAttributes.STATIC,
-    ColoringAttributes.DEPRECATED,
 
     ColoringAttributes.PRIVATE,
     ColoringAttributes.PACKAGE_PRIVATE,
