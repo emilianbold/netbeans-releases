@@ -54,6 +54,7 @@ import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
+import org.netbeans.modules.visualweb.api.designer.Designer.DesignerListener;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
@@ -152,6 +153,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
     private final PropertyChangeListener activatedNodesListener = new ActivatedNodesListener(this);
 
+    private final DesignerListener designerListener = new JsfDesignerListener(this);
 //    private final PaletteController designerPaletteController;
 
     
@@ -216,6 +218,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         designer.addWeakPreferenceChangeListener(settingsListener);
         
         addPropertyChangeListener(WeakListeners.propertyChange(activatedNodesListener, this));
+        
+        designer.addDesignerListener(WeakListeners.create(DesignerListener.class, designerListener, designer));
     }
 
     protected String preferredID() {
@@ -2208,4 +2212,13 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         designer.inlineEditComponents(componentRootElements);
     }
     // JSF notifications <<<
+    
+    
+    private static class JsfDesignerListener implements DesignerListener {
+        private final JsfTopComponent jsfTopComponent;
+        
+        public JsfDesignerListener(JsfTopComponent jsfTopComponent) {
+            this.jsfTopComponent = jsfTopComponent;
+        }
+    } // End of JsfDesignerListener.
 }
