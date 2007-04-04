@@ -24,15 +24,10 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.PrintStream;
 import java.util.prefs.PreferenceChangeListener;
-import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
-import org.netbeans.core.spi.multiview.CloseOperationState;
-import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.openide.awt.UndoRedo;
-import org.openide.util.Lookup;
 import org.w3c.dom.Element;
 
 /**
