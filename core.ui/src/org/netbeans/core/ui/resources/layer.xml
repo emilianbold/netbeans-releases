@@ -407,7 +407,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <file name="properties.wsmode" url="windowmanager/properties.wsmode"/>
     <folder name="properties">
-        <file name="properties.wstcref" url="windowmanager/properties/properties.wstcref"/>
+        <file name="properties.wstcref" url="properties.wstcref"/>
     </folder>
     
     <file name="leftSlidingSide.wsmode" url="windowmanager/leftside.wsmode"/>
@@ -423,12 +423,12 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="Groups">
             <folder name="form">
-                <file name="properties.wstcgrp" url="groups/form/properties.wstcgrp"/>
+                <file name="properties.wstcgrp" url="properties.wstcgrp"/>
             </folder>
         </folder>
         
         <folder name="Components">
-            <file name="properties.settings" url="components/properties.settings"/>
+            <file name="properties.settings" url="properties.xml"/>
         </folder>
         
     </folder>
