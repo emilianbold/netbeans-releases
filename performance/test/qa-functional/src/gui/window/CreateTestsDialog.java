@@ -24,9 +24,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
 
 /**
  * Open Create Tests dialog.
@@ -71,17 +69,6 @@ public class CreateTestsDialog extends org.netbeans.performance.test.utilities.P
     public ComponentOperator open(){
         // invoke Tools|Create JUnit Tests from the popup menu
         createTestsNode.performPopupActionNoBlock(CREATE_JUNIT_TESTS);
-        
-        // wait for the question dialog for the first time
-        if(firstTime) {
-            try { /// catch exception if dialog isn't opened
-                NbDialogOperator dialog = new NbDialogOperator("Select JUnit Version"); // NOI18N
-                new JButtonOperator(dialog, "Select").pushNoBlock(); // NOI18N
-            } catch(TimeoutExpiredException exc){
-                exc.printStackTrace(getLog());
-            }
-            firstTime = false;
-        }
         
         return new NbDialogOperator(DIALOG_TITLE);
     }
