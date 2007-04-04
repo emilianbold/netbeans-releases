@@ -139,8 +139,14 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
     }
 
     public Void visitDeclared(DeclaredType t, Boolean p) {
-        output.append('L');
-        output.append(ClassFileUtil.encodeClassName((TypeElement) t.asElement()));
+        if (t.getEnclosingType() != null && t.getEnclosingType().getKind() == TypeKind.DECLARED) {
+            visit(t.getEnclosingType(), Boolean.TRUE);
+            output.append('$');
+            output.append(t.asElement().getSimpleName());
+        } else {
+            output.append('L');
+            output.append(ClassFileUtil.encodeClassName((TypeElement) t.asElement()));
+        }
         List<? extends TypeMirror> actualTypeParameters = t.getTypeArguments();
         
         if (!actualTypeParameters.isEmpty()) {
@@ -150,7 +156,8 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
             }
             output.append('>');
         }
-        output.append(';');
+        if (p != Boolean.TRUE)
+            output.append(';');
         return null;
     }
 
@@ -315,6 +322,7 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
     private static void dumpInnerclasses(PrintWriter output, List<TypeElement> innerClasses) {
         for (TypeElement innerClass : innerClasses) {
             dumpName(output, innerClass.getSimpleName());
+            dumpFlags(output, ((Symbol)innerClass).flags_field & ~Flags.FROMCLASS);
         }
         output.append(';');
     }

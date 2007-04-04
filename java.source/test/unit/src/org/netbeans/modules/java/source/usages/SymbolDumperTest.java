@@ -1191,14 +1191,13 @@ public class SymbolDumperTest extends NbTestCase {
         performTestNarazecka("package test; public class test {public void testMethod() {new Runnable() {public void run(){}};}}\n", "test.test$1");
     }
     
-    //TODO: the following two tests represent unfixed bugs:
-//    public void testNarazecka2() throws Exception {
-//        performTestNarazecka("package test; public class test<I, T> {private java.util.List<Snap> snaps; private class Snap {}}\n", "test.test$Snap");
-//    }
-//    
-//    public void testNarazecka3() throws Exception {
-//        performTestNarazecka("package test; public class test {private annotations.RequestProcessor.Task task; public static class O {}}\n", "test.test$O");
-//    }
+    public void testNarazecka2() throws Exception {
+        performTestNarazecka("package test; public class test<I, T> {private java.util.List<Snap> snaps; private class Snap {}}\n", "test.test$Snap");
+    }
+    
+    public void testNarazecka3() throws Exception {
+        performTestNarazecka("package test; public class test {private annotations.RequestProcessor.Task task; public static class O {}}\n", "test.test$O");
+    }
     
     public void testNarazecka4() throws Exception {
         performTestNarazecka("package test;import java.util.Collection;" +

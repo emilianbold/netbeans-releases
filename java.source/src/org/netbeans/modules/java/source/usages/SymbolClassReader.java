@@ -277,7 +277,7 @@ public class SymbolClassReader extends JavadocClassReader {
             String innerClassName = readPlainName(r);
             ClassSymbol innerClass = enterClass(findName(innerClassName), c);
             
-            markInnerClassOwner(c, innerClass);
+            markInnerClassOwner(c, innerClass, readFlags(r));
         }
         
         read = r.read();
@@ -390,15 +390,15 @@ public class SymbolClassReader extends JavadocClassReader {
         return findMethod(name, type, scope, flags);
     }
     
-    private void markInnerClassOwner(ClassSymbol owner, ClassSymbol innerClass) {
+    private void markInnerClassOwner(ClassSymbol owner, ClassSymbol innerClass, long flags) {
         innerClass.complete();
-        enterMember(owner, innerClass);
-        
         if ((innerClass.flags_field & STATIC) == 0) {
             ((ClassType)innerClass.type).setEnclosingType(owner.type);
             if (innerClass.erasure_field != null)
                 ((ClassType)innerClass.erasure_field).setEnclosingType(types.erasure(owner.type));
         }
+        innerClass.flags_field = flags;
+        enterMember(owner, innerClass);
     }
 
     private List<TypeVar> readTypeParamsWithName(Reader r, Symbol owner) throws IOException {
@@ -534,7 +534,7 @@ public class SymbolClassReader extends JavadocClassReader {
             case 'V':
                 return syms.voidType;
             case 'L':
-                return readReferenceType(r);
+                return readReferenceType(r, null);
             case '[':
                 return (Type) jTypes.getArrayType(readType(r, r.read()));
             case 'R':
@@ -589,7 +589,7 @@ public class SymbolClassReader extends JavadocClassReader {
         return Name.fromChars(table, data, 0, len);
     }
 
-    private Type readReferenceType(Reader r) throws IOException {
+    private Type readReferenceType(Reader r, Type outer) throws IOException {
         clearBuffer();
         
         int read;
@@ -599,14 +599,14 @@ public class SymbolClassReader extends JavadocClassReader {
         }
         
         Name name = findName(buffer, bufferLength());
-        ClassSymbol symbol = enterClass(name);
+        ClassSymbol symbol = outer != null ? enterClass(name, outer.tsym) : enterClass(name);
         
         Symbol oldCurrentOwner = currentOwner;
         java.util.List<? extends TypeMirror> typeParams = read == '<' ? readTypeParams(r) : null;//Collections.<TypeMirror>emptyList();
         Type result;
         
         if (source.allowGenerics() && typeParams != null) {
-            result = new ClassType(symbol.type, List.from(typeParams.toArray(new Type[0])), symbol) {
+            result = new ClassType(outer != null ? outer : Type.noType, List.from(typeParams.toArray(new Type[0])), symbol) {
                 boolean completed = false;
                 public Type getEnclosingType() {
                     if (!completed) {
@@ -637,13 +637,16 @@ public class SymbolClassReader extends JavadocClassReader {
                 }
             };
         } else {
-            result = symbol.erasure(types);
+            result = outer != null ? new ClassType(outer, List.<Type>nil(), symbol) : symbol.erasure(types);
         }
         
         currentOwner = oldCurrentOwner;
         
         if (read == '<') {
             read = r.read();
+            if (read == '$') {
+                return readReferenceType(r, result);
+            }
             assert read == ';' : (char) read;
         }
         
