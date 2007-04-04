@@ -38,6 +38,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 /** Registers all loaded images into the AbstractNode, so nothing is loaded twice.
 *
@@ -64,10 +67,15 @@ final class IconManager extends Object {
     private static final MediaTracker tracker = new MediaTracker(component);
     private static int mediaTrackerID;
     
+    private static ImageReader PNG_READER;
+//    private static ImageReader GIF_READER;
+    
     private static final Logger ERR = Logger.getLogger(IconManager.class.getName());
 
     static {
         ImageIO.setUseCache(false);
+        PNG_READER = ImageIO.getImageReadersByMIMEType("image/png").next();
+//        GIF_READER = ImageIO.getImageReadersByMIMEType("image/gif").next();
     }
     
     /**
@@ -245,7 +253,38 @@ final class IconManager extends Object {
 //            img = (url == null) ? null : Toolkit.getDefaultToolkit().createImage(url);
             Image result = null;
             try {
-                result = url!=null? ImageIO.read(url): null;
+                if (url != null) {
+                    if (name.endsWith(".png")) {
+                        ImageInputStream stream = ImageIO.createImageInputStream(url.openStream());
+                        ImageReadParam param = PNG_READER.getDefaultReadParam();
+                        try {
+                            PNG_READER.setInput(stream, true, true);
+                            result = PNG_READER.read(0, param);
+                        }
+                        catch (IOException ioe1) {
+                            ERR.log(Level.INFO, "Image "+name+" is not PNG", ioe1);
+                        }
+                        stream.close();
+                    } 
+                    /*
+                    else if (name.endsWith(".gif")) {
+                        ImageInputStream stream = ImageIO.createImageInputStream(url.openStream());
+                        ImageReadParam param = GIF_READER.getDefaultReadParam();
+                        try {
+                            GIF_READER.setInput(stream, true, true);
+                            result = GIF_READER.read(0, param);
+                        }
+                        catch (IOException ioe1) {
+                            ERR.log(Level.INFO, "Image "+name+" is not GIF", ioe1);
+                        }
+                        stream.close();
+                    }
+                     */
+
+                    if (result == null) {
+                        result = ImageIO.read(url);
+                    }
+                }
             } catch (IOException ioe) {
                 ERR.log(Level.WARNING, "Cannot load image", ioe);
             }
