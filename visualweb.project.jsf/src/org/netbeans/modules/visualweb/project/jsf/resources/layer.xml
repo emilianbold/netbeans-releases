@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Projects">
         <folder name="org-netbeans-modules-web-project">
             <folder name="Nodes">
-		<attr name="org-netbeans-modules-web-project-ui-LibrariesNodeFactory.instance/org-netbeans-modules-visualweb-project-jsf-ui-JSFNodeFactory.instance" boolvalue="true"/>
+                <attr name="org-netbeans-modules-web-project-ui-LibrariesNodeFactory.instance/org-netbeans-modules-visualweb-project-jsf-ui-JSFNodeFactory.instance" boolvalue="true"/>
                 <file name="org-netbeans-modules-visualweb-project-jsf-ui-JSFNodeFactory.instance"/>
             </folder>
         </folder>
@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createWebFormIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/WebFormTemplateHelp.html" />
             </file>
-	    <attr name="Page.jsp/Page.java" boolvalue="true"/>
+            <attr name="Page.jsp/Page.java" boolvalue="true"/>
             <file name="Page.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/Page.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/pageJavaTemplateHelp.html" />
@@ -80,9 +80,44 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/pageJavaTemplateHelp.html" />
             </file>
+
+            <attr name="JSFManagedBean.java/RequestBean.java" boolvalue="true"/>
+            <file name="RequestBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/RequestBean.java.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
+                <attr name="template" boolvalue="true" />
+                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createBeanIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/requestBeanTemplateHelp.html" />
+            </file>
+            <attr name="RequestBean.java/SessionBean.java" boolvalue="true"/>
+            <file name="SessionBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/SessionBean.java.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
+                <attr name="template" boolvalue="true" />
+                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createBeanIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/sessionBeanTemplateHelp.html" />
+            </file>
+            <attr name="SessionBean.java/ApplicationBean.java" boolvalue="true"/>
+            <file name="ApplicationBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/ApplicationBean.java.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
+                <attr name="template" boolvalue="true" />
+                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createBeanIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/applicationBeanTemplateHelp.html" />
+            </file>
         </folder>
 
-	<attr name="JSP_Servlet/Jsf12Apps" boolvalue="true"/>
+        <folder name="Other">
+            <file name="stylesheet.css" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/stylesheet.css.template">
+                <attr name="template" boolvalue="true" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/stylesheetTemplateHelp.html" />
+                <attr name="templateCategory" stringvalue="rave-resources"/>
+            </file>
+            <attr name="stylesheet.css/properties.properties" boolvalue="true"/>
+        </folder>
+
+        <attr name="Other/Jsf12Apps" boolvalue="true"/>
         <folder name="Jsf12Apps">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/webappsTemplateHelp.html" />
@@ -115,45 +150,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>  <!-- Jsf12Apps -->
 
-        <attr name="Jsf12Apps/JsfBeans" boolvalue="true"/>
-        <folder name="JsfBeans"> 
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-            <file name="RequestBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/RequestBean.java.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="rave-managed-beans"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createBeanIterator"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/requestBeanTemplateHelp.html" />
-            </file>
-            <attr name="RequestBean.java/SessionBean.java" boolvalue="true"/>
-            <file name="SessionBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/SessionBean.java.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="rave-managed-beans"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createBeanIterator"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/sessionBeanTemplateHelp.html" />
-            </file>
-            <attr name="SessionBean.java/ApplicationBean.java" boolvalue="true"/>
-            <file name="ApplicationBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/ApplicationBean.java.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="rave-managed-beans"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createBeanIterator"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/applicationBeanTemplateHelp.html" />
-            </file>
-        </folder> <!-- JsfBeans -->
-        <attr name="JsfBeans/Classes" boolvalue="true"/> <!-- ordering -->
-
-        <folder name="Other">
-            <file name="stylesheet.css" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/stylesheet.css.template">
-                <attr name="template" boolvalue="true" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/stylesheetTemplateHelp.html" />
-                <attr name="templateCategory" stringvalue="rave-resources"/>
-            </file>
-            <attr name="stylesheet.css/properties.properties" boolvalue="true"/>
-        </folder>
-        <attr name="Other/JsfAdvanced" boolvalue="true"/>
+        <attr name="Jsf12Apps/JsfAdvanced" boolvalue="true"/>
         <folder name="JsfAdvanced">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/advancedTemplateHelp.html" />
@@ -200,7 +197,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/facesConfigHelp.html" />
             </file>
         </folder> <!-- JsfAdvanced -->
-        <attr name="JsfAdvanced/Sun Resources" boolvalue="true"/>        
     </folder> <!-- Templates -->
 
     <folder name="org-netbeans-api-project-libraries">

@@ -162,6 +162,10 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         return (SourceGroup)locationComboBox.getSelectedItem();
     }
         
+    public void setTargetFolder(String folder) {
+        folderTextField.setText(folder.replace('/', File.separatorChar));
+    }
+
     public String getTargetFolder() {
         
         String folderName = folderTextField.getText().trim();

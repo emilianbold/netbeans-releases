@@ -118,6 +118,10 @@ final class PagebeanPackagePanel implements WizardDescriptor.Panel, ChangeListen
     }
 
     public void stateChanged(ChangeEvent e) {        
+        if (wizard != null && isValid()) {
+            wizard.putProperty(JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, gui.getPackageName());
+        }
+
         fireChange();
     }
 }

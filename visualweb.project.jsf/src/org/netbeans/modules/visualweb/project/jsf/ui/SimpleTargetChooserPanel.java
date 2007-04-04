@@ -39,6 +39,7 @@ import org.openide.util.NbBundle;
 import java.io.File;
 import java.util.Enumeration;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 // </RAVE>
 
 /**
@@ -127,15 +128,15 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         return true;
     }
 
-    private String getFolderPath(FileObject targetRoot) {
+    private String getFolderPath(String targetPath) {
         // Get the path of the target folder relative to the target root
         FileObject rootDir = gui.getTargetGroup().getRootFolder();
         String rootPath = FileUtil.getFileDisplayName(rootDir).replace(File.separatorChar, '/');
         String folderName = gui.getTargetFolder();
         String folderPath = folderName != null ? (rootPath + (folderName.startsWith("/") ? "" : "/") + folderName) : rootPath; // NOI18N
-        String targetPath = FileUtil.getFileDisplayName(targetRoot).replace(File.separatorChar, '/');
         boolean isUnderTargetRoot = false;
         String relativePath = null;
+        targetPath = targetPath.replace(File.separatorChar, '/');
         if (folderPath.startsWith(targetPath)) {
             relativePath = folderPath.substring(targetPath.length());
             if (relativePath.equals("") || relativePath.equals("/")) {
@@ -168,7 +169,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
 
     private boolean checkWebForm(String targetName) {
         FileObject docRoot = JsfProjectUtils.getDocumentRoot(project);
-        String folderPath = getFolderPath(docRoot);
+        String folderPath = getFolderPath(FileUtil.getFileDisplayName(docRoot));
         if (folderPath == null) {
             return false;
         }
@@ -205,8 +206,18 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     }
 
     private boolean checkBean(String targetName) {
-        FileObject javaDir = JsfProjectUtils.getPageBeanRoot(project);
-        String folderPath = getFolderPath(javaDir);
+        FileObject javaDir;
+        String beanPath;
+        String bean = (String) wizard.getProperty(JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE);
+        if (bean != null) {
+            bean = bean.replace('.', File.separatorChar);
+            javaDir = JsfProjectUtils.getSourceRoot(project);
+            beanPath = FileUtil.getFileDisplayName(javaDir) + File.separatorChar + bean;
+        } else {
+            javaDir = JsfProjectUtils.getPageBeanRoot(project);
+            beanPath = FileUtil.getFileDisplayName(javaDir);
+        }
+        String folderPath = getFolderPath(beanPath);
         if (folderPath == null) {
             return false;
         }
@@ -376,6 +387,20 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     }
 
     public void stateChanged(ChangeEvent e) {        
+        if (e.getSource().getClass() == PagebeanPackagePanel.class && fileType.equals(PageIterator.FILETYPE_BEAN)) {
+            String bean = (String) wizard.getProperty(JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE);
+            if (bean != null) {
+                bean = bean.replace('.', '/');
+                FileObject rootFolder = gui.getTargetGroup().getRootFolder();
+                FileObject javaDir = JsfProjectUtils.getSourceRoot(project);
+                String srcPath = FileUtil.getRelativePath(rootFolder, javaDir).replace(File.separatorChar, '/');
+                String beanPath = srcPath + "/" + bean;
+                String folderName = gui.getTargetFolder();
+                if (folderName != null && !folderName.equals(beanPath) && !folderName.startsWith(beanPath+"/")) {
+                    gui.setTargetFolder(beanPath);
+                }
+            }
+        }
         fireChange();
     }
     
