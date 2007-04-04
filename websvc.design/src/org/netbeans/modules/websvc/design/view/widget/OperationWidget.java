@@ -129,7 +129,7 @@ public class OperationWidget extends AbstractTitledWidget {
         tabbedWidget.addTab(inputWidget);
         tabbedWidget.addTab(outputWidget);
         tabbedWidget.addTab(faultWidget);
-        tabbedWidget.addTab("Desription", null, new LabelWidget(getScene(),"description"));
+        tabbedWidget.addTab("Description", null, new LabelWidget(getScene(),"description"));
         
         contentWidget.addChild(listWidget);
         contentWidget.addChild(tabbedWidget);
