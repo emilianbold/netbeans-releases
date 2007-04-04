@@ -22,7 +22,7 @@ package org.netbeans.installer.products.tomcat;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.installer.netbeans.utils.applications.NetBeansUtils;
+import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;

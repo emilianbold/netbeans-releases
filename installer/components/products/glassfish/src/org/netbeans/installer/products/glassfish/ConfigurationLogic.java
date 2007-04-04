@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.installer.netbeans.utils.applications.GlassFishUtils;
-import org.netbeans.installer.netbeans.utils.applications.NetBeansUtils;
+import org.netbeans.installer.utils.applications.GlassFishUtils;
+import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
@@ -680,6 +680,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public static final String DOMAINS_DOMAIN1_IMQ_SUBDIR =
             "domains/" + DOMAIN_NAME + "/imq"; // NOI18N
+
     public static final String IMQENV_CONF_ADDITION =
             "        set IMQ_DEFAULT_JAVAHOME={0}\n" + // NOI18N
             "        set IMQ_DEFAULT_VARHOME={1}\n"; // NOI18N
