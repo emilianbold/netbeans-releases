@@ -12,22 +12,35 @@
  */
 package org.netbeans.modules.vmd.inspector;
 
-import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 
 import javax.swing.*;
+import org.netbeans.modules.vmd.api.inspector.OrderedNavigatorPanel;
 
 /**
  * @author Karol Harezlak
  */
 
-public final class InspectorPanel implements NavigatorPanel , LookupListener {
+public final class InspectorPanel implements OrderedNavigatorPanel, LookupListener {
+    
+    private static InspectorPanel INSTANCE;
+    
+    public static InspectorPanel getInstance() {
+        synchronized(InspectorPanel.class) {
+            if (INSTANCE == null)
+                INSTANCE = new InspectorPanel();
+            return INSTANCE;
+        }
+    }
     
     private InspectorUI ui;
     private Lookup lookup;
- 
+    
+    private InspectorPanel() {
+    }
+    
     public String getDisplayName() {
         return "Mobility Inspector"; // TODO Bundle
     }
@@ -45,13 +58,8 @@ public final class InspectorPanel implements NavigatorPanel , LookupListener {
             ui = new InspectorUI();
         return ui;
     }
-   
+    
     public void panelActivated(Lookup lookup) {
-//        SwingUtilities.invokeLater (new Runnable() {
-//            public void run () {
-//                NavigatorHandler.activatePanel (InspectorPanel.this);
-//            }
-//        });
     }
     
     public void panelDeactivated() {
@@ -62,6 +70,10 @@ public final class InspectorPanel implements NavigatorPanel , LookupListener {
     }
     
     public void resultChanged(LookupEvent ev) {
+    }
+
+    public Integer getOrder() {
+        return 1000;
     }
     
 }

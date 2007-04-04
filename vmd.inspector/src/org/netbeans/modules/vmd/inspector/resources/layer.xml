@@ -19,11 +19,13 @@
     -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-
      <folder name="Navigator">
         <folder name="Panels">
             <folder name="vmd">
-                <file name="org-netbeans-modules-vmd-inspector-InspectorPanel.instance"/>
+                <file name="InspectorPanel.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.vmd.inspector.InspectorPanel"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.vmd.inspector.InspectorPanel.getInstance"/>
+                </file>
             </folder>
         </folder>
     </folder>
