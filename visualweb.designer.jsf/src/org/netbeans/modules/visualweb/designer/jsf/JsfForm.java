@@ -702,6 +702,10 @@ public class JsfForm {
         notifyViewsSelectComponent(componentRootElement);
     }
     
+    void inlineEditComponents(Element[] componentRootElements) {
+        notifyViewsInlineEditComponents(componentRootElements);
+    }
+    
 //    public void clearHtml() {
 ////        InSyncServiceProvider.get().clearHtmlForMarkupFile(getFacesModel().getMarkupFile());
 //        getFacesModel().clearHtml();
@@ -1094,18 +1098,24 @@ public class JsfForm {
 //        }
 //    }
 
-    void fireInlineEdit(DesignBean[] designBeans) {
-        List<Element> componentRootElements = new ArrayList<Element>();
-        for (DesignBean designBean : designBeans) {
-            Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(designBean);
-            if (componentRootElement != null) {
-                componentRootElements.add(componentRootElement);
-            }
-        }
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-//            listener.inlineEdit(designBeans);
-            listener.inlineEdit(componentRootElements.toArray(new Element[componentRootElements.size()]));
+//    void fireInlineEdit(DesignBean[] designBeans) {
+//        List<Element> componentRootElements = new ArrayList<Element>();
+//        for (DesignBean designBean : designBeans) {
+//            Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(designBean);
+//            if (componentRootElement != null) {
+//                componentRootElements.add(componentRootElement);
+//            }
+//        }
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+////            listener.inlineEdit(designBeans);
+//            listener.inlineEdit(componentRootElements.toArray(new Element[componentRootElements.size()]));
+//        }
+//    }
+    private void notifyViewsInlineEditComponents(Element[] componentRootElements) {
+        JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.inlineEditComponents(componentRootElements);
         }
     }
 

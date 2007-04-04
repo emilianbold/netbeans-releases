@@ -611,8 +611,17 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
 //                jsfForm.fireRefreshForm(((Boolean)evt.getNewValue()).booleanValue());
                 jsfForm.refreshModel(((Boolean)evt.getNewValue()).booleanValue());
             } else if (FacesDndSupport.PROPERTY_INLINE_EDIT.equals(evt.getPropertyName())) {
+                DesignBean[] designBeans = (DesignBean[])evt.getNewValue();
+                List<Element> componentRootElements = new ArrayList<Element>();
+                for (DesignBean designBean : designBeans) {
+                    Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(designBean);
+                    if (componentRootElement != null) {
+                        componentRootElements.add(componentRootElement);
+                    }
+                }
 //                jsfForm.designer.inlineEdit((DesignBean[])evt.getNewValue());
-                jsfForm.fireInlineEdit((DesignBean[])evt.getNewValue());
+//                jsfForm.fireInlineEdit((DesignBean[])evt.getNewValue());
+                jsfForm.inlineEditComponents(componentRootElements.toArray(new Element[componentRootElements.size()]));
             }
         }
     } // End of DnDListener.

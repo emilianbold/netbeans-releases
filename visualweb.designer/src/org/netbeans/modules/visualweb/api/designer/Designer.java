@@ -59,6 +59,7 @@ public interface Designer {
     public void startInlineEditing(Element componentRootElement, String propertyName);
     public void finishInlineEditing(boolean cancel);
     public boolean isInlineEditing();
+    public void inlineEditComponents(Element[] componentRootElements);
     // XXX Hack
     public void invokeDeleteNextCharAction(ActionEvent evt); 
     // XXX

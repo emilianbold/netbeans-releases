@@ -1773,7 +1773,8 @@ public class WebForm implements Designer {
 //        refresh(deep);
 //    }
     
-    /*public*/private void inlineEdit(/*DesignBean[] designBeans*/Element[] componentRootElements) {
+//    /*public*/private void inlineEdit(/*DesignBean[] designBeans*/Element[] componentRootElements) {
+    public void inlineEditComponents(Element[] componentRootElements) {
 //        List<Element> componentRootElements = new ArrayList<Element>();
 //        for (DesignBean designBean : designBeans) {
 //            if (designBean instanceof MarkupDesignBean) {
@@ -2351,10 +2352,10 @@ public class WebForm implements Designer {
 //            webForm.refreshForm(deep);
 //        }
 
-        public void inlineEdit(/*DesignBean[] designBeans*/ Element[] componentRootElements) {
-//            webForm.inlineEdit(designBeans);
-            webForm.inlineEdit(componentRootElements);
-        }
+//        public void inlineEdit(/*DesignBean[] designBeans*/ Element[] componentRootElements) {
+////            webForm.inlineEdit(designBeans);
+//            webForm.inlineEdit(componentRootElements);
+//        }
 
 //        public void designContextActivated(DesignContext designContext) {
 //            webForm.contextActivated(designContext);

@@ -2202,5 +2202,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         // XXX Get rid of delayed.
         designer.selectComponentDelayed(componentRootElement);
     }
+    
+    public void inlineEditComponents(Element[] componentRootElements) {
+        designer.inlineEditComponents(componentRootElements);
+    }
     // JSF notifications <<<
 }
