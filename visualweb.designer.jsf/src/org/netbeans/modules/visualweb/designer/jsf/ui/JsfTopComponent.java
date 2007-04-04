@@ -2197,5 +2197,10 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     public void clearDropMatch() {
         designer.clearDropMatch();
     }
+    
+    public void selectComponent(Element componentRootElement) {
+        // XXX Get rid of delayed.
+        designer.selectComponentDelayed(componentRootElement);
+    }
     // JSF notifications <<<
 }

@@ -65,6 +65,9 @@ public interface Designer {
     public Transferable inlineCopyText(boolean isCut);
 
     public void selectComponent(Element componentRootElement);
+    // XXX This is bad, get rid of.
+    public void selectComponentDelayed(Element componentRootElement);
+    
     public int getSelectedCount();
     /** Gets selected componets (component root elements). */
     public Element[] getSelectedComponents();

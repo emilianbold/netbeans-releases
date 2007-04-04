@@ -1750,7 +1750,8 @@ public class WebForm implements Designer {
         getPane().getDndHandler().clearDropMatch();
     }
     
-    /*public*/private void select(final /*DesignBean designBean*/Element componentRootElement) {
+//    /*public*/private void select(final /*DesignBean designBean*/Element componentRootElement) {
+    public void selectComponentDelayed(final /*DesignBean designBean*/Element componentRootElement) {
 //        getSelection().selectBean(designBean);
 //        if (designBean instanceof MarkupDesignBean) {
         if (componentRootElement != null) {
@@ -2341,10 +2342,10 @@ public class WebForm implements Designer {
 //            webForm.clearDropMatch();
 //        }
 
-        public void select(/*DesignBean designBean*/ Element componentRootElement) {
-//            webForm.select(designBean);
-            webForm.select(componentRootElement);
-        }
+//        public void select(/*DesignBean designBean*/ Element componentRootElement) {
+////            webForm.select(designBean);
+//            webForm.select(componentRootElement);
+//        }
 
 //        public void refreshForm(boolean deep) {
 //            webForm.refreshForm(deep);

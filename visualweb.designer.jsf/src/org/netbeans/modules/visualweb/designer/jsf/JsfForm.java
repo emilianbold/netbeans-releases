@@ -698,6 +698,10 @@ public class JsfForm {
         notifyViewsClearDropMatch();
     }
     
+    void selectComponent(Element componentRootElement) {
+        notifyViewsSelectComponent(componentRootElement);
+    }
+    
 //    public void clearHtml() {
 ////        InSyncServiceProvider.get().clearHtmlForMarkupFile(getFacesModel().getMarkupFile());
 //        getFacesModel().clearHtml();
@@ -1068,12 +1072,18 @@ public class JsfForm {
         }
     }
 
-    void fireSelect(DesignBean designBean) {
-        Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(designBean);
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-//            listener.select(designBean);
-            listener.select(componentRootElement);
+//    void fireSelect(DesignBean designBean) {
+//        Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(designBean);
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+////            listener.select(designBean);
+//            listener.select(componentRootElement);
+//        }
+//    }
+    private void notifyViewsSelectComponent(Element componentRootElement) {
+        JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(this);
+        for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
+            jsfMultiViewElement.selectComponent(componentRootElement);
         }
     }
 

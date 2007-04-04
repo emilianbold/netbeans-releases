@@ -602,8 +602,10 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
 //                jsfForm.fireShowDropMatch(componentRootElement, dropInfo.getRegionElement(), dropInfo.getDropType());
                 jsfForm.showDropMatch(componentRootElement, dropInfo.getRegionElement(), dropInfo.getDropType());
             } else if (FacesDndSupport.PROPERTY_SELECTED_DESIGN_BEAN.equals(evt.getPropertyName())) {
+                Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean((DesignBean)evt.getNewValue());
 //                jsfForm.designer.select((DesignBean)evt.getNewValue());
-                jsfForm.fireSelect((DesignBean)evt.getNewValue());
+//                jsfForm.fireSelect((DesignBean)evt.getNewValue());
+                jsfForm.selectComponent(componentRootElement);
             } else if (FacesDndSupport.PROPERTY_REFRESH.equals(evt.getPropertyName())) {
 //                jsfForm.designer.refreshForm(((Boolean)evt.getNewValue()).booleanValue());
 //                jsfForm.fireRefreshForm(((Boolean)evt.getNewValue()).booleanValue());
