@@ -2067,7 +2067,7 @@ public class SelectionManager {
 
 //        releaseNodes();
 
-        DataObject dobj = webform.getDataObject();
+//        DataObject dobj = webform.getDataObject();
 //        DesignerTopComp topcomp = webform.getTopComponent();
 
 //        // Ensure that the tray is no longer appearing selected
