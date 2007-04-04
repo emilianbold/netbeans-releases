@@ -29,11 +29,13 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -42,9 +44,11 @@ import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.java.DiffElement;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.java.classpath.RefactoringClassPathImplementation;
 import org.netbeans.modules.refactoring.java.plugins.PushDownTransformer;
@@ -52,12 +56,14 @@ import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 
 /**
  * Plugin that implements the core functionality of Push Down refactoring.
  *
- * @author Pavel Flaska
+ * @author Pavel Flaska, Jan Becicka
  */
 public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
     
@@ -71,51 +77,68 @@ public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
         treePathHandle = refactoring.getSourceType();
     }
     
+    Problem precheckProblem;
     /** 
      * Checks pre-conditions of the refactoring.
      * 
      * @return problems found or <tt>null</tt>.
      */
     public Problem preCheck() {
-//        fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 4);
-//        try {
-//            JavaClass sourceType = refactoring.getSourceType();
-//            // check whether the element is valid
-//            Problem result = isElementAvail(sourceType);
-//            if (result != null) {
-//                // fatal error -> don't continue with further checks
-//                return result;
-//            }
-//            if (!CheckUtils.isElementInOpenProject(sourceType)) {
-//                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
-//            }
-//            
-//            // check whether the element is an unresolved class
-//            if (sourceType instanceof UnresolvedClass) {
-//                // fatal error -> return
-//                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
-//            }
-//            // increase progress (step 1)
-//            fireProgressListenerStep();
-//            //TODO: warning if there are no subtypes
-//            if (false) {
-//                return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDOwn_NoSubtype")); // NOI18N
-//            }
-//            // increase progress (step 2)
-//            fireProgressListenerStep();
-//            // #2 - check if there are any members to pull up
-//            if (!hasMembers(sourceType)) {
-//                // fatal error -> return
-//                return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_NoMembers")); // NOI18N
-//            }
-//            // increase progress (step 3)
-//            fireProgressListenerStep();
-//            
-//            return null;
-//        } finally {
-//            fireProgressListenerStop();
-//        }
-        return null;
+        //TODO: wrong classpath
+        JavaSource source=JavaSource.forFileObject(treePathHandle.getFileObject());
+        fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 4);
+        final Problem result;
+        precheckProblem = null;
+        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            public void run(CompilationController cc) throws Exception {
+                cc.toPhase(JavaSource.Phase.RESOLVED);
+                precheckProblem = isElementAvail(treePathHandle, cc);
+                if (precheckProblem != null) {
+                    // fatal error -> don't continue with further checks
+                    return;
+                }
+                if (!RetoucheUtils.isElementInOpenProject(treePathHandle.getFileObject())) {
+                    precheckProblem = new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+                    return;
+                }
+                
+
+                // increase progress (step 1)
+                fireProgressListenerStep();
+                ElementHandle eh = ElementHandle.create(treePathHandle.resolveElement(cc));
+                Set<FileObject> resources = cc.getClasspathInfo().getClassIndex().getResources(eh, EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE));
+                if (resources.isEmpty()) {
+                    precheckProblem = new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDOwn_NoSubtype")); // NOI18N
+                    return;
+                }
+                // increase progress (step 2)
+                fireProgressListenerStep();
+                // #2 - check if there are any members to pull up
+                Element el = treePathHandle.resolveElement(cc);
+                for (Element element : el.getEnclosedElements()) {
+                    if (element.getKind() != ElementKind.CONSTRUCTOR) {
+                        return;
+                    }
+                }
+                precheckProblem = new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_NoMembers")); // NOI18N
+                // increase progress (step 3)
+                fireProgressListenerStep();
+            }
+            
+        };
+        try {
+            source.runUserActionTask(task, true);
+        }catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            fireProgressListenerStop();
+        }
+        return precheckProblem;
     }
 
     public Problem checkParameters() {
@@ -123,14 +146,13 @@ public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
     }
 
     public Problem fastCheckParameters() {
-// TODO:
-//        // #1 - check whether there are any members to pull up
-//        if (refactoring.getMembers().length == 0) {
-//            return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_NoMembersSelected")); // NOI18N
-//        }
+        // #1 - check whether there are any members to pull up
+        if (refactoring.getMembers().length == 0) {
+            return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_NoMembersSelected")); // NOI18N
+        }
         return null;
     }
-    
+   
     private Set<FileObject> getRelevantFiles(CompilationInfo info, Element el) {
         ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
         ClassIndex idx = cpInfo.getClassIndex();
@@ -180,6 +202,10 @@ public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStop();
         return null;    
     }
+    
+//    public JavaClass[] collectSubtypes() {
+    
+//    public JavaClass[] collectSubtypes() {
     
 //    public JavaClass[] collectSubtypes() {
 //        if (subtypes == null) {
@@ -472,13 +498,8 @@ public class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
             }
             Element el = treePathHandle.resolveElement(compiler);
             assert el != null;
-            Tree trees[] = new Tree[refactoring.getMembers().length];
-            for (int i = 0; i < refactoring.getMembers().length; i++) {
-                Element method = refactoring.getMembers()[i].getElementHandle().resolve(compiler);
-                trees[i] = SourceUtils.treeFor(compiler, method);
-            }
             
-            PushDownTransformer findVisitor = new PushDownTransformer(compiler, trees);
+            PushDownTransformer findVisitor = new PushDownTransformer(compiler, refactoring.getMembers());
             findVisitor.scan(compiler.getCompilationUnit(), el);
             
             for (TreePath tree : findVisitor.getUsages()) {

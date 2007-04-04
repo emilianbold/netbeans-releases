@@ -20,9 +20,14 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
+import java.util.HashSet;
+import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.java.api.MemberInfo;
 
 /**
  *
@@ -30,24 +35,79 @@ import org.netbeans.api.java.source.WorkingCopy;
  */
 public class PushDownTransformer extends SearchVisitor {
 
-    Tree[] trees;
-    public PushDownTransformer(WorkingCopy workingCopy, Tree trees[]) {
+    private MemberInfo[] members;
+    public PushDownTransformer(WorkingCopy workingCopy, MemberInfo members[]) {
         super(workingCopy);
-        this.trees = trees;
+        this.members = members;
     }
 
     @Override
     public Tree visitClass(ClassTree tree, Element p) {
         Element el = workingCopy.getTrees().getElement(getCurrentPath());
-        if (el.equals(p))
-            return null;
-        TypeMirror tm = el.asType();
-        if (workingCopy.getTypes().isSubtype(tm, p.asType())) {
-            ClassTree newOne = tree;
-            for (int i = 0; i<trees.length; i++) {
-                newOne = make.addClassMember(newOne, trees[i]);
+        ClassTree njuClass = tree;
+        if (el.equals(p)) {
+            //source type
+            boolean classIsAbstract = el.getKind().isInterface();
+
+            for (Tree t:njuClass.getImplementsClause()) {
+                Element currentInterface = workingCopy.getTrees().getElement(TreePath.getPath(getCurrentPath(), t));
+                for (int i=0; i<members.length; i++) {
+                    if (members[i].getType()==1 && currentInterface.equals(members[i].getElementHandle().resolve(workingCopy))) {
+                        njuClass = make.removeClassImplementsClause(njuClass, t);
+                        workingCopy.rewrite(tree, njuClass);
+                    }
+                }
             }
-            workingCopy.rewrite(tree, newOne);
+            
+            for (Tree t: njuClass.getMembers()) {
+                for (int i=0; i<members.length; i++) {
+                    Element current = workingCopy.getTrees().getElement(TreePath.getPath(getCurrentPath(), t));
+                    if (members[i].getType()==0 && current.equals(members[i].getElementHandle().resolve(workingCopy))) {
+                        if (members[i].getUserData().lookup(Boolean.class)) {
+                            
+                        if (!classIsAbstract) {
+                            classIsAbstract = true;
+                            Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
+                            mod.add(Modifier.ABSTRACT);
+                            ModifiersTree modifiers = make.Modifiers(mod);
+                            workingCopy.rewrite(njuClass.getModifiers(), modifiers);
+                        }
+                            
+                            
+                            MethodTree method = (MethodTree) t;
+                            Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
+                            mod.add(Modifier.ABSTRACT);
+                            MethodTree nju = make.Method(
+                                    make.Modifiers(mod),
+                                    method.getName(),
+                                    method.getReturnType(),
+                                    method.getTypeParameters(),
+                                    method.getParameters(),
+                                    method.getThrows(),
+                                    (BlockTree) null,
+                                    (ExpressionTree)method.getDefaultValue());
+                            workingCopy.rewrite(method, nju);
+                        } else {
+                            njuClass = make.removeClassMember(njuClass, t);
+                            workingCopy.rewrite(tree, njuClass);
+                        }
+                    }
+                }
+                
+            }
+        } else {
+            //target type
+            TypeMirror tm = el.asType();
+            if (workingCopy.getTypes().isSubtype(tm, p.asType())) {
+                for (int i = 0; i<members.length; i++) {
+                    if (members[i].getType()==1) {
+                        njuClass = make.addClassImplementsClause(njuClass, make.Identifier(members[i].getElementHandle().resolve(workingCopy)));
+                    } else {
+                        njuClass = make.addClassMember(njuClass, SourceUtils.treeFor(workingCopy, members[i].getElementHandle().resolve(workingCopy)));
+                    }
+                }
+                workingCopy.rewrite(tree, njuClass);
+            }
         }
         return super.visitClass(tree, p);
     }

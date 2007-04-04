@@ -28,10 +28,16 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -41,11 +47,13 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -55,7 +63,9 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
     
     // helper constants describing columns in the table of members
     private static final String[] COLUMN_NAMES = {"LBL_PullUp_Selected", "LBL_PullUp_Member", "LBL_PushDown_KeepAbstract"}; // NOI18N
-    private static final Class[] COLUMN_CLASSES = {Boolean.class, TreePathHandle.class, Boolean.class};
+    private static final Class[] COLUMN_CLASSES = {Boolean.class, MemberInfo.class, Boolean.class};
+    
+    // refactoring this panel provides parameters for
     
     // refactoring this panel provides parameters for
     
@@ -63,18 +73,25 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
     private final PushDownRefactoring refactoring;
     // table model for the table of members
     // table model for the table of members
+    // table model for the table of members
     private final TableModel tableModel;
+    // pre-selected members (comes from the refactoring action - the elements
     // pre-selected members (comes from the refactoring action - the elements
     // pre-selected members (comes from the refactoring action - the elements
     // that should be pre-selected in the table of members)
     private Set selectedMembers;
     // target type to move the members to
     // target type to move the members to
+    // target type to move the members to
     private TreePathHandle originalType;
+    // data for the members table (first dimension - rows, second dimension - columns)
     // data for the members table (first dimension - rows, second dimension - columns)
     // data for the members table (first dimension - rows, second dimension - columns)
     // the columns are: 0 = Selected (true/false), 1 = Member (Java element), 2 = Make Abstract (true/false)
     private Object[][] members = new Object[0][0];
+    
+    private ElementKind sourceKind;
+    private ChangeListener parent;
     
     /** Creates new form PushDownPanel
      * @param refactoring The refactoring this panel provides parameters for.
@@ -82,12 +99,13 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
      *      (determined by which nodes the action was invoked on - e.g. if it was
      *      invoked on a method, the method will be pre-selected to be pulled up)
      */
-    public PushDownPanel(PushDownRefactoring refactoring, Set selectedMembers) {
+    public PushDownPanel(PushDownRefactoring refactoring, Set selectedMembers, ChangeListener parent) {
         this.refactoring = refactoring;
         this.tableModel = new TableModel();
         this.selectedMembers = selectedMembers;
         initComponents();
         setPreferredSize(new Dimension(420, 380));
+        this.parent = parent;
     }
     
     public void initialize() {
@@ -101,22 +119,24 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 List<MemberInfo> l = new ArrayList();
-                Element sourceTypeElement = handle.resolveElement(controller);
+                TypeElement sourceTypeElement = (TypeElement) handle.resolveElement(controller);
+                sourceKind = sourceTypeElement.getKind();
+                for (TypeMirror tm:sourceTypeElement.getInterfaces()) {
+                    l.add(new MemberInfo(RetoucheUtils.typeToElement(tm, controller), controller, 1));
+                }
                 for (Element m: sourceTypeElement.getEnclosedElements()) {
-                    l.add(new MemberInfo(m,controller));
-                    //l.addAll(refactoring.getSourceType().getInterfaceNames());
+                    if (m.getKind() != ElementKind.CONSTRUCTOR) 
+                        l.add(new MemberInfo(m,controller));
                 }
                 
                 Object[][] allMembers = new Object[l.size()][3];
                 int i = 0;
                 for (Iterator<MemberInfo> it = l.iterator(); it.hasNext(); ) {
                     MemberInfo o = it.next();
-                    //if (o instanceof JavaClass || o instanceof Method || o instanceof Field || o instanceof MultipartId) {
-                        allMembers[i][0] = selectedMembers.contains(o) ? Boolean.TRUE : Boolean.FALSE;
-                        allMembers[i][1] = o;
-                        allMembers[i][2] = o.getKind()==ElementKind.METHOD? Boolean.FALSE : null;
-                        i++;
-                    //}
+                    allMembers[i][0] = selectedMembers.contains(o) ? Boolean.TRUE : Boolean.FALSE;
+                    allMembers[i][1] = o;
+                    allMembers[i][2] = o.getKind()==ElementKind.METHOD? Boolean.FALSE : null;
+                    i++;
                 }
                 members = new Object[i][3];
                 if (i > 0)
@@ -129,10 +149,10 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                     // name from implements clause)
                     protected String extractText(Object value) {
                         String displayValue = super.extractText(value);
-                        //
-                        //                        if (value instanceof MultipartId) {
-//                            displayValue = "implements " + displayValue; // NOI18N
-//                        }
+                        
+                        if (value instanceof MemberInfo && ((MemberInfo) value).getType()==1) {
+                            displayValue = "implements " + displayValue; // NOI18N
+                        }
                         return displayValue;
                     }
                 });
@@ -144,13 +164,14 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                         // make the checkbox checked (even if "Make Abstract" is not set)
                         // for non-static methods if the target type is an interface
-                        Object object = table.getModel().getValueAt(row, 1);
-// TODO:                        
-//                        if (object instanceof Method) {
-//                            if (refactoring.getSourceType().isInterface() && !Modifier.isStatic(((Method) object).getModifiers())) {
-//                                value = Boolean.TRUE;
-//                            }
-//                        }
+                        MemberInfo object = (MemberInfo) table.getModel().getValueAt(row,
+                                                                                     1);
+
+                        if (object.getKind()==ElementKind.METHOD) {
+                            if (sourceKind.isInterface() && !((MemberInfo) object).getModifiers().contains(Modifier.STATIC)) {
+                                value = Boolean.TRUE;
+                            }
+                        }
                         // the super method automatically makes sure the checkbox is not visible if the
                         // "Make Abstract" value is null (which holds for non-methods)
                         // and that the checkbox is disabled if the cell is not editable (which holds for
@@ -171,12 +192,13 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                 }
                 // compute and set the preferred width for the first and the third column
                 UIUtilities.initColumnWidth(membersTable, 0, Boolean.TRUE, 4);
-                UIUtilities.initColumnWidth(membersTable, 2, Boolean.TRUE, 4);            }
+                UIUtilities.initColumnWidth(membersTable, 2, Boolean.TRUE, 4);}
             
             }, true);
         } catch (IOException ioe) {
             throw (RuntimeException) new RuntimeException().initCause(ioe);
         }
+        parent.stateChanged(null);
     }
     
     public MemberInfo[] getMembers() {
@@ -187,19 +209,10 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
             // add it to the list of selected members
             if (members[i][0].equals(Boolean.TRUE)) {
                 Object element = members[i][1];
-                Object member;
+                MemberInfo member;
                 member = (MemberInfo) element;
-//                if (element instanceof Field) {
-//                    member = new PushDownRefactoring.MemberInfo((Field) element);
-//                } else if (element instanceof JavaClass) {
-//                    member = new PushDownRefactoring.MemberInfo((JavaClass) element);
-//                } else if (element instanceof MultipartId) {
-//                    member = new PushDownRefactoring.MemberInfo((MultipartId) element);
-//                } else {
-//                    // for methods the makeAbstract is always set to true if the
-//                    // target type is an interface
-//                    member = new PushDownRefactoring.MemberInfo((Method) element, ((Boolean) members[i][2]).booleanValue());
-//                }
+                if (members[i][2]!=null)
+                        member.setUserData(Lookups.singleton(members[i][2]));
                 list.add(member);
             }
         }
@@ -266,6 +279,7 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
 
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
             members[rowIndex][columnIndex] = value;
+            parent.stateChanged(null);
         }
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -276,9 +290,8 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                     return false;
                 }
                 Object element = members[rowIndex][1];
-                //TODO:
-                //                return !refactoring.getSourceType().isInterface() && !Modifier.isStatic(((Method) element).getModifiers());
-                return false;
+               
+                return !sourceKind.isInterface() && !(((MemberInfo) element).getModifiers().contains(Modifier.STATIC));
             } else {
                 // column 0 is always editable, column 1 is never editable
                 return columnIndex == 0;
