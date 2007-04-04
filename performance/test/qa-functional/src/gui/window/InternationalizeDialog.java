@@ -43,12 +43,14 @@ public class InternationalizeDialog extends org.netbeans.performance.test.utilit
     public InternationalizeDialog(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN = 1500;
     }
     
     /** Creates a new instance of InternationalizeDialog */
     public InternationalizeDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN = 1500;
     }
     
     public void initialize() {
