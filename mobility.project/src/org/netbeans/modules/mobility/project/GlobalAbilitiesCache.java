@@ -27,6 +27,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -36,18 +37,19 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
+import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Adam Sotona
  */
-public class GlobalAbilitiesCache {
+public class GlobalAbilitiesCache implements Runnable {
     
     private static GlobalAbilitiesCache instance = null;
     
@@ -65,14 +67,7 @@ public class GlobalAbilitiesCache {
         L l = new L();
         OpenProjects.getDefault().addPropertyChangeListener(l);
         l.propertyChange(null);
-        try {
-            FileObject fo = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), UserConfigurationTemplatesProvider.CFG_TEMPLATES_PATH);
-            fo.addFileChangeListener(l);
-            FileObject ch[] = fo.getChildren();
-            for (int i=0; i<ch.length; i++) l.loadAbilities(ch[i]);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        }
+        RequestProcessor.getDefault().post(this);
     }
     
     public Set<String> getAllAbilities() {
@@ -81,6 +76,26 @@ public class GlobalAbilitiesCache {
     
     public void addAbility(final String ability) {
         globalAbilities.add(ability);
+    }
+
+    public void run() {
+        for (ProjectConfigurationFactory fac : Lookup.getDefault().lookupAll(ProjectConfigurationFactory.class)) {
+            LinkedList<ProjectConfigurationFactory.Descriptor> list = new LinkedList();
+            list.add(fac.getRootCategory());
+            while (!list.isEmpty()) {
+                ProjectConfigurationFactory.Descriptor des = list.removeFirst();
+                if (des instanceof ProjectConfigurationFactory.CategoryDescriptor) {
+                    list.addAll(((ProjectConfigurationFactory.CategoryDescriptor)des).getChildren());
+                }
+                if (des instanceof ProjectConfigurationFactory.ConfigurationTemplateDescriptor) {
+                    Map<String, String> map = ((ProjectConfigurationFactory.ConfigurationTemplateDescriptor)des).getProjectConfigurationProperties();
+                    if (map != null) {
+                        map = CommentingPreProcessor.decodeAbilitiesMap(map.get(DefaultPropertiesDescriptor.ABILITIES));
+                        if (map != null) globalAbilities.addAll(map.keySet());
+                    }
+                }
+            }
+        }
     }
     
     private class L extends FileChangeAdapter implements PropertyChangeListener {

@@ -25,15 +25,16 @@
 package org.netbeans.modules.mobility.project.ui.customizer;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.Collection;
+import javax.swing.Icon;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.tree.TreeSelectionModel;
@@ -66,6 +67,8 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, P
     private final ExplorerManager manager = new ExplorerManager();
     private final BeanTreeView treeView;
     private String oldName;
+    public static final Image CLOSED_ICON = findIcon("Nb.Explorer.Folder.icon", "Tree.closedIcon"); // NOI18N
+    public static final Image OPENED_ICON = findIcon("Nb.Explorer.Folder.openedIcon", "Tree.openIcon"); // NOI18N
     
     /** Creates new form NewConfigurationPanel */
     public NewConfigurationPanel(Collection<String> allNames) {
@@ -82,13 +85,16 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, P
         AbstractNode root = new AbstractNode(new Children.Keys<ProjectConfigurationFactory>(){
             {setKeys(Lookup.getDefault().lookupAll(ProjectConfigurationFactory.class));}
             protected Node[] createNodes(ProjectConfigurationFactory key) {
-                return new Node[] {new CategoryNode(key.getRootCategory())};
+                return new Node[] {key instanceof ConfigurationTemplateDescriptor ? new TemplateNode((ConfigurationTemplateDescriptor)key) : new CategoryNode(key.getRootCategory())};
             }
         });
         root.setName(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSelectionPanel_Templates")); //NOI18N
         manager.setRootContext(root);
         manager.addPropertyChangeListener(this);
-        manager.addVetoableChangeListener(this);
+//        manager.addVetoableChangeListener(this);
+        try {
+            manager.setSelectedNodes(new Node[] {root.getChildren().nodes().nextElement()});
+        } catch (PropertyVetoException pve) {}
     }
     
     private class CategoryNode extends AbstractNode {
@@ -102,14 +108,44 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, P
             });
             setDisplayName(cat.getDisplayName());
         }
+
+        public Image getIcon(int type) {
+            return CLOSED_ICON == null ? super.getIcon(type) : CLOSED_ICON;
+        }
+
+        public Image getOpenedIcon(int type) {
+            return OPENED_ICON == null ? super.getOpenedIcon(type) : OPENED_ICON;
+        }
     }
+
+    
+    private static Image findIcon(String key1, String key2) {
+        Image i = icon2image(key1);
+        return i == null ? icon2image(key2) : i;
+    }
+
+    /** Gets an icon from UIManager and converts it to Image
+     */
+    private static Image icon2image(String key) {
+        Object obj = UIManager.get(key);
+        if (obj instanceof Image) {
+            return (Image)obj;
+        }
+        
+        if (obj instanceof Icon) {
+            Icon icon = (Icon)obj;
+            return Utilities.icon2Image(icon);
+        }
+        
+        return null;
+    }  
     
     private class TemplateNode extends AbstractNode {
         private ConfigurationTemplateDescriptor cfgTmp;
         public TemplateNode(ConfigurationTemplateDescriptor cfgTmp) {
             super(Children.LEAF, Lookups.singleton(cfgTmp));
             this.cfgTmp = cfgTmp;
-            setDisplayName(cfgTmp.getDisplayName().equals(cfgTmp.getCfgName()) ? cfgTmp.getDisplayName() : NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSlePanel_TemplateNodePattern", cfgTmp.getDisplayName(), cfgTmp.getCfgName())); //NOI18N
+            setDisplayName(cfgTmp.getDisplayName().equals(cfgTmp.getCfgName()) || cfgTmp.getCfgName().length() == 0 ? cfgTmp.getDisplayName() : NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSlePanel_TemplateNodePattern", cfgTmp.getDisplayName(), cfgTmp.getCfgName())); //NOI18N
         }
     }
     
@@ -194,8 +230,11 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, P
             if (n[0].getLookup().lookup(ConfigurationTemplateDescriptor.class) == null) throw new PropertyVetoException("Only configuration templates selection allowed", evt); //NOI18N
         }
     }
-    
-    
+
+    public void addNotify() {
+        super.addNotify();
+        jTextFieldName.requestFocus();
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.

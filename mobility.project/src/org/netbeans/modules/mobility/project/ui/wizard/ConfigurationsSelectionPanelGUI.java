@@ -26,6 +26,7 @@ package org.netbeans.modules.mobility.project.ui.wizard;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -34,11 +35,11 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.modules.mobility.project.ui.customizer.NewConfigurationPanel;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.CategoryDescriptor;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.Descriptor;
-import org.openide.DialogDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.TreeTableView;
 import org.openide.nodes.AbstractNode;
@@ -49,6 +50,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -86,7 +88,8 @@ public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerM
         AbstractNode root = new AbstractNode(new Children.Keys<ProjectConfigurationFactory>(){
             {setKeys(Lookup.getDefault().lookupAll(ProjectConfigurationFactory.class));}
             protected Node[] createNodes(ProjectConfigurationFactory key) {
-                return new Node[] {new CategoryNode(key.getRootCategory())};
+                ProjectConfigurationFactory.CategoryDescriptor cat = key.getRootCategory();
+                return cat == null ? null : new Node[] {new CategoryNode(key.getRootCategory())};
             }
         });
         root.setName(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSelectionPanel_Templates")); //NOI18N
@@ -101,13 +104,21 @@ public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerM
             super(new Children.Keys<ProjectConfigurationFactory.Descriptor>(){
                 {setKeys(cat.getChildren());}
                 protected Node[] createNodes(Descriptor key) {
-                    Node n = key instanceof CategoryDescriptor ? new CategoryNode((CategoryDescriptor)key) : key instanceof ConfigurationTemplateDescriptor ? new TemplateNode((ConfigurationTemplateDescriptor)key) : null;
+                    Node n = key instanceof CategoryDescriptor ? new CategoryNode((CategoryDescriptor)key) : key instanceof ConfigurationTemplateDescriptor && Utilities.isJavaIdentifier(((ConfigurationTemplateDescriptor)key).getCfgName())? new TemplateNode((ConfigurationTemplateDescriptor)key) : null;
                     return n == null ? null : new Node[] {n};
                 }
             });
             setDisplayName(cat.getDisplayName());
         }
-    }
+  
+        public Image getIcon(int type) {
+            return NewConfigurationPanel.CLOSED_ICON == null ? super.getIcon(type) : NewConfigurationPanel.CLOSED_ICON;
+        }
+
+        public Image getOpenedIcon(int type) {
+            return NewConfigurationPanel.OPENED_ICON == null ? super.getOpenedIcon(type) : NewConfigurationPanel.OPENED_ICON;
+        }
+  }
     
     private class TemplateNode extends AbstractNode {
         private ConfigurationTemplateDescriptor cfgTmp;

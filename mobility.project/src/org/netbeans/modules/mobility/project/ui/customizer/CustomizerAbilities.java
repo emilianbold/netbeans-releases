@@ -84,6 +84,8 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
                     bEditActionPerformed(null);
             }
         });
+        //just to init abilities scan here
+        GlobalAbilitiesCache.getDefault();
     }
     
     /** This method is called from within the constructor to
