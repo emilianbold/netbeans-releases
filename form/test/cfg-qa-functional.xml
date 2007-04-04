@@ -67,6 +67,14 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+
+    <testbag testattribs="validation" executor="ide" name="testbag_editor_BasicTest">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/editor/formatting/BasicTest.*"/>                
+            </patternset>
+        </testset>
+    </testbag>
 <!-- Jana Maleckova -->   
 
 <!-- no tests
