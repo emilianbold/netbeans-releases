@@ -411,8 +411,12 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
     }
     
-    public void removeNode( PageFlowNode node ){
-        scene.removeNode(node);        
+    public void removeNodeWithEdges( PageFlowNode node ){
+//        scene.removeNode(node);        
+        scene.removeNodeWithEdges(node);
     }
     
+    public void replaceWidgetNode(PageFlowNode oldNode, PageFlowNode newNode) {
+        scene.replaceWidgetNode(oldNode, newNode);
+    }
 }

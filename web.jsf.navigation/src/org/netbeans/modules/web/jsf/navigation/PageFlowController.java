@@ -106,7 +106,7 @@ public class PageFlowController {
             if( webFolder != null ){
                 webFolder.addFileChangeListener(fcl);
                 for (Enumeration<FileObject> e = (Enumeration<FileObject>) webFolder.getFolders(true); e.hasMoreElements() ;) {
-//                    System.out.println(e.nextElement());
+                    //                    System.out.println(e.nextElement());
                     //I need to exclude WEB-INF, or maybe I should just allow it to stay..  Will it hurt?
                     e.nextElement().addFileChangeListener(fcl);
                 }
@@ -124,8 +124,8 @@ public class PageFlowController {
         if (fcl != null && webFolder != null ) {
             webFolder.removeFileChangeListener(fcl);
             for (Enumeration<FileObject> e = (Enumeration<FileObject>) webFolder.getFolders(true); e.hasMoreElements() ;) {
-                    e.nextElement().removeFileChangeListener(fcl);
-                }
+                e.nextElement().removeFileChangeListener(fcl);
+            }
         }
     }
     
@@ -247,10 +247,8 @@ public class PageFlowController {
         assert webFiles != null;
         
         view.clearGraph();
-        
-        if ( !pageName2Node.isEmpty() ) {
-            System.out.println("pageName2Node is not empty as expected.");
-        }
+        pageName2Node.clear();
+        case2Node.clear();
         
         FacesConfig facesConfig = configModel.getRootComponent();
         
@@ -396,40 +394,23 @@ public class PageFlowController {
                     case2Node.put(myNavCase, node);
                     createEdge(node);
                 } else {
-                    //                    NavigationCaseNode node = case2Node.get((NavigationCase)ev.getOldValue());
+//                    NavigationCaseNode node = case2Node.get((NavigationCase)ev.getOldValue());
                     NavigationCaseNode node = case2Node.remove((NavigationCase)ev.getOldValue());
                     view.removeEdge(node);
                 }
-                view.validate();
+                view.validateGraph();
             } else if (ev.getPropertyName() == "navigation-rule" ) {
                 NavigationRule myNavRule = (NavigationRule)ev.getNewValue();
                 //You can actually do nothing.
             } else if ( ev.getNewValue() == State.NOT_SYNCED ) {
                 // Do nothing.
-                //            } else if ( ev.getPropertyName("to-view-id")) {
-                //                String newToView = (String)ev.getNewValue();
-                //                String oldToView = (String)ev.getOldValue();
-                //                NavigationCase navCase = (NavigationCase)ev.getSource();
-                //                     } else if ( ev.getPropertyName("from-view-id")) {
-                //                String newFromView = (String)ev.getNewValue();
-                //                String oldFromView = (String)ev.getOldValue();
-                //                NavigationRule navRule = (NavigationRule)ev.getSource();
-                //
             }else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
                 view.warnUserMalFormedFacesConfig();
-                //                System.out.println("NOT WELL FORMED!!!");
             } else {
-                if ( !setupGraph() ){
-                    System.out.println("Something is wrong.  Why did setup not work?");
-                }
-                view.layoutSceneImmediately();
+                setupGraph();
+                view.validateGraph();
+//                view.layoutSceneImmediately();
             }
-            //            System.out.println("New Value: " + ev.getNewValue());
-            //            System.out.println("Old Value: " + ev.getOldValue());
-            //
-            //            System.out.println("PropertyName: " + ev.getPropertyName());
-            //            System.out.println("ID: " + ev.getPropagationId());
-            //            System.out.println("PropertyChangeListener");
             
         }
     }
@@ -480,6 +461,8 @@ public class PageFlowController {
      */
     public final class PageFlowNode extends FilterNode {
         
+        
+        
         /**
          *
          * @param original
@@ -502,6 +485,8 @@ public class PageFlowController {
                 iae.printStackTrace();
                 //                throw iae;
             }
+            
+           
         }
         
         /**
@@ -515,13 +500,13 @@ public class PageFlowController {
         
         @Override
         public boolean canDestroy() {
-            return false;
+            return true;
         }
         
         @Override
         public void destroy() throws IOException {
-            pageName2Node.remove(getDisplayName());
             super.destroy();
+            pageName2Node.remove(getDisplayName());
         }
         
         
@@ -549,7 +534,7 @@ public class PageFlowController {
             System.out.println("File Changed Event: " + fe);
         }
         
-        public void fileDeleted(FileEvent fe) {            
+        public void fileDeleted(FileEvent fe) {
             FileObject fileObj = fe.getFile();
             
             if( fileObj.isFolder() ){
@@ -560,10 +545,22 @@ public class PageFlowController {
             String pageDisplayName = fileObj.getNameExt();
             webFiles.remove(fileObj);
             
-            PageFlowNode node = pageName2Node.get(pageDisplayName);
-            if( node != null ) {
-                setupGraph();
-                view.layoutSceneImmediately();
+            PageFlowNode oldNode = pageName2Node.get(pageDisplayName);
+            if( oldNode != null ) {
+//                view.removeNodeWithEdges(oldNode);
+                
+                
+                Node tmpNode = new AbstractNode(Children.LEAF);
+                tmpNode.setName(pageDisplayName);
+                PageFlowNode newNode = new PageFlowNode(tmpNode);
+                
+                
+                view.replaceWidgetNode(oldNode, newNode);
+                view.validateGraph();
+                
+//                view.createNode(node, null, null);
+//                setupGraph();
+//                view.layoutSceneImmediately();
             }
             
             //            PageFlowNode node = pageName2Node.get(pageDisplayName);
@@ -585,7 +582,7 @@ public class PageFlowController {
         public void fileRenamed(FileRenameEvent fe) {
             /* fileRenamed should not modify the faces-config because it should
              * be up to refactoring to do this. If that is the case, FacesModelPropertyChangeListener
-             * should reload it.  
+             * should reload it.
              * WARNING: Will get setup twice.*/
             FileObject fileObj = fe.getFile();
             

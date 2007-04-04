@@ -24,6 +24,7 @@ import java.awt.Rectangle;
 import java.util.AbstractQueue;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.api.visual.graph.layout.UniversalGraph;
 import org.netbeans.modules.web.jsf.navigation.PageFlowController;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.LinkCreateProvider;
 import org.netbeans.api.visual.action.ActionFactory;
@@ -54,7 +55,9 @@ import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
+import org.netbeans.api.visual.graph.layout.GraphLayoutListener;
 import org.netbeans.api.visual.graph.layout.GridGraphLayout;
+import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
@@ -128,11 +131,11 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         actions.addAction(popupGraphAction);
         actions.addAction(dragNdropAction);
         
-        GridGraphLayout<PageFlowNode, NavigationCaseNode> gglayout = new GridGraphLayout<PageFlowNode, NavigationCaseNode> ();
-        gglayout.setChecker(true);
-        
-        sceneLayout = LayoutFactory.createSceneGraphLayout(this, gglayout);
-        sceneLayout.invokeLayout();
+//        GridGraphLayout<PageFlowNode, NavigationCaseNode> gglayout = new GridGraphLayout<PageFlowNode, NavigationCaseNode> ();
+//        gglayout.setChecker(true);
+//        sceneLayout = LayoutFactory.createSceneGraphLayout(this, gglayout);
+//        sceneLayout.invokeLayout();
+
         
         getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
             public void edit(Widget widget) {
@@ -140,6 +143,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
             }
         }));
         getActions().addAction(createActionMap());
+        
         
     }
     
@@ -204,7 +208,6 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         Widget header = nodeWidget.getHeader();
         ImageWidget imageWidget = new DefaultAnchorWidget(this, POINT_SHAPE_IMAGE);
         imageWidget.getActions().addAction(connectAction);
-        //        imageWidget.getActions().addAction(createSelectAction());
         imageWidget.getActions().addAction(createWidgetHoverAction());
         header.addChild(imageWidget);
         header.getActions().addAction(createWidgetHoverAction());
@@ -217,11 +220,13 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         
         mainLayer.addChild(nodeWidget);
         
-        nodeWidget.getHeader  ().getActions().addAction(createObjectHoverAction());
+        nodeWidget.getHeader().getActions().addAction(createObjectHoverAction());
         nodeWidget.getActions().addAction(selectAction);
         nodeWidget.getActions().addAction(moveAction);
         nodeWidget.setMinimized(true);
-        nodeWidget.setPreferredLocation(getPreferredNodePosition(nodeWidget));
+        Point point = PageFlowLayoutUtilities.getPreferredNodePosition(this,true);
+//        nodeWidget2Point.put(nodeWidget, point);
+        nodeWidget.setPreferredLocation(point);
         
         //        nodeWidget.getActions().addAction(createActionMap());
         //        nodeWidget.getActions ().addAction (popupGraphAction);
@@ -230,35 +235,11 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         return nodeWidget;
     }
     
-    private static final int VERTICAL_SEPARATION = 100;
-    private static final int HORIZONTAL_SEPARATION = 200;
-    private static final int BORDER_OFFSET=50;
     private Map<VMDNodeWidget,Point> nodeWidget2Point = new HashMap<VMDNodeWidget,Point>();
-    private int VMDNodeNumber = 0;
-    
-   
-    
-    private Point getPreferredNodePosition(VMDNodeWidget widget) {
-        Rectangle bounds =  this.getMaximumBounds();
-        System.out.println("Bounds: " + bounds);
-//        int maxColumn = bounds.x/HORIZONTAL_SEPARATION;
-        Rectangle visibleRect = tc.getVisibleRect();
-        int maxColumn = (visibleRect.width - BORDER_OFFSET)/ HORIZONTAL_SEPARATION;
-        
-        /* If the window is too small, then just set it to 3. */
-        if( maxColumn < 3 ){
-            maxColumn = 3;
-        }
-        Point testPoint = null;
-        Collection<PageFlowNode> pages = getNodes();
-        int i = pages.size(); //Node location number
-        int column = (i/maxColumn);
-        int row = (i)%maxColumn;
-        int verticalPosition = (column * VERTICAL_SEPARATION);
-        int horizontalPosition = (row * HORIZONTAL_SEPARATION);
-        testPoint = new Point(horizontalPosition + BORDER_OFFSET,verticalPosition + BORDER_OFFSET);
-        VMDNodeNumber++;
-        return testPoint;
+            
+    /* This is needed by PageFlowLayoutUtilities*/
+    public Rectangle getVisibleRect() {
+        return tc.getVisibleRect();
     }
     
     
@@ -266,13 +247,13 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     
     @Override
     protected void detachNodeWidget(org.netbeans.modules.web.jsf.navigation.PageFlowController.PageFlowNode node,
-                                    Widget widget) {
-//        Point p = widget.getPreferredLocation();
-//        if ( (p.getX() - BORDER_OFFSET) %
+            Widget widget) {
+        //        Point p = widget.getPreferredLocation();
+        //        if ( (p.getX() - BORDER_OFFSET) %
         super.detachNodeWidget(node, widget);
         
     }
-
+    
     
     
     private static class DefaultAnchorWidget extends ImageWidget{
@@ -331,6 +312,16 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         widget.getActions().addAction(createSelectAction());
         
         return widget;
+    }
+    
+    public void replaceWidgetNode( PageFlowNode oldNode, PageFlowNode newNode ) {
+        VMDNodeWidget widget = (VMDNodeWidget)findWidget(oldNode);
+        oldNode = newNode;
+        //        if ( widget != null ){
+        //            widget.setNodeName(newNode.getDisplayName());
+        //        }
+        removeObject(oldNode);
+        addObject(newNode, widget, widget.getChildren().get(0));
     }
     
     /**
