@@ -53,10 +53,9 @@ public class LocalSimpleTypeNode extends SchemaComponentNode<LocalSimpleType>
 	protected GlobalSimpleType getSuperDefinition()
 	{
 		SimpleTypeDefinition definition = getReference().get().getDefinition();
-        assert getReference().get().isInDocumentModel() : 
-            "node component is no longer part of model, node should have been refreshed";
-        assert definition.isInDocumentModel() : "definition is not refreshed";
-        
+                if(!getReference().get().isInDocumentModel() ||
+                    !definition.isInDocumentModel())
+                    return null;
 		GlobalSimpleType gt = null;
 		if(definition instanceof SimpleTypeRestriction)
 		{
