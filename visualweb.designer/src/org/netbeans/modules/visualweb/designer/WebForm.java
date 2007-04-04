@@ -55,6 +55,7 @@ import java.util.WeakHashMap;
 import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
+import javax.swing.event.EventListenerList;
 
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.spi.palette.PaletteController;
@@ -151,6 +152,7 @@ public class WebForm implements Designer {
     private ImageCache imageCache;
 //    private DocumentCache frameCache;
 
+    private final EventListenerList listenerList = new EventListenerList();
     
     
     private static class JspDataObjectListener implements PropertyChangeListener {
@@ -3029,5 +3031,29 @@ public class WebForm implements Designer {
     
     public void tcDeleteSelection() {
         htmlDomProvider.tcDeleteSelection(this);
+    }
+
+    
+    public void addDesignerListener(DesignerListener l) {
+        listenerList.add(DesignerListener.class, l);
+    }
+
+    public void removeDesignerListener(DesignerListener l) {
+        listenerList.remove(DesignerListener.class, l);
+    }
+    
+    private DesignerListener[] getDesignerListeners() {
+        // Guaranteed to return a non-null array
+        Object[] listeners = listenerList.getListenerList();
+        
+        List<DesignerListener> designerListeners = new ArrayList<DesignerListener>();
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i] == DesignerListener.class) {
+                designerListeners.add((DesignerListener)listeners[i+1]);
+            }          
+        }
+        return designerListeners.toArray(new DesignerListener[designerListeners.size()]);
     }
 }

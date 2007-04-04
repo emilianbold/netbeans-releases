@@ -23,6 +23,7 @@ import java.awt.Point;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.PrintStream;
+import java.util.EventListener;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
@@ -218,4 +219,17 @@ public interface Designer {
     
     public void showDropMatch(Element componentRootElement, Element regionElement, int dropType);
     public void clearDropMatch();
+    
+
+    
+    public void addDesignerListener(DesignerListener l);
+    public void removeDesignerListener(DesignerListener l);
+    
+    public interface DesignerListener extends EventListener {
+        
+    } // End of DesignerListener.
+    
+    public interface DesignerEvent {
+        
+    } // End of DesignerEvent.
 }
