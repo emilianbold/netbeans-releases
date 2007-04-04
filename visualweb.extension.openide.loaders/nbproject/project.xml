@@ -58,7 +58,6 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.visualweb.designer</friend>
                 <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <package>org.netbeans.modules.visualweb.extension.openide.loaders</package>
