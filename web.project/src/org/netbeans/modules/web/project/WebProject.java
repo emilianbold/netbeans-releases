@@ -27,7 +27,6 @@ import java.util.*;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
@@ -45,7 +44,6 @@ import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -99,6 +97,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathModifier;
+import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSVersionProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
@@ -141,7 +140,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private JaxWsListener jaxWsListener;
     private FileObject jaxWsFo;
     private JaxWsModel.ServiceListener jaxWsServiceListener;
-
+            
     private class FileWatch implements AntProjectListener, FileChangeListener {
 
         private String propertyName;
@@ -358,8 +357,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
             new WebPropertyEvaluatorImpl(evaluator()),
+            this, // never cast an externally obtained Project to WebProject - use lookup instead
             new WebProjectRestSupport(helper),
-            this, // never cast an externally obtained Project to J2SEProject - use lookup instead
+            new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
