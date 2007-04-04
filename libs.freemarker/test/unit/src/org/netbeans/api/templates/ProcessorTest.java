@@ -268,6 +268,23 @@ public class ProcessorTest extends TestCase {
         apply(fo, w, parameters);
         assertEquals("The size is greater than 0.", w.toString());
     }
+    public void testShowHowToGetSizeOfASequenceWithoutWrapper() throws Exception {
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject fo = FileUtil.createData(root, "simpleObject.txt");
+        OutputStream os = fo.getOutputStream();
+        String txt = "<#if (classInfo.getMethods()?size > 0) >The size is greater than 0.</#if>";
+        os.write(txt.getBytes());
+        os.close();       
+        
+        
+        StringWriter w = new StringWriter();
+                        
+        Map<String,Object> parameters = Collections.<String,Object>singletonMap(
+            "classInfo", new ClassInfo()
+        );
+        apply(fo, w, parameters);
+        assertEquals("The size is greater than 0.", w.toString());
+    }
     public void testMissingClassInfoSimple() throws Exception {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
