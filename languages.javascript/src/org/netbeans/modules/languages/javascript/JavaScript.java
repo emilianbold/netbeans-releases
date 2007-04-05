@@ -80,7 +80,8 @@ import org.openide.cookies.LineCookie;
 public class JavaScript {
 
     private static final String DOC = "org/netbeans/modules/languages/javascript/Documentation.xml";
-    private static final String DOM = "org/netbeans/modules/languages/javascript/DOM.xml";
+    private static final String DOM1 = "org/netbeans/modules/languages/javascript/DOM1.xml";
+    private static final String DOM2 = "org/netbeans/modules/languages/javascript/DOM2.xml";
     private static final String MIME_TYPE = "text/javascript";
     
     private static Set regExp = new HashSet ();
@@ -273,6 +274,13 @@ public class JavaScript {
         Token token = ts.token ();
         String tokenText = token.text ().toString ();
         String libraryContext = null;
+        if (token.id ().name ().endsWith ("whitespace") ) {
+            token = previousToken (ts);
+            if (token.text ().toString ().equals ("new")) {
+                result.addAll (getLibrary ().getCompletionItems ("constructor"));
+                return result;
+            }
+        }
         if (tokenText.equals (".")) {
             token = previousToken (ts);
             if (token.id ().name ().endsWith ("identifier"))
@@ -284,6 +292,10 @@ public class JavaScript {
                 token = previousToken (ts);
                 if (token.id ().name ().endsWith ("identifier"))
                     libraryContext = token.text ().toString ();
+            } else
+            if (token.text ().toString ().equals ("new")) {
+                result.addAll (getLibrary ().getCompletionItems ("constructor"));
+                return result;
             }
         }
         
@@ -517,7 +529,7 @@ public class JavaScript {
     private static LibrarySupport getLibrary () {
         if (library == null)
             library = LibrarySupport.create (
-                Arrays.asList (new String[] {DOC, DOM})
+                Arrays.asList (new String[] {DOC, DOM1, DOM2})
             );
         return library;
     }

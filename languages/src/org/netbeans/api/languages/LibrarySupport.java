@@ -126,11 +126,15 @@ public abstract class LibrarySupport {
                     String color = "000000";
                     String library = properties.get ("library");
                     String icon = null;
+                    String key = name;
+                    boolean bold = false;
                     if ("keyword".equals (type)) {
                         color = "000099";
                         icon = "/org/netbeans/modules/languages/resources/keyword.jpg";
+                        bold = true;
                     } else
                     if ("interface".equals (type)) {
+                        color = "560000";
                         icon = "/org/netbeans/modules/languages/resources/class.gif";
                     } else
                     if ("attribute".equals (type)) {
@@ -138,13 +142,17 @@ public abstract class LibrarySupport {
                     } else
                     if ("function".equals (type)) {
                         icon = "/org/netbeans/modules/languages/resources/method.gif";
+                        bold = true;
+                        key = key + "()";
                     }
 
                     if (description == null)
                         result.add (CompletionSupport.createCompletionItem (
                             name,
-                            "<html><b><font color=#" + color + ">" + name + 
-                                "</font></b></html>",
+                            "<html>" + (bold ? "<b>" : "") + 
+                                "<font color=#" + color + ">" + key + 
+                                "</font>" + (bold ? "</b>" : "") + 
+                                "</html>",
                             library,
                             icon,
                             2
@@ -152,8 +160,10 @@ public abstract class LibrarySupport {
                     else
                         result.add (CompletionSupport.createCompletionItem (
                             name,
-                            "<html><b><font color=#" + color + ">" + name + 
-                                ": </font></b><font color=#000000> " + 
+                            "<html>" + (bold ? "<b>" : "") + 
+                                "<font color=#" + color + ">" + key + 
+                                ": </font>" + (bold ? "</b>" : "") + 
+                                "<font color=#000000> " + 
                                 description + "</font></html>",
                             library,
                             icon,
