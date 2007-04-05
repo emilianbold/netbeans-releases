@@ -25,6 +25,7 @@ import javax.faces.component.EditableValueHolder;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DisplayAction;
+import com.sun.rave.designtime.ext.componentgroup.ColorWrapper;
 import com.sun.rave.web.ui.component.Form;
 import java.util.List;
 import java.util.ArrayList;
@@ -113,126 +114,6 @@ public class VirtualFormsHelper {
         return null;
     }
 
-    public static void fillColorMap(DesignBean formBean, Map colorMap) {
-        DesignContext context = formBean.getDesignContext();
-        Form form = (Form)formBean.getInstance();
-        Form.VirtualFormDescriptor[] vforms = form.getVirtualForms();
-        List unassignedVForms = new ArrayList();    //existing vforms that don't have a color assigned in colorMap
-        for (int i = 0; vforms != null && i < vforms.length; i++) {
-            String name = vforms[i].getName();
-            String key = VFORMS_COLOR_KEY_PREFIX + name;
-            Object o = context.getContextData(key);
-            if (o instanceof FormColor && ((FormColor)o).getColor() != null) {
-                colorMap.put(name, ((FormColor)o).getColor());
-            } else if (o instanceof String) {
-                FormColor fc = new FormColor((String)o);
-                if (fc.getColor() != null) {
-                    context.setContextData(key, fc);
-                    colorMap.put(name, fc.getColor());
-                } else {
-                    unassignedVForms.add(vforms[i]);
-                }
-            } else {
-                unassignedVForms.add(vforms[i]);
-            }
-        }
-        for (Iterator iter = unassignedVForms.iterator(); iter.hasNext(); ) {
-            Form.VirtualFormDescriptor vform = (Form.VirtualFormDescriptor)iter.next();
-            Color c = getLeastUsedColor(colorMap);
-            colorMap.put(vform.getName(), c);
-        }
-    }
-    
-    static String VFORMS_COLOR_KEY_PREFIX = "virtualFormColor:"; // NOI18N
-    
-    static Color[] VFORM_DEFAULT_COLOR_SET = new Color[] {
-        Color.blue,
-        Color.green,
-        Color.red,
-        Color.yellow,
-        Color.magenta,
-        Color.orange,
-        Color.cyan,
-        Color.pink,
-        new Color(0,0,128),       //navy blue
-        new Color(255,250,205),   //lemon chifon
-        new Color(0,100,0),       //dark green     
-        new Color(255,228,225),   //misty rose
-        new Color(250,128,114),   //salmon
-        new Color(224,255,255),   //light cyan
-        new Color(255,105,180),   //hot pink
-        new Color(205,92,92),     //indian red
-        new Color(0,0,205),       //medium blue
-        new Color(143,188,143),   //dark sea green
-        new Color(238,221,130),   //light goldenrod
-        new Color(238,130,238),   //violet
-        new Color(244,238,224),   //honeydew 2
-        new Color(64,224,208),    //turquoise
-        new Color(255,218,185),   //peach puff
-        new Color(240,128,128),   //light coral
-        new Color(135,206,250),   //light sky blue
-        new Color(46,139,87),     //sea green
-        new Color(218,165,32),    //goldenrod
-        new Color(230,230,250),   //lavender
-        new Color(189,183,107),   //dark khaki
-        new Color(208,32,144),    //violet red
-        new Color(173,255,47),    //green yellow
-        new Color(70,130,180),    //steel blue
-        new Color(205,133,63),    //peru
-        new Color(175,238,238),   //pale turquoise
-        new Color(60,179,113),    //medium sea green
-        new Color(176,196,222),   //light steel blue
-        new Color(186,85,211),    //medium orchid
-        new Color(244,164,96),    //sandy brown
-        new Color(32,178,170),    //light sea green
-        new Color(165,42,42),     //brown
-        new Color(50,205,50),     //lime green
-    };
-    
-    public static Color getFormColor(String formName, Map colorMap) {
-        Color c = (Color)colorMap.get(formName);
-        if (c != null) {
-            return c;
-        }
-        c = getLeastUsedColor(colorMap);
-        colorMap.put(formName, c);
-        return c;
-    }
-    
-    //of the colors in the default set, get one that appears least in the colorMap supplied
-    private static Color getLeastUsedColor(Map colorMap) {
-        Map timesUsed = new HashMap();
-        for (Iterator iter = colorMap.values().iterator(); iter.hasNext(); ) {
-            Color c = (Color)iter.next();
-            Integer times = (Integer)timesUsed.get(c);
-            if (times == null) {
-                timesUsed.put(c, new Integer(1));
-            }
-            else {
-                int t = times.intValue();
-                timesUsed.put(c, new Integer(t+1));
-            }
-        }
-        
-        Color leastUsedColor = null;
-        int leastTimesUsed = -1;
-        for (int i = 0; i < VFORM_DEFAULT_COLOR_SET.length; i++) {
-            Color c = VFORM_DEFAULT_COLOR_SET[i];
-            Integer times = (Integer)timesUsed.get(c);
-            if (times == null) {    //color c not yet used
-                return c;
-            }
-            else {
-                int t = times.intValue();   //color c used t times
-                if (leastTimesUsed < 0 || t < leastTimesUsed) {
-                    leastTimesUsed = t;
-                    leastUsedColor = c;
-                }
-            }
-        }
-        return leastUsedColor;
-    }
-    
     public static String getNewVirtualFormName(List vformsList) {
         List nameList = new ArrayList();
         for (int i = 0; vformsList != null && i < vformsList.size(); i++) {
@@ -249,32 +130,5 @@ public class VirtualFormsHelper {
         }
         
         return name;
-    }
-    
-    static class FormColor {
-        public FormColor(Color color) {
-            this.color = color;
-        }
-        public FormColor(String fromString) {
-            String[] split = fromString.split(","); // NOI18N
-            if (split.length > 2) {
-                int r = Integer.parseInt(split[0]);
-                int g = Integer.parseInt(split[1]);
-                int b = Integer.parseInt(split[2]);
-                this.color = new Color(r, g, b);
-            }
-        }
-        private Color color;
-        public Color getColor() {
-            return color;
-        }
-        public String toString() {
-            if (color != null) {
-                return color.getRed() + "," + // NOI18N
-                       color.getGreen() + "," +  // NOI18N
-                       color.getBlue();
-            }
-            return "";  // NOI18N
-        }
     }
 }
