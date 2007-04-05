@@ -101,7 +101,7 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
 
     public Image getIcon(int iconKind) {
         if (iconKind == ICON_COLOR_16x16)
-            return loadImage( "org/openidex/search/res/find.gif" ); // NOI18N
+            return loadImage( "org/openidex/resources/find.gif" ); // NOI18N
 
         return null;
     }
