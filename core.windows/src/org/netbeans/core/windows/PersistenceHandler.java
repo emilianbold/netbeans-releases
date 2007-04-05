@@ -640,8 +640,8 @@ final public class PersistenceHandler implements PersistenceObserver {
             String tcID = (String)it.next();
             
             boolean opened = openedTcIDs.contains(tcID);
-            TopComponent tc = wm.findTopComponent(tcID);
             if(opened) {
+                TopComponent tc = wm.findTopComponent(tcID);
                 if(tc == null || !pm.isTopComponentPersistent(tc)) {
                     continue;
                 }
