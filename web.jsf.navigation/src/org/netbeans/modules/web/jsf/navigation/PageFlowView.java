@@ -170,7 +170,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     public void clearGraph() {
         //        scene.removeChildren();
         
-        //Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
+        //Workaround: Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
         Collection<PageFlowNode> nodes = new HashSet<PageFlowNode>(scene.getNodes());
         for( PageFlowNode node : nodes ){
             scene.removeNodeWithEdges(node);

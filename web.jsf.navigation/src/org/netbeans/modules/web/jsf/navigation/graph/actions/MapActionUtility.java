@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -32,6 +33,7 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
+import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -149,9 +151,12 @@ public class MapActionUtility {
             if ( obj instanceof Widget ){
                 Widget widget = ((Widget)obj);
                 Scene scene = widget.getScene();
-                if( scene instanceof ObjectScene ) {
-                    ObjectScene objScene = (ObjectScene)scene;
-                    Set<Object> selectedObjects = (Set<Object>) objScene.getSelectedObjects();
+                if( scene instanceof GraphPinScene ) {
+                    GraphPinScene objScene = (GraphPinScene)scene;
+                     
+                    //Workaround: Temporarily Wrapping Collection because of Issue: 100127
+                    Set<Object> selectedObjects = new HashSet<Object>(objScene.getSelectedObjects());
+                    //  Set<Object> selectedObjects = (Set<Object>) objScene.getSelectedObjects();                             
                     for( Object myObject : selectedObjects ){
                         if( myObject instanceof Node ) {
                             Node node = (Node)myObject;
