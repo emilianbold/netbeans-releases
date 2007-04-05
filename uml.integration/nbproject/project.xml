@@ -306,7 +306,10 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.uml.kit</friend>
+                <friend>org.netbeans.modules.uml.codegen</friend>
                 <package>org.netbeans.modules.uml.integration</package>
+                <package>org.netbeans.modules.uml.integration.netbeans.actions</package>
+                <package>org.netbeans.modules.uml.integration.ide.events</package>
             </friend-packages>
         </data>
     </configuration>

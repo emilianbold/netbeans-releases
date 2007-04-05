@@ -19,9 +19,12 @@
 
 package org.netbeans.modules.uml.integration.ide.events;
 
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashSet;
+
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
-import java.lang.reflect.Modifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Classifier;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 
@@ -602,5 +605,73 @@ public class MethodInfo extends ConstructorInfo
     {
         this.operation = operation;
     }
+
+    
+    //
+    // added for template codegen
+    //
+
+
+    public boolean isAbstract() {
+	return Modifier.isAbstract(getModifiers()); 
+    }
+
+
+    public ArrayList<MethodParameterInfo> getParameterInfos() 
+    {
+        ArrayList<MethodParameterInfo> res = new ArrayList<MethodParameterInfo>();
+	MethodParameterInfo[] parms = getParameterInfo(getOperation());
+	if (parms == null && parms.length == 0) {
+	    return null;
+	}
+	for(int i = 0; i < parms.length; i++) {
+	    if (parms[i] != null) {
+		res.add(parms[i]);
+	    }
+	}
+	return res;
+    }
+
+
+    // see getCodeGenType() for how the type string is formed 
+    public ArrayList<String[]> getReferredCodeGenTypes()
+    {
+    
+	ArrayList<String[]> res = new ArrayList<String[]>();
+	HashSet<String> fqNames = new HashSet<String>();
+ 
+	MethodParameterInfo retType = getReturnParameter();
+	if (retType != null) {
+	    ArrayList<String[]> refs = retType.getReferredCodeGenTypes();
+	    GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
+	}
+
+	MethodParameterInfo[] params = getParameters();
+	if (params != null) {
+	    for(int i = 0; i < params.length; i++)  {
+		if (params[i] != null) {
+		    ArrayList<String[]> refs = params[i].getReferredCodeGenTypes();
+		    GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
+		}
+	    }
+	}
+
+	String[] exceptions = getExceptions();
+	if (exceptions != null) {
+	    for(int i = 0; i < exceptions.length; i++)  {
+		if (exceptions[i] != null) {
+		    // TBD - exception string may be with generic
+		    String[] pn = new String[]{JavaClassUtils.getPackageName(exceptions[i]), 
+					       JavaClassUtils.getShortClassName(exceptions[i])};
+		    ArrayList<String[]> refs = new ArrayList<String[]>();
+		    refs.add(pn);
+		    GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
+		}
+	    }
+	}
+	
+	return res;	
+    }
+
 
 }

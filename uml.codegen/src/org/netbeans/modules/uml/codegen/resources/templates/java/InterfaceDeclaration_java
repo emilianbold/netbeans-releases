@@ -1,0 +1,27 @@
+<#--
+
+#    InterfaceDecl :      
+#	NormalInterfaceDeclaration
+#       AnnotationTypeDeclaration
+#
+# Note: no AnnotationType   
+
+-->
+
+<#import "DeclLib.ftl" as lib />
+
+
+<#macro InterfaceDeclaration classInfo nestingLevel >
+
+<@lib.TypeDeclarationComment classInfo nestingLevel 
+/>
+<@lib.compress single_line=true >
+<@lib.ident nestingLevel /><@lib.TypeDeclarationModifiers classInfo /> interface ${classInfo.getName()} <@lib.TypeDeclarationTypeParameters classInfo /> <@lib.InterfaceExtends classInfo /> 
+</@lib.compress> {
+
+<@lib.ClassBodyDeclaration classInfo nestingLevel+1 />
+
+<@lib.ident nestingLevel />}
+
+</#macro>
+

@@ -30,6 +30,9 @@ package org.netbeans.modules.uml.integration.ide.events;
 import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
@@ -2156,7 +2159,7 @@ public class ClassInfo extends ElementInfo
         return s.toString();
     }
     
-    protected String getModifierText(Integer mods)
+    public String getModifierText(Integer mods)
     {
         if (mods == null) return null;
         return Modifier.toString(mods.intValue());
@@ -2326,5 +2329,185 @@ public class ClassInfo extends ElementInfo
         
         return owner.getOuterMostOwner();
     }
+
+
+    //
+    // added for template codegen
+    //
+
+    public Vector getFieldsCodeGenSorted() {
+	Vector<MemberInfo> res = new Vector<MemberInfo>();	
+	Iterator fs = mMembers.iterator();
+	
+	while(fs.hasNext()) {
+	    MemberInfo field = (MemberInfo)fs.next(); 
+	    res.add(field);
+	}
+	
+	Collections.sort(res, new StaticAndAccessModifierComparator());	
+	return res;
+    }
+
+
+    public Vector getConstructorsCodeGenSorted() {
+	Vector<MethodInfo> res = new Vector<MethodInfo>();
+	Iterator ms = mMethods.iterator();
+	
+	while(ms.hasNext()) {
+	    MethodInfo method = (MethodInfo)ms.next(); 
+	    IOperation op = method.getOperation();
+	    if (op != null && op.getIsConstructor()) {		
+		res.add(method);
+	    }
+	}
+
+	Collections.sort(res, new StaticAndAccessModifierComparator());	
+	return res;
+    }
+
+
+    public Vector getMethodsCodeGenSorted() {
+	Vector<MethodInfo> res = new Vector<MethodInfo>();
+	Iterator ms = mMethods.iterator();
+	
+	while(ms.hasNext()) {
+	    MethodInfo method = (MethodInfo)ms.next(); 
+	    IOperation op = method.getOperation();
+	    if (op != null && ( ! op.getIsConstructor() ) ) {		
+		res.add(method);
+	    }
+	}
+
+	Collections.sort(res, new StaticAndAccessModifierComparator());	
+	return res;
+    }
+
+
+    public static class StaticAndAccessModifierComparator implements Comparator<ElementInfo> {
+	
+	public int compare(ElementInfo el1, ElementInfo el2) {
+	    int mod1 = el1.getModifiers(); 
+	    int mod2 = el2.getModifiers();	    
+	    if (Modifier.isStatic(mod1) == Modifier.isStatic(mod2)) 
+		    return compareAccessModifiers(mod1, mod2);
+	    else if (Modifier.isStatic(mod1)) 
+		return -1;		
+	    else // (Modifier.isStatic(mod2))
+		return 1;
+	}
+
+	public int compareAccessModifiers(int mod1, int mod2) {
+	    return getNum(mod1) - getNum(mod2); 
+	}
+
+	int getNum(int mod) {
+	    if (Modifier.isPublic(mod))
+		return 1;
+	    else if (Modifier.isProtected(mod))
+		return 2;
+	    else if (Modifier.isPrivate(mod))
+		return 4;
+	    else //if package 
+		return 3;
+	}
+
+    }
+
+
+    //public int stringToModifier(String mod)  
     
+    public ArrayList<String> getImportedTypes() 
+    {
+	if(getOuterClass() != null)
+	{
+	    return getOuterClass().getImportedTypes();
+	}
+
+	// we're the outer class 
+	ArrayList<String> res = new ArrayList<String>();	
+	ArrayList<String[]> refs = getReferredCodeGenTypes();
+	
+	Iterator iter = refs.iterator();	
+	while(iter.hasNext()) {
+	    String[] pn = (String[]) iter.next();
+	    if (pn != null && pn.length == 2 && pn[0] != null &&  pn[1] != null) {
+		String pack = pn[0];
+		String name = pn[1];
+		if (pack == "") 
+		    continue;
+		if (pack.equals(getPackage()) || pack.equals("java.lang"))
+		    continue;		
+		String fq = pack+"."+name;
+		res.add(fq);
+	    }
+	}
+	Collections.sort(res);
+	return res;	
+    }
+
+
+    public ArrayList<String[]> getReferredCodeGenTypes()
+    {
+	ArrayList<String[]> res = new ArrayList<String[]>();
+	HashSet<String> fqNames = new HashSet<String>();
+
+	// referred by the fields
+	if (mMembers != null) {
+	    Iterator fs = mMembers.iterator();	
+	    while(fs.hasNext()) {
+		MemberInfo field = (MemberInfo)fs.next();  
+		ArrayList<String[]> refs = field.getReferredCodeGenTypes();
+		GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
+	    }
+	}
+
+	// referred by the methods' parameters and returns
+	if (mMethods != null) {
+	    Iterator ms = mMethods.iterator();	
+	    while(ms.hasNext()) {
+		MethodInfo method = (MethodInfo)ms.next();  
+		ArrayList<String[]> refs = method.getReferredCodeGenTypes();
+		GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
+	    }
+	}	    
+
+	// referred by the inner types
+	if (mInnerClasses != null) {
+	    Iterator nestedTypes =  mInnerClasses.iterator();
+	    while(nestedTypes.hasNext()) {
+		Object inner = nestedTypes.next();
+		if (inner instanceof ClassInfo) {
+		    ArrayList<String[]> refs = ((ClassInfo)inner).getReferredCodeGenTypes();
+		    GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
+		}
+	    } 
+	}
+
+	// referred by itself - extends/imports
+	ArrayList<String[]> refs = new ArrayList<String[]>();
+	String[] superClass = GenCodeUtil.getFullyQualifiedCodeGenType(mSuperClass);
+	if ( superClass != null && superClass.length == 2 ) {	    
+	    refs.add(superClass);
+	}
+	if (superInterfaces != null) {
+	    Iterator<IClassifier> sis =  superInterfaces.iterator();
+	    while(sis.hasNext()) {
+		String[] impl = GenCodeUtil.getFullyQualifiedCodeGenType(sis.next());		
+		if ( impl != null && impl.length == 2 ) {	    
+		    refs.add(impl);
+		}		
+	    } 
+	}
+	GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
+	
+	return res;
+    }
+
+
+
+
 }
+
+
+
+

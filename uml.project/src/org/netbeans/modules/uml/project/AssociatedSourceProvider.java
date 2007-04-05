@@ -245,6 +245,9 @@ public class AssociatedSourceProvider
             {
                 for (SourceGroup group : groups)
                 {
+
+		    if (group == null) 
+			continue;
                     // TODO: cvc - group has a potential for being null
                     FileObject fobj = group.getRootFolder();
                     

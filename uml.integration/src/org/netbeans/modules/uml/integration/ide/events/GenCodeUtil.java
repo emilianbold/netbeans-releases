@@ -20,6 +20,10 @@
 
 package org.netbeans.modules.uml.integration.ide.events;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
@@ -56,34 +60,13 @@ public final class GenCodeUtil
         boolean useGenerics, 
         IMultiplicity mult)
     {
-        // get complete package name - "com::foo::bar"
-        IPackage owningPkg = classType.getOwningPackage();
-        String fullPkgName = owningPkg.getFullyQualifiedName(false);
 
-        // default package elements have the project as the owning package
-        if (owningPkg instanceof IProject)
-            fullPkgName = "";
-        
-        // get fully qualified name - "com::foo::bar::Outer::Middle::Inner"
-        String qualName = classType.getFullyQualifiedName(false);
-        String fullClassName = qualName;
-        
-        if (isValidClassType(fullClassName))
-        {
-            // extract the full class name - "Outer::Middle::Inner"
-            // and convert to dot notation = "Outer.Middle.Inner"
-
-            if (fullPkgName.length() > 0)
-            {
-                fullClassName = JavaClassUtils.convertUMLtoJava(
-                    qualName.substring(fullPkgName.length()+2));
-            }
-
-            // it's in the default package
-            else
-                fullClassName = JavaClassUtils.convertUMLtoJava(qualName);
-        }
-        
+	  String fullClassName = "";
+	  String[] packAndName = getFullyQualifiedCodeGenType(classType);
+	  if (packAndName != null && packAndName.length == 2) {
+	      fullClassName = packAndName[1];
+	  }
+      
 //        if (fullClassName.indexOf('.') > 0)
 //        {
 //            // we have an inner class, so trim off all outer classes possible
@@ -187,5 +170,106 @@ public final class GenCodeUtil
         return type.indexOf("<") == -1 
             ? type : type.substring(0, type.indexOf('<'));
     }
+
+
+    //
+    // added for template codegen
+    //
+
+    public static String[] getFullyQualifiedCodeGenType(IClassifier classType)
+    {
+	if (classType == null) {
+	    return null;
+	}
+        IPackage owningPkg = classType.getOwningPackage();
+        String fullPkgName = owningPkg.getFullyQualifiedName(false);
+
+        // default package elements have the project as the owning package
+        if (owningPkg instanceof IProject)
+            fullPkgName = "";
+
+        // get fully qualified name - "com::foo::bar::Outer::Middle::Inner"
+        String qualName = classType.getFullyQualifiedName(false);
+        String fullClassName = qualName;
+
+        if (isValidClassType(fullClassName))
+        {
+            // extract the full class name - "Outer::Middle::Inner"
+            // and convert to dot notation = "Outer.Middle.Inner"
+
+            if (fullPkgName.length() > 0)
+            {
+                fullClassName = JavaClassUtils.convertUMLtoJava(
+                    qualName.substring(fullPkgName.length()+2));
+                fullPkgName = JavaClassUtils.convertUMLtoJava(fullPkgName);
+            }
+            // it's in the default package
+            else
+                fullClassName = JavaClassUtils.convertUMLtoJava(qualName);
+	    
+        }
+	return new String[] {fullPkgName, fullClassName};
+    }
     
+
+    // see getCodeGenType() for how the type string is formed 
+    public static ArrayList<String[]> getReferredCodeGenTypes(
+        IClassifier classType, 
+        String collectionType, 
+        boolean useGenerics, 
+        IMultiplicity mult)
+    {
+	ArrayList<String[]> res = new ArrayList<String[]>();
+
+	String[] fqType = GenCodeUtil.getFullyQualifiedCodeGenType(classType);
+	if ( ! ( fqType != null && fqType.length == 2 && fqType[1] != null) ) {	
+	    return null;
+	}
+
+	String fullClassName = fqType[1];
+	boolean reffersTheType = true;
+        if (mult != null && isMultiDim(mult))
+        {
+            if (!JavaClassUtils.isPrimitive(fullClassName) && 
+                collectionType != null && collectionType.length() > 0)
+	    {
+		res.add(new String[]{JavaClassUtils.getPackageName(collectionType), 
+				     JavaClassUtils.getShortClassName(collectionType)});
+		reffersTheType = ! useGenerics;
+	    }
+	}
+	
+	if (reffersTheType) {
+	    res.add(fqType);	    
+	}
+
+	return res;
+    }
+
+
+    // utility method merges 2 ArrayLists 
+    // of String[2] with package and name of a class
+    public static void mergeReferredCodeGenTypes(ArrayList<String[]> res, 
+					  HashSet<String> fqNames, 
+					  ArrayList<String[]>refs) 
+    {	
+	if (refs == null) {
+	    return;
+	}
+	Iterator iter = refs.iterator();	
+	while(iter.hasNext()) {
+	    String[] pn = (String[]) iter.next();
+	    if (pn != null && pn.length == 2) {
+		if (pn[0] != null &&  pn[1] != null) {
+		    String fq = pn[1]+"."+pn[0];
+		    if ( ! fqNames.contains(fq) ) {
+			fqNames.add(fq);
+			res.add(pn);
+		    }
+		}
+	    }
+	}	       
+    }
+
+
 }

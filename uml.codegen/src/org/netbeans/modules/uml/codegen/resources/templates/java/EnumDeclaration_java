@@ -1,0 +1,5 @@
+#
+# EnumDeclaration:
+#
+
+#enum Identifier [implements TypeList] EnumBody

@@ -1,0 +1,26 @@
+<#--
+ NormalClassDeclaration 
+-->
+
+
+<#import "DeclLib.ftl" as lib />
+
+
+<#macro NormalClassDeclaration classInfo nestingLevel >
+
+<@lib.TypeDeclarationComment classInfo nestingLevel 
+/>
+<@lib.compress single_line=true >
+<@lib.ident nestingLevel /><@lib.TypeDeclarationModifiers classInfo /> class ${classInfo.getName()} <@lib.TypeDeclarationTypeParameters classInfo /> <@lib.NormalClassExtends classInfo /> <@lib.ClassImplements classInfo />
+</@lib.compress> {
+
+<@lib.ClassBodyDeclaration classInfo nestingLevel+1 />
+
+<@lib.ident nestingLevel />}
+
+</#macro>
+
+
+
+
+

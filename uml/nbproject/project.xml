@@ -201,6 +201,7 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.uml.codegen</friend>
                 <friend>org.netbeans.modules.uml.designpattern</friend>
                 <friend>org.netbeans.modules.uml.documentation</friend>
                 <friend>org.netbeans.modules.uml.drawingarea</friend>

@@ -27,6 +27,8 @@ package org.netbeans.modules.uml.integration.ide.events;
 
 import java.lang.reflect.Modifier;
 import java.util.StringTokenizer;
+import java.util.ArrayList;
+
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.roundtripframework.RTMode;
 import org.netbeans.modules.uml.core.roundtripframework.RoundTripModeRestorer;
@@ -874,5 +876,22 @@ public class MemberInfo extends ElementInfo
     {
         return val.substring(0, val.indexOf('['));
     }
+
+
+    //
+    // added for template codegen
+    //
+
+    // see getCodeGenType() for how the type string is formed 
+    public ArrayList<String[]> getReferredCodeGenTypes()
+    {
+	return GenCodeUtil
+	    .getReferredCodeGenTypes(getAttribute().getType(), 
+				     getCollectionOverrideDataType(),
+				     isUseGenerics(),
+				     getAttribute().getMultiplicity());
+
+    }
+
 
 }

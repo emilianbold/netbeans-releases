@@ -20,6 +20,8 @@
 package org.netbeans.modules.uml.integration.ide.events;
 
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
@@ -323,4 +325,22 @@ public class MethodParameterInfo implements Cloneable
         this.parentMethodInfo = parentMethodInfo;
     }
 
+
+
+    //
+    // added for template codegen
+    //
+
+    // see getCodeGenType() for how the type string is formed 
+    public ArrayList<String[]> getReferredCodeGenTypes()
+    {
+	return GenCodeUtil
+	    .getReferredCodeGenTypes(getParameterElement().getType(), 
+				     getCollectionOverrideDataType(),
+				     isUseGenerics(),
+				     getParameterElement().getMultiplicity());
+    }
+
+
 }
+

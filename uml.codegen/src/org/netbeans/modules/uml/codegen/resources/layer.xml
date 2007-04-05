@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+
+    <folder name="Templates">
+      <folder name="UML">
+        <folder name="CodeGeneration">            
+          <folder name="Java">     
+       
+            <file name="CompilationUnit.java" url="templates/java/CompilationUnit_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateCategory" stringvalue="uml-java-templates"/>
+            </file>
+            <file name="NormalClassDeclaration.java" url="templates/java/NormalClassDeclaration_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateCategory" stringvalue="uml-java-templates"/>
+            </file>
+             <file name="EnumDeclaration.java" url="templates/java/EnumDeclaration_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateCategory" stringvalue="uml-java-templates"/>
+            </file>
+             <file name="InterfaceDeclaration.java" url="templates/java/InterfaceDeclaration_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateCategory" stringvalue="uml-java-templates"/>
+            </file>
+           <file name="DeclLib.ftl" url="templates/java/DeclLib_ftl">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateCategory" stringvalue="uml-java-templates"/>
+            </file>
+
+          </folder>
+        </folder>
+      </folder>
+    </folder>
+
+</filesystem>
