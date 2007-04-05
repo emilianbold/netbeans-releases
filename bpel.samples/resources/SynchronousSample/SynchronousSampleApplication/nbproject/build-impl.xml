@@ -251,6 +251,11 @@
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target name="clean" depends="init,deps-clean,do-clean,post-clean" description="Clean build products."/>
+    <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build" description="Clean project configuration."/>
+    <target name="clear-casa">
+        <delete file="${source.root}/conf/${org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}.casa"/>
+        <delete file="${src.dir}/${org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}.wsdl"/>
+    </target>
     <!--
                 JUNIT EXECUTION SECTION
                 ======================= 
