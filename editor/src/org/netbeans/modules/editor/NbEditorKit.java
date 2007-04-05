@@ -61,6 +61,8 @@ import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.impl.ActionsList;
 import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
+import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
+import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.OptionUtilities;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
@@ -160,7 +162,9 @@ public class NbEditorKit extends ExtKit {
                                        new NbToggleLineNumbersAction(),
                                        new ToggleToolbarAction(),
                                        new NbGenerateGoToPopupAction(),
-                                       new GenerateFoldPopupAction()
+                                       new GenerateFoldPopupAction(),
+                                       new NavigationHistoryBackAction(),
+                                       new NavigationHistoryForwardAction()
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
