@@ -77,17 +77,21 @@ public class LanguagesManager {
         return b.booleanValue ();
     }
     
-    private Map<String,Object> mimeTypeToLanguage = new HashMap<String,Object> ();
+    private Language parsingLanguage = new Language ("parsing...");
+    
+    private Map<String,Language> mimeTypeToLanguage = new HashMap<String,Language> ();
     
     public synchronized Language getLanguage (String mimeType) 
     throws LanguageDefinitionNotFoundException {
         if (!mimeTypeToLanguage.containsKey (mimeType)) {
-            mimeTypeToLanguage.put (mimeType, new ParseException ("Already parisng " + mimeType));
+            mimeTypeToLanguage.put (mimeType, parsingLanguage);
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             FileObject fo = fs.findResource ("Editors/" + mimeType + "/language.nbs");
-            if (fo == null) 
+            if (fo == null) {
+                mimeTypeToLanguage.remove (mimeType);
                 throw new LanguageDefinitionNotFoundException 
                     ("Language definition for " + mimeType + " not found.");
+            }
             addListener (fo);
             Language l = null;
             try {
@@ -104,7 +108,9 @@ public class LanguagesManager {
             //l.print ();
             mimeTypeToLanguage.put (mimeType, l);
         }
-        return (Language) mimeTypeToLanguage.get (mimeType);
+        if (parsingLanguage == mimeTypeToLanguage.get (mimeType))
+            throw new IllegalArgumentException ();
+        return mimeTypeToLanguage.get (mimeType);
     }
     
     public void addLanguage (Language l) {
