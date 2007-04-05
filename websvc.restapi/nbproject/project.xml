@@ -69,7 +69,6 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.web.project</friend>
-                <friend>org.netbeans.modules.web.webrest</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
                 <package>org.netbeans.modules.websvc.rest.spi</package>
             </friend-packages>
