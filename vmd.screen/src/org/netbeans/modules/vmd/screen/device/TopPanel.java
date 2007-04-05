@@ -288,7 +288,7 @@ public class TopPanel extends JPanel {
             if (! shape.enableInjector)
                 continue;
             Rectangle bounds = shape.shape.getBounds ();
-            if (new Rectangle (bounds.x + bounds.width - 20, bounds.y - 8, 16, 26).contains (e.getX () - shape.x, e.getY () - shape.y)) {
+            if (new Rectangle (bounds.x + bounds.width - 20, bounds.y - 8, 16, 16).contains (e.getX () - shape.x, e.getY () - shape.y)) {
                 if (invoke)
                     invokeInjectorWindow (shape.componentID, shape.x + bounds.x + bounds.width - 20, shape.y + bounds.y + 8);
                 return true;

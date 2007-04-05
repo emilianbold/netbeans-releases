@@ -100,7 +100,7 @@ public final class ClassCD extends ComponentDescriptor {
             new ClassCode.ClassCodeReferencePresenter (),
             new ClassCode.CodeLazyInitPresenter (),
             new ClassCode.CodeClassNamePresenter (),
-            new ScreenBooleanInjectorPresenter (PROP_LAZY_INIT, "Generate code with lazy-initialization Pattern", 10000)// TODO - temporary - test of ScreenInjectorPresenter
+            new ScreenBooleanInjectorPresenter (PROP_LAZY_INIT, "Generate code with lazy-initialization pattern", 10000)// TODO - temporary - test of ScreenInjectorPresenter
         );
     }
 
