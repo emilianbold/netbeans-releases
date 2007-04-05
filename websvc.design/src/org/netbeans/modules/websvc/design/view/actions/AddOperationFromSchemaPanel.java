@@ -239,14 +239,14 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
 
 
     private void populateWithTypes(WSDLModel wsdlModel) {
-        returnCombo.addItem("void"); //NOI18N
+        returnCombo.addItem("none"); //NOI18N
         try {
             List<ReferenceableSchemaComponent> schemaTypes = Utils.getSchemaTypes(wsdlModel);
             for (ReferenceableSchemaComponent schemaType:schemaTypes) {
                 returnCombo.addItem(schemaType);
             }
         } catch (CatalogModelException ex) {
-            
+            ErrorManager.getDefault().notify(ex);
         }
 
     }

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +96,7 @@ public class OperationGeneratorHelper {
         this.wsdlFile=wsdlFile;
     }
     
-    /** This method adds new operation to wsdl file
+    /** This method adds new operation to the wsdl file
      */
     public Operation addWsOperation(WSDLModel wsdlModel,
             String portTypeName,
@@ -107,7 +108,6 @@ public class OperationGeneratorHelper {
         WSDLComponentFactory factory = wsdlModel.getFactory();
         Definitions definitions = wsdlModel.getDefinitions();
         Types types = definitions.getTypes();
-        int counter = 0;
 
         String messageName = operationName+"Message"; //NOI18N
         String partName = operationName+"Part"; //NOI18N
@@ -117,11 +117,16 @@ public class OperationGeneratorHelper {
         String responseMessageName = operationName+"ResponseMessage"; //NOI18N
         String responsePartName = operationName+"ResponsePart"; //NOI18N
         
+        Operation operation = null;
         try {
             wsdlModel.startTransaction();
             
-            //TODO: Need to determine if it is request-response or one-way
-            RequestResponseOperation operation = factory.createRequestResponseOperation();
+            //If the user does not specify a return type, assume to be one-way
+            if(returnType != null){
+               operation = factory.createRequestResponseOperation();
+            }else{
+                operation = factory.createOneWayOperation();
+            }
             operation.setName(operationName);
             
             Message inputMessage=null;
@@ -144,7 +149,7 @@ public class OperationGeneratorHelper {
                 }
                 
                 paramElement = schemaModel.getFactory().createGlobalElement();
-                paramElement.setName(operationName); //NOI18N
+                paramElement.setName(getUniqueGlobalElementName(schema, operationName)); //NOI18N
                 NamedComponentReference<GlobalType> complexTypeRef = schema.createReferenceTo((GlobalType)complexType, GlobalType.class);
                 paramElement.setType(complexTypeRef);
                 schema.addElement(paramElement);
@@ -170,7 +175,7 @@ public class OperationGeneratorHelper {
                     }
                     
                     returnElement = schemaModel.getFactory().createGlobalElement();
-                    returnElement.setName(responseElementName);
+                    returnElement.setName(this.getUniqueGlobalElementName(schema, responseElementName));
                     NamedComponentReference<GlobalType> responseTypeRef = schema.createReferenceTo((GlobalType)responseComplexType, GlobalType.class);
                     returnElement.setType(responseTypeRef);
                     schema.addElement(returnElement);
@@ -428,6 +433,18 @@ public class OperationGeneratorHelper {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());
             }
         }
+    }
+    
+    private String getUniqueGlobalElementName(Schema schema, String baseName){
+        String bName = baseName;
+        int suffix = 0;
+        Collection<GlobalElement> elements = schema.getElements();
+        for(GlobalElement element : elements){
+            if(element.getName().equals(bName)){
+                bName = baseName + "_" + ++suffix;
+            }    
+        }
+        return bName;
     }
 }
 
