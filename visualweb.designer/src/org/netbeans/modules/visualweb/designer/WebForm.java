@@ -1848,13 +1848,13 @@ public class WebForm implements Designer {
         return htmlDomProvider.getPaletteController();
     }
 
-    // XXX
-//    boolean editEventHandlerForDesignBean(DesignBean designBean) {
-//        return htmlDomProvider.editEventHandlerForDesignBean(designBean);
+//    // XXX
+////    boolean editEventHandlerForDesignBean(DesignBean designBean) {
+////        return htmlDomProvider.editEventHandlerForDesignBean(designBean);
+////    }
+//    boolean editEventHandlerForComponent(Element componentRootElement) {
+//        return htmlDomProvider.editEventHandlerForComponent(componentRootElement);
 //    }
-    boolean editEventHandlerForComponent(Element componentRootElement) {
-        return htmlDomProvider.editEventHandlerForComponent(componentRootElement);
-    }
     
     // >>> Designer impl
 //    public JComponent getDesignerComponent() {
