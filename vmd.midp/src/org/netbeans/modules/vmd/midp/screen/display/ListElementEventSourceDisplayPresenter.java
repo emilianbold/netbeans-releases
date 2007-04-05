@@ -22,8 +22,10 @@ package org.netbeans.modules.vmd.midp.screen.display;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
+import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 
 import javax.swing.*;
 import java.awt.*;
@@ -67,4 +69,11 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
     public Shape getSelectionShape() {
         return new Rectangle(label.getSize());
     }
+
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
+        return Collections.singleton (
+                new ScreenPropertyDescriptor (getComponent (), label, new Rectangle (label.getSize ()), new ScreenStringPropertyEditor (ListElementEventSourceCD.PROP_STRING, JTextField.LEFT))
+        );
+    }
+
 }

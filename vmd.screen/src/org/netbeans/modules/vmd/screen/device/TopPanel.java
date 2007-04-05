@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.vmd.screen.device;
 
+import org.netbeans.modules.vmd.api.io.PopupUtil;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
@@ -28,7 +29,6 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.api.screen.display.injector.ScreenInjectorPresenter;
-import org.netbeans.modules.vmd.api.io.PopupUtil;
 import org.netbeans.modules.vmd.screen.ScreenAccessController;
 import org.netbeans.modules.vmd.screen.ScreenViewController;
 import org.openide.util.Utilities;
@@ -38,7 +38,9 @@ import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
-import java.awt.event.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,9 +65,6 @@ public class TopPanel extends JPanel {
 
     private Point lastHoverPoint = null;
     private SelectionShape hoverShape = null;
-
-//    private JComponent editedComponent;
-//    private ScreenPropertyEditor editedEditor;
 
     public TopPanel (DevicePanel devicePanel) {
         this.devicePanel = devicePanel;
@@ -231,12 +230,16 @@ public class TopPanel extends JPanel {
                 public void run () {
                     DesignComponent component = devicePanel.getDesignComponentAt (lastHoverPoint);
                     ScreenDisplayPresenter presenter = component != null ? component.getPresenter (ScreenDisplayPresenter.class) : null;
-                    Shape shape = presenter != null ? presenter.getSelectionShape () : null;
-                    if (shape != null) {
-                        Point point = devicePanel.calculateTranslation (presenter.getView ());
-                        hoverShape = new SelectionShape (point.x, point.y, shape, component.getComponentID (), false);
-                    } else
-                        hoverShape = null;
+                    Collection<ScreenPropertyDescriptor> properties = presenter != null ? presenter.getPropertyDescriptors () : Collections.<ScreenPropertyDescriptor>emptySet ();
+                    for (ScreenPropertyDescriptor property : properties) {
+                        Point editorOrigin = devicePanel.calculateTranslation (property.getRelatedView ());
+                        Shape shape = property.getSelectionShape ();
+                        if (shape.contains (new Point (e.getX () - editorOrigin.x, e.getY () - editorOrigin.y))) {
+                            hoverShape = new SelectionShape (editorOrigin.x, editorOrigin.y, shape, Long.MIN_VALUE, false);
+                            return;
+                        }
+                    }
+                    hoverShape = null;
                 }
             });
         repaint ();
@@ -340,10 +343,21 @@ public class TopPanel extends JPanel {
                     return;
                 Collection<ScreenPropertyDescriptor> properties = presenter.getPropertyDescriptors ();
                 for (ScreenPropertyDescriptor property : properties) {
-                    Point editorOrigin = devicePanel.calculateTranslation (property.getRelatedView ());
-                    if (property.getSelectionShape ().contains (new Point (e.getX () - editorOrigin.x, e.getY () - editorOrigin.y))) {
-        //                property.getEditor ().createEditorComponent ();
-                        // TODO - edit
+                    JComponent relatedView = property.getRelatedView ();
+                    Shape shape = property.getSelectionShape ();
+                    Point editorOrigin = devicePanel.calculateTranslation (relatedView);
+                    if (shape.contains (new Point (e.getX () - editorOrigin.x, e.getY () - editorOrigin.y))) {
+                        Rectangle bounds = shape.getBounds ();
+                        JComponent editorView = property.getEditor ().createEditorComponent (property);
+                        Insets insets = property.getEditor ().getEditorComponentInsets (editorView);
+                        bounds.x -= insets.left;
+                        bounds.width += insets.left + insets.right;
+                        bounds.y -= insets.top;
+                        bounds.height += insets.top + insets.bottom;
+                        editorView.setPreferredSize (bounds.getSize ());
+                        Point relatedViewLocationOnScreen = relatedView.getLocationOnScreen ();
+                        bounds.translate (relatedViewLocationOnScreen.x, relatedViewLocationOnScreen.y);
+                        PopupUtil.showPopup (editorView, "Editor", bounds.x, bounds.y, true);
                     }
                 }
             }

@@ -21,6 +21,7 @@
 package org.netbeans.modules.vmd.api.screen.display;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * @author David Kaspar
@@ -30,35 +31,11 @@ public interface ScreenPropertyEditor {
     /**
      * It should create an editor component which will be placed into the screen designer.
      * Called in AWT with model read access.
-     * @param controller the controller interface used e.g. for closing editor
-     * @param descriptor the currently edited screen property descriptor
+     * @param property the currently edited screen property descriptor
      * @return the editor component; if null, openNotify and closeNotify are not called
      */
-    public JComponent createEditorComponent (Controller controller, ScreenPropertyDescriptor descriptor);
+    public JComponent createEditorComponent (ScreenPropertyDescriptor property);
 
-    /**
-     * Loads the editor component with initial data.
-     * Called in AWT with model read access.
-     * @param controller the controller
-     * @param descriptor the currently edited screen property descriptor
-     * @param editorComponent the editor component created by createEditorComponent method of this instance
-     */
-    public void openNotify (Controller controller, ScreenPropertyDescriptor descriptor, JComponent editorComponent);
-
-    /**
-     * Commits the data from the editor component to the model.
-     * Called in AWT with model write access.
-     * @param controller the controller
-     * @param descriptor the currently edited screen property descriptor
-     * @param editorComponent the editor component created by createEditorComponent method of this instance
-     * @param commit if true, then commit the data into the model; if false, do not commit anything
-     */
-    public void closeNotify (Controller controller, ScreenPropertyDescriptor descriptor, JComponent editorComponent, boolean commit);
-
-    public interface Controller {
-
-        public void closeEditor (boolean commitApproved);
-
-    }
+    public Insets getEditorComponentInsets (JComponent editorComponent);
 
 }

@@ -19,17 +19,6 @@ import org.netbeans.modules.vmd.api.model.presenters.OrderablePresenter;
 import javax.swing.*;
 
 /**
- * ScreenInjectorPresenter is a presenter adding "behavior" to ScreenComponentPresenter and
- * ScreenPropertyPresenter presenters. This behavior can be added at runtime, so
- * other modules can install a functionality manipulating with the component
- * even the component does not know that.
- * 
- * TODO - shoudn't be ScreenInjectorPresenter defined rather on a higher level, so also other
- * view components (inspector/flow) can benefit from it?
- * 
- * TODO - this class will be perhaps redesigned based on the discussion
- * about data-biding we should have in April/May
- * 
  * @author breh
  */
 public abstract class ScreenInjectorPresenter extends Presenter implements OrderablePresenter {

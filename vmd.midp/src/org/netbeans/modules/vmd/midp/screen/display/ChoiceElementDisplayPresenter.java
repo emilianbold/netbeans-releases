@@ -104,5 +104,5 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     public Shape getSelectionShape() {
         return new Rectangle(panel.getSize());
     }
-    
+
 }

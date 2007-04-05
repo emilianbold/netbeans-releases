@@ -22,45 +22,68 @@ package org.netbeans.modules.vmd.midp.screen.display.property;
 
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.io.PopupUtil;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyListener;
+import java.awt.event.KeyEvent;
 
 /**
  * @author David Kaspar
  */
 public class ScreenStringPropertyEditor implements ScreenPropertyEditor {
 
-    private DesignComponent component;
     private String propertyName;
+    private int alignment;
 
-    public ScreenStringPropertyEditor (DesignComponent component, String propertyName) {
-        this.component = component;
+    public ScreenStringPropertyEditor (String propertyName, int alignment) {
+        this.alignment = alignment;
+        assert propertyName != null;
         this.propertyName = propertyName;
     }
 
-    public JComponent createEditorComponent (Controller controller, ScreenPropertyDescriptor descriptor) {
-        JTextField editor = new JTextField ();
+    public JComponent createEditorComponent (ScreenPropertyDescriptor property) {
+        StringTextField editor = new StringTextField (property);
         editor.setMinimumSize (new Dimension (128, 21));
+
+        PropertyValue value = property.getRelatedComponent ().readProperty (propertyName);
+        String string = MidpTypes.getString (value);
+        editor.setText (string != null ? string : ""); // NOI18N
+
         return editor;
     }
 
-    public void openNotify (Controller controller, ScreenPropertyDescriptor descriptor, JComponent editorComponent) {
-        JTextField editor = (JTextField) editorComponent;
-        PropertyValue value = component.readProperty (propertyName);
-        String string = MidpTypes.getString (value);
-        editor.setText (string != null ? string : ""); // NOI18N
+    public Insets getEditorComponentInsets (JComponent editorComponent) {
+        return editorComponent.getBorder ().getBorderInsets (editorComponent);
     }
 
-    public void closeNotify (Controller controller, ScreenPropertyDescriptor descriptor, JComponent editorComponent, boolean commit) {
-        if (! commit)
-            return;
-        JTextField editor = (JTextField) editorComponent;
-        PropertyValue value = MidpTypes.createStringValue (editor.getText ());
-        component.writeProperty (propertyName, value);
+    private class StringTextField extends JTextField implements KeyListener {
+
+        private ScreenPropertyDescriptor property;
+
+        public StringTextField (ScreenPropertyDescriptor property) {
+            this.property = property;
+            addKeyListener (this);
+            setHorizontalAlignment (alignment);
+        }
+
+        public void keyTyped (KeyEvent e) {
+            if (e.getKeyChar () != KeyEvent.VK_ENTER)
+                return;
+            PropertyValue value = MidpTypes.createStringValue (getText ());
+            property.getRelatedComponent ().writeProperty (propertyName, value);
+            PopupUtil.hidePopup ();
+        }
+
+        public void keyPressed (KeyEvent e) {
+        }
+
+        public void keyReleased (KeyEvent e) {
+        }
+
     }
 
 }

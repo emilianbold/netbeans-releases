@@ -83,7 +83,7 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
 
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
         if (titleEditor == null)
-            titleEditor = new ScreenStringPropertyEditor (getComponent (), DisplayableCD.PROP_TITLE);
+            titleEditor = new ScreenStringPropertyEditor (DisplayableCD.PROP_TITLE, JTextField.CENTER);
         return Collections.singletonList (new ScreenPropertyDescriptor (getComponent (), panel.getTitle (), new Rectangle (panel.getTitle ().getSize ()), titleEditor));
     }
 
