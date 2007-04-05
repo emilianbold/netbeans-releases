@@ -34,8 +34,9 @@ import javax.swing.JToolBar;
 import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
 
-import static org.netbeans.modules.print.api.PrintUI.*;
+import org.netbeans.modules.print.api.PrintManagerAccess;
 import org.netbeans.modules.bpel.search.impl.util.Util;
+import static org.netbeans.modules.print.api.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -67,7 +68,7 @@ public final class View extends TopComponent implements FocusListener {
 
   /**{@inheritDoc}*/
   public void focusLost(FocusEvent event) {
-    setActivatedNodes(null);
+    // setActivatedNodes(null);
   }
 
   private void setActivatedNode() {
@@ -146,6 +147,15 @@ public final class View extends TopComponent implements FocusListener {
         }
       }
     );
+    setSize(button);
+    toolBar.add(button);
+
+    // print preview
+    button = createButton(
+      i18n(View.class, "TLT_Print_Preview"), // NOI18N
+      PrintManagerAccess.getManager().getPreviewAction()
+    );
+    button.setText(null);
     setSize(button);
     toolBar.add(button);
 
