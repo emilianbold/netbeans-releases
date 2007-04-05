@@ -38,6 +38,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
     private String portComponentName;
     private String serviceDescriptionName;
     private List<String> serviceRefNames;
+    private List<ServiceRef> serviceRefs;
     
     /** Creates a new instance of J2ee15ProjectHelper */
     protected J2ee15ProjectHelper(Node node, JaxWsModel model) {
@@ -77,7 +78,8 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
     public List<String> getAllServiceRefNames() {
         if (serviceRefNames == null) {
             serviceRefNames = new ArrayList<String>();
-            List<ServiceRef> refs = getServiceRefs();
+            serviceRefs = new ArrayList<ServiceRef>();
+            List<ServiceRef> refs = getServiceRefsFromSources();
             String wsdlUri = getClient().getWsdlUrl();
             
             System.out.println("wsdlUri = " + wsdlUri);
@@ -86,6 +88,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
                 if (ref.getWsdlLocation().equals(wsdlUri)) {
                     System.out.println("adding serviceRefName = " + ref.getName());
                     serviceRefNames.add(ref.getName());
+                    serviceRefs.add(ref);
                 }
             }
         }
@@ -93,11 +96,22 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
         return serviceRefNames;
     }
     
+    public List<ServiceRef> getServiceRefs() {
+        if (serviceRefs == null) {
+            getAllServiceRefNames();
+        }
+        
+        return serviceRefs;
+    }
+    
+     public boolean providerExists() {
+        return false;
+    }
+    
+     
     public boolean isSecurityEnabled() {
         SunDDHelper helper = new SunDDHelper(getSunDDFO(), getProjectType());
-      
-        List<String> refNames = getAllServiceRefNames();
-        
+     
         if (isServer()) {
             return helper.isServiceSecurityEnabled(getServiceDescriptionName(), 
                     getPortComponentName());
@@ -106,9 +120,9 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
                 String namespace = wsdlData.getTargetNameSpace();
                 String localPart = wsdlData.getPort();
                 
-                for (String refName : getAllServiceRefNames()) {
-                    if (helper.isClientSecurityEnabled(refName,
-                            namespace, localPart)) {
+                for (ServiceRef ref : getServiceRefs()) {
+                    if (helper.isClientSecurityEnabled(ref.getName(),
+                            namespace, localPart, ref.getClassName())) {
                         return true;
                     }
                 }
@@ -120,8 +134,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
     
     protected void enableMessageLevelSecurity(String providerId) {
         SunDDHelper helper = new SunDDHelper(getSunDDFO(), getProjectType());
-        List<String> refNames = getAllServiceRefNames();
-        
+   
         if (isServer()) {
             helper.setServiceMessageSecurityBinding(getServiceDescriptionName(),
                     getPortComponentName(), providerId);
@@ -130,9 +143,9 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
                 String namespace = wsdlData.getTargetNameSpace();
                 String localPart = wsdlData.getPort();
                 
-                for (String refName : getAllServiceRefNames()) {
-                    helper.setServiceRefMessageSecurityBinding(refName,
-                            namespace, localPart);
+                for (ServiceRef ref : getServiceRefs()) {
+                    helper.setServiceRefMessageSecurityBinding(ref.getName(),
+                            namespace, localPart, ref.getClassName());
                 }
             }
         }
@@ -149,15 +162,15 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
                 String namespace = wsdlData.getTargetNameSpace();
                 String localPart = wsdlData.getPort();
                 
-                for (String refName : getAllServiceRefNames()) {
-                    helper.removeServiceRefMessageSecurityBinding(refName,
-                            namespace, localPart);
+                for (ServiceRef ref : getServiceRefs()) {
+                    helper.removeServiceRefMessageSecurityBinding(ref.getName(),
+                            namespace, localPart, ref.getClassName());
                 }
             }
         }
     }
     
-    private List<ServiceRef> getServiceRefs() {
+    private List<ServiceRef> getServiceRefsFromSources() {
         FileObject[] sourceRoots = getProvider().getSourceRoots();
         List<ServiceRef> refs = new ArrayList<ServiceRef>();
         
@@ -213,8 +226,8 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
                                         String wsdlLocation = values.get(key).toString().replace("\"", "");
                                         String refName = classElement.getQualifiedName().toString() + "/" +
                                                 field.getSimpleName().toString();
-                                        
-                                        refs.add(new ServiceRef(refName, wsdlLocation));
+                                        String className = classElement.getSimpleName().toString();
+                                        refs.add(new ServiceRef(refName, wsdlLocation, className));
                                     }
                                 }
                                 break;
@@ -234,10 +247,12 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
     private static class ServiceRef {
         private String name;
         private String wsdlLocation;
+        private String className;
         
-        public ServiceRef(String name, String wsdlLocation) {
+        public ServiceRef(String name, String wsdlLocation, String className) {
             this.name = name;
             this.wsdlLocation = wsdlLocation;
+            this.className = className;
         }
         
         public String getName() {
@@ -248,8 +263,13 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
             return wsdlLocation;
         }
         
+        public String getClassName() {
+            return className;
+        }
+        
         public String toString() {
-            return "name:" + name + " wsdlLocation: " + wsdlLocation;
+            return "name:" + name + " wsdlLocation: " + wsdlLocation +
+                    " className = " + className;
         }
     }
 }

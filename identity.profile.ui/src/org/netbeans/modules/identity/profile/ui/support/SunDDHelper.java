@@ -73,9 +73,13 @@ public class SunDDHelper {
     
     private static final String SERVLET_NAME_TAG = "servlet-name";  //NOI18N
     
+    private static final String ENTERPRISE_BEANS_TAG = "enterprise-beans";  //NOI18N
+    
     private static final String EJB_TAG = "ejb";            //NOI18N
     
     private static final String EJB_NAME_TAG = "ejb-name";  //NOI18N
+    
+    private static final String SUN_APPLICATION_CLIENT_TAG = "sun-application-client";  //NOI18N
     
     private static final String SERVICE_REF_TAG = "service-ref";    //NOI18N
     
@@ -129,9 +133,17 @@ public class SunDDHelper {
     
     private static final String SUN_WEB_SYSTEM_ID_2_5 = "http://www.sun.com/software/appserver/dtds/sun-web-app_2_5-0.dtd";   //NOI18N
     
+    private static final String SUN_EJB_SYSTEM_ID_3_0 = "http://www.sun.com/software/appserver/dtds/sun-ejb-jar_3_0-0.dtd";   //NOI18N
+    
+    private static final String SUN_APPCLIENT_SYSTEM_ID_5_0 = "http://www.sun.com/software/appserver/dtds/sun-application-client_5_0-0.dtd";       //NOI18N
+    
     private static final String SUN_WEB_DTD_2_4 = "resources/sun-web-app_2_4-1.dtd";    //NOI18N
     
     private static final String SUN_WEB_DTD_2_5 = "resources/sun-web-app_2_5-0.dtd";    //NOI18N
+    
+    private static final String SUN_EJB_DTD_3_0 = "resources/sun-ejb-jar_3_0-0.dtd";    //NOI18N
+    
+    private static final String SUN_APPCLIENT_DTD_5_0 = "resources/sun-application-client_5_0-0.dtd";  //NOI18N
     
     private static int TIME_TO_WAIT = 300;
     
@@ -150,7 +162,7 @@ public class SunDDHelper {
         //final FileChangeListener fcl = new FileChangeAdapter() {
         //    public void fileChanged(FileEvent event) {
         boolean isModified = false;
-        Element sunWebApp = getSunWebAppElement();
+        Element sunWebApp = getRootElement();
         String value = sunWebApp.getAttribute(HTTPSERVLET_SECURITY_PROVIDER);
         
         if (value == null || !value.equals(AM_HTTP_PROVIDER)) {
@@ -186,7 +198,7 @@ public class SunDDHelper {
         //final FileChangeListener fcl = new FileChangeAdapter() {
         //    public void fileChanged(FileEvent event) {
         boolean isModified = false;
-        Element sunWebApp = getSunWebAppElement();
+        Element sunWebApp = getRootElement();
         
         String value = sunWebApp.getAttribute(HTTPSERVLET_SECURITY_PROVIDER);
         
@@ -222,17 +234,17 @@ public class SunDDHelper {
     
     public void setServiceMessageSecurityBinding(String svcDescName,
             String pcName, String providerId) {
-        Element root = null;
+        Element root = getRootElement();
         Element component = null;
         String componentTag = null;
         String componentNameTag = null;
         
         if (type == ProjectType.WEB) {
-            root = getSunWebAppElement();
             componentTag = SERVLET_TAG;
             componentNameTag = SERVLET_NAME_TAG;
         } else if (type == ProjectType.EJB) {
-            
+            componentTag = EJB_TAG;
+            componentNameTag = EJB_NAME_TAG;
         }
         
         component = getComponentElement(root, componentTag, componentNameTag,
@@ -270,13 +282,17 @@ public class SunDDHelper {
     }
     
     public void setServiceRefMessageSecurityBinding(String serviceRefName,
-            String namespaceURI, String localPart) {
-        Element root = null;
+            String namespaceURI, String localPart, String className) {
+        Element root = getRootElement();
         
-        if (type == ProjectType.WEB) {
-            root = getSunWebAppElement();
-        } else if (type == ProjectType.EJB) {
+        if (type == ProjectType.EJB) {
+            Element component = getComponentElement(root, EJB_TAG, EJB_NAME_TAG, className);
+            if (component == null) {
+                component = createEjbElement(className);
+                root.appendChild(component);
+            }
             
+            root = component;
         }
         
         Element serviceRef = getServiceRefElement(root, serviceRefName,
@@ -309,17 +325,17 @@ public class SunDDHelper {
     
     public void removeServiceMessageSecurityBinding(String svcDescName,
             String pcName) {
-        Element root = null;
+        Element root = getRootElement();
         Element component = null;
         String componentTag = null;
         String componentNameTag = null;
         
         if (type == ProjectType.WEB) {
-            root = getSunWebAppElement();
             componentTag = SERVLET_TAG;
             componentNameTag = SERVLET_NAME_TAG;
         } else if (type == ProjectType.EJB) {
-            
+            componentTag = EJB_TAG;
+            componentNameTag = EJB_NAME_TAG;
         }
         
         component = getComponentElement(root, componentTag, componentNameTag,
@@ -337,13 +353,13 @@ public class SunDDHelper {
     }
     
     public void removeServiceRefMessageSecurityBinding(String serviceRefName,
-            String namespaceURI, String localPart) {
-        Element root = null;
+            String namespaceURI, String localPart, String className) {
+        Element root = getRootElement();
         
-        if (type == ProjectType.WEB) {
-            root = getSunWebAppElement();
-        } else if (type == ProjectType.EJB) {
+        if (type == ProjectType.EJB) {
+            root = getComponentElement(root, EJB_TAG, EJB_NAME_TAG, className);
             
+            if (root == null) return;
         }
         
         Element serviceRef = getServiceRefElement(root, serviceRefName,
@@ -357,17 +373,17 @@ public class SunDDHelper {
     }
     
     public boolean isServiceSecurityEnabled(String svcDescName, String pcName) {
-        Element root = null;
+        Element root = getRootElement();
         Element component = null;
         String componentTag = null;
         String componentNameTag = null;
         
         if (type == ProjectType.WEB) {
-            root = getSunWebAppElement();
             componentTag = SERVLET_TAG;
             componentNameTag = SERVLET_NAME_TAG;
         } else if (type == ProjectType.EJB) {
-            
+            componentTag = EJB_TAG;
+            componentNameTag = EJB_NAME_TAG;
         } else {
             return false;
         }
@@ -393,15 +409,13 @@ public class SunDDHelper {
     }
     
     public boolean isClientSecurityEnabled(String serviceRefName,
-            String namespaceURI, String localPart) {
-        Element root = null;
+            String namespaceURI, String localPart, String className) {
+        Element root = getRootElement();
         
-        if (type == ProjectType.WEB) {
-            root = getSunWebAppElement();
-        } else if (type == ProjectType.EJB) {
+        if (type == ProjectType.EJB) {
+            root = getComponentElement(root, EJB_TAG, EJB_NAME_TAG, className);
             
-        } else {
-            return false;
+            if (root == null) return false;      
         }
   
         Element serviceRef = getServiceRefElement(root, serviceRefName, 
@@ -421,11 +435,18 @@ public class SunDDHelper {
         return false;
     }
     
-    private Element getSunWebAppElement() {
-        Document document = getDocument();
-        NodeList nodes = document.getElementsByTagName(SUN_WEB_APP_TAG);
+    private Element getRootElement() {
+        String tagName = null;
         
-        return (Element) nodes.item(0);
+        if (type == ProjectType.WEB) {
+            tagName = SUN_WEB_APP_TAG;
+        } else if (type == ProjectType.EJB) {
+            tagName = ENTERPRISE_BEANS_TAG;
+        } else if (type == ProjectType.CLIENT) {
+            tagName = SUN_APPLICATION_CLIENT_TAG;
+        }
+        
+        return getElement(tagName);
     }
     
     private Element getComponentElement(Element root, String componentTag,
@@ -515,6 +536,18 @@ public class SunDDHelper {
         return serviceRef;
     }
     
+    private Element getElement(String tagName) {
+        Document document = getDocument();
+        
+        NodeList elements = document.getElementsByTagName(tagName);
+        
+        if (elements.getLength() > 0) {
+            return (Element) elements.item(0);
+        }
+        
+        return null;
+    }
+    
     private Element getElement(Element component, String tagName) {
         NodeList elements = component.getElementsByTagName(tagName);
         
@@ -523,6 +556,14 @@ public class SunDDHelper {
         }
         
         return null;
+    }
+    
+    private Element createEjbElement(String className) {
+        Document document = getDocument();
+        Element ejb = document.createElement(EJB_TAG);
+        ejb.appendChild(createElement(EJB_NAME_TAG, className));
+        
+        return ejb;
     }
     
     private Element createWebServiceEndpointElement(String endpointName) {
@@ -712,7 +753,7 @@ public class SunDDHelper {
         
         try {
             builder = factory.newDocumentBuilder();
-            builder.setEntityResolver(new SunWebDTDResolver());
+            builder.setEntityResolver(new SunDTDResolver());
         } catch (ParserConfigurationException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
@@ -724,14 +765,18 @@ public class SunDDHelper {
      *
      *
      */
-    private static class SunWebDTDResolver implements EntityResolver {
+    private static class SunDTDResolver implements EntityResolver {
         public InputSource resolveEntity(String publicId, String systemId) {
             String dtd = null;
             
-            if (systemId.equals(SUN_WEB_SYSTEM_ID_2_4)) {
+            if (SUN_WEB_SYSTEM_ID_2_4.equals(systemId)) {
                 dtd = SUN_WEB_DTD_2_4;
-            } else if (systemId.equals(SUN_WEB_SYSTEM_ID_2_5)) {
+            } else if (SUN_WEB_SYSTEM_ID_2_5.equals(systemId)) {
                 dtd = SUN_WEB_DTD_2_5;
+            } else if (SUN_EJB_SYSTEM_ID_3_0.equals(systemId)) {
+                dtd = SUN_EJB_DTD_3_0;
+            } else if (SUN_APPCLIENT_SYSTEM_ID_5_0.equals(systemId)) {
+                dtd = SUN_APPCLIENT_DTD_5_0;
             }
             
             if (dtd != null) {

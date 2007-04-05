@@ -678,15 +678,16 @@ public class J2eeProjectHelper {
     
     public boolean providerExists() {
         File sunDD = getSunDD();
-        String pcName = getPortComponentName();
-        String descName = getServiceDescriptionName();
-        List<String> refNames = getAllServiceRefNames();
-        
+   
         if (isServer()) {
+            String pcName = getPortComponentName();
+            String descName = getServiceDescriptionName();
+            
             if (SunDDBridge.doesEndPointMSBExist(sunDD, descName, pcName) &&
                     !(SunDDBridge.isEndPointMSBAMProvider(sunDD, descName, pcName)))
                 return true;
-        } else {
+        } else {                 
+            List<String> refNames = getAllServiceRefNames();     
             String s = refNames.get(0);
             List<WsdlData> wsdlInfo = getWsdlData();
             if (!wsdlInfo.isEmpty()) {
