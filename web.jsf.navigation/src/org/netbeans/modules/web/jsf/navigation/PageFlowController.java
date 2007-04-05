@@ -531,21 +531,16 @@ public class PageFlowController {
             webFiles.remove(fileObj);
             
             PageFlowNode oldNode = pageName2Node.get(pageDisplayName);
-            if( oldNode != null ) {
-                //                view.removeNodeWithEdges(oldNode);
-                
-                
-                Node tmpNode = new AbstractNode(Children.LEAF);
-                tmpNode.setName(pageDisplayName);
-                oldNode.replaceWrappedNode(tmpNode);
-                view.resetNodeWidget(oldNode);  /* If I add a listener to PageFlowNode, then I won't have to do this*/
-                //                PageFlowNode newNode = createPageFlowNode(tmpNode);
-                //                view.replaceWidgetNode(oldNode, newNode);
-                view.validateGraph();
-                
-                //                view.createNode(node, null, null);
-                //                setupGraph();
-                //                view.layoutSceneImmediately();
+            if( oldNode != null ) {                
+                if( oldNode.isDataNode() ) {
+                    Node tmpNode = new AbstractNode(Children.LEAF);
+                    tmpNode.setName(pageDisplayName);
+                    oldNode.replaceWrappedNode(tmpNode);
+                    view.resetNodeWidget(oldNode);  /* If I add a listener to PageFlowNode, then I won't have to do this*/
+                } else {
+                    view.removeNodeWithEdges(oldNode);
+                }
+                view.validateGraph();   //Either action validate graph
             }
             
             //            PageFlowNode node = pageName2Node.get(pageDisplayName);
