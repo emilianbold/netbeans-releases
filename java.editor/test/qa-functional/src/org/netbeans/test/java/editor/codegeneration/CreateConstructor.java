@@ -92,7 +92,7 @@ public class CreateConstructor extends EditorTestCase {
                     "    public testSimpleCase(ThreadGroup group, Runnable target) {\n"+
                     "        super(group, target);\n"+
                     "    }\n";
-            waitMaxMilisForValue(500,new EditorValueResolver(expected), Boolean.TRUE);
+            waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
         } finally {
             editor.close(false);
@@ -115,7 +115,7 @@ public class CreateConstructor extends EditorTestCase {
                     "    public testSimpleCase(int b) {\n"+
                     "        this.b = b;\n"+
                     "    }\n";
-            waitMaxMilisForValue(500,new EditorValueResolver(expected), Boolean.TRUE);
+            waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
         } finally {
             editor.close(false);
@@ -142,7 +142,7 @@ public class CreateConstructor extends EditorTestCase {
                     "        super(group, target, name, stackSize);\n"+
                     "        this.c = c;\n"+
                     "    }\n";
-            waitMaxMilisForValue(500,new EditorValueResolver(expected), Boolean.TRUE);
+            waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
         } finally {
             editor.close(false);
@@ -169,10 +169,7 @@ public class CreateConstructor extends EditorTestCase {
                     "                          long stackSize) {\n"+
                     "        super(group, target, name, stackSize);\n"+
                     "    }\n";
-            waitMaxMilisForValue(500,new EditorValueResolver(expected), Boolean.TRUE);
-            System.out.println(expected);
-            System.out.println("--------------------------------");
-            System.out.println(editor.getText());
+            waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);            
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
         } finally {
             editor.close(false);
@@ -199,7 +196,7 @@ public class CreateConstructor extends EditorTestCase {
                     "        this.b = b;\n"+
                     "        this.c = c;\n"+
                     "    }";
-            waitMaxMilisForValue(500,new EditorValueResolver(expected), Boolean.TRUE);
+            waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
         } finally {
             editor.close(false);
@@ -222,7 +219,7 @@ public class CreateConstructor extends EditorTestCase {
                     "    public testSimpleCase(String a) {\n"+
                     "        this.a = a;\n"+
                     "    }";
-            waitMaxMilisForValue(500,new EditorValueResolver(expected), Boolean.TRUE);
+            waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertFalse("Constuctor inserted",contains(editor.getText(),expected));
         } finally {
             editor.close(false);
@@ -245,9 +242,9 @@ public class CreateConstructor extends EditorTestCase {
                     "    public testSimpleCase(String a) {\n"+
                     "        this.a = a;\n"+
                     "    }";
-            waitMaxMilisForValue(500,new EditorValueResolver(expected), Boolean.TRUE);
+            waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
-            new UndoAction().performAction();
+            MainWindowOperator.getDefault().menuBar().pushMenu(new String[] {"Edit","Undo"});
             assertFalse("Constuctor not removed",contains(editor.getText(),expected));
             MainWindowOperator.getDefault().menuBar().pushMenu(new String[] {"Edit","Redo"});
             assertTrue("Constuctor not re-inserted",contains(editor.getText(),expected));
@@ -272,7 +269,7 @@ public class CreateConstructor extends EditorTestCase {
                     "        public Inner(String afield) {\n"+
                     "            this.afield = afield;\n"+
                     "        }\n";
-            waitMaxMilisForValue(500,new EditorValueResolver(expected), Boolean.TRUE);
+            waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));            
         } finally {
             editor.close(false);
