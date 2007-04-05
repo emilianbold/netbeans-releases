@@ -7,8 +7,8 @@ pack_component()
     component=$3
     filter=$4
     zip -r $dist/zip/$base_name-$component.zip $filter
-    tar cvzf $dist/targz/$base_name-$component.tar.gz $filter
-    tar cvjf $dist/targz/$base_name-$component.tar.bz2 $filter
+    gtar cvzf $dist/targz/$base_name-$component.tar.gz $filter
+    gtar cvjf $dist/targz/$base_name-$component.tar.bz2 $filter
 }
 
 if [ -z $NB_ALL ]; then
