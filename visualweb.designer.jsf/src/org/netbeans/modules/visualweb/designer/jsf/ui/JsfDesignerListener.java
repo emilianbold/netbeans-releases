@@ -25,7 +25,6 @@ import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerListener;
 import org.netbeans.modules.visualweb.api.designer.Designer.ExternalBox;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.openide.cookies.OpenCookie;
@@ -82,7 +81,7 @@ class JsfDesignerListener implements DesignerListener {
 //                DesignBean bean = (DesignBean)it.next();
 //            for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
             for (Element componentRootElement : jsfTopComponent.getDesigner().getSelectedComponents()) {
-//                DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                DesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //                if (bean != null) {
                 if (componentRootElement != null) {
 //                    box = webform.getMapper().findBox(bean);
@@ -188,7 +187,7 @@ class JsfDesignerListener implements DesignerListener {
         } else {
 //            component = getDefaultSelectionBean();
 //            Element componentRootElement = getDefaultSelectionComponentRootElement();
-//            component = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//            component = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
             componentRootElement = getDefaultSelectionComponentRootElement();
         }
 
@@ -207,7 +206,7 @@ class JsfDesignerListener implements DesignerListener {
 ////        if ((bean == null) && !sm.isSelectionEmpty()) {
 //        Element primaryComponentRootElement = sm.getPrimary();
         Element primaryComponentRootElement = jsfTopComponent.getDesigner().getPrimarySelection();
-//        DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(primaryComponentRootElement);
+//        DesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(primaryComponentRootElement);
 //        if (primaryComponentRootElement == null && !sm.isSelectionEmpty()) {
         if (primaryComponentRootElement == null && jsfTopComponent.getDesigner().getSelectedCount() > 0) {
             // TODO - get the component under the mouse, not the
@@ -218,7 +217,7 @@ class JsfDesignerListener implements DesignerListener {
 //                bean = (DesignBean)it.next();
 //            for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
             for (Element componentRootElement : jsfTopComponent.getDesigner().getSelectedComponents()) {
-//                bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
                 primaryComponentRootElement = componentRootElement;
 //                if (bean != null) {
                 if (primaryComponentRootElement != null) {

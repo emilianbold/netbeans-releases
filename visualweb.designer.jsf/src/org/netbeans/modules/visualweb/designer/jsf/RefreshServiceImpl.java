@@ -83,7 +83,7 @@ public class RefreshServiceImpl extends RefreshService {
     /** Refresh the given DataObject, if it's a webform */
     private static void refreshDataObject(DataObject dobj, boolean deep) {
 //        if (hasWebFormForDataObject(dobj)) {
-////            WebForm webform = WebForm.getWebFormForDataObject(WebForm.findHtmlDomProvider(dobj), dobj);
+////            WebForm webform = WebForm.getWebFormForDataObject(WebForm.findDomProvider(dobj), dobj);
 ////            webform.getActions().refresh(deep);
 ////            WebForm webform = WebForm.findWebForm(dobj);
 //            // XXX Really get, not find only? Revise.

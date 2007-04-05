@@ -33,9 +33,9 @@ public final class DesignerFactory {
     }
 
 
-    /** Creates <code>Designer</code> instance for specified <code>HtmlDomProvider</code>. */
-    public static Designer createDesigner(HtmlDomProvider htmlDomProvider) {
-        return WebForm.createWebForm(htmlDomProvider);
+    /** Creates <code>Designer</code> instance for specified <code>DomProvider</code>. */
+    public static Designer createDesigner(DomProvider domProvider) {
+        return WebForm.createWebForm(domProvider);
     }
 
 }

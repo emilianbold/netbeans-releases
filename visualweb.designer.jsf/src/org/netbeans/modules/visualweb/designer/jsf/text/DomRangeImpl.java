@@ -20,9 +20,9 @@
 package org.netbeans.modules.visualweb.designer.jsf.text;
 
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 
 import org.openide.ErrorManager;
@@ -55,7 +55,7 @@ import org.w3c.dom.ranges.DocumentRange;
  *
  * @author  Tor Norbye
  */
-/*public*/ class DomRangeImpl implements HtmlDomProvider.DomRange {
+/*public*/ class DomRangeImpl implements DomProvider.DomRange {
 //    private WebForm webform;
     private final JsfForm jsfForm;
 
@@ -495,7 +495,7 @@ import org.w3c.dom.ranges.DocumentRange;
 //                Element element = (Element)curr;
 ////                DesignBean bean = element.getDesignBean();
 ////                DesignBean bean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-////                DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+////                DesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(element);
 //                Element componentRootElement = MarkupService.getRenderedElementForElement(element);
 //                
 ////                if ((bean != null) &&
@@ -505,7 +505,7 @@ import org.w3c.dom.ranges.DocumentRange;
 ////                        (((RaveElement)element.getParentNode()).getDesignBean() != bean)))) {
 //                        (element.getParentNode() instanceof Element
 ////                        && InSyncService.getProvider().getMarkupDesignBeanForElement((Element)element.getParentNode()) != bean))) {
-////                        && WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)element.getParentNode()) != bean))) {
+////                        && WebForm.getDomProviderService().getMarkupDesignBeanForElement((Element)element.getParentNode()) != bean))) {
 //                        && MarkupService.getRenderedElementForElement((Element)element.getParentNode()) != componentRootElement))) {
 ////                    if (!beans.contains(bean)) {
 ////                        beans.add(bean);
@@ -535,8 +535,8 @@ import org.w3c.dom.ranges.DocumentRange;
 ////        Document doc = webform.getDocument();
 //
 ////        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-////        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomRangeImpl.class, "LBL_DeleteText")); // NOI18N
+////        DomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+//        DomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomRangeImpl.class, "LBL_DeleteText")); // NOI18N
 //        try {
 ////            doc.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
 //
@@ -546,9 +546,9 @@ import org.w3c.dom.ranges.DocumentRange;
 //
 ////                if (!FacesSupport.isSpecialBean(/*webform, */bean)) {
 ////                if (!Util.isSpecialBean(bean)) {
-////                if (bean instanceof MarkupDesignBean && !WebForm.getHtmlDomProviderService().isSpecialComponent(
-////                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean))) {
-////                if (!WebForm.getHtmlDomProviderService().isSpecialComponent(componentRootElement)) {
+////                if (bean instanceof MarkupDesignBean && !WebForm.getDomProviderService().isSpecialComponent(
+////                        WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean))) {
+////                if (!WebForm.getDomProviderService().isSpecialComponent(componentRootElement)) {
 //                if (!JsfSupportUtilities.isSpecialComponent(componentRootElement)) {
 ////                    model.getLiveUnit().deleteBean(bean);
 ////                    webform.deleteBean(bean);

@@ -686,7 +686,7 @@ public class FormComponentBox extends ContainerBox {
 //                        nodeVal = markupService.expandHtmlEntities(nodeVal, true, element);
                         // ====
 //                        nodeVal = InSyncService.getProvider().expandHtmlEntities(nodeVal, true, element);
-                        nodeVal = WebForm.getHtmlDomProviderService().expandHtmlEntities(nodeVal, true, element);
+                        nodeVal = WebForm.getDomProviderService().expandHtmlEntities(nodeVal, true, element);
                         // </markup_separation>
                     } // ELSE: regular entity fixing?
 

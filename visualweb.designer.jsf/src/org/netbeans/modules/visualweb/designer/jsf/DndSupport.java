@@ -23,7 +23,6 @@ import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DisplayItem;
 import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
-import com.sun.rave.designtime.markup.MarkupMouseRegion;
 import com.sun.rave.designtime.markup.MarkupPosition;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -36,7 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designerapi.DesignTimeTransferDataCreator;
 import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
@@ -47,7 +46,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
-import static org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.*;
+import static org.netbeans.modules.visualweb.api.designer.DomProvider.*;
 import org.w3c.dom.Node;
 
 /**
@@ -97,19 +96,19 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
     }
     
 //    boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos,
-//            String facet, List createdBeans, HtmlDomProvider.Location location,
-//            HtmlDomProvider.CoordinateTranslator coordinateTranslator) throws IOException {
+//            String facet, List createdBeans, DomProvider.Location location,
+//            DomProvider.CoordinateTranslator coordinateTranslator) throws IOException {
 //        return getFacesModel().getDnDSupport().importBean(items, origParent, nodePos, facet, createdBeans,
 //                new LocationImpl(location), new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
 //    }
 
 //    void importData(JComponent comp, Transferable t, Object transferData, Dimension dimension,
-//            HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
+//            DomProvider.Location location, DomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
 //        getFacesModel().getDnDSupport().importData(comp, t, transferData, dimension, new LocationImpl(location),
 //                new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender(), dropAction);
 //    }
     
-//    void importString(String string, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+//    void importString(String string, DomProvider.Location location, DomProvider.CoordinateTranslator coordinateTranslator) {
 //        getFacesModel().getDnDSupport().importString(string, new LocationImpl(location), new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
 //    }
     
@@ -275,10 +274,10 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
         // XXX This should be decided by the parent bean.
         // I.e. appropriate api is missing.
         // XXX This shouldn't be here resolved, but in the parent bean.
-//        if (jsfForm.getHtmlDomProvider().isBraveheartPage()) {
+//        if (jsfForm.getDomProvider().isBraveheartPage()) {
         if (jsfForm.isBraveheartPage()) {
             return com.sun.rave.web.ui.component.ImageComponent.class.getName(); // NOI18N
-//        } else if (jsfForm.getHtmlDomProvider().isWoodstockPage()) {
+//        } else if (jsfForm.getDomProvider().isWoodstockPage()) {
         } else if (jsfForm.isWoodstockPage()) {
             // Use woodstock ImageComponent component
             return com.sun.webui.jsf.component.ImageComponent.class.getName(); // NOI18N
@@ -452,7 +451,7 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
                 if (parent instanceof MarkupDesignBean) {
 //                    recentDropTarget = (MarkupDesignBean)parent;
 //                    showDropMatch(recentDropTarget, null, DROP_PARENTED);
-                    showDropMatch(HtmlDomProviderImpl.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent), DROP_PARENTED);
+                    showDropMatch(DomProviderImpl.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent), DROP_PARENTED);
                 } else {
                     clearDropMatch();
                 }
@@ -493,7 +492,7 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
     }
 
     void importString(String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-            Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+            Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent,DomProvider.CoordinateTranslator coordinateTranslator) {
 //        getFacesModel().getDnDSupport().importString(string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
 //                droppeeElement, droppeeBean, defaultParent, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
         facesDndSupport.importString(string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
@@ -501,7 +500,7 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
     }
 
     void importData(JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-            Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent, HtmlDomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
+            Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent,DomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
 //        getFacesModel().getDnDSupport().importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
 //                droppeeElement, droppeeBean, defaultParent, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender(), dropAction);
         facesDndSupport.importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
@@ -530,9 +529,9 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
     
     // XXX
     private static class CoordinateTranslatorImpl implements FacesDndSupport.CoordinateTranslator {
-        private final HtmlDomProvider.CoordinateTranslator coordinateTranslator;
+        private final DomProvider.CoordinateTranslator coordinateTranslator;
         
-        public CoordinateTranslatorImpl(HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+        public CoordinateTranslatorImpl(DomProvider.CoordinateTranslator coordinateTranslator) {
             this.coordinateTranslator = coordinateTranslator;
         }
         
@@ -551,10 +550,10 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
 
 //    // XXX
 //    private static class LocationImpl implements FacesDndSupport.Location {
-//        private final HtmlDomProvider.Location location;
+//        private final DomProvider.Location location;
 //        
 //        
-//        public LocationImpl(HtmlDomProvider.Location location) {
+//        public LocationImpl(DomProvider.Location location) {
 //            this.location = location;
 //        }
 //        
@@ -598,7 +597,7 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
                 FacesDndSupport.DropInfo dropInfo = (FacesDndSupport.DropInfo)evt.getNewValue();
 //                jsfForm.designer.showDropMatch(dropInfo.getMarkupDesignBean(), dropInfo.getMarkupMouseRegion(), dropInfo.getDropType());
 //                jsfForm.fireShowDropMatch(dropInfo.getMarkupDesignBean(), dropInfo.getMarkupMouseRegion(), dropInfo.getDropType());
-                Element componentRootElement = HtmlDomProviderImpl.getComponentRootElementForMarkupDesignBean(dropInfo.getMarkupDesignBean());
+                Element componentRootElement = DomProviderImpl.getComponentRootElementForMarkupDesignBean(dropInfo.getMarkupDesignBean());
 //                jsfForm.fireShowDropMatch(componentRootElement, dropInfo.getRegionElement(), dropInfo.getDropType());
                 jsfForm.showDropMatch(componentRootElement, dropInfo.getRegionElement(), dropInfo.getDropType());
             } else if (FacesDndSupport.PROPERTY_SELECTED_DESIGN_BEAN.equals(evt.getPropertyName())) {

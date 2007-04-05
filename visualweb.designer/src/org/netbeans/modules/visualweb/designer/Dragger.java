@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
@@ -746,7 +746,7 @@ public class Dragger extends Interaction implements KeyListener {
 ////                parent = ((RaveElement)curr).getDesignBean();
 //            if (curr instanceof Element) {
 ////                parent = InSyncService.getProvider().getMarkupDesignBeanForElement((Element)curr);
-//                parent = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)curr);
+//                parent = WebForm.getDomProviderService().getMarkupDesignBeanForElement((Element)curr);
 //
 //                if (parent != null) {
 //                    break;
@@ -850,7 +850,7 @@ public class Dragger extends Interaction implements KeyListener {
 //                            box = curr.getParent();
 //                        }
 //                    }
-                    if (!WebForm.getHtmlDomProviderService().isContainerComponent(currComponentRootElement)) {
+                    if (!WebForm.getDomProviderService().isContainerComponent(currComponentRootElement)) {
                         box = curr.getParent();
                     }
                 }
@@ -885,7 +885,7 @@ public class Dragger extends Interaction implements KeyListener {
 //        } else {
 //            return isDragged(bean.getBeanParent());
 //        }
-        Element parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(componentRootElement);
+        Element parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(componentRootElement);
         return parentComponentRootElement == null ? false : isDraggedComponent(parentComponentRootElement);
     }
 

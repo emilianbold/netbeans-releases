@@ -79,8 +79,8 @@ public class AlignAction extends AbstractDesignBeanAction {
 
         // XXX FIXME Cannot be an insync dependency.
         if (!LiveUnit.isTrayBean(designBeans[0])) {
-//        if (designBeans[0] instanceof MarkupDesignBean && !WebForm.getHtmlDomProviderService().isTrayComponent(
-//                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBeans[0]))) {
+//        if (designBeans[0] instanceof MarkupDesignBean && !WebForm.getDomProviderService().isTrayComponent(
+//                WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBeans[0]))) {
 //            WebForm webform = WebForm.findWebFormForDesignContext(designBeans[0].getDesignContext());
 //            if (webform != null && webform.getSelection().getNumSelected() > 0) {
             Designer designer = JsfSupportUtilities.findDesignerForDesignContext(designBeans[0].getDesignContext());
@@ -271,14 +271,14 @@ public class AlignAction extends AbstractDesignBeanAction {
 ////        Document doc = webform.getDocument();
 //
 ////        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(AlignAction.class, "LBL_SnapToGrid")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(AlignAction.class, "LBL_SnapToGrid")); // NOI18N
+//        DomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(AlignAction.class, "LBL_SnapToGrid")); // NOI18N
 //        try {
 ////            doc.writeLock(NbBundle.getMessage(AlignAction.class, "LBL_SnapToGrid")); // NOI18N
 //
 ////            while (it.hasNext()) {
 ////                MarkupDesignBean bean = (MarkupDesignBean)it.next();
 //            for (Element componentRootElement : componentRootElements) {
-////                MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+////                MarkupDesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 ////                CssBox box = mapper.findBox(bean);
 //                CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 //
@@ -341,7 +341,7 @@ public class AlignAction extends AbstractDesignBeanAction {
 ////        Document doc = webform.getDocument();
 //
 ////        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
+//        DomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
 //        try {
 ////            doc.writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
 //
@@ -358,7 +358,7 @@ public class AlignAction extends AbstractDesignBeanAction {
 ////            while (canAlign && it.hasNext()) {
 ////                MarkupDesignBean bean = (MarkupDesignBean)it.next();
 //            for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
-////                MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+////                MarkupDesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 ////                CssBox box = mapper.findBox(bean);
 //                CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 //

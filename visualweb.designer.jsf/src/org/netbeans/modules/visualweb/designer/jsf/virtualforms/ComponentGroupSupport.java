@@ -22,7 +22,7 @@ package org.netbeans.modules.visualweb.designer.jsf.virtualforms;
 
 
 import com.sun.rave.designtime.markup.MarkupDesignBean;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -129,7 +129,7 @@ public class ComponentGroupSupport {
      *   When set -
      *      extra painting? or done as the same border?  aeh for now just do as the same
      */
-    public static void paint(LiveUnit liveUnit, HtmlDomProvider.RenderContext renderContext, Graphics2D g2d) {
+    public static void paint(LiveUnit liveUnit,DomProvider.RenderContext renderContext, Graphics2D g2d) {
         ComponentGroupHolder[] holders = null;
         Object dcontextData = liveUnit.getContextData(ComponentGroupHolder.CONTEXT_DATA_KEY);
         //System.err.println("dcontextData.getClass().getClassLoader(): " + dcontextData.getClass().getClassLoader());
@@ -295,7 +295,7 @@ public class ComponentGroupSupport {
         }
     }
 
-    private static void paintChildren(HtmlDomProvider.RenderContext renderContext,
+    private static void paintChildren(DomProvider.RenderContext renderContext,
     DesignBean parent, ComponentGroupHolder[] holders, ComponentGroup[][] groupArr, Graphics2D g2d, String precedingIds) {
         DesignBean[] childBeans = parent.getChildBeans();
         if (childBeans == null || childBeans.length == 0) {
@@ -391,7 +391,7 @@ public class ComponentGroupSupport {
         }
     }
 
-    private static void paintHighlight(HtmlDomProvider.RenderContext renderContext,
+    private static void paintHighlight(DomProvider.RenderContext renderContext,
     Graphics2D g2d, DesignBean bean, Color color, boolean paintSolid, boolean paintDashed, int nestingLevel) {
         if (bean != null) {
 //            ModelViewMapper mapper = webform.getMapper();

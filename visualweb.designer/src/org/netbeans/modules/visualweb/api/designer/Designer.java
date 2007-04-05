@@ -27,7 +27,7 @@ import java.util.EventListener;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -154,7 +154,7 @@ public interface Designer {
     
     /** Box representing external page (e.g. fragment). */
     public interface ExternalBox extends Box {
-        public HtmlDomProvider getExternalDomProvider();
+        public DomProvider getExternalDomProvider();
     } // End od ExternalBox.
 
     

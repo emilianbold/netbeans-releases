@@ -498,7 +498,7 @@ implements JsfForm.ErrorPanel {
 
         Tidy tidy = getTidy();
 //        diff(tidy, doc, webform.getDataObject());
-        // See HtmlDomProviderImpl.getJspDataObject();
+        // See DomProviderImpl.getJspDataObject();
         FileObject file = model.getMarkupFile();
         DataObject dobj;
         try {

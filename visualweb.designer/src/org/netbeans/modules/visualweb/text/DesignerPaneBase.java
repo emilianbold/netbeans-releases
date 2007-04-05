@@ -19,7 +19,7 @@
 package org.netbeans.modules.visualweb.text;
 
 import java.util.HashMap;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.actions.SelectLineAction;
 import java.awt.AWTEvent;

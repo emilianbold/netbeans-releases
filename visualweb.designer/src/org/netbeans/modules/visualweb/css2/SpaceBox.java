@@ -25,8 +25,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.designer.WebForm;
 
 import org.w3c.dom.Element;
@@ -291,7 +291,7 @@ public class SpaceBox extends CssBox {
 //                        getUnexpandedOffset(jspx, beginOffset);
                 // ====
 //                beginDomOffset = InSyncService.getProvider().getUnexpandedOffset(jspx, beginOffset);
-                beginDomOffset = WebForm.getHtmlDomProviderService().getUnexpandedOffset(jspx, beginOffset);
+                beginDomOffset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, beginOffset);
                 // </markup_separation>
             }
         }
@@ -311,7 +311,7 @@ public class SpaceBox extends CssBox {
 //                        getUnexpandedOffset(jspx, endOffset);
                 // ====
 //                endDomOffset = InSyncService.getProvider().getUnexpandedOffset(jspx, endOffset);
-                endDomOffset = WebForm.getHtmlDomProviderService().getUnexpandedOffset(jspx, endOffset);
+                endDomOffset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, endOffset);
                 // </markup_separation>
             }
         }

@@ -23,8 +23,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
@@ -487,7 +487,7 @@ public final class TextBox extends CssBox {
 //            offset = MarkupServiceProvider.getDefault().getUnexpandedOffset(jspx, offset);
             // ====
 //            offset = InSyncService.getProvider().getUnexpandedOffset(jspx, offset);
-            offset = WebForm.getHtmlDomProviderService().getUnexpandedOffset(jspx, offset);
+            offset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, offset);
             // </markup_separation>
         }
 
@@ -560,7 +560,7 @@ public final class TextBox extends CssBox {
 //                    getExpandedOffset(jspx, pos.getOffset());
             // ====
 //            htmlpos = InSyncService.getProvider().getExpandedOffset(jspx, pos.getOffset());
-            htmlpos = WebForm.getHtmlDomProviderService().getExpandedOffset(jspx, pos.getOffset());
+            htmlpos = WebForm.getDomProviderService().getExpandedOffset(jspx, pos.getOffset());
             // </markup_separation>
         }
 
@@ -608,7 +608,7 @@ public final class TextBox extends CssBox {
 //                        getUnexpandedOffset(jspx, beginOffset);
                 // ====
 //                beginDomOffset = InSyncService.getProvider().getUnexpandedOffset(jspx, beginOffset);
-                beginDomOffset = WebForm.getHtmlDomProviderService().getUnexpandedOffset(jspx, beginOffset);
+                beginDomOffset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, beginOffset);
                 // </markup_separation>
             }
         }
@@ -627,7 +627,7 @@ public final class TextBox extends CssBox {
 //                        getUnexpandedOffset(jspx, endOffset);
                 // ====
 //                endDomOffset = InSyncService.getProvider().getUnexpandedOffset(jspx, endOffset);
-                endDomOffset = WebForm.getHtmlDomProviderService().getUnexpandedOffset(jspx, endOffset);
+                endDomOffset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, endOffset);
                 // </markup_separation>
             }
         }
@@ -656,7 +656,7 @@ public final class TextBox extends CssBox {
 //                        getExpandedOffset(jspx, pos.getOffset());
                 // ====
 //                offset = InSyncService.getProvider().getExpandedOffset(jspx, pos.getOffset());
-                offset = WebForm.getHtmlDomProviderService().getExpandedOffset(jspx, pos.getOffset());
+                offset = WebForm.getDomProviderService().getExpandedOffset(jspx, pos.getOffset());
                 // </markup_separation>
             }
 
@@ -672,7 +672,7 @@ public final class TextBox extends CssBox {
 //                        getUnexpandedOffset(jspx, offset);
                 // ====
 //                offset = InSyncService.getProvider().getUnexpandedOffset(jspx, offset);
-                offset = WebForm.getHtmlDomProviderService().getUnexpandedOffset(jspx, offset);
+                offset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, offset);
                 // </markup_separation>
             }
 
@@ -706,7 +706,7 @@ public final class TextBox extends CssBox {
 //                        getExpandedOffset(jspx, pos.getOffset());
                 // ====
 //                offset = InSyncService.getProvider().getExpandedOffset(jspx, pos.getOffset());
-                offset = WebForm.getHtmlDomProviderService().getExpandedOffset(jspx, pos.getOffset());
+                offset = WebForm.getDomProviderService().getExpandedOffset(jspx, pos.getOffset());
                 // </markup_separation>
             }
 
@@ -722,7 +722,7 @@ public final class TextBox extends CssBox {
 //                        getUnexpandedOffset(jspx, offset);
                 // ====
 //                offset = InSyncService.getProvider().getUnexpandedOffset(jspx, offset);
-                offset = WebForm.getHtmlDomProviderService().getUnexpandedOffset(jspx, offset);
+                offset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, offset);
                 // </markup_separation>
             }
 

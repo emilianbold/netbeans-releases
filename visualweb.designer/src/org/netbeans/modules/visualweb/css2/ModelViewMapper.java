@@ -20,8 +20,8 @@
 package org.netbeans.modules.visualweb.css2;
 
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
@@ -1894,7 +1894,7 @@ public final class ModelViewMapper {
 ////
 ////        return null;
 ////        return InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-//        return WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//        return WebForm.getDomProviderService().getMarkupDesignBeanForElement(element);
 //    }
 //
 //    private static Element getElement(CssBox box) {
@@ -2300,7 +2300,7 @@ public final class ModelViewMapper {
 ////                CssBox box = findBox(element.getDesignBean());
 //                CssBox box = findBox(webform.getPane().getPageBox(), element.getDesignBean());
 //            MarkupDesignBean markupDesignBean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-//            MarkupDesignBean markupDesignBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//            MarkupDesignBean markupDesignBean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(element);
 //            if (markupDesignBean != null) {
 //                CssBox box = findBox(webform.getPane().getPageBox(), markupDesignBean);
         
@@ -2536,14 +2536,14 @@ public final class ModelViewMapper {
                                 if (MarkupService.getSourceElementForElement(e) != null) {
 //                                    MarkupDesignBean bean = e.getDesignBean();
 //                                    MarkupDesignBean bean = InSyncService.getProvider().getMarkupDesignBeanForElement(e);
-//                                    MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(e);
+//                                    MarkupDesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(e);
 //                                    
 //                                    if (bean != null) {
 //                                        bean = /*FacesSupport.*/findRendersChildren(bean);
 ////                                        e = (RaveElement)bean.getElement();
 //                                        e = bean.getElement();
 //                                    }
-                                    Element se = WebForm.getHtmlDomProviderService().getSourceElementWhichRendersChildren(e);
+                                    Element se = WebForm.getDomProviderService().getSourceElementWhichRendersChildren(e);
                                     if (se != null) {
                                         e = se;
                                     }
@@ -2575,14 +2575,14 @@ public final class ModelViewMapper {
 //                if (element.getDesignBean() != null) {
 //                    MarkupDesignBean bean = element.getDesignBean();
 //                MarkupDesignBean bean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-//                MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//                MarkupDesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(element);
 //                
 //                if (bean != null) {
 //                    MarkupDesignBean parent = /*FacesSupport.*/findRendersChildren(bean);
 //                    
 //                    // XXX what if bean itself is a renders children?
 //                    if (parent != bean) {
-                Element se = WebForm.getHtmlDomProviderService().getSourceElementWhichRendersChildren(element);
+                Element se = WebForm.getDomProviderService().getSourceElementWhichRendersChildren(element);
                 if (se != null) {
                     if (se != element) {
                         if (adjust) {
@@ -2627,13 +2627,13 @@ public final class ModelViewMapper {
 //                    if (element.getDesignBean() != null) {
 //                        DesignBean bean = element.getDesignBean();
 //                    DesignBean bean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-//                    DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//                    DesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(element);
 //                    if (bean != null) {
-                    Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForElement(element);
+                    Element componentRootElement = WebForm.getDomProviderService().getComponentRootElementForElement(element);
                     if (componentRootElement != null) {
 //                        Element el = FacesSupport.getElement(bean);
 //                        Element el = Util.getElement(bean);
-//                        Element el = WebForm.getHtmlDomProviderService().getElement(bean);
+//                        Element el = WebForm.getDomProviderService().getElement(bean);
                         Element sourceElement = MarkupService.getSourceElementForElement(componentRootElement);
 //                        return Position.create(sourceElement, pos.getOffset() > 0);
                         return webForm.createDomPosition(sourceElement, pos.getOffset() > 0);
@@ -2677,7 +2677,7 @@ public final class ModelViewMapper {
 //            	ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
 //            	try {
 ////                    Thread.currentThread().setContextClassLoader(InSyncService.getProvider().getContextClassLoader(curr));
-//                    Thread.currentThread().setContextClassLoader(WebForm.getHtmlDomProviderService().getContextClassLoaderForDesignContext(curr.getDesignContext()));
+//                    Thread.currentThread().setContextClassLoader(WebForm.getDomProviderService().getContextClassLoaderForDesignContext(curr.getDesignContext()));
 //                    if (((UIComponent)curr.getInstance()).getRendersChildren()) {
 //                    	bean = curr;
 //                        // Can't break here - there could be an outer
@@ -2753,8 +2753,8 @@ public final class ModelViewMapper {
 //
 ////                if (FacesSupport.isSpecialBean(/*webform, */lb)) {
 ////                if (Util.isSpecialBean(lb)) {
-//                if (lb instanceof MarkupDesignBean && WebForm.getHtmlDomProviderService().isSpecialComponent(
-//                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)lb))) {
+//                if (lb instanceof MarkupDesignBean && WebForm.getDomProviderService().isSpecialComponent(
+//                        WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)lb))) {
 //                    continue;
 //                }
 //
@@ -2771,7 +2771,7 @@ public final class ModelViewMapper {
         for (; box != null; box = box.getParent()) {
             Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
             if (componentRootElement != null) {
-                if (WebForm.getHtmlDomProviderService().isSpecialComponent(componentRootElement)) {
+                if (WebForm.getDomProviderService().isSpecialComponent(componentRootElement)) {
                     continue;
                 }
 
@@ -2887,7 +2887,7 @@ public final class ModelViewMapper {
 //                DesignBean child = lb.getChildBean(i);
 //                bounds = pageBox.computeBounds(child, bounds);
 //            }
-            Element[] childComponentRootElements = WebForm.getHtmlDomProviderService().getChildComponentRootElements(componentRootElement);
+            Element[] childComponentRootElements = WebForm.getDomProviderService().getChildComponentRootElements(componentRootElement);
             for (Element child : childComponentRootElements) {
                 bounds = pageBox.computeBounds(child, bounds);
             }

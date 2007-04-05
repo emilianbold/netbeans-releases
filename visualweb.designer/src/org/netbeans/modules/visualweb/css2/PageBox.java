@@ -43,7 +43,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.designer.ColorManager;
 import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.DesignerSettings;
@@ -807,7 +807,7 @@ public class PageBox extends DocumentBox implements ChangeListener {
 ////            }
 ////        }
 //        // XXX Hack, see the impl.
-//        renderBean = WebForm.getHtmlDomProviderService().adjustRenderBeanHack(renderBean);
+//        renderBean = WebForm.getDomProviderService().adjustRenderBeanHack(renderBean);
 //
 //        Element e = bean.getElement();
 //        assert e != null;
@@ -962,14 +962,14 @@ public class PageBox extends DocumentBox implements ChangeListener {
 
 //        CssBox box = findCssBox(bean);
 //        CssBox box = findCssBoxForComponentRootElement(
-//                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean));
+//                WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean(bean));
         CssBox box = findCssBoxForComponentRootElement(componentRootElement);
 
         Rectangle bounds;
 
         if (box == null) {
 //            bounds = computeBounds(bean, null);
-//            bounds = computeBounds(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean), null);
+//            bounds = computeBounds(WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean(bean), null);
             bounds = computeBounds(componentRootElement, null);
             // XXX #6389428 Possible NPE. Probably just a consequence of some other issue.
             if (bounds == null) {

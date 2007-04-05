@@ -23,7 +23,7 @@ package org.netbeans.modules.visualweb.css2;
 import java.awt.Color;
 import java.awt.Graphics;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.designer.DesignerSettings;

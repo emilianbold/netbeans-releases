@@ -94,8 +94,8 @@ public class InlineEditAction extends AbstractDesignBeanAction {
         }
 
 //        return InlineEditor.getEditablePropertyNames(designBean);
-//        return WebForm.getHtmlDomProviderService().getEditablePropertyNames(
-//                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean));
+//        return WebForm.getDomProviderService().getEditablePropertyNames(
+//                WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean));
         return JsfSupportUtilities.getEditableProperties(designBean);
     }
 
@@ -187,7 +187,7 @@ public class InlineEditAction extends AbstractDesignBeanAction {
 //            if (webform.getManager().isInlineEditing()
 ////            && webform.getManager().getInlineEditor().isEditing(bean, propertyName)) {
 //            && webform.getManager().getInlineEditor().isEditing(
-//                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean), propertyName)) {
+//                    WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean(bean), propertyName)) {
 //                return;
 //            } else {
 //                webform.getManager().finishInlineEditing(false);
@@ -195,7 +195,7 @@ public class InlineEditAction extends AbstractDesignBeanAction {
 //
 ////            ModelViewMapper mapper = webform.getMapper();
 ////            CssBox box = mapper.findBox(bean);
-//            Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean);
+//            Element componentRootElement = WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean(bean);
 //            CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 //            webform.getTopComponent().requestActive();
 //            webform.getManager().startInlineEditing(componentRootElement, propertyName, box, true, true, null, false);

@@ -20,8 +20,8 @@
 package org.netbeans.modules.visualweb.designer;
 
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -90,7 +90,7 @@ public abstract class InlineEditor {
     protected DomPosition end;
 
     
-    protected final HtmlDomProvider.InlineEditorSupport inlineEditorSupport;
+    protected final DomProvider.InlineEditorSupport inlineEditorSupport;
 //    protected String propertyName;
 
     /** Timestamp when we last entered inline editing. */
@@ -100,8 +100,7 @@ public abstract class InlineEditor {
     private long lastClick = 0L;
 
 //    protected InlineEditor(WebForm webform, MarkupDesignBean bean, String propertyName) {
-    protected InlineEditor(WebForm webform, /*MarkupDesignBean bean, DesignProperty property,*/
-    HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
+    protected InlineEditor(WebForm webform,DomProvider.InlineEditorSupport inlineEditorSupport) {
         this.webform = webform;
 //        this.bean = bean;
 //        this.propertyName = propertyName;
@@ -136,7 +135,7 @@ public abstract class InlineEditor {
         }
 
 //        String[] properties = getEditableProperties(markupBean);
-        String[] properties = WebForm.getHtmlDomProviderService().getEditableProperties(componentRootElement);
+        String[] properties = WebForm.getDomProviderService().getEditableProperties(componentRootElement);
 
         if ((properties == null) || (properties.length == 0)) {
             return null;
@@ -230,7 +229,7 @@ public abstract class InlineEditor {
 //                return null;
 //            }
             
-            HtmlDomProvider.InlineEditorSupport inlineEditorSupport = webform.createInlineEditorSupport(
+            DomProvider.InlineEditorSupport inlineEditorSupport = webform.createInlineEditorSupport(
                     componentRootElement,
                     name);
             if (inlineEditorSupport == null) {
@@ -365,7 +364,7 @@ public abstract class InlineEditor {
 //            // TODO: Change types above from DesignProperty to FacesDesignProperty, and
 //            // call property.isBound() instead of the below!
 ////            if ((value != null) && FacesSupport.isValueBindingExpression(value, false)) {
-//            if ((value != null) && WebForm.getHtmlDomProviderService().isValueBindingExpression(value, false)) {
+//            if ((value != null) && WebForm.getDomProviderService().isValueBindingExpression(value, false)) {
 //                return false;
 //            }
 //        }
@@ -527,7 +526,7 @@ public abstract class InlineEditor {
         while (box != null) {
 //            if (box.getDesignBean() == bean) {
 //            if (CssBox.getMarkupDesignBeanForCssBox(box) == bean) {
-//            Element componentRootElement = WebForm.getHtmlDomProviderService().getRenderedElement(bean);
+//            Element componentRootElement = WebForm.getDomProviderService().getRenderedElement(bean);
             Element componentRootElement = inlineEditorSupport.getRenderedElement();
             if (componentRootElement != null && componentRootElement == CssBox.getElementForComponentRootCssBox(box)) {
                 return true;
@@ -589,7 +588,7 @@ public abstract class InlineEditor {
 //        ArrayList rectangles = webform.getMapper().getComponentRectangles(bean);
 //        List rectangles = ModelViewMapper.getComponentRectangles(webform.getPane().getPageBox(), bean);
         List rectangles = ModelViewMapper.getComponentRectangles(webform.getPane().getPageBox(),
-//                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean));
+//                WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean(bean));
                 inlineEditorSupport.getRenderedElement());
         int n = rectangles.size();
 

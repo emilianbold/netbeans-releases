@@ -28,13 +28,13 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocumentEvent;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocumentListener;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocument;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomRange;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomDocumentEvent;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomDocumentListener;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomDocument;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomRange;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
@@ -74,7 +74,7 @@ import org.w3c.dom.traversal.NodeIterator;
  *    I don't keep recomputing it!
  * @author Tor Norbye
  */
-public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
+public class DomDocumentImpl implements DomProvider.DomDocument {
 //    // DEBUG:
 //    // Log info pertaining to document events
 //    static final boolean debugevents = false;
@@ -189,7 +189,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
             return false;
         }
 //                    UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DefaultKeyTypedAction.class, "InsertChar")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_InsertText")); // NOI18N
+//        DomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_InsertText")); // NOI18N
         UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_InsertText")); // NOI18N
         try {
         
@@ -825,7 +825,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 ////                    return element.getDesignBean();
 ////                }
 ////                MarkupDesignBean markupDesignBean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-//                MarkupDesignBean markupDesignBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//                MarkupDesignBean markupDesignBean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(element);
 //                if (markupDesignBean != null) {
 //                    return markupDesignBean;
 //                }
@@ -854,7 +854,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 
 //        return FacesSupport.getMarkupBean(bean).getElement();
 //        return Util.getMarkupBean(bean).getElement();
-//        return WebForm.getHtmlDomProviderService().getMarkupBeanElement(bean);
+//        return WebForm.getDomProviderService().getMarkupBeanElement(bean);
     }
 
     
@@ -970,7 +970,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
                 Element element = (Element)curr;
 //                DesignBean bean = element.getDesignBean();
 //                DesignBean bean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-//                DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//                DesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(element);
                 Element componentRootElement = MarkupService.getRenderedElementForElement(element);
                 
 //                if ((bean != null) &&
@@ -980,7 +980,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //                        (((RaveElement)element.getParentNode()).getDesignBean() != bean)))) {
                         (element.getParentNode() instanceof Element
 //                        && InSyncService.getProvider().getMarkupDesignBeanForElement((Element)element.getParentNode()) != bean))) {
-//                        && WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)element.getParentNode()) != bean))) {
+//                        && WebForm.getDomProviderService().getMarkupDesignBeanForElement((Element)element.getParentNode()) != bean))) {
                         && MarkupService.getRenderedElementForElement((Element)element.getParentNode()) != componentRootElement))) {
 //                    if (!beans.contains(bean)) {
 //                        beans.add(bean);
@@ -1010,8 +1010,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //        Document doc = webform.getDocument();
 
 ////        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-////        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
+////        DomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
+//        DomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
 //        try {
 ////            doc.writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
 //
@@ -1021,9 +1021,9 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //
 ////                if (!FacesSupport.isSpecialBean(/*webform, */bean)) {
 ////                if (!Util.isSpecialBean(bean)) {
-////                if (bean instanceof MarkupDesignBean && !WebForm.getHtmlDomProviderService().isSpecialComponent(
-////                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean))) {
-////                if (!WebForm.getHtmlDomProviderService().isSpecialComponent(componentRootElement)) {
+////                if (bean instanceof MarkupDesignBean && !WebForm.getDomProviderService().isSpecialComponent(
+////                        WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean))) {
+////                if (!WebForm.getDomProviderService().isSpecialComponent(componentRootElement)) {
 //                if (!JsfSupportUtilities.isSpecialComponent(componentRootElement)) {
 ////                    model.getLiveUnit().deleteBean(bean);
 ////                    webform.deleteBean(bean);
@@ -1270,7 +1270,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //////                parentBean = ((RaveElement)e).getDesignBean();
 ////            if (e instanceof Element) {
 //////                parentBean = InSyncService.getProvider().getMarkupDesignBeanForElement((Element)e);
-////                parentBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)e);
+////                parentBean = WebForm.getDomProviderService().getMarkupDesignBeanForElement((Element)e);
 ////                
 ////                if (parentBean != null) {
 ////                    break;
@@ -1482,15 +1482,15 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
     }
 
     
-    public HtmlDomProvider.DomPosition createDomPosition(Node node, int offset, DomPosition.Bias bias) {
+    public DomProvider.DomPosition createDomPosition(Node node, int offset, DomPosition.Bias bias) {
         return DomPositionImpl.create(node, offset, bias);
     }
 
-    public HtmlDomProvider.DomPosition createDomPosition(Node node, boolean after) {
+    public DomProvider.DomPosition createDomPosition(Node node, boolean after) {
         return DomPositionImpl.create(node, after);
     }
 
-    public HtmlDomProvider.DomRange createRange(Node dotNode, int dotOffset, Node markNode, int markOffset) {
+    public DomProvider.DomRange createRange(Node dotNode, int dotOffset, Node markNode, int markOffset) {
         return DomRangeImpl.create(jsfForm, dotNode, dotOffset, markNode, markOffset);
     }
 
@@ -1498,11 +1498,11 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         return DomPositionImpl.compareBoundaryPoints(endPointA, offsetA, endPointB, offsetB);
     }
 
-    public HtmlDomProvider.DomPosition first(HtmlDomProvider.DomPosition dot, HtmlDomProvider.DomPosition mark) {
+    public DomProvider.DomPosition first(DomProvider.DomPosition dot,org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition mark) {
         return DomPositionImpl.first(dot, mark);
     }
 
-    public HtmlDomProvider.DomPosition last(HtmlDomProvider.DomPosition dot, HtmlDomProvider.DomPosition mark) {
+    public DomProvider.DomPosition last(DomProvider.DomPosition dot,org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition mark) {
         return DomPositionImpl.last(dot, mark);
     }
     
@@ -1618,7 +1618,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 ////                parentBean = ((RaveElement)e).getDesignBean();
 //            if (e instanceof Element) {
 ////                parentBean = InSyncService.getProvider().getMarkupDesignBeanForElement((Element)e);
-//                parentBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)e);
+//                parentBean = WebForm.getDomProviderService().getMarkupDesignBeanForElement((Element)e);
 //                
 //                if (parentBean != null) {
 //                    break;
@@ -1670,8 +1670,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
             description = NbBundle.getMessage(DomDocumentImpl.class, "LBL_MoveComponent");
         }
 //        UndoEvent undoEvent = webform.getModel().writeLock(description);
-//        HtmlDomProvider.WriteLock writeLock = webform.writeLock(description);
-//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(description);
+//        DomProvider.WriteLock writeLock = webform.writeLock(description);
+//        DomProvider.WriteLock writeLock = jsfForm.writeLock(description);
         UndoEvent writeLock = jsfForm.writeLock(description);
         try {
 //            String description;
@@ -1866,7 +1866,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //                    Util.updateLocalStyleValuesForElement(e,
 //                            (StyleData[])set.toArray(new StyleData[set.size()]),
 //                            (StyleData[])remove.toArray(new StyleData[remove.size()]));
-//                    WebForm.getHtmlDomProviderService().updateLocalStyleValuesForElement(componentRootElement,
+//                    WebForm.getDomProviderService().updateLocalStyleValuesForElement(componentRootElement,
 //                            set.toArray(new StyleData[set.size()]),
 //                            remove.toArray(new StyleData[remove.size()]));
                     JsfSupportUtilities.updateLocalStyleValuesForElement(componentRootElement,
@@ -2135,7 +2135,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 // ====
 //            Util.updateLocalStyleValuesForElement(e,
 //                    (StyleData[])set.toArray(new StyleData[set.size()]), null);
-//            WebForm.getHtmlDomProviderService().updateLocalStyleValuesForElement(componentRootElement,
+//            WebForm.getDomProviderService().updateLocalStyleValuesForElement(componentRootElement,
 //                    set.toArray(new StyleData[set.size()]), null);
             JsfSupportUtilities.updateLocalStyleValuesForElement(componentRootElement,
                     set.toArray(new StyleData[set.size()]), null);
@@ -2154,8 +2154,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //        Document doc = webform.getDocument();
 
 //        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(GridHandler.class, "BringToFront")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(GridHandler.class, "BringToFront")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_BringToFront")); // NOI18N
+//        DomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(GridHandler.class, "BringToFront")); // NOI18N
+//        DomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_BringToFront")); // NOI18N
         UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_BringToFront")); // NOI18N
         try {
 //            doc.writeLock(NbBundle.getMessage(GridHandler.class, "BringToFront")); // NOI18N
@@ -2234,7 +2234,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 // ====
 //                    Util.updateLocalStyleValuesForElement(e,
 //                            (StyleData[])set.toArray(new StyleData[set.size()]), null);
-//                    WebForm.getHtmlDomProviderService().updateLocalStyleValuesForElement(componentRootElement,
+//                    WebForm.getDomProviderService().updateLocalStyleValuesForElement(componentRootElement,
 //                            set.toArray(new StyleData[set.size()]), null);
                     JsfSupportUtilities.updateLocalStyleValuesForElement(componentRootElement,
                             set.toArray(new StyleData[set.size()]), null);
@@ -2260,8 +2260,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //        Document doc = webform.getDocument();
 
 //        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(GridHandler.class, "SendToBack")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(GridHandler.class, "SendToBack")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SendToBack")); // NOI18N
+//        DomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(GridHandler.class, "SendToBack")); // NOI18N
+//        DomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SendToBack")); // NOI18N
         UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SendToBack")); // NOI18N
         try {
 //            doc.writeLock(NbBundle.getMessage(GridHandler.class, "SendToBack")); // NOI18N
@@ -2341,7 +2341,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 // ====
 //                    Util.updateLocalStyleValuesForElement(e,
 //                            (StyleData[])set.toArray(new StyleData[set.size()]), null);
-//                    WebForm.getHtmlDomProviderService().updateLocalStyleValuesForElement(componentRootElement,
+//                    WebForm.getDomProviderService().updateLocalStyleValuesForElement(componentRootElement,
 //                            set.toArray(new StyleData[set.size()]), null);
                     JsfSupportUtilities.updateLocalStyleValuesForElement(componentRootElement,
                             set.toArray(new StyleData[set.size()]), null);
@@ -2411,8 +2411,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         boolean absolute = isAbsolutelyPositioned(element);
 
 //        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(GridHandler.class, "ResizeComponent")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(GridHandler.class, "ResizeComponent")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_ResizeComponent")); // NOI18N
+//        DomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(GridHandler.class, "ResizeComponent")); // NOI18N
+//        DomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_ResizeComponent")); // NOI18N
         UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_ResizeComponent")); // NOI18N
         // Gotta set width and height attributes!
         try {
@@ -2444,8 +2444,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 
             if (widthChanged) {
 //                if (!DndHandler.setDesignProperty(bean, HtmlAttribute.WIDTH, newWidth, webform)) {
-//                if (!WebForm.getHtmlDomProviderService().setDesignProperty(bean, HtmlAttribute.WIDTH, newWidth)) {
-//                if (!WebForm.getHtmlDomProviderService().setStyleAttribute(componentRootElement, HtmlAttribute.WIDTH, newWidth)) {
+//                if (!WebForm.getDomProviderService().setDesignProperty(bean, HtmlAttribute.WIDTH, newWidth)) {
+//                if (!WebForm.getDomProviderService().setStyleAttribute(componentRootElement, HtmlAttribute.WIDTH, newWidth)) {
                 if (!JsfSupportUtilities.setStyleAttribute(componentRootElement, HtmlAttribute.WIDTH, newWidth)) {
                     set.add(new StyleData(XhtmlCss.WIDTH_INDEX, Integer.toString(newWidth) + "px")); // NOI18N
                 } else {
@@ -2456,7 +2456,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 
             if (heightChanged) {
 //                if (!DndHandler.setDesignProperty(bean, HtmlAttribute.HEIGHT, newHeight, webform)) {
-//                if (!WebForm.getHtmlDomProviderService().setDesignProperty(bean, HtmlAttribute.HEIGHT, newHeight)) {
+//                if (!WebForm.getDomProviderService().setDesignProperty(bean, HtmlAttribute.HEIGHT, newHeight)) {
                 if (!JsfSupportUtilities.setStyleAttribute(componentRootElement, HtmlAttribute.HEIGHT, newHeight)) {
                     set.add(new StyleData(XhtmlCss.HEIGHT_INDEX, Integer.toString(newHeight) + "px")); // NOI18N
                 } else {
@@ -2473,7 +2473,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //            Util.updateLocalStyleValuesForElement(element,
 //                    (StyleData[])set.toArray(new StyleData[set.size()]),
 //                    (StyleData[])remove.toArray(new StyleData[remove.size()]));
-//            WebForm.getHtmlDomProviderService().updateLocalStyleValuesForElement(element,
+//            WebForm.getDomProviderService().updateLocalStyleValuesForElement(element,
 //                    set.toArray(new StyleData[set.size()]),
 //                    remove.toArray(new StyleData[remove.size()]));
             JsfSupportUtilities.updateLocalStyleValuesForElement(element,
@@ -2505,8 +2505,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //        Document doc = webform.getDocument();
 
 //        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(AlignAction.class, "LBL_SnapToGrid")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = webForm.writeLock(NbBundle.getMessage(GridHandler.class, "LBL_SnapToGrid")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SnapToGrid")); // NOI18N
+//        DomProvider.WriteLock writeLock = webForm.writeLock(NbBundle.getMessage(GridHandler.class, "LBL_SnapToGrid")); // NOI18N
+//        DomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SnapToGrid")); // NOI18N
         UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_SnapToGrid")); // NOI18N
         try {
 //            doc.writeLock(NbBundle.getMessage(AlignAction.class, "LBL_SnapToGrid")); // NOI18N
@@ -2514,7 +2514,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //            while (it.hasNext()) {
 //                MarkupDesignBean bean = (MarkupDesignBean)it.next();
             for (Element componentRootElement : componentRootElements) {
-//                MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                MarkupDesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //                CssBox box = mapper.findBox(bean);
 //                CssBox box = ModelViewMapper.findBoxForComponentRootElement(webForm.getPane().getPageBox(), componentRootElement);
                 Box box = designer.findBoxForComponentRootElement(componentRootElement);
@@ -2585,8 +2585,8 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //        Document doc = webform.getDocument();
 
 //        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = webForm.writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_Align")); // NOI18N
+//        DomProvider.WriteLock writeLock = webForm.writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
+//        DomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_Align")); // NOI18N
         UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_Align")); // NOI18N
         try {
 //            doc.writeLock(NbBundle.getMessage(SelectionManager.class, "Align")); // NOI18N
@@ -2606,7 +2606,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 //                MarkupDesignBean bean = (MarkupDesignBean)it.next();
 //            for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
             for (Element componentRootElement : designer.getSelectedComponents()) {
-//                MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                MarkupDesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //                CssBox box = mapper.findBox(bean);
 //                CssBox box = ModelViewMapper.findBoxForComponentRootElement(webForm.getPane().getPageBox(), componentRootElement);
                 Box box = designer.findBoxForComponentRootElement(componentRootElement);
@@ -2703,7 +2703,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         }
 
 //            UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
+//        DomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
         UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
         try {
             // TODO - compute previous visual position, decide if it's
@@ -2755,7 +2755,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
         }
         
 //            UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(DeleteNextCharAction.class, "DeleteText")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
+//        DomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
         UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteText")); // NOI18N
         try {
             // TODO - compute previous visual position, decide if it's
@@ -2816,7 +2816,7 @@ public class DomDocumentImpl implements HtmlDomProvider.DomDocument {
 
     public void deleteComponents(Element[] componentRootElements) {
 //        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(SelectionTopComp.class, "DeleteSelection")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteComponents")); // NOI18N
+//        DomProvider.WriteLock writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteComponents")); // NOI18N
         UndoEvent writeLock = jsfForm.writeLock(NbBundle.getMessage(DomDocumentImpl.class, "LBL_DeleteComponents")); // NOI18N
         try {
             for (Element componentRootElement : componentRootElements) {

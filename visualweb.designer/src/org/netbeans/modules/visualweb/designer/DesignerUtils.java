@@ -296,7 +296,7 @@ public class DesignerUtils {
 //     */
 //    public static String getBeanName(Element element) {
 ////        DesignBean bean = FacesSupport.getDesignBean(element);
-//        DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//        DesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(element);
 //        
 //        if (bean != null) {
 //            return getBeanName(bean);
@@ -494,7 +494,7 @@ public class DesignerUtils {
 //                                if (MarkupService.getSourceElementForElement(e) != null) {
 ////                                    MarkupDesignBean bean = e.getDesignBean();
 ////                                    MarkupDesignBean bean = InSyncService.getProvider().getMarkupDesignBeanForElement(e);
-//                                    MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(e);
+//                                    MarkupDesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(e);
 //                                    
 //                                    if (bean != null) {
 //                                        bean = /*FacesSupport.*/findRendersChildren(bean);
@@ -526,7 +526,7 @@ public class DesignerUtils {
 ////                if (element.getDesignBean() != null) {
 ////                    MarkupDesignBean bean = element.getDesignBean();
 ////                MarkupDesignBean bean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-//                MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//                MarkupDesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(element);
 //                
 //                if (bean != null) {
 //                    MarkupDesignBean parent = /*FacesSupport.*/findRendersChildren(bean);
@@ -570,7 +570,7 @@ public class DesignerUtils {
 ////                    if (element.getDesignBean() != null) {
 ////                        DesignBean bean = element.getDesignBean();
 ////                    DesignBean bean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-//                    DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//                    DesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(element);
 //                    if (bean != null) {
 //                        Element el = FacesSupport.getElement(bean);
 //                        
@@ -614,7 +614,7 @@ public class DesignerUtils {
 //            	ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
 //            	try {
 ////                    Thread.currentThread().setContextClassLoader(InSyncService.getProvider().getContextClassLoader(curr));
-//                    Thread.currentThread().setContextClassLoader(WebForm.getHtmlDomProviderService().getContextClassLoaderForDesignContext(curr.getDesignContext()));
+//                    Thread.currentThread().setContextClassLoader(WebForm.getDomProviderService().getContextClassLoaderForDesignContext(curr.getDesignContext()));
 //                    if (((UIComponent)curr.getInstance()).getRendersChildren()) {
 //                    	bean = curr;
 //                        // Can't break here - there could be an outer
@@ -1075,7 +1075,7 @@ public class DesignerUtils {
 //        }
 //    }
 
-    // XXX Copy also in designer/jsf/../HtmlDomProviderImpl
+    // XXX Copy also in designer/jsf/../DomProviderImpl
     /** Thread-safe method to set the activated nodes of a TopComponent;
      * this can only be done from the event dispatch thread. If called
      * from another thread it will post a runnable on the event dispatch
@@ -1109,9 +1109,9 @@ public class DesignerUtils {
 //     * @param initialize If false, don't initialize a webform that has
 //     *  not yet been open - return null instead.
 //     */
-//    public static WebForm getWebForm(HtmlDomProvider htmlDomProvider, DataObject dobj) {
+//    public static WebForm getWebForm(DomProvider domProvider, DataObject dobj) {
 //        if (WebForm.isWebFormDataObject(dobj)) {
-//            return WebForm.getWebFormForDataObject(htmlDomProvider, dobj);
+//            return WebForm.getWebFormForDataObject(domProvider, dobj);
 //        }
 //        
 //        return null;

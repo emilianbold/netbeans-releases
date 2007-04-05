@@ -47,7 +47,7 @@ public final class JsfSupportUtilities {
 
     
     public static String[] getEditableProperties(DesignBean designBean) {
-        return HtmlDomProviderServiceImpl.getEditablePropertyNames(designBean);
+        return DomProviderServiceImpl.getEditablePropertyNames(designBean);
     }
 
     public static Designer findDesignerForDesignContext(DesignContext designContext) {
@@ -62,7 +62,7 @@ public final class JsfSupportUtilities {
 
     public static Element getComponentRootElementForDesignBean(DesignBean designBean) {
         if (designBean instanceof MarkupDesignBean) {
-            return HtmlDomProviderImpl.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean);
+            return DomProviderImpl.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean);
         }
         return null;
     }

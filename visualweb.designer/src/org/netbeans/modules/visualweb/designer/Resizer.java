@@ -19,7 +19,7 @@
 package org.netbeans.modules.visualweb.designer;
 
 import java.util.Arrays;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProviderService.ResizeConstraint;
+import org.netbeans.modules.visualweb.api.designer.DomProviderService.ResizeConstraint;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
@@ -568,7 +568,7 @@ public class Resizer extends Interaction implements KeyListener {
 //        }
 //
 //        return constraints;
-        return WebForm.getHtmlDomProviderService().getResizeConstraintsForComponent(componentRootElement);
+        return WebForm.getDomProviderService().getResizeConstraintsForComponent(componentRootElement);
     }
     
     public static boolean hasMaintainAspectRatioResizeConstraint(ResizeConstraint[] resizeConstraints) {

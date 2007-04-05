@@ -26,7 +26,7 @@ package org.netbeans.modules.visualweb.text.actions;
 
 import java.awt.event.ActionEvent;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.designer.InlineEditor;
 import org.netbeans.modules.visualweb.designer.WebForm;

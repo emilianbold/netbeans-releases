@@ -416,7 +416,7 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 //                if (element.getDesignBean() != null && (box.getParent() == null ||
 //                        element.getDesignBean() != box.getParent().getDesignBean())) {
 //                MarkupDesignBean markupDesignBean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-//                MarkupDesignBean markupDesignBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//                MarkupDesignBean markupDesignBean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(element);
 //                if (markupDesignBean != null
                 if (element != null
 //                && (box.getParent() == null || markupDesignBean != box.getParent().getDesignBean())) {
@@ -426,7 +426,7 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
                     sb.append("<i>"); // NOI18N
 //                    sb.append(element.getDesignBean().getInstanceName());
 //                    sb.append(markupDesignBean.getInstanceName());
-                    sb.append(WebForm.getHtmlDomProviderService().getInstanceName(element));
+                    sb.append(WebForm.getDomProviderService().getInstanceName(element));
                     sb.append("</i>"); // NOI18N
                 }
             }
@@ -857,7 +857,7 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 //        if (bean != null) {
         if (componentRootElement != null) {
 //            return "<" + bean.getInstanceName() + ">";
-            return "<" + WebForm.getHtmlDomProviderService().getInstanceName(componentRootElement) + ">";
+            return "<" + WebForm.getDomProviderService().getInstanceName(componentRootElement) + ">";
         }
         
         return null;
@@ -897,8 +897,8 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 //                Element element = bean.getElement();
 
 //		return InSyncService.getProvider().getHtmlStream(df);
-//                return WebForm.getHtmlDomProviderService().getHtmlStream(df);
-                return WebForm.getHtmlDomProviderService().getHtmlStream(componentRootElement);
+//                return WebForm.getDomProviderService().getHtmlStream(df);
+                return WebForm.getDomProviderService().getHtmlStream(componentRootElement);
 	    }
 	};
     }

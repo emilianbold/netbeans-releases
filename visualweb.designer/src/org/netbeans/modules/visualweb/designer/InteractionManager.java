@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ExternalDocumentBox;
 import org.netbeans.modules.visualweb.spi.designer.Decoration;
@@ -72,6 +72,9 @@ import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.css2.TextBox;
 
 import org.netbeans.modules.visualweb.designer.WebForm.DefaultDesignerEvent;
+
+
+// For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
 
 
 // For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
@@ -184,7 +187,7 @@ public class InteractionManager {
 //                }
                 // XXX Doesn't allow to insert into include (fragment).
                 Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
-                if (WebForm.getHtmlDomProviderService().isIncludeComponentBox(componentRootElement)) {
+                if (WebForm.getDomProviderService().isIncludeComponentBox(componentRootElement)) {
                     insertModeBox = null;
                     return;
                 }
@@ -338,8 +341,8 @@ public class InteractionManager {
 
 //            if ((b != null) && FacesSupport.isFacesComponent(b)) {
 //            if ((b != null) && isFacesComponent(b)) {
-//            if (b != null && WebForm.getHtmlDomProviderService().isFacesComponentBean(b)) {
-            if (componentRootElement != null && WebForm.getHtmlDomProviderService().isFacesComponent(componentRootElement)) {
+//            if (b != null && WebForm.getDomProviderService().isFacesComponentBean(b)) {
+            if (componentRootElement != null && WebForm.getDomProviderService().isFacesComponent(componentRootElement)) {
                 return null;
             }
 
@@ -472,7 +475,7 @@ public class InteractionManager {
 ////            while (it.hasNext()) {
 ////                DesignBean bean = (DesignBean)it.next();
 //            for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
-////                DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+////                DesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 ////                if (bean != null) {
 //                if (componentRootElement != null) {
 ////                    box = webform.getMapper().findBox(bean);
@@ -565,7 +568,7 @@ public class InteractionManager {
 //        } else {
 ////            component = getDefaultSelectionBean();
 ////            Element componentRootElement = getDefaultSelectionComponentRootElement();
-////            component = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+////            component = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //            componentRootElement = getDefaultSelectionComponentRootElement();
 //        }
 //
@@ -592,7 +595,7 @@ public class InteractionManager {
 //
 //        if ((bean == null) && !sm.isSelectionEmpty()) {
         Element primaryComponentRootElement = sm.getPrimary();
-//        DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(primaryComponentRootElement);
+//        DesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(primaryComponentRootElement);
         if (primaryComponentRootElement == null && !sm.isSelectionEmpty()) {
             // TODO - get the component under the mouse, not the
             // whole selection!
@@ -601,7 +604,7 @@ public class InteractionManager {
 //            while (it.hasNext()) {
 //                bean = (DesignBean)it.next();
             for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
-//                bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
                 primaryComponentRootElement = componentRootElement;
 //                if (bean != null) {
                 if (primaryComponentRootElement != null) {
@@ -765,14 +768,14 @@ public class InteractionManager {
 //        // DndHandler.getDropTarget(). I should debug this and clean it up.
 ////        if ((highlighted != null) && highlighted instanceof MarkupDesignBean) {
 ////            target = (MarkupDesignBean)highlighted;
-//        target = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(highlightedComponentRootElement);
+//        target = WebForm.getDomProviderService().getMarkupDesignBeanForElement(highlightedComponentRootElement);
 //        if (target != null) {
 //            // XXX It was done already.
 //        } else if ((dropType == DndHandler.DROP_LINKED) || (dropType == DndHandler.DROP_PARENTED)) {
 ////            target = dndHandler.getDropTarget();
 ////            target = dndHandler.getRecentDropTarget();
 //            Element recentDropTargetComponnetRootElement = dndHandler.getRecentDropTargetComponentRootElement();
-//            target = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(recentDropTargetComponnetRootElement);
+//            target = WebForm.getDomProviderService().getMarkupDesignBeanForElement(recentDropTargetComponnetRootElement);
 //        }
 //
 //        if (target != null) {
@@ -906,7 +909,7 @@ public class InteractionManager {
 //                a = ModelViewMapper.getComponentBounds(webform.getPane().getPageBox(), highlighted);
 //                if (highlighted instanceof MarkupDesignBean) {
 //                    a = ModelViewMapper.getComponentBounds(webform.getPane().getPageBox(),
-//                            WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean) highlighted));
+//                            WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean) highlighted));
 //                }
                 a = ModelViewMapper.getComponentBounds(webform.getPane().getPageBox(), highlightedComponentRootElement);
             }
@@ -1158,7 +1161,7 @@ public class InteractionManager {
 //            if ((parentMarkupDesignBean != null) &&
 ////                    FacesSupport.isSpecialBean(/*webform, */parent.getDesignBean())) {
 //                    Util.isSpecialBean(parentMarkupDesignBean)) {
-            if (WebForm.getHtmlDomProviderService().isSpecialComponent(parentComponentRootElement)) {
+            if (WebForm.getDomProviderService().isSpecialComponent(parentComponentRootElement)) {
                 return prevComponentRootElement;
             }
 
@@ -1572,7 +1575,7 @@ public class InteractionManager {
 //                if (SelectionManager.canSelectParent(ancestorComponentRootElement)) {
                 if (canSelectParent(ancestorComponentRootElement)) {
 //                    parent = ancestorMarkupDesignBean.getBeanParent();
-                    parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(ancestorComponentRootElement);
+                    parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(ancestorComponentRootElement);
                 }
 
                 boolean found = false;
@@ -1584,7 +1587,7 @@ public class InteractionManager {
 //                    Element element = FacesSupport.getElement(parent);
 //                    Element element = Util.getElement(parent);
                     
-//                    Element element = WebForm.getHtmlDomProviderService().getElement(parent);
+//                    Element element = WebForm.getDomProviderService().getElement(parent);
 //                    if (element != null) {
 //                        CssBox box = mapper.findBox(element);
 //                        CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), element);
@@ -1602,7 +1605,7 @@ public class InteractionManager {
 //                    }
 
 //                    parent = parent.getBeanParent();
-                    parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(parentComponentRootElement);
+                    parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(parentComponentRootElement);
                 }
 
                 if (!found && (bx != ancestor)) {
@@ -1876,7 +1879,7 @@ public class InteractionManager {
             if ((resize != Cursor.DEFAULT_CURSOR) && (resize != Cursor.MOVE_CURSOR)) {
 //                MarkupDesignBean bean = sm.getSelectionHandleView(x, y, maxWidth, maxHeight);
                 Element componentRootElement = sm.getSelectionHandleView(x, y, maxWidth, maxHeight);
-//                MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                MarkupDesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //                CssBox box = mapper.findBox(bean);
                 CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 //                ArrayList bounds = mapper.getComponentRectangles(bean);
@@ -2049,7 +2052,7 @@ public class InteractionManager {
 //                    while (it.hasNext()) {
 //                        MarkupDesignBean bean = (MarkupDesignBean)it.next();
                     for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
-//                        MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                        MarkupDesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
                         
 //                        CssBox box = mapper.findBox(bean);
                         CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
@@ -2161,7 +2164,7 @@ public class InteractionManager {
 //            MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
             Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
 //            MarkupDesignBean pbean = findMovableParent(box);
-//            MarkupDesignBean pbean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(findMovableParentComponentRootElement(box));
+//            MarkupDesignBean pbean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(findMovableParentComponentRootElement(box));
             Element pComponentRootElement = findMovableParentComponentRootElement(box);
 
 //            if (pbean == null) {
@@ -2194,7 +2197,7 @@ public class InteractionManager {
                 // Change the view rectangle to reflect the parent instead
 //                box = webform.getMapper().findBox(pbean);
 //                box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(),
-//                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(pbean));
+//                        WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean(pbean));
                 box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), pComponentRootElement);
 
                 if (box == null) {
@@ -2298,7 +2301,7 @@ public class InteractionManager {
 //                webform.getActions().selectParent();
 //                DesignBean defaultSelectionBean = getDefaultSelectionBean();
 //                if (defaultSelectionBean instanceof MarkupDesignBean) {
-//                    SelectionManager.selectParent(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)defaultSelectionBean));
+//                    SelectionManager.selectParent(WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)defaultSelectionBean));
 //                }
 //                SelectionManager.selectParent(getDefaultSelectionComponentRootElement());
                 webform.getSelection().selectComponent(getDefaultSelectionComponentRootElement());
@@ -3007,7 +3010,7 @@ public class InteractionManager {
             return false;
         }
 
-//        DesignBean designBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//        DesignBean designBean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //        if (designBean == null) {
 //            return false;
 //        }
@@ -3023,20 +3026,20 @@ public class InteractionManager {
 //        if (designContext == null) {
 //            return false;
 //        }
-        Element parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(componentRootElement);
+        Element parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(componentRootElement);
 
 //        while (parent != null) {
         if (parentComponentRootElement != null) {
 //            if (parent == model.getRootBean()) {
 //            if (parent == designContext.getRootContainer()) {
-            if (WebForm.getHtmlDomProviderService().isRootContainerComponent(parentComponentRootElement)) {
+            if (WebForm.getDomProviderService().isRootContainerComponent(parentComponentRootElement)) {
                 return false;
             }
 
 //            if (Util.isSpecialBean(/*webform, */parent)) {
-//            if (parent instanceof MarkupDesignBean && WebForm.getHtmlDomProviderService().isSpecialComponent(
-//                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent))) {
-            if (WebForm.getHtmlDomProviderService().isSpecialComponent(parentComponentRootElement)) {
+//            if (parent instanceof MarkupDesignBean && WebForm.getDomProviderService().isSpecialComponent(
+//                    WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent))) {
+            if (WebForm.getDomProviderService().isSpecialComponent(parentComponentRootElement)) {
                 return false;
             }
 
@@ -3062,7 +3065,7 @@ public class InteractionManager {
 ////                return element.getMarkupMouseRegion();
 ////            }
 ////            MarkupMouseRegion region = InSyncService.getProvider().getMarkupMouseRegionForElement(element);
-//            MarkupMouseRegion region = WebForm.getHtmlDomProviderService().getMarkupMouseRegionForElement(element);
+//            MarkupMouseRegion region = WebForm.getDomProviderService().getMarkupMouseRegionForElement(element);
 //            if (region != null) {
 //                return region;
 //            }
@@ -3149,7 +3152,7 @@ public class InteractionManager {
                         // We could consider searching recursively here but that's probably overkill.
 //                        for (int j = 0, m = lb.getChildBeanCount(); j < m; j++) {
 //                            DesignBean lbc = lb.getChildBean(j);
-                        Element[] children = WebForm.getHtmlDomProviderService().getChildComponents(componentRootElement);
+                        Element[] children = WebForm.getDomProviderService().getChildComponents(componentRootElement);
                         for (Element child : children) {
 
 //                            if (lbc instanceof MarkupDesignBean) {
@@ -3181,7 +3184,7 @@ public class InteractionManager {
 //    }
 
     
-    private static class RenderContextImpl implements /*VirtualFormRenderer*/HtmlDomProvider.RenderContext {
+    private static class RenderContextImpl implements /*VirtualFormRenderer*/DomProvider.RenderContext {
         private final WebForm webForm;
         
         public RenderContextImpl(WebForm webForm) {

@@ -199,7 +199,7 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //            }
 //        }
         // XXX Hack, see the impl.
-//        renderBean = WebForm.getHtmlDomProviderService().adjustRenderBeanHack(renderBean);
+//        renderBean = WebForm.getDomProviderService().adjustRenderBeanHack(renderBean);
         renderBean = adjustRenderBeanHack(renderBean);
 
         Element e = bean.getElement();

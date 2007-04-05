@@ -713,7 +713,7 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
         } else if (element == parent) {
             return true;
         } else {
-//            return isBelow(parent, WebForm.getHtmlDomProviderService().getParentComponent(element));
+//            return isBelow(parent, WebForm.getDomProviderService().getParentComponent(element));
             return isBelow(parent, JsfSupportUtilities.getParentComponent(element));
         }
     }
@@ -993,7 +993,7 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
 //            for (DesignBean parent = getPasteParent(); parent != null;
 //                    parent = parent.getBeanParent()) {
             for (Element parentComponentRootElement = getPasteParentComponent(); parentComponentRootElement != null;
-//            parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(parentComponentRootElement)) {
+//            parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(parentComponentRootElement)) {
             parentComponentRootElement = JsfSupportUtilities.getParentComponent(parentComponentRootElement)) {
 //                int allowed = dndHandler.computeActions(parent, t, false, /*DropSupport.CENTER*/DROP_CENTER);
 //                int allowed = dndHandler.computeActions(parentComponentRootElement, t, false, /*DropSupport.CENTER*/DROP_CENTER);

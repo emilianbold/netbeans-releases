@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 import java.awt.Component;
@@ -69,15 +69,14 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 
 
     AttributeInlineEditor(WebForm webform, /*MarkupDesignBean bean, DesignProperty property,*/
-    String xpath, HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
+    String xpath,DomProvider.InlineEditorSupport inlineEditorSupport) {
 //        super(webform, bean, property.getPropertyDescriptor().getName());
         super(webform, /*bean,*/ inlineEditorSupport);
 //        this.property = property;
         this.xpath = xpath;
     }
 
-    public static AttributeInlineEditor get(WebForm webform, String xpath, Element componentRootElement, /*MarkupDesignBean bean,*/
-    /*DesignProperty property,*/ HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
+    public static AttributeInlineEditor get(WebForm webform, String xpath, Element componentRootElement,DomProvider.InlineEditorSupport inlineEditorSupport) {
 //        if (!isEditingAllowed(property)) {
         if (!inlineEditorSupport.isEditingAllowed()) {
             return null;
@@ -452,7 +451,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //            String value = property.getValueSource();
 //
 ////            if ((value != null) && FacesSupport.isValueBindingExpression(value, false)) {
-//            if ((value != null) && WebForm.getHtmlDomProviderService().isValueBindingExpression(value, false)) {
+//            if ((value != null) && WebForm.getDomProviderService().isValueBindingExpression(value, false)) {
 //                // Show vb text in rendered view
 //                pane.select(begin, end);
 //                pane.getCaret().replaceSelection(value);
@@ -596,7 +595,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
             for (int i = 0, n = children.getLength(); i < n; i++) {
                 Node child = children.item(i);
 //                sb.append(InSyncService.getProvider().getHtmlStream(child));
-                sb.append(WebForm.getHtmlDomProviderService().getHtmlStream(child));
+                sb.append(WebForm.getDomProviderService().getHtmlStream(child));
             }
 
             value = sb.toString();
@@ -609,7 +608,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 ////                    bean.getElement());
 //                    // ====
 ////                InSyncService.getProvider().expandHtmlEntities(value, false, bean.getElement());
-//                WebForm.getHtmlDomProviderService().expandHtmlEntities(value, false, bean.getElement());
+//                WebForm.getDomProviderService().expandHtmlEntities(value, false, bean.getElement());
 //                // </markup_separation>\
             value = inlineEditorSupport.expandHtmlEntities(value, false);
         }
@@ -650,7 +649,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //        }
 //
 //        return true;
-        return WebForm.getHtmlDomProviderService().isEscapedComponent(componentRootElement);
+        return WebForm.getDomProviderService().isEscapedComponent(componentRootElement);
     }
 
     public boolean isMultiLine() {
@@ -679,7 +678,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         target.addEventListener(MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED, adapter, false);
 
 //        target.addEventListener(InSyncService.DOM_DOCUMENT_REPLACED, adapter, false);
-        target.addEventListener(WebForm.getHtmlDomProviderService().getDomDocumentReplacedEventConstant(), adapter, false);
+        target.addEventListener(WebForm.getDomProviderService().getDomDocumentReplacedEventConstant(), adapter, false);
     }
 
     private void unregisterDomListeners() {
@@ -701,7 +700,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         target.removeEventListener(MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED, adapter, false);
 
 //        target.removeEventListener(InSyncService.DOM_DOCUMENT_REPLACED, adapter, false);
-        target.removeEventListener(WebForm.getHtmlDomProviderService().getDomDocumentReplacedEventConstant(), adapter, false);
+        target.removeEventListener(WebForm.getDomProviderService().getDomDocumentReplacedEventConstant(), adapter, false);
     }
 
     public void handleEvent(final org.w3c.dom.events.Event e) {
@@ -751,7 +750,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //            if (node instanceof Element) {
 ////                MarkupDesignBean b = ((RaveElement)node).getDesignBean();
 ////                MarkupDesignBean b = InSyncService.getProvider().getMarkupDesignBeanForElement((Element)node);
-//                MarkupDesignBean b = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)node);
+//                MarkupDesignBean b = WebForm.getDomProviderService().getMarkupDesignBeanForElement((Element)node);
 //
 //                if (b == null) {
 //                    b = bean;

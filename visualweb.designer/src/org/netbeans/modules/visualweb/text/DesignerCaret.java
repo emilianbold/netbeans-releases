@@ -43,10 +43,10 @@ import javax.swing.Timer;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocumentEvent;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocumentListener;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomRange;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomDocumentEvent;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomDocumentListener;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomRange;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.designer.WebForm;
@@ -1478,9 +1478,9 @@ import org.w3c.dom.Node;
 ////            new Position(box.getDesignBean().getElement(), 0, Bias.FORWARD);
 //                // XXX Possible NPE?
 ////                new Position(CssBox.getMarkupDesignBeanForCssBox(box).getElement(), 0, Bias.FORWARD);
-////                new Position(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
-////        DomPosition editableRegionStart = DesignerPaneBase.createDomPosition(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
-//        DomPosition editableRegionStart = component.getWebForm().createDomPosition(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+////                new Position(WebForm.getDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+////        DomPosition editableRegionStart = DesignerPaneBase.createDomPosition(WebForm.getDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+//        DomPosition editableRegionStart = component.getWebForm().createDomPosition(WebForm.getDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
 //        
 ////        Position editableRegionEnd =
 ////            new Position(editableRegionStart.getNode(),

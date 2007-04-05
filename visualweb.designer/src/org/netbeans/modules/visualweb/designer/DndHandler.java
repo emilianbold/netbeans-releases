@@ -29,8 +29,8 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.CssBox;
 
@@ -63,10 +63,10 @@ public class DndHandler /*extends TransferHandler*/ {
 
 
     /** State indicating that a drop is not allowed */
-    public static final int DROP_DENIED = HtmlDomProvider.DROP_DENIED;
+    public static final int DROP_DENIED = DomProvider.DROP_DENIED;
 
     /** State indicating that the drop is allowed and will cause a link */
-    public static final int DROP_PARENTED = HtmlDomProvider.DROP_PARENTED;
+    public static final int DROP_PARENTED = DomProvider.DROP_PARENTED;
 
 //    /** Directory prefix under the project root to place the web folder */
 //    private static final String WEB = "web"; // NOI18N
@@ -76,7 +76,7 @@ public class DndHandler /*extends TransferHandler*/ {
 
     /** State indicating that the drop is allowed and the bean will be
      *  parented by one of the beans under the cursor */
-    public static final int DROP_LINKED = HtmlDomProvider.DROP_LINKED;
+    public static final int DROP_LINKED = DomProvider.DROP_LINKED;
     
     private static final transient boolean DONT_SHOW_MATCHES =
         System.getProperty("designer.dontShowDropTarget") != null;
@@ -388,10 +388,10 @@ public class DndHandler /*extends TransferHandler*/ {
 //        }
         
         
-//        HtmlDomProvider.CoordinateTranslator coordinateTranslator = GridHandler.getInstance();
-        HtmlDomProvider.CoordinateTranslator coordinateTranslator = webform.getGridHandler();
+//        DomProvider.CoordinateTranslator coordinateTranslator = GridHandler.getInstance();
+        DomProvider.CoordinateTranslator coordinateTranslator = webform.getGridHandler();
   
-//        HtmlDomProvider.Location location = computeLocationForPositions(DROP_CENTER, null, getDropPoint(), insertPos, true);
+//        DomProvider.Location location = computeLocationForPositions(DROP_CENTER, null, getDropPoint(), insertPos, true);
         Point canvasPos = getDropPoint();
 //        Position documentPos = insertPos;
 //        Position computedDocumentPos = computeDocumentPosition(canvasPos, documentPos);
@@ -411,7 +411,7 @@ public class DndHandler /*extends TransferHandler*/ {
         Element defaultParentComponentRootElement = webform.getDefaultParentComponent();
 //        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
         
-//        HtmlDomProvider.Location location = WebForm.getHtmlDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
+//        DomProvider.Location location = WebForm.getDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
 //                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
 //        doImportDataDelayed(comp, t, transferData, location, coordinateTranslator);
         webform.importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid,
@@ -425,7 +425,7 @@ public class DndHandler /*extends TransferHandler*/ {
     }
     
 //    private void doImportDataDelayed(JComponent comp, Transferable t, Object transferData,
-//    HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+//    DomProvider.Location location, DomProvider.CoordinateTranslator coordinateTranslator) {
 ////        LiveUnit unit = webform.getModel().getLiveUnit();
 ////        if (unit == null) {
 ////            NotifyDescriptor d =
@@ -749,11 +749,11 @@ public class DndHandler /*extends TransferHandler*/ {
 //        }
 //    }
 
-    void importString(String string, Point point, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+    void importString(String string, Point point,DomProvider.CoordinateTranslator coordinateTranslator) {
         setDropPoint(point);
         //setInsertPosition(getPasteMarkupPosition());
 
-//        HtmlDomProvider.Location location =
+//        DomProvider.Location location =
 //            computeLocationForPositions(DROP_CENTER, null, getDropPoint(), insertPos, true);
         Point canvasPos = getDropPoint();
 //        Position documentPos = insertPos;
@@ -774,13 +774,13 @@ public class DndHandler /*extends TransferHandler*/ {
         Element defaultParentComponentRootElement = webform.getDefaultParentComponent();
 //        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
         
-//        HtmlDomProvider.Location location = WebForm.getHtmlDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
+//        DomProvider.Location location = WebForm.getDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
 //                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
 //        importString(string, location, coordinateTranslator);
         webform.importString(string, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement, coordinateTranslator);
     }
     
-//    void importString(String string, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+//    void importString(String string, DomProvider.Location location, DomProvider.CoordinateTranslator coordinateTranslator) {
 ////        // Import the string as part of an output text component
 //////        Location location =
 //////            computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
@@ -920,9 +920,9 @@ public class DndHandler /*extends TransferHandler*/ {
 //     *    if caller is not interested in the result
 //     */
 //    public boolean importItem(DisplayItem item, DesignBean parent, int nodePos, String facet,
-//    List beans, HtmlDomProvider.CoordinateTranslator coordinateTranslator) throws IOException {
+//    List beans, DomProvider.CoordinateTranslator coordinateTranslator) throws IOException {
 ////        Location location = computePositions(parent, nodePos, facet, getDropPoint(), insertPos, true);
-//        HtmlDomProvider.Location location = computeLocationForBean(parent, nodePos, facet, getDropPoint(), getDropSize(), webform);
+//        DomProvider.Location location = computeLocationForBean(parent, nodePos, facet, getDropPoint(), getDropSize(), webform);
 ////        return doImportItem(item, parent, nodePos, facet, beans, location);
 //        return importBean(new DisplayItem[] {item}, parent, nodePos, facet, beans, location, coordinateTranslator);
 //    }
@@ -1131,7 +1131,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //     * @return true iff the bean palette item was inserted successfully
 //     */
 //    private boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos,
-//    String facet, List createdBeans, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) throws IOException {
+//    String facet, List createdBeans, DomProvider.Location location, DomProvider.CoordinateTranslator coordinateTranslator) throws IOException {
 //        if(DesignerUtils.DEBUG) {
 //            DesignerUtils.debugLog(getClass().getName() + ".importBean(DisplayItem[], DesignBean, int, String, List)");
 //        }
@@ -1282,7 +1282,7 @@ public class DndHandler /*extends TransferHandler*/ {
         }
     }
     
-//    private HtmlDomProvider.Location computeLocationForPositions(
+//    private DomProvider.Location computeLocationForPositions(
 //            int where,
 //            String facet,
 //            Point canvasPos,
@@ -1303,13 +1303,13 @@ public class DndHandler /*extends TransferHandler*/ {
 ////        DesignBean defaultParentBean = webform.getDefaultParentBean();
 //        Element defaultParentComponentRootElement = webform.getDefautlParentComponent();
 ////        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
-//        return WebForm.getHtmlDomProviderService().computeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
+//        return WebForm.getDomProviderService().computeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
 //                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
 //    }
     
-//    private static HtmlDomProvider.Location doComputeLocationForPositions(String facet, Point canvasPos, Node documentPosNode, int documentPosOffset,
+//    private static DomProvider.Location doComputeLocationForPositions(String facet, Point canvasPos, Node documentPosNode, int documentPosOffset,
 //    Dimension dropSize, boolean isGrid, Element droppeeElement, DesignBean droppeeBean, /*WebForm webform*/DesignBean defaultParentBean) {
-//        HtmlDomProvider.Location location = new HtmlDomProvider.Location();
+//        DomProvider.Location location = new DomProvider.Location();
 //        location.facet = facet;
 //        location.coordinates = canvasPos;
 ////        location.size = getDropSize();
@@ -1370,7 +1370,7 @@ public class DndHandler /*extends TransferHandler*/ {
 ////                        if (xel.getDesignBean() != null) {
 ////                            DesignBean lbean = (DesignBean)xel.getDesignBean();
 ////                    DesignBean lbean = InSyncService.getProvider().getMarkupDesignBeanForElement(xel);
-//                    DesignBean lbean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(xel);
+//                    DesignBean lbean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(xel);
 //                    if (lbean != null) {
 //                        if (lbean.isContainer()) {
 //                            parent = lbean;
@@ -1438,20 +1438,20 @@ public class DndHandler /*extends TransferHandler*/ {
 //        
 //    }
     
-//    private static HtmlDomProvider.Location computeLocationForBean(DesignBean bean, int where, String facet, Point canvasPos, Dimension dropSize, WebForm webform) {
+//    private static DomProvider.Location computeLocationForBean(DesignBean bean, int where, String facet, Point canvasPos, Dimension dropSize, WebForm webform) {
 //        if (bean == null) {
 //            throw new NullPointerException("Bean can't be null!"); // NOI18N
 //        }
 //        
-//        HtmlDomProvider.Location location = new HtmlDomProvider.Location();
+//        DomProvider.Location location = new DomProvider.Location();
 //        location.facet = facet;
 //        location.coordinates = canvasPos;
 ////        location.size = getDropSize();
 //        location.size = dropSize;
 //
 ////        if ((bean != null) && !LiveUnit.isCssPositionable(bean)) {
-//        if (bean instanceof MarkupDesignBean && !WebForm.getHtmlDomProviderService().isCssPositionable(
-//                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean))) {
+//        if (bean instanceof MarkupDesignBean && !WebForm.getDomProviderService().isCssPositionable(
+//                WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean))) {
 //            location.coordinates = null;
 //        }
 //
@@ -1464,7 +1464,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //        if (bean != null) {
 ////            element = FacesSupport.getElement(bean);
 ////            element = Util.getElement(bean);
-//            element = WebForm.getHtmlDomProviderService().getElement(bean);
+//            element = WebForm.getDomProviderService().getElement(bean);
 //
 //            // No, can still reposition these guys.
 //            //if (element == null) {
@@ -1497,7 +1497,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //                    DesignBean next = parent.getChildBean(i + 1);
 ////                    Element nextElement = FacesSupport.getElement(next);
 ////                    Element nextElement = Util.getElement(next);
-//                    Element nextElement = WebForm.getHtmlDomProviderService().getElement(next);
+//                    Element nextElement = WebForm.getDomProviderService().getElement(next);
 //                    before = nextElement;
 //
 //                    break;
@@ -1820,7 +1820,7 @@ public class DndHandler /*extends TransferHandler*/ {
 ////
 ////        return new MarkupPosition(under, before);
 ////        return webform.getDefaultMarkupPositionUnderParent(parent);
-//        return WebForm.getHtmlDomProviderService().getDefaultMarkupPositionUnderParent(parent);
+//        return WebForm.getDomProviderService().getDefaultMarkupPositionUnderParent(parent);
 //    }
 
 //    /** Figure out which kind of action we can do for the given
@@ -3395,7 +3395,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //            lastMessage =
 //                NbBundle.getMessage(DndHandler.class, "LinkTarget", region.getDisplayName());
                         lastMessage =
-                NbBundle.getMessage(DndHandler.class, "LinkTarget", WebForm.getHtmlDomProviderService().getRegionDisplayName(regionElement));
+                NbBundle.getMessage(DndHandler.class, "LinkTarget", WebForm.getDomProviderService().getRegionDisplayName(regionElement));
 
             StatusDisplayer.getDefault().setStatusText(lastMessage);
 //        } else if (bean != null) {
@@ -3419,12 +3419,12 @@ public class DndHandler /*extends TransferHandler*/ {
             if (type == DROP_LINKED) {
                 lastMessage =
 //                    NbBundle.getMessage(DndHandler.class, "LinkTarget", bean.getInstanceName());
-                        NbBundle.getMessage(DndHandler.class, "LinkTarget", WebForm.getHtmlDomProviderService().getInstanceName(componentRootElement));
+                        NbBundle.getMessage(DndHandler.class, "LinkTarget", WebForm.getDomProviderService().getInstanceName(componentRootElement));
                 StatusDisplayer.getDefault().setStatusText(lastMessage);
             } else if (type == DROP_PARENTED) {
                 lastMessage =
 //                    NbBundle.getMessage(DndHandler.class, "ParentTarget", bean.getInstanceName());
-                        NbBundle.getMessage(DndHandler.class, "ParentTarget", WebForm.getHtmlDomProviderService().getInstanceName(componentRootElement));
+                        NbBundle.getMessage(DndHandler.class, "ParentTarget", WebForm.getDomProviderService().getInstanceName(componentRootElement));
                 StatusDisplayer.getDefault().setStatusText(lastMessage);
             } else {
                 assert false : type;

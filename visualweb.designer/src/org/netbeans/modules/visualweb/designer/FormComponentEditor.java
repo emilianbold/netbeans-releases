@@ -18,8 +18,8 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
 import java.awt.Color;
@@ -101,7 +101,7 @@ class FormComponentEditor extends InlineEditor {
 //    private DesignProperty property;
 
     private FormComponentEditor(WebForm webform, /*MarkupDesignBean bean, DesignProperty property,*/
-    CssBox box/*, String xpath*/, HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
+    CssBox box/*, String xpath*/,DomProvider.InlineEditorSupport inlineEditorSupport) {
 //        super(webform, bean, property.getPropertyDescriptor().getName());
         super(webform, /*bean,*/ inlineEditorSupport);
         if(DesignerUtils.DEBUG) {
@@ -116,7 +116,7 @@ class FormComponentEditor extends InlineEditor {
     }
 
     public static FormComponentEditor get(WebForm webform, String xpath, CssBox box,
-    Element componentRootElement, /*MarkupDesignBean bean, DesignProperty property,*/ HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
+    Element componentRootElement,DomProvider.InlineEditorSupport inlineEditorSupport) {
         if (xpath != null) {
 //            RaveElement sourceElement = (RaveElement)bean.getElement();
 //            RaveElement root = sourceElement.getRendered();
@@ -503,7 +503,7 @@ class FormComponentEditor extends InlineEditor {
 ////                    bean.getElement());
 //                    // ====
 ////                InSyncService.getProvider().expandHtmlEntities(value, false, bean.getElement());
-//                WebForm.getHtmlDomProviderService().expandHtmlEntities(value, false, bean.getElement());
+//                WebForm.getDomProviderService().expandHtmlEntities(value, false, bean.getElement());
 //                    // </markup_separation>
             value = inlineEditorSupport.expandHtmlEntities(value, false);
         }

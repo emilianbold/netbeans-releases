@@ -24,7 +24,7 @@ import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.insync.faces.Entities;
@@ -37,37 +37,37 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.events.Event;
 
 /**
- * Impl of <code>HtmlDomProvider.InlineEditorSupport</code>
+ * Impl of <code>DomProvider.InlineEditorSupport</code>
  *
  * @author Peter Zavadsky
  * @author Tor Norby (old original code)
  */
-class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
+class InlineEditorSupportImpl implements DomProvider.InlineEditorSupport {
 
     private final JsfForm jsfForm;
-    // XXX TODO Remove ref to htmlDomProviderImpl.
-    private final HtmlDomProviderImpl htmlDomProviderImpl;
+    // XXX TODO Remove ref to domProviderImpl.
+    private final DomProviderImpl domProviderImpl;
     private final MarkupDesignBean markupDesignBean;
     private final DesignProperty   designProperty;
     
     /** Creates a new instance of InlineEditorSupportImpl */
-    public InlineEditorSupportImpl(JsfForm jsfForm, HtmlDomProviderImpl htmlDomProviderImpl, MarkupDesignBean markupDesignBean, DesignProperty designProperty) {
+    public InlineEditorSupportImpl(JsfForm jsfForm,DomProviderImpl domProviderImpl, MarkupDesignBean markupDesignBean, DesignProperty designProperty) {
         this.jsfForm = jsfForm;
-        this.htmlDomProviderImpl = htmlDomProviderImpl;
+        this.domProviderImpl = domProviderImpl;
         this.markupDesignBean = markupDesignBean;
         this.designProperty = designProperty;
     }
 
 
-//    public static HtmlDomProvider.InlineEditorSupport createDummyInlineEditorSupport() {
+//    public static DomProvider.InlineEditorSupport createDummyInlineEditorSupport() {
 //        return new DummyInlineEditorSupport();
 //    }
 //    
-//    private static class DummyInlineEditorSupport implements HtmlDomProvider.InlineEditorSupport {
+//    private static class DummyInlineEditorSupport implements DomProvider.InlineEditorSupport {
 //    } // End of DummyInlineEditorSupport.
 
     public boolean isEditingAllowed() {
-        return HtmlDomProviderServiceImpl.isEditingAllowed(designProperty);
+        return DomProviderServiceImpl.isEditingAllowed(designProperty);
     }
 
     public String getValueSource() {
@@ -88,7 +88,7 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
 
     // XXX AttributeInlineEditor only.
     public String getSpecialInitValue() {
-        return HtmlDomProviderServiceImpl.getSpecialInitValue(designProperty);
+        return DomProviderServiceImpl.getSpecialInitValue(designProperty);
     }
 
     public String getValue() {
@@ -124,7 +124,7 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
     }
 
     public DocumentFragment createSourceFragment() {
-        return htmlDomProviderImpl.createSourceFragment(markupDesignBean);
+        return domProviderImpl.createSourceFragment(markupDesignBean);
     }
 
     public String expandHtmlEntities(String value, boolean warn) {
@@ -132,7 +132,7 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
     }
 
     public boolean isEscaped() {
-        return HtmlDomProviderServiceImpl.isEscapedDesignBean(markupDesignBean);
+        return DomProviderServiceImpl.isEscapedDesignBean(markupDesignBean);
     }
 
     public void handleEvent(Event e) {
@@ -159,7 +159,7 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
             if (node instanceof Element) {
 //                MarkupDesignBean b = ((RaveElement)node).getDesignBean();
 //                MarkupDesignBean b = InSyncService.getProvider().getMarkupDesignBeanForElement((Element)node);
-//                MarkupDesignBean b = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)node);
+//                MarkupDesignBean b = WebForm.getDomProviderService().getMarkupDesignBeanForElement((Element)node);
                 MarkupDesignBean b = MarkupUnit.getMarkupDesignBeanForElement((Element)node);
 
                 if (b == null) {
@@ -169,29 +169,29 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
 
 //                webform.getDomSynchronizer().requestTextUpdate(b);
 //                webform.requestTextUpdate(b);
-                htmlDomProviderImpl.requestTextUpdate(b);
+                domProviderImpl.requestTextUpdate(b);
             }
         } else {
 //            webform.getDomSynchronizer().requestChange(bean);
 //            webform.requestChange(bean);
-            htmlDomProviderImpl.requestChange(markupDesignBean);
+            domProviderImpl.requestChange(markupDesignBean);
         }
     }
 
     public void beanChanged() {
-        htmlDomProviderImpl.beanChanged(markupDesignBean);
+        domProviderImpl.beanChanged(markupDesignBean);
     }
 
     public void requestChange() {
-        htmlDomProviderImpl.requestChange(markupDesignBean);
+        domProviderImpl.requestChange(markupDesignBean);
     }
 
     public void clearPrerendered() {
-        htmlDomProviderImpl.setPrerenderedBean(null, null);
+        domProviderImpl.setPrerenderedBean(null, null);
     }
 
     public boolean setPrerendered(DocumentFragment fragment) {
-        return htmlDomProviderImpl.setPrerenderedBean(markupDesignBean, fragment);
+        return domProviderImpl.setPrerenderedBean(markupDesignBean, fragment);
     }
 
     public void setStyleParent(DocumentFragment fragment) {
@@ -225,10 +225,10 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
     }
 
     public DocumentFragment renderDomFragment() {
-        DocumentFragment fragment = htmlDomProviderImpl.renderHtmlForMarkupDesignBean(markupDesignBean);
+        DocumentFragment fragment = domProviderImpl.renderHtmlForMarkupDesignBean(markupDesignBean);
         // XXX To get it into source document so it can work (Positions work only against source doc!).
         // TODO Change the positions to work over the rendered document, and also attach this fragment to the rendered doc.
-        fragment = (DocumentFragment)htmlDomProviderImpl.getJsfForm().getJspDom().importNode(fragment, true);
+        fragment = (DocumentFragment)domProviderImpl.getJsfForm().getJspDom().importNode(fragment, true);
         
         // XXX Moved from designer/../AttributeInlineEditor
         jsfForm.updateErrorsInComponent();

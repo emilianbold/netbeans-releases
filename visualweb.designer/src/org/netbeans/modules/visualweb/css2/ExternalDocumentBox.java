@@ -25,7 +25,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JViewport;
 
 import org.netbeans.modules.visualweb.api.designer.Designer.ExternalBox;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssListValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
@@ -392,7 +392,7 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
 ////        if (bean == CssBox.getMarkupDesignBeanForCssBox(this)) {
 ////            return this;
 ////        }
-//        Element componentRootElement = WebForm.getHtmlDomProviderService().getRenderedElement(bean);
+//        Element componentRootElement = WebForm.getDomProviderService().getRenderedElement(bean);
 //        if (componentRootElement != null && componentRootElement == CssBox.getElementForComponentRootCssBox(this)) {
 //            return this;
 //        }
@@ -505,7 +505,7 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
         return super.getWebForm();
     }
     
-    public HtmlDomProvider getExternalDomProvider() {
+    public DomProvider getExternalDomProvider() {
         WebForm externalForm = getExternalForm();
         return externalForm == null ? null : externalForm.getDomProvider();
     }

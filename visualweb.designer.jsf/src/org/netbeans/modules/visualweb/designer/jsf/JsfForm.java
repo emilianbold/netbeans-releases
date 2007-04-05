@@ -22,7 +22,7 @@ package org.netbeans.modules.visualweb.designer.jsf;
 
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.DesignerFactory;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DesignEvent;
@@ -126,7 +126,7 @@ public class JsfForm {
 
     private final PaletteController paletteController;
 
-    private final HtmlDomProvider htmlDomProvider = new HtmlDomProviderImpl(this);
+    private final DomProvider domProvider = new DomProviderImpl(this);
     
     private final DndSupport dndSupport;
 
@@ -218,12 +218,12 @@ public class JsfForm {
     }
     
     // XXX Revise, the need for this method is suspicious.
-    public static JsfForm findJsfFormForDomProvider(HtmlDomProvider domProvider) {
-        if (!(domProvider instanceof HtmlDomProviderImpl)) {
+    public static JsfForm findJsfFormForDomProvider(DomProvider domProvider) {
+        if (!(domProvider instanceof DomProviderImpl)) {
             return null;
         }
         
-        return ((HtmlDomProviderImpl)domProvider).getJsfForm();
+        return ((DomProviderImpl)domProvider).getJsfForm();
     }
 //    public static Designer createDesigner(DataObject jsfJspDataObject) {
 //        JsfForm jsfForm = JsfForm.getJsfForm(jsfJspDataObject);
@@ -255,7 +255,7 @@ public class JsfForm {
                 designerSet = new WeakSet<Designer>();
             }
             
-            designer = DesignerFactory.createDesigner(jsfForm.getHtmlDomProvider());
+            designer = DesignerFactory.createDesigner(jsfForm.getDomProvider());
             designerSet.add(designer);
             jsfForm2designerSet.put(jsfForm, designerSet);
         }
@@ -398,11 +398,11 @@ public class JsfForm {
     }
 
     
-    HtmlDomProvider getHtmlDomProvider() {
-        return htmlDomProvider;
+    DomProvider getDomProvider() {
+        return domProvider;
     }
 
-//    static boolean hasHtmlDomProvider(DataObject dataObject) {
+//    static boolean hasDomProvider(DataObject dataObject) {
 //        if (dataObject == null) {
 //            return false;
 //        }
@@ -521,7 +521,7 @@ public class JsfForm {
 //        return getFacesModel().getJspDom();
 //    }
     
-    // >> Impl of HtmlDomProvider
+    // >> Impl of DomProvider
 //    public Document getHtmlDom() {
 ////        return InSyncServiceProvider.get().getHtmlDomForMarkupFile(getFacesModel().getMarkupFile());
 //        return getFacesModel().getHtmlDom();
@@ -593,7 +593,7 @@ public class JsfForm {
     void requestTextUpdate(MarkupDesignBean bean) {
         getDomSynchronizer().requestTextUpdate(bean);
     }
-    // << Impl of HtmlDomProvider
+    // << Impl of DomProvider
     
     //////
     // XXX See DomSynchronizer
@@ -637,9 +637,9 @@ public class JsfForm {
 //// ====
 //        Exception renderFailure = InSyncService.getProvider().getRenderFailure(markupFile);
         
-//        Exception renderFailure = htmlDomProvider.getRenderFailure();
+//        Exception renderFailure = domProvider.getRenderFailure();
 ////        MarkupDesignBean renderFailureComponent = (MarkupDesignBean)InSyncService.getProvider().getRenderFailureComponent(markupFile);
-//        MarkupDesignBean renderFailureComponent = htmlDomProvider.getRenderFailureMarkupDesignBean();
+//        MarkupDesignBean renderFailureComponent = domProvider.getRenderFailureMarkupDesignBean();
 //        
 //// </missing designtime api>
 //
@@ -675,7 +675,7 @@ public class JsfForm {
 //            // Ugh... I need to track this differently!
 //            getTopComponent().updateErrors();
 //        }
-//        htmlDomProvider.tcUpdateErrors(this);
+//        domProvider.tcUpdateErrors(this);
         notifyViewsUpdateErrors();
     }
     
@@ -741,7 +741,7 @@ public class JsfForm {
     }
     
     //////
-    // XXX See HtmlDomProvider interface.
+    // XXX See DomProvider interface.
     void requestRefresh() {
         getDomSynchronizer().requestRefresh();
     }
@@ -878,11 +878,11 @@ public class JsfForm {
 //        return getFacesModel().getDnDSupport().canImport(comp, transferFlavors);
 //    }
     
-//    public DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+//    public DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, DomProvider.CoordinateTranslator coordinateTranslator) {
 //        return getFacesModel().getDnDSupport().pasteBeans(t, parent, pos, location, new CoordinateTranslatorImpl(coordinateTranslator), getDomSynchronizer());
 //    }
     
-//    public void importData(JComponent comp, Transferable t, Object transferData, Dimension dimension, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
+//    public void importData(JComponent comp, Transferable t, Object transferData, Dimension dimension, omProvider.Location location, DomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
 //        getFacesModel().getDnDSupport().importData(comp, t, transferData, dimension, new LocationImpl(location), new CoordinateTranslatorImpl(coordinateTranslator), getDomSynchronizer(), dropAction);
 //    }
     
@@ -894,7 +894,7 @@ public class JsfForm {
 //        return getFacesModel().getDnDSupport().getClasses(displayItems);
 //    }
     
-//    public boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos, String facet, List createdBeans, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator)
+//    public boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos, String facet, List createdBeans, DomProvider.Location location, DomProvider.CoordinateTranslator coordinateTranslator)
 //    throws IOException {
 //        return getFacesModel().getDnDSupport().importBean(items, origParent, nodePos, facet, createdBeans, new LocationImpl(location), new CoordinateTranslatorImpl(coordinateTranslator), getDomSynchronizer());
 //    }
@@ -945,32 +945,32 @@ public class JsfForm {
 //        }
 //    }
 
-//    void addHtmlDomProviderListener(HtmlDomProvider.HtmlDomProviderListener l) {
-//        listenerList.add(HtmlDomProvider.HtmlDomProviderListener.class, l);
+//    void addDomProviderListener(DomProvider.DomProviderListener l) {
+//        listenerList.add(DomProvider.DomProviderListener.class, l);
 //    }
 //
-//    void removeHtmlDomProviderListener(HtmlDomProvider.HtmlDomProviderListener l) {
-//        listenerList.remove(HtmlDomProvider.HtmlDomProviderListener.class, l);
+//    void removeDomProviderListener(DomProvider.DomProviderListener l) {
+//        listenerList.remove(DomProvider.DomProviderListener.class, l);
 //    }
     
-//    private HtmlDomProvider.HtmlDomProviderListener[] getHtmlDomProviderListeners() {
+//    private DomProvider.DomProviderListener[] getDomProviderListeners() {
 //        // Guaranteed to return a non-null array
 //        Object[] listeners = listenerList.getListenerList();
 //        
-//        List<HtmlDomProvider.HtmlDomProviderListener> htmlDomProviderListeners = new ArrayList<HtmlDomProvider.HtmlDomProviderListener>();
+//        List<DomProvider.DomProviderListener> dDomProviderListeners = new ArrayList<DomProvider.DomProviderListener>();
 //        // Process the listeners last to first, notifying
 //        // those that are interested in this event
 //        for (int i = listeners.length-2; i>=0; i-=2) {
-//            if (listeners[i] == HtmlDomProvider.HtmlDomProviderListener.class) {
-//                htmlDomProviderListeners.add((HtmlDomProvider.HtmlDomProviderListener)listeners[i+1]);
+//            if (listeners[i] == DomProvider.DomProviderListener.class) {
+//                domProviderListeners.add((DomProvider.DomProviderListener)listeners[i+1]);
 //            }          
 //        }
-//        return htmlDomProviderListeners.toArray(new HtmlDomProvider.HtmlDomProviderListener[htmlDomProviderListeners.size()]);
+//        return domProviderListeners.toArray(new DomProvider.DomProviderListener[domProviderListeners.size()]);
 //    }
 
 //    private void fireModelChanged() {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.modelChanged();
 //        }
 //    }
@@ -982,8 +982,8 @@ public class JsfForm {
     }
     
 //    private void fireModelRefreshed() {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.modelRefreshed();
 //        }
 //    }
@@ -995,8 +995,8 @@ public class JsfForm {
     }
 
 //    private void fireNodeChanged(Node rendered, Node parent, boolean wasMove) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.nodeChanged(rendered, parent, wasMove);
 //        }
 //    }
@@ -1008,8 +1008,8 @@ public class JsfForm {
     }
 
 //    private void fireNodeRemoved(Node previouslyRendered, Node parent) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.nodeRemoved(previouslyRendered, parent);
 //        }
 //    }
@@ -1021,8 +1021,8 @@ public class JsfForm {
     }
 
 //    private void fireNodeInserted(Node rendered, Node parent) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.nodeInserted(rendered, parent);
 //        }
 //    }
@@ -1034,15 +1034,15 @@ public class JsfForm {
     }
 
 //    private void fireUpdateErrorsInComponent() {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.updateErrorsInComponent();
 //        }
 //    }
 
 //    private void fireUpdateGridMode(boolean gridMode) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.gridModeUpdated(gridMode);
 //        }
 //    }
@@ -1054,8 +1054,8 @@ public class JsfForm {
     }
 
 //    private void fireDocumentReplaced() {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.documentReplaced();
 //        }
 //    }
@@ -1067,8 +1067,8 @@ public class JsfForm {
     }
 
 //    void fireShowDropMatch(Element componentRootElement, Element regionElement, int dropType) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.showDropMatch(componentRootElement, regionElement, dropType);
 //        }
 //    }
@@ -1080,8 +1080,8 @@ public class JsfForm {
     }
     
 //    void fireClearDropMatch() {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.clearDropMatch();
 //        }
 //    }
@@ -1094,8 +1094,8 @@ public class JsfForm {
 
 //    void fireSelect(DesignBean designBean) {
 //        Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(designBean);
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 ////            listener.select(designBean);
 //            listener.select(componentRootElement);
 //        }
@@ -1108,8 +1108,8 @@ public class JsfForm {
     }
 
 //    private void fireRefreshForm(boolean deep) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.refreshForm(deep);
 //        }
 //    }
@@ -1122,8 +1122,8 @@ public class JsfForm {
 //                componentRootElements.add(componentRootElement);
 //            }
 //        }
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 ////            listener.inlineEdit(designBeans);
 //            listener.inlineEdit(componentRootElements.toArray(new Element[componentRootElements.size()]));
 //        }
@@ -1136,15 +1136,15 @@ public class JsfForm {
     }
 
 //    private void fireDesignContextActivated(DesignContext designContext) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.designContextActivated(designContext);
 //        }
 //    }
 
 //    private void fireDesignContextDeactivated(DesignContext designContext) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.designContextDeactivated(designContext);
 //        }
 //    }
@@ -1180,8 +1180,8 @@ public class JsfForm {
         }
         generationSeen = currentGeneration;
         
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 ////            listener.designContextChanged(designContext);
 //            listener.designContextGenerationChanged();
 //        }
@@ -1189,64 +1189,64 @@ public class JsfForm {
     }
 
 //    private void fireDesignBeanCreated(DesignBean designBean) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.designBeanCreated(designBean);
 //        }
 //    }
 
 //    private void fireDesignBeanDeleted(DesignBean designBean) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.designBeanDeleted(designBean);
 //        }
 //    }
 
 //    private void fireDesignBeanMoved(DesignBean designBean, DesignBean designBean0, Position position) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.designBeanMoved(designBean, designBean0, position);
 //        }
 //    }
 
 //    private void fireDesignBeanContextActivated(DesignBean designBean) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.designBeanContextActivated(designBean);
 //        }
 //    }
 
 //    private void fireDesignBeanContextDeactivated(DesignBean designBean) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.designBeanContextDeactivated(designBean);
 //        }
 //    }
 
 //    private void fireDesignBeanNameChanged(DesignBean designBean, String string) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.designBeanNameChanged(designBean, string);
 //        }
 //    }
 
 //    private void fireDesignBeanChanged(DesignBean designBean) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.designBeanChanged(designBean);
 //        }
 //    }
 
 //    private void fireDesignPropertyChanged(DesignProperty designProperty, Object object) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.designPropertyChanged(designProperty, object);
 //        }
 //    }
 
 //    private void fireDesignEventChanged(DesignEvent designEvent) {
-//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//        DomProvider.DomProviderListener[] listeners = getDomProviderListeners();
+//        for (DomProvider.DomProviderListener listener : listeners) {
 //            listener.designEventChanged(designEvent);
 //        }
 //    }
@@ -1386,7 +1386,7 @@ public class JsfForm {
     }
 
     public Element getHtmlBody() {
-//        return htmlDomProvider.getHtmlBody();
+//        return domProvider.getHtmlBody();
         return getHtmlBody(true);
     }
 
@@ -1402,17 +1402,17 @@ public class JsfForm {
     }
     
     public Document getJspDom() {
-//        return htmlDomProvider.getJspDom();
+//        return domProvider.getJspDom();
         return getFacesModel().getJspDom();
     }
     
     Document getHtmlDom() {
-//        return htmlDomProvider.getHtmlDom();
+//        return domProvider.getHtmlDom();
         return getFacesModel().getHtmlDom();
     }
     
     public Element createComponent(String className, Node parent, Node before) {
-//        return htmlDomProvider.createComponent(className, parent, before);
+//        return domProvider.createComponent(className, parent, before);
         DesignBean designBean = createBean(className, parent, before);
         return designBean instanceof MarkupDesignBean ? ((MarkupDesignBean)designBean).getElement() : null;
     }
@@ -1426,7 +1426,7 @@ public class JsfForm {
     }
     
     public boolean moveComponent(Element componentRootElement, Node parentNode, Node before) {
-        return htmlDomProvider.moveComponent(componentRootElement, parentNode, before);
+        return domProvider.moveComponent(componentRootElement, parentNode, before);
     }
 
     public boolean isInlineEditing() {
@@ -1441,11 +1441,11 @@ public class JsfForm {
     }
 
 //    public WriteLock writeLock(String message) {
-//        return htmlDomProvider.writeLock(message);
+//        return domProvider.writeLock(message);
 //    }
 //
 //    public void writeUnlock(WriteLock writeLock) {
-//        htmlDomProvider.writeUnlock(writeLock);
+//        domProvider.writeUnlock(writeLock);
 //    }
     public UndoEvent writeLock(String message) {
         return getFacesModel().writeLock(message);
@@ -1456,7 +1456,7 @@ public class JsfForm {
     }
 
 //    public void deleteComponent(Element componentRootElement) {
-//        htmlDomProvider.deleteComponent(componentRootElement);
+//        domProvider.deleteComponent(componentRootElement);
 //    }
 
     DomDocumentImpl getDomDocumentImpl() {
@@ -1464,30 +1464,30 @@ public class JsfForm {
     }
     
     public /*private*/ void syncModel() {
-//        htmlDomProvider.syncModel();
+//        domProvider.syncModel();
         getFacesModel().sync();
     }
     
     public void setModelActivated(boolean activated) {
-//        htmlDomProvider.setModelActivated(activated);
+//        domProvider.setModelActivated(activated);
         getFacesModel().setActivated(activated);
     }
     
     boolean isModelValid() {
-        return htmlDomProvider.isModelValid();
+        return domProvider.isModelValid();
     }
     
     public boolean isModelBusted() {
-        return htmlDomProvider.isModelBusted();
+        return domProvider.isModelBusted();
     }
     
     public /*private*/ void clearHtml() {
-//        htmlDomProvider.clearHtml();
+//        domProvider.clearHtml();
         getFacesModel().clearHtml();
     }
     
     public DataObject getJspDataObject() {
-        return htmlDomProvider.getJspDataObject();
+        return domProvider.getJspDataObject();
     }
     
     public void deleteDesignBean(DesignBean designBean) {
@@ -1495,7 +1495,7 @@ public class JsfForm {
     }
     
     public void setUpdatesSuspended(Element componentRootElement, boolean suspend) {
-//        htmlDomProvider.setUpdatesSuspended(componentRootElement, suspend);
+//        domProvider.setUpdatesSuspended(componentRootElement, suspend);
         MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
         setUpdatesSuspended(markupDesignBean, suspend);
     }
@@ -1524,20 +1524,20 @@ public class JsfForm {
     } // End of Alignment.
     
     public boolean canPasteTransferable(Transferable trans) {
-        return htmlDomProvider.canPasteTransferable(trans);
+        return domProvider.canPasteTransferable(trans);
     }
     
     public UndoRedo getUndoManager() {
-//        return htmlDomProvider.getUndoManager();
+//        return domProvider.getUndoManager();
         return getFacesModel().getUndoManager();
     }
     
     public int computeActions(Element componentRootElement, Transferable transferable) {
-        return htmlDomProvider.computeActions(componentRootElement, transferable);
+        return domProvider.computeActions(componentRootElement, transferable);
     }
     
     public void attachContext() {
-//        htmlDomProvider.attachContext();
+//        domProvider.attachContext();
         DesignContext context = getFacesModel().getLiveUnit();
         if (context != null) {
 //            attachContext(context);
@@ -1547,12 +1547,12 @@ public class JsfForm {
     
     
     public boolean hasRenderingErrors() {
-//        return htmlDomProvider.hasRenderingErrors();
+//        return domProvider.hasRenderingErrors();
         return getRenderFailureComponent() != null;
     }
     
     public JComponent getErrorPanel(ErrorPanelCallback errorPanelCallback) {
-//        return (JComponent)htmlDomProvider.getErrorPanel(errorPanelCallback);
+//        return (JComponent)domProvider.getErrorPanel(errorPanelCallback);
         FacesModel facesModel = getFacesModel();
         if (facesModel.isBusted()) {
             return new ErrorPanelImpl(facesModel, facesModel.getErrors(), errorPanelCallback);
@@ -1583,7 +1583,7 @@ public class JsfForm {
 
     
     public boolean isSourceDirty() {
-//        return htmlDomProvider.isSourceDirty();
+//        return domProvider.isSourceDirty();
         MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
         if (markupUnit != null) {
             return markupUnit.getState() == Unit.State.SOURCEDIRTY;
@@ -1596,7 +1596,7 @@ public class JsfForm {
     }
     
     public void dumpHtmlMarkupForNode(org.openide.nodes.Node node) {
-//        htmlDomProvider.dumpHtmlMarkupForNode(node);
+//        domProvider.dumpHtmlMarkupForNode(node);
         DesignBean designBean = (DesignBean)node.getLookup().lookup(DesignBean.class);
         if (designBean instanceof MarkupDesignBean) {
             MarkupDesignBean markupDesignBean = (MarkupDesignBean)designBean;
@@ -1626,16 +1626,16 @@ public class JsfForm {
     }
    
     public DocumentFragment getHtmlDomFragment() {
-//        return htmlDomProvider.getHtmlDocumentFragment();
+//        return domProvider.getHtmlDocumentFragment();
         return getFacesModel().getHtmlDomFragment();
     }
     
     public Element getDefaultParentComponent() {
-        return htmlDomProvider.getDefaultParentComponent();
+        return domProvider.getDefaultParentComponent();
     }
     
     public Transferable copyComponents(Element[] componentRootElements) {
-//        return htmlDomProvider.copyComponents(componentRootElements);
+//        return domProvider.copyComponents(componentRootElements);
         List<DesignBean> beans = new ArrayList<DesignBean>();
         for (Element componentRootElement : componentRootElements) {
             DesignBean bean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
@@ -1658,7 +1658,7 @@ public class JsfForm {
 ////                parent = ((RaveElement)curr).getDesignBean();
 //            if (node instanceof Element) {
 ////                parent = InSyncService.getProvider().getMarkupDesignBeanForElement((Element)curr);
-////                parent = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)curr);
+////                parent = WebForm.getDomProviderService().getMarkupDesignBeanForElement((Element)curr);
 //                parent = MarkupUnit.getMarkupDesignBeanForElement((Element)node);
 //
 //                if (parent != null) {
@@ -1860,9 +1860,9 @@ public class JsfForm {
     
     
 //    private static class CoordinateTranslatorImpl implements FacesDnDSupport.CoordinateTranslator {
-//        private final HtmlDomProvider.CoordinateTranslator coordinateTranslator;
+//        private final DomProvider.CoordinateTranslator coordinateTranslator;
 //        
-//        public CoordinateTranslatorImpl(HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+//        public CoordinateTranslatorImpl(DomProvider.CoordinateTranslator coordinateTranslator) {
 //            this.coordinateTranslator = coordinateTranslator;
 //        }
 //        
@@ -1881,10 +1881,10 @@ public class JsfForm {
     
     
 //    private static class LocationImpl implements FacesDnDSupport.Location {
-//        private final HtmlDomProvider.Location location;
+//        private final DomProvider.Location location;
 //        
 //        
-//        public LocationImpl(HtmlDomProvider.Location location) {
+//        public LocationImpl(DomProvider.Location location) {
 //            this.location = location;
 //        }
 //        
@@ -2101,7 +2101,7 @@ public class JsfForm {
             Iterator it =
 //                DesignerService.getDefault().getWebPages(getProject(), true, false).iterator();
 //                    InSyncService.getProvider().getWebPages(getProject(), true, false).iterator();
-//                    htmlDomProvider.getWebPageFileObjectsInThisProject().iterator();
+//                    domProvider.getWebPageFileObjectsInThisProject().iterator();
                     Util.getWebPages(getFacesModel().getProject(), true, false).iterator();
 
             while (it.hasNext()) {

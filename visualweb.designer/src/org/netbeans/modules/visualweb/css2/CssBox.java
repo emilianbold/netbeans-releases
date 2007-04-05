@@ -232,7 +232,7 @@ public class CssBox implements Box {
 //        this.initialFocus = DesignerActions.isFocus(getDesignBean());
 //        this.initialFocus = isFocus(getDesignBean());
 //        this.initialFocus = isFocus(getMarkupDesignBeanForCssBox(this));
-        this.initialFocus = WebForm.getHtmlDomProviderService().isFocusedElement(CssBox.getElementForComponentRootCssBox(this));
+        this.initialFocus = WebForm.getDomProviderService().isFocusedElement(CssBox.getElementForComponentRootCssBox(this));
     }
     
 
@@ -248,13 +248,13 @@ public class CssBox implements Box {
 ////                    (((RaveElement)element.getParentNode()).getDesignBean() == bean)) {
 //            if (element.getParentNode() instanceof Element
 ////            && InSyncService.getProvider().getMarkupDesignBeanForElement((Element)element.getParentNode()) == bean) {
-//            && WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)element.getParentNode()) == bean) {
+//            && WebForm.getDomProviderService().getMarkupDesignBeanForElement((Element)element.getParentNode()) == bean) {
 //                // Only set the sourceElement if we're a new toplevel
 //                // element for this bean
 //                bean = null;
 //            }
             
-////            bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForComponentRootElement(element);
+////            bean = WebForm.getDomProviderService().getMarkupDesignBeanForComponentRootElement(element);
 //            MarkupDesignBean bean = getMarkupDesignBeanForComponentRootCssBox(this);
 //            
 //            if (bean != null) {
@@ -407,7 +407,7 @@ public class CssBox implements Box {
 //        || bean.getInstance() instanceof com.sun.webui.jsf.component.PageSeparator) {
 //            return;
 //        }
-        if(WebForm.getHtmlDomProviderService().ignoreDesignBorder(componentRootElement)) {
+        if(WebForm.getDomProviderService().ignoreDesignBorder(componentRootElement)) {
             return;
         }
 
@@ -669,8 +669,8 @@ public class CssBox implements Box {
     public /*protected*/ final Rectangle computeRegionBounds(Element regionElement, Rectangle bounds) {
 //        if ((element != null) && (((RaveElement)element).getMarkupMouseRegion() == region)) {
 //        if (element != null && (InSyncService.getProvider().getMarkupMouseRegionForElement(element) == region)) {
-//        if (element != null && (WebForm.getHtmlDomProviderService().getMarkupMouseRegionForElement(element) == region)) {
-        if (element != null && WebForm.getHtmlDomProviderService().isSameRegionOfElement(regionElement, element)) {
+//        if (element != null && (WebForm.getDomProviderService().getMarkupMouseRegionForElement(element) == region)) {
+        if (element != null && WebForm.getDomProviderService().isSameRegionOfElement(regionElement, element)) {
             Rectangle r = new Rectangle(getAbsoluteX(), getAbsoluteY(), getWidth(), getHeight());
 
             if (bounds == null) {
@@ -696,8 +696,8 @@ public class CssBox implements Box {
 
 //                    if (xel.getMarkupMouseRegion() == region) {
 //                    if (InSyncService.getProvider().getMarkupMouseRegionForElement(xel) == region) {
-//                    if (WebForm.getHtmlDomProviderService().getMarkupMouseRegionForElement(xel) == region) {
-                    if (WebForm.getHtmlDomProviderService().isSameRegionOfElement(regionElement, xel)) {
+//                    if (WebForm.getDomProviderService().getMarkupMouseRegionForElement(xel) == region) {
+                    if (WebForm.getDomProviderService().isSameRegionOfElement(regionElement, xel)) {
                         found = true;
                     }
 
@@ -770,8 +770,8 @@ public class CssBox implements Box {
 //    protected CssBox findCssBox(DesignBean bean) {
 ////        Element e = FacesSupport.getElement(bean);
 ////        Element e = Util.getElement(bean);
-////        Element e = WebForm.getHtmlDomProviderService().getElement(bean);
-//        Element componentRootElement = WebForm.getHtmlDomProviderService().getRenderedElement(bean);
+////        Element e = WebForm.getDomProviderService().getElement(bean);
+//        Element componentRootElement = WebForm.getDomProviderService().getRenderedElement(bean);
 //
 ////        if (e != null) {
 //////            CssBox box = CssBox.getBox(e);
@@ -1229,7 +1229,7 @@ public class CssBox implements Box {
 ////                FacesSupport.isFormBean(webform, bean)) {
 //        if ((bean == null) || !boxType.isPositioned()
 ////        || (Util.getFacesBean(bean) == null) || Util.isFormBean(webform.getModel(), bean)) {
-//        || !WebForm.getHtmlDomProviderService().isFacesBean(bean)
+//        || !WebForm.getDomProviderService().isFacesBean(bean)
 //        || webform.isFormBean(bean)) {
 //            return;
 //        }
@@ -1238,7 +1238,7 @@ public class CssBox implements Box {
 //                FacesSupport.isFormBean(webform, bean)) {
         if ((componentRootElement == null) || !boxType.isPositioned()
 //        || (Util.getFacesBean(bean) == null) || Util.isFormBean(webform.getModel(), bean)) {
-        || !WebForm.getHtmlDomProviderService().isFacesComponent(componentRootElement)
+        || !WebForm.getDomProviderService().isFacesComponent(componentRootElement)
         || webform.isFormComponent(componentRootElement)) {
             return;
         }
@@ -1362,7 +1362,7 @@ public class CssBox implements Box {
 ////            return null;
 ////        }
 ////        return getMarkupDesignBeanForComponentRootCssBox(cssBox);
-//        return WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(
+//        return WebForm.getDomProviderService().getMarkupDesignBeanForElement(
 //                getElementForComponentRootCssBox(cssBox));
 //    }
     
@@ -1373,7 +1373,7 @@ public class CssBox implements Box {
 //        Element element = cssBox.getElement();
 //        ContainerBox parentBox = cssBox.getParent();
 //        Element parentBoxElement = parentBox == null ? null : parentBox.getElement();
-//        return WebForm.getHtmlDomProviderService().getMarkupDesignBeanForComponentRootElement(element, parentBoxElement);
+//        return WebForm.getDomProviderService().getMarkupDesignBeanForComponentRootElement(element, parentBoxElement);
 //    }
 
     /** XXX This will replace the JSF specific above methods.
@@ -1403,7 +1403,7 @@ public class CssBox implements Box {
         Element element = cssBox.getElement();
         ContainerBox parentBox = cssBox.getParent();
         Element parentBoxElement = parentBox == null ? null : parentBox.getElement();
-        return WebForm.getHtmlDomProviderService().isPrincipalElement(element, parentBoxElement) ? element : null;
+        return WebForm.getDomProviderService().isPrincipalElement(element, parentBoxElement) ? element : null;
     }
     
     

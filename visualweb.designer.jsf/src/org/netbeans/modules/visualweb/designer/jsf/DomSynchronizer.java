@@ -674,7 +674,7 @@ FacesDndSupport.UpdateSuspender {
         pendingEventType = TYPE_NONE;
 
         if (DEBUG) {
-            DocumentFragment html = jsfForm.getHtmlDomProvider().getHtmlDocumentFragment();
+            DocumentFragment html = jsfForm.getDomProvider().getHtmlDocumentFragment();
 
             if (html != null) {
                 System.out.println("\nBefore delayed updates to bean " + bean + " the html is\n" +
@@ -783,7 +783,7 @@ FacesDndSupport.UpdateSuspender {
         }
 
         if (DEBUG) {
-            DocumentFragment html = jsfForm.getHtmlDomProvider().getHtmlDocumentFragment();
+            DocumentFragment html = jsfForm.getDomProvider().getHtmlDocumentFragment();
 
             if (html != null) {
                 System.out.println("\nAfter delayed updates to bean " + bean + " the html is\n" +
@@ -1110,11 +1110,11 @@ FacesDndSupport.UpdateSuspender {
     private void processRefresh() {
         // XXX Revise this method, it might be meaningless here now.
 //        webform.clearHtml();
-//        jsfForm.getHtmlDomProvider().clearHtml();
+//        jsfForm.getDomProvider().clearHtml();
         jsfForm.clearHtml();
 
         // Intentional side-effect -- cause re-generation of html dom
-        DocumentFragment html = jsfForm.getHtmlDomProvider().getHtmlDocumentFragment();
+        DocumentFragment html = jsfForm.getDomProvider().getHtmlDocumentFragment();
 
         if (DEBUG) {
             System.out.println("Refresh: Got new HTML fragment: " +

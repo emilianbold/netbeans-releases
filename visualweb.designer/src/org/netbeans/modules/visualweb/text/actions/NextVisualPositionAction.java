@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 import org.w3c.dom.Element;
 
@@ -162,7 +162,7 @@ public class NextVisualPositionAction extends TextAction {
 //        while (it.hasNext()) {
 //            DesignBean bean = (DesignBean)it.next();
         for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
-//            DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//            DesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //            CssBox box = mapper.findBox(bean);
             CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 

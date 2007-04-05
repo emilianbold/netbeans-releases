@@ -19,7 +19,7 @@
 package org.netbeans.modules.visualweb.designer.jsf.text;
 
 import java.util.Arrays;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.insync.faces.Entities;
 import org.openide.ErrorManager;
@@ -628,7 +628,7 @@ import org.w3c.dom.Text;
 //                            getExpandedOffset(jspx, offset);
                     // ====
 //                    renderOffset = InSyncService.getProvider().getExpandedOffset(jspx, offset);
-//                    renderOffset = WebForm.getHtmlDomProviderService().getExpandedOffset(jspx, offset);
+//                    renderOffset = WebForm.getDomProviderService().getExpandedOffset(jspx, offset);
                     renderOffset = Entities.getExpandedOffset(jspx, offset);
                     // </markup_separation>
                 }
@@ -788,7 +788,7 @@ import org.w3c.dom.Text;
 //                            getUnexpandedOffset(jspx, offset);
                     // ====
 //                    sourceOffset = InSyncService.getProvider().getUnexpandedOffset(jspx, offset);
-//                    sourceOffset = WebForm.getHtmlDomProviderService().getUnexpandedOffset(jspx, offset);
+//                    sourceOffset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, offset);
                     sourceOffset = Entities.getUnexpandedOffset(jspx, offset);
                     // </markup_separation>
                 }

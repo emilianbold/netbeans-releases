@@ -22,7 +22,7 @@ import javax.swing.UIManager;
 
 import javax.swing.plaf.ComponentUI;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 
 /**
  * Text editor user interface

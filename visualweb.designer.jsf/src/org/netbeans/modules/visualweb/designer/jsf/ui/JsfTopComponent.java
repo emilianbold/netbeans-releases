@@ -20,7 +20,7 @@ package org.netbeans.modules.visualweb.designer.jsf.ui;
 
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Point;
@@ -55,7 +55,6 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerListener;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.palette.PaletteController;
@@ -577,7 +576,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //            throw(new IllegalArgumentException("Null context"));
 //        }
 ////        long currentGeneration = ((LiveUnit)context).getContextGeneration();
-//        long currentGeneration = WebForm.getHtmlDomProviderService().getContextGenearation(context);
+//        long currentGeneration = WebForm.getDomProviderService().getContextGenearation(context);
 //
 //        if (generationSeen == currentGeneration) {
 //            return;
@@ -1391,7 +1390,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //                MarkupDesignBean bean = (MarkupDesignBean)it.next();
 //            for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
             for (Element componentRootElement : componentRootElements) {
-//                MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                MarkupDesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //                if (bean == null) {
 //                    continue;
 //                }
@@ -1460,7 +1459,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //                }
 //                System.err.println("\nRendered markup design bean=" + markupDesignBean); // NOI18N
 ////                System.err.println(Util.getHtmlStream(renderedElement));
-//                System.err.println(WebForm.getHtmlDomProviderService().getHtmlStream(renderedElement));
+//                System.err.println(WebForm.getDomProviderService().getHtmlStream(renderedElement));
 //            } else {
 //                System.err.println("\nDesign bean not renderable, design bean=" + designBean); // NOI18N
 //                dumpHtmlMarkupDesignBeanHtml();
@@ -1473,14 +1472,14 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //    private void dumpHtmlMarkupDesignBeanHtml() {
 //        DocumentFragment df = webform.getHtmlDomFragment();
 ////        Element html = Util.findDescendant(HtmlTag.HTML.name, df);
-//        Element html = WebForm.getHtmlDomProviderService().findHtmlElementDescendant(df);
+//        Element html = WebForm.getDomProviderService().findHtmlElementDescendant(df);
 //        if (html == null) {
 //            return;
 //        }
 ////        System.err.println("\nRendered html element markup design bean=" + MarkupUnit.getMarkupDesignBeanForElement(html)); // NOI18N
-//        System.err.println("\nRendered html element markup design bean=" + WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(html)); // NOI18N
+//        System.err.println("\nRendered html element markup design bean=" + WebForm.getDomProviderService().getMarkupDesignBeanForElement(html)); // NOI18N
 ////        System.err.println(Util.getHtmlStream(html)); // NOI18N
-//        System.err.println(WebForm.getHtmlDomProviderService().getHtmlStream(html)); // NOI18N
+//        System.err.println(WebForm.getDomProviderService().getHtmlStream(html)); // NOI18N
 //    }
     
     private void dumpActivatedComponentCssBoxes() {
@@ -1494,7 +1493,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
                 continue;
             }
 //            DesignBean designBean = (DesignBean)node.getLookup().lookup(DesignBean.class);
-//            Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementFromNode(node);
+//            Element componentRootElement = WebForm.getDomProviderService().getComponentRootElementFromNode(node);
             Element componentRootElement = JsfSupportUtilities.getComponentRootElementFromNode(node);
                     
 //            if (designBean == null) {
@@ -1528,7 +1527,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         DocumentFragment df = jsfForm.getHtmlDomFragment();
         
 //        Element html = Util.findDescendant(HtmlTag.HTML.name, df);
-//        Element html = WebForm.getHtmlDomProviderService().findHtmlElementDescendant(df);
+//        Element html = WebForm.getDomProviderService().findHtmlElementDescendant(df);
         Element html = JsfSupportUtilities.findHtmlElementDescendant(df);
         if (html == null) {
             return;
@@ -1539,7 +1538,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             return;
         }
 //        System.err.println("\nCss boxes for html element markup design bean=" + MarkupUnit.getMarkupDesignBeanForElement(html));
-//        System.err.println("\nCss boxes for html element markup design bean=" + WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(html));
+//        System.err.println("\nCss boxes for html element markup design bean=" + WebForm.getDomProviderService().getMarkupDesignBeanForElement(html));
         System.err.println("\nCssBoxes for element=" + html);
         pageBox.list(System.err, 0);
     }
@@ -1601,7 +1600,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //                DesignBean bean = (DesignBean)it.next();
 //            for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
             for (Element componentRootElement : designer.getSelectedComponents()) {
-//                DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                DesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //
 //                if (bean != null) {
                 if (componentRootElement != null) {
@@ -1644,7 +1643,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        DesignBean lb = webform.getSelection().getSelectedContainer();
 //        Element componentRootElement = webform.getSelection().getSelectedContainer();
         Element componentRootElement = designer.getSelectedContainer();
-//        DesignBean lb = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//        DesignBean lb = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 
 //        if (lb == null) {
         if (componentRootElement == null) {
@@ -1679,7 +1678,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        List<MarkupDesignBean> selectedBeans = Arrays.asList(markupDesignBeans);
 //        List<MarkupDesignBean> selectedBeans = new ArrayList<MarkupDesignBean>();
 //        for (Element componentRootElement : selectedComponentRootElements) {
-//            selectedBeans.add(WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement));
+//            selectedBeans.add(WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement));
 //        }
         List<Element> selectedComponents = Arrays.asList(selectedComponentRootElements);
         
@@ -1729,15 +1728,15 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //            if (designBean == null) {
 //                continue;
 //            }
-//            Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementFromNode(node);
+//            Element componentRootElement = WebForm.getDomProviderService().getComponentRootElementFromNode(node);
             Element componentRootElement = JsfSupportUtilities.getComponentRootElementFromNode(node);
             if (componentRootElement == null) {
                 continue;
             }
 //            if (!Util.isSpecialBean(designBean)) {
-//            if (designBean instanceof MarkupDesignBean && !WebForm.getHtmlDomProviderService().isSpecialComponent(
-//                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean))) {
-//            if (!WebForm.getHtmlDomProviderService().isSpecialComponent(componentRootElement)) {
+//            if (designBean instanceof MarkupDesignBean && !WebForm.getDomProviderService().isSpecialComponent(
+//                    WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean))) {
+//            if (!WebForm.getDomProviderService().isSpecialComponent(componentRootElement)) {
             if (!JsfSupportUtilities.isSpecialComponent(componentRootElement)) {
 //                list.add(designBean);
                 componentRootElements.add(componentRootElement);
@@ -1776,7 +1775,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        Document doc = webform.getDocument();
 
 ////        UndoEvent undoEvent = webform.getModel().writeLock(NbBundle.getMessage(SelectionTopComp.class, "DeleteSelection")); // NOI18N
-//        HtmlDomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(SelectionTopComp.class, "DeleteSelection")); // NOI18N
+//        DomProvider.WriteLock writeLock = webform.writeLock(NbBundle.getMessage(SelectionTopComp.class, "DeleteSelection")); // NOI18N
 //        try {
 //            doc.writeLock(NbBundle.getMessage(SelectionTopComp.class, "DeleteSelection")); // NOI18N
 
@@ -1802,15 +1801,15 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //                if (designBean == null) {
 //                    continue;
 //                }
-//                Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementFromNode(node);
+//                Element componentRootElement = WebForm.getDomProviderService().getComponentRootElementFromNode(node);
                 Element componentRootElement = JsfSupportUtilities.getComponentRootElementFromNode(node);
                 if (componentRootElement == null) {
                     continue;
                 }
 //                if (!Util.isSpecialBean(designBean)) {
-//                if (designBean instanceof MarkupDesignBean && !WebForm.getHtmlDomProviderService().isSpecialComponent(
-//                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean))) {
-//                if (!WebForm.getHtmlDomProviderService().isSpecialComponent(componentRootElement)) {
+//                if (designBean instanceof MarkupDesignBean && !WebForm.getDomProviderService().isSpecialComponent(
+//                        WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean))) {
+//                if (!WebForm.getDomProviderService().isSpecialComponent(componentRootElement)) {
 ////                    webform.getModel().getLiveUnit().deleteBean(designBean);
 ////                    webform.deleteBean(designBean);
 //                    webform.deleteComponent(componentRootElement);
@@ -2065,7 +2064,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //                        new NullPointerException("No DesignBean for node=" + node)); // NOI18N
 //                continue;
 //            }
-//            Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementFromNode(node);
+//            Element componentRootElement = WebForm.getDomProviderService().getComponentRootElementFromNode(node);
             Element componentRootElement = JsfSupportUtilities.getComponentRootElementFromNode(node);
 //            beans.add(bean);
             if (componentRootElement != null) {
