@@ -40,6 +40,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.api.project.Project;
 import javax.swing.*;
 import java.util.*;
@@ -576,7 +577,7 @@ public class Annotator {
 
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();
-            if (VCSContext.isFlat(file)) {
+            if (VersioningSupport.isFlat(file)) {
                 for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
                     if (mf.getParentFile().equals(file)) {

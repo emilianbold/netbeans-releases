@@ -27,7 +27,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
-import org.netbeans.modules.versioning.spi.FlatFolder;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 
 import javax.swing.*;
@@ -81,7 +81,7 @@ public class Utils {
      * @return true if ancestor is an ancestor folder of file OR both parameters are equal, false otherwise
      */
     public static boolean isAncestorOrEqual(File ancestor, File file) {
-        if (VCSContext.isFlat(ancestor)) {
+        if (VersioningSupport.isFlat(ancestor)) {
             return ancestor.equals(file) || ancestor.equals(file.getParentFile()) && !file.isDirectory();
         }
         for (; file != null; file = file.getParentFile()) {

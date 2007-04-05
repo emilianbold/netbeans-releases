@@ -33,7 +33,6 @@ import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.ErrorManager;
@@ -46,6 +45,8 @@ import org.openide.filesystems.*;
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.beans.PropertyChangeListener;
@@ -698,51 +699,21 @@ public class CvsVersioningSystem {
             FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY;
     
     
-    public OriginalContent getVCSOriginalContent(File file) {
-        FileInformation info = fileStatusCache.getStatus(file);
-        if ((info.getStatus() & STATUS_DIFFABLE) == 0) return null;
-        return new CvsOriginalContent(file);
+    public void getOriginalFile(File workingCopy, File originalFile) {
+        FileInformation info = fileStatusCache.getStatus(workingCopy);
+        if ((info.getStatus() & STATUS_DIFFABLE) == 0) return;
+
+        // TODO: it is not easy to tell whether the file is not yet versioned OR some real error occurred   
+        try {
+            File original = VersionsCache.getInstance().getRemoteFile(workingCopy, VersionsCache.REVISION_BASE, null, true);
+            if (original == null) throw new IOException("Unable to get BASE revision of " + workingCopy);
+            org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
+        } catch (Exception e) {
+            Logger.getLogger(CvsVersioningSystem.class.getName()).log(Level.INFO, "Unable to get original file", e);
+        }
     }
 
     public void refreshAllAnnotations() {
         listenerSupport.fireVersioningEvent(EVENT_REFRESH_ANNOTATIONS);
     }
-
-    private class CvsOriginalContent extends OriginalContent implements VersioningListener  {
-        
-        public CvsOriginalContent(File working) {
-            super(working);
-        }
-
-        public void getOriginalFile(File originalFile, File file) throws Exception {
-            // TODO: it is not easy to tell whether the file is not yet versioned OR some real error occurred   
-            File original = VersionsCache.getInstance().getRemoteFile(file, VersionsCache.REVISION_BASE, null, true);
-            if (original == null) throw new IOException("Unable to get BASE revision of " + file);
-
-            org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original)); 
-        }
-
-        public void versioningEvent(VersioningEvent event) {
-            if (FileStatusCache.EVENT_FILE_STATUS_CHANGED == event.getId()) {
-                File eventFile = (File) event.getParams()[0];
-                if (eventFile.equals(getWorkingCopy())) {
-                    support.firePropertyChange(PROP_CONTENT_CHANGED, null, null);
-                }
-            }
-        }
-        
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            if (!support.hasListeners(null)) {
-                fileStatusCache.addVersioningListener(this);
-            }
-            super.addPropertyChangeListener(listener);
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            super.removePropertyChangeListener(listener);
-            if (!support.hasListeners(null)) {
-                fileStatusCache.removeVersioningListener(this);
-            }
-        }
-    }    
 }

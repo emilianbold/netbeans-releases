@@ -23,33 +23,24 @@ import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
-import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
-import org.netbeans.modules.versioning.spi.FlatFolder;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -64,9 +55,14 @@ public class Utils {
 
     private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "CVS(\\" + File.separatorChar + ".*|$)");    
     
-    private static Reference/*<Node[]>*/ contextNodesCached = new /* #72006 */ WeakReference(null);
-    private static Context  contextCached;
-
+    private static final FileFilter cvsFileFilter = new FileFilter() {
+        public boolean accept(File pathname) {
+            if (CvsVersioningSystem.FILENAME_CVS.equals(pathname.getName())) return false;
+            if (CvsVersioningSystem.FILENAME_CVSIGNORE.equals(pathname.getName())) return true;
+            return SharabilityQuery.getSharability(pathname) != SharabilityQuery.NOT_SHARABLE;
+        }
+    };
+    
     /**
      * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
      * method returns File objects instead od Nodes. Every node is examined for Files it represents. File and Folder
@@ -80,29 +76,8 @@ public class Utils {
         if (nodes == null) {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
-        if (Arrays.equals((Node[]) contextNodesCached.get(), nodes)) return contextCached;
-        Set files = new HashSet(nodes.length);
-        Set rootFiles = new HashSet(nodes.length);
-        Set rootFileExclusions = new HashSet(5);
-        for (int i = 0; i < nodes.length; i++) {
-            Node node = nodes[i];
-            CvsFileNode cvsNode = node.getLookup().lookup(CvsFileNode.class);
-            if (cvsNode != null) {
-                files.add(cvsNode.getFile());
-                rootFiles.add(cvsNode.getFile());
-                continue;
-            }
-            Project project =  node.getLookup().lookup(Project.class);
-            if (project != null) {
-                addProjectFiles(files, rootFiles, rootFileExclusions, project);
-                continue;
-            }
-            addFileObjects(node, files, rootFiles);
-        }
-        
-        contextCached = new Context(files, rootFiles, rootFileExclusions);
-        contextNodesCached = new WeakReference(nodes);
-        return contextCached;
+        VCSContext ctx = VCSContext.forNodes(nodes);
+        return new Context(new HashSet(ctx.computeFiles(cvsFileFilter)), new HashSet(ctx.getRootFiles()), new HashSet(ctx.getExclusions()));  
     }
 
     
@@ -189,33 +164,6 @@ public class Utils {
         return false;
     }
 
-    private static void addFileObjects(Node node, Set files, Set rootFiles) {
-        Collection folders = node.getLookup().lookup(new Lookup.Template(NonRecursiveFolder.class)).allInstances();
-        List nodeFiles = new ArrayList();
-        if (folders.size() > 0) {
-            for (Iterator j = folders.iterator(); j.hasNext();) {
-                NonRecursiveFolder nonRecursiveFolder = (NonRecursiveFolder) j.next();
-                nodeFiles.add(new FlatFolder(FileUtil.toFile(nonRecursiveFolder.getFolder()).getAbsolutePath()));
-            }
-        } else {
-            Collection fileObjects = node.getLookup().lookup(new Lookup.Template(FileObject.class)).allInstances();
-            if (fileObjects.size() > 0) {
-                nodeFiles.addAll(toFileCollection(fileObjects));
-            } else {
-                DataObject dataObject = node.getCookie(DataObject.class);
-                if (dataObject instanceof DataShadow) {
-                    dataObject = ((DataShadow) dataObject).getOriginal();
-                }
-                if (dataObject != null) {
-                    Collection doFiles = toFileCollection(dataObject.files());
-                    nodeFiles.addAll(doFiles);
-                }
-            }
-        }
-        files.addAll(nodeFiles);
-        rootFiles.addAll(nodeFiles);
-    }
-
     /**
      * Determines all files and folders that belong to a given project and adds them to the supplied Collection.
      *
@@ -278,15 +226,6 @@ public class Utils {
             addProjectFiles(filtered, roots, exclusions, projects[i]);
         }
         return new Context(filtered, roots, exclusions);
-    }
-
-    private static Collection toFileCollection(Collection fileObjects) {
-        Set files = new HashSet(fileObjects.size()*4/3+1);
-        for (Iterator i = fileObjects.iterator(); i.hasNext();) {
-            files.add(FileUtil.toFile((FileObject) i.next()));
-        }
-        files.remove(null);
-        return files;
     }
 
     public static File [] toFileArray(Collection fileObjects) {

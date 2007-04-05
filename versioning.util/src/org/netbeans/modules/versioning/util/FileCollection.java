@@ -18,8 +18,7 @@
  */
 package org.netbeans.modules.versioning.util;
 
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.spi.FlatFolder;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 
 import java.io.File;
 import java.util.*;
@@ -41,7 +40,7 @@ public class FileCollection {
         storage.clear();        
         for (String path : paths) {
             if (path.charAt(0) == FLAT_FOLDER_MARKER) {
-                storage.add(new FlatFolder(path.substring(1)));        
+                storage.add(VersioningSupport.getFlat(path.substring(1)));        
             } else {
                 storage.add(new File(path));        
             }
@@ -51,7 +50,7 @@ public class FileCollection {
     public synchronized void save(Preferences prefs, String key) {
         List<String> paths = new ArrayList<String>(storage.size());
         for (File file : storage) {
-            if (VCSContext.isFlat(file)) {
+            if (VersioningSupport.isFlat(file)) {
                 paths.add(FLAT_FOLDER_MARKER + file.getAbsolutePath());        
             } else {
                 paths.add(file.getAbsolutePath());        

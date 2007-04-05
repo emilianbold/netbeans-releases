@@ -19,6 +19,7 @@
 package org.netbeans.modules.versioning.spi;
 
 import org.netbeans.modules.versioning.Utils;
+import org.netbeans.modules.versioning.FlatFolder;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ProjectUtils;
@@ -33,6 +34,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.*;
 import java.lang.ref.WeakReference;
 import java.lang.ref.Reference;
@@ -118,14 +120,19 @@ public final class VCSContext {
     }
     
     /**
-     * Tests whether the given file represents a flat folder (eg a java package), that is a folder 
-     * that contains only its direct children.
+     * Returns the smallest possible set of all files that lie under Root files and are NOT 
+     * under some Excluded file. 
+     * Technically, for every file in the returned set all of the following is true:
      * 
-     * @param file a File to test
-     * @return true if the File represents a flat folder (eg a java package), false otherwise
+     * - the file itself or at least one of its ancestors is a root file/folder
+     * - neither the file itself nor any of its ancestors is an exluded file/folder
+     * - the file passed through the supplied FileFilter
+     *  
+     * @param filter custom file filter
+     * @return filtered se of files that must pass through the filter
      */
-    public static boolean isFlat(File file) {
-        return file instanceof FlatFolder;
+    public Set<File> computeFiles(FileFilter filter) {
+        return substract(rootFiles, exclusions, filter);
     }
     
     /**
@@ -238,11 +245,55 @@ public final class VCSContext {
 
     private VCSContext(Node [] nodes, Set<File> rootFiles, Set<File> exclusions) {
         this.nodes = nodes; // TODO: construct artificial nodes in case nodes == null ?
-        this.rootFiles = Collections.unmodifiableSet(new HashSet<File>(rootFiles));
-        this.exclusions = Collections.unmodifiableSet(new HashSet<File>(exclusions));
+        Set<File> tempRootFiles = new HashSet<File>(rootFiles);
+        Set<File> tempExclusions = new HashSet<File>(exclusions);
+        // TODO remove all exclusions without some ancestor root 
+        removeDuplicates(tempRootFiles);
+        removeDuplicates(tempExclusions);
+        this.rootFiles = Collections.unmodifiableSet(tempRootFiles);
+        this.exclusions = Collections.unmodifiableSet(tempExclusions);
+    }
+
+    private static Set<File> substract(Set<File> roots, Set<File> exclusions, FileFilter filter) {
+        Set<File> files = new HashSet<File>(roots);
+        for (File exclusion : exclusions) {
+            for (;;) {
+                addSiblings(files, exclusion, filter);
+                exclusion = exclusion.getParentFile();
+                files.remove(exclusion);
+                if (roots.contains(exclusion)) break;
+            }
+        }
+        files.removeAll(exclusions);
+        return files;
+    }
+
+    private static void addSiblings(Set<File> files, File exclusion, FileFilter filter) {
+        File [] siblings = exclusion.getParentFile().listFiles();
+        for (File sibling : siblings) {
+            if (filter.accept(sibling)) files.add(sibling);
+        }
+        files.remove(exclusion);
     }
 
     private static final Set<File> emptySet() {
         return Collections.emptySet();
+    }
+
+    private void removeDuplicates(Set<File> files) {
+        List<File> newFiles = new ArrayList<File>();
+        outter: for (Iterator<File> i = files.iterator(); i.hasNext();) {
+            File file = i.next();
+            for (Iterator<File> j = newFiles.iterator(); j.hasNext();) {
+                File includedFile = j.next();
+                if (Utils.isAncestorOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) continue outter;
+                if (Utils.isAncestorOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
+                    j.remove();
+                }
+            }
+            newFiles.add(file);
+        }
+        files.clear();
+        files.addAll(newFiles);
     }
 }

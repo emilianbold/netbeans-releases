@@ -33,6 +33,7 @@ import org.openide.windows.CloneableOpenSupport;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 
 import javax.swing.text.Document;
 import javax.swing.*;
@@ -97,7 +98,7 @@ public final class Utils {
      * @return true if ancestor is an ancestor folder of file OR both parameters are equal, false otherwise
      */
     public static boolean isAncestorOrEqual(File ancestor, File file) {
-        if (VCSContext.isFlat(ancestor)) {
+        if (VersioningSupport.isFlat(ancestor)) {
             return ancestor.equals(file) || ancestor.equals(file.getParentFile()) && !file.isDirectory();
         }
         for (; file != null; file = file.getParentFile()) {
@@ -305,7 +306,7 @@ public final class Utils {
     public static File[][] splitFlatOthers(File [] files) {
         Set<File> flat = new HashSet<File>(1);
         for (int i = 0; i < files.length; i++) {
-            if (VCSContext.isFlat(files[i])) {
+            if (VersioningSupport.isFlat(files[i])) {
                 flat.add(files[i]);
             }
         }

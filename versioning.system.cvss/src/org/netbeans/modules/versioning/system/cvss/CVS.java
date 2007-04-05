@@ -21,7 +21,6 @@ package org.netbeans.modules.versioning.system.cvss;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.openide.util.NbBundle;
@@ -64,8 +63,8 @@ public class CVS extends VersioningSystem implements VersioningListener, Prefere
         return CvsVersioningSystem.getInstance().getVCSInterceptor();
     }
 
-    public OriginalContent getVCSOriginalContent(File workingCopy) {
-        return CvsVersioningSystem.getInstance().getVCSOriginalContent(workingCopy);
+    public void getOriginalFile(File workingCopy, File originalFile) {
+        CvsVersioningSystem.getInstance().getOriginalFile(workingCopy, originalFile);
     }
 
     public void versioningEvent(VersioningEvent event) {

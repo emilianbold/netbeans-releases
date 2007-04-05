@@ -19,6 +19,7 @@
 package org.netbeans.modules.versioning.spi;
 
 import org.netbeans.modules.versioning.VersioningManager;
+import org.netbeans.modules.versioning.FlatFolder;
 
 import java.io.File;
 
@@ -37,5 +38,27 @@ public class VersioningSupport {
      */
     public static VersioningSystem getOwner(File file) {
         return VersioningManager.getInstance().getOwner(file);
+    }
+
+    /**
+     * Tests whether the given file represents a flat folder (eg a java package), that is a folder 
+     * that contains only its direct children.
+     * 
+     * @param file a File to test
+     * @return true if the File represents a flat folder (eg a java package), false otherwise
+     */
+    public static boolean isFlat(File file) {
+        return file instanceof FlatFolder;
+    }
+
+    /**
+     * Creates a File that is marked is flat (eg a java package), that is a folder 
+     * that contains only its direct children.
+     * 
+     * @param path a file path
+     * @return File a flat file representing given abstract path
+     */
+    public static File getFlat(String path) {
+        return new FlatFolder(path);
     }
 }

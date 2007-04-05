@@ -137,19 +137,15 @@ public abstract class VersioningSystem {
     }
 
     /**
-     * Provides the diff algorithm with the original content of a file.
-     * For version control systems that support keyword expansion, the returned stream must expand all keywords so the
-     * diff will not report any differences in keywords.
-     * An implementing class must only return null if it does not provide original content for the file in which
-     * case the system queries other providers. For CVS provider, for example, this means that it should return null if
-     * the file is not managed by CVS and return a valid instance of OriginalContent otherwise. Later when diff asks for the original
-     * content Reader and the content is not available, it can return null.
+     * Get the original (unmodified) copy of a file. If the versioning system cannot provide it then this method should do nothing.
+     * For version control systems that support keyword expansion, the original file must expand all keywords so the
+     * diff sidebar support will not report any differences in keywords.
      * 
      * @param workingCopy a File in the working copy  
-     * @return OriginalContent a wrapper for the original content of the working file or null if this file is not managed by this versioning system
+     * @param originalFile placeholder File for the original (unmodified) copy of the working file
      */ 
-    public OriginalContent getVCSOriginalContent(File workingCopy) {
-        return null;
+    public void getOriginalFile(File workingCopy, File originalFile) {
+        // default implementation does nothing
     }
 
     /**

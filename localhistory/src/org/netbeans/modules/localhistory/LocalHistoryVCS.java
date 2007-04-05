@@ -19,7 +19,6 @@
 package org.netbeans.modules.localhistory;
 
 import java.io.File;
-import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
@@ -53,10 +52,4 @@ public class LocalHistoryVCS extends VersioningSystem {
     public VCSInterceptor getVCSInterceptor() {
         return LocalHistory.getInstance().getVCSInterceptor();
     }
-    
-    public OriginalContent getVCSOriginalContent(File workingCopy) {
-        // not supported yet
-        return super.getVCSOriginalContent(workingCopy);
-    }     
-    
 }

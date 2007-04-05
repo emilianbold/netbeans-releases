@@ -21,7 +21,6 @@ package org.netbeans.modules.subversion;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.openide.util.NbBundle;
@@ -58,8 +57,8 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         return Subversion.getInstance().getVCSInterceptor();
     }
 
-    public OriginalContent getVCSOriginalContent(File file) {
-        return Subversion.getInstance().getVCSOriginalContent(file);
+    public void getOriginalFile(File workingCopy, File originalFile) {
+        Subversion.getInstance().getOriginalFile(workingCopy, originalFile);
     }
 
     public void versioningEvent(VersioningEvent event) {

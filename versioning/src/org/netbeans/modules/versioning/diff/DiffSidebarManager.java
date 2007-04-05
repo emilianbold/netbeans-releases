@@ -30,8 +30,7 @@ import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Document;
 import java.io.File;
-import java.util.WeakHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 
@@ -65,19 +64,37 @@ public class DiffSidebarManager implements PreferenceChangeListener {
         VersioningConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
 
-    public void refreshAllSidebars() {
+    public void refreshSidebars(final Set<File> files) {
         // pushing the change ... we may as well listen for changes in versioning manager
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                Set<FileObject> fileObjects = null;
+                if (files != null) {
+                    fileObjects = new HashSet<FileObject>(files.size());
+                    for (File file : files) {
+                        fileObjects.add(FileUtil.toFileObject(file));
+                    }
+                    fileObjects.remove(null);
+                }
                 synchronized(sideBars) {
                     for (DiffSidebar bar : sideBars.keySet()) {
-                        bar.refresh();
+                        if (matches(bar, fileObjects)) {
+                            bar.refresh();
+                        }
                     }
                 }
             }
         });
     }
         
+    private boolean matches(DiffSidebar sidebar, Set<FileObject> fileObjects) {
+        if (fileObjects == null) return true;
+        for (FileObject fileObject : fileObjects) {
+            if (sidebar.getFileObject().equals(fileObject)) return true;
+        }
+        return false;
+    }
+
     /**
      * Creates a new task needed by a diff sidebar to update its structures (compute diff). 
      * 

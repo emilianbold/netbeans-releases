@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.subversion.util;
 
-import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 
 import java.io.File;
 import java.io.Serializable;
@@ -85,8 +85,8 @@ public class Context implements Serializable {
             File file = i.next();
             for (Iterator<File> j = newFiles.iterator(); j.hasNext();) {
                 File includedFile = j.next();
-                if (SvnUtils.isParentOrEqual(includedFile, file) && (file.isFile() || !VCSContext.isFlat(includedFile))) continue outter;
-                if (SvnUtils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !VCSContext.isFlat(file))) {
+                if (SvnUtils.isParentOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) continue outter;
+                if (SvnUtils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
                     j.remove();
                 }
             }

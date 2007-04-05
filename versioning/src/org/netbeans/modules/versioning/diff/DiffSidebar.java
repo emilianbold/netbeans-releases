@@ -29,7 +29,6 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
-import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.netbeans.modules.versioning.Utils;
@@ -52,8 +51,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.text.*;
 import java.awt.event.*;
 import java.awt.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Logger;
@@ -67,7 +64,7 @@ import java.text.MessageFormat;
  * 
  * @author Maros Sandor
  */
-class DiffSidebar extends JComponent implements DocumentListener, ComponentListener, PropertyChangeListener, FoldHierarchyListener, FileChangeListener {
+class DiffSidebar extends JComponent implements DocumentListener, ComponentListener, FoldHierarchyListener, FileChangeListener {
     
     private static final int BAR_WIDTH = 9;
     
@@ -90,16 +87,12 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     private Color colorRemoved =    new Color(255, 160, 180);
     private Color colorBorder =     new Color(102, 102, 102);
     
-    /**
-     * Can change and also can be null for example if the file is not versioned.
-     */
-    private OriginalContent originalContent;
-
     private int     originalContentSerial;
     private int     originalContentBufferSerial = -1;
     private String  originalContentBuffer;
 
     private RequestProcessor.Task   refreshDiffTask;
+    private VersioningSystem ownerVersioningSystem;
 
     public DiffSidebar(JTextComponent target, File file) {
         this.textComponent = target;
@@ -113,10 +106,13 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         setMaximumSize(new Dimension(BAR_WIDTH, Integer.MAX_VALUE));
     }
 
+    FileObject getFileObject() {
+        return fileObject;
+    }
+
     private void refreshOriginalContent() {
         File file = FileUtil.toFile(fileObject);
-        VersioningSystem vs = VersioningManager.getInstance().getOwner(file);
-        originalContent = vs == null ? null : vs.getVCSOriginalContent(file);
+        ownerVersioningSystem = VersioningManager.getInstance().getOwner(file);
         originalContentSerial++;        
     }
     
@@ -191,7 +187,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             DiffView view = Diff.getDefault().createDiff(new SidebarStreamSource(true), new SidebarStreamSource(false));
             JComponent c = (JComponent) view.getComponent();
             DiffTopComponent tc = new DiffTopComponent(c);
-            tc.setName(originalContent.getWorkingCopy().getName() + " [Diff]"); // NOI18N
+            tc.setName(fileObject.getNameExt() + " [Diff]"); // NOI18N
             tc.open();
             tc.requestActive();
             view.setCurrentDifference(getDiffIndex(diff));
@@ -394,9 +390,6 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         textComponent.addComponentListener(this);
         foldHierarchy.addFoldHierarchyListener(this);
         refreshOriginalContent();
-        if (originalContent != null) {
-            originalContent.addPropertyChangeListener(this);
-        }
         if (fileObject != null) {
             fileObject.addFileChangeListener(this);
         }
@@ -407,9 +400,6 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
         if (fileObject != null) {
             fileObject.removeFileChangeListener(this);
-        }
-        if (originalContent != null) {
-            originalContent.removePropertyChangeListener(this);
         }
         foldHierarchy.removeFoldHierarchyListener(this);
         textComponent.removeComponentListener(this);
@@ -596,14 +586,6 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     public void componentHidden(ComponentEvent e) {
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        String id = evt.getPropertyName();
-        if (OriginalContent.PROP_CONTENT_CHANGED.equals(id)) {
-            originalContentSerial++;
-            refreshDiff();
-        }
-    }
-
     public void foldHierarchyChanged(FoldHierarchyEvent evt) {
         repaint();
     }
@@ -680,10 +662,10 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
         private void fetchOriginalContent() {
             int serial = originalContentSerial;
-            if (originalContent == null || originalContentBuffer != null && originalContentBufferSerial == serial) return;
+            if (ownerVersioningSystem == null || originalContentBuffer != null && originalContentBufferSerial == serial) return;
             originalContentBufferSerial = serial;
 
-            Reader r = getText(originalContent);
+            Reader r = getText(ownerVersioningSystem);
             if (r == null) {
                 originalContentBuffer = null;
                 return;
@@ -706,17 +688,17 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
      * @param oc current OriginalContent
      * @return Reader original content of the working copy or null if the original content is not available
      */ 
-    private Reader getText(OriginalContent oc) {
-        FileObject fo = FileUtil.toFileObject(oc.getWorkingCopy());
-        if (fo == null) return null;
+    private Reader getText(VersioningSystem vs) {
+        File mainFile = FileUtil.toFile(fileObject);
+        if (mainFile == null) return null;
         
         File tempFolder = Utils.getTempFolder();
         
         Set<File> filesToCheckout = new HashSet<File>(2);
-        filesToCheckout.add(oc.getWorkingCopy());
+        filesToCheckout.add(mainFile);
         DataObject dao = null;
         try {
-            dao = DataObject.find(fo);
+            dao = DataObject.find(fileObject);
             Set<FileObject> fileObjects = dao.files();
             for (FileObject fileObject : fileObjects) {
                 File file = FileUtil.toFile(fileObject);
@@ -729,9 +711,9 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         try {
             for (File file : filesToCheckout) {
                 File originalFile = new File(tempFolder, file.getName());
-                oc.getOriginalFile(originalFile, file);
+                vs.getOriginalFile(file, originalFile);
             }
-            return createReader(new File(tempFolder, oc.getWorkingCopy().getName()));
+            return createReader(new File(tempFolder, fileObject.getNameExt()));
         } catch (Exception e) {
             // let providers raise errors when they feel appropriate
             return null;
@@ -775,7 +757,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         }
 
         public String getName() {
-            return originalContent.getWorkingCopy().getName();
+            return fileObject.getNameExt();
         }
 
         public String getTitle() {

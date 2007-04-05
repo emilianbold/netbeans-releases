@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.regex.*;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.turbo.Turbo;
@@ -154,7 +154,7 @@ public class FileStatusCache implements ISVNNotifyListener {
             File [] roots = context.getRootFiles();
             for (int j = 0; j < roots.length; j++) {
                 File root = roots[j];
-                if (VCSContext.isFlat(root)) {
+                if (VersioningSupport.isFlat(root)) {
                     if (file.equals(root) || file.getParentFile().equals(root)) {
                         set.add(file);
                         break;
@@ -200,7 +200,7 @@ public class FileStatusCache implements ISVNNotifyListener {
             if ((info.getStatus() & includeStatus) == 0) continue;
             for (int j = 0; j < roots.length; j++) {
                 File root = roots[j];
-                if (VCSContext.isFlat(root)) {
+                if (VersioningSupport.isFlat(root)) {
                     if (file.getParentFile().equals(root)) {
                         set.add(file);
                         break;

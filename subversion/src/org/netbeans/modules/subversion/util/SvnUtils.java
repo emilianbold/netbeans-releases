@@ -28,14 +28,12 @@ import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataShadow;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.api.project.*;
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.SvnFileNode;
 import java.io.*;
 import java.lang.Character;
 import java.util.*;
@@ -46,7 +44,7 @@ import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
-import org.netbeans.modules.versioning.spi.FlatFolder;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
@@ -61,8 +59,12 @@ public class SvnUtils {
     
     private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.|_)svn(\\" + File.separatorChar + ".*|$)");
     
-    private static Node []  contextNodesCached;
-    private static Context  contextCached;
+    private static final FileFilter svnFileFilter = new FileFilter() {
+        public boolean accept(File pathname) {
+            if (Subversion.getInstance().isAdministrative(pathname)) return false;
+            return SharabilityQuery.getSharability(pathname) != SharabilityQuery.NOT_SHARABLE;
+        }
+    };
     
     /**
      * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
@@ -77,29 +79,8 @@ public class SvnUtils {
         if (nodes == null) {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
-        if (Arrays.equals(contextNodesCached, nodes)) return contextCached;
-        List<File> files = new ArrayList<File>(nodes.length);
-        List<File> rootFiles = new ArrayList<File>(nodes.length);
-        List<File> rootFileExclusions = new ArrayList<File>(5);
-        for (int i = 0; i < nodes.length; i++) {
-            Node node = nodes[i];
-            SvnFileNode svnNode = (SvnFileNode) node.getLookup().lookup(SvnFileNode.class);
-            if (svnNode != null) {
-                files.add(svnNode.getFile());
-                rootFiles.add(svnNode.getFile());
-                continue;
-            }
-            Project project = (Project) node.getLookup().lookup(Project.class);
-            if (project != null) {
-                addProjectFiles(files, rootFiles, rootFileExclusions, project);
-                continue;
-            }
-            addFileObjects(node, files, rootFiles);
-        }
-        
-        contextCached = new Context(files, rootFiles, rootFileExclusions);
-        contextNodesCached = nodes;
-        return contextCached;
+        VCSContext ctx = VCSContext.forNodes(nodes);
+        return new Context(new ArrayList(ctx.computeFiles(svnFileFilter)), new ArrayList(ctx.getRootFiles()), new ArrayList(ctx.getExclusions()));  
     }
     
     
@@ -173,32 +154,6 @@ public class SvnUtils {
         return false;
     }
     
-    private static void addFileObjects(Node node, List<File> files, List<File> rootFiles) {
-        Collection<? extends NonRecursiveFolder> folders = node.getLookup().lookup(new Lookup.Template<NonRecursiveFolder>(NonRecursiveFolder.class)).allInstances();
-        List<File> nodeFiles = new ArrayList<File>();
-        if (folders.size() > 0) {
-            for (NonRecursiveFolder j : folders) {
-                nodeFiles.add(new FlatFolder(FileUtil.toFile(j.getFolder()).getAbsolutePath()));
-            }
-        } else {
-            Collection<? extends FileObject> fileObjects = node.getLookup().lookup(new Lookup.Template<FileObject>(FileObject.class)).allInstances();
-            if (fileObjects.size() > 0) {
-                nodeFiles.addAll(toFileCollection(fileObjects));
-            } else {
-                DataObject dataObject = node.getCookie(DataObject.class);
-                if (dataObject instanceof DataShadow) {
-                    dataObject = ((DataShadow) dataObject).getOriginal();
-                }
-                if (dataObject != null) {
-                    Collection<File> doFiles = toFileCollection(dataObject.files());
-                    nodeFiles.addAll(doFiles);
-                }
-            }
-        }
-        files.addAll(nodeFiles);
-        rootFiles.addAll(nodeFiles);
-    }
-    
     /**
      * Determines all files and folders that belong to a given project and adds them to the supplied Collection.
      *
@@ -255,15 +210,6 @@ public class SvnUtils {
             addProjectFiles(filtered, roots, exclusions, projects[i]);
         }
         return new Context(filtered, roots, exclusions);
-    }
-    
-    private static Collection<File> toFileCollection(Collection<? extends FileObject> fileObjects) {
-        Set<File> files = new HashSet<File>(fileObjects.size()*4/3+1);
-        for (FileObject f: fileObjects) {
-            files.add(FileUtil.toFile(f));
-        }
-        files.remove(null);
-        return files;
     }
     
     public static File [] toFileArray(Collection<FileObject> fileObjects) {

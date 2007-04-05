@@ -29,12 +29,13 @@ import org.tigris.subversion.svnclientadapter.*;
 import org.openide.util.RequestProcessor;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
@@ -485,48 +486,16 @@ public class Subversion {
         support.removePropertyChangeListener(listener);
     }
 
-    public OriginalContent getVCSOriginalContent(File file) {
-        FileInformation info = fileStatusCache.getStatus(file);
-        if ((info.getStatus() & STATUS_DIFFABLE) == 0) return null;
-        return new SubversionOriginalContent(file);
-    }
-    
-    
-    private class SubversionOriginalContent extends OriginalContent implements VersioningListener {
-        
-        public SubversionOriginalContent(File working) { 
-            super(working);
-        }
+    public void getOriginalFile(File workingCopy, File originalFile) {
+        FileInformation info = fileStatusCache.getStatus(workingCopy);
+        if ((info.getStatus() & STATUS_DIFFABLE) == 0) return;
 
-        public void getOriginalFile(File originalFile, File file) throws Exception {
-            File original = VersionsCache.getInstance().getFileRevision(file, Setup.REVISION_BASE);
-            if (original == null) throw new IOException("Unable to get BASE revision of " + file);
-
-            org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original)); 
-        }
-
-        public void versioningEvent(VersioningEvent event) {
-            if (FileStatusCache.EVENT_FILE_STATUS_CHANGED == event.getId()) {
-                File eventFile = (File) event.getParams()[0];
-                if (eventFile.equals(getWorkingCopy())) {
-                    support.firePropertyChange(PROP_CONTENT_CHANGED, null, null);
-                }
-            }
-        }
-        
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            if (!support.hasListeners(null)) {
-                fileStatusCache.addVersioningListener(this);
-            }
-            super.addPropertyChangeListener(listener);
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            super.removePropertyChangeListener(listener);
-            if (!support.hasListeners(null)) {
-                fileStatusCache.removeVersioningListener(this);
-            }
+        try {
+            File original = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
+            if (original == null) throw new IOException("Unable to get BASE revision of " + workingCopy);
+            org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
+        } catch (IOException e) {
+            Logger.getLogger(Subversion.class.getName()).log(Level.INFO, "Unable to get original file", e);
         }
     }
-    
 }

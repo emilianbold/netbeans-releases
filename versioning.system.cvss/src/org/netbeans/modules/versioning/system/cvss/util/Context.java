@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.util;
 
-import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 
 import java.io.File;
 import java.io.Serializable;
@@ -72,8 +72,8 @@ public class Context implements Serializable {
             File file = (File) i.next();
             for (Iterator j = newFiles.iterator(); j.hasNext();) {
                 File includedFile = (File) j.next();
-                if (Utils.isParentOrEqual(includedFile, file) && (file.isFile() || !VCSContext.isFlat(includedFile))) continue outter;
-                if (Utils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !VCSContext.isFlat(file))) {
+                if (Utils.isParentOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) continue outter;
+                if (Utils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
                     j.remove();
                 }
             }

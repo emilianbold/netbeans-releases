@@ -150,9 +150,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         return filesystemInterceptor;
     }
 
-    private void refreshDiffSidebars() {
+    private void refreshDiffSidebars(Set<File> files) {
         // pushing the change ... DiffSidebarManager may as well listen for changes
-        DiffSidebarManager.getInstance().refreshAllSidebars();
+        DiffSidebarManager.getInstance().refreshSidebars(files);
     }
     
     private synchronized void flushFileOwnerCache() {
@@ -266,12 +266,13 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         if (EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
             Set<File> files = (Set<File>) evt.getNewValue();
             VersioningAnnotationProvider.instance.refreshAnnotations(files);
+            refreshDiffSidebars(files);
         } else if (EVENT_ANNOTATIONS_CHANGED.equals(evt.getPropertyName())) {
             Set<File> files = (Set<File>) evt.getNewValue();
             VersioningAnnotationProvider.instance.refreshAnnotations(files);
         } else if (EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
             flushFileOwnerCache();
-            refreshDiffSidebars();
+            refreshDiffSidebars(null);
         }
     }
 }
