@@ -88,6 +88,9 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.visualweb.project.importpage</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfloader</friend>
                 <friend>org.netbeans.modules.visualweb.xhtml</friend>
+
+                <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
+
                 <package>org.netbeans.modules.visualweb.api.designerapi</package>
             </friend-packages>
         </data>

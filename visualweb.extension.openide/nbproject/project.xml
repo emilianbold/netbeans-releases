@@ -76,6 +76,9 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime</friend>
                 <friend>org.netbeans.modules.visualweb.propertyeditors</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
+
+                <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
+
                 <package>org.netbeans.modules.visualweb.extension.openide.awt</package>
                 <package>org.netbeans.modules.visualweb.extension.openide.cookies</package>
                 <package>org.netbeans.modules.visualweb.extension.openide.io</package>

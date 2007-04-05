@@ -317,6 +317,9 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.visualweb.project.navigationloader</friend>
                 <friend>org.netbeans.modules.visualweb.xhtml</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
+
+                <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
+
                 <package>org.netbeans.modules.visualweb.project.jsf.api</package>
                 <package>org.netbeans.modules.visualweb.project.jsf.services</package>
             </friend-packages>

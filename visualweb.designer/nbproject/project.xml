@@ -169,6 +169,9 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.designer.decoration</friend>
                 <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
+
+                <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
+
                 <package>org.netbeans.modules.visualweb.api.designer</package>
                 <package>org.netbeans.modules.visualweb.spi.designer</package>
             </friend-packages>
