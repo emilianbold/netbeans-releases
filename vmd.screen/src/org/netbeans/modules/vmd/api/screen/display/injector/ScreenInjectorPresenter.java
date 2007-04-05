@@ -14,12 +14,9 @@
 package org.netbeans.modules.vmd.api.screen.display.injector;
 
 import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.presenters.OrderablePresenter;
-import org.netbeans.modules.vmd.screen.device.InjectorWindow;
 
 import javax.swing.*;
-import java.awt.*;
 
 /**
  * ScreenInjectorPresenter is a presenter adding "behavior" to ScreenComponentPresenter and
@@ -52,21 +49,5 @@ public abstract class ScreenInjectorPresenter extends Presenter implements Order
      * @return the view component
      */
     public abstract JComponent getViewComponent ();
-
-    /**
-     * Call to close the injector menu window.
-     * @param viewComponent the view component
-     */
-    protected static void closeInjectorWindow (JComponent viewComponent) {
-        Container container = viewComponent;
-        while (container != null) {
-            if (container instanceof InjectorWindow) {
-                ((InjectorWindow) container).close ();
-                return;
-            }
-            container = container.getParent ();
-        }
-        Debug.warning ("Cannot close injector window", viewComponent);
-    }
 
 }

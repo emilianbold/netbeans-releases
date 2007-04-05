@@ -23,6 +23,7 @@ package org.netbeans.modules.vmd.midp.screen.display.injector;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.injector.ScreenInjectorPresenter;
+import org.netbeans.modules.vmd.api.io.PopupUtil;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 import javax.swing.*;
@@ -73,7 +74,7 @@ public class ScreenBooleanInjectorPresenter extends ScreenInjectorPresenter {
                     comp.writeProperty (propertyName, MidpTypes.createBooleanValue (InjectorCheckBox.this.isSelected ()));
                 }
             });
-            closeInjectorWindow (this);
+            PopupUtil.hidePopup ();
         }
     }
 

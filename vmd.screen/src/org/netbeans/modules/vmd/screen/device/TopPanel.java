@@ -28,17 +28,17 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.api.screen.display.injector.ScreenInjectorPresenter;
+import org.netbeans.modules.vmd.api.io.PopupUtil;
 import org.netbeans.modules.vmd.screen.ScreenAccessController;
 import org.netbeans.modules.vmd.screen.ScreenViewController;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -73,6 +73,8 @@ public class TopPanel extends JPanel {
         
         addMouseListener (new MouseListener() {
             public void mouseClicked (MouseEvent e) {
+                if (injectorWindow (e, true))
+                    return;
                 select (e);
                 if (e.getButton () == MouseEvent.BUTTON1  &&  e.getClickCount () == 2)
                     editProperty (e);
@@ -81,7 +83,7 @@ public class TopPanel extends JPanel {
             }
 
             public void mousePressed (MouseEvent e) {
-                if (injectorMenu (e))
+                if (injectorWindow (e, false))
                     return;
                 select (e);
                 if (e.isPopupTrigger ())
@@ -89,6 +91,8 @@ public class TopPanel extends JPanel {
             }
 
             public void mouseReleased (MouseEvent e) {
+                if (injectorWindow (e, false))
+                    return;
                 select (e);
                 if (e.isPopupTrigger ())
                     popupMenu (e);
@@ -160,10 +164,6 @@ public class TopPanel extends JPanel {
             gr.fill (shape.shape);
             gr.setColor (COLOR_SELECTION_DRAW);
             gr.draw (shape.shape);
-            if (shape.enableInjector) {
-                Rectangle rectangle = shape.shape.getBounds ();
-                gr.drawImage (IMAGE_INJECT, rectangle.x + rectangle.width - 20, rectangle.y - 8, null);
-            }
             gr.translate (- shape.x, - shape.y);
         }
 
@@ -174,6 +174,15 @@ public class TopPanel extends JPanel {
             gr.setColor (COLOR_HOVER_DRAW);
             gr.draw (hoverShape.shape);
             gr.translate (- hoverShape.x, - hoverShape.y);
+        }
+
+        for (SelectionShape shape : selectionShapes) {
+            if (shape.enableInjector) {
+                gr.translate (shape.x, shape.y);
+                Rectangle rectangle = shape.shape.getBounds ();
+                gr.drawImage (IMAGE_INJECT, rectangle.x + rectangle.width - 20, rectangle.y - 8, null);
+                gr.translate (- shape.x, - shape.y);
+            }
         }
     }
 
@@ -274,23 +283,21 @@ public class TopPanel extends JPanel {
         });
     }
 
-    private boolean injectorMenu (MouseEvent e) {
+    private boolean injectorWindow (MouseEvent e, boolean invoke) {
         for (SelectionShape shape : selectionShapes) {
             if (! shape.enableInjector)
                 continue;
-            Point point = e.getPoint ();
-            point.x -= shape.x;
-            point.y -= shape.y;
             Rectangle bounds = shape.shape.getBounds ();
-            if (new Rectangle (bounds.x + bounds.width - 20, bounds.y - 8, 16, 26).contains (point)) {
-                invokeInjectorMenu (shape.componentID, bounds.x + bounds.width - 20, bounds.y + 8);
+            if (new Rectangle (bounds.x + bounds.width - 20, bounds.y - 8, 16, 26).contains (e.getX () - shape.x, e.getY () - shape.y)) {
+                if (invoke)
+                    invokeInjectorWindow (shape.componentID, shape.x + bounds.x + bounds.width - 20, shape.y + bounds.y + 8);
                 return true;
             }
         }
         return false;
     }
 
-    private void invokeInjectorMenu (final long componentID, final int x, final int y) {
+    private void invokeInjectorWindow (final long componentID, final int x, final int y) {
         final DesignDocument document = devicePanel.getController ().getDocument ();
         if (document == null)
             return;
@@ -310,11 +317,15 @@ public class TopPanel extends JPanel {
         });
         if (views.isEmpty ())
             return;
-        InjectorWindow injectorWindow = new InjectorWindow (views);
-        Point screen = TopPanel.this.getLocationOnScreen ();
-        injectorWindow.setLocation (screen.x + x, screen.y + y);
-        injectorWindow.setVisible (true);
-        injectorWindow.requestFocus ();
+
+        JPanel pane = new JPanel ();
+        pane.setBorder (BorderFactory.createBevelBorder (BevelBorder.RAISED));
+        pane.setLayout (new GridBagLayout ());
+        for (JComponent view : views)
+            pane.add (view, new GridBagConstraints (GridBagConstraints.REMAINDER, 0, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets (0, 0, 0, 0), 0, 6));
+
+        Point screen = getLocationOnScreen ();
+        PopupUtil.showPopup (pane, "Actions", screen.x + x, screen.y + y, true);
     }
 
     private void editProperty (final MouseEvent e) {
