@@ -73,13 +73,12 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, CancellableTa
 
     public synchronized void run(CompilationController controller) throws IOException {
         controller.toPhase(Phase.PARSED);
-        TreePath startPath = controller.getTreeUtilities().pathFor(startOffset);
-        ctx = startPath.getLeaf().getKind();
+        Tree tree = controller.getTreeUtilities().pathFor(startOffset).getLeaf();
         if (endOffset >= 0 && startOffset != endOffset) {
-            TreePath endPath = controller.getTreeUtilities().pathFor(endOffset);
-            if (endPath.getLeaf().getKind() != ctx)
-                ctx = null;
+            if (controller.getTreeUtilities().pathFor(endOffset).getLeaf() != tree)
+                return;
         }
+        ctx = tree.getKind();
     }
 
     private EnumSet<Tree.Kind> getTemplateContexts(CodeTemplate template) {

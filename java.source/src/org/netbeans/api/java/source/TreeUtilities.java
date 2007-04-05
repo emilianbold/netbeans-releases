@@ -200,6 +200,11 @@ public final class TreeUtilities {
                         case CATCH:
                             path = path.getParentPath();
                         case METHOD:
+                        case FOR_LOOP:
+                        case ENHANCED_FOR_LOOP:
+                        case IF:
+                        case SYNCHRONIZED:
+                        case WHILE_LOOP:
                         case TRY:
                             path = path.getParentPath();
                     }
