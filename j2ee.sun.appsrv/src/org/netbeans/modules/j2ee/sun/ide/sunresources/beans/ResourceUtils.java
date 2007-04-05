@@ -1139,7 +1139,7 @@ public class ResourceUtils implements WizardConstants{
             url = "jdbc:derby://"; //NOI18N
             if(serverName != null){
                 url = url + serverName;
-                if(portNo != null) {
+                if(portNo != null && portNo.length() > 0) {
                     url = url + ":" + portNo; //NOI18N
                 }    
                 url = url + "/" + dbName ; //NOI8N
@@ -1153,7 +1153,7 @@ public class ResourceUtils implements WizardConstants{
                 } else{
                     url = urlPrefix + "//" + serverName; //NOI18N
                 }
-                if(portNo != null) {
+                if(portNo != null && portNo.length() > 0) {
                     url = url + ":" + portNo; //NOI18N
                 }    
             }
@@ -1323,7 +1323,7 @@ public class ResourceUtils implements WizardConstants{
         }else if(driverClassName.indexOf("derby") != -1){
             if(serverName != null){
                 url = "jdbc:derby://" + serverName;
-                if(portNo != null) {
+                if(portNo != null && portNo.length() > 0) {
                     url = url + ":" + portNo; //NOI18N
                 }
                 url = url + "/" + dbName ; //NOI8N
@@ -1341,8 +1341,8 @@ public class ResourceUtils implements WizardConstants{
                         url = urlPrefix + serverName; 
                     }else{
                          url = urlPrefix + "//" + serverName; //NOI18N
-                    }    
-                    if(portVal != null) {
+                    } 
+                    if(portVal != null && portVal.length() > 0) {
                         url = url + ":" + portVal; //NOI18N
                     }    
                 }

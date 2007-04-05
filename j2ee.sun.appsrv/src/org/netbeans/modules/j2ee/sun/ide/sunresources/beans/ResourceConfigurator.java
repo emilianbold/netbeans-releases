@@ -604,7 +604,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                             pwd = pl[i].getValue();
                         }
                     }
-                    String serverPort = hostName + ":" + portNumber; //NOI18N
+                    String serverPort = hostName;
+                    if (null != portNumber && portNumber.length() > 0) {
+                        serverPort += ":" + portNumber; //NOI18N
+                    }
                     if((databaseUrl.indexOf(serverPort) != -1 ) && 
                        ((databaseUrl.indexOf(databaseName) != -1) || (databaseUrl.indexOf(sid) != -1))){
                             if((username != null && user.equals(username)) && (password != null && pwd.equals(password))){
@@ -885,7 +888,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                         url = "jdbc:derby://";
                         if(serverName != null){
                             url = url + serverName;
-                            if(portNo != null) {
+                            if(portNo != null  && portNo.length() > 0) {
                                 url = url + ":" + portNo; //NOI18N
                             }    
                             url = url + "/" + dbName ; //NOI8N
@@ -899,7 +902,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                             } else {
                                 url = urlPrefix + "//" + serverName; //NOI18N
                             }
-                            if(portNo != null) {
+                            if(portNo != null  && portNo.length() > 0) {
                                 url = url + ":" + portNo; //NOI18N
                             }    
                         }
