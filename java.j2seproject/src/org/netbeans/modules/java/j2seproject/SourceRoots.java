@@ -29,7 +29,6 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -98,7 +97,7 @@ public final class SourceRoots {
         this.support = new PropertyChangeSupport(this);
         this.listener = new ProjectMetadataListener();
         this.evaluator.addPropertyChangeListener (WeakListeners.propertyChange(this.listener,this.evaluator));
-        this.helper.getAntProjectHelper().addAntProjectListener ((AntProjectListener)WeakListeners.create(AntProjectListener.class, this.listener,this.helper));
+        this.helper.getAntProjectHelper().addAntProjectListener(WeakListeners.create(AntProjectListener.class, this.listener, this.helper));
     }
 
 
@@ -132,8 +131,8 @@ public final class SourceRoots {
                     if (sourceRootProperties == null) {
                         readProjectMetadata();
                     }
+                    return sourceRootProperties.toArray(new String[sourceRootProperties.size()]);
                 }
-                return sourceRootProperties.toArray (new String[sourceRootProperties.size()]);
             }
         });
     }
@@ -291,7 +290,7 @@ public final class SourceRoots {
                             }
                             Element newRootNode = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); //NOI18N
                             newRootNode.setAttribute("id",rootName);    //NOI18N
-                            String label = (String) newRoots2lab.get (newRoot);
+                            String label = newRoots2lab.get(newRoot);
                             if (label != null && label.length()>0 && !label.equals (getRootDisplayName(null,rootName))) { //NOI18N
                                 newRootNode.setAttribute("name",label); //NOI18N
                             }
