@@ -33,8 +33,8 @@ BUILDNUM=trunk-nightly-all-$DATESTAMP
 ant -Dbuildnum=$BUILDNUM -f nbbuild/build.xml build-nozip
 ERROR_CODE=$?
 if [ $ERROR_CODE <> 0 ]; then
-    echo "ERROR - Can't build basic IDE"
-    exit ERROR_CODE;
+    echo "ERROR: $ERROR_CODE - Can't build basic IDE"
+    exit $ERROR_CODE;
 fi
 ant -Dnb_all=$NB_ALL -f visualweb/ravebld/build.xml
 ant -f mobility/build.xml build
