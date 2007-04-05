@@ -54,7 +54,7 @@ public class SecurityWSEditor implements WSEditor {
     
     public JComponent createWSEditorComponent(Node node,
             JaxWsModel jaxWsModel) {
-        helper = new J2eeProjectHelper(node, jaxWsModel);
+        helper = J2eeProjectHelper.newInstance(node, jaxWsModel);
         
         if (!helper.isAppServerSun()) {
             iPanel = new MessagePanel(NbBundle.getMessage(

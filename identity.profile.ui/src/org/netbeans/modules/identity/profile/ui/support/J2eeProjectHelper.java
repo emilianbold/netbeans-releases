@@ -154,15 +154,30 @@ public class J2eeProjectHelper {
     private List<WsdlData> wsdlData;
     private List<String> serviceNames;
    
+    public static J2eeProjectHelper newInstance(Node node, JaxWsModel model) {
+        J2eeProjectHelper helper = new J2eeProjectHelper(node, model);
+        
+        if (helper.getVersion() == Version.VERSION_1_5) {
+            return new J2ee15ProjectHelper(node, model);
+        }
+        
+        return helper;
+    }
+    
     /** Creates a new instance of J2eeProjectHelper */
-    public J2eeProjectHelper(Node node, JaxWsModel model) {
+    protected J2eeProjectHelper(Node node, JaxWsModel model) {
         this.node = node;
         this.model = model;
     }
     
     public boolean isSecurable() {
+        System.out.println("isSecurable() project = " + getProject() +
+                " provider = " + getProvider());
+        
         if (getProject() == null || getProvider() == null)
             return false;
+        
+        System.out.println("isServer = " + isServer());
         
         if (isServer()) {
             if (getPortComponentName() != null &&
@@ -184,14 +199,7 @@ public class J2eeProjectHelper {
     }
     
     public boolean isServer() {
-        // this is a server for 1.4 and 1.5 projects
-        if (getJavaSource() != null) return true;
-        
-        //For 1.5 project client this should be not null.
-        if (getClient() != null) return false;
-        
-        // Shouldn't this return true?
-        return false;
+        return (getService() != null);
     }
     
     public void refreshBuildScript() {
@@ -336,11 +344,23 @@ public class J2eeProjectHelper {
     
     public File getSunDD() {
         if (sunDD == null) {
-/*todo vlv
+            FileObject fobj = getSunDDFO();
+        
+            if (fobj != null) {
+                sunDD = FileUtil.toFile(fobj);
+            }
+        }
+        
+        System.out.println("sunDD = " + sunDD);
+        return sunDD;
+        /*
+        if (sunDD == null) {
             switch (getProjectType()) {
                 case WEB:
+                    
                     sunDD = getProvider().getDeploymentConfigurationFile(
                             WEB_CONFIG_FILE_NAME);
+                    System.out.println("sunDD = " + sunDD);
                     break;
                 case EJB:
                     sunDD = getProvider().getDeploymentConfigurationFile(
@@ -353,18 +373,19 @@ public class J2eeProjectHelper {
                 default:
                     break;
             }
-*/
         }
         
         return sunDD;
+        */
+   
     }
     
-    private FileObject getSunDDFO() {
-        switch (getProjectType()) {
-            case WEB:
-                FileObject[] fos = getProvider().getConfigurationFiles();
-                if (fos.length > 0)
-                    return getProvider().getConfigurationFiles()[0];
+    protected FileObject getSunDDFO() {
+        FileObject[] fobjs = getProvider().getConfigurationFiles();
+        
+        if (fobjs.length > 0) {
+            System.out.println("sunDD fobj = " + fobjs[0]);
+            return fobjs[0];
         }
         
         return null;
@@ -487,7 +508,10 @@ public class J2eeProjectHelper {
             switch (getProjectType()) {
                 case WEB:
                     try {
+                        System.out.println("serviceRefs = " + getWebApp().getServiceRef());
+                        
                         for (ServiceRef s : getWebApp().getServiceRef()) {
+                            System.out.println("s = " + s);
                             if (version == Version.VERSION_1_4) {
                                 if (s.getServiceRefName().equalsIgnoreCase(getServiceRefName()))
                                     serviceRefNames.add(s.getServiceRefName());
@@ -745,7 +769,7 @@ public class J2eeProjectHelper {
         disableMessageLevelSecurity();
     }
     
-    private void enableMessageLevelSecurity(String providerId) {
+    protected void enableMessageLevelSecurity(String providerId) {
         File sunDD = getSunDD();
         String pcName = getPortComponentName();
         String descName = getServiceDescriptionName();
@@ -778,7 +802,7 @@ public class J2eeProjectHelper {
         }
     }
     
-    private void disableMessageLevelSecurity() {
+    protected void disableMessageLevelSecurity() {
         //if (!isSecurityEnabled()) return;
         
         File sunDD = getSunDD();
@@ -815,13 +839,13 @@ public class J2eeProjectHelper {
     
     private void enableLiberty() {
         addAMSecurityConstraint();
-        SunDDHelper helper = new SunDDHelper(getSunDDFO());
+        SunDDHelper helper = new SunDDHelper(getSunDDFO(), getProjectType());
         helper.addSecurityRoleMapping();
     }
     
     private void disableLiberty() {
         removeAMSecurityConstraint();
-        SunDDHelper helper = new SunDDHelper(getSunDDFO());
+        SunDDHelper helper = new SunDDHelper(getSunDDFO(), getProjectType());
         helper.removeSecurityRoleMapping();
     }
     
@@ -1068,7 +1092,7 @@ public class J2eeProjectHelper {
         return FileOwnerQuery.getOwner(getFileObject());
     }
     
-    private FileObject getProjectDirectory() {
+    protected FileObject getProjectDirectory() {
         return getProject().getProjectDirectory();
     }
     
@@ -1086,17 +1110,12 @@ public class J2eeProjectHelper {
         return dobj.getPrimaryFile();
     }
     
-     private FileObject getJavaSource() {
-        String implBean = getService().getImplementationClass();
-        System.out.println("javaSource = " + implBean);
-        if(implBean != null) {
-            FileObject srcRoot = (FileObject)node.getLookup().lookup(FileObject.class);
-            return srcRoot.getFileObject(implBean.replace('.','/')+".java");
-        }
-        return null;
+     protected FileObject getJavaSource() {
+        System.out.println("getJavaSource() = " + node.getLookup().lookup(FileObject.class));
+        return (FileObject)node.getLookup().lookup(FileObject.class);
     }
 
-    private String getJavaSourceName() {
+    protected String getJavaSourceName() {
         return getService().getImplementationClass();
     }
     
@@ -1120,19 +1139,19 @@ public class J2eeProjectHelper {
         return Car.getCar(getProjectDirectory());
     }
     
-    private WebApp getWebApp() {
+    protected WebApp getWebApp() {
         //System.out.println(getProvider().getJ2eeModule().getDeploymentDescriptor(
         //        J2eeModule.WEB_XML).dumpBeanNode());
         return (WebApp)getJ2eeModule().getDeploymentDescriptor(
                 J2eeModule.WEB_XML);
     }
     
-    private AppClient getAppClient() {
+    protected AppClient getAppClient() {
         return (AppClient)getJ2eeModule().getDeploymentDescriptor(
                 J2eeModule.CLIENT_XML);
     }
     
-    private org.netbeans.modules.j2ee.dd.api.ejb.EjbJar getEjbJar() {
+    protected org.netbeans.modules.j2ee.dd.api.ejb.EjbJar getEjbJar() {
         //System.out.println(getProvider().getJ2eeModule().getDeploymentDescriptor(
         //        J2eeModule.EJBJAR_XML).dumpBeanNode());
         return (org.netbeans.modules.j2ee.dd.api.ejb.EjbJar)

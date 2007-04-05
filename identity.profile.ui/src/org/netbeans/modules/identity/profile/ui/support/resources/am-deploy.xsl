@@ -88,7 +88,7 @@ introduced by support for multiple source roots. -jglick
                 <fail unless="deploy.ant.properties.file">Must set ant deploy properties</fail>
                 <property file="nbproject/project.properties"/>
                 <fail unless="sjsas.root">Must set Sun app server root</fail>
-                <property name="am.config.file" value="${{sjsas.root}}/addons/amserver/AMConfig.properties"/>
+                <property name="am.config.file" value="${{sjsas.root}}/domains/domain1/config/AMConfig.properties"/>
                 <condition property="amconf.dir" value="${{conf.dir}}" else="${{meta.inf}}">
                     <isset property="conf.dir"/>
                 </condition>
