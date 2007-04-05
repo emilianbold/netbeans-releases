@@ -660,7 +660,6 @@ public class J2eeProjectHelper {
         } else if (getVersion() == Version.VERSION_1_5) {
             Client client = getClient();
             String wsdl = client.getLocalWsdlFile();
-            System.out.println("local wsdl = " + wsdl);
             Enumeration e = getProject().getProjectDirectory().getFolders(true);
             while (e.hasMoreElements()) {
                 FileObject fo = (FileObject)e.nextElement();
@@ -996,8 +995,7 @@ public class J2eeProjectHelper {
             serviceNames = new ArrayList<String>();
         
             FileObject wsdlFO = getWsdlFO();
-            
-            System.out.println("wsdlFO = " + wsdlFO);
+   
             if (wsdlFO != null) {
                 try {
                     serviceNames = WsdlParser.getWsdlSvcNames(
@@ -1008,11 +1006,7 @@ public class J2eeProjectHelper {
                 }
             }
         }
-        
-        System.out.println("getAllServiceNames()");
-        for (String name : serviceNames) {
-            System.out.println("name = " + name);
-        }
+     
         return serviceNames;
     }
     

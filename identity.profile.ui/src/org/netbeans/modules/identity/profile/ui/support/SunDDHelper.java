@@ -77,9 +77,21 @@ public class SunDDHelper {
     
     private static final String EJB_NAME_TAG = "ejb-name";  //NOI18N
     
+    private static final String SERVICE_REF_TAG = "service-ref";    //NOI18N
+    
+    private static final String SERVICE_REF_NAME_TAG = "service-ref-name";  //NOI18N
+    
     private static final String WEBSERVICE_ENDPOINT_TAG = "webservice-endpoint"; //NOI18N
     
     private static final String PORT_COMPONENT_NAME_TAG = "port-component-name"; //NOI18N
+    
+    private static final String PORT_INFO_TAG = "port-info";    //NOI18N
+    
+    private static final String WSDL_PORT_TAG = "wsdl-port";    //NOI18N
+    
+    private static final String NAMESPACE_URI_TAG = "namespaceURI";     //NOI18N
+    
+    private static final String LOCALPART_TAG = "localpart";    //NOI18N
     
     private static final String MESSAGE_SECURITY_BINDING_TAG = "message-security-binding";  //NOI18N
     
@@ -223,7 +235,7 @@ public class SunDDHelper {
             
         }
         
-        component = getComponentElement(componentTag, componentNameTag,
+        component = getComponentElement(root, componentTag, componentNameTag,
                 pcName);
         
         if (component == null) {
@@ -231,7 +243,7 @@ public class SunDDHelper {
                     pcName);
             
             if (type == ProjectType.WEB) {
-                insertServletElement(root, component);
+                insertSunWebComponent(root, component);
             } else {
                 root.appendChild(component);
             }
@@ -257,6 +269,44 @@ public class SunDDHelper {
         writeDocument();
     }
     
+    public void setServiceRefMessageSecurityBinding(String serviceRefName,
+            String namespaceURI, String localPart) {
+        Element root = null;
+        
+        if (type == ProjectType.WEB) {
+            root = getSunWebAppElement();
+        } else if (type == ProjectType.EJB) {
+            
+        }
+        
+        Element serviceRef = getServiceRefElement(root, serviceRefName,
+                namespaceURI, localPart);
+        
+        if (serviceRef == null) {
+            serviceRef = createServiceRefElement(serviceRefName,
+                    namespaceURI, localPart);
+            
+            if (type == ProjectType.WEB) {
+                insertSunWebComponent(root, serviceRef);
+            } else {
+                root.appendChild(serviceRef);
+            }
+        }
+        
+        Element portInfo = getElement(serviceRef, PORT_INFO_TAG);
+        
+        Element binding = getElement(portInfo, MESSAGE_SECURITY_BINDING_TAG);
+        
+        if (binding == null) {
+            binding = createSecurityBindingElement();
+            portInfo.appendChild(binding);
+        }
+        
+        binding.setAttribute(PROVIDER_ID_ATTR, AM_CLIENT_PROVIDER);
+        
+        writeDocument();
+    }
+    
     public void removeServiceMessageSecurityBinding(String svcDescName,
             String pcName) {
         Element root = null;
@@ -272,7 +322,7 @@ public class SunDDHelper {
             
         }
         
-        component = getComponentElement(componentTag, componentNameTag,
+        component = getComponentElement(root, componentTag, componentNameTag,
                 pcName);
         
         if (component != null) {
@@ -286,8 +336,27 @@ public class SunDDHelper {
         writeDocument();
     }
     
+    public void removeServiceRefMessageSecurityBinding(String serviceRefName,
+            String namespaceURI, String localPart) {
+        Element root = null;
+        
+        if (type == ProjectType.WEB) {
+            root = getSunWebAppElement();
+        } else if (type == ProjectType.EJB) {
+            
+        }
+        
+        Element serviceRef = getServiceRefElement(root, serviceRefName,
+                namespaceURI, localPart);
+        
+        if (serviceRef != null) {
+            root.removeChild(serviceRef);
+        }
+        
+        writeDocument();
+    }
     
-    public boolean isSecurityEnabled(String svcDescName, String pcName) {
+    public boolean isServiceSecurityEnabled(String svcDescName, String pcName) {
         Element root = null;
         Element component = null;
         String componentTag = null;
@@ -303,7 +372,7 @@ public class SunDDHelper {
             return false;
         }
         
-        component = getComponentElement(componentTag, componentNameTag,
+        component = getComponentElement(root, componentTag, componentNameTag,
                 pcName);
         
         if (component != null) {
@@ -323,6 +392,35 @@ public class SunDDHelper {
         return false;
     }
     
+    public boolean isClientSecurityEnabled(String serviceRefName,
+            String namespaceURI, String localPart) {
+        Element root = null;
+        
+        if (type == ProjectType.WEB) {
+            root = getSunWebAppElement();
+        } else if (type == ProjectType.EJB) {
+            
+        } else {
+            return false;
+        }
+  
+        Element serviceRef = getServiceRefElement(root, serviceRefName, 
+                namespaceURI, localPart);
+        
+        if (serviceRef != null) {
+            Element portInfo = getElement(serviceRef, PORT_INFO_TAG);
+            Element binding = getElement(serviceRef, MESSAGE_SECURITY_BINDING_TAG);
+            
+            if (binding != null) {
+                if (AM_CLIENT_PROVIDER.equals(binding.getAttribute(PROVIDER_ID_ATTR))) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
     private Element getSunWebAppElement() {
         Document document = getDocument();
         NodeList nodes = document.getElementsByTagName(SUN_WEB_APP_TAG);
@@ -330,10 +428,9 @@ public class SunDDHelper {
         return (Element) nodes.item(0);
     }
     
-    private Element getComponentElement(String componentTag,
+    private Element getComponentElement(Element root, String componentTag,
             String componentNameTag, String componentName) {
-        Document document = getDocument();
-        NodeList components = document.getElementsByTagName(componentTag);
+        NodeList components = root.getElementsByTagName(componentTag);
         int length = components.getLength();
         
         for (int i = 0; i < length; i++) {
@@ -352,6 +449,47 @@ public class SunDDHelper {
         return null;
     }
     
+    private Element getServiceRefElement(Element root, String serviceRefName,
+            String namespaceURI, String localPart) {
+        Document document = getDocument();
+        NodeList serviceRefs = document.getElementsByTagName(SERVICE_REF_TAG);
+        int length = serviceRefs.getLength();
+        
+        for (int i = 0; i < length; i++) {
+            Element serviceRef = (Element) serviceRefs.item(i);
+            Element refName = getElement(serviceRef, SERVICE_REF_NAME_TAG);
+      
+            if (refName != null) {
+                if (containsValue(refName, serviceRefName)) {
+                    Element portInfo = getElement(serviceRef, PORT_INFO_TAG);
+                    
+                    if (portInfo == null) continue;
+                    
+                    Element wsdlPort = getElement(portInfo, WSDL_PORT_TAG);
+                    
+                    if (wsdlPort == null) continue;
+                    
+                    Element namespaceURIElement = getElement(wsdlPort, NAMESPACE_URI_TAG);
+                    
+                    if (namespaceURIElement != null) {
+                        if (containsValue(namespaceURIElement, namespaceURI)) {
+                            Element localPartElement = getElement(wsdlPort, LOCALPART_TAG);
+                            
+                            if (localPartElement != null) {
+                                if (containsValue(localPartElement, localPart)) {
+                                    return serviceRef;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    
     private Element createComponentElement(String componentTag,
             String componentNameTag, String componentName) {
         Document document = getDocument();
@@ -359,6 +497,22 @@ public class SunDDHelper {
         componentElement.appendChild(createElement(componentNameTag, componentName));
         
         return componentElement;
+    }
+    
+    private Element createServiceRefElement(String serviceRefName,
+            String namespaceURI, String localPart) {
+        Document document = getDocument();
+        Element serviceRef = document.createElement(SERVICE_REF_TAG);
+        serviceRef.appendChild(createElement(SERVICE_REF_NAME_TAG, 
+                serviceRefName));
+        Element portInfo = document.createElement(PORT_INFO_TAG);
+        serviceRef.appendChild(portInfo);
+        Element wsdlPort = document.createElement(WSDL_PORT_TAG);
+        wsdlPort.appendChild(createElement(NAMESPACE_URI_TAG, namespaceURI));
+        wsdlPort.appendChild(createElement(LOCALPART_TAG, localPart));
+        portInfo.appendChild(wsdlPort);
+        
+        return serviceRef;
     }
     
     private Element getElement(Element component, String tagName) {
@@ -396,9 +550,9 @@ public class SunDDHelper {
         return binding;
     }
     
-    private void insertServletElement(Element root, Element servletElement) {
+    private void insertSunWebComponent(Element root, Element component) {
         Element classLoader = getElement(root, CLASS_LOADER_TAG);
-        root.insertBefore(servletElement, classLoader);
+        root.insertBefore(component, classLoader);
     }
     
     private Element getSecurityRoleMapping(String value) {

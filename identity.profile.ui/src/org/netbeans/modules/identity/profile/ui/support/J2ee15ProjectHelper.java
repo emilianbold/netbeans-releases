@@ -79,7 +79,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
             serviceRefNames = new ArrayList<String>();
             List<ServiceRef> refs = getServiceRefs();
             String wsdlUri = getClient().getWsdlUrl();
-    
+            
             System.out.println("wsdlUri = " + wsdlUri);
             
             for (ServiceRef ref : refs) {
@@ -87,107 +87,73 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
                     System.out.println("adding serviceRefName = " + ref.getName());
                     serviceRefNames.add(ref.getName());
                 }
-            }     
+            }
         }
         
         return serviceRefNames;
     }
     
     public boolean isSecurityEnabled() {
-        FileObject sunDD = getSunDDFO();
-        String pcName = getPortComponentName();
-        String descName = getServiceDescriptionName();
+        SunDDHelper helper = new SunDDHelper(getSunDDFO(), getProjectType());
+      
         List<String> refNames = getAllServiceRefNames();
         
         if (isServer()) {
-            SunDDHelper helper = new SunDDHelper(sunDD, getProjectType());
-            
-            return helper.isSecurityEnabled(descName, pcName);
+            return helper.isServiceSecurityEnabled(getServiceDescriptionName(), 
+                    getPortComponentName());
         } else {
-            /*
-            String s = refNames.get(0);
-            List<WsdlData> wsdlInfo = getWsdlData();
-             
-            if (!wsdlInfo.isEmpty()) {
-                WsdlData w = wsdlInfo.get(0);
-                String namespace = w.getTargetNameSpace();
-                String localPart = w.getPort();
-             
-                if (SunDDBridge.doesSvcRefMSBExist(sunDD, s, namespace, localPart) &&
-                        SunDDBridge.isSvcRefMSBAMProvider(sunDD, s, namespace, localPart))
-                    return true;
+            for (WsdlData wsdlData : getWsdlData()) {
+                String namespace = wsdlData.getTargetNameSpace();
+                String localPart = wsdlData.getPort();
+                
+                for (String refName : getAllServiceRefNames()) {
+                    if (helper.isClientSecurityEnabled(refName,
+                            namespace, localPart)) {
+                        return true;
+                    }
+                }
             }
-             */
         }
+        
         return false;
     }
     
     protected void enableMessageLevelSecurity(String providerId) {
-        FileObject sunDD = getSunDDFO();
-        String pcName = getPortComponentName();
-        String descName = getServiceDescriptionName();
+        SunDDHelper helper = new SunDDHelper(getSunDDFO(), getProjectType());
         List<String> refNames = getAllServiceRefNames();
         
         if (isServer()) {
-            //            System.out.println("descname: portcompname: " + descName +
-            //                    " : " + pcName);
-            SunDDHelper helper = new SunDDHelper(sunDD, getProjectType());
-            
-            helper.setServiceMessageSecurityBinding(descName, pcName, providerId);
+            helper.setServiceMessageSecurityBinding(getServiceDescriptionName(),
+                    getPortComponentName(), providerId);
         } else {
-            /*
-            List<WsdlData> wsdlInfo = getWsdlData();
-            int i = 0;
-            assert(wsdlInfo.size() >= refNames.size());
-            for (String s : refNames) {
-                if (wsdlInfo.get(i) != null) {
-                    String namespace = wsdlInfo.get(i).getTargetNameSpace();
-                    String localPart = wsdlInfo.get(i).getPort();
-//                    System.out.println("refName : namespace: localpart: " + s +
-//                            " : " + namespace + " : " + localPart);
-                    if (!SunDDBridge.setSvceRefMSB(sunDD, s, namespace, localPart)) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                new Exception("Failed during SunDD changes")); // NOI18N
-                    }
+            for (WsdlData wsdlData : getWsdlData()) {
+                String namespace = wsdlData.getTargetNameSpace();
+                String localPart = wsdlData.getPort();
+                
+                for (String refName : getAllServiceRefNames()) {
+                    helper.setServiceRefMessageSecurityBinding(refName,
+                            namespace, localPart);
                 }
-                i++;
             }
-             */
         }
     }
     
     protected void disableMessageLevelSecurity() {
-        //if (!isSecurityEnabled()) return;
-        
-        FileObject sunDD = getSunDDFO();
-        String pcName = getPortComponentName();
-        String descName = getServiceDescriptionName();
-        List<String> refNames = getAllServiceRefNames();
+        SunDDHelper helper = new SunDDHelper(getSunDDFO(), getProjectType());
         
         if (isServer()) {
-            //            System.out.println("Into delete -- descname: portcompname: " + descName +
-            //                    " : " + pcName);
-            SunDDHelper helper = new SunDDHelper(sunDD, getProjectType());
-            helper.removeServiceMessageSecurityBinding(descName, pcName);
+            helper.removeServiceMessageSecurityBinding(getServiceDescriptionName(),
+                    getPortComponentName());
         } else {
-            /*
-            List<WsdlData> wsdlInfo = getWsdlData();
-            int i = 0;
-            assert(wsdlInfo.size() >= refNames.size());
-            for (String s : refNames) {
-                if (wsdlInfo.get(i) != null) {
-                    String namespace = wsdlInfo.get(i).getTargetNameSpace();
-                    String localPart = wsdlInfo.get(i).getPort();
-                    //                    System.out.println("Into delete -- refName : namespace: localpart: " + s +
-                    //                            " : " + namespace + " : " + localPart);
-                    if (!SunDDBridge.deleteSvcRefMSB(sunDD, s, namespace, localPart)) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                new Exception("Failed during SunDD changes")); // NOI18N
-                    }
+            for (WsdlData wsdlData : getWsdlData()) {
+                String namespace = wsdlData.getTargetNameSpace();
+                String localPart = wsdlData.getPort();
+                
+                for (String refName : getAllServiceRefNames()) {
+                    helper.removeServiceRefMessageSecurityBinding(refName,
+                            namespace, localPart);
                 }
-                i++;
             }
-             */
         }
     }
     
@@ -221,7 +187,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
     private List<ServiceRef> getServiceRefsFromSource(JavaSource source) {
         final List<ServiceRef> refs = new ArrayList<ServiceRef>();
         
-         try {
+        try {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
@@ -243,8 +209,8 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
                                     System.out.println("key = " + key.getSimpleName());
                                     System.out.println("value = " + values.get(key));
                                     
-                                    if (key.getSimpleName().toString().equals("wsdlLocation")) { //NOI18N                   
-                                        String wsdlLocation = values.get(key).toString().replace("\"", "");                        
+                                    if (key.getSimpleName().toString().equals("wsdlLocation")) { //NOI18N
+                                        String wsdlLocation = values.get(key).toString().replace("\"", "");
                                         String refName = classElement.getQualifiedName().toString() + "/" +
                                                 field.getSimpleName().toString();
                                         
@@ -260,7 +226,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
         } catch (IOException ex) {
             
         }
-     
+        
         return refs;
     }
     
@@ -277,7 +243,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
         public String getName() {
             return name;
         }
-     
+        
         public String getWsdlLocation() {
             return wsdlLocation;
         }
