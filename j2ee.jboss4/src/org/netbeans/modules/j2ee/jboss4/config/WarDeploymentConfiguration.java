@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,6 +29,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
@@ -54,7 +55,7 @@ import org.openide.util.lookup.Lookups;
  * Web module deployment configuration handles creation and updating of the 
  * jboss-web.xml configuration file.
  *
- * @author sherold, lkotouc
+ * @author Stepan Herold, Libor Kotouc
  */
 public class WarDeploymentConfiguration extends JBDeploymentConfiguration 
 implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguration, 
@@ -100,6 +101,10 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         return true;
     }
     
+    public boolean supportsCreateMessageDestination() {
+        return true;
+    }
+
     /**
      * Return context path.
      * 
@@ -162,7 +167,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 try {
                     String resType = resourceRef.getResType();
                     if ("javax.sql.DataSource".equals(resType)) { // NOI18N
-                        addResReference(resourceRef.getResRefName());
+                        addResReference(resourceRef.getResRefName(), JBOSS4_DATASOURCE_JNDI_PREFIX + resourceRef.getResRefName());
                     } else if ("javax.mail.Session".equals(resType)) { // NOI18N
                         addMailReference(resourceRef.getResRefName());
                     } else if ("javax.jms.ConnectionFactory".equals(resType)) { // NOI18N
@@ -197,12 +202,29 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         }
     }
     
+    public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
+        addResReference(referenceName, jndiName);
+    }
+    
+    public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
+        
+        ResourceRef resourceRefs[] = getJbossWeb().getResourceRef();
+        for (ResourceRef resourceRef : resourceRefs) {
+            String rrn = resourceRef.getResRefName();
+            if (referenceName.equals(rrn)) {
+                return resourceRef.getJndiName();
+            }
+        }
+        
+        return null;
+    }
+
     /**
      * Add a new resource reference.
      * 
      * @param name resource reference name
      */
-    private void addResReference(final String name) throws ConfigurationException {
+    private void addResReference(final String name, final String jndiName) throws ConfigurationException {
         modifyJbossWeb(new JbossWebModifier() {
             public void modify(JbossWeb modifiedJbossWeb) {
 
@@ -219,7 +241,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 //if it doesn't exist yet, create a new one
                 ResourceRef newRR = new ResourceRef();
                 newRR.setResRefName(name);
-                newRR.setJndiName(JBOSS4_DATASOURCE_JNDI_PREFIX + name);
+                newRR.setJndiName(jndiName);
                 modifiedJbossWeb.addResourceRef(newRR);
             }
         });
@@ -251,6 +273,23 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 modifiedJbossWeb.addResourceRef(newRR);
             }
         });
+    }
+    
+    public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, 
+            String destName, MessageDestination.Type type) throws ConfigurationException {
+
+        addConnectionFactoryReference(connectionFactoryName);
+        
+        String jndiName = null;
+        if (MessageDestination.Type.QUEUE.equals(type)) {
+            jndiName = "queue/" + destName;
+        }
+        else
+        if (MessageDestination.Type.TOPIC.equals(type)) {
+            jndiName = "topic/" + destName;
+        }
+
+        addMsgDestReference(referenceName, jndiName);
     }
     
     /**
@@ -287,7 +326,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
      * @param name message destination name
      * @param destPrefix MDB destination prefix
      */
-    private void addMsgDestReference(final String name, final String destPrefix) throws ConfigurationException {
+    private void addMsgDestReference(final String name, final String jndiName) throws ConfigurationException {
         modifyJbossWeb(new JbossWebModifier() {
             public void modify(JbossWeb modifiedJbossWeb) {
 
@@ -304,9 +343,6 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 //if it doesn't exist yet, create a new one
                 MessageDestinationRef mdr = new MessageDestinationRef();
                 mdr.setMessageDestinationRefName(name);
-                String jndiName = name;
-                if (name.startsWith("jms/")) // prefix automatically prepended to the selected message destination during 'Send JMS Message' action
-                    jndiName = destPrefix + name.substring("jms/".length()); //replace 'jms/' with the correct prefix
                 mdr.setJndiName(jndiName);
                 modifiedJbossWeb.addMessageDestinationRef(mdr);
             }
@@ -366,7 +402,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 } else {
                     // create jboss-web.xml if it does not exist yet
                     jbossWeb = generateJbossWeb();
-                    writefile(jbossWebFile, jbossWeb);
+                    writeFile(jbossWebFile, jbossWeb);
                 }
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ce);

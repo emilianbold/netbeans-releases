@@ -612,6 +612,24 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         else if (contextPath.indexOf("//")>=0) correct=false; //NOI18N
         return correct;
     }
+
+    public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
+        // TODO implement
+    }
+
+    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, String referenceName, String jndiName) throws ConfigurationException {
+        // TODO implement
+    }
+
+    public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
+        // TODO implement
+        return null;
+    }
+
+    public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
+        // TODO implement
+        return null;
+    }
     
     // private helper interface -----------------------------------------------
      

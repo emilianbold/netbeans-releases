@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.enterprise.deploy.model.DDBean;
@@ -35,13 +37,17 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.gen.EnterpriseBeans;
+import org.netbeans.modules.j2ee.jboss4.config.gen.Entity;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Jboss;
 import org.netbeans.modules.j2ee.jboss4.config.gen.MessageDriven;
+import org.netbeans.modules.j2ee.jboss4.config.gen.ResourceRef;
+import org.netbeans.modules.j2ee.jboss4.config.gen.Session;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -130,7 +136,11 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     public boolean supportsCreateDatasource() {
         return true;
     }
-        
+    
+    public boolean supportsCreateMessageDestination() {
+        return true;
+    }
+    
 //        //listen on the resource-ref element
 //        deplObj.getDDBeanRoot().addXpathListener(SESSION_RESOURCE_REF, this);
 //        deplObj.getDDBeanRoot().addXpathListener(ENTITY_RESOURCE_REF, this);
@@ -165,7 +175,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 } else {
                     // create jboss.xml if it does not exist yet
                     jboss = generateJboss();
-                    writefile(jbossFile, jboss);
+                    writeFile(jbossFile, jboss);
                 }
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ce);
@@ -237,7 +247,8 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
 //                        Set beanNames = null;
 //                        if (desc.length > 0  && "javax.sql.DataSource".equals(type[0])) { // NOI18N
 //                            beanNames = getRelevantBeansDataRef(desc[0], name[0], eventDDBean.getRoot(), beanType);
-//                            addResReference(desc[0], name[0], beanNames, beanType);
+//                            String jndiName = JBDeploymentConfiguration.JBOSS4_DATASOURCE_JNDI_PREFIX + resRefName;
+//                            addResReference(jndiName, name[0], beanNames, beanType);
 //                        }
 //                        else
 //                        if ("javax.mail.Session".equals(type[0])) { // NOI18N
@@ -724,41 +735,111 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         
         return beanMap;
     }
+
+    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, 
+            String referenceName, String jndiName) throws ConfigurationException {
+        
+        Set beanNames = new HashSet();
+        beanNames.add(ejbName);
+        if (org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.SESSION.equals(ejbType)) {
+            addResReference(jndiName, referenceName, beanNames, BEAN_TYPE.SESSION);
+        }
+        else
+        if (org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.ENTITY.equals(ejbType)) {
+            addResReference(jndiName, referenceName, beanNames, BEAN_TYPE.ENTITY);
+        }
+        else
+        if (org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.MESSAGE_DRIVEN.equals(ejbType)) {
+            addMsgDrvResReference(jndiName, referenceName, ejbName);
+        }
+
+    }
+    
+    public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
+
+        EnterpriseBeans beans = getJboss().getEnterpriseBeans();
+        if (beans == null) {
+            return null;
+        }
+        
+        Session[] sessions = beans.getSession();
+        for (Session session : sessions) {
+            if (ejbName.equals(session.getEjbName())) {
+                ResourceRef[] resourceRefs = session.getResourceRef();
+                for (ResourceRef resourceRef : resourceRefs) {
+                    String rrn = resourceRef.getResRefName();
+                    if (referenceName.equals(rrn)) {
+                        return resourceRef.getJndiName();
+                    }
+                }
+                return null;
+            }
+        }
+
+        Entity[] entities = beans.getEntity();
+        for (Entity entity : entities) {
+            if (ejbName.equals(entity.getEjbName())) {
+                ResourceRef[] resourceRefs = entity.getResourceRef();
+                for (ResourceRef resourceRef : resourceRefs) {
+                    String rrn = resourceRef.getResRefName();
+                    if (referenceName.equals(rrn)) {
+                        return resourceRef.getJndiName();
+                    }
+                }
+                return null;
+            }
+        }
+
+        MessageDriven[] mdbs = beans.getMessageDriven();
+        for (MessageDriven mdb : mdbs) {
+            if (ejbName.equals(mdb.getEjbName())) {
+                ResourceRef[] resourceRefs = mdb.getResourceRef();
+                for (ResourceRef resourceRef : resourceRefs) {
+                    String rrn = resourceRef.getResRefName();
+                    if (referenceName.equals(rrn)) {
+                        return resourceRef.getJndiName();
+                    }
+                }
+                return null;
+            }
+        }
+        
+        return null;
+    }    
+    
     
     /**
      * Add a new data source reference to the beans of the given type without it.
      * 
-     * @param desc data source description
+     * @param jndiName JNDI name of the resource
      * @param resRefName data source reference name
      * @param beanNames the beans (ejb-name value) which might need to add data source reference specified by resRefName
      * @param beanType type of bean to add data source reference to
      */
-    private void addResReference(String desc, final String resRefName, final Set beanNames, final BEAN_TYPE beanType) 
+    private void addResReference(final String jndiName, final String resRefName, final Set beanNames, final BEAN_TYPE beanType) 
     throws ConfigurationException 
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               String jndiName = JBDeploymentConfiguration.JBOSS4_DATASOURCE_JNDI_PREFIX + resRefName;
                JbossDataSourceRefModifier.modify(modifiedJboss, resRefName, beanNames, beanType, jndiName);
            }
         });
     }
 
     /**
-     * Add a new resource reference to the message-driven beans without it.
+     * Add a new resource reference to the message-driven bean.
      * 
-     * @param desc data source description
+     * @param jndiName JNDI name of the resource
      * @param resRefName resource reference name
-     * @param beans the bean names (ejb-name) mapped to the message destinations (message-destination-link)
+     * @param mdbName the MDB (ejb-name) which might need to add resource reference specified by resRefName
      * which might need to add resource reference specified by resRefName
      */
-    private void addMsgDrvResReference(String desc, final String resRefName, final Map beans) 
+    private void addMsgDrvResReference(final String jndiName, final String resRefName, final String mdbName) 
     throws ConfigurationException 
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               String jndiName = JBDeploymentConfiguration.JBOSS4_DATASOURCE_JNDI_PREFIX + resRefName;
-               JbossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, resRefName, beans, jndiName);
+               JbossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, resRefName, mdbName, jndiName);
            }
         });
     }
@@ -833,13 +914,47 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         });
     }
 
+    public void bindMdbToMessageDestination(String mdbName, String name, MessageDestination.Type type) throws ConfigurationException {
+        addMDB(mdbName, name, type);
+    }
+    
+    public String findMessageDestinationName(String mdbName) throws ConfigurationException {
+
+        EnterpriseBeans beans = getJboss().getEnterpriseBeans();
+        if (beans == null) {
+            return null;
+        }
+        
+        MessageDriven[] mdbs = beans.getMessageDriven();
+        for (MessageDriven mdb : mdbs) {
+            if (mdbName.equals(mdb.getEjbName())) {
+                String destJndiName = mdb.getDestinationJndiName();
+                if (destJndiName != null) {
+                    if (destJndiName.startsWith("queue/") || destJndiName.startsWith("topic/")) {
+                        return destJndiName.substring(6); // "queue/".length() == "topic/".length() == 6
+                    }
+                    else {
+                        ErrorManager.getDefault().log(
+                                ErrorManager.INFORMATIONAL, 
+                                NbBundle.getMessage(EjbDeploymentConfiguration.class, "MSG_NoPrefix", destJndiName));
+                    }
+                }
+                return null;
+            }
+        }
+        
+        return null;
+    }
+
     /**
      * Add MDB record.
      * 
      * @param name MDB name (ejb-name)
      * @param dest MDB destination (message-destination-link)
      */
-    private void addMDB(final String name, final String dest) throws ConfigurationException {
+    private void addMDB(final String name, final String destName, final MessageDestination.Type destType) 
+    throws ConfigurationException {
+        
         modifyJboss(new JbossModifier() {
             public void modify(Jboss modifiedJboss) {
 
@@ -862,7 +977,13 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 //if it doesn't exist yet, create a new one
                 MessageDriven mdb = new MessageDriven();
                 mdb.setEjbName(name);
-                mdb.setDestinationJndiName(dest); // NOI18N
+                if (MessageDestination.Type.QUEUE.equals(destType)) {
+                    mdb.setDestinationJndiName("queue/" + destName); // NOI18N
+                }
+                else
+                if (MessageDestination.Type.TOPIC.equals(destType)) {
+                    mdb.setDestinationJndiName("topic/" + destName); // NOI18N
+                }
                 eb.addMessageDriven(mdb);
             }
         });
@@ -889,34 +1010,69 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     /**
      * Add a new connection factory reference to the message-driven beans without it.
      * 
-     * @param resRefName connection factory reference name
-     * @param beans the bean names (ejb-name) mapped to the message destinations (message-destination-link)
-     * which might need to add connection factory reference specified by resRefName
+     * @param connectionFactoryName connection factory reference name
+     * @param mdbName the MDB (ejb-name) which might need to add connection factory reference specified by resRefName
      */
-    private void addMsgDrvConnectionFactoryReference(final String resRefName, final Map beans) 
+    private void addMsgDrvConnectionFactoryReference(final String connectionFactoryName, final String mdbName) 
     throws ConfigurationException 
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
                String jndiName = JBOSS4_CONN_FACTORY_JNDI_NAME;
-               JbossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, resRefName, beans, jndiName);
+               JbossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, connectionFactoryName, mdbName, jndiName);
            }
         });
     }
+    
+    public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
+            String referenceName, String connectionFactoryName,
+            String destName, MessageDestination.Type type) throws ConfigurationException {
+    
+        Set beanNames = new HashSet();
+        beanNames.add(ejbName);
+        
+        String destPrefix = null;
+        if (MessageDestination.Type.QUEUE.equals(type)) {
+            destPrefix = "queue/";
+        }
+        else
+        if (MessageDestination.Type.TOPIC.equals(type)) {
+            destPrefix = "topic/";
+        }
+        
+        if (org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.SESSION.equals(ejbType)) {
+            addConnectionFactoryReference(connectionFactoryName, beanNames, BEAN_TYPE.SESSION);
+            addMsgDestReference(referenceName, destPrefix, destName, beanNames, BEAN_TYPE.SESSION);
+        }
+        else
+        if (org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.ENTITY.equals(ejbType)) {
+            addConnectionFactoryReference(connectionFactoryName, beanNames, BEAN_TYPE.ENTITY);
+            addMsgDestReference(referenceName, destPrefix, destName, beanNames, BEAN_TYPE.ENTITY);
+        }
+        else
+        if (org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.MESSAGE_DRIVEN.equals(ejbType)) {
+            addMsgDrvConnectionFactoryReference(connectionFactoryName, ejbName);
+            addMsgDrvMsgDestReference(referenceName, destPrefix, destName, ejbName);
+        }
+        
+    }
+    
     
     /**
      * Add a new message destination reference to the beans of the given type without it.
      * 
      * @param msgDestRefName message destination reference name
+     * @param destName message destination name
+     * @param detPrefix message destination prefix (queue/ ot topic/)
      * @param beanNames the beans (ejb-name value) which might need to add message destination reference specified by msgDestRefName
      * @param beanType type of bean to add message destination reference to
      */
-    private void addMsgDestReference(final String msgDestRefName, final String destPrefix,
+    private void addMsgDestReference(final String msgDestRefName, final String destPrefix, final String destName,
                                      final Set beanNames, final BEAN_TYPE beanType) throws ConfigurationException 
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               JbossMsgDestRefModifier.modify(modifiedJboss, msgDestRefName, beanNames, beanType, destPrefix);
+               JbossMsgDestRefModifier.modify(modifiedJboss, msgDestRefName, beanNames, beanType, destPrefix, destName);
            }
         });
     }
@@ -925,15 +1081,17 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
      * Add a new message destination reference to the message driven beans without it.
      * 
      * @param msgDestRefName message destination reference name
-     * @param beanNames the beans (ejb-name value) which might need to add message destination reference specified by msgDestRefName
-     * @param beanType type of bean to add message destination reference to
+     * @param destName message destination name
+     * @param destPrefix message destination prefix (queue/ ot topic/)
+     * @param mdbName the MDB (ejb-name value) which might need to add 
+     *        message destination reference specified by msgDestRefName
      */
     private void addMsgDrvMsgDestReference(final String msgDestRefName, final String destPrefix,
-                                     final Map beans) throws ConfigurationException 
+                                     final String destName, final String mdbName) throws ConfigurationException 
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               JbossMsgDestRefModifier.modifyMsgDrv(modifiedJboss, msgDestRefName, beans, destPrefix);
+               JbossMsgDestRefModifier.modifyMsgDrv(modifiedJboss, msgDestRefName, mdbName, destPrefix, destName);
            }
         });
     }

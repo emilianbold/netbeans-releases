@@ -40,6 +40,14 @@ import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.JMSDestination;
@@ -61,7 +69,14 @@ public final class SendJMSGenerator {
         this.jmsDestination = jmsDestination;
     }
     
-    public void genMethods(EnterpriseReferenceContainer container, final String className, FileObject fileObject, ServiceLocatorStrategy slStrategy) throws IOException {
+    public void genMethods(
+            EnterpriseReferenceContainer container, 
+            final String className, 
+            FileObject fileObject, 
+            ServiceLocatorStrategy slStrategy,
+            J2eeModuleProvider j2eeModuleProvider,
+            MessageDestination dest) throws IOException {
+        
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] isInjectionTarget = new boolean[1];
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
@@ -89,7 +104,100 @@ public final class SendJMSGenerator {
         String sendMethodName = createSendMethod(fileObject, className, jmsDestination.getDestination());
         createJMSProducer(fileObject, className, factoryName, connectionFactoryFieldName, destinationName,
                 destinationFieldName,sendMethodName, slStrategy);
+        
+if (System.getProperties().getProperty("resource-api-redesign") != null) {
+
+    if (dest != null) {
+        try {
+            if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
+                //in the current implementation, reference name is the same as the destination name...
+                j2eeModuleProvider.getConfigSupport().bindMessageDestinationReference(
+                        dest.getName(), factoryName, dest.getName(), dest.getType());
+            }
+            else
+            if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
+                //in the current implementation, reference name is the same as the destination name...
+                bindMessageDestinationReferenceForEjb(j2eeModuleProvider, fileObject, className, 
+                        dest.getName(), factoryName, dest.getName(), dest.getType());
+            }
+        }
+        catch (ConfigurationException ce) {
+        }
     }
+}
+
+    }
+
+private void bindMessageDestinationReferenceForEjb(J2eeModuleProvider j2eeModuleProvider, 
+        FileObject fileObject, String className, 
+        String referenceName, String connectionFactoryName,
+        String destName, MessageDestination.Type destType) throws ConfigurationException {
+
+    EjbJar dd = null;
+    try {
+        dd = findDDRoot(fileObject);
+    }
+    catch (IOException ioe) {
+        // TODO
+    }
+    if (dd == null) {
+        return;
+    }
+    
+    EnterpriseBeans beans = dd.getEnterpriseBeans();
+    if (beans == null) {
+        return;
+    }
+
+    String ejbName = getEjbName(beans, className);
+    if (ejbName == null) {
+        return;
+    }
+
+    String ejbType = getEjbType(beans, className);
+    if (ejbType == null) {
+        return;
+    }
+    
+    j2eeModuleProvider.getConfigSupport().bindMessageDestinationReferenceForEjb(
+            ejbName, ejbType, referenceName, connectionFactoryName, destName, destType);
+}        
+      
+private EjbJar findDDRoot(FileObject fileObject) throws IOException {
+    org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJar = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
+    assert ejbJar != null;
+    return DDProvider.getDefault().getMergedDDRoot(ejbJar.getMetadataUnit());
+}
+
+private String getEjbName(EnterpriseBeans beans, String className) {
+    Ejb ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className);
+    if (ejb == null) {
+        ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className);
+    }
+    if (ejb == null) {
+        ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN, Ejb.EJB_CLASS, className);
+    }
+
+    return ejb.getEjbName();
+}
+
+private String getEjbType(EnterpriseBeans beans, String className) {
+    String type = null;
+
+    if (beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className) != null) {
+        type = EnterpriseBeans.SESSION;
+    }
+    else
+    if (beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className) != null) {
+        type = EnterpriseBeans.ENTITY;
+    }
+    else
+    if (beans.findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN, Ejb.EJB_CLASS, className) != null) {
+        type = EnterpriseBeans.MESSAGE_DRIVEN;
+    }
+
+    return type;
+}
     
     private String generateConnectionFactoryReference(EnterpriseReferenceContainer container, FileObject referencingFile, String referencingClass) throws IOException {
         ResourceRef ref = container.createResourceRef(referencingClass);

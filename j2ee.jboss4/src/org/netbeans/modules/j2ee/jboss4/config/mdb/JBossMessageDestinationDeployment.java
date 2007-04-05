@@ -17,65 +17,66 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.j2ee.jboss4.config;
+package org.netbeans.modules.j2ee.jboss4.config.mdb;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.jboss4.config.gen.Datasources;
-import org.netbeans.modules.j2ee.jboss4.config.gen.LocalTxDatasource;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.schema2beans.BaseBean;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Libor Kotouc
  */
-public final class JBossDatasourceManager implements DatasourceManager {
+public final class JBossMessageDestinationDeployment implements MessageDestinationDeployment {
     
-    private static final String DSdotXML = "-ds.xml"; // NOI18N
-    private static final String JBossDSdotXML = "jboss-ds.xml"; // NOI18N
+//    private static final String DSdotXML = "-ds.xml"; // NOI18N
+//    private static final String JBossDSdotXML = "jboss-ds.xml"; // NOI18N
     
     // server's deploy dir
-    private FileObject serverDir;
+    private FileObject deployDir;
     
-    public JBossDatasourceManager(String serverUrl) {
+    public JBossMessageDestinationDeployment(String serverUrl) {
         String serverDirPath = InstanceProperties.getInstanceProperties(serverUrl).
                                         getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR);
-        serverDir = FileUtil.toFileObject(new File(serverDirPath));
+        deployDir = FileUtil.toFileObject(new File(serverDirPath));
     }
     
+    public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
+        HashSet<MessageDestination> destinations = new HashSet<MessageDestination>();
+        destinations.add(new JBossMessageDestination("SampleServerQueue", MessageDestination.Type.QUEUE));
+        destinations.add(new JBossMessageDestination("SampleServerTopic", MessageDestination.Type.TOPIC));
+        return destinations;
+    }
+
+    public void deployMessageDestinations(Set<MessageDestination> destinations) throws ConfigurationException {
+    }
+    
+    
+/*  
     public Set<Datasource> getDatasources() throws ConfigurationException {
         
         Set<Datasource> datasources = new HashSet<Datasource>();
         
-        if (serverDir == null || !serverDir.isValid() || !serverDir.isFolder() || !serverDir.canRead()) {
+        if (deployDir == null || !deployDir.isValid() || !deployDir.isFolder() || !deployDir.canRead()) {
             ErrorManager.getDefault().log(ErrorManager.USER, 
-                    NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_DEPLOY_DIR"));
+                    NbBundle.getMessage(JBossMessageDestinationDeployment.class, "ERR_WRONG_DEPLOY_DIR"));
             return datasources;
         }
         
-        Enumeration files = serverDir.getChildren(true);
+        Enumeration files = deployDir.getChildren(true);
         List<FileObject> confs = new LinkedList<FileObject>();
         while (files.hasMoreElements()) { // searching for config files with DS
             FileObject file = (FileObject) files.nextElement();
@@ -95,7 +96,7 @@ public final class JBossDatasourceManager implements DatasourceManager {
                     ds = Datasources.createGraph(dsFile);
                 } catch (RuntimeException re) {
                     // most likely not a data source (e.g. jms-ds.xml in JBoss 5.x)
-                    String msg = NbBundle.getMessage(JBossDatasourceManager.class, "MSG_NotParseableDatasources", dsFile.getAbsolutePath());
+                    String msg = NbBundle.getMessage(JBossMessageDestinationDeployment.class, "MSG_NotParseableDatasources", dsFile.getAbsolutePath());
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
                     continue;
                 }
@@ -111,10 +112,10 @@ public final class JBossDatasourceManager implements DatasourceManager {
                     }
                 }
             } catch (IOException ioe) {
-                String msg = NbBundle.getMessage(JBossDatasourceManager.class, "MSG_CannotReadDatasources", dsFile.getAbsolutePath());
+                String msg = NbBundle.getMessage(JBossMessageDestinationDeployment.class, "MSG_CannotReadDatasources", dsFile.getAbsolutePath());
                 throw new ConfigurationException(msg, ioe);
             } catch (RuntimeException re) {
-                String msg = NbBundle.getMessage(JBossDatasourceManager.class, "MSG_NotParseableDatasources", dsFile.getAbsolutePath());
+                String msg = NbBundle.getMessage(JBossMessageDestinationDeployment.class, "MSG_NotParseableDatasources", dsFile.getAbsolutePath());
                 throw new ConfigurationException(msg ,re);
             }
         }
@@ -220,20 +221,20 @@ public final class JBossDatasourceManager implements DatasourceManager {
         }
         return map;
     }
-
+*/
     private void writeFile(final File file, final BaseBean bean) throws ConfigurationException {
         try {
 
-            FileSystem fs = serverDir.getFileSystem();
+            FileSystem fs = deployDir.getFileSystem();
             fs.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
                     OutputStream os = null;
                     FileLock lock = null;
                     try {
                         String name = file.getName();
-                        FileObject configFO = serverDir.getFileObject(name);
+                        FileObject configFO = deployDir.getFileObject(name);
                         if (configFO == null) {
-                            configFO = serverDir.createData(name);
+                            configFO = deployDir.createData(name);
                         }
                         lock = configFO.lock();
                         os = new BufferedOutputStream (configFO.getOutputStream(lock), 4096);
@@ -254,5 +255,5 @@ public final class JBossDatasourceManager implements DatasourceManager {
             throw new ConfigurationException (e.getLocalizedMessage ());
         }
     }
-    
+
 }

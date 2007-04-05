@@ -53,8 +53,10 @@ final class JbossMsgDestRefModifier {
      * @param beanNames the beans (ejb-name value) which might need to add message destination reference specified by msgDestRefName
      * @param beanType type of bean to add message destination reference to
      * @param destPrefix prefix of the message destination
+     * @param destName message destination name
      */
-    static void modify(Jboss modifiedJboss, String msgDestRefName, Set beanNames, BEAN_TYPE beanType, String destPrefix) {
+    static void modify(Jboss modifiedJboss, String msgDestRefName, Set beanNames, 
+            BEAN_TYPE beanType, String destPrefix, String destName) {
 
         assert(beanNames.size() > 0);
 
@@ -62,10 +64,10 @@ final class JbossMsgDestRefModifier {
             modifiedJboss.setEnterpriseBeans(new EnterpriseBeans());
 
         if (beanType == BEAN_TYPE.SESSION) {
-            addSessionMsgDestReference(modifiedJboss, msgDestRefName, beanNames, destPrefix);
+            addSessionMsgDestReference(modifiedJboss, msgDestRefName, beanNames, destPrefix, destName);
         } else
         if (beanType == BEAN_TYPE.ENTITY) {
-            addEntityMsgDestReference(modifiedJboss, msgDestRefName, beanNames, destPrefix);
+            addEntityMsgDestReference(modifiedJboss, msgDestRefName, beanNames, destPrefix, destName);
         }
     }
     
@@ -76,8 +78,10 @@ final class JbossMsgDestRefModifier {
      * @param resRefName message destination reference name
      * @param sessionNames the sessions (ejb-name value) which might need to add message destination reference specified by msgDestRefName
      * @param destPrefix prefix of the message destination
+     * @param destName message destination name
      */
-    private static void addSessionMsgDestReference(Jboss modifiedJboss, String msgDestRefName, Set sessionNames, String destPrefix) {
+    private static void addSessionMsgDestReference(Jboss modifiedJboss, String msgDestRefName, 
+            Set sessionNames, String destPrefix, String destName) {
 
         List/*<Session>*/ sesssionsWithoutReference = new LinkedList();
 
@@ -119,7 +123,7 @@ final class JbossMsgDestRefModifier {
         for (Iterator it = sesssionsWithoutReference.iterator(); it.hasNext(); ) {
             MessageDestinationRef mdr = new MessageDestinationRef();
             mdr.setMessageDestinationRefName(msgDestRefName);
-            String jndiName = getJndiName(msgDestRefName, destPrefix);
+            String jndiName = getJndiName(destName, destPrefix);
             mdr.setJndiName(jndiName);
             Session session = (Session)it.next();
             session.addMessageDestinationRef(mdr);
@@ -134,8 +138,10 @@ final class JbossMsgDestRefModifier {
      * @param resRefName message destination reference name
      * @param sessionNames the entities (ejb-name value) which might need to add message destination reference specified by msgDestRefName
      * @param destPrefix prefix of the message destination
+     * @param destName message destination name
      */
-    private static void addEntityMsgDestReference(Jboss modifiedJboss, String msgDestRefName, Set entityNames, String destPrefix) {
+    private static void addEntityMsgDestReference(Jboss modifiedJboss, String msgDestRefName, 
+            Set entityNames, String destPrefix, String destName) {
 
         List/*<Entity>*/ entitiesWithoutReference = new LinkedList();
 
@@ -177,7 +183,7 @@ final class JbossMsgDestRefModifier {
         for (Iterator it = entitiesWithoutReference.iterator(); it.hasNext(); ) {
             MessageDestinationRef mdr = new MessageDestinationRef();
             mdr.setMessageDestinationRefName(msgDestRefName);
-            String jndiName = getJndiName(msgDestRefName, destPrefix);
+            String jndiName = getJndiName(destName, destPrefix);
             mdr.setJndiName(jndiName);
             Entity entity = (Entity)it.next();
             entity.addMessageDestinationRef(mdr);
@@ -262,13 +268,53 @@ final class JbossMsgDestRefModifier {
 
     }
     
-    private static String getJndiName(String msgDestRefName, String destPrefix) {
-        String jndiName = msgDestRefName;
-        // 'jms/' prefix automatically prepended to the selected message destination during 'Send JMS Message' action
-        if (msgDestRefName.startsWith("jms/")) // NOI18N
-            jndiName = destPrefix + msgDestRefName.substring("jms/".length()); //replace 'jms/' with the correct prefix
+    /**
+     * Add a reference to the given message destination to the message-driven beans if it does not exist yet.
+     *
+     * @param modifiedJboss Jboss graph instance being modified
+     * @param msgDestRefName message destination reference name
+     * @param mdbName the MDB (ejb-name value) which might need to add message 
+     *        destination reference specified by msgDestRefName
+     * @param destPrefix prefix of the message destination
+     * @param destName message destination name
+     */
+    static void modifyMsgDrv(Jboss modifiedJboss, String msgDestRefName, 
+            String mdbName, String destPrefix, String destName) {
 
-        return jndiName;
+        if (modifiedJboss.getEnterpriseBeans() == null)
+            modifiedJboss.setEnterpriseBeans(new EnterpriseBeans());
+
+        addMsgDrvMsgDestReference(modifiedJboss, msgDestRefName, mdbName, destPrefix, destName);
+    }
+    
+    private static void addMsgDrvMsgDestReference(Jboss modifiedJboss, String msgDestRefName, 
+            String mdbName, String destPrefix, String destName) {
+
+        EnterpriseBeans eb = modifiedJboss.getEnterpriseBeans();
+
+        for (MessageDriven mdb : eb.getMessageDriven()) {
+            String ejbName = mdb.getEjbName();
+            if (mdbName.equals(ejbName)) { // msgdrv found -> check whether it has the message-destination-ref
+                MessageDestinationRef[] msgDestRefs = mdb.getMessageDestinationRef();
+                int j = 0;
+                for ( ; j < msgDestRefs.length; j++) {
+                    String mdrn = msgDestRefs[j].getMessageDestinationRefName();
+                    if (msgDestRefName.equals(mdrn))
+                        return; // message-destination-ref found
+                }
+                if (j == msgDestRefs.length) { // message-destination-ref not found
+                    MessageDestinationRef mdr = new MessageDestinationRef();
+                    mdr.setMessageDestinationRefName(msgDestRefName);
+                    String jndiName = getJndiName(destName, destPrefix);
+                    mdr.setJndiName(jndiName);
+                    mdb.addMessageDestinationRef(mdr);
+                }
+            }
+        }
+    }
+    
+    private static String getJndiName(String destName, String destPrefix) {
+        return destPrefix + destName;
     }
     
 }

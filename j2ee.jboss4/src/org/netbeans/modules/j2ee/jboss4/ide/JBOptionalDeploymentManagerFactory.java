@@ -13,11 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.jboss4.ide;
 
+import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.jboss4.config.JBossDatasourceManager;
@@ -27,6 +28,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.j2ee.jboss4.config.mdb.JBossMessageDestinationDeployment;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
 /**
@@ -61,5 +63,14 @@ public class JBOptionalDeploymentManagerFactory extends OptionalDeploymentManage
         
         return dsMgr;
     }
+
+    public MessageDestinationDeployment getMessageDestinationDeployment(DeploymentManager dm) {
+        if (!(dm instanceof JBDeploymentManager)) {
+            throw new IllegalArgumentException("");
+        }
+
+        return new JBossMessageDestinationDeployment(((JBDeploymentManager)dm).getUrl());
+    }
+    
     
 }

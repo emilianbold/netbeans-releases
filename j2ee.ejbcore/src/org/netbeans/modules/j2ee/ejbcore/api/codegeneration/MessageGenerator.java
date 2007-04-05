@@ -106,6 +106,23 @@ public final class MessageGenerator {
                     ErrorManager.getDefault().notify(ex);
                 }
             }
+
+if (System.getProperties().getProperty("resource-api-redesign") != null) {
+    try {
+        Project project = FileOwnerQuery.getOwner(pkg);
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        if (isQueue) {
+            j2eeModuleProvider.getConfigSupport().bindMdbToMessageDestination(ejbName, "MyQueue", org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type.QUEUE);
+        }
+        else {
+            j2eeModuleProvider.getConfigSupport().bindMdbToMessageDestination(ejbName, "MyTopic", org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type.TOPIC);
+        }
+    }
+    catch (ConfigurationException ce) {
+        // TODO inform user
+    }
+}        
+            
         }
         return resultFileObject;
     }

@@ -259,5 +259,45 @@ final class JbossDataSourceRefModifier {
         }
 
     }
+
+    /**
+     * Add a reference to the given resource to the message-driven bean if it does not exist yet.
+     *
+     * @param modifiedJboss Jboss graph instance being modified
+     * @param resRefName resource reference name
+     * @param mdbName the MDB (ejb-name) which might need to add resource reference specified by resRefName
+     * @param jndiName JNDI name of the resource
+     */
+    static void modifyMsgDrv(Jboss modifiedJboss, String resRefName, String mdbName, String jndiName) {
+
+        if (modifiedJboss.getEnterpriseBeans() == null)
+            modifiedJboss.setEnterpriseBeans(new EnterpriseBeans());
+
+        addMsgDrvResReference(modifiedJboss, resRefName, mdbName, jndiName);
+    }
+    
+    private static void addMsgDrvResReference(Jboss modifiedJboss, String resRefName, String mdbName, String jndiName) {
+
+        EnterpriseBeans eb = modifiedJboss.getEnterpriseBeans();
+
+        for (MessageDriven mdb : eb.getMessageDriven()) {
+            String ejbName = mdb.getEjbName();
+            if (mdbName.equals(ejbName)) { // msgdrv found -> check whether it has the resource-ref
+                ResourceRef[] resourceRefs = mdb.getResourceRef();
+                int j = 0;
+                for ( ; j < resourceRefs.length; j++) {
+                    String rrn = resourceRefs[j].getResRefName();
+                    if (resRefName.equals(rrn))
+                        return; // resource-ref found
+                }
+                if (j == resourceRefs.length) {// resource-ref not found
+                    ResourceRef newRR = new ResourceRef();
+                    newRR.setResRefName(resRefName);
+                    newRR.setJndiName(jndiName);
+                    mdb.addResourceRef(newRR);
+                }
+            }
+        }
+    }
     
 }

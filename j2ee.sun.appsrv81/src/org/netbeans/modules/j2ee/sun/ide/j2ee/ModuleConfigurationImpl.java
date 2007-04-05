@@ -210,5 +210,19 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
                 new UnsupportedOperationException());
     }
 
+    public void bindDatasourceReference(String jndiName, String dsJNDIName) throws ConfigurationException {
+    }
+
+    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, String jndiName, String dsJNDIName) throws ConfigurationException {
+    }
+
+    public String findDatasourceJndiName(String jndiName) throws ConfigurationException {
+        return null;
+    }
+
+    public String findDatasourceJndiNameForEjb(String ejbName, String jndiName) throws ConfigurationException {
+        return null;
+    }
+
 }
 

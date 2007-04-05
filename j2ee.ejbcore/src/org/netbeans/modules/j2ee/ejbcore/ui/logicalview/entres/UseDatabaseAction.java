@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,6 +22,8 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
@@ -33,9 +35,18 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.action.UseDatabaseGenerator;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -97,20 +108,126 @@ public class UseDatabaseAction extends NodeAction {
             }
         });
         selectDatabasePanel.checkDatasource();
+        
+if (System.getProperties().getProperty("resource-api-redesign") != null) {
+    try {            
+        Map<String, Datasource> refs = getDataSourceReferences(j2eeModuleProvider, fileObject);
+    }
+    catch (ConfigurationException ce) {
+        //TODO notify user
+    }
+}
+String refName = "NameOfSelectedReference";
+        
         Object option = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (option == NotifyDescriptor.OK_OPTION) {
+            
             UseDatabaseGenerator generator = new UseDatabaseGenerator();
-            generator.generate(
-                    fileObject,
-                    elementHandle,
-                    selectDatabasePanel.getDatasource(),
-                    selectDatabasePanel.createServerResources(),
-                    selectDatabasePanel.getServiceLocator()
-                    );
+            try {
+                generator.generate(
+                        fileObject,
+                        elementHandle,
+                        j2eeModuleProvider,
+                        refName,
+                        selectDatabasePanel.getDatasource(),
+                        selectDatabasePanel.createServerResources(),
+                        selectDatabasePanel.getServiceLocator()
+                        );
+            }
+            catch (ConfigurationException ex) {
+                //TODO
+            }
         }
         return false;
     }
+
+    private Map<String, Datasource> getDataSourceReferences(J2eeModuleProvider j2eeModuleProvider, FileObject fileObject) 
+    throws ConfigurationException {
+        
+        HashMap<String, Datasource> references = new HashMap<String, Datasource>();
+        
+        if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
+            EjbJar dd = findEjbDDRoot(fileObject);
+            if (dd == null) {
+                return references;
+            }
+            EnterpriseBeans beans = dd.getEnterpriseBeans();
+            if (beans == null) {
+                return references;
+            }
+            
+            Ejb[] ejbs = beans.getEjbs();
+            for (Ejb ejb : ejbs) {
+                ResourceRef[] refs = ejb.getResourceRef();
+                for (ResourceRef ref : refs) {
+                    String refName = ref.getResRefName();
+                    Datasource ds = findDatasourceForReferenceForEjb(j2eeModuleProvider, refName, ejb.getEjbName());
+                    if (ds != null) {
+                        references.put(refName, ds);
+                        System.out.println(refName + " ~ " + ds.getUrl());
+                    }
+                }
+            }
+        }
+        else
+        if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
+            WebApp dd = findWebDDRoot(fileObject);
+            if (dd == null) {
+                return references;
+            }
+            ResourceRef[] refs = dd.getResourceRef();
+            for (ResourceRef ref : refs) {
+                String refName = ref.getResRefName();
+                Datasource ds = findDatasourceForReference(j2eeModuleProvider, refName);
+                if (ds != null) {
+                    references.put(refName, ds);
+                    System.out.println(refName + " ~ " + ds.getUrl());
+                }
+            }
+        }
+        
+        return references;
+    }
+
+    private Datasource findDatasourceForReference(J2eeModuleProvider j2eeModuleProvider, String referenceName) throws ConfigurationException {
+        String jndiName = j2eeModuleProvider.getConfigSupport().findDatasourceJndiName(referenceName);
+        if (jndiName == null) {
+            return null;
+        }
+        return j2eeModuleProvider.getConfigSupport().findDatasource(jndiName);
+    }
     
+    public Datasource findDatasourceForReferenceForEjb(J2eeModuleProvider j2eeModuleProvider, String referenceName, String ejbName) throws ConfigurationException {
+        String jndiName = j2eeModuleProvider.getConfigSupport().findDatasourceJndiNameForEjb(ejbName, referenceName);
+        if (jndiName == null) {
+            return null;
+        }
+        return j2eeModuleProvider.getConfigSupport().findDatasource(jndiName);
+    }
+    
+    private EjbJar findEjbDDRoot(FileObject fileObject) throws ConfigurationException {
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJar = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
+        assert ejbJar != null;
+        try {
+            return org.netbeans.modules.j2ee.dd.api.ejb.DDProvider.getDefault().getMergedDDRoot(ejbJar.getMetadataUnit());
+        }
+        catch (IOException ioe) {
+            String msg = NbBundle.getMessage(UseDatabaseAction.class, "ERR_CannotReadEjbDD");
+            throw new ConfigurationException(msg, ioe);
+        }
+    }
+    
+    private WebApp findWebDDRoot(FileObject fileObject) throws ConfigurationException {
+        WebModule mod = WebModule.getWebModule(fileObject);
+        try {
+            return org.netbeans.modules.j2ee.dd.api.web.DDProvider.getDefault().getMergedDDRoot(mod);
+        }
+        catch (IOException ioe) {
+            String msg = NbBundle.getMessage(UseDatabaseAction.class, "ERR_CannotReadWebDD");
+            throw new ConfigurationException(msg, ioe);
+        }
+    }
+        
     protected boolean enable(Node[] nodes) {
         if (nodes == null || nodes.length != 1) {
             return false;

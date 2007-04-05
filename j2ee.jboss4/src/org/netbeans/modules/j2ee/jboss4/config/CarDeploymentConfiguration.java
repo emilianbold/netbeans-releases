@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -111,7 +111,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 } else {
                     // create jboss-web.xml if it does not exist yet
                     jbossClient = generateJbossClient();
-                    writefile(jbossClientFile, jbossClient);
+                    writeFile(jbossClientFile, jbossClient);
                 }
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ce);
@@ -419,6 +419,10 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
 
     public boolean supportsCreateDatasource() {
         return true;
+    }
+
+    public boolean supportsCreateMessageDestination() {
+        return false;
     }
     
     // private helper interface -----------------------------------------------

@@ -34,8 +34,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -111,8 +115,15 @@ public class SendJMSMessageAction extends NodeAction {
                         ServiceLocatorStrategy.create(enterpriseProject, srcFile, 
                                                       serviceLocator);
             }
+            
             SendJMSGenerator generator = new SendJMSGenerator(destination);
-            generator.genMethods(erc, beanClass.getQualifiedName().toString(), srcFile, serviceLocatorStrategy);
+            generator.genMethods(
+                    erc, 
+                    beanClass.getQualifiedName().toString(), 
+                    srcFile, 
+                    serviceLocatorStrategy,
+                    enterpriseProject.getLookup().lookup(J2eeModuleProvider.class),
+                    panel.getDestination());
             if (serviceLocator != null) {
                 erc.setServiceLocatorName(serviceLocator);
             }

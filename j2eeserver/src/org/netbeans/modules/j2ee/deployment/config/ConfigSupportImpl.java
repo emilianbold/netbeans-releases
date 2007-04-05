@@ -13,14 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.deployment.config;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,13 +29,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import javax.enterprise.deploy.model.DDBean;
-import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import org.netbeans.modules.j2ee.dd.api.common.ComponentInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -60,7 +55,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
+import org.openide.util.Parameters;
 
 /**
  * Each J2eeModuleProvider hold a reference to an instance of this config support.
@@ -374,7 +373,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
     
     public Datasource createDatasource(String jndiName, String  url, String username, String password, String driver) 
-    throws OperationUnsupportedException, DatasourceAlreadyExistsException {
+    throws UnsupportedOperationException, DatasourceAlreadyExistsException {
         Datasource ds = null;
         if (server != null) {
             ModuleConfiguration config = getModuleConfiguration();
@@ -391,6 +390,266 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         }
         return ds;
     }    
+    
+    public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
+
+        Parameters.notNull("referenceName", referenceName);     // NOI18N
+        Parameters.notNull("jndiName", jndiName);               // NOI18N
+        
+        if (server != null) {
+            ModuleConfiguration config = getModuleConfiguration();
+            if (config != null) {
+                DatasourceConfiguration datasourceConfiguration = config.getLookup().lookup(DatasourceConfiguration.class);
+                if (datasourceConfiguration != null) {
+                    datasourceConfiguration.bindDatasourceReference(referenceName, jndiName);
+                }
+            }
+        }
+   }
+
+    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, 
+            String referenceName, String jndiName) throws ConfigurationException {
+        
+        Parameters.notNull("ejbName", ejbName);             // NOI18N
+        Parameters.notNull("ejbType", ejbType);             // NOI18N
+        Parameters.notNull("referenceName", referenceName); // NOI18N
+        Parameters.notNull("jndiName", jndiName);           // NOI18N
+        
+        if (!EnterpriseBeans.SESSION.equals(ejbType) &&
+            !EnterpriseBeans.ENTITY.equals(ejbType) &&
+            !EnterpriseBeans.MESSAGE_DRIVEN.equals(ejbType)) {
+            throw new IllegalArgumentException("ejbType parameter doesn't have an allowed value.");
+        }
+        
+        if (server != null) {
+            ModuleConfiguration config = getModuleConfiguration();
+            if (config != null) {
+                DatasourceConfiguration datasourceConfiguration = config.getLookup().lookup(DatasourceConfiguration.class);
+                if (datasourceConfiguration != null) {
+                    datasourceConfiguration.bindDatasourceReferenceForEjb(ejbName, ejbType, referenceName, jndiName);
+                }
+            }
+        }
+    }
+
+    public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
+        
+        Parameters.notNull("referenceName", referenceName); // NOI18N
+        
+        String jndiName = null;
+        if (server != null) {
+            ModuleConfiguration config = getModuleConfiguration();
+            if (config != null) {
+                DatasourceConfiguration datasourceConfiguration = config.getLookup().lookup(DatasourceConfiguration.class);
+                if (datasourceConfiguration != null) {
+                    jndiName = datasourceConfiguration.findDatasourceJndiName(referenceName);
+                }
+            }
+        }
+        
+        return jndiName;
+    }
+
+    public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
+
+        Parameters.notNull("ejbName", ejbName);             // NOI18N
+        Parameters.notNull("referenceName", referenceName); // NOI18N
+
+        String jndiName = null;
+        if (server != null) {
+            ModuleConfiguration config = getModuleConfiguration();
+            if (config != null) {
+                DatasourceConfiguration datasourceConfiguration = config.getLookup().lookup(DatasourceConfiguration.class);
+                if (datasourceConfiguration != null) {
+                    jndiName = datasourceConfiguration.findDatasourceJndiNameForEjb(ejbName, referenceName);
+                }
+            }
+        }
+        
+        return jndiName;
+    }
+
+    public Datasource findDatasource(String jndiName) throws ConfigurationException {
+        
+        Parameters.notNull("jndiName", jndiName);           // NOI18N
+
+        Set<Datasource> datasources = getDatasources();
+        for (Datasource ds : datasources) {
+            if (jndiName.equals(ds.getJndiName())) {
+                return ds;
+            }
+        }
+        datasources = provider.getServerDatasources();
+        for (Datasource ds : datasources) {
+            if (jndiName.equals(ds.getJndiName())) {
+                return ds;
+            }
+        }
+        
+        return null;
+    }
+
+    public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
+        
+        Set<MessageDestination> destinations = Collections.<MessageDestination>emptySet();
+        
+        if (server != null) {
+            ModuleConfiguration config = getModuleConfiguration();
+            if (config != null) {
+                MessageDestinationConfiguration msgConfig = config.getLookup().lookup(MessageDestinationConfiguration.class);
+                if (msgConfig != null) {
+                    destinations = msgConfig.getMessageDestinations();
+                }
+            }
+        }
+
+        return destinations;
+    }
+
+    public Set<MessageDestination> getServerMessageDestinations() throws ConfigurationException {
+        ServerInstance si = ServerRegistry.getInstance().getServerInstance(provider.getServerInstanceID());
+        if (si == null) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                    "The server data sources cannot be retrieved because the server instance cannot be found.");
+            return Collections.<MessageDestination>emptySet();
+        }
+        
+        return si.getMessageDestinations();
+   }
+    
+    public boolean supportsCreateMessageDestination() {
+        if (server == null) {
+            // the module has no target server
+            return false;
+        }
+        ModuleConfiguration config = getModuleConfiguration();
+        if (config != null) {
+            MessageDestinationConfiguration msgConfig = config.getLookup().lookup(MessageDestinationConfiguration.class);
+            if (msgConfig != null) {
+                return msgConfig.supportsCreateMessageDestination();
+            }
+        }
+        return false;
+    }
+
+    public MessageDestination createMessageDestination(String name, MessageDestination.Type type) 
+    throws UnsupportedOperationException, ConfigurationException {
+        
+        Parameters.notNull("name", name);           // NOI18N
+        Parameters.notNull("type", type);           // NOI18N
+        
+        if (server == null) {
+            return null;
+        }
+         
+        ModuleConfiguration config = getModuleConfiguration();
+        if (config == null) {
+            return null;
+        }
+        
+        MessageDestinationConfiguration msgConfig = config.getLookup().lookup(MessageDestinationConfiguration.class);
+        if (msgConfig != null) {
+            return msgConfig.createMessageDestination(name, type);
+        }
+
+        return null;
+    }
+    
+    public void bindMdbToMessageDestination(String mdbName, String name, MessageDestination.Type type) throws ConfigurationException {
+        
+        Parameters.notNull("mdbName", mdbName);     // NOI18N
+        Parameters.notNull("name", name);           // NOI18N
+        Parameters.notNull("type", type);           // NOI18N
+
+        ModuleConfiguration config = getModuleConfiguration();
+        if (server == null || config == null) {
+            return;
+        }
+        
+        MessageDestinationConfiguration msgConfig = config.getLookup().lookup(MessageDestinationConfiguration.class);
+        if (msgConfig != null) {
+            msgConfig.bindMdbToMessageDestination(mdbName, name, type);
+        }
+    }
+
+    public String findMessageDestinationName(String mdbName) throws ConfigurationException {
+        
+        Parameters.notNull("mdbName", mdbName);     // NOI18N
+        
+        ModuleConfiguration config = getModuleConfiguration();
+        if (server == null || config == null) {
+            return null;
+        }
+        
+        MessageDestinationConfiguration msgConfig = config.getLookup().lookup(MessageDestinationConfiguration.class);
+        if (msgConfig != null) {
+            return msgConfig.findMessageDestinationName(mdbName);
+        }
+        
+        return null;
+    }
+    
+    public MessageDestination findMessageDestination(String name) throws ConfigurationException {
+        
+        Parameters.notNull("name", name);     // NOI18N
+
+        Set<MessageDestination> destinations = getMessageDestinations();
+        for (MessageDestination dest : destinations) {
+            if (name.equals(dest.getName())) {
+                return dest;
+            }
+        }
+        destinations = provider.getConfigSupport().getServerMessageDestinations();
+        for (MessageDestination dest : destinations) {
+            if (name.equals(dest.getName())) {
+                return dest;
+            }
+        }
+        
+        return null;
+    }
+
+    public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, 
+            String destName, MessageDestination.Type type) throws ConfigurationException {
+        
+        Parameters.notNull("referenceName", referenceName);                 // NOI18N
+        Parameters.notNull("connectionFactoryName", connectionFactoryName); // NOI18N
+        Parameters.notNull("destName", destName);                           // NOI18N
+        Parameters.notNull("type", type);                                   // NOI18N
+        
+        ModuleConfiguration config = getModuleConfiguration();
+        if (server == null || config == null) {
+            return;
+        }
+        
+        MessageDestinationConfiguration msgConfig = config.getLookup().lookup(MessageDestinationConfiguration.class);
+        if (msgConfig != null) {
+            msgConfig.bindMessageDestinationReference(referenceName, connectionFactoryName, destName, type);
+        }
+    }
+
+    public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
+            String referenceName, String connectionFactoryName,
+            String destName, MessageDestination.Type type) throws ConfigurationException {
+        
+        Parameters.notNull("ejbName", ejbName);             // NOI18N
+        Parameters.notNull("ejbType", ejbType);             // NOI18N
+        Parameters.notNull("referenceName", referenceName);                 // NOI18N
+        Parameters.notNull("connectionFactoryName", connectionFactoryName); // NOI18N
+        Parameters.notNull("destName", destName);                           // NOI18N
+        Parameters.notNull("type", type);                                   // NOI18N
+        
+        ModuleConfiguration config = getModuleConfiguration();
+        if (server == null || config == null) {
+            return;
+        }
+        
+        MessageDestinationConfiguration msgConfig = config.getLookup().lookup(MessageDestinationConfiguration.class);
+        if (msgConfig != null) {
+            msgConfig.bindMessageDestinationReferenceForEjb(ejbName, ejbType, referenceName, connectionFactoryName, destName, type);
+        }
+        
+    }
     
     // DeploymentConfigurationProvider implementation -------------------------
     

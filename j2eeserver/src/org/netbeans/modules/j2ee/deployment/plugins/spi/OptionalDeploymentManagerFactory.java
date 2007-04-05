@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,8 +21,6 @@
 package org.netbeans.modules.j2ee.deployment.plugins.spi;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.openide.WizardDescriptor;
 
 /**
@@ -107,4 +105,20 @@ public abstract class OptionalDeploymentManagerFactory {
     public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
         return null;
     }
+
+    /**
+     * Creates a <code>MessageDestinationDeployment</code> for the given deployment manager
+     * or <code>null</code> if message destination deployment is not supported
+     *
+     * @param dm the deployment manager
+     *
+     * @return a message destination deployment or <code>null</code> 
+     *          if message destination deployment is not supported
+     *
+     * @since 1.25
+     */
+    public MessageDestinationDeployment getMessageDestinationDeployment(DeploymentManager dm) {
+        return null;
+    }
+    
 }

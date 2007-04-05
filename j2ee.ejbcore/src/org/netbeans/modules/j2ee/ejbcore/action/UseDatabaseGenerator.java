@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,7 +37,14 @@ import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.ServiceLocatorStrategy;
@@ -52,8 +59,11 @@ public final class UseDatabaseGenerator {
     public UseDatabaseGenerator() {
     }
 
-    public void generate(final FileObject fileObject, final ElementHandle<TypeElement> elementHandle, final Datasource datasource, 
-            final boolean createServerResources, String serviceLocator) throws IOException {
+    public void generate(final FileObject fileObject, final ElementHandle<TypeElement> elementHandle, 
+                         final J2eeModuleProvider j2eeModuleProvider, final String datasourceReferenceName, 
+                         final Datasource datasource, final boolean createServerResources, String serviceLocator) 
+                         throws IOException, ConfigurationException
+    {
         Project project = FileOwnerQuery.getOwner(fileObject);
         ServiceLocatorStrategy serviceLocatorStrategy = (serviceLocator == null) ? null : 
             ServiceLocatorStrategy.create(project, fileObject, serviceLocator);
@@ -73,9 +83,105 @@ public final class UseDatabaseGenerator {
                 generateLookupMethod(fileObject, className, jndiName, serviceLocatorStrategy);
             }
         }
+        
+if (System.getProperties().getProperty("resource-api-redesign") != null) {
+    J2eeModule module = j2eeModuleProvider.getJ2eeModule();
+    if (isWebModule(module)) {
+        bindDataSourceReference(j2eeModuleProvider, datasourceReferenceName, datasource);
+    }
+    else if (isEjbModule(module)) {
+        bindDataSourceReferenceForEjb(j2eeModuleProvider, datasourceReferenceName, datasource, fileObject, elementHandle);
+    }
+}
+        
         if (serviceLocator != null) {
             erc.setServiceLocatorName(serviceLocator);
         }
+    }
+    
+    private void bindDataSourceReference(J2eeModuleProvider j2eeModuleProvider, String dsRefName, Datasource datasource) 
+    throws ConfigurationException {
+
+        String dsJndiName = datasource.getJndiName();
+        j2eeModuleProvider.getConfigSupport().bindDatasourceReference(dsRefName, dsJndiName);
+    }
+    
+    private void bindDataSourceReferenceForEjb(J2eeModuleProvider j2eeModuleProvider, String dsRefName, Datasource datasource,
+            FileObject fileObject, ElementHandle<TypeElement> elementHandle) throws ConfigurationException {
+
+        String dsJndiName = datasource.getJndiName();
+
+        EjbJar dd = null;
+        try {
+            dd = findDDRoot(fileObject);
+        }
+        catch (IOException ioe) {
+            // TODO
+        }
+        if (dd == null) {
+            return;
+        }
+        
+        EnterpriseBeans beans = dd.getEnterpriseBeans();
+        if (beans == null) {
+            return;
+        }
+        
+        String ejbName = getEjbName(beans, elementHandle.getQualifiedName());
+        if (ejbName == null) {
+            return;
+        }
+        
+        String ejbType = getEjbType(beans, elementHandle.getQualifiedName());
+        if (ejbType == null) {
+            return;
+        }
+        
+        j2eeModuleProvider.getConfigSupport().bindDatasourceReferenceForEjb(ejbName, ejbType, dsRefName, dsJndiName);
+    }
+    
+    private EjbJar findDDRoot(FileObject fileObject) throws IOException {
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJar = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
+        assert ejbJar != null;
+        return DDProvider.getDefault().getMergedDDRoot(ejbJar.getMetadataUnit());
+    }
+    
+    private boolean isWebModule(J2eeModule module) {
+        return module.getModuleType().equals(J2eeModule.WAR);
+    }
+    
+    private boolean isEjbModule(J2eeModule module) {
+        return module.getModuleType().equals(J2eeModule.EJB);
+    }
+    
+    private String getEjbName(EnterpriseBeans beans, String className) {
+        Ejb ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className);
+        if (ejb == null) {
+            ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className);
+        }
+        if (ejb == null) {
+            ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN, Ejb.EJB_CLASS, className);
+        }
+
+        return ejb.getEjbName();
+    }
+    
+    private String getEjbType(EnterpriseBeans beans, String className) {
+        String type = null;
+        
+        if (beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className) != null) {
+            type = EnterpriseBeans.SESSION;
+        }
+        else
+        if (beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className) != null) {
+            type = EnterpriseBeans.ENTITY;
+        }
+        else
+        if (beans.findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN, Ejb.EJB_CLASS, className) != null) {
+            type = EnterpriseBeans.MESSAGE_DRIVEN;
+        }
+
+        return type;
     }
     
     private String generateJNDILookup(String jndiName, EnterpriseReferenceContainer enterpriseReferenceContainer, 

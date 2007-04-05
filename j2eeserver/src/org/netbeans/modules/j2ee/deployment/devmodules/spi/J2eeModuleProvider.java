@@ -13,23 +13,18 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import javax.enterprise.deploy.spi.Target;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.config.*;
@@ -38,7 +33,6 @@ import org.netbeans.modules.j2ee.deployment.impl.DefaultSourceMap;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
-import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -49,11 +43,9 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.WeakListeners;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
 /** This object must be implemented by J2EE module support and an instance 
  * added into project lookup.
@@ -207,7 +199,7 @@ public abstract class J2eeModuleProvider {
         try {
             //btw, ds existence in a project is verified directly in the deployment configuration
             ds = getConfigSupport().createDatasource(jndiName, url, username, password, driver);
-        } catch (OperationUnsupportedException oue) {
+        } catch (UnsupportedOperationException oue) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, oue);
         }
         
@@ -339,14 +331,217 @@ public abstract class J2eeModuleProvider {
          * 
          * @return created data source
          * 
-         * @throws OperationUnsupportedException if operation is not supported
+         * @throws UnsupportedOperationException if operation is not supported
          * @throws DatasourceAlreadyExistsException if conflicting data source is found
          * @throws ConfigurationException reports errors in creating the data source.
          *
          * @since 1.15 
          */
         public Datasource createDatasource(String jndiName, String  url, String username, String password, String driver)
-        throws OperationUnsupportedException, DatasourceAlreadyExistsException, ConfigurationException;
+        throws UnsupportedOperationException, DatasourceAlreadyExistsException, ConfigurationException;
+        
+        /**
+         * Binds the data source reference name with the corresponding data source which is
+         * identified by the given JNDI name.
+         * 
+         * @param referenceName name used to identify the data source
+         * @param jndiName JNDI name of the data source
+         * 
+         * @throws NullPointerException if any of parameters is null
+         * @throws ConfigurationException if there is some problem with data source configuration
+         * 
+         * @since 1.25
+         */
+        public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException;
+
+        /**
+         * Binds the data source reference name with the corresponding data source which is
+         * identified by the given JNDI name. The reference is used within the scope of the EJB.
+         * 
+         * @param ejbName EJB name
+         * @param ejbType EJB type - the possible values are 
+         *        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.SESSION,
+         *        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.ENTITY and
+         *        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.MESSAGE_DRIVEN
+         * @param referenceName name used to identify the data source
+         * @param jndiName JNDI name of the data source
+
+         * @throws NullPointerException if any of parameters is null
+         * @throws ConfigurationException if there is some problem with data source configuration
+         * @throws IllegalArgumentException if ejbType doesn't have one of allowed values
+         * 
+         * @since 1.25
+         */
+        public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, 
+                String referenceName, String jndiName) throws ConfigurationException;
+        
+        /**
+         * Finds JNDI name of data source which is mapped to the given reference name of a data source
+         * 
+         * @param referenceName reference name of data source
+         * @return JNDI name which is mapped to the given JNDI name
+         * 
+         * @throws NullPointerException if reference name is null
+         * @throws ConfigurationException if there is some problem with data source configuration
+         * 
+         * @since 1.25
+         */
+        public String findDatasourceJndiName(String referenceName) throws ConfigurationException;
+        
+        /**
+         * Finds JNDI name of data source which is mapped to the given reference name in the scope of the EJB.
+         * 
+         * @param ejbName EJB name
+         * @param referenceName reference name of data source
+         * @return data source if it exists, null otherwise
+         *
+         * @throws NullPointerException if any of parameters is null
+         * @throws ConfigurationException if there is some problem with data source configuration
+         * 
+         * @since 1.25
+         */
+        public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException;
+        
+        /**
+         * Finds data source with the given JNDI name.
+         * 
+         * @param jndiName JNDI name of a data source
+         * @param return data source if it exists, null otherwise
+         *
+         * @throws NullPointerException if JNDI name is null
+         * @throws ConfigurationException if there is some problem with data source configuration
+         * 
+         * @since 1.25
+         */
+        public Datasource findDatasource(String jndiName) throws ConfigurationException;
+
+        /**
+         * Retrieves message destinations stored in the module.
+         * 
+         * @return set of message destinations
+         * 
+         * @throws ConfigurationException if there is some problem with message destination configuration
+         * 
+         * @since 1.25
+         */
+        public Set<MessageDestination> getMessageDestinations() throws ConfigurationException;
+
+        /**
+         * Retrieves message destinations configured on the target server instance.
+         *
+         * @return set of message destinations
+         * 
+         * @throws ConfigurationException if there is some problem with message destination configuration
+         * 
+         * @since 1.25 
+         */
+        public Set<MessageDestination> getServerMessageDestinations() throws ConfigurationException;
+        
+        /**
+         * Tests whether a message destination creation is supported.
+         *
+         * @return true if message destination creation is supported, false otherwise.
+         *
+         * @since 1.25
+         */
+        public boolean supportsCreateMessageDestination();
+
+        /**
+         * Creates and saves a message destination in the module if it does not exist in the module yet.
+         * Message destinations are considered to be equal if their JNDI names are equal.
+         *
+         * @param name name of the message destination
+         * @param type message destination type
+         * @return created message destination
+         * 
+         * @throws NullPointerException if any of parameters is null
+         * @throws UnsupportedOperationException if this opearation is not supported
+         * @throws ConfigurationException if there is some problem with message destination configuration
+         *
+         * @since 1.25 
+         */
+        public MessageDestination createMessageDestination(String name, MessageDestination.Type type) 
+        throws UnsupportedOperationException, ConfigurationException;
+        
+        /**
+         * Binds the message destination name with message-driven bean.
+         * 
+         * @param mdbName MDB name
+         * @param name name of the message destination
+         * @param type message destination type
+         * 
+         * @throws NullPointerException if any of parameters is null
+         * @throws ConfigurationException if there is some problem with message destination configuration
+         * 
+         * @since 1.25
+         */
+        public void bindMdbToMessageDestination(String mdbName, String name, MessageDestination.Type type) throws ConfigurationException;
+
+        /**
+         * Finds name of message destination which the given MDB listens to
+         * 
+         * @param mdbName MDB name
+         * @return message destination name
+         * 
+         * @throws NullPointerException if MDB name is null
+         * @throws ConfigurationException if there is some problem with message destination configuration
+         * 
+         * @since 1.25
+         */
+        public String findMessageDestinationName(String mdbName) throws ConfigurationException;
+
+        /**
+         * Finds message destination with the given name.
+         * 
+         * @param name message destination name
+         * @param return message destination if it exists, null otherwise
+         *
+         * @throws NullPointerException if name is null
+         * @throws ConfigurationException if there is some problem with message destination configuration
+         * 
+         * @since 1.25
+         */
+        public MessageDestination findMessageDestination(String name) throws ConfigurationException;
+
+        /**
+         * Binds the message destination reference name with the corresponding message destination which is
+         * identified by the given name.
+         * 
+         * @param referenceName reference name used to identify the message destination
+         * @param connectionFactoryName connection factory name
+         * @param destName name of the message destination
+         * @param type message destination type
+         * 
+         * @throws NullPointerException if any of parameters is null
+         * @throws ConfigurationException if there is some problem with message destination configuration
+         * 
+         * @since 1.25
+         */
+        public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, 
+                String destName, MessageDestination.Type type) throws ConfigurationException;
+
+        /**
+         * Binds the message destination reference name with the corresponding message destination which is
+         * identified by the given name. The reference is used within the EJB scope.
+         * 
+         * @param ejbName EJB name
+         * @param ejbType EJB type - the possible values are 
+         *        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.SESSION,
+         *        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.ENTITY and
+         *        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.MESSAGE_DRIVEN
+         * @param referenceName reference name used to identify the message destination
+         * @param connectionFactoryName connection factory name
+         * @param destName name of the message destination
+         * @param type message destination type
+         * 
+         * @throws NullPointerException if any of parameters is null
+         * @throws ConfigurationException if there is some problem with message destination configuration
+         * 
+         * @since 1.25
+         */
+        public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
+                String referenceName, String connectionFactoryName,
+                String destName, MessageDestination.Type type) throws ConfigurationException;
     }
 
     /**

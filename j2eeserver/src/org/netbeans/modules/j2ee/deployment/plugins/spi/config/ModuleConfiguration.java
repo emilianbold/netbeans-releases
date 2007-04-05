@@ -39,7 +39,8 @@ public interface ModuleConfiguration extends Lookup.Provider {
      * implementations of all the supported configurations.
      * <p>
      * The configuration are:  {@link ContextRootConfiguration},  {@link DatasourceConfiguration}, 
-     * {@link MappingConfiguration}, {@link EjbResourceConfiguration}, {@link DeploymentPlanConfiguration}
+     * {@link MappingConfiguration}, {@link EjbResourceConfiguration}, {@link DeploymentPlanConfiguration},
+     * {@link MessageDestinationConfiguration}
      * <p>
      * Implementators are advised to use {@link org.openide.util.lookup.Lookups#fixed}
      * to implement this method.

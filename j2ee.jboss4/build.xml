@@ -67,6 +67,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 	  removeUnreferencedNodes="true"
           docroot="datasources"
 	  rootDir="src"/>
+	<schema2beans schema="${jb_dir}/resources/jboss-service_4_0.dtd"
+	  package="org.netbeans.modules.j2ee.jboss4.config.gen"
+	  schemaType="dtd"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+          docroot="server"
+	  rootDir="src"/>
 	<schema2beans schema="${jb_dir}/resources/jboss-client_4_0.dtd"
 	  package="org.netbeans.modules.j2ee.jboss4.config.gen"
 	  schemaType="dtd"

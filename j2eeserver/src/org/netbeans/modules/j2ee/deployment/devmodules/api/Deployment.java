@@ -13,24 +13,21 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.*;
@@ -119,6 +116,10 @@ public final class Deployment {
             }
 
             jmp.deployDatasources();
+            
+if (System.getProperties().getProperty("resource-api-redesign") != null) {
+            deployMessageDestinations(jmp);
+}
 
             modules = targetserver.deploy(progress, forceRedeploy);
             // inform the plugin about the deploy action, even if there was
@@ -140,6 +141,17 @@ public final class Deployment {
             if (progress != null) {
                 progress.finish();
             }
+        }
+    }
+    
+    public void deployMessageDestinations(J2eeModuleProvider jmp) throws ConfigurationException {
+        ServerInstance si = ServerRegistry.getInstance ().getServerInstance (jmp.getServerInstanceID ());
+        if (si != null) {
+            si.deployMessageDestinations(jmp.getConfigSupport().getMessageDestinations());
+        }
+        else {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                    "The message destinations cannot be deployed because the server instance cannot be found.");
         }
     }
     

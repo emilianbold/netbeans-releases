@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -39,6 +39,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.openide.filesystems.*;
 import java.util.*;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
@@ -53,6 +54,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
@@ -61,6 +63,7 @@ import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
@@ -104,6 +107,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private FindJSPServlet findJSPServlet;
     private DatasourceManager dsMgr;
     private DatasourceManager ddsMgr;
+    private MessageDestinationDeployment msgDestDeploymentConnected;
+    private MessageDestinationDeployment msgDestDeploymentDisconnected;
     private final Set targetsStartedByIde = new HashSet(); // valued by target name
     private Map targets; // keyed by target name, valued by ServerTarget
     private boolean managerStartedByIde = false;
@@ -565,6 +570,65 @@ public class ServerInstance implements Node.Cookie, Comparable {
 
         if (dsMgr != null) 
             dsMgr.deployDatasources(datasources);
+    }
+    
+    private synchronized MessageDestinationDeployment getMessageDestinationDeploymentConnected() {
+        if (msgDestDeploymentConnected == null) {
+            msgDestDeploymentConnected = server.getOptionalFactory().
+                    getMessageDestinationDeployment(getDeploymentManager());
+        }
+
+        return msgDestDeploymentConnected;
+    }
+    
+    private MessageDestinationDeployment getMessageDestinationDeploymentDisconnected() {
+        DeploymentManager dm = null;
+        try {
+            dm = getDisconnectedDeploymentManager();
+        }  catch (DeploymentManagerCreationException dmce) {
+            throw new RuntimeException(dmce);
+        }
+        synchronized (this) {
+            if (msgDestDeploymentDisconnected == null) {
+                msgDestDeploymentDisconnected = server.getOptionalFactory().getMessageDestinationDeployment(dm);
+            }
+            return msgDestDeploymentDisconnected;
+        }
+    }
+    
+    /**
+     * Retrieves message destinations configured on the target server instance.
+     *
+     * @return set of message destinations
+     * 
+     * @throws ConfigurationException if there is some problem with message destination configuration
+     */
+    public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
+        
+        MessageDestinationDeployment destDepl = getMessageDestinationDeploymentDisconnected();
+        if (destDepl != null) {
+            return destDepl.getMessageDestinations();
+        }
+        
+        return Collections.<MessageDestination>emptySet();
+    }
+    
+    /**
+     * Deploys message destinations saved in the module.
+     *
+     * @param destinations set of message destinations
+     * 
+     * @throws NullPointerException if destinations parameter is null
+     * @throws ConfigurationException if there is some problem with message destination configuration
+     */
+    public void deployMessageDestinations(Set<MessageDestination> destinations) throws ConfigurationException {
+    
+        Parameters.notNull("destinations", destinations);
+        
+        MessageDestinationDeployment destDepl = getMessageDestinationDeploymentConnected();
+        if (destDepl != null) {
+            destDepl.deployMessageDestinations(destinations);
+        }
     }
     
     //---------- State API's:  running, debuggable, startedByIDE -----------

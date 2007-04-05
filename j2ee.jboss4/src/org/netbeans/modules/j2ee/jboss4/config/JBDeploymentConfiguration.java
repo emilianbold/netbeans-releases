@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,23 +25,21 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
-import javax.enterprise.deploy.model.DDBeanRoot;
-import javax.enterprise.deploy.spi.DConfigBeanRoot;
-import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
-import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Datasources;
 import org.netbeans.modules.j2ee.jboss4.config.gen.LocalTxDatasource;
+import org.netbeans.modules.j2ee.jboss4.config.mdb.MessageDestinationSupport;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -62,9 +60,11 @@ import org.openide.util.NbBundle;
 /** 
  * Base for JBoss DeploymentConfiguration implementations.
  *
- * @author  Pavel Buzek, lkotouc
+ * @author  Pavel Buzek, Libor Kotouc
  */
-public abstract class JBDeploymentConfiguration implements DatasourceConfiguration {
+public abstract class JBDeploymentConfiguration 
+        implements DatasourceConfiguration, MessageDestinationConfiguration {
+
     
     protected static final String JBOSS4_DATASOURCE_JNDI_PREFIX = "java:"; // NOI18N
     protected static final String JBOSS4_MAIL_SERVICE_JNDI_NAME = "java:Mail"; // NOI18N
@@ -92,6 +92,9 @@ public abstract class JBDeploymentConfiguration implements DatasourceConfigurati
     //cached data object for the data source file
     private DataObject datasourcesDO;
     
+     //support for message destination resources
+    private MessageDestinationSupport destSupport;
+    
     /** Creates a new instance of JBDeploymentConfiguration */
     public JBDeploymentConfiguration (J2eeModule j2eeModule) {
         this.j2eeModule = j2eeModule;
@@ -114,7 +117,7 @@ public abstract class JBDeploymentConfiguration implements DatasourceConfigurati
     
     // helper methods -------------------------------------------------
     
-    protected void writefile(final File file, final BaseBean bean) throws ConfigurationException {
+    public static void writeFile(final File file, final BaseBean bean) throws ConfigurationException {
         try {
             FileObject cfolder = FileUtil.toFileObject(file.getParentFile());
             if (cfolder == null) {
@@ -261,7 +264,7 @@ public abstract class JBDeploymentConfiguration implements DatasourceConfigurati
             } else {
                 // create jboss-ds.xml if it does not exist yet
                 datasources = new Datasources();
-                writefile(datasourcesFile, datasources);
+                writeFile(datasourcesFile, datasources);
             }
         } catch (ConfigurationException ce) {
             ErrorManager.getDefault().notify(ce);
@@ -408,5 +411,46 @@ public abstract class JBDeploymentConfiguration implements DatasourceConfigurati
         });
     }
     
+    public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {}
+    
+    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, 
+            String referenceName, String jndiName) throws ConfigurationException {}
+
+    public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
+        return null;
+    }
+    
+    public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
+        return null;
+    }
+    
+    private MessageDestinationSupport getMessageDestinationsSupport() {
+        if (destSupport == null) {
+            destSupport = new MessageDestinationSupport(resourceDir);
+        }
+        return destSupport;
+    }
+   
+    public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
+        return getMessageDestinationsSupport().getMessageDestinations();
+    }
+
+    public MessageDestination createMessageDestination(String name, MessageDestination.Type type) 
+    throws UnsupportedOperationException, ConfigurationException {
+        return getMessageDestinationsSupport().createMessageDestination(name, type);
+    }
+    
+    public void bindMdbToMessageDestination(String mdbName, String name, MessageDestination.Type type) throws ConfigurationException {}
+
+    public String findMessageDestinationName(String mdbName) throws ConfigurationException {
+        return null;
+    }
+
+    public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, 
+            String destName, MessageDestination.Type type) throws ConfigurationException {}
+
+    public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
+            String referenceName, String connectionFactoryName,
+            String destName, MessageDestination.Type type) throws ConfigurationException {}
     
 }
