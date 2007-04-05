@@ -19,6 +19,7 @@
 package org.netbeans.modules.visualweb.css2;
 
 import java.net.URL;
+import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 
 import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
@@ -180,7 +181,8 @@ public class FrameBox extends ExternalDocumentBox {
     public int getPrefWidth() {
         int result;
 
-        if ((contentWidth != AUTO) && (contentWidth != UNINITIALIZED)) {
+//        if ((contentWidth != AUTO) && (contentWidth != UNINITIALIZED)) {
+        if ((contentWidth != AUTO) && (contentWidth != Box.UNINITIALIZED)) {
             result = contentWidth;
         } else {
             result = getIntrinsicWidth();

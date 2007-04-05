@@ -24,6 +24,7 @@ import java.awt.event.ActionEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.ActionMap;
 import org.netbeans.modules.visualweb.api.designer.Designer;
+import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocument;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
@@ -516,6 +517,10 @@ public class WebForm implements Designer {
 //            // references to it.
 //        }
 //    }
+    
+    public HtmlDomProvider getDomProvider() {
+        return htmlDomProvider;
+    }
 
     public String toString() {
 //        if (getMarkup() != null) {
@@ -3055,5 +3060,32 @@ public class WebForm implements Designer {
             }          
         }
         return designerListeners.toArray(new DesignerListener[designerListeners.size()]);
+    }
+    
+    
+    public static class DefaultDesignerEvent implements DesignerEvent {
+        private final Designer designer;
+        private final Box box;
+        
+        public DefaultDesignerEvent(Designer designer, Box box) {
+            this.designer = designer;
+            this.box = box;
+        }
+
+        public Designer getDesigner() {
+            return designer;
+        }
+
+        public Box getBox() {
+            return box;
+        }
+    } // End of DefaultDesignerEvent.
+    
+    
+    public void fireUserActionPerformed(DesignerEvent evt) {
+        DesignerListener[] designerListeners = getDesignerListeners();
+        for (DesignerListener l : designerListeners) {
+            l.userActionPerformed(evt);
+        }
     }
 }

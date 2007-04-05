@@ -27,6 +27,9 @@ import java.net.URL;
 import javax.swing.ImageIcon;
 
 import javax.swing.JViewport;
+import org.netbeans.modules.visualweb.api.designer.Designer;
+import org.netbeans.modules.visualweb.api.designer.Designer.ExternalBox;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
@@ -49,7 +52,7 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
  * @author Tor Norbye
  *
  */
-public abstract class ExternalDocumentBox extends DocumentBox {
+public abstract class ExternalDocumentBox extends DocumentBox implements ExternalBox {
     /** Flag which indicates that this page wants to load the resource
      * via a url, and that we don't support it*/
     protected boolean external;
@@ -424,21 +427,21 @@ public abstract class ExternalDocumentBox extends DocumentBox {
         return 150;
     }
 
-    /** Open the given page source in the editor */
-    public void open() {
-        if (frameForm == null) {
-            java.awt.Toolkit.getDefaultToolkit().beep();
-
-            return;
-        }
-
-        DataObject dobj = frameForm.getDataObject();
-        OpenCookie oc = (OpenCookie)dobj.getCookie(OpenCookie.class);
-
-        if (oc != null) {
-            oc.open();
-        }
-    }
+//    /** Open the given page source in the editor */
+//    public void open() {
+//        if (frameForm == null) {
+//            java.awt.Toolkit.getDefaultToolkit().beep();
+//
+//            return;
+//        }
+//
+//        DataObject dobj = frameForm.getDataObject();
+//        OpenCookie oc = (OpenCookie)dobj.getCookie(OpenCookie.class);
+//
+//        if (oc != null) {
+//            oc.open();
+//        }
+//    }
 
     protected void updateSizeInfo() {
         // Unlike the main page box, we don't want the extents of the
@@ -500,5 +503,10 @@ public abstract class ExternalDocumentBox extends DocumentBox {
         }
 
         return super.getWebForm();
+    }
+    
+    public HtmlDomProvider getExternalDomProvider() {
+        WebForm externalForm = getExternalForm();
+        return externalForm == null ? null : externalForm.getDomProvider();
     }
 }

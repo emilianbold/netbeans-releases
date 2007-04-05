@@ -206,6 +206,14 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     }
 
     
+    JsfForm getJsfForm() {
+        return jsfForm;
+    }
+    
+    Designer getDesigner() {
+        return designer;
+    }
+    
     private void initA11Y() {
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JsfTopComponent.class,
                 "ACSD_DesignerTopComp"));
@@ -2214,11 +2222,11 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     // JSF notifications <<<
     
     
-    private static class JsfDesignerListener implements DesignerListener {
-        private final JsfTopComponent jsfTopComponent;
-        
-        public JsfDesignerListener(JsfTopComponent jsfTopComponent) {
-            this.jsfTopComponent = jsfTopComponent;
-        }
-    } // End of JsfDesignerListener.
+//    private static class JsfDesignerListener implements DesignerListener {
+//        private final JsfTopComponent jsfTopComponent;
+//        
+//        public JsfDesignerListener(JsfTopComponent jsfTopComponent) {
+//            this.jsfTopComponent = jsfTopComponent;
+//        }
+//    } // End of JsfDesignerListener.
 }

@@ -48,6 +48,7 @@ import javax.swing.JPopupMenu;
 
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
 import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.ErrorManager;
@@ -70,6 +71,13 @@ import org.netbeans.modules.visualweb.css2.LineBoxGroup;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.css2.TextBox;
+
+
+// For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
+import org.netbeans.modules.visualweb.designer.WebForm.DefaultDesignerEvent;
+
+
+// For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
 
 
 // For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
@@ -440,136 +448,136 @@ public class InteractionManager {
         }
     }
 
-    /** The user double clicked on the component during -initial- inline editing
-     * (e.g. we entered inline editing as part of the first click in a double
-     * click) so cancel inline editing and process the double click in the normal
-     * way: as a request to open the default event handler. However if there is
-     * no default event handler, stay in inline edit mode. */
-    public void notifyEditedDoubleClick() {
-//        if (webform.getActions().handleDoubleClick(true)) {
-//        if (handleDoubleClick(true)) {
-        if (handleDoubleClick()) {
-            finishInlineEditing(true);
-        }
-    }
-    
-    // XXX Moved from DesignerActions.
-    /** Perform the equivalent of a double click on the first item
-     * in the selection (if any).
-     * @param selOnly If true, only do something if the selection is nonempty
-     * @todo Rename to handleDefaultAction
-     * @return True iff the double click resulted in opening an event handler
-     */
-    public boolean handleDoubleClick(/*boolean selOnly*/) {
-        CssBox box = null;
-        SelectionManager sm = webform.getSelection();
-
-        if (!sm.isSelectionEmpty()) {
-//            Iterator it = sm.iterator();
-//
-//            while (it.hasNext()) {
-//                DesignBean bean = (DesignBean)it.next();
-            for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
-//                DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
-//                if (bean != null) {
-                if (componentRootElement != null) {
-//                    box = webform.getMapper().findBox(bean);
-                    box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
-
-                    if (box != null) {
-                        break;
-                    }
-                }
-            }
-//        } else if (selOnly) {
-        } else {
-            return false;
-        }
-
-        return handleDoubleClick(box);
-    }
-
-    // XXX Moved from DesignerActions.
-    /** Handle double clicks with the given box as the target.
-     * @todo Rename to handleDefaultAction
-     * @return Return true iff the double click resulted in opening an event handler
-     */
-    private boolean handleDoubleClick(CssBox box) {
-        if (box instanceof ExternalDocumentBox) {
-            ((ExternalDocumentBox)box).open();
-
-            return false;
-        } else if ((box != null) && (box.getTag() == HtmlTag.DIV) && (box.getBoxCount() == 1) &&
-                box.getBox(0) instanceof ExternalDocumentBox) {
-            // IF user has clicked on a large div containing only a
-            // jsp include, treat this as an attempt to open the page
-            // fragment child.
-            ((ExternalDocumentBox)box.getBox(0)).open();
-
-            return false;
-        } else {
-            return editEventHandler();
-        }
-    }
-    
-    // XXX Copied from DesignerActions.
-    /** Return true iff an event handler was found and created/opened */
-    private boolean editEventHandler() {
+//    /** The user double clicked on the component during -initial- inline editing
+//     * (e.g. we entered inline editing as part of the first click in a double
+//     * click) so cancel inline editing and process the double click in the normal
+//     * way: as a request to open the default event handler. However if there is
+//     * no default event handler, stay in inline edit mode. */
+//    public void notifyEditedDoubleClick() {
+////        if (webform.getActions().handleDoubleClick(true)) {
+////        if (handleDoubleClick(true)) {
+//        if (handleDoubleClick()) {
+//            finishInlineEditing(true);
+//        }
+//    }
+//    
+//    // XXX Moved from DesignerActions.
+//    /** Perform the equivalent of a double click on the first item
+//     * in the selection (if any).
+//     * @param selOnly If true, only do something if the selection is nonempty
+//     * @todo Rename to handleDefaultAction
+//     * @return True iff the double click resulted in opening an event handler
+//     */
+//    public boolean handleDoubleClick(/*boolean selOnly*/) {
+//        CssBox box = null;
 //        SelectionManager sm = webform.getSelection();
 //
-//        if (sm.isSelectionEmpty()) {
-//            webform.getModel().openDefaultHandler();
+//        if (!sm.isSelectionEmpty()) {
+////            Iterator it = sm.iterator();
+////
+////            while (it.hasNext()) {
+////                DesignBean bean = (DesignBean)it.next();
+//            for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
+////                DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+////                if (bean != null) {
+//                if (componentRootElement != null) {
+////                    box = webform.getMapper().findBox(bean);
+//                    box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 //
-//            return false;
-//        }
-//
-//        // TODO - get the component under the mouse, not the
-//        // whole selection!
-//        DesignBean component = getDefaultSelectionBean();
-//
-//        if (component != null) {
-//            // See if it's an XHTML element; if so just show it in
-//            // the JSP source
-////            if (FacesSupport.isXhtmlComponent(component)) {
-//            if (isXhtmlComponent(component)) {
-////                MarkupBean mb = FacesSupport.getMarkupBean(component);
-//                MarkupBean mb = Util.getMarkupBean(component);
-//                
-//                MarkupUnit unit = webform.getMarkup();
-//                // <markup_separation>
-////                Util.show(null, unit.getFileObject(),
-////                    unit.computeLine((RaveElement)mb.getElement()), 0, true);
-//                // ====
-////                MarkupService.show(unit.getFileObject(), unit.computeLine((RaveElement)mb.getElement()), 0, true);
-//                showLineAt(unit.getFileObject(), unit.computeLine(mb.getElement()), 0);
-//                // </markup_separation>
-//            } else {
-//                webform.getModel().openDefaultHandler(component);
+//                    if (box != null) {
+//                        break;
+//                    }
+//                }
 //            }
-//
-//            return true;
+////        } else if (selOnly) {
+//        } else {
+//            return false;
 //        }
 //
-//        return false;
-        SelectionManager sm = webform.getSelection();
-//        DesignBean component;
-        Element componentRootElement;
-        if (sm.isSelectionEmpty()) {
-//            webform.getModel().openDefaultHandler();
+//        return handleDoubleClick(box);
+//    }
+//
+//    // XXX Moved from DesignerActions.
+//    /** Handle double clicks with the given box as the target.
+//     * @todo Rename to handleDefaultAction
+//     * @return Return true iff the double click resulted in opening an event handler
+//     */
+//    private boolean handleDoubleClick(CssBox box) {
+//        if (box instanceof ExternalDocumentBox) {
+//            ((ExternalDocumentBox)box).open();
 //
 //            return false;
-//            component = null;
-            componentRootElement = null;
-        } else {
-//            component = getDefaultSelectionBean();
-//            Element componentRootElement = getDefaultSelectionComponentRootElement();
-//            component = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
-            componentRootElement = getDefaultSelectionComponentRootElement();
-        }
-
-//        return webform.editEventHandlerForDesignBean(component);
-        return webform.editEventHandlerForComponent(componentRootElement);
-    }
+//        } else if ((box != null) && (box.getTag() == HtmlTag.DIV) && (box.getBoxCount() == 1) &&
+//                box.getBox(0) instanceof ExternalDocumentBox) {
+//            // IF user has clicked on a large div containing only a
+//            // jsp include, treat this as an attempt to open the page
+//            // fragment child.
+//            ((ExternalDocumentBox)box.getBox(0)).open();
+//
+//            return false;
+//        } else {
+//            return editEventHandler();
+//        }
+//    }
+//    
+//    // XXX Copied from DesignerActions.
+//    /** Return true iff an event handler was found and created/opened */
+//    private boolean editEventHandler() {
+////        SelectionManager sm = webform.getSelection();
+////
+////        if (sm.isSelectionEmpty()) {
+////            webform.getModel().openDefaultHandler();
+////
+////            return false;
+////        }
+////
+////        // TODO - get the component under the mouse, not the
+////        // whole selection!
+////        DesignBean component = getDefaultSelectionBean();
+////
+////        if (component != null) {
+////            // See if it's an XHTML element; if so just show it in
+////            // the JSP source
+//////            if (FacesSupport.isXhtmlComponent(component)) {
+////            if (isXhtmlComponent(component)) {
+//////                MarkupBean mb = FacesSupport.getMarkupBean(component);
+////                MarkupBean mb = Util.getMarkupBean(component);
+////                
+////                MarkupUnit unit = webform.getMarkup();
+////                // <markup_separation>
+//////                Util.show(null, unit.getFileObject(),
+//////                    unit.computeLine((RaveElement)mb.getElement()), 0, true);
+////                // ====
+//////                MarkupService.show(unit.getFileObject(), unit.computeLine((RaveElement)mb.getElement()), 0, true);
+////                showLineAt(unit.getFileObject(), unit.computeLine(mb.getElement()), 0);
+////                // </markup_separation>
+////            } else {
+////                webform.getModel().openDefaultHandler(component);
+////            }
+////
+////            return true;
+////        }
+////
+////        return false;
+//        SelectionManager sm = webform.getSelection();
+////        DesignBean component;
+//        Element componentRootElement;
+//        if (sm.isSelectionEmpty()) {
+////            webform.getModel().openDefaultHandler();
+////
+////            return false;
+////            component = null;
+//            componentRootElement = null;
+//        } else {
+////            component = getDefaultSelectionBean();
+////            Element componentRootElement = getDefaultSelectionComponentRootElement();
+////            component = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//            componentRootElement = getDefaultSelectionComponentRootElement();
+//        }
+//
+////        return webform.editEventHandlerForDesignBean(component);
+//        return webform.editEventHandlerForComponent(componentRootElement);
+//    }
     
 //    // XXX Copied from DesignerActions.
 //    /** Return true iff the given DesignBean is an XHTML markup "component" */
@@ -581,6 +589,7 @@ public class InteractionManager {
 //    }
 
     // XXX Copy from DesignerActions
+    // XXX Copy also in designer/jsf/../JsfDesignerListener.
 //    private DesignBean getDefaultSelectionBean() {
     private Element getDefaultSelectionComponentRootElement() {
         // TODO - should this be a checkbox instead?
@@ -1437,7 +1446,9 @@ public class InteractionManager {
                         // LATER when I have markup beans check for Frame bean
                         // instead in the selection, don't use box located above
 //                        webform.getActions().handleDoubleClick(box);
-                        handleDoubleClick(box);
+//                        handleDoubleClick(box);
+                        DesignerEvent evt = new DefaultDesignerEvent(webform, box);
+                        webform.fireUserActionPerformed(evt);
                     }
                 }
             } else if (isToggleEvent(e)) {

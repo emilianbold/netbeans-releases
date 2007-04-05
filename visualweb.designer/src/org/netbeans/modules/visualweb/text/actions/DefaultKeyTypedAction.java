@@ -21,10 +21,12 @@ package org.netbeans.modules.visualweb.text.actions;
 import java.awt.event.ActionEvent;
 
 import javax.swing.UIManager;
+import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
 import org.netbeans.modules.visualweb.designer.InlineEditor;
 
 
 import org.netbeans.modules.visualweb.designer.WebForm;
+import org.netbeans.modules.visualweb.designer.WebForm.DefaultDesignerEvent;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 
 
@@ -112,7 +114,9 @@ public class DefaultKeyTypedAction extends TextAction {
                             // Enter key has same effect as double click
 //                            webform.getActions().handleDoubleClick(true);
 //                            webform.getManager().handleDoubleClick(true);
-                            webform.getManager().handleDoubleClick();
+//                            webform.getManager().handleDoubleClick();
+                            DesignerEvent evt = new DefaultDesignerEvent(webform, null);
+                            webform.fireUserActionPerformed(evt);
 
                             return;
                         } else {

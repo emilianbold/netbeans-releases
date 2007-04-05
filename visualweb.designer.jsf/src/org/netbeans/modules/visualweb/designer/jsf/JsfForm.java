@@ -40,6 +40,7 @@ import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -65,14 +66,19 @@ import org.netbeans.modules.visualweb.designer.jsf.ui.RenderErrorPanelImpl;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.Unit;
 import org.netbeans.modules.visualweb.insync.Util;
+import org.netbeans.modules.visualweb.insync.faces.FacesBean;
 import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
+import org.netbeans.modules.visualweb.insync.faces.MarkupBean;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.w3c.dom.Document;
@@ -211,6 +217,14 @@ public class JsfForm {
         return jsfForm;
     }
     
+    // XXX Revise, the need for this method is suspicious.
+    public static JsfForm findJsfFormForDomProvider(HtmlDomProvider domProvider) {
+        if (!(domProvider instanceof HtmlDomProviderImpl)) {
+            return null;
+        }
+        
+        return ((HtmlDomProviderImpl)domProvider).getJsfForm();
+    }
 //    public static Designer createDesigner(DataObject jsfJspDataObject) {
 //        JsfForm jsfForm = JsfForm.getJsfForm(jsfJspDataObject);
 //        if (jsfForm == null) {
@@ -2165,5 +2179,88 @@ public class JsfForm {
     public boolean isRenderFailureShown() {
         return renderFailureShown;
     }
+    
+    public boolean editEventHandlerForComponent(Element componentRootElement) {
+        DesignBean designBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+        if (designBean == null) {
+//            webform.getModel().openDefaultHandler(component);
+            getFacesModel().openDefaultHandler();
+            return false;
+        } else {
+            // See if it's an XHTML element; if so just show it in
+            // the JSP source
+//            if (FacesSupport.isXhtmlComponent(component)) {
+            if (isXhtmlComponent(designBean)) {
+//                MarkupBean mb = FacesSupport.getMarkupBean(component);
+                MarkupBean mb = Util.getMarkupBean(designBean);
+                
+//                MarkupUnit unit = webform.getMarkup();
+                MarkupUnit unit = getFacesModel().getMarkupUnit();
+                // <markup_separation>
+//                Util.show(null, unit.getFileObject(),
+//                    unit.computeLine((RaveElement)mb.getElement()), 0, true);
+                // ====
+//                MarkupService.show(unit.getFileObject(), unit.computeLine((RaveElement)mb.getElement()), 0, true);
+                showLineAt(unit.getFileObject(), unit.computeLine(mb.getElement()), 0);
+                // </markup_separation>
+            } else {
+//                webform.getModel().openDefaultHandler(component);
+                getFacesModel().openDefaultHandler(designBean);
+            }
+
+            return true;
+        }
+    }
+    
+    /** Return true iff the given DesignBean is an XHTML markup "component" */
+    private static boolean isXhtmlComponent(DesignBean bean) {
+//        MarkupBean mb = FacesSupport.getMarkupBean(bean);
+        MarkupBean mb = Util.getMarkupBean(bean);
+
+        return (mb != null) && !(mb instanceof FacesBean);
+    }
+
+    // XXX Copied from DesignerActions.
+    private static void showLineAt(FileObject fo, int lineno, int column) {
+        DataObject dobj;
+        try {
+            dobj = DataObject.find(fo);
+        }
+        catch (DataObjectNotFoundException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return;
+        }
+
+        // Try to open doc before showing the line. This SHOULD not be
+        // necessary, except without this the IDE hangs in its attempt
+        // to open the file when the file in question is a CSS file.
+        // Probably a bug in the xml/css module's editorsupport code.
+        // This has the negative effect of first flashing the top
+        // of the file before showing the destination line, so
+        // this operation is made conditional so only clients who
+        // actually need it need to use it.
+        EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+        if (ec != null) {
+            try {
+                ec.openDocument(); // ensure that it has been opened - REDUNDANT?
+                //ec.open();
+            }
+            catch (IOException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+
+        LineCookie lc = (LineCookie)dobj.getCookie(LineCookie.class);
+        if (lc != null) {
+            Line.Set ls = lc.getLineSet();
+            if (ls != null) {
+                // -1: convert line numbers to be zero-based
+                Line line = ls.getCurrent(lineno-1);
+                // TODO - pass in a column too?
+                line.show(Line.SHOW_GOTO, column);
+            }
+        }
+    }
+
 }
 

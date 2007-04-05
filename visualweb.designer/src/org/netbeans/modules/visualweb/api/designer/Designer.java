@@ -151,6 +151,13 @@ public interface Designer {
         public void list(PrintStream outputStream, int indent);
     } // End of Box.
     
+    
+    /** Box representing external page (e.g. fragment). */
+    public interface ExternalBox extends Box {
+        public HtmlDomProvider getExternalDomProvider();
+    } // End od ExternalBox.
+
+    
     public Box getPageBox();
     
     public Box findBox(int x, int y);
@@ -226,10 +233,12 @@ public interface Designer {
     public void removeDesignerListener(DesignerListener l);
     
     public interface DesignerListener extends EventListener {
-        
+        /** When user performed action on the box. */
+        public void userActionPerformed(DesignerEvent evt);
     } // End of DesignerListener.
     
     public interface DesignerEvent {
-        
+        public Designer getDesigner();
+        public Box getBox();
     } // End of DesignerEvent.
 }
