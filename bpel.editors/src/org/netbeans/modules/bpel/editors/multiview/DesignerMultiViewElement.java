@@ -130,6 +130,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
 import org.netbeans.modules.soa.ui.tnv.scrollpane.ThumbnailScrollPane;
+import org.netbeans.modules.print.api.PrintManagerAccess;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.Mode;
@@ -392,6 +393,9 @@ public class DesignerMultiViewElement extends TopComponent
                     toolbar.add(Box.createHorizontalStrut(1));
                 }
             }
+            // vlv: print and search
+            toolbar.addSeparator();
+            toolbar.add(PrintManagerAccess.getManager().getPreviewAction());
 
             // Add button for valdiate action.
             toolbar.addSeparator();
