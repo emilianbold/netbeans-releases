@@ -25,6 +25,7 @@
 
 package org.netbeans.modules.uml.project;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.uml.core.IApplication;
@@ -132,12 +133,19 @@ public class UMLProjectModule extends ModuleInstall
                 pDiaMgr.closeAllDiagrams();
             }
         }
-        TopComponent tc = WindowManager.getDefault().findTopComponent("designpattern");
-        if (tc != null)
-            tc.close();
-        tc = WindowManager.getDefault().findTopComponent("documentation");
-        if (tc != null)
-            tc.close();
+        SwingUtilities.invokeLater( new Runnable()
+        {
+            public void run()
+            {
+                TopComponent tc = WindowManager.getDefault().findTopComponent("designpattern");
+                if (tc != null)
+                    tc.close();
+                tc = WindowManager.getDefault().findTopComponent("documentation");
+                if (tc != null)
+                    tc.close();
+            }
+        });
+        
         OpenProjects.getDefault().close(projects);      
     }
     
