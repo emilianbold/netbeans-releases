@@ -22,7 +22,6 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -34,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
 import java.net.URL;
@@ -47,7 +47,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -56,7 +55,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
@@ -95,7 +93,7 @@ import org.xml.sax.SAXException;
  */
 public class Installer extends ModuleInstall {
     /**
-     * 
+     *
      */
     static final String USER_CONFIGURATION = "UI_USER_CONFIGURATION";   // NOI18N
     private static UIHandler ui = new UIHandler(false);
@@ -115,7 +113,7 @@ public class Installer extends ModuleInstall {
         Logger all = Logger.getLogger("");
         all.addHandler(handler);
         logsSize = prefs.getInt("count", 0);
-
+        
         for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
             a.activated(log);
         }
@@ -145,7 +143,7 @@ public class Installer extends ModuleInstall {
         
         closeLogStream();
     }
-
+    
     static void writeOut(LogRecord r) {
         try {
             LogRecords.write(logStream(), r);
@@ -177,7 +175,7 @@ public class Installer extends ModuleInstall {
             return Collections.emptyList();
         }
         closeLogStream();
-
+        
         class H extends Handler {
             List<LogRecord> logs = new LinkedList<LogRecord>();
             
@@ -187,10 +185,10 @@ public class Installer extends ModuleInstall {
                     logs.remove(0);
                 }
             }
-
+            
             public void flush() {
             }
-
+            
             public void close() throws SecurityException {
             }
         }
@@ -369,8 +367,8 @@ public class Installer extends ModuleInstall {
      * @param u the url to read the page from
      * @param defaultButton the button to add always to the list
      */
-    static void parseButtons(InputStream is, Object defaultButton, DialogDescriptor dd) 
-    throws IOException, ParserConfigurationException, SAXException {
+    static void parseButtons(InputStream is, Object defaultButton, DialogDescriptor dd)
+            throws IOException, ParserConfigurationException, SAXException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setValidating(false);
         factory.setIgnoringComments(true);
@@ -408,7 +406,7 @@ public class Installer extends ModuleInstall {
                         continue;
                     }
                     
-                    
+
                     if ("hidden".equals(type)) { // NOI18N
                         JButton b = new JButton();
                         Mnemonics.setLocalizedText(b, value);
@@ -419,6 +417,8 @@ public class Installer extends ModuleInstall {
                         addTo.add(b);
                         if ("exit".equals(name)) { // NOI18N
                             defaultButton = null;
+                        }else if ("redirect".equals(name)){
+                            b.putClientProperty("url", f.url);
                         }
                     }
                 }
@@ -474,7 +474,7 @@ public class Installer extends ModuleInstall {
         conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=--------konec<>bloku");
         conn.setRequestProperty("Pragma", "no-cache");
         conn.setRequestProperty("Cache-control", "no-cache");
-
+        
         h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadSending"), 60);
         
         PrintStream os = new PrintStream(conn.getOutputStream());
@@ -531,7 +531,7 @@ public class Installer extends ModuleInstall {
             redir.append((char)ch);
         }
         is.close();
-
+        
         h.progress(cnt + 20);
         
         LOG.info("Reply from uploadLogs:");
@@ -637,7 +637,7 @@ public class Installer extends ModuleInstall {
             }
             
             exitMsg = NbBundle.getMessage(Installer.class, "MSG_" + msg + "_EXIT"); // NOI18N
-
+            
             String defaultURI = NbBundle.getMessage(Installer.class, msg);
             if (defaultURI == null || defaultURI.length() == 0) {
                 okToExit = true;
@@ -672,6 +672,14 @@ public class Installer extends ModuleInstall {
                     conn.getInputStream().close();
                     InputStream is = new FileInputStream(tmp);
                     parseButtons(is, exitMsg, dd);
+                    if ("ERROR_URL".equals(msg)&(dd.getOptions().length > 1)){
+                        Object obj = dd.getOptions()[0];
+                        AbstractButton abut = null;
+                        String report=null;
+                        if (obj instanceof AbstractButton ) abut = (AbstractButton)obj;
+                        if (abut != null)report = (String) abut.getClientProperty("alt");
+                        if ("reportDialog".equals(report)) dd.setMessage(reportPanel);
+                    }
                     is.close();
                     url = tmp.toURI().toURL();
                 } catch (ParserConfigurationException ex) {
@@ -689,6 +697,11 @@ public class Installer extends ModuleInstall {
                     msg = null;
                     continue;
                 } catch (NoRouteToHostException ex) {
+                    LOG.log(Level.INFO, url.toExternalForm(), ex);
+                    url = getUnknownHostExceptionURL();
+                    msg = null;
+                    continue;
+                }catch (ConnectException ex){
                     LOG.log(Level.INFO, url.toExternalForm(), ex);
                     url = getUnknownHostExceptionURL();
                     msg = null;
@@ -717,42 +730,39 @@ public class Installer extends ModuleInstall {
         
         private URL getUnknownHostExceptionURL() {
             String resource = NbBundle.getMessage(Installer.class, "URL_UnknownHostException");
-            return getClass().getResource(resource);            
+            return getClass().getResource(resource);
         }
         
         public void run() {
-            if ("ERROR_URL".equals(msg)){   // NOI18N
-                if (reportPanel==null) reportPanel = new ReportPanel();
-                Throwable t = getThrown();
-                assert t!= null : "NO THROWABLE FOUND";  // NOI18N
+            if (reportPanel==null) reportPanel = new ReportPanel();
+            Throwable t = getThrown();
+            if ((t != null)&&(reportPanel !=null)){
                 String summary = t.getClass().getName();
                 String[] pieces = summary.split("\\.");
                 if (pieces.length > 0) summary = pieces[pieces.length-1];//posledni piece
                 if (t.getMessage()!= null)summary = summary.concat(" : " + t.getMessage()); //NOI18N
                 reportPanel.setSummary(summary);
-                dd.setMessage(reportPanel);
-            }else{
-                browser = new HtmlBrowser();
-                String resource = NbBundle.getMessage(Installer.class, "URL_Connecting"); // NOI18N
-                browser.setURL(Installer.class.getResource("Connecting.html")); // NOI18N
-                browser.setEnableLocation(false);
-                browser.setEnableHome(false);
-                browser.setStatusLineVisible(false);
-                browser.setToolbarVisible(false);
-                browser.setPreferredSize(new Dimension(640, 480));
-                dd.setMessage(browser);
-                
-                //        AbstractNode root = new AbstractNode(new Children.Array());
-                //        root.setName("root"); // NOI18N
-                //        root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
-                //        root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
-                //        for (LogRecord r : recs) {
-                //            root.getChildren().add(new Node[] { UINode.create(r) });
-                //        }
-                //
-                //        panel.getExplorerManager().setRootContext(root);
-                
             }
+            browser = new HtmlBrowser();
+            String resource = NbBundle.getMessage(Installer.class, "URL_Connecting"); // NOI18N
+            browser.setURL(Installer.class.getResource("Connecting.html")); // NOI18N
+            browser.setEnableLocation(false);
+            browser.setEnableHome(false);
+            browser.setStatusLineVisible(false);
+            browser.setToolbarVisible(false);
+            browser.setPreferredSize(new Dimension(640, 480));
+            dd.setMessage(browser);
+            
+            //        AbstractNode root = new AbstractNode(new Children.Array());
+            //        root.setName("root"); // NOI18N
+            //        root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
+            //        root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
+            //        for (LogRecord r : recs) {
+            //            root.getChildren().add(new Node[] { UINode.create(r) });
+            //        }
+            //
+            //        panel.getExplorerManager().setRootContext(root);
+            
             Object[] arr = new Object[] { exitMsg };
             dd.setOptions(arr);
             dd.setClosingOptions(arr);
@@ -810,6 +820,15 @@ public class Installer extends ModuleInstall {
                 dd.setValue(DialogDescriptor.CLOSED_OPTION);
                 closeDialog();
                 return;
+            }
+            
+            if ("redirect".equals(e.getActionCommand())){
+                if (url[0] != null) {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(url[0]);
+                }
+                dd.setValue(DialogDescriptor.CLOSED_OPTION);
+                closeDialog();
+                return ;
             }
             
             if ("view-data".equals(e.getActionCommand())) { // NOI18N
