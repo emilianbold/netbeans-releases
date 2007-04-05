@@ -63,7 +63,7 @@ public class SyntaxHighlightTest extends EditorTestCase{
 	curPackage = getClass().getPackage().getName();
     }
     
-    private boolean generateGoldenFiles = true;
+    private boolean generateGoldenFiles = false;
     
     private String curPackage;
     

@@ -421,10 +421,10 @@ public class EditorTestCase extends JellyTestCase {
                 
             }
         }
-
+        if(df.length==0) return "n/a";
         String val = null;
         try {
-            val = (String) clip.getTransferData(new DataFlavor("text/plain; class=java.lang.String; charset=Unicode"));            
+            val = (String) clip.getTransferData(new DataFlavor("text/plain; class=java.lang.String"));            
         } catch (UnsupportedFlavorException ex) {            
             fail(ex);
         } catch (IOException ex) {            

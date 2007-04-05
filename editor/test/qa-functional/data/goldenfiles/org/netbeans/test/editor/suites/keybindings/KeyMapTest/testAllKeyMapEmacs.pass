@@ -4,22 +4,22 @@ Build|Clean and Build Main Project
   Shift+F11
 Build|Compile File
   F9
-Edit|<unknown action>
+Edit|<unknown>
   Alt+W
   COPY
-Edit|<unknown action>
+Edit|<unknown>
   Ctrl+W
   CUT
-  Shift+DELETE
-Edit|<unknown action>
+Edit|<unknown>
   DELETE
-Edit|<unknown action>
+  Ctrl+D
+Edit|<unknown>
   FIND
   Ctrl+S
-Edit|find-next
+Edit|Find Next Occurrence
   Alt+S
   F3
-Edit|find-previous
+Edit|Find Previous Occurrence
   Alt+R
   Ctrl+R
   Shift+F3
@@ -27,21 +27,19 @@ Edit|Find Usages
   Alt+F7
 Edit|Find/Replace in Projects...
   Ctrl+Shift+P
-Edit|<unknown action>
+Edit|<unknown>
   PASTE
-  Shift+INSERT
   Ctrl+Y
-Edit|<unknown action>
+Edit|<unknown>
   Ctrl+Shift+Z
   Alt+Shift+MINUS
-Edit|<unknown action>
-  Ctrl+H
-Edit|start-macro-recording
+Edit|<unknown>
+  Alt+Shift+5
+Edit|Start Macro Recording
   Ctrl+X Shift+9
-Edit|stop-macro-recording
+Edit|Stop Macro Recording
   Ctrl+X Shift+0
-Edit|<unknown action>
-  Ctrl+Shift+MINUS
+Edit|<unknown>
   Ctrl+X U
   UNDO
   Ctrl+SLASH
@@ -61,8 +59,211 @@ File|Save
   Ctrl+X Ctrl+S
 File|Save All
   Ctrl+X S
+Go To|Go to Declaration
+  Alt+PERIOD
+  Ctrl+Alt+G
+Go To|<unknown>
+  Alt+G
+Go To|Go to Previous Document
+  Ctrl+BACK_QUOTE
+Go To|Go to Test
+  Alt+Shift+E
+Go To|Go to Type...
+  Alt+Shift+O
+Go To|Next Bookmark
+  F2
+Go To|Next Error
+  F12
+  Ctrl+X BACK_QUOTE
+Go To|Next Inner View
+  Alt+Shift+RIGHT
+Go To|Next Tab
+  Alt+RIGHT
+Go To|Previous Bookmark
+  Shift+F2
+Go To|Previous Error
+  Shift+F12
+Go To|Previous Inner View
+  Alt+Shift+LEFT
+Go To|Previous Tab
+  Alt+LEFT
+Go To|Select Node in Projects
+  Ctrl+Shift+1
+Go To|Select in Favorites
+  Ctrl+Shift+3
+Go To|Toggle Bookmark
+  Ctrl+F2
 Help|Help
   F1
+Other|Cancel Process
+  Ctrl+Shift+DELETE
+Other|Check XML
+  Alt+F9
+Other|Copy Info
+  Alt+F3
+Other|Cut from Insertion Point to Line Begining
+  Alt+0 Ctrl+K
+Other|Cut from Insertion Point to Line End
+  Ctrl+K
+Other|Delete Next Word
+  Alt+D
+Other|Delete Previous Character
+  BACK_SPACE
+Other|Delete Previous Word
+  Ctrl+BACK_SPACE
+  Alt+BACK_SPACE
+Other|Delete Tab
+  Shift+TAB
+Other|Extend Selection Back
+  Ctrl+Shift+LEFT
+Other|Extend Selection Backward
+  Shift+LEFT
+Other|Extend Selection Down
+  Shift+DOWN
+Other|Extend Selection Forward
+  Shift+RIGHT
+Other|Extend Selection Up
+  Shift+UP
+Other|Extend Selection to Beginning of Document
+  Ctrl+Shift+HOME
+Other|Extend Selection to Beginning of Text on Line
+  Shift+HOME
+Other|Extend Selection to End of Document
+  Ctrl+Shift+END
+Other|Extend Selection to End of Line
+  Shift+END
+Other|Extend Selection to Next Page
+  Shift+PAGE_DOWN
+Other|Extend Selection to Next Word
+  Ctrl+Shift+RIGHT
+Other|Extend Selection to Previous Page
+  Shift+PAGE_UP
+Other|Full Screen
+  Alt+Shift+ENTER
+Other|HTTP Monitor
+  Ctrl+Shift+5
+Other|Insert Newline
+  ENTER
+Other|Insert Tab
+  Ctrl+Q TAB
+Other|Insertion Point Backward
+  KP_LEFT
+  Ctrl+B
+  LEFT
+Other|Insertion Point Down
+  Ctrl+N
+  KP_DOWN
+  DOWN
+Other|Insertion Point Forward
+  RIGHT
+  Ctrl+F
+Other|Insertion Point Up
+  KP_UP
+  UP
+  Ctrl+P
+Other|Insertion Point to Beginning of Document
+  Alt+Shift+COMMA
+  ESCAPE Shift+COMMA
+  Ctrl+HOME
+Other|Insertion Point to Beginning of Line
+  Ctrl+A
+Other|Insertion Point to Beginning of Text on Line
+  HOME
+Other|Insertion Point to End of Document
+  Ctrl+END
+  ESCAPE Shift+PERIOD
+  Alt+Shift+PERIOD
+Other|Insertion Point to End of Line
+  END
+  Ctrl+E
+Other|Insertion Point to Next Word
+  Alt+F
+  Ctrl+RIGHT
+Other|Insertion Point to Previous Word
+  Alt+B
+  Ctrl+LEFT
+Other|Inspect Hierarchy
+  Alt+Shift+F12
+Other|Inspect Hierarchy
+  Alt+F12
+Other|Inspect Members
+  Ctrl+Shift+F12
+Other|Inspect Members
+  Ctrl+F12
+Other|JUnit Test Results
+  Ctrl+Shift+6
+Other|Javadoc Index Search
+  Shift+F1
+Other|Modify Profiling...
+  Alt+Shift+F2
+Other|Page Down
+  PAGE_DOWN
+  Ctrl+V
+Other|Page Up
+  Alt+V
+  PAGE_UP
+Other|Projects
+  Ctrl+1
+Other|Re-indent Current Line or Selection
+  TAB
+Other|ReRun Last Profiling
+  Ctrl+Shift+F2
+Other|Reload Form
+  Ctrl+R
+Other|Replace Variable With its Getter
+  Alt+U G
+Other|Replace Variable With its Setter
+  Alt+U S
+Other|Replace Variable With its is* Method
+  Alt+U I
+Other|Run SQL
+  Ctrl+Shift+E
+Other|Scroll Down
+  Ctrl+UP
+Other|Scroll Insertion Point to Center
+  Ctrl+U Ctrl+L
+Other|Scroll Up
+  Ctrl+DOWN
+Other|Select All
+  Ctrl+X H
+Other|Select Word
+  Ctrl+Alt+W
+Other|Set Request Parameters...
+  Ctrl+Q
+Other|Show All Code Completion Popup
+  Ctrl+Alt+SPACE
+Other|Show Code Completion Popup
+  Ctrl+SPACE
+  Ctrl+BACK_SLASH
+Other|Show Code Completion Tip Popup
+  Alt+P
+Other|Show Documentation Popup
+  Ctrl+Shift+SPACE
+Other|<unknown>
+  CONTEXT_MENU
+  Shift+F10
+Other|Split Line
+  Ctrl+ENTER
+Other|Start New Line
+  Shift+ENTER
+Other|Step Over Expression
+  Shift+F8
+Other|Switch Capitalization of Identifier
+  Alt+C
+Other|Take Snapshot of Collected Results
+  Ctrl+F2
+Other|Test Project
+  Alt+F6
+Other|To Lowercase
+  Ctrl+X Ctrl+L
+Other|To Uppercase
+  Ctrl+X Ctrl+U
+Other|Toggle Typing Mode
+  INSERT
+Other|Undock Window
+  Alt+Shift+D
+Other|Validate XML
+  Alt+Shift+F9
 Run|Continue
   Ctrl+F5
 Run|Debug File
@@ -101,34 +302,34 @@ Run|Test File
   Ctrl+F6
 Run|Toggle Breakpoint
   Ctrl+F8
-Source|comment
+Source|Comment
   Ctrl+C Ctrl+C
-Source|fix-imports
+Source|Fix Imports
   Alt+Shift+F
-Source|word-match-next
+Source|Next Matching Word
   Alt+SLASH
-Source|format
+Source|Reformat Code
   Ctrl+Alt+BACK_SLASH
-Source|shift-line-left
+Source|Shift Line Left
   Alt+0 Ctrl+X TAB
-Source|shift-line-right
+Source|Shift Line Right
   Ctrl+X TAB
-Source|uncomment
+Source|Uncomment
   Alt+0 Ctrl+C Ctrl+C
 Tools|Create JUnit Tests
   Ctrl+Shift+U
 Tools|Insert Internationalized String...
   Ctrl+Shift+J
-View|collapse-all-folds
+View|Collapse All
   Ctrl+Shift+SUBTRACT
-View|collapse-fold
+View|Collapse Fold
   Ctrl+SUBTRACT
   Ctrl+MINUS
-View|expand-all-folds
+View|Expand All
   Ctrl+Shift+EQUALS
   Ctrl+Shift+ADD
   Ctrl+Shift+PLUS
-View|expand-fold
+View|Expand Fold
   Ctrl+ADD
   Ctrl+EQUALS
   Ctrl+PLUS
