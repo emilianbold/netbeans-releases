@@ -633,21 +633,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     }
                 });
             } else {
-                RequestProcessor.getDefault().post(new Runnable () {
-                    public void run () {
-                        try {
-                            genFilesHelper.refreshBuildScript(org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                                              org.netbeans.modules.web.project.WebProject.class.getResource("resources/build-impl.xsl"),
-                                                              jaxWsFo, false);
-                        }
-                        catch (IOException ex) {
-                            ErrorManager.getDefault().notify(ex);
-                        }
-                        catch (IllegalStateException ex) {
-                            ErrorManager.getDefault().notify(ex);
-                        }
-                    }
-                }, 2000);
+                genFilesHelper.refreshBuildScript(org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                                                  org.netbeans.modules.web.project.WebProject.class.getResource("resources/build-impl.xsl"),
+                                                  jaxWsFo, false);
             }
             genFilesHelper.refreshBuildScript(
                 getBuildXmlName (),
