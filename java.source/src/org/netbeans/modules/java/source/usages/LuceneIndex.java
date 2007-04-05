@@ -524,7 +524,7 @@ class LuceneIndex extends Index {
 //                    Disabled assertion until the signature file links are integrated
 //                    assert hits.length() <=1 : "Multiple index entries for binaryName: " + toDeleteItem;    //NOI18N
                     if (hits.length()>1) {
-                        java.util.logging.Logger.getLogger("global").warning("Multiple index entries for binaryName: " + toDeleteItem); //NOI18N
+                        LOGGER.warning("Multiple index entries for binaryName: " + toDeleteItem); //NOI18N
                     }
                     for (int i=0; i<hits.length(); i++) {
                         in.deleteDocument (hits.id(i));
