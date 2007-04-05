@@ -84,7 +84,7 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.Registry;
-import org.netbeans.api.java.source.query.QueryEnvironment;
+import org.netbeans.modules.java.source.query.QueryEnvironment;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.Scanner;

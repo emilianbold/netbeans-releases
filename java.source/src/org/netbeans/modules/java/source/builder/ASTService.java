@@ -40,8 +40,8 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.util.*;
 import java.util.Collections;
-import org.netbeans.api.java.source.transform.UndoEntry;
-import org.netbeans.api.java.source.transform.UndoList;
+import org.netbeans.modules.java.source.transform.UndoEntry;
+import org.netbeans.modules.java.source.transform.UndoList;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 

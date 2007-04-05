@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.java.source.engine.ASTModel;
-import org.netbeans.api.java.source.transform.Transformer;
+import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileStateInvalidException;
 

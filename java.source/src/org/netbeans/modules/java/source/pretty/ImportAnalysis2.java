@@ -49,10 +49,10 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.query.QueryEnvironment;
+import org.netbeans.modules.java.source.query.QueryEnvironment;
 import org.netbeans.modules.java.source.engine.ASTModel;
 import org.netbeans.modules.java.source.engine.EngineEnvironment;
-import org.netbeans.api.java.source.transform.ChangeSet;
+import org.netbeans.modules.java.source.transform.ChangeSet;
 import org.netbeans.modules.java.source.engine.TreeMakerInt;
 
 /**

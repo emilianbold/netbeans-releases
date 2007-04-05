@@ -25,9 +25,9 @@ import com.sun.source.tree.VariableTree;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.api.java.source.Comment;
-import org.netbeans.api.java.source.query.CommentHandler;
-import org.netbeans.api.java.source.query.CommentSet;
-import org.netbeans.api.java.source.query.Query;
+import org.netbeans.modules.java.source.query.CommentHandler;
+import org.netbeans.modules.java.source.query.CommentSet;
+import org.netbeans.modules.java.source.query.Query;
 
 import com.sun.tools.javac.util.*;
 import com.sun.tools.javac.code.*;

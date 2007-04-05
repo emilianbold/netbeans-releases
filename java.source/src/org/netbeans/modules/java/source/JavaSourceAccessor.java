@@ -28,7 +28,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.query.QueryEnvironment;
+import org.netbeans.modules.java.source.query.QueryEnvironment;
 import org.openide.ErrorManager;
 
 /**

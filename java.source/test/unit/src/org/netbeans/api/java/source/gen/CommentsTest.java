@@ -26,7 +26,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
-import org.netbeans.api.java.source.query.Query;
+import org.netbeans.modules.java.source.query.Query;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;

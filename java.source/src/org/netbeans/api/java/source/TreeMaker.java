@@ -37,11 +37,11 @@ import org.netbeans.api.lexer.TokenSequence;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
 
-import org.netbeans.api.java.source.query.CommentHandler;
-import org.netbeans.api.java.source.query.CommentSet;
+import org.netbeans.modules.java.source.query.CommentHandler;
+import org.netbeans.modules.java.source.query.CommentSet;
 import org.netbeans.api.java.source.Comment.Style;
-import org.netbeans.api.java.source.query.CommentHandler;
-import org.netbeans.api.java.source.query.Query;
+import org.netbeans.modules.java.source.query.CommentHandler;
+import org.netbeans.modules.java.source.query.Query;
 
 import org.netbeans.modules.java.source.engine.TreeMakerInt;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;

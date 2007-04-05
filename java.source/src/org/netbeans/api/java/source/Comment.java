@@ -19,7 +19,7 @@
 
 package org.netbeans.api.java.source;
 
-import org.netbeans.api.java.source.query.Query;
+import org.netbeans.modules.java.source.query.Query;
 
 /**
  * An individual comment, consisting of a style, begin and end source

@@ -31,8 +31,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.util.zip.GZIPInputStream;
-import org.netbeans.api.java.source.query.ResultTableModel;
-import org.netbeans.api.java.source.transform.Transformer;
+import org.netbeans.modules.java.source.query.ResultTableModel;
+import org.netbeans.modules.java.source.transform.Transformer;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

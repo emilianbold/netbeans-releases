@@ -21,8 +21,8 @@ package org.netbeans.modules.java.source.builder;
 
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.api.java.source.Comment;
-import org.netbeans.api.java.source.query.CommentHandler;
-import org.netbeans.api.java.source.query.CommentSet;
+import org.netbeans.modules.java.source.query.CommentHandler;
+import org.netbeans.modules.java.source.query.CommentSet;
 import org.netbeans.modules.java.source.engine.ASTModel;
 
 import com.sun.source.tree.CompilationUnitTree;

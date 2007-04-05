@@ -40,7 +40,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.transform.Transformer;
+import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;

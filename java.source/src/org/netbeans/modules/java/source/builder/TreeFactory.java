@@ -23,7 +23,7 @@ import com.sun.tools.javac.model.JavacElements;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.java.source.engine.TreeMakerInt;
-import org.netbeans.api.java.source.query.Query;
+import org.netbeans.modules.java.source.query.Query;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.BoundKind;

@@ -31,7 +31,7 @@ import javax.lang.model.type.TypeKind;
 import junit.textui.TestRunner;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.transform.Transformer;
+import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
 
