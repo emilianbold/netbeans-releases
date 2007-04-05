@@ -1096,7 +1096,13 @@ Microsystems, Inc. All Rights Reserved.
 -->
     <answer id="resources-file">
         <p>
-            XXX no answer for resources-file
+            <api name="var-log-uigestures" group="java.io.File" category="private" type="export">
+            The module stores its loggging
+            information in $userdir/var/log/uigestures and 
+            $userdir/var/log/uigestures.1 files. There are written whenever
+            a UI action happens and read when the data are send to server.
+            Each of these files is supposed to contain at most 1000 of 
+            actions</api>
         </p>
     </answer>
     
