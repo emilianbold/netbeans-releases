@@ -32,7 +32,7 @@ BUILDNUM=trunk-nightly-all-$DATESTAMP
 
 ant -Dbuildnum=$BUILDNUM -f nbbuild/build.xml build-nozip
 ERROR_CODE=$?
-if [ $ERROR_CODE <> 0 ]; then
+if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build basic IDE"
     exit $ERROR_CODE;
 fi
@@ -40,6 +40,7 @@ ant -Dnb_all=$NB_ALL -f visualweb/ravebld/build.xml
 ant -f mobility/build.xml build
 ant -f uml/build.xml build
 ant -f scripting/ruby/build.xml build
+ant -f nbbuild/entpack/build.xml build
 
 cd nbbuild
 mkdir -p dist/zip
@@ -60,31 +61,34 @@ pack_component $DIST $BASENAME all-in-one netbeans
 
 cd netbeans
 
-pack_component $DIST $BASENAME uml uml*
+pack_component $DIST $BASENAME uml "uml*"
 rm -rf uml*
 
-pack_component $DIST $BASENAME visualweb visulalweb*
+pack_component $DIST $BASENAME visualweb "visulalweb*"
 rm -rf visualweb*
 
-pack_component $DIST $BASENAME ruby ruby*
+pack_component $DIST $BASENAME ruby "ruby*"
 rm -rf ruby*
 
-pack_component $DIST $BASENAME profiler profiler*
+pack_component $DIST $BASENAME profiler "profiler*"
 rm -rf profiler*
 
-pack_component $DIST $BASENAME platform platform*
+pack_component $DIST $BASENAME platform "platform*"
 rm -rf platform*
 
-pack_component $DIST $BASENAME mobility mobility*
+pack_component $DIST $BASENAME mobility "mobility*"
 rm -rf mobility*
 
-pack_component $DIST $BASENAME ide ide*
+pack_component $DIST $BASENAME ide "ide*"
 rm -rf ide*
 
-pack_component $DIST $BASENAME harness harness*
+pack_component $DIST $BASENAME harness "harness*"
 rm -rf harness*
 
-pack_component $DIST $BASENAME enterprise enterprise*
+pack_component $DIST $BASENAME enterprise "enterprise*"
 rm -rf enterprise*
 
-pack_component $DIST $BASENAME nb6.0-etc *
+pack_component $DIST $BASENAME soa "soa*"
+rm -rf soa*
+
+pack_component $DIST $BASENAME nb6.0-etc "*"
