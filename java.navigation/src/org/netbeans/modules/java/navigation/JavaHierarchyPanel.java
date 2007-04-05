@@ -517,14 +517,12 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        filterLabel.setDisplayedMnemonic('F');
         filterLabel.setLabelFor(filterTextField);
-        filterLabel.setText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("LABEL_filterLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filterLabel, org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("LABEL_filterLabel")); // NOI18N
 
         filterTextField.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_filterTextField")); // NOI18N
 
-        caseSensitiveFilterCheckBox.setMnemonic('C');
-        caseSensitiveFilterCheckBox.setText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("LABEL_caseSensitiveFilterCheckBox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(caseSensitiveFilterCheckBox, org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("LABEL_caseSensitiveFilterCheckBox")); // NOI18N
         caseSensitiveFilterCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         caseSensitiveFilterCheckBox.setFocusable(false);
         caseSensitiveFilterCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -546,39 +544,33 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         signatureEditorPane.setContentType("text/x-java");
         signatureEditorPane.setEditable(false);
 
-        filtersLabel.setText(org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "LABEL_filtersLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filtersLabel, org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "LABEL_filtersLabel")); // NOI18N
 
         javaHierarchyModeButtonGroup.add(showSuperTypeHierarchyToggleButton);
         showSuperTypeHierarchyToggleButton.setIcon(JavaMembersAndHierarchyIcons.SUPER_TYPE_HIERARCHY_ICON);
         showSuperTypeHierarchyToggleButton.setSelected(true);
         showSuperTypeHierarchyToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showSuperTypeHierarchyToggleButton")); // NOI18N
-        showSuperTypeHierarchyToggleButton.setFocusPainted(false);
         showSuperTypeHierarchyToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
 
         javaHierarchyModeButtonGroup.add(showSubTypeHierarchyToggleButton);
         showSubTypeHierarchyToggleButton.setIcon(JavaMembersAndHierarchyIcons.SUB_TYPE_HIERARCHY_ICON);
         showSubTypeHierarchyToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showSubTypeHierarchyToggleButton")); // NOI18N
-        showSubTypeHierarchyToggleButton.setFocusPainted(false);
         showSubTypeHierarchyToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
 
         showFQNToggleButton.setIcon(JavaMembersAndHierarchyIcons.FQN_ICON);
         showFQNToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showFQNToggleButton")); // NOI18N
-        showFQNToggleButton.setFocusPainted(false);
         showFQNToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
 
         showInnerToggleButton.setIcon(JavaMembersAndHierarchyIcons.INNER_CLASS_ICON);
         showInnerToggleButton.setSelected(true);
         showInnerToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showInnerToggleButton")); // NOI18N
-        showInnerToggleButton.setFocusPainted(false);
         showInnerToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
 
         expandAllButton.setIcon(JavaMembersAndHierarchyIcons.EXPAND_ALL_ICON);
         expandAllButton.setToolTipText(org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_expandAll")); // NOI18N
-        expandAllButton.setFocusPainted(false);
         expandAllButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
 
-        closeButton.setMnemonic('l');
-        closeButton.setText(org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "LABEL_Close")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(closeButton, org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "LABEL_Close")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -587,14 +579,14 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 670, Short.MAX_VALUE)
+                    .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(filterLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
+                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 547, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(caseSensitiveFilterCheckBox))
-                    .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 670, Short.MAX_VALUE)
+                    .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(filtersLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -607,7 +599,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                         .add(showInnerToggleButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(expandAllButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 500, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 504, Short.MAX_VALUE)
                         .add(closeButton)))
                 .addContainerGap())
         );
@@ -620,7 +612,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                     .add(caseSensitiveFilterCheckBox)
                     .add(filterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
+                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -630,8 +622,8 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                     .add(showSubTypeHierarchyToggleButton)
                     .add(showFQNToggleButton)
                     .add(showInnerToggleButton)
-                    .add(closeButton)
-                    .add(expandAllButton))
+                    .add(expandAllButton)
+                    .add(closeButton))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

@@ -176,7 +176,7 @@ public final class InspectMembersAtCaretAction extends BaseAction {
                     }
                 }, true);
         } catch (IOException e) {
-            Logger.global.log(Level.WARNING, e.getMessage(), e);
+            Logger.getLogger(InspectMembersAtCaretAction.class.getName()).log(Level.WARNING, e.getMessage(), e);
         }
     }
 }

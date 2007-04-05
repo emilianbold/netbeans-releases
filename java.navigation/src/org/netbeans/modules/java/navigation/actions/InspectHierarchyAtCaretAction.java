@@ -177,7 +177,7 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
                     }
                 }, true);
         } catch (IOException e) {
-            Logger.global.log(Level.WARNING, e.getMessage(), e);
+            Logger.getLogger(InspectHierarchyAtCaretAction.class.getName()).log(Level.WARNING, e.getMessage(), e);
         }
     }
 }
