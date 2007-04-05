@@ -208,7 +208,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         //            System.out.println("PageName : " + pageName);
         //        }
         String pageName = pageNode.getDisplayName();
-        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
+//        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
+        widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
         scene.addPin(pageNode, new PinNode(pageNode));
         
         return widget;
@@ -405,8 +406,10 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         scene.removeNodeWithEdges(node);
     }
     
-    public void resetNodeWidget( PageFlowNode node ){
+    public void resetNodeWidget( PageFlowNode pageNode ){
         //Reset the Node Name
-        ((VMDNodeWidget)scene.findWidget(node)).setNodeName(node.getDisplayName());        
+        VMDNodeWidget nodeWidget = (VMDNodeWidget)scene.findWidget(pageNode);
+//        nodeWidget.setNodeName(node.getDisplayName()); 
+        nodeWidget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageNode.getDisplayName(), null, null );
     }
 }
