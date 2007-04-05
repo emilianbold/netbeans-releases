@@ -56,7 +56,7 @@ public class ExtensibilityElementPropertyAdapter extends PropertyAdapter {
     public String getValue() {
         String value = element.getAttribute(attributeName);
         if (value == null) {
-            value = supportsDefaultValue ? defaultValue : "";
+            value = "";
         }
         return value;
     }
@@ -68,7 +68,7 @@ public class ExtensibilityElementPropertyAdapter extends PropertyAdapter {
     public void setValue(String value) {
         boolean inTransaction = Utility.startTransaction(element.getModel());
         if (value == null || value.trim().length() == 0 || value.equalsIgnoreCase(valueNotSetMessage)) {
-            value = supportsDefaultValue ? defaultValue : null;
+            value = null;
         }
         element.setAttribute(attributeName, value);
         Utility.endTransaction(element.getModel(), inTransaction);
