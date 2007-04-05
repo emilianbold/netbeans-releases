@@ -17,6 +17,7 @@
 
 package org.netbeans.lib.uihandler;
 
+import java.awt.Component;
 import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
@@ -31,6 +32,9 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.XMLFormatter;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.JMenuItem;
 import org.openide.util.Lookup;
 import static java.util.Calendar.*;
 
@@ -284,7 +288,7 @@ class LogFormatter extends XMLFormatter{
             for (int i = 0; i < parameters.length; i++) {
                 sb.append("  <param>");
                 try {
-                    escape(sb, parameters[i].toString());
+                    escape(sb, paramToString(parameters[i]));
                 } catch (Exception ex) {
                     sb.append("???");
                 }
@@ -298,5 +302,41 @@ class LogFormatter extends XMLFormatter{
         
         sb.append("</record>\n");
         return sb.toString();
+    }
+    
+    private static String paramToString(Object obj) {
+        if (obj == null) {
+            return "null"; // NOI18N
+        }
+        
+        if (obj instanceof JMenuItem) {
+            JMenuItem ab = (JMenuItem)obj;
+            Action a = ab.getAction();
+            if (a == null) {
+                // fall thru to AbstractButton
+            } else {
+                return ab.getClass().getName() + '[' + paramToString(a) + ']';
+            }
+        }
+        if (obj instanceof AbstractButton) {
+            AbstractButton ab = (AbstractButton)obj;
+            return ab.getClass().getName() + '[' + ab.getText() + ']';
+        }
+        if (obj instanceof Action) {
+            Action a = (Action)obj;
+            if (
+                a.getClass().getName().endsWith("$DelegateAction") && // NOI18N
+                a.getClass().getName().startsWith("org.openide") // NOI18N
+            ) {
+                return a.toString().replaceAll("@[0-9a-fA-F]*", "," + a.getValue(Action.NAME)); // NOI18N
+            }
+            return a.getClass().getName() + '[' + a.getValue(Action.NAME) + ']';
+        }
+        if (obj instanceof Component) {
+            Component c = (Component)obj;
+            return c.getClass().getName() + '[' + c.getName() + ']'; // NOI18N
+        }
+        
+        return obj.toString();
     }
 }

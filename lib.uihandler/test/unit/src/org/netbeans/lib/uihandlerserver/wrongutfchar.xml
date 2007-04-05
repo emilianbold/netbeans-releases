@@ -1,3 +1,4 @@
+<uigestures>
 <record>
   <date>2007-01-08T20:07:05</date>
   <millis>1168283225211</millis>
@@ -4384,3 +4385,4 @@
   <param>org.openide.util.actions.CookieAction$CookieDelegateAction</param>
   <param>&amp;Save</param>
 </record>
+</uigestures>

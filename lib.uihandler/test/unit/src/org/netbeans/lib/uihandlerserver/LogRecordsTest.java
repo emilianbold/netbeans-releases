@@ -27,18 +27,24 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.netbeans.lib.uihandler.TestHandler;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -410,13 +416,14 @@ public class LogRecordsTest extends NbTestCase {
     }
     public void testScanFileThatClaimsTohaveWrongUTF8Char() throws Exception {
         InputStream is = getClass().getResourceAsStream("wrongutfchar.xml");
-        int cnt = 0;
         
+        final List<LogRecord> recs = new ArrayList<LogRecord>();
         class H extends Handler {
             int cnt;
             
             public void publish(LogRecord record) {
                 cnt++;
+                recs.add(record);
             }
 
             public void flush() {
@@ -426,24 +433,36 @@ public class LogRecordsTest extends NbTestCase {
             }
         }
         
-        TestHandler records = new TestHandler(is);
-        for (;;) {
-            LOG.log(Level.INFO, "Reading {0}th record", cnt);
-            LogRecord r = records.read();
-            if (r == null) {
-                break;
-            }
-            LOG.log(Level.INFO, "Read {0}th record", cnt);
-            cnt++;
-        }
-        is.close();
-        
         H h = new H();
         is = getClass().getResourceAsStream("wrongutfchar.xml");
         LogRecords.scan(is, h);
         is.close();
         
-        assertEquals("The same amount of records", cnt, h.cnt);
+        assertEquals("The same amount of records", 232, h.cnt);
+        
+        try {
+            DocumentBuilder db1 = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document d1 = db1.parse(getClass().getResourceAsStream("wrongutfchar.xml"));
+            fail("Parsing must fail here");
+        } catch (SAXException ex) {
+            // ok, the original document is not well formed
+        }
+        
+        // but if we save it
+        File f = new File(getWorkDir(), "tst.xml");
+        FileOutputStream os = new FileOutputStream(f);
+        os.write("<uigestures>\n".getBytes());
+        for (LogRecord r : recs) {
+            LogRecords.write(os, r);
+        }
+        os.write("</uigestures>\n".getBytes());
+        os.close();
+        
+        
+        // it will be parseable
+        DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document d = db.parse(f);
+        assertNotNull("Parsed", d);
     }
     
     private void doWriteAndReadTest(long seed) throws Exception {
@@ -565,6 +584,6 @@ public class LogRecordsTest extends NbTestCase {
             }
             arr[i] = (byte)ch;
         }
-        return new String(new String(arr, "utf-8").getBytes(), "utf-8");
+        return new String(new String(arr, "utf-8").getBytes(),"utf-8");
     }
 }

@@ -25,7 +25,15 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.XMLFormatter;
+import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import javax.swing.JMenuItem;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -138,6 +146,83 @@ public class LogFormatterTest extends NbTestCase {
     private void generateClassNotFoundException() throws ClassNotFoundException{
         java.lang.Class.forName("unknown name");
     }                  
+    
+    public void testFormatterDoesNotIncludeHashOnButton() throws ClassNotFoundException {
+        LogRecord r = new LogRecord(Level.INFO, "BUTTON");
+        r.setParameters(new Object[] { new JButton("kuk") });
+        Formatter formatter = new LogFormatter();
+        String s = formatter.format(r);
+        assertEquals("No @\n" + s, -1, s.indexOf("@"));
+        if (s.indexOf("kuk") == -1) {
+            fail("kuk should be there:\n" + s);
+        }
+    }
+    public void testFormatterDoesNotIncludeHashOnActions() throws ClassNotFoundException {
+        LogRecord r = new LogRecord(Level.INFO, "ACTION");
+        SA sa = SA.get(SA.class);
+        r.setParameters(new Object[] { sa });
+        Formatter formatter = new LogFormatter();
+        String s = formatter.format(r);
+        assertEquals("No @\n" + s, -1, s.indexOf("@"));
+        if (s.indexOf("SomeName") == -1) {
+            fail("SomeName should be there:\n" + s);
+        }
+        if (s.indexOf("LogFormatterTest$SA") == -1) {
+            fail("LogFormatterTest$SA should be there:\n" + s);
+        }
+    }
+    public void testFormatterDoesNotIncludeHashOnActionsClone() throws ClassNotFoundException {
+        LogRecord r = new LogRecord(Level.INFO, "ACTION_CLONE");
+        SA sa = SA.get(SA.class);
+        r.setParameters(new Object[] { sa.createContextAwareInstance(Lookup.EMPTY) });
+        Formatter formatter = new LogFormatter();
+        String s = formatter.format(r);
+        assertEquals("No @\n" + s, -1, s.indexOf("@"));
+        if (s.indexOf("SomeName") == -1) {
+            fail("SomeName should be there:\n" + s);
+        }
+        if (s.indexOf("LogFormatterTest$SA") == -1) {
+            fail("LogFormatterTest$SA should be there:\n" + s);
+        }
+    }
+    public void testFormatterDoesNotIncludeHashOnMenu() throws ClassNotFoundException {
+        LogRecord r = new LogRecord(Level.INFO, "MENU");
+        SA sa = SA.get(SA.class);
+        r.setParameters(new Object[] { new JMenuItem(sa) });
+        Formatter formatter = new LogFormatter();
+        String s = formatter.format(r);
+        assertEquals("No @\n" + s, -1, s.indexOf("@"));
+        if (s.indexOf("SomeName") == -1) {
+            fail("SomeName should be there:\n" + s);
+        }
+        if (s.indexOf("LogFormatterTest$SA") == -1) {
+            fail("LogFormatterTest$SA should be there:\n" + s);
+        }
+    }
+    public void testFormatterDoesNotIncludeHashOnEditor() throws ClassNotFoundException {
+        LogRecord r = new LogRecord(Level.INFO, "EDIT");
+        JEditorPane ep = new javax.swing.JEditorPane();
+        ep.setName("SomeName");
+        r.setParameters(new Object[] { ep });
+        Formatter formatter = new LogFormatter();
+        String s = formatter.format(r);
+        assertEquals("No @\n" + s, -1, s.indexOf("@"));
+        if (s.indexOf("SomeName") == -1) {
+            fail("SomeName should be there:\n" + s);
+        }
+    }
+    
+    public static class SA extends CallbackSystemAction {
+
+        public String getName() {
+            return "SomeName";
+        }
+
+        public HelpCtx getHelpCtx() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+    }
 }
 
 
