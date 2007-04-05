@@ -36,17 +36,9 @@ import java.util.List;
 import java.util.Iterator;
 import java.net.URL;
 import java.net.URI;
-import java.net.URISyntaxException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-/**
- *
- * <lu>
- * <li><code>parserdb</code> volume type can be used to associate prebuild parserDB
- * with the library. The resouce in such a case must specify path to .jsc file.</li>
- * </lu>
- */
 public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
 
     private J2SELibraryTypeProvider () {
