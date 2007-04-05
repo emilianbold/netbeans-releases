@@ -32,7 +32,7 @@ BUILDNUM=trunk-nightly-all-$DATESTAMP
 
 ant -Dbuildnum=$BUILDNUM -f nbbuild/build.xml build-nozip
 ERROR_CODE=$?
-if [ ERROR_CODE != 0 ]; then
+if [ $ERROR_CODE <> 0 ]; then
     echo "ERROR - Can't build basic IDE"
     exit ERROR_CODE;
 fi
