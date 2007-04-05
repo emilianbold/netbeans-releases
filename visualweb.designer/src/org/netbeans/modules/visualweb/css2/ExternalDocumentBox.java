@@ -16,32 +16,32 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.visualweb.css2;
 
+
+import java.net.URL;
+import javax.swing.ImageIcon;
+import javax.swing.JViewport;
+
+import org.netbeans.modules.visualweb.api.designer.Designer.ExternalBox;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssListValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
+import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
+import org.netbeans.modules.visualweb.designer.DesignerPane;
+import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.ImageCache;
-import java.net.URL;
-import javax.swing.ImageIcon;
+import org.netbeans.modules.visualweb.designer.WebForm;
 
-import javax.swing.JViewport;
-import org.netbeans.modules.visualweb.api.designer.Designer;
-import org.netbeans.modules.visualweb.api.designer.Designer.ExternalBox;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
-
-import org.openide.cookies.OpenCookie;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.netbeans.modules.visualweb.designer.DesignerPane;
-import org.netbeans.modules.visualweb.designer.DesignerUtils;
-import org.netbeans.modules.visualweb.designer.WebForm;
-import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 
 
 /**

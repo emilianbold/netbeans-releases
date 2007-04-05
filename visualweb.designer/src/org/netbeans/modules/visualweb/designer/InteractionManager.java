@@ -23,7 +23,6 @@ import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ExternalDocumentBox;
-import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.spi.designer.Decoration;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -72,12 +71,7 @@ import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.css2.TextBox;
 
-
-// For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
 import org.netbeans.modules.visualweb.designer.WebForm.DefaultDesignerEvent;
-
-
-// For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
 
 
 // For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
