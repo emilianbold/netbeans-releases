@@ -165,9 +165,9 @@ public class DesignMultiViewElement extends TopComponent
     private void populateConfigurationProviders(){
         WSConfigurationProviderRegistry registry = WSConfigurationProviderRegistry.getDefault();
         if(registry.getWSConfigurationProviders().isEmpty()){
-            Lookup.Result results = Lookup.getDefault().
-                    lookup(new Lookup.Template(WSConfigurationProvider.class));
-            Collection<WSConfigurationProvider> providers = results.allInstances();
+            Lookup.Result<WSConfigurationProvider> results = Lookup.getDefault().
+                    lookup(new Lookup.Template<WSConfigurationProvider>(WSConfigurationProvider.class));
+            Collection<? extends WSConfigurationProvider> providers = results.allInstances();
             for(WSConfigurationProvider provider : providers){
                 registry.register(provider);
             }
