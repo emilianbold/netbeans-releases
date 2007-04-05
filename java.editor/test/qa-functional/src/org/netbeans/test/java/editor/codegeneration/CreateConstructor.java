@@ -20,10 +20,13 @@
 
 package org.netbeans.test.java.editor.codegeneration;
 
+import java.util.Enumeration;
 import junit.textui.TestRunner;
 import lib.EditorTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.test.java.editor.jelly.GenerateCodeOperator;
@@ -48,7 +51,7 @@ public class CreateConstructor extends EditorTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         openProject("java_editor_test");
-        //openDefaultProject();        
+        //openDefaultProject();
         //openDefaultSampleFile();
         
     }
@@ -76,7 +79,11 @@ public class CreateConstructor extends EditorTestCase {
         
     }
     
-    public void testSuperConstuructor() {
+    private boolean isWin() {
+        return System.getProperty("os.name").contains("Windows");
+    }
+    
+    public void testSuperConstructor() {
         openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateConstructor", "testSimpleCase");
         editor = new EditorOperator("testSimpleCase");
         txtOper = editor.txtEditorPane();
@@ -92,6 +99,7 @@ public class CreateConstructor extends EditorTestCase {
                     "    public testSimpleCase(ThreadGroup group, Runnable target) {\n"+
                     "        super(group, target);\n"+
                     "    }\n";
+            if(isWin()) expected = expected.replace("\n", "\r\n");
             waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
         } finally {
@@ -115,6 +123,7 @@ public class CreateConstructor extends EditorTestCase {
                     "    public testSimpleCase(int b) {\n"+
                     "        this.b = b;\n"+
                     "    }\n";
+            if(isWin()) expected = expected.replace("\n", "\r\n");
             waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
         } finally {
@@ -142,6 +151,7 @@ public class CreateConstructor extends EditorTestCase {
                     "        super(group, target, name, stackSize);\n"+
                     "        this.c = c;\n"+
                     "    }\n";
+            if(isWin()) expected = expected.replace("\n", "\r\n");
             waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
         } finally {
@@ -169,7 +179,8 @@ public class CreateConstructor extends EditorTestCase {
                     "                          long stackSize) {\n"+
                     "        super(group, target, name, stackSize);\n"+
                     "    }\n";
-            waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);            
+            if(isWin()) expected = expected.replace("\n", "\r\n");
+            waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
         } finally {
             editor.close(false);
@@ -196,6 +207,7 @@ public class CreateConstructor extends EditorTestCase {
                     "        this.b = b;\n"+
                     "        this.c = c;\n"+
                     "    }";
+            if(isWin()) expected = expected.replace("\n", "\r\n");
             waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
         } finally {
@@ -219,6 +231,7 @@ public class CreateConstructor extends EditorTestCase {
                     "    public testSimpleCase(String a) {\n"+
                     "        this.a = a;\n"+
                     "    }";
+            if(isWin()) expected = expected.replace("\n", "\r\n");
             waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertFalse("Constuctor inserted",contains(editor.getText(),expected));
         } finally {
@@ -242,15 +255,18 @@ public class CreateConstructor extends EditorTestCase {
                     "    public testSimpleCase(String a) {\n"+
                     "        this.a = a;\n"+
                     "    }";
+            if(isWin()) expected = expected.replace("\n", "\r\n");
             waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
             assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
-            MainWindowOperator.getDefault().menuBar().pushMenu(new String[] {"Edit","Undo"});
-            assertFalse("Constuctor not removed",contains(editor.getText(),expected));
-            MainWindowOperator.getDefault().menuBar().pushMenu(new String[] {"Edit","Redo"});
+            new Action("Edit|Undo",null).perform();
+            assertFalse("Constuctor not removed",contains(editor.getText(),expected));           
+            MainWindowOperator.getDefault().menuBar().pushMenu("Edit");
+            MainWindowOperator.getDefault().menuBar().closeSubmenus();
+            new Action("Edit|Redo",null).perform();
             assertTrue("Constuctor not re-inserted",contains(editor.getText(),expected));
         } finally {
             editor.close(false);
-        }        
+        }
     }
     
     public void testInnerClass() {
@@ -269,16 +285,17 @@ public class CreateConstructor extends EditorTestCase {
                     "        public Inner(String afield) {\n"+
                     "            this.afield = afield;\n"+
                     "        }\n";
+            if(isWin()) expected = expected.replace("\n", "\r\n");
             waitMaxMilisForValue(1500,new EditorValueResolver(expected), Boolean.TRUE);
-            assertTrue("Constuctor not inserted",contains(editor.getText(),expected));            
+            assertTrue("Constuctor not inserted",contains(editor.getText(),expected));
         } finally {
             editor.close(false);
         }
     }
     
     public static void main(String[] args) {
-        new TestRunner().run(CreateConstructor.class);
-        
+        //new TestRunner().run(CreateConstructor.class);
+        new TestRunner().run(new CreateConstructor("testUndoRedo"));
     }
     
     
