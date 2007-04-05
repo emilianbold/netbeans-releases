@@ -402,7 +402,7 @@ public class PageFlowController {
                     case2Node.put(myNavCase, node);
                     createEdge(node);
                 } else {
-//                    NavigationCaseNode node = case2Node.get((NavigationCase)ev.getOldValue());
+                    //                    NavigationCaseNode node = case2Node.get((NavigationCase)ev.getOldValue());
                     NavigationCaseNode node = case2Node.remove((NavigationCase)ev.getOldValue());
                     view.removeEdge(node);
                 }
@@ -417,7 +417,7 @@ public class PageFlowController {
             } else {
                 setupGraph();
                 view.validateGraph();
-//                view.layoutSceneImmediately();
+                //                view.layoutSceneImmediately();
             }
             
         }
@@ -455,6 +455,38 @@ public class PageFlowController {
         }
     }
     
+    
+    /**
+     * Remove all rules and cases with this pagename.
+     * @param displayName
+     */
+    public void removePageInModel( String displayName ){
+        configModel.startTransaction();
+        FacesConfig facesConfig = configModel.getRootComponent();
+        List<NavigationRule> navRules = facesConfig.getNavigationRules();
+        for( NavigationRule navRule : navRules ){
+            if ( navRule.getFromViewId().equals(displayName) ){
+                //if the rule is removed, don't check the cases.
+                facesConfig.removeNavigationRule(navRule);
+            } else {
+                List<NavigationCase> navCases = navRule.getNavigationCases();
+                for( NavigationCase navCase : navCases ) {
+                    if ( navCase.getToViewId().equals(displayName) ) {
+                        navRule.removeNavigationCase(navCase);
+                    }
+                }
+            }
+        }
+        
+        configModel.endTransaction();
+        try {
+            configModel.sync();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+    }
+    
     /**
      * Gets the WebFolder which contains the jsp pages.
      * @return FileObject webfolder
@@ -464,7 +496,7 @@ public class PageFlowController {
     }
     
     
-
+    
     
     private class WebFolderListener extends FileChangeAdapter{
         
@@ -500,20 +532,20 @@ public class PageFlowController {
             
             PageFlowNode oldNode = pageName2Node.get(pageDisplayName);
             if( oldNode != null ) {
-//                view.removeNodeWithEdges(oldNode);
+                //                view.removeNodeWithEdges(oldNode);
                 
                 
                 Node tmpNode = new AbstractNode(Children.LEAF);
                 tmpNode.setName(pageDisplayName);
                 oldNode.replaceWrappedNode(tmpNode);
                 view.resetNodeWidget(oldNode);  /* If I add a listener to PageFlowNode, then I won't have to do this*/
-//                PageFlowNode newNode = createPageFlowNode(tmpNode);                
-//                view.replaceWidgetNode(oldNode, newNode);
+                //                PageFlowNode newNode = createPageFlowNode(tmpNode);
+                //                view.replaceWidgetNode(oldNode, newNode);
                 view.validateGraph();
                 
-//                view.createNode(node, null, null);
-//                setupGraph();
-//                view.layoutSceneImmediately();
+                //                view.createNode(node, null, null);
+                //                setupGraph();
+                //                view.layoutSceneImmediately();
             }
             
             //            PageFlowNode node = pageName2Node.get(pageDisplayName);

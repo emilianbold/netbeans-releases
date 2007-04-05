@@ -127,11 +127,11 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         actions.addAction(popupGraphAction);
         actions.addAction(dragNdropAction);
         
-//        GridGraphLayout<PageFlowNode, NavigationCaseNode> gglayout = new GridGraphLayout<PageFlowNode, NavigationCaseNode> ();
-//        gglayout.setChecker(true);
-//        sceneLayout = LayoutFactory.createSceneGraphLayout(this, gglayout);
-//        sceneLayout.invokeLayout();
-
+        //        GridGraphLayout<PageFlowNode, NavigationCaseNode> gglayout = new GridGraphLayout<PageFlowNode, NavigationCaseNode> ();
+        //        gglayout.setChecker(true);
+        //        sceneLayout = LayoutFactory.createSceneGraphLayout(this, gglayout);
+        //        sceneLayout.invokeLayout();
+        
         
         getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
             public void edit(Widget widget) {
@@ -217,7 +217,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         nodeWidget.getActions().addAction(moveAction);
         nodeWidget.setMinimized(true);
         Point point = PageFlowLayoutUtilities.getPreferredNodePosition(this,true);
-//        nodeWidget2Point.put(nodeWidget, point);
+        //        nodeWidget2Point.put(nodeWidget, point);
         nodeWidget.setPreferredLocation(point);
         
         //        nodeWidget.getActions().addAction(createActionMap());
@@ -228,7 +228,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     }
     
     private Map<VMDNodeWidget,Point> nodeWidget2Point = new HashMap<VMDNodeWidget,Point>();
-            
+    
     /* This is needed by PageFlowLayoutUtilities*/
     public Rectangle getVisibleRect() {
         return tc.getVisibleRect();
@@ -306,15 +306,15 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         return widget;
     }
     
-//    public void replaceWidgetNode( PageFlowNode oldNode, PageFlowNode newNode ) {
-//        VMDNodeWidget widget = (VMDNodeWidget)findWidget(oldNode);
-//        oldNode = newNode;
-//        //        if ( widget != null ){
-//        //            widget.setNodeName(newNode.getDisplayName());
-//        //        }
-//        removeObject(oldNode);
-//        addObject(newNode, widget, widget.getChildren().get(0));
-//    }
+    //    public void replaceWidgetNode( PageFlowNode oldNode, PageFlowNode newNode ) {
+    //        VMDNodeWidget widget = (VMDNodeWidget)findWidget(oldNode);
+    //        oldNode = newNode;
+    //        //        if ( widget != null ){
+    //        //            widget.setNodeName(newNode.getDisplayName());
+    //        //        }
+    //        removeObject(oldNode);
+    //        addObject(newNode, widget, widget.getChildren().get(0));
+    //    }
     
     /**
      * Implements attaching a widget to an edge. the widget is ConnectionWidget and has object-hover, select and move-control-point actions.
