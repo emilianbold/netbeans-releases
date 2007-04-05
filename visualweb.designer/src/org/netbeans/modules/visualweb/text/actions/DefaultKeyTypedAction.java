@@ -111,7 +111,8 @@ public class DefaultKeyTypedAction extends TextAction {
                         } else if ((c == '\r') || (c == '\n')) {
                             // Enter key has same effect as double click
 //                            webform.getActions().handleDoubleClick(true);
-                            webform.getManager().handleDoubleClick(true);
+//                            webform.getManager().handleDoubleClick(true);
+                            webform.getManager().handleDoubleClick();
 
                             return;
                         } else {

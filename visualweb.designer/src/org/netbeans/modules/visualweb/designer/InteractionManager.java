@@ -447,7 +447,8 @@ public class InteractionManager {
      * no default event handler, stay in inline edit mode. */
     public void notifyEditedDoubleClick() {
 //        if (webform.getActions().handleDoubleClick(true)) {
-        if (handleDoubleClick(true)) {
+//        if (handleDoubleClick(true)) {
+        if (handleDoubleClick()) {
             finishInlineEditing(true);
         }
     }
@@ -459,7 +460,7 @@ public class InteractionManager {
      * @todo Rename to handleDefaultAction
      * @return True iff the double click resulted in opening an event handler
      */
-    public boolean handleDoubleClick(boolean selOnly) {
+    public boolean handleDoubleClick(/*boolean selOnly*/) {
         CssBox box = null;
         SelectionManager sm = webform.getSelection();
 
@@ -480,7 +481,8 @@ public class InteractionManager {
                     }
                 }
             }
-        } else if (selOnly) {
+//        } else if (selOnly) {
+        } else {
             return false;
         }
 
