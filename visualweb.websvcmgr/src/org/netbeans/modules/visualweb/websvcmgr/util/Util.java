@@ -841,14 +841,14 @@ public class Util {
     public static String getParameterType(Port inPort, JavaParameter inParameter) {
         
         String parameterType = null;
-        ClientProcessorEnvironment env = new ClientProcessorEnvironment(new ByteArrayOutputStream(), null, null);
+//        ClientProcessorEnvironment env = new ClientProcessorEnvironment(new ByteArrayOutputStream(), null, null);
         
         if (inParameter.isHolder()) {
-            if (inParameter.getHolderName() == null) {
-                parameterType = env.getNames().holderClassName(inPort, inParameter.getType());
-            } else {
+//            if (inParameter.getHolderName() == null) {
+//                parameterType = env.getNames().holderClassName(inPort, inParameter.getType());
+//            } else {
                 parameterType = inParameter.getHolderName();
-            }
+//            }
         } else {
             parameterType =inParameter.getType().getName();
         }
