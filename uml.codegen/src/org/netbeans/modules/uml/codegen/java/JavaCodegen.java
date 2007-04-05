@@ -102,7 +102,6 @@ public class JavaCodegen implements ICodeGenerator {
 
 		if (backup) {
 		    FileObject buFileObj = backupFile(existingFile);		
-		    System.out.println("buFileObj = "+ buFileObj);
 		    if (buFileObj != null) {
 			FileObject efo = FileUtil.toFileObject(existingFile);
 			if (efo != null) 
@@ -162,11 +161,11 @@ public class JavaCodegen implements ICodeGenerator {
 			;			
 		    }
 		} catch (Exception e) {
-		    e.printStackTrace(System.out);		
+		    e.printStackTrace();		
 		}
 	    }
 	} catch (Exception e) {
-	    e.printStackTrace(System.out);		
+	    e.printStackTrace();		
 	}
 
     }
@@ -182,8 +181,6 @@ public class JavaCodegen implements ICodeGenerator {
                 classifier.getFullyQualifiedName(false),
                 COLON_COLON, String.valueOf(File.separatorChar)) + JAVA_EXT;
         
-	System.out.println("pathName = "+pathName);
-
         if (pathName != null && pathName.length() > 0)
         {
             file = new File(pathName);
