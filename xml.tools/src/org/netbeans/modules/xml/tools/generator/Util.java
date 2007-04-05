@@ -21,7 +21,7 @@ package org.netbeans.modules.xml.tools.generator;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import javax.swing.*;
-import org.netbeans.api.java.classpath.ClassPath;
+
 
 import org.netbeans.modules.xml.core.lib.AbstractUtil;
 import org.openide.filesystems.FileObject;
@@ -72,18 +72,18 @@ class Util extends AbstractUtil {
         return template.getPreferredSize().height;
     }
     
-    /**
-     * Finds Java package name for the given folder.
-     * @return package name separated by dots or null if package name
-     *     could not be find for the given file
-     */
-    public static String findJavaPackage(FileObject fo) {
-        assert fo.isFolder() : fo;
-        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        if (cp == null) {
-            return null;
-        }
-        return cp.getResourceName(fo, '.', false);
-    }
+//    /**
+//     * Finds Java package name for the given folder.
+//     * @return package name separated by dots or null if package name
+//     *     could not be find for the given file
+//     */
+//    public static String findJavaPackage(FileObject fo) {
+//        assert fo.isFolder() : fo;
+//        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+//        if (cp == null) {
+//            return null;
+//        }
+//        return cp.getResourceName(fo, '.', false);
+//    }
     
 }
