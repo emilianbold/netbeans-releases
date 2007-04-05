@@ -504,6 +504,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
                 ((LabelWidget) widget).setLabel(newName);
                 validate();
             }
+            tc.requestActive();
             
             
         }

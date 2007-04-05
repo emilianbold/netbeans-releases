@@ -67,6 +67,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     PageFlowView(JSFConfigEditorContext context){
         init();
         pfc = new PageFlowController( context,  this );
+        setFocusable(true);
         //        this(context, new InstanceContent());
     }
     
@@ -79,7 +80,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return pfc;
     }
     
-
+    
     /** Weak reference to the lookup. */
     private WeakReference<Lookup> lookupWRef = new WeakReference<Lookup>(null);
     
@@ -101,12 +102,12 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
             //            }
             
             /* Temporarily Removing Palette */
-//            PaletteController paletteController = getPaletteController();
-//            if (paletteController == null) {
-                lookup = new ProxyLookup(new Lookup[] {superLookup});
-//            } else {
-//                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] { paletteController})});
-//            }
+            //            PaletteController paletteController = getPaletteController();
+            //            if (paletteController == null) {
+            lookup = new ProxyLookup(new Lookup[] {superLookup});
+            //            } else {
+            //                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] { paletteController})});
+            //            }
             
             lookupWRef = new WeakReference<Lookup>(lookup);
         }
@@ -182,12 +183,12 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      *
      */
     public void validateGraph() {
-//        scene.layoutScene();
+        //        scene.layoutScene();
         scene.validate();
     }
     
     public void layoutSceneImmediately() {
-//        scene.layoutSceneImmediately();
+        //        scene.layoutSceneImmediately();
     }
     
     
@@ -208,46 +209,46 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         //            System.out.println("PageName : " + pageName);
         //        }
         String pageName = pageNode.getDisplayName();
-//        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
+        //        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
         widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
         scene.addPin(pageNode, new PinNode(pageNode));
         
         return widget;
     }
     
-//    protected boolean resetNode( PageFlowNode oldPageNode, PageFlowNode newPageNode ){
-//        
-//    }
+    //    protected boolean resetNode( PageFlowNode oldPageNode, PageFlowNode newPageNode ){
+    //
+    //    }
     
-//    /**
-//     * Creates a PageFlowScene pin from a pageNode and pin name String.
-//     * In general a pin represents a NavigasbleComponent orginally designed for VWP.
-//     * @param pageNode
-//     * @param navComp
-//     * @return
-//     */
-//    protected VMDPinWidget createPin( Node pageNode, NavigationCaseNode navComp) {
-//        //        Pin pin = new Pin(page, navComp);
-//        VMDPinWidget widget = (VMDPinWidget) scene.addPin(pageNode, navComp);
-//        //        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, pin);
-//        //        if( navComp != null ){
-//        //            widget.setProperties(navComp, Arrays.asList(navComp.getBufferedIcon()));
-//        //        }
-//        return widget;
-//    }
+    //    /**
+    //     * Creates a PageFlowScene pin from a pageNode and pin name String.
+    //     * In general a pin represents a NavigasbleComponent orginally designed for VWP.
+    //     * @param pageNode
+    //     * @param navComp
+    //     * @return
+    //     */
+    //    protected VMDPinWidget createPin( Node pageNode, NavigationCaseNode navComp) {
+    //        //        Pin pin = new Pin(page, navComp);
+    //        VMDPinWidget widget = (VMDPinWidget) scene.addPin(pageNode, navComp);
+    //        //        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, pin);
+    //        //        if( navComp != null ){
+    //        //            widget.setProperties(navComp, Arrays.asList(navComp.getBufferedIcon()));
+    //        //        }
+    //        return widget;
+    //    }
     
     /**
      * Creates an Edge or Connection in the Graph Scene
      * @param navCaseNode
-     * @param fromPageNode 
-     * @param toPageNode 
+     * @param fromPageNode
+     * @param toPageNode
      */
     protected void createEdge( NavigationCaseNode navCaseNode, PageFlowNode fromPageNode, PageFlowNode toPageNode  ) {
-      
-
-//        
-//        PageFlowNode fromPageNode = pfc.page2Node.get(fromPage);
-//        PageFlowNode toPageNode = pfc.page2Node.get(toPage);
+        
+        
+        //
+        //        PageFlowNode fromPageNode = pfc.page2Node.get(fromPage);
+        //        PageFlowNode toPageNode = pfc.page2Node.get(toPage);
         
         ConnectionWidget widget = (ConnectionWidget)scene.addEdge(navCaseNode);
         
@@ -322,7 +323,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
                 if ( event.getStateChange() == ItemEvent.SELECTED ) {
                     pfu.setCurrentScope((String)event.getItem());
                     pfc.setupGraph();
-                }
+                }                
+                requestActive();
             }
         });
         
@@ -383,14 +385,17 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public boolean requestFocusInWindow() {
-    super.requestFocusInWindow();
+        super.requestFocusInWindow();
         return view.requestFocusInWindow();
     }
+    
 
+    
+    
     
     /**
      * Remove the Edge from the scene.
-     * @param node 
+     * @param node
      */
     public void removeEdge( NavigationCaseNode node ){
         
@@ -402,14 +407,14 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public void removeNodeWithEdges( PageFlowNode node ){
-//        scene.removeNode(node);        
+        //        scene.removeNode(node);
         scene.removeNodeWithEdges(node);
     }
     
     public void resetNodeWidget( PageFlowNode pageNode ){
         //Reset the Node Name
         VMDNodeWidget nodeWidget = (VMDNodeWidget)scene.findWidget(pageNode);
-//        nodeWidget.setNodeName(node.getDisplayName()); 
+        //        nodeWidget.setNodeName(node.getDisplayName());
         nodeWidget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageNode.getDisplayName(), null, null );
     }
 }

@@ -184,7 +184,8 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         }
         
         public void componentActivated() {
-            tc.requestFocusInWindow();
+            //tc.requestFocusInWindow();
+            tc.requestActive();
         }
         
         public void componentDeactivated() {
