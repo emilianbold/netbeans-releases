@@ -35,9 +35,13 @@ import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
 public final class SearchAction extends NodeAction {
 
   @Override
-  protected synchronized void performAction(Node [] nodes)
+  protected void performAction(Node [] nodes)
   { 
-    SearchManagerAccess.getManager().getUI(getBpelModel(nodes [0]), null, true);
+    performAction(nodes [0]);
+  }
+
+  static synchronized void performAction(Node node) {
+    SearchManagerAccess.getManager().getUI(getBpelModel(node), null, true);
   }
 
   @Override
@@ -49,7 +53,7 @@ public final class SearchAction extends NodeAction {
     return getBpelModel(nodes [0]) != null;
   }
 
-  private BpelModel getBpelModel(Node node) {
+  private static BpelModel getBpelModel(Node node) {
     DataObject dataObject = getDataObject(node);
 
     if (dataObject instanceof Lookup.Provider) {
@@ -59,7 +63,7 @@ public final class SearchAction extends NodeAction {
     return null;
   }
 
-  private DataObject getDataObject(Node node) {
+  private static DataObject getDataObject(Node node) {
     return (DataObject) node.getLookup().lookup(DataObject.class);
   }
 

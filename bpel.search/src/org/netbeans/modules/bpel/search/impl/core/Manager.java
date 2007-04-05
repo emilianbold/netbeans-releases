@@ -21,12 +21,14 @@ package org.netbeans.modules.bpel.search.impl.core;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JComponent;
 
 import org.netbeans.modules.bpel.search.api.SearchManager;
 import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.api.SearchPattern;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
+import org.netbeans.modules.bpel.search.impl.action.ManagerAction;
 import org.netbeans.modules.bpel.search.impl.ui.Find;
 import org.netbeans.modules.bpel.search.impl.ui.Search;
 import org.netbeans.modules.bpel.search.impl.util.Util;
@@ -66,6 +68,11 @@ public final class Manager implements SearchManager {
     boolean caseSensitive)
   {
     return new Pattern(text, match, caseSensitive);
+  }
+
+  /**{@inheritDoc}*/  
+  public Action getSearchAction() {
+    return new ManagerAction();
   }
 
   private List<SearchEngine> getEngines(Object source) {

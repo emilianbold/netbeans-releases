@@ -128,9 +128,9 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
-import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
 import org.netbeans.modules.soa.ui.tnv.scrollpane.ThumbnailScrollPane;
 import org.netbeans.modules.print.api.PrintManagerAccess;
+import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.Mode;
@@ -396,6 +396,7 @@ public class DesignerMultiViewElement extends TopComponent
             // vlv: print and search
             toolbar.addSeparator();
             toolbar.add(PrintManagerAccess.getManager().getPreviewAction());
+            toolbar.add(SearchManagerAccess.getManager().getSearchAction());
 
             // Add button for valdiate action.
             toolbar.addSeparator();
