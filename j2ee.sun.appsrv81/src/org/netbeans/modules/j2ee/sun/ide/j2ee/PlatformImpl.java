@@ -102,7 +102,8 @@ public class PlatformImpl extends J2eePlatformImpl {
         "config/cacerts.jks"  //NOI18N
     };    
     
-    private static final String PERSISTENCE_PROV_TOPLINK = "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider"; //NOI18N
+    private static final String PERSISTENCE_PROV_TOPLINK = "oracle.toplink.essentials.PersistenceProvider"; //NOI18N
+    //private static final String PERSISTENCE_PROV_TOPLINK_OLD = "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider"; //NOI18N
     private static final String PERSISTENCE_PROV_TOPLINK_DEFAULT = "toplinkPersistenceProviderIsDefault"; //NOI18N
             
     private static String CONST_LOCATION = "LOCATION"; // NOI18N
