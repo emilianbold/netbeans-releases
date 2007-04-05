@@ -156,31 +156,11 @@ public class MapActionUtility {
                         if( myObject instanceof Node ) {
                             Node node = (Node)myObject;
                             if ( node.canDestroy() ){
-                                ;
-                                int i = JOptionPane.showConfirmDialog(null,
-                                        NbBundle.getMessage(MapActionUtility.class, "MSG_DELETE_QUESTION"),
-                                        NbBundle.getMessage(MapActionUtility.class, "MSG_DELETE_TITLE"),
-                                        JOptionPane.YES_NO_CANCEL_OPTION);
-                                
-                                //Would you like to delete this file too?
-                                switch ( i ){
-                                case JOptionPane.YES_OPTION:
-                                    System.out.println("YOu Selected Yes.");
-                                    break;
-                                case JOptionPane.NO_OPTION:
-                                    System.out.println("YOu Selected no.");break;
-                                case JOptionPane.CANCEL_OPTION:
-                                    System.out.println("You selected cancel");break;
+                                try                 {
+                                    node.destroy();
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
                                 }
-                                //                                Object[] options = { "Option1", "Option2", "Option3" };
-                                //                                JOptionPane.showOptionDialog(null, "Delete Options", "Delete Options", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-                                //                                                name = JOptionPane.showInputDialog("Select Page Name", name);
-                                
-                                //                                try                 {
-                                //                                    node.destroy();
-                                //                                } catch (IOException ex) {
-                                //                                    Exceptions.printStackTrace(ex);
-                                //                                }
                             }
                         }
                     }
