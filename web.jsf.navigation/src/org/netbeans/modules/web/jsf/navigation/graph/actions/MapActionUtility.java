@@ -44,6 +44,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -155,17 +156,20 @@ public class MapActionUtility {
                         if( myObject instanceof Node ) {
                             Node node = (Node)myObject;
                             if ( node.canDestroy() ){
+                                ;
+                                int i = JOptionPane.showConfirmDialog(null,
+                                        NbBundle.getMessage(MapActionUtility.class, "MSG_DELETE_QUESTION"),
+                                        NbBundle.getMessage(MapActionUtility.class, "MSG_DELETE_TITLE"),
+                                        JOptionPane.YES_NO_CANCEL_OPTION);
                                 
-                                 int i = JOptionPane.showConfirmDialog(null, "Would you like to delete this file too?", "Delete", JOptionPane.YES_NO_CANCEL_OPTION);
-                                 
-                                
+                                //Would you like to delete this file too?
                                 switch ( i ){
                                 case JOptionPane.YES_OPTION:
                                     System.out.println("YOu Selected Yes.");
                                     break;
                                 case JOptionPane.NO_OPTION:
                                     System.out.println("YOu Selected no.");break;
-                                case JOptionPane.CANCEL_OPTION:                                 
+                                case JOptionPane.CANCEL_OPTION:
                                     System.out.println("You selected cancel");break;
                                 }
                                 //                                Object[] options = { "Option1", "Option2", "Option3" };
@@ -184,7 +188,7 @@ public class MapActionUtility {
             }
         }
     };
-
+    
     
     
     public static Action handleNewWebForm = new AbstractAction() {
