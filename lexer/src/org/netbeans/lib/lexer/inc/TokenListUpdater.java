@@ -99,7 +99,7 @@ public final class TokenListUpdater {
     TokenHierarchyEventInfo eventInfo, TokenListChange<T> change) {
         // Ensure the offsets in token list are up-to-date
         if (tokenList.getClass() == EmbeddedTokenList.class) {
-            ((EmbeddedTokenList<? extends TokenId>)tokenList).updateStartOffset();
+            ((EmbeddedTokenList<? extends TokenId>)tokenList).updateStatus();
         }
 
         // Fetch offset where the modification occurred
@@ -160,7 +160,7 @@ public final class TokenListUpdater {
             } else { // modification in non-last token
                 // Find modified token by binary search
                 int low = 0; // use index as 'high'
-                while (low < index) {
+                while (low <= index) {
                     int mid = (low + index) / 2;
                     int midStartOffset = tokenList.tokenOffset(mid);
 
@@ -175,7 +175,7 @@ public final class TokenListUpdater {
                         break;
                     }
                 }
-                if (index <= low) { // no token starting right at 'modOffset'
+                if (index < low) { // no token starting right at 'modOffset'
                     modTokenOffset = tokenList.tokenOffset(index);
                 }
                 modToken = token(tokenList, index);

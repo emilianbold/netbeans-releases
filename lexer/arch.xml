@@ -1107,6 +1107,10 @@ No.
         </question>
 -->
 <answer id="exec-property">
+    <api type="export" group="logger" name="org.netbeans.lib.lexer.TokenHierarchyOperation" category="friend">
+        <code>FINE</code> level lists lexer changes made in tokens both at the root level
+        and embedded levels of the token hierarchy.
+    </api>
     <api type="export" group="property" name="netbeans.debug.lexer.test" category="private">
         System property to allow deep-compare of token lists - the framework
         generates and maintains lookahead and state information even for

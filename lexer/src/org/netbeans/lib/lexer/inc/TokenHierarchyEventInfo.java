@@ -155,5 +155,10 @@ public final class TokenHierarchyEventInfo {
         }
         return originalText;
     }
+    
+    public String toString() {
+        return "modOffset=" + modificationOffset() // NOI18N
+                + ", removedLength=" + removedLength + ", insertedLength=" + insertedLength; // NOI18N
+    }
 
 }

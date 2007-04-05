@@ -72,7 +72,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                 @SuppressWarnings("unchecked")
                 EmbeddingContainer<T> ecUC = (EmbeddingContainer<T>)tokenOrEmbeddingContainer;
                 ec = ecUC;
-                ec.updateOffsets();
+                ec.updateStatus();
 
                 EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbedding();
                 while (etl != null) {
@@ -126,7 +126,7 @@ public final class EmbeddingContainer<T extends TokenId> {
         if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
             EmbeddingContainer<? extends TokenId> ec
                     = (EmbeddingContainer<? extends TokenId>)tokenOrEmbeddingContainer;
-            ec.updateOffsets();
+            ec.updateStatus();
             EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbedding();
             return etl;
         } else {
@@ -248,22 +248,18 @@ public final class EmbeddingContainer<T extends TokenId> {
     private int cachedModCount; // 16 bytes
 
     /**
-     * For mutable environment this field contains root token list of the hierarchy.
+     * Root token list of the hierarchy.
      * 
      */
     private final TokenList<? extends TokenId> rootTokenList; // 20 bytes
     
     /**
-     * The token in the root token list to which this embedding container relates.
-     * <br/>
-     * For first-level embedding it is the same like value of branchToken variable
-     * but for deeper embeddings it points to the corresponding branch token
-     * in the root token list.
+     * The root embedding container to which this embedding container relates.
      * <br/>
      * It's used for getting of the start offset of the contained tokens
      * and for getting of their text.
      */
-    private final AbstractToken<? extends TokenId> rootToken; // 24 bytes
+    private AbstractToken<? extends TokenId> rootToken; // 24 bytes
     
     /**
      * Cached start offset of the token for which this embedding container
@@ -282,9 +278,8 @@ public final class EmbeddingContainer<T extends TokenId> {
      * <br>
      * The offset gets refreshed upon <code>updateStartOffset()</code>.
      */
-    private int rootTokenOffsetShift; // 52 bytes
-
-
+    private int rootTokenOffsetShift; // 36 bytes
+    
     public EmbeddingContainer(AbstractToken<T> token) {
         this.token = token;
         TokenList<T> embeddedTokenList = token.tokenList();
@@ -292,24 +287,18 @@ public final class EmbeddingContainer<T extends TokenId> {
         this.rootToken = (embeddedTokenList.getClass() == EmbeddedTokenList.class)
                 ? ((EmbeddedTokenList<? extends TokenId>)embeddedTokenList).rootToken()
                 : token;
-        this.cachedModCount = -2; // must differ from root's one to sync offsets
-        updateOffsets();
-    }
-
-    public void updateOffsets() {
-        synchronized (rootTokenList) {
-            if (cachedModCount != rootTokenList.modCount()) {
-                cachedModCount = rootTokenList.modCount();
-                tokenStartOffset = token.offset(null);
-                rootTokenOffsetShift = tokenStartOffset - rootToken.offset(null);
-            }
-        }
+        // cachedModCount must differ from root's one to sync offsets
+        // Root mod count can be >= 0 or -1 for non-incremental token lists
+        // It also cannot be -2 which means that this container is no longer
+        // attached to the token hierarchy.
+        this.cachedModCount = -3;
+        updateStatus();
     }
 
     public AbstractToken<T> token() {
         return token;
     }
-
+    
     public TokenList<? extends TokenId> rootTokenList() {
         return rootTokenList;
     }
@@ -334,6 +323,34 @@ public final class EmbeddingContainer<T extends TokenId> {
         return firstEmbedding;
     }
     
+    public boolean updateStatus() {
+        synchronized (rootTokenList) {
+            rootToken = updateStatusImpl();
+            return (rootToken != null);
+        }
+    }
+    
+    AbstractToken<? extends TokenId> updateStatusImpl() {
+        if (rootToken == null)
+            return null; // Removed from hierarchy
+        int rootModCount;
+        if (cachedModCount != (rootModCount = rootTokenList.modCount())) {
+            cachedModCount = rootModCount;
+            tokenStartOffset = token.offset(null);
+            rootTokenOffsetShift = tokenStartOffset - rootToken.offset(null);
+
+            TokenList<?> tl = token.tokenList();
+            if (tl == null) {
+                return null;
+            }
+            if (tl instanceof EmbeddedTokenList) {
+                EmbeddingContainer<?> ec = ((EmbeddedTokenList<?>)tl).embeddingContainer();
+                return ec.updateStatusImpl();
+            }
+        }
+        return rootToken;
+    }
+
     void setFirstEmbedding(EmbeddedTokenList<? extends TokenId> firstEmbedding) {
         this.firstEmbedding = firstEmbedding;
     }

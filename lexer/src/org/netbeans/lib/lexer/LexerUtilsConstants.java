@@ -25,6 +25,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.lexer.inc.SnapshotTokenList;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -259,6 +260,65 @@ public final class LexerUtilsConstants {
     
     public static String idToString(TokenId id) {
         return id.name() + '[' + id.ordinal() + ']'; // NOI18N;
+    }
+    
+    public static void appendTokenInfo(StringBuilder sb, Object tokenOrEmbeddingContainer) {
+        if (tokenOrEmbeddingContainer == null) {
+            sb.append("<null>");
+        } else if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
+            EmbeddingContainer<? extends TokenId> ec
+                    = (EmbeddingContainer<? extends TokenId>)tokenOrEmbeddingContainer;
+            sb.append("E[");
+            EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbedding();
+            boolean first = true;
+            while (etl != null) {
+                sb.append('"');
+                sb.append(etl.languagePath().mimePath());
+                sb.append('"');
+                if (first)
+                    first = false;
+                else
+                    sb.append(',');
+                etl = etl.nextEmbedding();
+            }
+            sb.append("] ");
+            appendIdentityHashCode(sb, ec);
+            sb.append(": ");
+            appendTokenInfo(sb, ec.token());
+
+        } else { // regular token
+            Token<? extends TokenId> token = (Token<? extends TokenId>)tokenOrEmbeddingContainer;
+            sb.append(idToString(token.id()));
+            sb.append(' ');
+            CharSequence text = token.text();
+            if (text != null) {
+                sb.append("  \"");
+                sb.append(TokenUtilities.debugText(token.text()));
+                sb.append('"');
+            } else
+                sb.append("<null-text>");
+            sb.append(' ');
+            appendIdentityHashCode(sb, token);
+        }
+    }
+    
+    public static void appendIdentityHashCode(StringBuilder sb, Object o) {
+        sb.append("IHC(");
+        sb.append(System.identityHashCode(o));
+        sb.append(')');
+    }
+    
+    public static void appendLAState(StringBuilder sb, TokenList<? extends TokenId> tokenList, int index) {
+        int lookahead = tokenList.lookahead(index);
+        if (lookahead > 0) {
+            sb.append(", la=");
+            sb.append(lookahead);
+        }
+        Object state = tokenList.state(index);
+        if (state != null) {
+            sb.append(", st=");
+            sb.append(state);
+        }
     }
     
     private LexerUtilsConstants() {

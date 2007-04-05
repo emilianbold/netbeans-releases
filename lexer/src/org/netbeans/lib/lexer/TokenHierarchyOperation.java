@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
@@ -41,6 +43,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.lexer.inc.SnapshotTokenList;
 import org.netbeans.lib.lexer.inc.TokenListChange;
 import org.netbeans.lib.lexer.token.AbstractToken;
@@ -58,6 +61,9 @@ import org.netbeans.lib.lexer.token.AbstractToken;
 
 public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands for input
     
+    // -J-Dorg.netbeans.lib.lexer.TokenHierarchyOperation.level=FINE
+    private static final Logger LOG = Logger.getLogger(TokenHierarchyOperation.class.getName());
+
     /**
      * The token hierarchy delegating to this operation.
      * <br>
@@ -250,6 +256,9 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             incTokenList.incrementModCount();
             TokenListChange<T> change = new TokenListChange<T>(incTokenList);
             TokenListUpdater.update(incTokenList, eventInfo, change);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("LEXER CHANGE: " + eventInfo + "\nROOT CHANGE: " + change.toString(0) + "\n"); // NOI18N
+            }
             if (!incTokenList.isFullyLexed())
                 incTokenList.refreshLexerInputOperation();
             
@@ -268,14 +277,17 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             // Create nested changes if necessary
             if (change.isBoundsChange()) {
                 // Use modification boundaries first (for possibly having just
-                // boundar
+                // boundary change
                 eventInfo.setAffectedStartOffset(eventInfo.modificationOffset());
                 eventInfo.setAffectedEndOffset(eventInfo.modificationOffset()
                         + Math.max(0, eventInfo.insertedLength() - eventInfo.removedLength()));
-                addNestedChanges(eventInfo, change);
+                addNestedChanges(eventInfo, change, 1);
             } else { // Not bounds-only change
                 eventInfo.setAffectedStartOffset(change.offset());
                 eventInfo.setAffectedEndOffset(change.addedEndOffset());
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("------------------ LEXER CHANGE END -------------------------\n"); // NOI18N
             }
             fireTokenHierarchyChanged(
                 LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
@@ -290,7 +302,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * @param etl non-null embedding token list
      */
     private <TX extends TokenId> void addNestedChanges(
-    TokenHierarchyEventInfo eventInfo, TokenListChange<TX> change) {
+    TokenHierarchyEventInfo eventInfo, TokenListChange<TX> change, int level) {
         EmbeddedTokenList<? extends TokenId> etl = EmbeddingContainer.getEmbeddingIfExists(
                 change.tokenChangeInfo().removedTokenList().tokenOrEmbeddingContainer(0));
         if (etl != null) {
@@ -309,9 +321,19 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 @SuppressWarnings("unchecked")
                 EmbeddedTokenList<TokenId> etlT = (EmbeddedTokenList<TokenId>)etl;
                 TokenListUpdater.update(etlT, eventInfo, nestedChange);
+                if (LOG.isLoggable(Level.FINE)) {
+                    StringBuilder sb = new StringBuilder();
+                    ArrayUtilities.appendSpaces(sb, level << 2);
+                    sb.append("NESTED CHANGE at level="); // NOI18N
+                    sb.append(level);
+                    sb.append(": ");
+                    sb.append(nestedChange.toString(level << 2));
+                    sb.append('\n');
+                    LOG.fine(sb.toString());
+                }
                 change.tokenChangeInfo().addEmbeddedChange(nestedChange.tokenChangeInfo());
                 if (nestedChange.isBoundsChange()) { // Attempt to find more nested
-                    addNestedChanges(eventInfo, nestedChange);
+                    addNestedChanges(eventInfo, nestedChange, level + 1);
                 } else { // Not a bounds change
                     eventInfo.setMinAffectedStartOffset(nestedChange.offset());
                     eventInfo.setMaxAffectedEndOffset(nestedChange.addedEndOffset());

@@ -94,7 +94,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         this.embedding = embedding;
         this.nextEmbedding = nextEmbedding;
 
-        if (embeddingContainer.rootTokenList().modCount() != -1 || testing) {
+        if (modCount() != -1 || testing) {
             this.laState = LAState.empty(); // Store lookaheads and states
         }
         
@@ -171,7 +171,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
 
     public int childTokenOffset(int rawOffset) {
         // Need to make sure that the startOffset is up-to-date
-        embeddingContainer.updateOffsets();
+        embeddingContainer.updateStatus();
         return embeddingContainer.tokenStartOffset() + embedding.startSkipLength()
             + childTokenRelOffset(rawOffset);
     }
@@ -182,7 +182,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      */
     public int childTokenOffsetShift(int rawOffset) {
         // Need to make sure that the startOffsetShift is up-to-date
-        updateStartOffset();
+        updateStatus();
         return embeddingContainer.rootTokenOffsetShift() + childTokenRelOffset(rawOffset);
     }
 
@@ -214,8 +214,8 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return embeddingContainer.tokenStartOffset() + embedding.startSkipLength();
     }
     
-    public void updateStartOffset() {
-        embeddingContainer.updateOffsets();
+    public boolean updateStatus() {
+        return embeddingContainer.updateStatus();
     }
     
     public TokenList<? extends TokenId> root() {
@@ -353,10 +353,14 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return null;
     }
     
+    public EmbeddingContainer embeddingContainer() {
+        return embeddingContainer;
+    }
+    
     public void setEmbeddingContainer(EmbeddingContainer<? extends TokenId> embeddingContainer) {
         this.embeddingContainer = embeddingContainer;
     }
-
+    
     public String toString() {
         return LexerUtilsConstants.appendTokenList(null, this, -1).toString();
     }

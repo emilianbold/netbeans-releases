@@ -26,6 +26,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.LexerApiPackageAccessor;
+import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenList;
 
 /**
@@ -76,7 +77,8 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
     public CharSequence text() {
         if (tokenList != null) {
             if (tokenList.getClass() == EmbeddedTokenList.class) {
-                ((EmbeddedTokenList)tokenList).updateStartOffset();
+                EmbeddedTokenList<?> etl = (EmbeddedTokenList<?>)tokenList;
+                return etl.updateStatus() ? this : null;
             }
             return this;
         } else {
@@ -203,7 +205,17 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
      * This method is in fact <code>CharSequence.toString()</code> implementation.
      */
     public String toString() {
-        return CharSequenceUtilities.toString(this, 0, length());
+        // To prevent NPEs when token.toString() would called without checking
+        // (text() == null) there is an extra check for that.
+        CharSequence text = text();
+        try {
+        return (text != null)
+                ? CharSequenceUtilities.toString(this, 0, length())
+                : "<null>";
+        } catch (NullPointerException e) {
+            System.err.println("id=" + LexerUtilsConstants.idToString(id) + ", IHC=" + System.identityHashCode(this));
+            throw e;
+        }
     }
 
     /**

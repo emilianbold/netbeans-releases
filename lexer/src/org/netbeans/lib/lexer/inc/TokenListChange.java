@@ -23,9 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.EmbeddingContainer;
+import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.lexer.LAState;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
+import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.token.AbstractToken;
 
 /**
@@ -153,4 +154,39 @@ public final class TokenListChange<T extends TokenId> {
         return laState;
     }
 
+    public String toString() {
+        return toString(0);
+    }
+
+    public String toString(int indent) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("index=");
+        sb.append(index());
+        sb.append(", offset=");
+        sb.append(offset());
+        TokenList<T> removedTL = tokenChangeInfo.removedTokenList();
+        if (removedTL != null && removedTL.tokenCount() > 0) {
+            int digitCount = ArrayUtilities.digitCount(removedTL.tokenCount() - 1);
+            for (int i = 0; i < removedTL.tokenCount(); i++) {
+                sb.append('\n');
+                ArrayUtilities.appendSpaces(sb, indent);
+                sb.append("R[");
+                ArrayUtilities.appendIndex(sb, i, digitCount);
+                sb.append("]: ");
+                LexerUtilsConstants.appendTokenInfo(sb, removedTL.tokenOrEmbeddingContainer(i));
+            }
+        }
+        if (addedTokensOrBranches() != null) {
+            int digitCount = ArrayUtilities.digitCount(addedTokensOrBranches().size() - 1);
+            for (int i = 0; i < addedTokensOrBranches().size(); i++) {
+                sb.append('\n');
+                ArrayUtilities.appendSpaces(sb, indent);
+                sb.append("A[");
+                ArrayUtilities.appendIndex(sb, i, digitCount);
+                sb.append("]: ");
+                LexerUtilsConstants.appendTokenInfo(sb, addedTokensOrBranches.get(i));
+            }
+        }
+        return sb.toString();
+    }
 }
