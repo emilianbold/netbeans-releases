@@ -19,15 +19,6 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElement;
@@ -35,6 +26,13 @@ import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUser
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.util.NbBundle;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  *
@@ -131,13 +129,6 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         }
         return true;
     }
-    
-//    public ScreenInplaceEditor getInplaceEditor() {
-//        if (inplaceEditor == null) {
-//            inplaceEditor = new CheckboxInplaceEditor();
-//        }
-//        return inplaceEditor;
-//    }
     
     private class CustomEditor extends JPanel implements ActionListener {
         private JComboBox combobox;

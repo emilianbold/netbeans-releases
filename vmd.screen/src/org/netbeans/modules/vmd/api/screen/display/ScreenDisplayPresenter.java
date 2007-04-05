@@ -77,45 +77,10 @@ public abstract class ScreenDisplayPresenter extends Presenter {
 
     /**
      * Returns a collection of all screen property descriptors
-     * @return
+     * @return the collection
      */
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
         return Collections.emptySet ();
     }
-
-//    /**
-//     * Gets available injectors with mouse at this display point. If the supplied
-//     * point is null, this method shold return all display injectors available for
-//     * this component.
-//     * @param displayPoint if null, this method shold call return all injetors
-//     * for this component.
-//     * @return
-//     * // TODO - move this outside of the ScreenDisplayPresenter e.g. ScreenInjectorPresenter, to allow composition of multiple injectors
-//     */
-//    public abstract List<ScreenInjectorPresenter> getInjectors (Point displayPoint);
-
-//    /**
-//     * Is any injector available for this component
-//     * @return
-//     */
-//    public boolean isInjectorAvailable() {
-//        return false;
-//    }
-
-//    /**
-//     * Called immediately after the view component has been removed from the view tree. This method call is done in AWT thread.
-//     */
-//    public void hideNotify() {
-//    }
-
-//    /**
-//     * Returns the actual display size used for viewing the component. Some components can "grow" the display components off the screen.
-//     * Please note, this method is called always after the reload() methos call
-//     * @return
-//     */
-//    public abstract Dimension getActualDisplaySize();
-
-    // TODO
-    // drag & drop stuff needs to be added !!!
 
 }

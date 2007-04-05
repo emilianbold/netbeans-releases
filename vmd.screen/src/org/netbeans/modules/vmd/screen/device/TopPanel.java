@@ -23,9 +23,11 @@ package org.netbeans.modules.vmd.screen.device;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
+import org.netbeans.modules.vmd.api.screen.display.injector.ScreenInjectorPresenter;
 import org.netbeans.modules.vmd.screen.ScreenAccessController;
 import org.netbeans.modules.vmd.screen.ScreenViewController;
 import org.openide.util.Utilities;
@@ -79,6 +81,8 @@ public class TopPanel extends JPanel {
             }
 
             public void mousePressed (MouseEvent e) {
+                if (injectorMenu (e))
+                    return;
                 select (e);
                 if (e.isPopupTrigger ())
                     popupMenu (e);
@@ -156,8 +160,10 @@ public class TopPanel extends JPanel {
             gr.fill (shape.shape);
             gr.setColor (COLOR_SELECTION_DRAW);
             gr.draw (shape.shape);
-            Rectangle rectangle = shape.shape.getBounds ();
-            gr.drawImage (IMAGE_INJECT, rectangle.x + rectangle.width - 20, rectangle.y - 8, null);
+            if (shape.enableInjector) {
+                Rectangle rectangle = shape.shape.getBounds ();
+                gr.drawImage (IMAGE_INJECT, rectangle.x + rectangle.width - 20, rectangle.y - 8, null);
+            }
             gr.translate (- shape.x, - shape.y);
         }
 
@@ -188,7 +194,7 @@ public class TopPanel extends JPanel {
             Shape shape = presenter.getSelectionShape ();
             if (shape != null) {
                 Point point = devicePanel.calculateTranslation (presenter.getView ());
-                newSelectionShapes.add (new SelectionShape (point.x, point.y, shape));
+                newSelectionShapes.add (new SelectionShape (point.x, point.y, shape, component.getComponentID (), ! component.getPresenters (ScreenInjectorPresenter.class).isEmpty ()));
             }
         }
         for (DesignComponent child : presenter.getChildren ())
@@ -219,7 +225,7 @@ public class TopPanel extends JPanel {
                     Shape shape = presenter != null ? presenter.getSelectionShape () : null;
                     if (shape != null) {
                         Point point = devicePanel.calculateTranslation (presenter.getView ());
-                        hoverShape = new SelectionShape (point.x, point.y, shape);
+                        hoverShape = new SelectionShape (point.x, point.y, shape, component.getComponentID (), false);
                     } else
                         hoverShape = null;
                 }
@@ -268,6 +274,49 @@ public class TopPanel extends JPanel {
         });
     }
 
+    private boolean injectorMenu (MouseEvent e) {
+        for (SelectionShape shape : selectionShapes) {
+            if (! shape.enableInjector)
+                continue;
+            Point point = e.getPoint ();
+            point.x -= shape.x;
+            point.y -= shape.y;
+            Rectangle bounds = shape.shape.getBounds ();
+            if (new Rectangle (bounds.x + bounds.width - 20, bounds.y - 8, 16, 26).contains (point)) {
+                invokeInjectorMenu (shape.componentID, bounds.x + bounds.width - 20, bounds.y + 8);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void invokeInjectorMenu (final long componentID, final int x, final int y) {
+        final DesignDocument document = devicePanel.getController ().getDocument ();
+        if (document == null)
+            return;
+        final ArrayList<JComponent> views = new ArrayList<JComponent> ();
+        document.getTransactionManager ().readAccess (new Runnable() {
+            public void run () {
+                DesignComponent component = document.getComponentByUID (componentID);
+                ArrayList<ScreenInjectorPresenter> list = new ArrayList<ScreenInjectorPresenter> (component.getPresenters (ScreenInjectorPresenter.class));
+                DocumentSupport.sortPresentersByOrder (list);
+                for (ScreenInjectorPresenter presenter : list) {
+                    JComponent view = presenter.getViewComponent ();
+                    if (view == null)
+                        continue;
+                    views.add (view);
+                }
+            }
+        });
+        if (views.isEmpty ())
+            return;
+        InjectorWindow injectorWindow = new InjectorWindow (views);
+        Point screen = TopPanel.this.getLocationOnScreen ();
+        injectorWindow.setLocation (screen.x + x, screen.y + y);
+        injectorWindow.setVisible (true);
+        injectorWindow.requestFocus ();
+    }
+
     private void editProperty (final MouseEvent e) {
         final DesignDocument document = devicePanel.getController ().getDocument ();
         if (document == null)
@@ -294,11 +343,15 @@ public class TopPanel extends JPanel {
 
         private int x, y;
         private Shape shape;
+        private long componentID;
+        private boolean enableInjector;
 
-        public SelectionShape (int x, int y, Shape shape) {
+        public SelectionShape (int x, int y, Shape shape, long componentID, boolean enableInjector) {
             this.x = x;
             this.y = y;
             this.shape = shape;
+            this.componentID = componentID;
+            this.enableInjector = enableInjector;
         }
 
     }

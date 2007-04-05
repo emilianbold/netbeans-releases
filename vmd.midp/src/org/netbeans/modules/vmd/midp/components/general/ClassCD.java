@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInstanceName;
+import org.netbeans.modules.vmd.midp.screen.display.injector.ScreenBooleanInjectorPresenter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -98,7 +99,8 @@ public final class ClassCD extends ComponentDescriptor {
             // codegen
             new ClassCode.ClassCodeReferencePresenter (),
             new ClassCode.CodeLazyInitPresenter (),
-            new ClassCode.CodeClassNamePresenter ()
+            new ClassCode.CodeClassNamePresenter (),
+            new ScreenBooleanInjectorPresenter (PROP_LAZY_INIT, "Generate code with lazy-initialization Pattern", 10000)// TODO - temporary - test of ScreenInjectorPresenter
         );
     }
 
