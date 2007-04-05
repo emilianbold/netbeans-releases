@@ -83,7 +83,16 @@ public class SunToolkitEmulatorExecTask extends Task {
         //debugger
         if (debug) {
             arguments.add("-Xdebug");
-            arguments.add("-Xrunjdwp:transport=dt_socket,address=" + debuggerAddressProperty);            
+            String debugAddress = null;
+            try {
+                debugAddress = Integer.toString(this.determineFreePort());
+            } catch (IOException e) {
+                throw new BuildException(e);
+            }
+            arguments.add("-Xrunjdwp:transport=dt_socket,address=" + debugAddress + ",server=y,suspend=y");            
+            if (debuggerAddressProperty != null) {
+                this.getProject().setProperty(debuggerAddressProperty, debugAddress);
+            }
         }
         
         if (!xlet && !applet){ //for main
