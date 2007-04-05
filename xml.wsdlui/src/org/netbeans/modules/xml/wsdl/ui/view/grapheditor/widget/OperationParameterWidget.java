@@ -189,7 +189,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
                 mLabel.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
 
                     public void setText(Widget widget, String text) {
-                        if (getWSDLComponent() != null)
+                        if (getWSDLComponent() != null && !getWSDLComponent().getName().equals(text))
                             SharedUtils.locallyRenameRefactor(getWSDLComponent(), text);
                     }
 

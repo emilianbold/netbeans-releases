@@ -46,6 +46,7 @@ import org.openide.util.Lookup;
  * Need to provide methods for changing custom icon?
  *
  * @author radval
+ * @author skini
  */
 public class DragOverSceneLayer extends LayerWidget {
 
@@ -74,7 +75,7 @@ public class DragOverSceneLayer extends LayerWidget {
                     if (t.isDataFlavorSupported(PaletteController.ITEM_DATA_FLAVOR)) {
                         Lookup lookup = (Lookup) t.getTransferData(
                                 PaletteController.ITEM_DATA_FLAVOR);
-                        Node node = (Node) lookup.lookup(Node.class);
+                        Node node = lookup.lookup(Node.class);
                         icon = new IconNodeWidget(getScene(),
                                 IconNodeWidget.TextOrientation.BOTTOM_CENTER);
                         icon.setOpaque(false);
@@ -94,6 +95,18 @@ public class DragOverSceneLayer extends LayerWidget {
             }
         }
         if (icon != null) {
+            Rectangle bounds = icon.getBounds();
+            if (bounds != null) {
+                bounds = icon.convertLocalToScene(bounds);
+
+                //make bounds bigger than it actually is.
+                int boundInc = 200;
+                bounds.y -= boundInc;
+                bounds.height += boundInc;
+                bounds.x -= boundInc;
+                bounds.width += boundInc;
+                getScene().getView().scrollRectToVisible(bounds);
+            }
             icon.setPreferredLocation(convertSceneToLocal(scenePoint));
         }
         return false;

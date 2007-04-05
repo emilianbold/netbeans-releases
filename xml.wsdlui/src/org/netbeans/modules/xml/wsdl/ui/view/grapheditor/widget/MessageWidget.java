@@ -708,7 +708,7 @@ public class MessageWidget extends AbstractWidget<Message>
         
         public void setText(Widget widget, String text) {
             Message message = getMessage(widget);
-            if (message != null) {
+            if (message != null && !message.getName().equals(text)) {
                 // try rename silent and locally
                 SharedUtils.locallyRenameRefactor(message, text);
              }

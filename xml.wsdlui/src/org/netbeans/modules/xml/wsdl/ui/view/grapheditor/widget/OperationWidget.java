@@ -59,7 +59,9 @@ public abstract class OperationWidget<T extends Operation>
         mOperationNameLabelWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
             
             public void setText(Widget widget, String text) {
-                SharedUtils.locallyRenameRefactor(getWSDLComponent(), text);
+                if (!getWSDLComponent().getName().equals(text.trim())) {
+                    SharedUtils.locallyRenameRefactor(getWSDLComponent(), text);
+                }
             }
             
             public boolean isEnabled(Widget widget) {

@@ -168,7 +168,7 @@ public class PartWidget extends AbstractWidget<Part> {
         
         public void setText(Widget widget, String text) {
             Part part = getPart(widget);
-            if (part != null) {
+            if (part != null && !part.getName().equals(text)) {
                 // try rename silent and locally
                 SharedUtils.locallyRenameRefactor(part, text);
             }

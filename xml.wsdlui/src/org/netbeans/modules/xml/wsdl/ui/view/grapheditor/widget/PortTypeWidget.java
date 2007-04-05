@@ -332,8 +332,10 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
                             }
                         }
                     } else {
-                        // try rename silent and locally
-                        SharedUtils.locallyRenameRefactor(getWSDLComponent(), text);
+                        if (!getWSDLComponent().getName().equals(text)) {
+                            // try rename silent and locally
+                            SharedUtils.locallyRenameRefactor(getWSDLComponent(), text);
+                        }
                     }
                 }
 

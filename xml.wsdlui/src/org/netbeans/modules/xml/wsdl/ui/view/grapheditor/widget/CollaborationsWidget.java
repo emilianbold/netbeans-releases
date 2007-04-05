@@ -72,7 +72,6 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.ExtensibilityElementsFolderNode;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -381,6 +380,7 @@ public class CollaborationsWidget extends Widget
      */
     private Collection<PortType> getUnusedPortTypes() {
         // Make a list that we can modify (and is our non-null return value).
+
         List<PortType> allPorts = new ArrayList<PortType>();
         Definitions defs = mModel.getDefinitions();
         Collection<PortType> ports = defs.getPortTypes();
@@ -397,7 +397,7 @@ public class CollaborationsWidget extends Widget
                     allPorts.addAll(ports);
                 }
             } catch (CatalogModelException cme) {
-                ErrorManager.getDefault().notify(cme);
+                //ignore the error. validation would find it.
             }
         }
         List<PartnerLinkType> partners = defs.getExtensibilityElements(
