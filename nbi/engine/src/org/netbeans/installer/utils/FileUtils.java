@@ -56,6 +56,7 @@ import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.FileEntry;
 import org.netbeans.installer.utils.helper.NativeLauncher;
 import org.netbeans.installer.utils.helper.Platform;
+import org.netbeans.installer.utils.helper.launchers.Launcher;
 import org.netbeans.installer.utils.progress.Progress;
 
 /**
@@ -824,7 +825,7 @@ public final class FileUtils {
         return parent;
     }
     
-    public static File createLauncher(NativeLauncher nl, Platform platform, Progress progress) throws IOException {
+    public static Launcher createLauncher(NativeLauncher nl, Platform platform, Progress progress) throws IOException {
         Progress prg = (progress==null) ? new Progress() : progress;
         return nl.create(platform, progress);
                 

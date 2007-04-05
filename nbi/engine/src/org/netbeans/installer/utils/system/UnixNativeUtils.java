@@ -37,6 +37,9 @@ import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
+import org.netbeans.installer.utils.helper.Platform;
+import org.netbeans.installer.utils.helper.launchers.Launcher;
+import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.unix.shell.BourneShell;
 import org.netbeans.installer.utils.system.unix.shell.CShell;
 import org.netbeans.installer.utils.system.unix.shell.KornShell;
@@ -52,7 +55,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
     private boolean isUserAdmin;
     private static final String [] FORBIDDEN_DELETING_FILES_UNIX = {
         System.getProperty("user.home"),
-	System.getProperty("java.home"),
+        System.getProperty("java.home"),
         "/",
         "/bin",
         "/boot",
@@ -162,14 +165,14 @@ public abstract class UnixNativeUtils extends NativeUtils {
         }
         
         if(shortcut.getCategories().length != 0) {
-            contents.append("Categories=" + 
+            contents.append("Categories=" +
                     StringUtils.asString(shortcut.getCategories(),";")).
                     append(nl);
         }
         
         contents.append("Version=1.0").append(nl);
         contents.append("StartupNotify=true").append(nl);
-        contents.append("Type=Application").append(nl);        
+        contents.append("Type=Application").append(nl);
         contents.append("Terminal=0").append(nl);
         
         
@@ -201,97 +204,62 @@ public abstract class UnixNativeUtils extends NativeUtils {
     public List<File> findExecutableFiles(File parent) throws IOException {
         List<File> files = new ArrayList<File>();
         
-        if (!parent.exists()) {
-            return files;
-        }
-        
-        for(File child : parent.listFiles()) {
-            if (child.isDirectory()) {
-                files.addAll(findExecutableFiles(child));
+        if (parent.exists()) {
+            if(parent.isDirectory()) {
+                File [] children = parent.listFiles();
+                for(File child : children) {
+                    files.addAll(findExecutableFiles(child));
+                }
             } else {
                 // name based analysis
+                File child = parent;
                 String name = child.getName();
-                if (name.endsWith(".sh")) { // shell script
-                    files.add(child);
-                    continue;
+                String [] scriptExtensions = { ".sh", ".pl", ".py"};  //shell, perl, python
+                for(String ext : scriptExtensions) {
+                    if (name.endsWith(ext)) {
+                        files.add(child);
+                        return files;
+                    }
                 }
-                if (name.endsWith(".pl")) { // perl script
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".py")) { // python script
-                    files.add(child);
-                    continue;
-                }
-                
                 // contents based analysis
                 String line = FileUtils.readFirstLine(child);
                 if (line != null) {
                     if (line.startsWith("#!")) { // a script of some sort
                         files.add(child);
-                        continue;
+                        return files;
                     }
                 }
             }
         }
-        
-        return files;
+        return files;        
     }
     
     public List<File> findIrrelevantFiles(File parent) throws IOException {
         List<File> files = new ArrayList<File>();
         
-        if (!parent.exists()) {
-            return files;
-        }
-        
-        for(File child : parent.listFiles()) {
-            if (child.isDirectory()) {
-                files.addAll(findIrrelevantFiles(child));
+        if (parent.exists()) {
+            if(parent.isDirectory()) {
+                File [] children = parent.listFiles();
+                for(File child : children) {
+                    files.addAll(findIrrelevantFiles(child));
+                }
             } else {
-                // name based analysis
-                String name = child.getName();
-                if (name.endsWith(".bat")) { // dos batch file
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".cmd")) { // windows batch file
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".dll")) { // windows library
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".exe")) { // windows executable
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".com")) { // windows executable
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".vbs")) { // windows script
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".vbe")) { // windows script
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".wsf")) { // windows script
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".wsh")) { // windows script
-                    files.add(child);
-                    continue;
-                }
-                
                 // contents based analysis - none at this point
+                
+                // name based analysis
+                File child = parent;
+                String name = child.getName();
+                String [] windowsExtensions = { 
+                    ".bat", ".cmd", ".dll", ".exe", ".com", 
+                    ".vbs", ".vbe", ".wsf", ".wsh"} ;
+                for(String ext : windowsExtensions) {
+                    if(name.endsWith(ext)) {
+                        files.add(child);
+                        break;
+                    }
+                }
             }
         }
-        
         return files;
     }
     
@@ -400,8 +368,19 @@ public abstract class UnixNativeUtils extends NativeUtils {
         return true;
     }
     
-    public void addComponentToSystemInstallManager(ApplicationDescriptor descriptor) {
-        // does nothing - no support for unix package managers yet
+    public FilesList addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
+        FilesList list = new FilesList();
+        try {
+            Launcher launcher = createUninstaller(descriptor, true, new Progress());
+            correctFilesPermissions(launcher.getOutputFile());
+            list.add(launcher.getOutputFile());
+        }  catch (IOException ex) {
+            String exString = "Can`t create uninstaller";
+            LogManager.log(ErrorLevel.WARNING, exString);
+            LogManager.log(ErrorLevel.WARNING, ex);
+            throw new NativeException(exString, ex);
+        }
+        return list;
     }
     
     public void removeComponentFromSystemInstallManager(ApplicationDescriptor descriptor) {

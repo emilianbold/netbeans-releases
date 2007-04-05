@@ -40,6 +40,7 @@ import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
+import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
@@ -440,8 +441,8 @@ public final class SystemUtils {
         getNativeUtils().removeShortcut(shortcut, locationType, deleteEmptyParents);
     }
     
-    public static void addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
-        getNativeUtils().addComponentToSystemInstallManager(descriptor);
+    public static FilesList addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
+        return getNativeUtils().addComponentToSystemInstallManager(descriptor);
     }
     
     public static void removeComponentFromSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {

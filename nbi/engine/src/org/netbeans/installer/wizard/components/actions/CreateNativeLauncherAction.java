@@ -48,12 +48,7 @@ public class CreateNativeLauncherAction extends WizardAction {
     public static final String DEFAULT_DESCRIPTION = ResourceUtils.getString(
             CreateNativeLauncherAction.class,
             "CNLA.description"); // NOI18N
-    
-    public static final String MIN_JAVA_VERSION_DEFAULT       = "1.5";
-    public static final String MIN_JAVA_VERSION_UNIX          = "1.5.0_01";
-    public static final String MIN_JAVA_VERSION_WINDOWS       = "1.5.0_06";
-    public static final String MIN_JAVA_VERSION_WINDOWS_VISTA = "1.5.0_11";
-    
+     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public CreateNativeLauncherAction() {
@@ -71,42 +66,12 @@ public class CreateNativeLauncherAction extends WizardAction {
         getWizardUi().setProgress(progress);
         try {
             
-            Platform platform = Registry.getInstance().getTargetPlatform();
+            Platform platform = Registry.getInstance().getTargetPlatform();            
+            NativeLauncher nl = new NativeLauncher();           
+            nl.addJar(new LauncherResource(new File(targetPath)));
+            nl.setJvmArguments(new String [] {"-Xmx256m", "-Xms64m"});
             
-            NativeLauncher nl = new NativeLauncher();
-            switch (platform) {
-                // this code should be moved either to the .properties file or smth else outside here
-                case WINDOWS :
-                    nl.addCompatibleJava(
-                            new JavaCompatibleProperties(MIN_JAVA_VERSION_WINDOWS_VISTA, null, null, "Vista", null));
-                    nl.addCompatibleJava(
-                            new JavaCompatibleProperties(MIN_JAVA_VERSION_WINDOWS, null, null, "XP", null));
-                    nl.addCompatibleJava(
-                            new JavaCompatibleProperties(MIN_JAVA_VERSION_WINDOWS, null, null, "2000", null));
-                    nl.addCompatibleJava(
-                            new JavaCompatibleProperties(MIN_JAVA_VERSION_WINDOWS, null, null, "2003", null));
-                    break;
-                    
-                case LINUX :
-                case SOLARIS_SPARC :
-                case SOLARIS_X86 :
-                case MACOS_X_PPC :
-                case MACOS_X_X86 :
-                    nl.addCompatibleJava(
-                            new JavaCompatibleProperties(MIN_JAVA_VERSION_UNIX, null, null, null, null));
-                    break;
-                    
-                default: // something else
-                    nl.addCompatibleJava(
-                            new JavaCompatibleProperties(MIN_JAVA_VERSION_DEFAULT, null, null, null, null));
-                    break;
-                    
-            }
-            
-            nl.addJar(new LauncherResource(new File(targetPath)));            
-            nl.setJvmArguments(new String [] {"-Xmx256m", "-Xms64m"});                        
-            
-            File f = nl.create(platform, progress);
+            File f = nl.create(platform, progress).getOutputFile();
             
             if ( !targetFile.equals(f)) {
                 FileUtils.deleteFile(targetFile);

@@ -40,6 +40,10 @@ import org.netbeans.installer.utils.system.windows.SystemApplication;
 import org.netbeans.installer.utils.system.windows.FileExtension;
 import org.netbeans.installer.utils.system.windows.WindowsRegistry;
 import static org.netbeans.installer.utils.StringUtils.*;
+import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.helper.FilesList;
+import org.netbeans.installer.utils.helper.launchers.Launcher;
+import org.netbeans.installer.utils.progress.Progress;
 import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 
 /**
@@ -333,7 +337,8 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
-    public void addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
+    public FilesList addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
+        FilesList list = new FilesList();
         LogManager.log("adding new Add or Remove Programs entry with id [" + descriptor.getUid() + "]");
         
         final String uid = getVacantUninstallUid(descriptor.getUid());
@@ -356,22 +361,58 @@ public class WindowsNativeUtils extends NativeUtils {
             
             registry.setStringValue(uninstallSection, key, INSTALL_LOCATION, descriptor.getInstallPath(), false);
         }
+        
+        String [] execCommand;
+        try {
+            Launcher launcher = createUninstaller(descriptor, false, new Progress());
+            execCommand = launcher.getExecutionCommand();
+            list.add(launcher.getOutputFile());
+        }  catch (IOException ex) {
+            String exString = "Can`t create uninstaller";
+            LogManager.log(ErrorLevel.WARNING, exString);
+            LogManager.log(ErrorLevel.WARNING, ex);
+            throw new NativeException(exString, ex);
+        }
+        String modifyCommand = StringUtils.EMPTY_STRING;
+        for(String s : execCommand) {
+            modifyCommand += StringUtils.SPACE +
+                    (s.contains(StringUtils.SPACE) ? (StringUtils.QUOTE + s + StringUtils.QUOTE) : s);
+        }
+        modifyCommand = modifyCommand.trim();
+        
         if (descriptor.getModifyCommand() != null) {
             LogManager.log("Set '" + NO_REPAIR + "' = [" + 1 + "]");
             
             registry.set32BitValue(uninstallSection, key, NO_REPAIR, 1);
             
-            LogManager.log("Set '" + MODIFY_STRING + "' = [" + descriptor.getModifyCommand() + "]");
+            LogManager.log("Set '" + MODIFY_STRING + "' = [" + modifyCommand + "]");
             
-            registry.setStringValue(uninstallSection, key, MODIFY_STRING, descriptor.getModifyCommand(), false);
+            registry.setStringValue(uninstallSection, key, MODIFY_STRING, modifyCommand, false);
         }
+        
         if (descriptor.getUninstallCommand() != null) {
-            LogManager.log("Set '" + UNINSTALL_STRING + "' = [" + descriptor.getUninstallCommand() + "]");
+            String uninstallString = modifyCommand;            
+            for(String s : descriptor.getUninstallCommand()) {
+                boolean add = true;
+                for(String sm : descriptor.getModifyCommand()) {
+                    if(s.equals(sm)) {
+                        add = false;
+                        continue ;
+                    }
+                }
+                if(add) {
+                    uninstallString += StringUtils.SPACE +
+                            (s.contains(StringUtils.SPACE) ? (StringUtils.QUOTE + s + StringUtils.QUOTE) : s);
+                }
+            }
+            uninstallString = uninstallString.trim();
+            LogManager.log("Set '" + UNINSTALL_STRING + "' = [" + uninstallString + "]");
             
-            registry.setStringValue(uninstallSection, key, UNINSTALL_STRING, descriptor.getUninstallCommand(), false);
+            registry.setStringValue(uninstallSection, key, UNINSTALL_STRING, uninstallString, false);
         }
         
         registry.setAdditionalValues(uninstallSection, key, descriptor.getParameters());
+        return list;
     }
     
     public void removeComponentFromSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
@@ -431,9 +472,9 @@ public class WindowsNativeUtils extends NativeUtils {
                 
                 if (registry.keyExists(section, rootKey)) {
                     registry.setStringValue(section, rootKey, name, value, expand);
-                    notifyEnvironmentChanged0();                        
+                    notifyEnvironmentChanged0();
                 } else {
-                    LogManager.log(ErrorLevel.WARNING, 
+                    LogManager.log(ErrorLevel.WARNING,
                             "Root envonment key doesn`t exist. " +
                             "Can`t set environment variable");
                 }
@@ -444,27 +485,21 @@ public class WindowsNativeUtils extends NativeUtils {
     public List<File> findIrrelevantFiles(File parent) throws IOException {
         List<File> files = new LinkedList<File>();
         
-        if (!parent.exists()) {
-            return files;
-        }
-        
-        for(File child : parent.listFiles()) {
-            if (child.isDirectory()) {
-                files.addAll(findIrrelevantFiles(child));
+        if (parent.exists()) {
+            if(parent.isDirectory()) {
+                for(File child : parent.listFiles()) {
+                    files.addAll(findIrrelevantFiles(child));
+                }
             } else {
                 // name based analysis
+                File child = parent;
                 String name = child.getName();
-                if (name.endsWith(".sh")) { // shell script
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".so")) { // library
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".dylib")) { // macosx library
-                    files.add(child);
-                    continue;
+                String [] unixExtensions = {".sh", ".so", ".dylib"};
+                for(String ext : unixExtensions) {
+                    if(name.endsWith(ext)) {
+                        files.add(child);
+                        break;
+                    }
                 }
                 
                 // contents based analysis
@@ -482,7 +517,6 @@ public class WindowsNativeUtils extends NativeUtils {
                     }
                 }
                  */
-                
             }
         }
         
@@ -492,59 +526,27 @@ public class WindowsNativeUtils extends NativeUtils {
     public List<File> findExecutableFiles(File parent) throws IOException {
         List<File> files = new LinkedList<File>();
         
-        if (!parent.exists()) {
-            return files;
-        }
-        
-        for(File child : parent.listFiles()) {
-            if (child.isDirectory()) {
-                files.addAll(findIrrelevantFiles(child));
+        if (parent.exists()) {
+            if(parent.isDirectory()) {
+                File [] children = parent.listFiles();
+                for(File child : children) {
+                    files.addAll(findIrrelevantFiles(child));
+                }
             } else {
                 // name based analysis
+                File child = parent;
                 String name = child.getName();
-                if (name.endsWith(".exe")) {
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".com")) {
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".bat")) {
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".cmd")) {
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".vbs")) {
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".vbe")) {
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".js")) {
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".jse")) {
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".wsf")) {
-                    files.add(child);
-                    continue;
-                }
-                if (name.endsWith(".wsh")) {
-                    files.add(child);
-                    continue;
+                String [] windowsExecutableExtensions = {
+                    ".exe", ".com", ".bat", ".cmd", ".vbs",
+                    ".vbe", ".js",".jse", ".wsf", ".wsh" };
+                for(String ext : windowsExecutableExtensions) {
+                    if (name.endsWith(ext)) {
+                        files.add(child);
+                        break;
+                    }
                 }
             }
         }
-        
         return files;
     }
     
@@ -552,7 +554,7 @@ public class WindowsNativeUtils extends NativeUtils {
         // does nothing, as there is no such thing as execute permissions
     }
     
-    // protected ////////////////////////////////////////////////////////////////////
+// protected ////////////////////////////////////////////////////////////////////
     protected void scheduleCleanup(String libraryPath) {
         try {
             deleteFileOnReboot(new File(libraryPath));
@@ -561,7 +563,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
-    // windows-specific operations //////////////////////////////////////////////////
+// windows-specific operations //////////////////////////////////////////////////
     public WindowsRegistry getWindowsRegistry() {
         return registry;
     }
@@ -589,7 +591,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
-    // private //////////////////////////////////////////////////////////////////////
+// private //////////////////////////////////////////////////////////////////////
     private String getVacantUninstallUid(final String baseUid) throws NativeException {
         String vacantUid = baseUid;
         
@@ -1153,7 +1155,7 @@ public class WindowsNativeUtils extends NativeUtils {
         props.setProperty(EXTENSION_VALUE_NAME + name + DOT + prop, value);
     }
     
-    // native declarations //////////////////////////////////////////////////////////
+// native declarations //////////////////////////////////////////////////////////
     private native boolean isCurrentUserAdmin0();
     
     private native long getFreeSpace0(String string);

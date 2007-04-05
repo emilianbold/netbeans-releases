@@ -36,6 +36,7 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.FileEntry;
 import org.netbeans.installer.utils.helper.FilesList;
@@ -54,7 +55,6 @@ import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.DependencyType;
-import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
@@ -126,10 +126,10 @@ public final class Product extends RegistryNode {
         }
         
         totalProgress.addChild(
-                unjarProgress, 
+                unjarProgress,
                 Progress.COMPLETE - configurationLogic.getLogicPercentage());
         totalProgress.addChild(
-                logicProgress, 
+                logicProgress,
                 configurationLogic.getLogicPercentage());
         totalProgress.synchronizeTo(progress);
         totalProgress.synchronizeDetails(true);
@@ -275,6 +275,8 @@ public final class Product extends RegistryNode {
                 progress.setDetail("Registering in the system package manager");
                 SystemUtils.addComponentToSystemInstallManager(getApplicationDescriptor());
             } catch (NativeException e) {
+                LogManager.log("Integration with the system package manager failed");
+                LogManager.log(e);
                 addInstallationWarning(e);
             }
         }
@@ -309,10 +311,10 @@ public final class Product extends RegistryNode {
         }
         
         int logicChunk = (int) (progress.getPercentage() * (
-                (float) configurationLogic.getLogicPercentage() / 
+                (float) configurationLogic.getLogicPercentage() /
                 (float) Progress.COMPLETE));
         int eraseChunk = (int) (progress.getPercentage() * (1. - (
-                (float) configurationLogic.getLogicPercentage() / 
+                (float) configurationLogic.getLogicPercentage() /
                 (float) Progress.COMPLETE)));
         
         totalProgress.setPercentage(Progress.COMPLETE - logicChunk - eraseChunk);
@@ -328,53 +330,53 @@ public final class Product extends RegistryNode {
         // fall through all these cases, as they should be executed exactly in this
         // order and the only unclear point is where to start
         switch (installationPhase) {
-        case COMPLETE:
-        case FINALIZATION:
-            try {
-                FileUtils.deleteFile(getInstalledFilesList());
-            } catch (IOException e) {
-                ErrorManager.notifyWarning("Cannot delete installed files list", e);
-            }
-            
-            if (configurationLogic.registerInSystem()) {
+            case COMPLETE:
+            case FINALIZATION:
                 try {
-                    SystemUtils.removeComponentFromSystemInstallManager(getApplicationDescriptor());
-                } catch (NativeException e) {
-                    ErrorManager.notifyWarning("Cannot remove component from system registry", e);
-                }
-            }
-            
-        case CUSTOM_LOGIC:
-            configurationLogic.uninstall(logicProgress);
-            
-        case EXTRACTION:
-            logicProgress.setPercentage(Progress.COMPLETE);
-            
-            // remove installation files
-            int total   = installedFiles.getSize();
-            int current = 0;
-            
-            for (FileEntry entry: installedFiles) {
-                current++;
-                
-                File file = entry.getFile();
-                
-                eraseProgress.setDetail("Deleting " + file);
-                eraseProgress.setPercentage(Progress.COMPLETE * current / total);
-                
-                try {
-                    FileUtils.deleteFile(file);
+                    FileUtils.deleteFile(getInstalledFilesList());
                 } catch (IOException e) {
-                    ErrorManager.notifyWarning("Cannot delete file", e);
+                    ErrorManager.notifyWarning("Cannot delete installed files list", e);
                 }
-            }
-            
-        case INITIALIZATION:
-            eraseProgress.setPercentage(Progress.COMPLETE);
-            // for initialization we don't need to do anything
-            
-        default:
-            // default, nothing should be done here
+                
+                if (configurationLogic.registerInSystem()) {
+                    try {
+                        SystemUtils.removeComponentFromSystemInstallManager(getApplicationDescriptor());
+                    } catch (NativeException e) {
+                        ErrorManager.notifyWarning("Cannot remove component from system registry", e);
+                    }
+                }
+                
+            case CUSTOM_LOGIC:
+                configurationLogic.uninstall(logicProgress);
+                
+            case EXTRACTION:
+                logicProgress.setPercentage(Progress.COMPLETE);
+                
+                // remove installation files
+                int total   = installedFiles.getSize();
+                int current = 0;
+                
+                for (FileEntry entry: installedFiles) {
+                    current++;
+                    
+                    File file = entry.getFile();
+                    
+                    eraseProgress.setDetail("Deleting " + file);
+                    eraseProgress.setPercentage(Progress.COMPLETE * current / total);
+                    
+                    try {
+                        FileUtils.deleteFile(file);
+                    } catch (IOException e) {
+                        ErrorManager.notifyWarning("Cannot delete file", e);
+                    }
+                }
+                
+            case INITIALIZATION:
+                eraseProgress.setPercentage(Progress.COMPLETE);
+                // for initialization we don't need to do anything
+                
+            default:
+                // default, nothing should be done here
         }
     }
     
@@ -395,10 +397,10 @@ public final class Product extends RegistryNode {
         }
         
         totalProgress.addChild(
-                logicProgress, 
+                logicProgress,
                 configurationLogic.getLogicPercentage());
         totalProgress.addChild(
-                eraseProgress, 
+                eraseProgress,
                 Progress.COMPLETE - configurationLogic.getLogicPercentage());
         totalProgress.synchronizeTo(progress);
         totalProgress.synchronizeDetails(true);
@@ -660,23 +662,23 @@ public final class Product extends RegistryNode {
     
     public boolean satisfies(final Dependency dependency) {
         switch (dependency.getType()) {
-        case REQUIREMENT:
-            if (dependency.getVersionResolved() != null) {
+            case REQUIREMENT:
+                if (dependency.getVersionResolved() != null) {
+                    return uid.equals(dependency.getUid()) &&
+                            version.equals(dependency.getVersionResolved());
+                }
+                // if the requirement is not resolved, we fall through to validation
+                // for a conflict - it's identical to what we need
+            case CONFLICT:
                 return uid.equals(dependency.getUid()) &&
-                        version.equals(dependency.getVersionResolved());
-            }
-            // if the requirement is not resolved, we fall through to validation
-            // for a conflict - it's identical to what we need
-        case CONFLICT:
-            return uid.equals(dependency.getUid()) &&
-                    version.newerOrEquals(dependency.getVersionLower()) &&
-                    version.olderOrEquals(dependency.getVersionUpper());
-            
-        case INSTALL_AFTER:
-            return uid.equals(dependency.getUid());
-            
-        default:
-            ErrorManager.notifyCritical("Unrecognized dependency type: " + dependency.getType());
+                        version.newerOrEquals(dependency.getVersionLower()) &&
+                        version.olderOrEquals(dependency.getVersionUpper());
+                
+            case INSTALL_AFTER:
+                return uid.equals(dependency.getUid());
+                
+            default:
+                ErrorManager.notifyCritical("Unrecognized dependency type: " + dependency.getType());
         }
         
         // the only way for us to reach this spot is to get to 'default:' in the
@@ -760,14 +762,14 @@ public final class Product extends RegistryNode {
         element.setAttribute("features", StringUtils.asString(features, " "));
         
         element.appendChild(XMLUtils.saveExtendedUrisList(
-                logicUris, 
+                logicUris,
                 document.createElement("configuration-logic")));
         
         element.appendChild(XMLUtils.saveExtendedUrisList(
-                dataUris, 
+                dataUris,
                 document.createElement("installation-data")));
         
-        final Element systemRequirementsElement = 
+        final Element systemRequirementsElement =
                 document.createElement("system-requirements");
         
         final Element diskSpaceElement = document.createElement("disk-space");
@@ -777,7 +779,7 @@ public final class Product extends RegistryNode {
         element.appendChild(systemRequirementsElement);
         
         element.appendChild(XMLUtils.saveDependencies(
-                dependencies, 
+                dependencies,
                 document.createElement("dependencies")));
         
         return element;
@@ -802,15 +804,15 @@ public final class Product extends RegistryNode {
             features = StringUtils.asList(element.getAttribute("features"), " ");
             
             logicUris.addAll(XMLUtils.parseExtendedUrisList(XMLUtils.getChild(
-                    element, 
+                    element,
                     "configuration-logic")));
             
             dataUris.addAll(XMLUtils.parseExtendedUrisList(XMLUtils.getChild(
-                    element, 
+                    element,
                     "installation-data")));
             
             requiredDiskSpace = Long.parseLong(XMLUtils.getChild(
-                    element, 
+                    element,
                     "system-requirements/disk-space").getTextContent());
             
             dependencies.addAll(XMLUtils.parseDependencies(
@@ -894,15 +896,12 @@ public final class Product extends RegistryNode {
         
         final String installLocation = getInstallationLocation().getAbsolutePath();
         
-        final String modifyCommand = StringUtils.format(
-                System.getProperty(EngineResources.LOCAL_ENGINE_MODIFY_COMMAND_PROPERTY),
-                uid,
-                version);
+        final String [] modifyCommand = new String [] {
+            "--target", uid, version.toString()};
         
-        final String uninstallCommand = StringUtils.format(
-                System.getProperty(EngineResources.LOCAL_ENGINE_UNINSTALL_COMMAND_PROPERTY),
-                uid,
-                version);
+        final String [] uninstallCommand = new String [] {
+            "--target", uid, version.toString(), "--force-uninstall"};
+        
         
         return new ApplicationDescriptor(
                 key,

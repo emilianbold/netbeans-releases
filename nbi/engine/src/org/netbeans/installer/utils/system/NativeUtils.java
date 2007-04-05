@@ -25,15 +25,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
+import org.netbeans.installer.utils.helper.EngineResources;
+import org.netbeans.installer.utils.helper.FilesList;
+import org.netbeans.installer.utils.helper.NativeLauncher;
+import org.netbeans.installer.utils.helper.Platform;
+import org.netbeans.installer.utils.helper.launchers.Launcher;
+import org.netbeans.installer.utils.helper.launchers.LauncherResource;
+import org.netbeans.installer.utils.progress.Progress;
 
 /**
  *
@@ -91,7 +100,27 @@ public abstract class NativeUtils {
     
     public abstract void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws NativeException;
     
-    public abstract void addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException;
+    protected Launcher createUninstaller(ApplicationDescriptor descriptor, boolean useUninstallCommand, Progress progress) throws IOException {        
+        LogManager.log(ErrorLevel.DEBUG, "Creating uninstaller...");
+        NativeLauncher nl = new NativeLauncher();
+        nl.addJVM(new LauncherResource(false, SystemUtils.getCurrentJavaHome()));
+        File engine = new File(System.getProperty(EngineResources.LOCAL_ENGINE_PATH_PROPERTY));
+        nl.addJar(new LauncherResource(false, engine));
+        nl.setJvmArguments(new String [] { "-Xmx256m", "-Xms64m" });
+        nl.setAppArguments(
+                (useUninstallCommand) ?
+                    descriptor.getUninstallCommand() :
+                    descriptor.getModifyCommand());
+        
+        nl.setOutput(
+                new File(descriptor.getInstallPath(),
+                "uninstall"),
+                true);
+        nl.setMainClass(Installer.class.getName());
+        return nl.create(SystemUtils.getCurrentPlatform(), progress);
+    }
+    
+    public abstract FilesList addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException;
     
     public abstract void removeComponentFromSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException;
     

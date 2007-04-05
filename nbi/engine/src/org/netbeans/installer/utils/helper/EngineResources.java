@@ -35,12 +35,12 @@ public final class EngineResources {
     public static final String LOCAL_ENGINE_PATH_PROPERTY = 
             "nbi.product.local.engine.path";
     
-    public static final String LOCAL_ENGINE_UNINSTALL_COMMAND_PROPERTY =
+    /*public static final String LOCAL_ENGINE_UNINSTALL_COMMAND_PROPERTY =
             "nbi.product.local.engine.uninstall.command";
     
     public static final String LOCAL_ENGINE_MODIFY_COMMAND_PROPERTY =
             "nbi.product.local.engine.modify.command";
-    
+    */
     public static final String DATA_DIRECTORY = 
             "data";
     

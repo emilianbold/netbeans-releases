@@ -35,8 +35,8 @@ public class ApplicationDescriptor {
     
     private String installPath;
     
-    private String uninstallCommand;
-    private String modifyCommand;
+    private String [] uninstallCommand;
+    private String [] modifyCommand;
     
     private Map<String, Object> parameters;
     
@@ -45,8 +45,8 @@ public class ApplicationDescriptor {
             final String displayName,
             final String icon,
             final String installPath,
-            final String uninstallCommand,
-            final String modifyCommand) {
+            final String [] uninstallCommand,
+            final String [] modifyCommand) {
         this.uid = uid;
         
         this.displayName = displayName;
@@ -65,8 +65,8 @@ public class ApplicationDescriptor {
             final String displayName,
             final String icon,
             final String installPath,
-            final String uninstallCommand,
-            final String modifyCommand,
+            final String [] uninstallCommand,
+            final String [] modifyCommand,
             final Map<String, Object> parameters) {
         this(uid,
             displayName,
@@ -94,11 +94,11 @@ public class ApplicationDescriptor {
         return installPath;
     }
     
-    public String getUninstallCommand() {
+    public String [] getUninstallCommand() {
         return uninstallCommand;
     }
     
-    public String getModifyCommand() {
+    public String [] getModifyCommand() {
         return modifyCommand;
     }
     

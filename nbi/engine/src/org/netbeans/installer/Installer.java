@@ -761,28 +761,10 @@ public class Installer implements FinishHandler {
                 }
             }
             
-            final String java = JavaUtils.getExecutableW(
-                    SystemUtils.getCurrentJavaHome()).getAbsolutePath();
-            
-            final String modifyCommand =
-                    "\"" + java + "\" " +
-                    "-jar \"" + cachedEngine.getAbsolutePath() + "\" " +
-                    "--target \"{0}\" \"{1}\"";
-            
-            final String uninstallCommand =
-                    modifyCommand + StringUtils.SPACE +
-                    "--force-uninstall";
-            
             System.setProperty(
                     EngineResources.LOCAL_ENGINE_PATH_PROPERTY,
-                    cachedEngine.getAbsolutePath());
+                    cachedEngine.getAbsolutePath());            
             
-            System.setProperty(
-                    EngineResources.LOCAL_ENGINE_MODIFY_COMMAND_PROPERTY,
-                    modifyCommand);
-            System.setProperty(
-                    EngineResources.LOCAL_ENGINE_UNINSTALL_COMMAND_PROPERTY,
-                    uninstallCommand);
         } catch (IOException ex) {
             ErrorManager.notifyCritical("can`t cache installer engine", ex);
         }
