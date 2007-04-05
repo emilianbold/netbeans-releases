@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.Context;
@@ -315,19 +316,17 @@ public class Feature {
                     sb.append (node.getAsText ());
                     continue;
                 }
-                Object o = get (node, names [i + 1]);
-                if (o == null)
-                    return null; //sb.append ('?').append (names [i + 1]).append ('?');
+                ASTItem item = get (node, names [i + 1]);
+                if (item instanceof ASTToken)
+                    sb.append (((ASTToken) item).getIdentifier ());
                 else
-                if (o instanceof ASTToken)
-                    sb.append (((ASTToken) o).getIdentifier ());
-                else
-                    sb.append (((ASTNode) o).getAsText ());
+                if (item instanceof ASTNode)
+                    sb.append (((ASTNode) item).getAsText ());
             }
             return sb.toString ();
         }
 
-        private static Object get (ASTNode node, String s) {
+        private static ASTItem get (ASTNode node, String s) {
             int i = s.indexOf ('.');
             if (i > 0) {
                 String ss = s.substring (0, i);
@@ -341,7 +340,7 @@ public class Feature {
             return node.getTokenType (s);
         }
 
-        private Object evaluate (ASTToken token) {
+        private String evaluate (ASTToken token) {
             if (names == null) return null;
             StringBuilder sb = new StringBuilder ();
             int i, k = names.length;
@@ -356,8 +355,6 @@ public class Feature {
                 else
                 if (names [i + 1].equals ("type"))
                     sb.append (token.getType ());
-                else
-                    return null; //sb.append ('?').append (names [i + 1]).append ('?');
             }
             return sb.toString ();
         }

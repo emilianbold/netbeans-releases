@@ -157,7 +157,7 @@ NAVIGATOR:groupToken: {
 }
 
 NAVIGATOR:command: {
-    display_name: "<html><b><font color=000099>$keyword$</font></b>: $command0.class$</html>";
+    display_name: "<html><b><font color=000099>$keyword$</font></b>: $command0.selector$</html>";
 }
 
 HYPERLINK:value: org.netbeans.modules.languages.NBS.hyperlink  
