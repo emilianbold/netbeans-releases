@@ -32,7 +32,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JPanel;
@@ -81,6 +83,8 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     // data for the members table (first dimension - rows, second dimension - columns)
     // the columns are: 0 = Selected (true/false), 1 = Member (Java element), 2 = Make Abstract (true/false)
     private Object[][] members = new Object[0][0];
+    private ElementKind sourceKind;
+    
     
     /** Creates new form PullUpPanel
      * @param refactoring The refactoring this panel provides parameters for.
@@ -120,6 +124,9 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     for (Element e: supertypes) {
                         minfo[i++] = new MemberInfo(e, controller);
                     }
+                    
+                    TypeElement sourceTypeElement = (TypeElement) handle.resolveElement(controller);
+                    sourceKind = sourceTypeElement.getKind();
                     
                     // *** initialize combo
                     // set renderer for the combo (to display name of the class)
@@ -177,6 +184,8 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     // compute and set the preferred width for the first and the third column
                     UIUtilities.initColumnWidth(membersTable, 0, Boolean.TRUE, 4);
                     UIUtilities.initColumnWidth(membersTable, 2, Boolean.TRUE, 4);
+                    String name = UiUtils.getHeader(handle.resolve(controller), controller, UiUtils.PrintPart.NAME);
+                    setName(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "LBL_PullUpHeader", new Object[] {name}) /* NOI18N */); // NOI18N
                 }
             }, true);
         } catch (IOException ioe) {
@@ -250,7 +259,6 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
         membersTable = new javax.swing.JTable();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
-        setName(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "LBL_PullUpHeader", new Object[] {"TODO"}) /* NOI18N */); // NOI18N
         setLayout(new java.awt.BorderLayout());
 
         supertypePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -333,9 +341,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     return false;
                 }
                 Object element = members[rowIndex][1];
-                //TODO:
-                //return !targetType.isInterface() && !Modifier.isStatic(((Method) element).getModifiers()) && !Modifier.isAbstract(((Method) element).getModifiers());
-                return false;
+                return !sourceKind.isInterface() && !(((MemberInfo) element).getModifiers().contains(Modifier.STATIC)) && !(((MemberInfo) element).getModifiers().contains(Modifier.ABSTRACT));                
             } else {
                 // column 0 is always editable, column 1 is never editable
                 return columnIndex == 0;
@@ -370,17 +376,23 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     // a future table row corresponding to that member
                     for (int i = 0; i < classes.length; i++) {
                         // collect interface names
-                        //TODO:
-                        //                for (Iterator it = classes[i].getInterfaceNames().iterator(); it.hasNext();) {
-                        //                    Object ifcName = it.next();
-                        //                    map.put(ifcName, new Object[] {Boolean.FALSE, ifcName, null});
-                        //                }
+                        for (TypeMirror tm: ((TypeElement) (classes[i].getElementHandle().resolve(info))).getInterfaces()) {
+                            MemberInfo ifcName = new MemberInfo(RetoucheUtils.typeToElement(tm, info), info, 1);
+                            map.put(ifcName, new Object[] {Boolean.FALSE, ifcName, null});
+                        }
                         // collect fields, methods and inner classes
                         List<? extends Element> features = classes[i].getElementHandle().resolve(info).getEnclosedElements();
                         int j = 0;
                         for (Element e:features) {
-                            MemberInfo mi = new MemberInfo(e, info);
-                            map.put(mi, new Object[] {Boolean.FALSE, mi, (e.getKind() == ElementKind.METHOD) ? Boolean.FALSE : null});
+                            switch (e.getKind()) {
+                                case CONSTRUCTOR:
+                                case STATIC_INIT:
+                                case INSTANCE_INIT: continue;
+                                default: {
+                                    MemberInfo mi = new MemberInfo(e, info);
+                                    map.put(mi, new Object[] {Boolean.FALSE, mi, (e.getKind() == ElementKind.METHOD) ? Boolean.FALSE : null});
+                                }
+                            }
                         }
                     }
                     // select some members if applicable
@@ -408,6 +420,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     }
                     
                     // TODO: remove overrides, since they cannot be pulled up
+                    // Did not work even in 5.5
                     
                     // the members are collected
                     // now, create a tree map (to sort them) and create the table data
@@ -415,7 +428,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                         public int compare(Object o1, Object o2) {
                             return ((MemberInfo) o1).getHtmlText().compareTo(((MemberInfo) o2).getHtmlText());
                             
-//TODO:
+//TODO: sorting
 //                            NamedElement ne1 = (NamedElement) o1, ne2 = (NamedElement) o2;
 //                            // elements are sorted primarily by their class name
 //                            int result = ne1.getClass().getName().compareTo(ne2.getClass().getName());
@@ -492,15 +505,13 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                             Element e = refactoring.getSourceType().resolveElement(info);
                             MemberInfo m = new MemberInfo(e, info);
                             classes.add(m);
-                            //TODO:
-                            //                for (int i = 0; i < supertypes.length; i++) {
-                            //                    // add the other subtypes of the target type
-                            //                    if (!supertypes[i].equals(targetType) && supertypes[i].isSubTypeOf(targetType)) {
-                            //                        classes.add(supertypes[i]);
-                            //                    }
-                            //                }
+                            for (int i = 0; i < supertypes.length; i++) {
+                                // add the other subtypes of the target type
+                                if (info.getTypes().isSubtype(supertypes[i].getElementHandle().resolve(info).asType(), targetType.getElementHandle().resolve(info).asType())) {
+                                    classes.add(supertypes[i]);
+                                }
+                            }
                             // update the table
-                            //                tableModel.update((MemberInfo[]) classes.toArray(new MemberInfo[classes.size()]));
                             tableModel.update((MemberInfo[]) classes.toArray(new MemberInfo[classes.size()]));
                         }
                     }

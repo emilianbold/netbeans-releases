@@ -7,11 +7,6 @@
         <EmptyBorder bottom="11" left="12" right="11" top="12"/>
       </Border>
     </Property>
-    <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="LBL_PullUpHeader" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments}) /* NOI18N */">
-        <Argument index="0" javacode="&quot;TODO&quot;"/>
-      </ResourceString>
-    </Property>
   </Properties>
   <AuxValues>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>

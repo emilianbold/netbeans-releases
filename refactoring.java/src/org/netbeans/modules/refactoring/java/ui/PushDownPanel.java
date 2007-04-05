@@ -125,8 +125,13 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                     l.add(new MemberInfo(RetoucheUtils.typeToElement(tm, controller), controller, 1));
                 }
                 for (Element m: sourceTypeElement.getEnclosedElements()) {
-                    if (m.getKind() != ElementKind.CONSTRUCTOR) 
-                        l.add(new MemberInfo(m,controller));
+                    if (m.getKind() == ElementKind.CONSTRUCTOR || m.getKind() == ElementKind.STATIC_INIT || m.getKind() == ElementKind.INSTANCE_INIT) {
+                        continue;
+                    }
+                    if (m instanceof TypeElement && controller.getTypes().isSubtype(m.asType(), sourceTypeElement.asType())) {
+                        continue;
+                    }
+                    l.add(new MemberInfo(m,controller));
                 }
                 
                 Object[][] allMembers = new Object[l.size()][3];

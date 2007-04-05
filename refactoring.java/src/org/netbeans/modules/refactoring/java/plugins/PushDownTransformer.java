@@ -63,15 +63,16 @@ public class PushDownTransformer extends SearchVisitor {
                 for (int i=0; i<members.length; i++) {
                     Element current = workingCopy.getTrees().getElement(TreePath.getPath(getCurrentPath(), t));
                     if (members[i].getType()==0 && current.equals(members[i].getElementHandle().resolve(workingCopy))) {
-                        if (members[i].getUserData().lookup(Boolean.class)) {
+                        Boolean b = members[i].getUserData().lookup(Boolean.class);
+                        if (b==null?Boolean.FALSE:b) {
                             
-                        if (!classIsAbstract) {
-                            classIsAbstract = true;
-                            Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
-                            mod.add(Modifier.ABSTRACT);
-                            ModifiersTree modifiers = make.Modifiers(mod);
-                            workingCopy.rewrite(njuClass.getModifiers(), modifiers);
-                        }
+                            if (!classIsAbstract) {
+                                classIsAbstract = true;
+                                Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
+                                mod.add(Modifier.ABSTRACT);
+                                ModifiersTree modifiers = make.Modifiers(mod);
+                                workingCopy.rewrite(njuClass.getModifiers(), modifiers);
+                            }
                             
                             
                             MethodTree method = (MethodTree) t;

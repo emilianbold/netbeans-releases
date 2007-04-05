@@ -326,5 +326,13 @@ public class RetoucheUtils {
         return result;
     }
     
+    public static boolean elementExistsIn(TypeElement target, Element member) {
+        for (Element currentMember: target.getEnclosedElements()) {
+            if (ElementHandle.create(currentMember).signatureEquals(member))
+                return true;
+        }
+        return false;
+    }
+    
     
 }
