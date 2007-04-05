@@ -573,7 +573,20 @@ public class JsfProjectUtils {
             }
         }
         
-        return null;
+        FileObject rootDir = project.getProjectDirectory();
+        try {
+            FileObject srcDir = rootDir.getFileObject("src/java"); // NOI18N
+            if (srcDir != null) {
+                return srcDir;
+            }
+            srcDir = rootDir.getFileObject("src"); // NOI18N
+            if (srcDir != null) {
+                return srcDir;
+            }
+            return FileUtil.createFolder(rootDir, "src"); // NOI18N
+        } catch (IOException e) {
+            return rootDir;
+        }
     }
     
     /**
