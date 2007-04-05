@@ -759,6 +759,11 @@ public abstract class PositionEstimator {
                 int treeStart = (int) positions.getStartPosition(compilationUnit, item);
                 int treeEnd = (int) positions.getEndPosition(compilationUnit, item);
                 
+                // teribolak
+                if (item instanceof CasualDiff.FieldGroupTree) { //
+                    treeEnd = ((CasualDiff.FieldGroupTree) item).endPos();
+                }
+                
                 seq.move(treeStart);
                 seq.moveNext();
                 if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {

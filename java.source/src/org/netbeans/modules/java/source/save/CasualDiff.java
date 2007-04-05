@@ -136,7 +136,7 @@ public class CasualDiff {
     // todo (#pf): Is this really needed? -- Seems it duplicates the work
     // in SourcePositions, but in different way. Uses map of endPositions.
     // Look into the implementation and try to use SourcePositions!
-    private int endPos(JCTree t) {
+    public int endPos(JCTree t) {
         return model.getEndPos(t, oldTopLevel);
     }
     
@@ -1896,15 +1896,32 @@ public class CasualDiff {
     
     private List<JCTree> filterHidden(List<JCTree> list) {
         List<JCTree> result = new ArrayList<JCTree>(); // todo (#pf): capacity?
+        List<VariableTree> fieldGroup = new ArrayList<VariableTree>();
         for (JCTree tree : list) {
             if (Kind.METHOD == tree.getKind()) {
                 // filter syntetic constructors, i.e. constructors which are in
                 // the tree, but not available in the source.
                 if ((((JCMethodDecl)tree).mods.flags & Flags.GENERATEDCONSTR) != 0)
                     continue;
+            } else if (Kind.VARIABLE == tree.getKind()) {
+                JCVariableDecl var = (JCVariableDecl) tree;
+                if (isCommaSeparated(var)) {
+                    fieldGroup.add(var);
+                    continue;
+                }
+            }
+            if (!fieldGroup.isEmpty()) {
+                result.add(new FieldGroupTree(fieldGroup, this));
+                System.err.println("Group:");
+                for (VariableTree vt : fieldGroup) {
+                    System.err.println(vt);
+                }
+                fieldGroup = new ArrayList();
             }
             result.add(tree);
         }
+        if (!fieldGroup.isEmpty())
+            result.add(new FieldGroupTree(fieldGroup, this));
         return result;
     }
     
@@ -2030,12 +2047,10 @@ public class CasualDiff {
                             break;
                         }
                         printer.print(head);
-    //                    int old = printer.indent();
                         printer.enclClassName = printer.enclClassName;
                         if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
                         printer.print(item.element);
                         if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
-//                        printer.undent(old);
                     }
                     break;
                 }
@@ -2682,6 +2697,28 @@ public class CasualDiff {
         return listsMatch(t1.defs, t2.defs) && treesMatch(t1.expr, t2.expr);
     }
 
+    private boolean isCommaSeparated(JCVariableDecl oldT) {
+        if (getOldPos(oldT) <= 0) {
+            return false;
+        }
+        tokenSequence.move(oldT.pos);
+        PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+        if (JavaTokenId.COMMA == tokenSequence.token().id()) {
+            return true;
+        }
+        if (oldT.getInitializer() != null) {
+            tokenSequence.move(endPos(oldT.getInitializer()));
+        } else {
+            tokenSequence.move(oldT.pos);
+            tokenSequence.moveNext();
+        }
+        PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+        if (JavaTokenId.COMMA == tokenSequence.token().id()) {
+            return true;
+        }
+        return false;
+    }
+    
     private int[] getBounds(JCTree tree) {
         return new int[] { getOldPos(tree), endPos(tree) };
     }
@@ -2702,6 +2739,56 @@ public class CasualDiff {
         }
         loc.print(origText.substring(from, to));
     }
+    
+    protected static class FieldGroupTree extends JCTree implements Tree {
+        
+        List<VariableTree> vars;
+        CasualDiff diff;
+        
+        public FieldGroupTree(List<VariableTree> vars, CasualDiff diff) {
+            super(0);
+            this.vars = vars;
+            this.diff = diff;
+            pos = diff.getOldPos((JCVariableDecl) vars.get(0));
+        }
+        
+        public Kind getKind() {
+            return Kind.OTHER;
+        }
+
+        public List<VariableTree> getVariables() {
+            return vars;
+        }
+
+        public int endPos() {
+            return diff.endPos((JCTree)vars.get(vars.size()-1));
+        }
+        
+        public <R, D> R accept(TreeVisitor<R, D> arg0, D arg1) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void accept(Visitor arg0) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+        @Override
+        public boolean equals(Object arg0) {
+            if (arg0 instanceof FieldGroupTree) {
+                return vars.equals(((FieldGroupTree) arg0).getVariables());
+            }
+            return false;
+        }
+        
+        @Override
+        public int hashCode() {
+            return vars.hashCode();
+        }
+
+        
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
     
     private static class Line {
         Line(String data, int start, int end) {
