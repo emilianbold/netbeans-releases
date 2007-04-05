@@ -202,8 +202,7 @@ public class PageIterator implements TemplateWizard.Iterator {
                     }
                     JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, beanPackage);
 
-                    boolean isPage = "jsp".equals(template.getExt()); // NOI18N
-                    if (isPage) {
+                    if ("jsp".equals(template.getExt())) { // NOI18N
                         setStartPage(project, webModule, dir, targetName);
                     } else if ("jspf".equals(template.getExt()) && "Page1".equals(targetName)) { // NOI18N
                         setStartPage(project, webModule, dir, "Page2"); // NOI18N
@@ -212,12 +211,8 @@ public class PageIterator implements TemplateWizard.Iterator {
                     framework.getConfigurationPanel(webModule);
                     result = framework.extend(webModule);
 
-                    if (isPage) {
+                    if (dir.getFileObject(targetName+"."+template.getExt()) != null) { // NOI18N
                         return result;
-                    } else if (fileType == FILETYPE_BEAN) {
-                        if (dir.getFileObject(targetName+".java") != null) { // NOI18N
-                            return result;
-                        }
                     }
                 }
             }
