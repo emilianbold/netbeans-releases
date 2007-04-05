@@ -40,6 +40,9 @@ public class EnabledModulesCollectorTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", getWorkDirPath());
+        clearWorkDir();
+        
         Locale.setDefault(new Locale("te", "ST"));
         MockServices.setServices(EnabledModulesCollector.class, MyModule.class, MyModule2.class, ActivatedDeativatedTest.DD.class);
         installer = Installer.findObject(Installer.class, true);

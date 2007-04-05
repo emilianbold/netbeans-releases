@@ -26,6 +26,9 @@ import javax.swing.JButton;
 import javax.xml.parsers.ParserConfigurationException;
 import junit.framework.*;
 import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
@@ -46,13 +49,12 @@ public class InstallerTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", getWorkDirPath());
         clearWorkDir();
         
         Installer installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
 
-        System.setProperty("netbeans.user", getWorkDirPath());
-        
         // setup the listing
         installer.restored();
     }
@@ -70,15 +72,29 @@ public class InstallerTest extends NbTestCase {
         Installer installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
         installer.close();
-        Installer.clearLogs();
-        
-        assertEquals("No logs right now", 0, Installer.getLogsSize());
         
         installer.restored();
         assertEquals("One log is available: " + Installer.getLogs(), 1, Installer.getLogsSize());
         assertEquals("The right message is there", 
             "Something happened", Installer.getLogs().get(0).getMessage()
         );
+    }
+
+    public void testWeCanGetLast1000If1500Logged() throws Exception {
+        Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
+        
+        for (int i = 0; i < 1500; i++) {
+            log.warning("" + i);
+        }
+
+        List<LogRecord> arr = Installer.getLogs();
+        assertEquals("Has 1000 records", 1000, arr.size());
+        
+        Iterator<LogRecord> it = arr.iterator();
+        for (int i = 500; i < 1500; i++) {
+            LogRecord r = it.next();
+            assertEquals("The right name", i, Integer.parseInt(r.getMessage()));
+        }
     }
 
     public void testReadListOfSubmitButtons() throws Exception {

@@ -20,7 +20,6 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
@@ -28,6 +27,7 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -49,6 +49,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -81,10 +82,10 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.io.NullOutputStream;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -97,40 +98,24 @@ public class Installer extends ModuleInstall {
      * 
      */
     static final String USER_CONFIGURATION = "UI_USER_CONFIGURATION";   // NOI18N
-    private static Queue<LogRecord> logs = new LinkedList<LogRecord>();
-    private static UIHandler ui = new UIHandler(logs, false);
-    private static UIHandler handler = new UIHandler(logs, true);
+    private static UIHandler ui = new UIHandler(false);
+    private static UIHandler handler = new UIHandler(true);
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
     static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
+    private static final Preferences prefs = NbPreferences.forModule(Installer.class);
+    private static OutputStream logStream;
+    private static int logsSize;
     
     @Override
     public void restored() {
-        File logFile = logFile();
-        if (logFile != null && logFile.canRead()) {
-            InputStream is = null;
-            try {
-                is = new GZIPInputStream(new BufferedInputStream(new FileInputStream(logFile)));
-                LogRecords.scan(is, ui);
-            } catch (IOException ex) {
-                LOG.log(Level.INFO, "Cannot read " + logFile, ex);
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (Exception ex) {
-                        LOG.log(Level.INFO, "Cannot read " + logFile, ex);
-                    }
-                }
-            }
-        }
-        
         Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
         log.setUseParentHandlers(false);
         log.setLevel(Level.FINEST);
         log.addHandler(ui);
         Logger all = Logger.getLogger("");
         all.addHandler(handler);
-        
+        logsSize = prefs.getInt("count", 0);
+
         for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
             a.activated(log);
         }
@@ -158,47 +143,161 @@ public class Installer extends ModuleInstall {
         Logger all = Logger.getLogger(""); // NOI18N
         all.removeHandler(handler);
         
-        File logFile = logFile();
-        if (logFile != null) {
-            try {
-                logFile.getParentFile().mkdirs();
-                // flush all the unsend data to disk
-                OutputStream os = new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(logFile)));
-                for (LogRecord r : getLogs()) {
-                    LogRecords.write(os, r);
+        closeLogStream();
+    }
+
+    static void writeOut(LogRecord r) {
+        try {
+            LogRecords.write(logStream(), r);
+            if (logsSize >= UIHandler.MAX_LOGS) {
+                prefs.putInt("count", UIHandler.MAX_LOGS);
+                closeLogStream();
+                File f = logFile(0);
+                f.renameTo(new File(f.getParentFile(), f.getName() + ".1"));
+                logsSize = 0;
+            } else {
+                logsSize++;
+                if (prefs.getInt("count", 0) < logsSize) {
+                    prefs.putInt("count", logsSize);
                 }
-                os.close();
-            } catch (IOException ex) {
-                LOG.log(Level.INFO, "Cannot write " + logFile, ex);
             }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     
+    
     public static int getLogsSize() {
-        return logs.size();
+        return prefs.getInt("count", 0); // NOI18N
     }
     
     public static List<LogRecord> getLogs() {
-        synchronized (UIHandler.class) {
-            return new ArrayList<LogRecord>(logs);
+        File f = logFile(0);
+        if (f == null || !f.exists()) {
+            return Collections.emptyList();
         }
+        closeLogStream();
+
+        class H extends Handler {
+            List<LogRecord> logs = new LinkedList<LogRecord>();
+            
+            public void publish(LogRecord r) {
+                logs.add(r);
+                if (logs.size() > UIHandler.MAX_LOGS) {
+                    logs.remove(0);
+                }
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+        }
+        H handler = new H();
+        
+        
+        InputStream is = null;
+        File f1 = logFile(1);
+        if (logsSize < UIHandler.MAX_LOGS && f1 != null && f1.exists()) {
+            try {
+                is = new FileInputStream(f1);
+                LogRecords.scan(is, handler);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close();
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        try {
+            is = new FileInputStream(f);
+            LogRecords.scan(is, handler);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        return handler.logs;
     }
     
-    private static File logFile() {
+    private static File logFile(int revision) {
         String ud = System.getProperty("netbeans.user"); // NOI18N
         if (ud == null || "memory".equals(ud)) { // NOI18N
             return null;
         }
         
+        String suffix = revision == 0 ? "" : "." + revision;
+        
         File userDir = new File(ud); // NOI18N
-        File logFile = new File(new File(new File(userDir, "var"), "log"), "uigestures.gz");
+        File logFile = new File(new File(new File(userDir, "var"), "log"), "uigestures" + suffix);
         return logFile;
     }
     
-    static void clearLogs() {
-        synchronized (UIHandler.class) {
-            logs.clear();
+    private static OutputStream logStream() throws FileNotFoundException {
+        synchronized (Installer.class) {
+            if (logStream != null) {
+                return logStream;
+            }
         }
+        
+        OutputStream os;
+        File logFile = logFile(0);
+        if (logFile != null) {
+            logFile.getParentFile().mkdirs();
+            os = new BufferedOutputStream(new FileOutputStream(logFile, true));
+        } else {
+            os = new NullOutputStream();
+        }
+        
+        synchronized (Installer.class) {
+            logStream = os;
+        }
+        
+        return os;
+    }
+    
+    private static void closeLogStream() {
+        OutputStream os;
+        synchronized (Installer.class) {
+            os = logStream;
+            logStream = null;
+        }
+        if (os == null) {
+            return;
+        }
+        
+        try {
+            os.close();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    static void clearLogs() {
+        closeLogStream();
+        
+        for (int i = 0; ; i++) {
+            File f = logFile(i);
+            if (f == null || !f.exists()) {
+                break;
+            }
+            f.delete();
+        }
+        
+        prefs.putInt("count", 0);
         UIHandler.SUPPORT.firePropertyChange(null, null, null);
     }
     

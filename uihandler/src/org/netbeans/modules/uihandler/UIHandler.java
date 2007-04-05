@@ -41,39 +41,21 @@ import org.openide.util.NbBundle;
  */
 public class UIHandler extends Handler 
 implements ActionListener, Runnable, Callable<JButton> {
-    private final Queue<LogRecord> logs;
     private final boolean exceptionOnly;
     static final PropertyChangeSupport SUPPORT = new PropertyChangeSupport(UIHandler.class);
-    private static int MAX_LOGS = 1000;
+    static final int MAX_LOGS = 1000;
     
-    public UIHandler(Queue<LogRecord> l, boolean exceptionOnly) {
+    public UIHandler(boolean exceptionOnly) {
         setLevel(Level.FINEST);
-        logs = l;
         this.exceptionOnly = exceptionOnly;
     }
 
-    static void addPropertyChangeListener(PropertyChangeListener l) {
-        SUPPORT.addPropertyChangeListener(l);
-    }
-    static void removePropertyChangeListener(PropertyChangeListener l) {
-        SUPPORT.removePropertyChangeListener(l);
-    }
-    
     public void publish(LogRecord record) {
         if (exceptionOnly && record.getThrown() == null) {
             return;
         }
         
-        synchronized (UIHandler.class) {
-            if (logs.size() > MAX_LOGS) {
-                for (int i = 0; i < 100; i++) {
-                    logs.poll();
-                }
-            }
-            if (!logs.contains(record)) {
-                logs.add(record);
-            }
-        }
+        Installer.writeOut(record);
         
         SUPPORT.firePropertyChange(null, null, null);
     }

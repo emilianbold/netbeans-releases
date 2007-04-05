@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -34,6 +35,16 @@ public class ExceptionsTest extends NbTestCase {
     public ExceptionsTest(String testName) {
         super(testName);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        
+        System.setProperty("netbeans.user", getWorkDirPath());
+        clearWorkDir();
+    }
+    
+    
     
     public void testSetReportPanelSummary(){
         String str = "RETEZEC SUMMARY";
@@ -58,16 +69,24 @@ public class ExceptionsTest extends NbTestCase {
         uiLogger.log(log2);
         uiLogger.log(log3);
         assertEquals(3, installer.getLogsSize());
-        assertEquals(t2, installer.getThrown());
+        if (installer.getThrown().getMessage().indexOf("TESTING ERROR") == -1) {
+            fail("Wrong message " + installer.getThrown().getMessage());
+        }
         log1 = new LogRecord(Level.SEVERE, "TESTING 2");
         log1.setThrown(t1);
         uiLogger.log(log1);
         assertEquals(4, installer.getLogsSize());
-        assertEquals(t1, installer.getThrown());
+        List<LogRecord> arr = installer.getLogs();
+        assertEquals("The same amount of logs is loaded: " + arr, 4, arr.size());
+        if (installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1) {
+            fail("Wrong message " + installer.getThrown().getMessage());
+        }
         for (int i= 0; i < 10; i++){
             uiLogger.warning("MESSAGE "+Integer.toString(i));
         }
         assertEquals(14, installer.getLogsSize());
-        assertEquals(t1, installer.getThrown());
+        if (installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1) {
+            fail("Wrong message " + installer.getThrown().getMessage());
+        }
     }
 }

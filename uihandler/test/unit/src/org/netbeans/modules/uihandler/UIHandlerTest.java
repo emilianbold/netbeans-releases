@@ -25,15 +25,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
-import junit.framework.TestCase;
 import java.util.logging.LogRecord;
 import javax.swing.Action;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class UIHandlerTest extends TestCase {
+public class UIHandlerTest extends NbTestCase {
     private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions");
 
     
@@ -43,6 +43,8 @@ public class UIHandlerTest extends TestCase {
 
     protected void setUp() throws Exception {
         Installer o = Installer.findObject(Installer.class, true);
+        System.setProperty("netbeans.user", getWorkDirPath());
+        clearWorkDir();
         assertNotNull("Installer created", o);
         o.restored();
     }
@@ -70,7 +72,7 @@ public class UIHandlerTest extends TestCase {
         assertEquals("One log: " + logs, 1, logs.size());
         LogRecord first = logs.get(0);
         
-        assertSame("This is the logged record", rec, first);
+        assertEquals("This is the logged record", rec.getMessage(), first.getMessage());
         
         
     }
