@@ -620,8 +620,8 @@ public class J2eeProjectHelper {
         return wsdlData;
     }
     
-    private FileObject getWsdlFO() {
-        if (version == Version.VERSION_1_4) {
+    protected FileObject getWsdlFO() {
+        if (getVersion() == Version.VERSION_1_4) {
             String refName = null;
             
             switch (getProjectType()) {
@@ -657,9 +657,10 @@ public class J2eeProjectHelper {
                     // Not applicable?
                     break;
             }
-        } else if (version == Version.VERSION_1_5) {
+        } else if (getVersion() == Version.VERSION_1_5) {
             Client client = getClient();
             String wsdl = client.getLocalWsdlFile();
+            System.out.println("local wsdl = " + wsdl);
             Enumeration e = getProject().getProjectDirectory().getFolders(true);
             while (e.hasMoreElements()) {
                 FileObject fo = (FileObject)e.nextElement();
@@ -996,6 +997,7 @@ public class J2eeProjectHelper {
         
             FileObject wsdlFO = getWsdlFO();
             
+            System.out.println("wsdlFO = " + wsdlFO);
             if (wsdlFO != null) {
                 try {
                     serviceNames = WsdlParser.getWsdlSvcNames(
@@ -1007,6 +1009,10 @@ public class J2eeProjectHelper {
             }
         }
         
+        System.out.println("getAllServiceNames()");
+        for (String name : serviceNames) {
+            System.out.println("name = " + name);
+        }
         return serviceNames;
     }
     
@@ -1079,7 +1085,7 @@ public class J2eeProjectHelper {
         }
     }
     
-    private J2eeModuleProvider getProvider() {
+    protected J2eeModuleProvider getProvider() {
         Project project = getProject();
         
         if (project != null)
@@ -1088,7 +1094,7 @@ public class J2eeProjectHelper {
         return null;
     }
     
-    private Project getProject() {
+    protected Project getProject() {
         return FileOwnerQuery.getOwner(getFileObject());
     }
     
@@ -1119,23 +1125,23 @@ public class J2eeProjectHelper {
         return getService().getImplementationClass();
     }
     
-    private Client getClient() {
+    protected Client getClient() {
         return (Client) node.getLookup().lookup(Client.class);
     }
     
-    private Service getService() {
+    protected Service getService() {
         return (Service) node.getLookup().lookup(Service.class);
     }
     
-    private WebModule getWebModule() {
+    protected WebModule getWebModule() {
         return WebModule.getWebModule(getProjectDirectory());
     }
     
-    private EjbJar getEjbModule() {
+    protected EjbJar getEjbModule() {
         return EjbJar.getEjbJar(getProjectDirectory());
     }
     
-    private Car getClientModule() {
+    protected Car getClientModule() {
         return Car.getCar(getProjectDirectory());
     }
     
@@ -1159,7 +1165,7 @@ public class J2eeProjectHelper {
                 J2eeModule.EJBJAR_XML);
     }
     
-    private org.netbeans.modules.j2ee.dd.api.webservices.Webservices getWebServicesXML() {
+    protected org.netbeans.modules.j2ee.dd.api.webservices.Webservices getWebServicesXML() {
         switch (getProjectType()) {
             case WEB:
                 //System.out.println(getProvider().getJ2eeModule().getDeploymentDescriptor(
@@ -1178,7 +1184,7 @@ public class J2eeProjectHelper {
         return null;
     }
     
-    private J2eeModule getJ2eeModule() {
+    protected J2eeModule getJ2eeModule() {
         return getProvider().getJ2eeModule();
     }
 }

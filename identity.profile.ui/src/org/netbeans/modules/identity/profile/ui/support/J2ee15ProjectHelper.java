@@ -10,7 +10,18 @@
 package org.netbeans.modules.identity.profile.ui.support;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.identity.profile.api.bridgeapi.SunDDBridge;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -26,6 +37,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
     
     private String portComponentName;
     private String serviceDescriptionName;
+    private List<String> serviceRefNames;
     
     /** Creates a new instance of J2ee15ProjectHelper */
     protected J2ee15ProjectHelper(Node node, JaxWsModel model) {
@@ -60,6 +72,25 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
         
         System.out.println("J2ee15ProjectHelper.serviceDescriptionName = " + serviceDescriptionName);
         return serviceDescriptionName;
+    }
+    
+    public List<String> getAllServiceRefNames() {
+        if (serviceRefNames == null) {
+            serviceRefNames = new ArrayList<String>();
+            List<ServiceRef> refs = getServiceRefs();
+            String wsdlUri = getClient().getWsdlUrl();
+    
+            System.out.println("wsdlUri = " + wsdlUri);
+            
+            for (ServiceRef ref : refs) {
+                if (ref.getWsdlLocation().equals(wsdlUri)) {
+                    System.out.println("adding serviceRefName = " + ref.getName());
+                    serviceRefNames.add(ref.getName());
+                }
+            }     
+        }
+        
+        return serviceRefNames;
     }
     
     public boolean isSecurityEnabled() {
@@ -157,6 +188,102 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
                 i++;
             }
              */
+        }
+    }
+    
+    private List<ServiceRef> getServiceRefs() {
+        FileObject[] sourceRoots = getProvider().getSourceRoots();
+        List<ServiceRef> refs = new ArrayList<ServiceRef>();
+        
+        for (FileObject root : sourceRoots) {
+            System.out.println("root = " + root);
+            if (root.getName().endsWith("conf")) {
+                continue;
+            }
+            
+            Enumeration<? extends FileObject> dataFiles = root.getData(true);
+            
+            while (dataFiles.hasMoreElements()) {
+                FileObject fobj = dataFiles.nextElement();
+                
+                if (fobj.getExt().equals("java")) {
+                    System.out.println("source fobj = " + fobj);
+                    JavaSource source = JavaSource.forFileObject(fobj);
+                    
+                    refs.addAll(getServiceRefsFromSource(source));
+                }
+            }
+        }
+        
+        return refs;
+    }
+    
+    private List<ServiceRef> getServiceRefsFromSource(JavaSource source) {
+        final List<ServiceRef> refs = new ArrayList<ServiceRef>();
+        
+         try {
+            source.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    
+                    TypeElement classElement = JavaSourceHelper.getTopLevelClassElement(controller);
+                    List<VariableElement> fields = ElementFilter.fieldsIn(classElement.getEnclosedElements());
+                    
+                    for (VariableElement field : fields) {
+                        System.out.println("field = " + field);
+                        List<? extends AnnotationMirror> annotations = field.getAnnotationMirrors();
+                        
+                        for (AnnotationMirror annotation : annotations) {
+                            System.out.println("annotation = " + annotation);
+                            if (annotation.toString().startsWith("@javax.xml.ws.WebServiceRef")) {    //NOI18N
+                                
+                                Map<? extends ExecutableElement, ? extends AnnotationValue> values = annotation.getElementValues();
+                                
+                                for (ExecutableElement key : values.keySet()) {
+                                    System.out.println("key = " + key.getSimpleName());
+                                    System.out.println("value = " + values.get(key));
+                                    
+                                    if (key.getSimpleName().toString().equals("wsdlLocation")) { //NOI18N                   
+                                        String wsdlLocation = values.get(key).toString().replace("\"", "");                        
+                                        String refName = classElement.getQualifiedName().toString() + "/" +
+                                                field.getSimpleName().toString();
+                                        
+                                        refs.add(new ServiceRef(refName, wsdlLocation));
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            
+        }
+     
+        return refs;
+    }
+    
+    
+    private static class ServiceRef {
+        private String name;
+        private String wsdlLocation;
+        
+        public ServiceRef(String name, String wsdlLocation) {
+            this.name = name;
+            this.wsdlLocation = wsdlLocation;
+        }
+        
+        public String getName() {
+            return name;
+        }
+     
+        public String getWsdlLocation() {
+            return wsdlLocation;
+        }
+        
+        public String toString() {
+            return "name:" + name + " wsdlLocation: " + wsdlLocation;
         }
     }
 }
