@@ -9,7 +9,10 @@
         <j9builder jvmargs="${{run.jvmargs}} -Xrunjdwp:server=n,address=${{jpda.port}}" mainclass="${{main.class}}" args="${{application.args}}" platform="${{platform.type}}" home="${{platform.home}}" dist="${{j9.dist}}" id="${{semc.application.uid}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}" jarname="${{dist.jar}}"/>
     </target>
     <target name="semc-debug-start" if="semc-platform.trigger">
-        <nbjpdastart transport="dt_socket" addressproperty="jpda.port" name="${{debug.class}}">
+        <nbjpdastart transport="dt_socket" addressproperty="jpda.port" name="${{main.class}}">
+            <classpath>
+                <path path="${{build.classes.dir}}"/>
+            </classpath>
             <bootclasspath>
                 <path path="${{platform.bootclasspath}}"/>
             </bootclasspath>
