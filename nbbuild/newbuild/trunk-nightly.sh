@@ -84,7 +84,7 @@ cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D '00:00UTC today' nbbui
 ant -f nbbuild/build.xml checkout >> $CVS_CHECKOUT_LOG 2>&1
 
 #Checkout modules for the components
-cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D '00:00UTC today' mobility uml visualweb scripting enterprise print >> $CVS_CHECKOUT_LOG 2>&1
+cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D '00:00UTC today' mobility uml visualweb scripting enterprise print identity  >> $CVS_CHECKOUT_LOG 2>&1
 
 
 ###################################################################
