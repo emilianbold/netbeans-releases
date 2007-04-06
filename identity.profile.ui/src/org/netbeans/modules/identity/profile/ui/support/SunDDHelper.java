@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -39,6 +40,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
@@ -144,6 +146,8 @@ public class SunDDHelper {
     private static final String SUN_EJB_DTD_3_0 = "resources/sun-ejb-jar_3_0-0.dtd";    //NOI18N
     
     private static final String SUN_APPCLIENT_DTD_5_0 = "resources/sun-application-client_5_0-0.dtd";  //NOI18N
+    
+    private static final String IDENT = "    ";     //NOI18N
     
     private static int TIME_TO_WAIT = 300;
     
@@ -415,10 +419,10 @@ public class SunDDHelper {
         if (type == ProjectType.EJB) {
             root = getComponentElement(root, EJB_TAG, EJB_NAME_TAG, className);
             
-            if (root == null) return false;      
+            if (root == null) return false;
         }
-  
-        Element serviceRef = getServiceRefElement(root, serviceRefName, 
+        
+        Element serviceRef = getServiceRefElement(root, serviceRefName,
                 namespaceURI, localPart);
         
         if (serviceRef != null) {
@@ -479,7 +483,7 @@ public class SunDDHelper {
         for (int i = 0; i < length; i++) {
             Element serviceRef = (Element) serviceRefs.item(i);
             Element refName = getElement(serviceRef, SERVICE_REF_NAME_TAG);
-      
+            
             if (refName != null) {
                 if (containsValue(refName, serviceRefName)) {
                     Element portInfo = getElement(serviceRef, PORT_INFO_TAG);
@@ -524,7 +528,7 @@ public class SunDDHelper {
             String namespaceURI, String localPart) {
         Document document = getDocument();
         Element serviceRef = document.createElement(SERVICE_REF_TAG);
-        serviceRef.appendChild(createElement(SERVICE_REF_NAME_TAG, 
+        serviceRef.appendChild(createElement(SERVICE_REF_NAME_TAG,
                 serviceRefName));
         Element portInfo = document.createElement(PORT_INFO_TAG);
         serviceRef.appendChild(portInfo);
@@ -663,6 +667,8 @@ public class SunDDHelper {
     }
     
     private void writeDocument() {
+        beautify();
+        
         //RequestProcessor.getDefault().post(new Runnable() {
         //   public void run() {
         FileLock lock = null;
@@ -736,7 +742,7 @@ public class SunDDHelper {
                 }
             }
         }
-        
+   
         return document;
     }
     
@@ -746,7 +752,7 @@ public class SunDDHelper {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(false);
         factory.setIgnoringComments(false);
-        factory.setIgnoringElementContentWhitespace(false);
+        factory.setIgnoringElementContentWhitespace(true);
         factory.setCoalescing(false);
         factory.setExpandEntityReferences(false);
         factory.setValidating(false);
@@ -759,6 +765,34 @@ public class SunDDHelper {
         }
         
         return builder;
+    }
+    
+    private void beautify() {
+        beautify(getDocument().getDocumentElement(), "\n");   //NOI18N
+    }
+    
+    private void beautify(Node node, String indent) {
+        Document document = getDocument();
+        NodeList children = node.getChildNodes();
+        int length = children.getLength();
+        ArrayList<Node> list = new ArrayList<Node>();
+        
+        for (int i = 0; i < length; i++) {
+            list.add(children.item(i));
+        }
+        
+        for (int i = 0; i < length; i++) {
+            Node child = list.get(i);
+           
+            if (child instanceof Text) continue;
+            
+            node.insertBefore(document.createTextNode(indent + IDENT), child);
+            beautify(child, indent + IDENT);
+         
+            if (i+1 == length) {
+                node.appendChild(document.createTextNode(indent));
+            }
+        }
     }
     
     /**

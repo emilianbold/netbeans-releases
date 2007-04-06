@@ -508,8 +508,6 @@ public class J2eeProjectHelper {
             switch (getProjectType()) {
                 case WEB:
                     try {
-                        System.out.println("serviceRefs = " + getWebApp().getServiceRef());
-                        
                         for (ServiceRef s : getWebApp().getServiceRef()) {
                             System.out.println("s = " + s);
                             if (version == Version.VERSION_1_4) {
