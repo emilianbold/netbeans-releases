@@ -30,6 +30,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -116,7 +118,7 @@ public class MenuEditLayer extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.setColor(Color.RED);
-        g.drawString("Menu Edit Layer",5,getHeight()-5);
+        g.drawString("the MenuEditLayer is visible",5,getHeight()-5);
     }
     
     
@@ -130,6 +132,7 @@ public class MenuEditLayer extends JPanel {
     
     public void closeMenu(RADComponent menuComp, Component comp) {
     }
+    
     public void openMenu(RADComponent metacomp, Component comp) {
         //p("MenuEditLayer.openMenu on: " + metacomp.getName());
         JMenu menu = (JMenu) comp;
@@ -265,6 +268,9 @@ public class MenuEditLayer extends JPanel {
         return menuParentMap.containsKey(c);
     }
     
+    
+    
+    
     void configureMenuItem(final JMenu parent, final JComponent c) {
         menuParentMap.put(c,parent);
         // menu items tranfer themselves
@@ -294,7 +300,17 @@ public class MenuEditLayer extends JPanel {
         menuParentMap.remove(c);
     }
     
+    
+    
     private void configMouseListener(final JComponent c) {
+        //remove existing listeners
+        
+        for(MouseListener l : c.getMouseListeners()) {
+            c.removeMouseListener(l);
+        }
+        for(MouseMotionListener l : c.getMouseMotionListeners()) {
+            c.removeMouseMotionListener(l);
+        }
         // a listener for the context menu and for starting drags
         MouseInputAdapter mia = new MenuItemMouseHandler(c);
         c.addMouseListener(mia);
