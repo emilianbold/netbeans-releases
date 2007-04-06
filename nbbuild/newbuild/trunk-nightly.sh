@@ -11,6 +11,8 @@ pack_component()
     gtar cvjf $dist/targz/$base_name-$component.tar.bz2 $filter
 }
 
+ANT_OPTS="-Xmx512m"
+
 if [ -z $NB_ALL ]; then
     NB_ALL=/space/NB-IDE/nb-all
 fi
@@ -36,7 +38,7 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build basic IDE"
     exit $ERROR_CODE;
 fi
-ant -Dnb_all=$NB_ALL -f visualweb/ravebld/build.xml
+ant -Dnb_all=$NB_ALL -f visualweb/ravebuild/build.xml
 ant -f mobility/build.xml build
 ant -f uml/build.xml build
 ant -f scripting/ruby/build.xml build
