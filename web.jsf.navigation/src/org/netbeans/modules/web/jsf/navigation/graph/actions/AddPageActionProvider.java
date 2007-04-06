@@ -37,9 +37,21 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
     
     public Action createContextAwareInstance(Lookup lookup) {
         PageFlowScene scene = lookup.lookup(PageFlowScene.class);
-        return new AddPageAction(scene);
+        if( scene != null) {
+            setEnabled(true);
+            return new AddPageAction(scene);
+        }
+        setEnabled(false);
+        return null;
     }
   
+//    @Override
+//    public boolean isEnabled() {
+//        return super.isEnabled();
+//    }
+
+    
+    
     public void actionPerformed(ActionEvent arg0) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

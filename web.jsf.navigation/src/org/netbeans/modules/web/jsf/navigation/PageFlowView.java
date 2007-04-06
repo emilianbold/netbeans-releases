@@ -114,7 +114,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
             /* Temporarily Removing Palette */
             //            PaletteController paletteController = getPaletteController();
             //            if (paletteController == null) {
-            lookup = new ProxyLookup(new Lookup[] {superLookup});
+            lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[]{scene})});
             //            } else {
             //                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] { paletteController})});
             //            }

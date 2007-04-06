@@ -92,7 +92,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     
     private WidgetAction moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction();
     //    private WidgetAction popupNodeAction = ActionFactory.createPopupMenuAction (new NodePopupMenuProvider(this));
-    private WidgetAction popupGraphAction = ActionFactory.createPopupMenuAction(new PageFlowPopupProvider(this));
+    private WidgetAction popupGraphAction;
     private WidgetAction moveAction = ActionFactory.createMoveAction();
     private WidgetAction dragNdropAction = ActionFactory.createAcceptAction(new PageFlowAcceptProvider());
     private WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
@@ -118,6 +118,8 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         
         router = RouterFactory.createOrthogonalSearchRouter(mainLayer, connectionLayer);
         
+        popupGraphAction = ActionFactory.createPopupMenuAction(new PageFlowPopupProvider(this, tc));
+        
         Chain actions = getActions();
         actions.addAction(ActionFactory.createZoomAction());
         actions.addAction(ActionFactory.createPanAction());
@@ -141,7 +143,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         
     }
     
-    
+     
     
     private WidgetAction createActionMap() {
         return ActionFactory.createActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());

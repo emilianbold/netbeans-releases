@@ -40,6 +40,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -53,13 +54,14 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
     private JPopupMenu graphPopup;
     
     private String addPage = NbBundle.getMessage(PageFlowPopupProvider.class, "MSG_AddPage");
-    
+    private TopComponent tc;
     /**
      * Creates a Popup for any right click on Page Flow Editor
      * @param graphScene The related PageFlow Scene.
+     * @param tc 
      */
-    public PageFlowPopupProvider(PageFlowScene graphScene) {
-        
+    public PageFlowPopupProvider(PageFlowScene graphScene, TopComponent tc ) {
+        this.tc = tc;
         this.graphScene = graphScene;
         initialize();
     }
@@ -71,10 +73,10 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
     private void initialize() {
         InstanceContent ic = new InstanceContent();
         ic.add(graphScene);
-        Lookup lookup = new AbstractLookup(ic);
+//        Lookup lookup = tc.getLookup();
         
-        graphPopup = Utilities.actionsToPopup(
-                SystemFileSystemSupport.getActions(PATH_PAGEFLOW_ACTIONS), lookup);
+//        graphPopup = Utilities.actionsToPopup(
+//                SystemFileSystemSupport.getActions(PATH_PAGEFLOW_ACTIONS), lookup);
         //        graphPopup = new JPopupMenu("Transition Menu");
         //
         //        graphPopup = new JPopupMenu();
@@ -87,7 +89,8 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
     
     
     public JPopupMenu getPopupMenu(Widget widget, Point point){
-        return graphPopup;
+        return Utilities.actionsToPopup(
+                SystemFileSystemSupport.getActions(PATH_PAGEFLOW_ACTIONS), tc.getLookup());
     }
     
     
