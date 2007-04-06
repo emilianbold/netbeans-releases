@@ -76,7 +76,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
         "/var" };
     
     protected void scheduleCleanup(String libraryPath) {
-        new File(libraryPath).deleteOnExit();
+        FileUtils.deleteOnExit(new File(libraryPath));
     }
     
     public boolean isCurrentUserAdmin() {

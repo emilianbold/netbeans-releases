@@ -465,6 +465,10 @@ public final class SystemUtils {
         getNativeUtils().setEnvironmentVariable(name, value, scope, expand);
     }
     
+    public static void deleteFilesOnExit() {
+        getNativeUtils().deleteFilesOnExit();
+    }
+    
     public static List<File> findIrrelevantFiles(File parent) throws IOException {
         return getNativeUtils().findIrrelevantFiles(parent);
     }

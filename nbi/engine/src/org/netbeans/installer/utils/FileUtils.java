@@ -81,6 +81,7 @@ public final class FileUtils {
     public static final String CURRENT = ".";
     public static final String PARENT = "..";
     
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     public static String readFile(File file) throws IOException {
@@ -348,14 +349,18 @@ public final class FileUtils {
             
             if (!exists(file)) {
                 LogManager.log("    ... " + type + " does not exist");
+                SystemUtils.getNativeUtils().removeDeleteOnExitFile(file);
             } else {
                 if (!file.delete()) {
-                    file.deleteOnExit();
+                    deleteOnExit(file);                    
                 }
             }
         }
     }
     
+    public static void deleteOnExit(File file) {
+        SystemUtils.getNativeUtils().addDeleteOnExitFile(file);
+    }
     public static void deleteFile(File file, String mask) throws IOException {
         if (file.isDirectory()) {
             File [] list = file.listFiles(new MaskFileFilter(mask));
@@ -828,7 +833,7 @@ public final class FileUtils {
     public static Launcher createLauncher(NativeLauncher nl, Platform platform, Progress progress) throws IOException {
         Progress prg = (progress==null) ? new Progress() : progress;
         return nl.create(platform, progress);
-                
+        
     }
     
     public static boolean exists(File file) {

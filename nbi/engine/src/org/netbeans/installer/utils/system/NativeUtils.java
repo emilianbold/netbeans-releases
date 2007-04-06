@@ -23,6 +23,7 @@ package org.netbeans.installer.utils.system;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import org.netbeans.installer.Installer;
@@ -39,7 +40,6 @@ import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.NativeLauncher;
-import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.launchers.Launcher;
 import org.netbeans.installer.utils.helper.launchers.LauncherResource;
 import org.netbeans.installer.utils.progress.Progress;
@@ -53,6 +53,7 @@ public abstract class NativeUtils {
     // Static
     private static NativeUtils instance;
     private static HashSet<File> forbiddenDeletingFiles = new HashSet<File>();
+    private static List <File> deleteOnExitFiles = new ArrayList <File> ();
     
     public static synchronized NativeUtils getInstance() {
         switch (SystemUtils.getCurrentPlatform()) {
@@ -100,7 +101,7 @@ public abstract class NativeUtils {
     
     public abstract void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws NativeException;
     
-    protected Launcher createUninstaller(ApplicationDescriptor descriptor, boolean useUninstallCommand, Progress progress) throws IOException {        
+    protected Launcher createUninstaller(ApplicationDescriptor descriptor, boolean useUninstallCommand, Progress progress) throws IOException {
         LogManager.log(ErrorLevel.DEBUG, "Creating uninstaller...");
         NativeLauncher nl = new NativeLauncher();
         nl.addJVM(new LauncherResource(false, SystemUtils.getCurrentJavaHome()));
@@ -137,6 +138,32 @@ public abstract class NativeUtils {
     public boolean checkFileAccess(File file, boolean isReadNotModify) throws NativeException {
         return true;
     }
+    
+    public final void addDeleteOnExitFile(File file) {
+        if(!deleteOnExitFiles.contains(file)) {
+            deleteOnExitFiles.add(file);
+        }
+    }
+    
+    public final void removeDeleteOnExitFile(File file) {
+        deleteOnExitFiles.remove(file);
+    }
+    
+    public void deleteFilesOnExit() {        
+        if(deleteOnExitFiles.size()>0) {
+            LogManager.log(ErrorLevel.DEBUG, 
+                    "Total files to delete on exit : " + 
+                    deleteOnExitFiles.size());
+        }
+        for(File file : deleteOnExitFiles) {
+            if(FileUtils.exists(file)) {
+                file.deleteOnExit();
+                LogManager.log(ErrorLevel.DEBUG, 
+                    "... delete on exit : " + file.getAbsolutePath());
+            }
+        }
+    }
+    
     // protected abstract ///////////////////////////////////////////////////////////
     protected abstract void scheduleCleanup(String libraryPath);
     

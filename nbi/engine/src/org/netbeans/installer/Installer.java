@@ -39,6 +39,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.DateUtils;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -167,9 +168,9 @@ public class Installer implements FinishHandler {
         wizard.setFinishHandler(this);
         wizard.getContext().put(Registry.getInstance());
         
-        cacheEngineLocally();
-        
         createInstallerLockFile();
+        
+        cacheEngineLocally();
         
         LogManager.unindent();
         LogManager.log("... finished initializing the installer engine");
@@ -193,12 +194,10 @@ public class Installer implements FinishHandler {
      * @see #finish()
      * @see #criticalExit()
      */
-    public void cancel() {
-        // shut down everything that needs it
-        DownloadManager.instance.terminate();
-        
+    public void cancel() {     
+        // shut down everything that needs it   
         // exit with the cancel error code
-        System.exit(CANCEL_ERRORCODE);
+        cleanupAndExit(CANCEL_ERRORCODE);
     }
     
     /**
@@ -208,10 +207,9 @@ public class Installer implements FinishHandler {
      * @see #cancel()
      * @see #criticalExit()
      */
-    public void finish() {
-        Wizard.getInstance().close();
-        DownloadManager.instance.terminate();
-        System.exit(NORMAL_ERRORCODE);
+    public void finish() {        
+        Wizard.getInstance().close();        
+        cleanupAndExit(NORMAL_ERRORCODE);
     }
     
     /**
@@ -222,12 +220,18 @@ public class Installer implements FinishHandler {
      * @see #finish()
      */
     public void criticalExit() {
-        // exit immediately, as the system is apparently in a crashed state
-        DownloadManager.instance.terminate();
-        System.exit(CRITICAL_ERRORCODE);
-    }
+        // exit immediately, as the system is apparently in a crashed state        
+        cleanupAndExit(CRITICAL_ERRORCODE);
+    }    
     
     // private //////////////////////////////////////////////////////////////////////
+    private void cleanupAndExit(int errorCode) {
+        
+        DownloadManager.instance.terminate();
+        SystemUtils.deleteFilesOnExit();
+        System.exit(errorCode);
+    }
+    
     private void dumpSystemInfo() {
         LogManager.log("dumping target system information");
         LogManager.indent();
