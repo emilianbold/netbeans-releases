@@ -172,6 +172,9 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                             w = WindowManager.getDefault ().getMainWindow ();
                         }
                         Frame f = w instanceof Frame ? (Frame) w : WindowManager.getDefault().getMainWindow();
+                        if (noParent) {
+                            f = null;
+                        }
                         presenter = new NbDialog((DialogDescriptor) descriptor, f);
                     }
                 } else {

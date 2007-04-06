@@ -21,7 +21,10 @@ package org.netbeans.core.windows.services;
 
 import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.awt.Window;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
@@ -217,7 +220,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         assertFalse ("Child is dead too", child.isVisible ());
     }
     
-    private void postInAwtAndWaitOutsideAwt (final Runnable run) throws Exception {
+    static void postInAwtAndWaitOutsideAwt (final Runnable run) throws Exception {
         // pendig to better implementation
         SwingUtilities.invokeLater (run);
 //        Thread.sleep (10);
@@ -229,42 +232,4 @@ public class DialogDisplayerImplTest extends NbTestCase {
     private void waitAWT() throws Exception {
         SwingUtilities.invokeAndWait(new Runnable() { public void run() { } });
     }
-
-    public void testIfLasterWhenSplashShownThanWaitTillItFinished() throws Exception {
-        class MyObj extends Object {
-            public int called;
-            
-            public String toString() {
-                called = 1;
-                return "Kuk";
-            }
-        }
-        MyObj obj = new MyObj();
-        
-        NotifyDescriptor ownerDD = new NotifyDescriptor.Message(obj);
-        
-        
-        
-        DialogDisplayer.getDefault ().notifyLater(ownerDD);
-        waitAWT();
-        assertEquals("No notify yet", 0, obj.called);
-        
-        postInAwtAndWaitOutsideAwt(new Runnable () {
-            public void run() {
-                DialogDisplayerImpl.runDelayed();
-            }
-        });
-        
-        
-        waitAWT();
-        assertEquals("Now it is showing", 1, obj.called);
-        
-        SwingUtilities.invokeAndWait(new Runnable () {
-            public void run() {
-                DialogDisplayerImpl.runDelayed();
-            }
-        });
-        
-    }
-    
 }
