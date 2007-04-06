@@ -28,12 +28,12 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
                 xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1"
                 exclude-result-prefixes="xalan p projdeps projdeps2">
-<!-- XXX should use namespaces for NB in-VM tasks from ant/browsetask and debuggerjpda/ant (Ant 1.6.1 and higher only) -->
+    <!-- XXX should use namespaces for NB in-VM tasks from ant/browsetask and debuggerjpda/ant (Ant 1.6.1 and higher only) -->
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:param name = "jax_ws_uri">jax-ws.xml</xsl:param>
     <xsl:param name = "jaxws" select="document($jax_ws_uri)"/>
     <xsl:template match="/">
-
+        
         <xsl:comment><![CDATA[
 *** GENERATED FROM project.xml - DO NOT EDIT  ***
 ***         EDIT ../build.xml INSTEAD         ***
@@ -53,38 +53,38 @@ is divided into following sections:
   - applet
   - cleanup
 
-]]></xsl:comment>
-
+        ]]></xsl:comment>
+        
         <xsl:variable name="name" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:name"/>
         <!-- Synch with build-impl.xsl: -->
         <xsl:variable name="codename" select="translate($name, ' ', '_')"/>
         <project name="{$codename}-impl">
             <xsl:attribute name="default">default</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
-
+            
             <target name="default">
                 <xsl:attribute name="depends">test,jar,javadoc</xsl:attribute>
                 <xsl:attribute name="description">Build and test whole project.</xsl:attribute>
             </target>
-
+            
             <xsl:comment> 
-    ======================
-    INITIALIZATION SECTION 
-    ======================
-    </xsl:comment>
-
+                ======================
+                INITIALIZATION SECTION 
+                ======================
+            </xsl:comment>
+            
             <target name="-pre-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="-init-private">
                 <xsl:attribute name="depends">-pre-init</xsl:attribute>
                 <property file="nbproject/private/config.properties"/>
                 <property file="nbproject/private/configs/${{config}}.properties"/>
                 <property file="nbproject/private/private.properties"/>
             </target>
-
+            
             <target name="-init-user">
                 <xsl:attribute name="depends">-pre-init,-init-private</xsl:attribute>
                 <property file="${{user.properties.file}}"/>
@@ -93,13 +93,13 @@ is divided into following sections:
                 <property name="default.javac.source" value="1.4"/>
                 <property name="default.javac.target" value="1.4"/>
             </target>
-
+            
             <target name="-init-project">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-user</xsl:attribute>
                 <property file="nbproject/configs/${{config}}.properties"/>
                 <property file="nbproject/project.properties"/>
             </target>
-
+            
             <target name="-do-init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
@@ -182,12 +182,12 @@ is divided into following sections:
                 <property name="includes" value="**"/>
                 <property name="excludes" value=""/>
             </target>
-
+            
             <target name="-post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="-init-check">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init</xsl:attribute>
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
@@ -208,7 +208,7 @@ is divided into following sections:
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
                 <fail unless="dist.jar">Must set dist.jar</fail>
             </target>
-
+            
             <target name="-init-macrodef-property">
                 <macrodef>
                     <xsl:attribute name="name">property</xsl:attribute>
@@ -222,7 +222,7 @@ is divided into following sections:
                     <sequential>
                         <property name="@{{name}}" value="${{@{{value}}}}"/>
                     </sequential>
-                  </macrodef>
+                </macrodef>
             </target>
             
             <target name="-init-macrodef-javac">
@@ -291,7 +291,7 @@ is divided into following sections:
                             <customize/>
                         </javac>
                     </sequential>
-                 </macrodef>
+                </macrodef>
                 <macrodef> <!-- #36033, #85707 -->
                     <xsl:attribute name="name">depend</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -354,7 +354,7 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-
+            
             <target name="-init-macrodef-junit">
                 <macrodef>
                     <xsl:attribute name="name">junit</xsl:attribute>
@@ -399,7 +399,7 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-
+            
             <target name="-init-macrodef-nbjpda">
                 <macrodef>
                     <xsl:attribute name="name">nbjpdastart</xsl:attribute>
@@ -443,7 +443,7 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-
+            
             <target name="-init-debug-args">
                 <xsl:choose>
                     <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
@@ -468,7 +468,7 @@ is divided into following sections:
                     <istrue value="${{have-jdk-older-than-1.4}}"/>
                 </condition>
             </target>
-
+            
             <target name="-init-macrodef-debug" depends="-init-debug-args">
                 <macrodef>
                     <xsl:attribute name="name">debug</xsl:attribute>
@@ -538,7 +538,7 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-
+            
             <target name="-init-presetdef-jar">
                 <presetdef>
                     <xsl:attribute name="name">jar</xsl:attribute>
@@ -553,13 +553,13 @@ is divided into following sections:
             <target name="init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-java,-init-presetdef-jar</xsl:attribute>
             </target>
-
+            
             <xsl:comment>
-    ===================
-    COMPILATION SECTION
-    ===================
-    </xsl:comment>
-
+                ===================
+                COMPILATION SECTION
+                ===================
+            </xsl:comment>
+            
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-jar'"/>
                 <xsl:with-param name="type" select="'jar'"/>
@@ -596,6 +596,7 @@ is divided into following sections:
                         <wsimport
                             fork="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            extension="true"
                             package="{$package_name}"
                             destdir="${{build.generated.dir}}/wsimport/binaries"
                             wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
@@ -663,26 +664,26 @@ is divided into following sections:
             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
                 <target name="wscompile-init" depends="init">
                     <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile"
-                        classpath="${{wscompile.classpath}}"/>
+                             classpath="${{wscompile.classpath}}"/>
                     <taskdef name="wsclientuptodate" classname="org.netbeans.modules.websvc.core.ant.WsClientUpToDate"
-                        classpath="${{wsclientuptodate.classpath}}"/>
-
+                             classpath="${{wsclientuptodate.classpath}}"/>
+                    
                     <mkdir dir="${{build.classes.dir}}"/>
                     <mkdir dir="${{build.generated.dir}}/wsclient"/>
                     <mkdir dir="${{build.generated.dir}}/wsbinary"/>
-
+                    
                     <xsl:for-each select="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
                         <xsl:variable name="wsclientname">
                             <xsl:value-of select="j2seproject3:web-service-client-name"/>
                         </xsl:variable>
-
+                        
                         <wsclientuptodate property="wscompile.client.{$wsclientname}.notrequired"
-                            sourcewsdl="${{meta.inf.dir}}/wsdl/{$wsclientname}.wsdl"
-                            targetdir="${{build.generated.dir}}/wsclient"/>
+                                          sourcewsdl="${{meta.inf.dir}}/wsdl/{$wsclientname}.wsdl"
+                                          targetdir="${{build.generated.dir}}/wsclient"/>
                     </xsl:for-each>
                 </target>
             </xsl:if>
-
+            
             <xsl:for-each select="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
                 <xsl:variable name="wsclientname">
                     <xsl:value-of select="j2seproject3:web-service-client-name"/>
@@ -703,11 +704,11 @@ is divided into following sections:
                         <xsl:otherwise>false</xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
-
+                
                 <target name="{$wsclientname}-client-wscompile" depends="wscompile-init" unless="wscompile.client.{$wsclientname}.notrequired">
                     <property name="config_target" location="${{meta.inf.dir}}/wsdl"/>
                     <copy file="${{meta.inf.dir}}/wsdl/{$wsclientname}-config.xml"
-                        tofile="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml" filtering="on" encoding="UTF-8">
+                          tofile="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml" filtering="on" encoding="UTF-8">
                         <filterset>
                             <!-- replace token with reference to WSDL file in source tree, not build tree, since the
                                  the file probably has not have been copied to the build tree yet. -->
@@ -732,7 +733,7 @@ is divided into following sections:
                     </wscompile>
                 </target>
             </xsl:for-each>
-
+            
             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
                 <target name="web-service-client-generate">
                     <xsl:attribute name="depends">
@@ -755,12 +756,12 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-generate</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-generate</xsl:if></xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
             </target>
-
+            
             <target name="-pre-compile">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="-do-compile">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-compile</xsl:if></xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
@@ -773,68 +774,68 @@ is divided into following sections:
                     </xsl:call-template>
                 </copy>
             </target>
-
+            
             <target name="-post-compile">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="compile">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-post-compile</xsl:attribute>
                 <xsl:attribute name="description">Compile project.</xsl:attribute>
             </target>
-
+            
             <target name="-pre-compile-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="-do-compile-single">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-compile</xsl:if></xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <j2seproject3:force-recompile/>
                 <j2seproject3:javac includes="${{javac.includes}}" excludes=""/>
             </target>
-
+            
             <target name="-post-compile-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="compile-single">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile-single,-do-compile-single,-post-compile-single</xsl:attribute>
             </target>
-
+            
             <xsl:comment>
-    ====================
-    JAR BUILDING SECTION
-    ====================
-    </xsl:comment>
-
+                ====================
+                JAR BUILDING SECTION
+                ====================
+            </xsl:comment>
+            
             <target name="-pre-pre-jar">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
             </target>
-
+            
             <target name="-pre-jar">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="-do-jar-without-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="unless">manifest.available</xsl:attribute>
                 <j2seproject1:jar/>
             </target>
-
+            
             <target name="-do-jar-with-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">manifest.available</xsl:attribute>
                 <xsl:attribute name="unless">manifest.available+main.class</xsl:attribute>
                 <j2seproject1:jar manifest="${{manifest.file}}"/>
             </target>
-
+            
             <target name="-do-jar-with-mainclass">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">manifest.available+main.class</xsl:attribute>
@@ -854,7 +855,7 @@ is divided into following sections:
                 <echo><xsl:choose>
                         <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
                         <xsl:otherwise>java</xsl:otherwise>
-                    </xsl:choose> -cp "${run.classpath.with.dist.jar}" ${main.class}</echo>
+                </xsl:choose> -cp "${run.classpath.with.dist.jar}" ${main.class}</echo>
             </target>
             
             <target name="-do-jar-with-libraries">
@@ -886,25 +887,25 @@ is divided into following sections:
                 <echo><xsl:choose>
                         <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
                         <xsl:otherwise>java</xsl:otherwise>
-                    </xsl:choose> -jar "${dist.jar.resolved}"</echo>                
+                </xsl:choose> -jar "${dist.jar.resolved}"</echo>                
             </target>
-
+            
             <target name="-post-jar">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="jar">
                 <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-post-jar</xsl:attribute>
                 <xsl:attribute name="description">Build JAR.</xsl:attribute>
             </target>
-
+            
             <xsl:comment>
-    =================
-    EXECUTION SECTION
-    =================
-    </xsl:comment>
-
+                =================
+                EXECUTION SECTION
+                =================
+            </xsl:comment>
+            
             <target name="run">
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
                 <xsl:attribute name="description">Run a main class.</xsl:attribute>
@@ -914,25 +915,25 @@ is divided into following sections:
                     </customize>
                 </j2seproject1:java>
             </target>
-
+            
             <target name="run-single">
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
                 <j2seproject1:java classname="${{run.class}}"/>
             </target>
-
+            
             <xsl:comment>
-    =================
-    DEBUGGING SECTION
-    =================
-    </xsl:comment>
-
+                =================
+                DEBUGGING SECTION
+                =================
+            </xsl:comment>
+            
             <target name="-debug-start-debugger">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <j2seproject1:nbjpdastart name="${{debug.class}}"/>
             </target>
-
+            
             <target name="-debug-start-debuggee">
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
                 <j2seproject3:debug>
@@ -941,59 +942,59 @@ is divided into following sections:
                     </customize>
                 </j2seproject3:debug>
             </target>
-
+            
             <target name="debug">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-debug-start-debugger,-debug-start-debuggee</xsl:attribute>
                 <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
             </target>
-
+            
             <target name="-debug-start-debugger-stepinto">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <j2seproject1:nbjpdastart stopclassname="${{main.class}}"/>
             </target>
-
+            
             <target name="debug-stepinto">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-debug-start-debugger-stepinto,-debug-start-debuggee</xsl:attribute>
             </target>
-
+            
             <target name="-debug-start-debuggee-single">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="debug.class">Must select one file in the IDE or set debug.class</fail>
                 <j2seproject3:debug classname="${{debug.class}}"/>
             </target>
-
+            
             <target name="debug-single">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-debug-start-debugger,-debug-start-debuggee-single</xsl:attribute>
             </target>
-
+            
             <target name="-pre-debug-fix">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <fail unless="fix.includes">Must set fix.includes</fail>
                 <property name="javac.includes" value="${{fix.includes}}.java"/>
             </target>
-
+            
             <target name="-do-debug-fix">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,compile-single</xsl:attribute>
                 <j2seproject1:nbjpdareload/>
             </target>
-
+            
             <target name="debug-fix">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix</xsl:attribute>
             </target>
-
+            
             <xsl:comment>
-    ===============
-    JAVADOC SECTION
-    ===============
-    </xsl:comment>
-
+                ===============
+                JAVADOC SECTION
+                ===============
+            </xsl:comment>
+            
             <target name="-javadoc-build">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}"/>
@@ -1027,44 +1028,44 @@ is divided into following sections:
                     </sourcepath>
                     -->
                     <xsl:call-template name="createPackagesets">
-                            <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
-                   </xsl:call-template>
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
+                    </xsl:call-template>
                     <xsl:call-template name="createFilesets">
-                            <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
-                            <xsl:with-param name="includes2">**/*.java</xsl:with-param>
-                   </xsl:call-template>
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
+                        <xsl:with-param name="includes2">**/*.java</xsl:with-param>
+                    </xsl:call-template>
                 </javadoc>
             </target>
-
+            
             <target name="-javadoc-browse">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="unless">no.javadoc.preview</xsl:attribute>
                 <xsl:attribute name="depends">init,-javadoc-build</xsl:attribute>
                 <nbbrowse file="${{dist.javadoc.dir}}/index.html"/>
             </target>
-
+            
             <target name="javadoc">
                 <xsl:attribute name="depends">init,-javadoc-build,-javadoc-browse</xsl:attribute>
                 <xsl:attribute name="description">Build Javadoc.</xsl:attribute>
             </target>
-
+            
             <xsl:comment>
-    =========================
-    JUNIT COMPILATION SECTION
-    =========================
-    </xsl:comment>
-
+                =========================
+                JUNIT COMPILATION SECTION
+                =========================
+            </xsl:comment>
+            
             <target name="-pre-pre-compile-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
                 <mkdir dir="${{build.test.classes.dir}}"/>
             </target>
-
+            
             <target name="-pre-compile-test">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="-do-compile-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test</xsl:attribute>
@@ -1094,21 +1095,21 @@ is divided into following sections:
                     </xsl:call-template>
                 </copy>
             </target>
-
+            
             <target name="-post-compile-test">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="compile-test">
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test,-do-compile-test,-post-compile-test</xsl:attribute>
             </target>
-
+            
             <target name="-pre-compile-test-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="-do-compile-test-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test-single</xsl:attribute>
@@ -1135,40 +1136,40 @@ is divided into following sections:
                     </xsl:call-template>
                 </copy>
             </target>
-
+            
             <target name="-post-compile-test-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="compile-test-single">
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test-single,-do-compile-test-single,-post-compile-test-single</xsl:attribute>
             </target>
-
+            
             <xsl:comment>
-    =======================
-    JUNIT EXECUTION SECTION
-    =======================
-    </xsl:comment>
-
+                =======================
+                JUNIT EXECUTION SECTION
+                =======================
+            </xsl:comment>
+            
             <target name="-pre-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <mkdir dir="${{build.test.results.dir}}"/>
             </target>
-
+            
             <target name="-do-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run</xsl:attribute>
                 <j2seproject3:junit/>
             </target>
-
+            
             <target name="-post-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run,-do-test-run</xsl:attribute>
                 <fail if="tests.failed">Some tests failed; see details above.</fail>
             </target>
-
+            
             <target name="test-report">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
@@ -1181,7 +1182,7 @@ is divided into following sections:
                 </junitreport>
                 -->
             </target>
-
+            
             <target name="-test-browse">
                 <xsl:attribute name="if">netbeans.home+have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
@@ -1189,42 +1190,42 @@ is divided into following sections:
                 <nbbrowse file="${{build.test.results.dir}}/junit-noframes.html"/>
                 -->
             </target>
-
+            
             <target name="test">
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run,-do-test-run,test-report,-post-test-run,-test-browse</xsl:attribute>
                 <xsl:attribute name="description">Run unit tests.</xsl:attribute>
             </target>
-
+            
             <target name="-pre-test-run-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <mkdir dir="${{build.test.results.dir}}"/>
             </target>
-
+            
             <target name="-do-test-run-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
                 <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
                 <j2seproject3:junit includes="${{test.includes}}" excludes=""/>
             </target>
-
+            
             <target name="-post-test-run-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single,-do-test-run-single</xsl:attribute>
                 <fail if="tests.failed">Some tests failed; see details above.</fail>
             </target>
-
+            
             <target name="test-single">
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run-single,-do-test-run-single,-post-test-run-single</xsl:attribute>
                 <xsl:attribute name="description">Run single unit test.</xsl:attribute>
             </target>
-
+            
             <xsl:comment>
-    =======================
-    JUNIT DEBUGGING SECTION
-    =======================
-    </xsl:comment>
-
+                =======================
+                JUNIT DEBUGGING SECTION
+                =======================
+            </xsl:comment>
+            
             <target name="-debug-start-debuggee-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
@@ -1239,35 +1240,35 @@ is divided into following sections:
                     </customize>
                 </j2seproject3:debug>
             </target>
-
+            
             <target name="-debug-start-debugger-test">
                 <xsl:attribute name="if">netbeans.home+have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
                 <j2seproject1:nbjpdastart name="${{test.class}}" classpath="${{debug.test.classpath}}"/>
             </target>
-
+            
             <target name="debug-test">
                 <xsl:attribute name="depends">init,compile-test,-debug-start-debugger-test,-debug-start-debuggee-test</xsl:attribute>
             </target>
-
+            
             <target name="-do-debug-fix-test">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,compile-test-single</xsl:attribute>
                 <j2seproject1:nbjpdareload dir="${{build.test.classes.dir}}"/>
             </target>
-
+            
             <target name="debug-fix-test">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix-test</xsl:attribute>
             </target>
-
             
-    <xsl:comment>
-    =========================
-    APPLET EXECUTION SECTION
-    =========================
-    </xsl:comment>
-                    
+            
+            <xsl:comment>
+                =========================
+                APPLET EXECUTION SECTION
+                =========================
+            </xsl:comment>
+            
             <target name="run-applet">
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
@@ -1277,12 +1278,12 @@ is divided into following sections:
                     </customize>
                 </j2seproject1:java>
             </target>
-
-    <xsl:comment>
-    =========================
-    APPLET DEBUGGING  SECTION
-    =========================
-    </xsl:comment>
+            
+            <xsl:comment>
+                =========================
+                APPLET DEBUGGING  SECTION
+                =========================
+            </xsl:comment>
             
             <target name="-debug-start-debuggee-applet">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
@@ -1294,43 +1295,43 @@ is divided into following sections:
                     </customize>
                 </j2seproject3:debug>
             </target>
-
+            
             <target name="debug-applet">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-single,-debug-start-debugger,-debug-start-debuggee-applet</xsl:attribute>
             </target>
-
-    <xsl:comment>
-    ===============
-    CLEANUP SECTION
-    ===============
-    </xsl:comment>
-
+            
+            <xsl:comment>
+                ===============
+                CLEANUP SECTION
+                ===============
+            </xsl:comment>
+            
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-clean'"/>
             </xsl:call-template>
-
+            
             <target name="-do-clean">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <delete dir="${{build.dir}}"/>
                 <delete dir="${{dist.dir}}"/>
                 <!-- XXX explicitly delete all build.* and dist.* dirs in case they are not subdirs -->
             </target>
-
+            
             <target name="-post-clean">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="clean">
                 <xsl:attribute name="depends">init,deps-clean,-do-clean,-post-clean</xsl:attribute>
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
-
+            
         </project>
-
+        
     </xsl:template>
-
+    
     <!---
     Generic template to build subdependencies of a certain type.
     Feel free to copy into other modules.
@@ -1402,23 +1403,23 @@ is divided into following sections:
             <or>
                 <xsl:for-each select="$roots/j2seproject3:root">
                     <xsl:element name="available">
-			        <xsl:attribute name="file"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
-		            </xsl:element>
+                        <xsl:attribute name="file"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+                    </xsl:element>
                 </xsl:for-each>
             </or>
         </xsl:element>
     </xsl:template>
-
+    
     <xsl:template name="createSourcePathValidityTest">
         <xsl:param name="roots"/>
         <xsl:for-each select="$roots/j2seproject3:root">
             <xsl:element name="fail">
-			    <xsl:attribute name="unless"><xsl:value-of select="@id"/></xsl:attribute>
+                <xsl:attribute name="unless"><xsl:value-of select="@id"/></xsl:attribute>
                 <xsl:text>Must set </xsl:text><xsl:value-of select="@id"/>
-		    </xsl:element>
+            </xsl:element>
         </xsl:for-each>
     </xsl:template>
-
+    
     <xsl:template name="createFilesets">
         <xsl:param name="roots"/>
         <xsl:param name="includes" select="'${includes}'"/>
@@ -1462,26 +1463,26 @@ is divided into following sections:
             </xsl:element>
         </xsl:for-each>
     </xsl:template>        
-
+    
     <xsl:template name="createPathElements">
         <xsl:param name="locations"/>
         <xsl:for-each select="$locations/j2seproject3:root">
             <xsl:element name="pathelement">
-			    <xsl:attribute name="location"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
-		    </xsl:element>
+                <xsl:attribute name="location"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+            </xsl:element>
         </xsl:for-each>
     </xsl:template>
-
-	<xsl:template name="createPath">
-		<xsl:param name="roots"/>
-		<xsl:for-each select="$roots/j2seproject3:root">
-		    <xsl:if test="position() != 1">
-			    <xsl:text>:</xsl:text>
-		    </xsl:if>
-		    <xsl:text>${</xsl:text>
-		    <xsl:value-of select="@id"/>
-		    <xsl:text>}</xsl:text>
-		</xsl:for-each>						
-	</xsl:template>
-
+    
+    <xsl:template name="createPath">
+        <xsl:param name="roots"/>
+        <xsl:for-each select="$roots/j2seproject3:root">
+            <xsl:if test="position() != 1">
+                <xsl:text>:</xsl:text>
+            </xsl:if>
+            <xsl:text>${</xsl:text>
+            <xsl:value-of select="@id"/>
+            <xsl:text>}</xsl:text>
+        </xsl:for-each>						
+    </xsl:template>
+    
 </xsl:stylesheet>

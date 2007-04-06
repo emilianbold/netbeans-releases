@@ -149,6 +149,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                     final WsdlModeler modeler = WsdlModelerFactory.getDefault().getWsdlModeler(localWsdl.getURL());
                     if (modeler!=null) {
                         modeler.setPackageName(packageName);
+                        modeler.setCatalog(catalog.getURL()); 
                         modeler.generateWsdlModel(new WsdlModelListener() {
                             public void modelCreated(WsdlModel model) {
                                 if (model==null) {
