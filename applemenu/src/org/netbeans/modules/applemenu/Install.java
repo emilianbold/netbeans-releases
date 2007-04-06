@@ -46,6 +46,10 @@ public class Install extends ModuleInstall {
             } catch (ClassNotFoundException e) {
             } catch (Exception e) {
             }
+            String pn = "apple.laf.useScreenMenuBar"; // NOI18N
+            if (System.getProperty(pn) == null) {
+                System.setProperty(pn, "true"); // NOI18N
+            }
         }
     }
     
