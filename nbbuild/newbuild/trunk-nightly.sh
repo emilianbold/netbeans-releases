@@ -27,7 +27,7 @@ done
 
 cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D '00:00UTC today' nbbuild
 ant -f nbbuild/build.xml checkout
-cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D '00:00UTC today' mobility uml visualweb scripting enterprise
+cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D '00:00UTC today' mobility uml visualweb scripting enterprise print
 
 DATESTAMP=`date -u +%Y%m%d%M`
 BUILDNUM=trunk-nightly-all-$DATESTAMP
