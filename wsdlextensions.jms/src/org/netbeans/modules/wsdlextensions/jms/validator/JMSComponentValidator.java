@@ -337,30 +337,14 @@ public class JMSComponentValidator
         Collection<ResultItem> results =
                 mValidationResult.getValidationResult();
         
-        String connectionURL = target.getConnectionURL();
-        
-        if (!isAToken(connectionURL, target)) {
-        
-            Validator.ResultItem sunOneValidationErr = null;
+        final String URL_SEPARATORS = ",";
+        StringTokenizer urls = new StringTokenizer(target.getConnectionURL(), URL_SEPARATORS);
+        while (urls.hasMoreTokens()) {
+            String aurl = urls.nextToken();
+            if (!isAToken(aurl, target)) {
 
-            // first try sun one url parser
-            try {
-                SunOneUrlParser urlParser = new SunOneUrlParser(connectionURL);
-                urlParser.validate();
-            } catch (ValidationException ex) {
-                sunOneValidationErr = new Validator.ResultItem(this,
-                                          Validator.ResultType.ERROR,
-                                          target,
-                                          getMessage("JMSAddress.INVALID_CONNECTION_URL",
-                                          new Object[] {target.getConnectionURL(), ex}));
-            }
-
-            boolean genericError = false;
-
-            // try generic url parser
-            if (sunOneValidationErr != null) {
-
-                UrlParser url = new UrlParser(target.getConnectionURL());
+                // try generic url parser
+                UrlParser url = new UrlParser(aurl);
 
                 // cause url to be parsed
                 String protocol = null;
@@ -368,90 +352,92 @@ public class JMSComponentValidator
                 int UNLIKELY_PORT = -291; // unlikely that user will enter this number
                 int port = UNLIKELY_PORT;
                 try {
-                     protocol = url.getProtocol();
-                     host = url.getHost();
-                     port = url.getPort();
+                    protocol = url.getProtocol();
+                    host = url.getHost();
+                    port = url.getPort();
+
+                    if (protocol == null || protocol.length() == 0) {
+                        results.add(new Validator.ResultItem(this,
+                                Validator.ResultType.ERROR,
+                                target,
+                                getMessage("JMSAddress.NO_PROTOCOL_SPECIFIED",
+                                           new Object[] {aurl})));            
+                    } else {
+                        // now try parsing specific provider urls 
+                        if (protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_SUN_JAVA_SYSTEM_MQ)) {
+                            try {
+                                SunOneUrlParser urlParser = new SunOneUrlParser(aurl);
+                                urlParser.validate();
+                            } catch (ValidationException ex) {
+                                results.add(new Validator.ResultItem(this,
+                                                Validator.ResultType.ERROR,
+                                                target,
+                                                getMessage("JMSAddress.INVALID_CONNECTION_URL",
+                                                new Object[] {aurl, ex})));
+                            }                        
+                        } else { // for others check if protocol is supported                    
+                            if (!protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WEPSHERE_MQ) &&
+                                !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_JBOSS) &&
+                                !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_STCMS) &&
+                                !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WAVE) &&
+                                !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WEBLOGIC) &&
+                                !protocol.equals(ConnectionUrl.PROTOCOL_GENERIC_JMS_JNDI)) {
+                                results.add(new Validator.ResultItem(this,
+                                        Validator.ResultType.ERROR,
+                                        target,
+                                        getMessage("JMSAddress.PROVIDER_NOT_SUPPORTED",
+                                                   new Object[] {aurl, protocol})));
+                            }
+                        }
+                    }
+
+                    if (!protocol.equals(ConnectionUrl.PROTOCOL_GENERIC_JMS_JNDI)) {
+                        if (host == null || host.length() == 0) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.ERROR,
+                                    target,
+                                    getMessage("JMSAddress.NO_HOST_SPECIFIED",
+                                               new Object[] {aurl})));            
+                        }
+
+                        if (port == UNLIKELY_PORT) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.ERROR,
+                                    target,
+                                    getMessage("JMSAddress.NO_PORT_SPECIFIED",
+                                               new Object[] {aurl})));            
+                        } else if (port <= 0) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.ERROR,
+                                    target,
+                                    getMessage("JMSAddress.INVALID_PORT_SPECIFIED",
+                                               new Object[] {aurl,
+                                                             new Integer(port)})));            
+                        }
+                        String username = target.getUsername();
+
+                        if (username != null) {
+                            isAToken(username, target);
+                            String password = target.getPassword();
+                            if (password == null) {
+                                results.add(new Validator.ResultItem(this,
+                                        Validator.ResultType.ERROR,
+                                        target,
+                                        getMessage("JMSAddress.MISSING_PASSWORD",
+                                                   new Object[] {username})));                
+                            } else {
+                                isAToken(password, target);
+                            }
+                        }                    
+                    }                
                 } catch (Throwable t) {
-                    genericError = true;
                     results.add(new Validator.ResultItem(this,
                             Validator.ResultType.ERROR,
                             target,
                             getMessage("JMSAddress.INVALID_CONNECTION_URL",
-                                       new Object[] {target.getConnectionURL(), t.getLocalizedMessage()})));
+                                       new Object[] {aurl, t.getLocalizedMessage()})));
                 } 
-
-                if (protocol == null || protocol.length() == 0) {
-                    genericError = true;
-                    results.add(new Validator.ResultItem(this,
-                            Validator.ResultType.ERROR,
-                            target,
-                            getMessage("JMSAddress.NO_PROTOCOL_SPECIFIED",
-                                       new Object[] {target.getConnectionURL()})));            
-                } else {
-                    if (!protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_SUN_JAVA_SYSTEM_MQ) &&
-                        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WEPSHERE_MQ) &&
-                        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_JBOSS) &&
-                        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_STCMS) &&
-                        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WAVE) &&
-                        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WEBLOGIC)) {
-                        genericError = true;
-                        results.add(new Validator.ResultItem(this,
-                                Validator.ResultType.ERROR,
-                                target,
-                                getMessage("JMSAddress.PROVIDER_NOT_SUPPORTED",
-                                           new Object[] {target.getConnectionURL(), protocol})));
-                    }
-                }
-
-                if (host == null || host.length() == 0) {
-                    genericError = true;
-                    results.add(new Validator.ResultItem(this,
-                            Validator.ResultType.ERROR,
-                            target,
-                            getMessage("JMSAddress.NO_HOST_SPECIFIED",
-                                       new Object[] {target.getConnectionURL()})));            
-                }
-
-                if (port == UNLIKELY_PORT) {
-                    genericError = true;
-                    results.add(new Validator.ResultItem(this,
-                            Validator.ResultType.ERROR,
-                            target,
-                            getMessage("JMSAddress.NO_PORT_SPECIFIED",
-                                       new Object[] {target.getConnectionURL()})));            
-                } else if (port <= 0) {
-                    genericError = true;
-                    results.add(new Validator.ResultItem(this,
-                            Validator.ResultType.ERROR,
-                            target,
-                            getMessage("JMSAddress.INVALID_PORT_SPECIFIED",
-                                       new Object[] {target.getConnectionURL(),
-                                                     new Integer(port)})));            
-                }
-            }
-
-            if (genericError) {
-                // add provider specific errors to error bundle
-                if (sunOneValidationErr != null) {
-                    results.add(sunOneValidationErr);
-                }
-            }
-        }
-        
-        String username = target.getUsername();
-        
-        if (username != null) {
-            isAToken(username, target);
-            String password = target.getPassword();
-            if (password == null) {
-                results.add(new Validator.ResultItem(this,
-                        Validator.ResultType.ERROR,
-                        target,
-                        getMessage("JMSAddress.MISSING_PASSWORD",
-                                   new Object[] {username})));                
-            } else {
-                isAToken(password, target);
-            }
+            }                    
         }
     }
 

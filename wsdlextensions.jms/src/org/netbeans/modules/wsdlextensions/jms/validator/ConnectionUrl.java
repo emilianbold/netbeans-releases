@@ -27,12 +27,13 @@ import java.util.Properties;
  *
  */
 public abstract class ConnectionUrl {
-    public static final String PROTOCOL_JMS_PROVIDER_SUN_JAVA_SYSTEM_MQ    ="mq";
-    public static final String PROTOCOL_JMS_PROVIDER_WEPSHERE_MQ           ="wmq";
+    public static final String PROTOCOL_JMS_PROVIDER_SUN_JAVA_SYSTEM_MQ    = "mq";
+    public static final String PROTOCOL_JMS_PROVIDER_WEPSHERE_MQ           = "wmq";
     public static final String PROTOCOL_JMS_PROVIDER_STCMS                 = "stcms";
     public static final String PROTOCOL_JMS_PROVIDER_JBOSS                 = "jnp";
     public static final String PROTOCOL_JMS_PROVIDER_WAVE                  = "tcp";
     public static final String PROTOCOL_JMS_PROVIDER_WEBLOGIC              = "t3";
+    public static final String PROTOCOL_GENERIC_JMS_JNDI                   = "jndi";
     
     /**
      * Extracts the key value pairs from the query string
