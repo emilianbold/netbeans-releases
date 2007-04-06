@@ -55,6 +55,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -391,30 +392,6 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     }
 
-    /** Gets all subprojects recursively
-     */
-    static void addSubprojects(Project p, List<Project> result, Map<Project,Set<? extends Project>> cache) {
-        Set<? extends Project> subprojects = cache.get(p);
-        if (subprojects == null) {
-            SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
-            if (spp != null) {
-                subprojects = spp.getSubprojects();
-            } else {
-                subprojects = Collections.emptySet();
-            }
-            cache.put(p, subprojects);
-        }
-        for (Project sp : subprojects) {
-            if ( !result.contains( sp ) ) {
-                result.add( sp );
-
-                //#70029: only add sp's subprojects if sp is not already in result,
-                //to prevent StackOverflow caused by misconfigured projects:
-                addSubprojects(sp, result, cache);
-            }
-        }
-
-    }
 
     /**
      * Get a slash-separated relative path from f1 to f2, if they are collocated
@@ -517,11 +494,10 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     public void removeNotify() { // #72006
         super.removeNotify();
+        modelUpdater.cancel();
         modelUpdater = null;
         subprojectsCache = null;
         updateSubprojectsTask = null;
-        //#98080
-        RP.stop();
     }
 
     // Aditional innerclasses for the file chooser -----------------------------
@@ -643,15 +619,19 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     }
 
-    private class ModelUpdater implements Runnable {
+    private class ModelUpdater implements Runnable, Cancellable {
 
         // volatile Project project;
         volatile List<Project> projects;
         private DefaultListModel subprojectsToSet;
+        private boolean cancel = false;
 
         public void run() {
 
             if ( !SwingUtilities.isEventDispatchThread() ) {
+                if (cancel) {
+                    return;
+                }
                 List<Project> currentProjects = projects;
                 if ( currentProjects == null ) {
                     return;
@@ -665,9 +645,11 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
                 List<Project> subprojects = new ArrayList<Project>(currentProjects.size() * 5);
                 for (Project p : currentProjects) {
+                    if (cancel) return;
                     addSubprojects(p, subprojects, cache); // Find the projects recursively
                 }
 
+                if (cancel) return;
 		List<String> subprojectNames = new ArrayList<String>(subprojects.size());
                 if ( !subprojects.isEmpty() ) {
                     String pattern = NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_SubprojectName_Format" ); // NOI18N
@@ -677,6 +659,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
                     // Replace projects in the list with formated names
                     for (Project p : subprojects) {
+                        if (cancel) return;
                         FileObject spDir = p.getProjectDirectory();
 
                         // Try to compute relative path
@@ -699,7 +682,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     // Sort the list
                     Collections.sort( subprojectNames, Collator.getInstance() );
                 }
-                if ( currentProjects != projects ) {
+                if ( currentProjects != projects ||cancel) {
                     return;
                 }
                 DefaultListModel listModel = new DefaultListModel();
@@ -708,6 +691,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     listModel.addElement(displayName);
                 }
                 subprojectsToSet = listModel;
+                if (cancel) return;
                 SwingUtilities.invokeLater( this );
                 return;
             }
@@ -729,6 +713,41 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 }
             }
 
+        }
+        
+        /** Gets all subprojects recursively
+         */
+        void addSubprojects(Project p, List<Project> result, Map<Project,Set<? extends Project>> cache) {
+            if (cancel) return;
+            Set<? extends Project> subprojects = cache.get(p);
+            if (subprojects == null) {
+                SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
+                if (spp != null) {
+                    if (cancel) return;
+                    subprojects = spp.getSubprojects();
+                } else {
+                    subprojects = Collections.emptySet();
+                }
+                cache.put(p, subprojects);
+            }
+            for (Project sp : subprojects) {
+                if (cancel) return;
+                if ( !result.contains( sp ) ) {
+                    result.add( sp );
+
+                    //#70029: only add sp's subprojects if sp is not already in result,
+                    //to prevent StackOverflow caused by misconfigured projects:
+                    addSubprojects(sp, result, cache);
+                }
+            }
+
+        }
+        
+
+        public boolean cancel() {
+            cancel = true;
+            // we don't really care that much to wait for cancelation here..
+            return true;
         }
 
 
