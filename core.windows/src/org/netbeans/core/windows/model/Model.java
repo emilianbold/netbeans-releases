@@ -264,6 +264,9 @@ public interface Model {
     /** Gets the tab index of the given top component before it was moved to sliding/separate mode */
     public int getModeTopComponentPreviousIndex(ModeImpl mode, String tcID);
     
+    /** Gets position of given top component in given mode */
+    public int getModeOpenedTopComponentTabPosition(ModeImpl mode, TopComponent tc);
+    
     // Accessors (mode level) <<
     ////////////////////////////
     // Mode level <<

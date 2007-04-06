@@ -353,6 +353,35 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     public void open(Workspace workspace) {
         WindowManager.getDefault().topComponentOpen(this);
     }
+    
+    /** Opens TopComponent at given position in the mode. TopComponent is inserted at given
+     * position, positions of already opened TopComponents in the same mode are
+     * incremented.
+     * 
+     * <ul>
+     *    <li>Does no operation if this TopComponent is already opened.</li>
+     *    <li>For position value less then 0, TopComponent is opened at position 0, the very first one.</li>
+     *    <li>For position value greater then count of opened TopComponents in the mode,
+     *          TopComponent is opened at last position</li>
+     * </ul>
+     * 
+     * @param position Index of the requested position.
+     * @since 6.15
+     */
+    public final void openAtTabPosition (int position) {
+        WindowManager.getDefault().topComponentOpenAtTabPosition(this, position);
+    }
+    
+    /** Gives position index of opened TopComponent in the mode.
+     * 
+     * For closed TopComponents, position value less then zero is returned.
+     * 
+     * @return Index of position.
+     * @since 6.15
+     */
+    public final int getTabPosition () {
+        return WindowManager.getDefault().topComponentGetTabPosition(this);
+    }
 
     /** Indicates whether this <code>TopComponent</code> is opened.
     * @return true if given top component is opened, false otherwise */

@@ -830,6 +830,15 @@ final class DefaultModel implements Model {
         }
     }
     
+    public int getModeOpenedTopComponentTabPosition(ModeImpl mode, TopComponent tc) {
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getOpenedTopComponentTabPosition(tc);
+        } else {
+            return -1;
+        }
+    }
+    
     public List<String> getModeClosedTopComponentsIDs(ModeImpl mode) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {

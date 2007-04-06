@@ -1374,6 +1374,12 @@ final class Central implements ControllerHandler {
     public List<TopComponent> getModeOpenedTopComponents(ModeImpl mode) {
         return model.getModeOpenedTopComponents(mode);
     }
+    
+    /** Gets position of top component in given mode. */
+    public int getModeTopComponentTabPosition(ModeImpl mode, TopComponent tc) {
+        return model.getModeOpenedTopComponentTabPosition(mode, tc);
+    }
+    
     /// << Mode specific
     ////////////////////////////////
     

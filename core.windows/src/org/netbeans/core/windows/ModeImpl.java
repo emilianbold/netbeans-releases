@@ -293,17 +293,21 @@ public final class ModeImpl implements Mode {
         getCentral().setUnloadedPreviousSelectedTopComponent(this, tcID);
     }
     
-    // XXX
     public List<String> getOpenedTopComponentsIDs() {
         return getCentral().getModeOpenedTopComponentsIDs(this);
     }
-    // XXX
+    
     public List getClosedTopComponentsIDs() {
         return getCentral().getModeClosedTopComponentsIDs(this);
     }
-    // XXX
+    
     public List getTopComponentsIDs() {
         return getCentral().getModeTopComponentsIDs(this);
+    }
+    
+    /** Gets opened top component position in the mode */
+    public int getTopComponentTabPosition(TopComponent tc) {
+        return getCentral().getModeTopComponentTabPosition(this, tc);
     }
     
     /** Sets and updates the state of associated frame, if frame exists.

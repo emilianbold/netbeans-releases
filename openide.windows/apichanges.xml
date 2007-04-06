@@ -24,6 +24,24 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
 
+<change id="openAtTabPosition">
+    <api name="winsys"/>
+    <summary>Added methods for opening TopComponent at specified position</summary>
+    <version major="6" minor="15"/>
+    <date day="6" month="4" year="2007"/>
+    <author login="dsimonek"/>
+    <compatibility addition="yes" binary="incompatible" source="incompatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        Added method <a href="@TOP@org/openide/windows/TopComponent.html#openAtTabPosition(int)">TopComponent.openAtTabPosition(int)</a>
+        for opening and inserting top component at specified position. For retrieving current position, 
+        method <a href="@TOP@org/openide/windows/TopComponent.html#getTabPosition()">TopComponent.getTabPosition()</a>
+        was added.
+     </description>
+    <class package="org.openide.windows" name="TopComponent"/>
+    <class package="org.openide.windows" name="WindowManager"/>
+    <issue number="94604"/>
+</change>    
+
 <change id="netbeans.windows">
     <api name="winsys"/>
     <summary>Removal of netbeans.windows=sdi and netbeans.windows=mdi cmnd line option.</summary>

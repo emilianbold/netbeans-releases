@@ -114,5 +114,7 @@ interface ModeModel {
     
     public SplitConstraint[] getTopComponentPreviousConstraints(String tcID);
     
+    /** Gets position of opened top component in this mode */
+    public int getOpenedTopComponentTabPosition (TopComponent tc);
 }
 

@@ -349,6 +349,32 @@ public abstract class WindowManager extends Object implements Serializable {
      * @param tc <code>TopComponent</code> to open
      * @since 4.13 */
     protected abstract void topComponentOpen(TopComponent tc);
+    
+    /** Opens given TopComponent at given position in the mode. TopComponent is inserted at given
+     * position, positions of already opened TopComponents in the same mode are
+     * incremented.
+     * 
+     * <ul>
+     *    <li>Does no operation if TopComponent is already opened.</li>
+     *    <li>For position value less then 0, TopComponent is opened at position 0, the very first one.</li>
+     *    <li>For position value greater then count of opened TopComponents in the mode,
+     *          TopComponent is opened at last position</li>
+     * </ul>
+     * 
+     * @param tc TopComponent which is opened.  
+     * @param position Index of the requested position.
+     * @since 6.15
+     */
+    protected abstract void topComponentOpenAtTabPosition(TopComponent tc, int position);
+    
+    /** Gives position index of given TopComponent in the mode. Result is
+     * undefined for closed TopComponents.
+     * 
+     * @param tc TopComponent for which position is returned. 
+     * @return Index of position.
+     * @since 6.15
+     */
+    protected abstract int topComponentGetTabPosition(TopComponent tc);
 
     /** Provides closing of specified <code>TopComponent</code>.
      * @param tc <code>TopComponent</code> to close

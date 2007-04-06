@@ -286,6 +286,12 @@ final class DefaultModeModel implements ModeModel {
         }
     }
     
+    public int getOpenedTopComponentTabPosition (TopComponent tc) {
+        synchronized(LOCK_TOPCOMPONENTS) {
+            return topComponentSubModel.getOpenedTopComponentTabPosition(tc);
+        }
+    }
+    
     public SplitConstraint[] getTopComponentPreviousConstraints(String tcID) {
         synchronized(LOCK_TC_CONTEXTS) {
             return getContextSubModel().getTopComponentPreviousConstraints(tcID);

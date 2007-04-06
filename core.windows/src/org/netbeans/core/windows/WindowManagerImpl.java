@@ -1024,7 +1024,11 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     
     // Manipulating methods (overriding the superclass dummy ones) >>
-    protected void topComponentOpen(TopComponent tc) {
+    protected void topComponentOpen (TopComponent tc) {
+        topComponentOpenAtTabPosition(tc, -1);
+    }
+
+    protected void topComponentOpenAtTabPosition (TopComponent tc, int position) {
         assertEventDispatchThreadWeak();
         
         if (tc == null) {
@@ -1051,8 +1055,12 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
            && central.isViewMaximized() ) {
             switchMaximizedMode(null);
         }
-
-        mode.addOpenedTopComponent(tc);
+        
+        if (position == -1) {
+            mode.addOpenedTopComponent(tc);
+        } else {
+            mode.addOpenedTopComponent(tc, position);
+        }
         
         if( central.isEditorMaximized() 
                 && !alreadyOpened 
@@ -1065,6 +1073,17 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
                 topComponentRequestActive( tc );
             }
+        }
+    }
+    
+    protected int topComponentGetTabPosition (TopComponent tc) {
+        assertEventDispatchThreadWeak();
+        
+        ModeImpl mode = getModeForOpenedTopComponent(tc);
+        if(mode != null) {
+            return mode.getTopComponentTabPosition(tc);
+        } else {
+            return -1;
         }
     }
     

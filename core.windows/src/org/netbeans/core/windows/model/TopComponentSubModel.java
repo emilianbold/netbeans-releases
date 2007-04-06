@@ -232,6 +232,10 @@ final class TopComponentSubModel {
         return openedTopComponents.contains(tc) || tcIDs.contains(getID(tc));
     }
     
+    public int getOpenedTopComponentTabPosition (TopComponent tc) {
+        return openedTopComponents.indexOf(tc);
+    }
+    
     public boolean isEmpty() {
         return tcIDs.isEmpty();
     }
