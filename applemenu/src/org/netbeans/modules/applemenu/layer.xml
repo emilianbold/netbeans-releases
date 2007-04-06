@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <!-- Hide menu items that belong on Apple's app menu -->
+   <folder name="Menu">
+
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+        <folder name="File">
+            <file name="org-netbeans-core-actions-SystemExit.instance_hidden"/>
+        </folder>
+
+        <folder name="Tools">
+            <file name="org-netbeans-modules-options-OptionsWindowAction.shadow_hidden"/>
+        </folder>
+        
+        <folder name="Help">
+            <file name="org-netbeans-core-actions-AboutAction.instance_hidden"/>
+        </folder>
+        
+    </folder>
+    
+    <folder name="Shortcuts">
+        
+        <!-- mkleint: #57300 commenting out this entry, not sure what it's good for 
+                             and it's causing bad behaviour when renaming nodes and elsewhere.
+          file name="BACK_SPACE.instance">
+	    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+        </file-->
+
+        <!-- On the mac, alt left-right is select, etc. next/prev word-->
+        <file name="C-LEFT.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.PreviousTabAction" />
+        </file>
+        <file name="A-LEFT.shadow_hidden"/>
+
+        <file name="C-RIGHT.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.NextTabAction"/>
+	</file>
+        <file name="A-RIGHT.shadow_hidden"/>
+
+        <file name="M-J.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.PreviousTabAction" />
+        </file>
+                
+        <file name="M-R.instance">
+	    <attr name="instanceClass" stringvalue="org.openide.actions.ReplaceAction"/>
+        </file>
+        
+        <file name="C-H.shadow_hidden"/>
+
+        <file name="D-BACK_QUOTE.shadow_hidden"/>
+        
+        <file name="OS-G.instance">
+	    <attr name="instanceClass" stringvalue="org.openide.actions.GotoAction"/>
+	</file>
+        
+    </folder>
+
+</filesystem>
