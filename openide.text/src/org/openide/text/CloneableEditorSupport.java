@@ -2026,11 +2026,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     }
 
     private static Reference<CloneableTopComponent> lastReusable = new WeakReference(null);
-    
-    // temporal - should be replaced by better impl in winsys
+
     private static void replaceTc(TopComponent orig, TopComponent open) {
+        int pos = orig.getTabPosition ();
         orig.close();
-        open.open();
+        open.openAtTabPosition (pos);
     }
 
     // #18981. There could happen a thing also another class type
