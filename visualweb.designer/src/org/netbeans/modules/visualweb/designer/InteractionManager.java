@@ -48,6 +48,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
+import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
+import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
+import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.ErrorManager;
@@ -72,6 +75,15 @@ import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.css2.TextBox;
 
 import org.netbeans.modules.visualweb.designer.WebForm.DefaultDesignerEvent;
+
+
+// For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
+
+
+// For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
+
+
+// For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
 
 
 // For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
@@ -3310,5 +3322,75 @@ public class InteractionManager {
     private boolean isIgnoreCnC() {
         return ignoreCnC;
     }
+    
+
+    // XXX Moved from designer/jsf/../AbstractJsfTopComponent.
+    /**
+     * This method returns the position at which a component should be
+     * pasted.
+     * <p>
+     * This implementation returns the current position of the mouse cursor.
+     * If the cursor is outside the visual editor or hasn't moved
+     * since the last time this method was invoked, this method will
+     * return a position one grid box below and to the right of the
+     * currently selected component. If no component is selected, this method
+     * returns <code>null</code>.
+     *
+     * @return the point at which to paste a component or <code>null</code> if
+     * there is no valid paste position
+     */
+    public /*protected*/ Point getPastePoint() {
+//        Point p = webform.getManager().getMouseHandler().getCurrentPos();
+//        Point p = designer.getCurrentPos();
+        Point p = getMouseHandler().getCurrentPos();
+
+        if (p != null) {
+            // Ensure that if user pastes multiple times without moving
+            // the mouse, we don't reuse the mouse position but switch
+            // to an offset from selection instead
+            Point location = new Point(p);
+//            webform.getManager().getMouseHandler().clearCurrentPos();
+//            designer.clearCurrentPos();
+            getMouseHandler().clearCurrentPos();
+
+            return location;
+        } else {
+//            Element e = webform.getSelection().getPositionElement();
+//            Element e = designer.getPositionElement();
+            Element e = webform.getSelection().getPositionElement();
+
+            if (e == null) {
+                return null;
+            }
+
+//            int top = CssLookup.getLength(e, XhtmlCss.TOP_INDEX);
+//            int left = CssLookup.getLength(e, XhtmlCss.LEFT_INDEX);
+            int top = CssProvider.getValueService().getCssLength(e, XhtmlCss.TOP_INDEX);
+            int left = CssProvider.getValueService().getCssLength(e, XhtmlCss.LEFT_INDEX);
+
+            if ((top != CssValue.AUTO) || (left != CssValue.AUTO)) {
+                if (left == CssValue.AUTO) {
+                    left = 0;
+                }
+
+                if (top == CssValue.AUTO) {
+                    top = 0;
+                }
+
+//                GridHandler gh = GridHandler.getInstance();
+//                GridHandler gh = webform.getGridHandler();
+//                return new Point(left + gh.getGridWidth(), top + gh.getGridHeight());
+//                int gridWidth = designer.getGridWidth();
+//                int gridHeight = designer.getGridHeight();
+                GridHandler gh = GridHandler.getDefault();
+                int gridWidth = gh.getGridWidth();
+                int gridHeight = gh.getGridHeight();
+                return new Point(left + gridWidth, top + gridHeight);
+            }
+
+            return null;
+        }
+    }
+    
 
 }

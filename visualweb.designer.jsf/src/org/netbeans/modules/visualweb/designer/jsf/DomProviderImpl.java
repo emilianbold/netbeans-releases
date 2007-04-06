@@ -1317,7 +1317,8 @@ class DomProviderImpl implements DomProvider {
 //                DesignBean parent = selectionTopComp.getPasteParent();
         Element parentComponentRootElement = jsfTopComponent.getPasteParentComponent();
 //                MarkupPosition pos = selectionTopComp.getPasteMarkupPosition();
-        Point location = jsfTopComponent.getPastePosition();
+//        Point location = jsfTopComponent.getPastePosition();
+        Point location = designer.getPastePoint();
 //                DesignBean[] beans = selectionTopComp.pasteBeans(webform, t, parent, pos, location);
 //                Element[] componentRootElements = SelectionTopComp.pasteComponents(webform, t, parentComponentRootElement, location);
 
@@ -1343,11 +1344,12 @@ class DomProviderImpl implements DomProvider {
     }
 
     public Point tcGetPastePosition(Designer designer) {
-        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-        if (jsfMultiViewElement == null) {
-            return new Point(0, 0);
-        }
-        return jsfMultiViewElement.getJsfTopComponent().getPastePosition();
+//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+//        if (jsfMultiViewElement == null) {
+//            return new Point(0, 0);
+//        }
+//        return jsfMultiViewElement.getJsfTopComponent().getPastePosition();
+        return designer.getPastePoint();
     }
 
     public void tcRepaint(Designer designer) {

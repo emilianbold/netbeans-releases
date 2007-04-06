@@ -174,11 +174,13 @@ public interface Designer {
     // <<< Boxes stuff
     
     
-    public Point getCurrentPos();
-    public void clearCurrentPos();
-    public Element getPositionElement();
-    public int getGridWidth();
-    public int getGridHeight();
+//    public Point getCurrentPos();
+//    public void clearCurrentPos();
+//    public Element getPositionElement();
+//    public int getGridWidth();
+//    public int getGridHeight();
+    
+    public Point getPastePoint();
     
     // XXX Designer settings properties
     /** show grid */

@@ -2930,26 +2930,30 @@ public class WebForm implements Designer {
         return getPane().getPageBox();
     }
 
-    public Point getCurrentPos() {
-        return getManager().getMouseHandler().getCurrentPos();
-    }
-
-    public void clearCurrentPos() {
-        getManager().getMouseHandler().clearCurrentPos();
-    }
-
-    public Element getPositionElement() {
-        return getSelection().getPositionElement();
-    }
-
-    public int getGridWidth() {
-//        return getGridHandler().getGridWidth();
-        return GridHandler.getDefault().getGridWidth();
-    }
-
-    public int getGridHeight() {
-//        return getGridHandler().getGridHeight();
-        return GridHandler.getDefault().getGridHeight();
+//    public Point getCurrentPos() {
+//        return getManager().getMouseHandler().getCurrentPos();
+//    }
+//
+//    public void clearCurrentPos() {
+//        getManager().getMouseHandler().clearCurrentPos();
+//    }
+//
+//    public Element getPositionElement() {
+//        return getSelection().getPositionElement();
+//    }
+//
+//    public int getGridWidth() {
+////        return getGridHandler().getGridWidth();
+//        return GridHandler.getDefault().getGridWidth();
+//    }
+//
+//    public int getGridHeight() {
+////        return getGridHandler().getGridHeight();
+//        return GridHandler.getDefault().getGridHeight();
+//    }
+    
+    public Point getPastePoint() {
+        return getManager().getPastePoint();
     }
 
     public void addWeakPreferenceChangeListener(PreferenceChangeListener l) {
