@@ -187,7 +187,9 @@ public class NextVisualPositionAction extends TextAction {
         }
 
 //        GridHandler gm = GridHandler.getInstance();
-        GridHandler gm = webform.getGridHandler();
+//        GridHandler gm = webform.getGridHandler();
+        GridHandler gm = GridHandler.getDefault();
+        
         int offsetX = 0;
         int offsetY = 0;
         int stepSize = 1;

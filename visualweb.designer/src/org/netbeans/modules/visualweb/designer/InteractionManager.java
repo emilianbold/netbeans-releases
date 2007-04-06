@@ -1854,7 +1854,8 @@ public class InteractionManager {
                 sizer = new Marquee(webform, gridBox);
                 sizer.setSelect(false);
 //                sizer.setSnapToGrid(GridHandler.getInstance().snap());
-                sizer.setSnapToGrid(webform.getGridHandler().snap());
+//                sizer.setSnapToGrid(webform.getGridHandler().snap());
+                sizer.setSnapToGrid(GridHandler.getDefault().isSnap());
                 sizer.setInsertCursor(true);
                 interaction = sizer;
                 interaction.mousePressed(e);

@@ -298,7 +298,8 @@ public class PageBox extends DocumentBox implements ChangeListener {
         }
 
 //        if (grid && GridHandler.getInstance().grid()) {
-        if (grid && getWebForm().getGridHandler().grid()) {
+//        if (grid && getWebForm().getGridHandler().grid()) {
+        if (grid && GridHandler.getDefault().isGrid()) {
             if (hidden && !(this instanceof PageBox)) { // paint grid for the root pagebox!
 
                 return;
@@ -350,7 +351,8 @@ public class PageBox extends DocumentBox implements ChangeListener {
         }
 
 //        GridHandler gh = GridHandler.getInstance();
-        GridHandler gh = getWebForm().getGridHandler();
+//        GridHandler gh = getWebForm().getGridHandler();
+        GridHandler gh = GridHandler.getDefault();
         int gridWidth = gh.getGridWidth();
         int gridHeight = gh.getGridHeight();
         int xOffset = (px % gridWidth);

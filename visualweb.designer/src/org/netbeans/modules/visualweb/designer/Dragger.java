@@ -170,7 +170,7 @@ public class Dragger extends Interaction implements KeyListener {
 //        StatusDisplayer_RAVE.getRaveDefault().clearPositionLabel();
 
 //        GridHandler gm = GridHandler.getInstance();
-        GridHandler gm = webform.getGridHandler();
+//        GridHandler gm = webform.getGridHandler();
 //        DesignerPane.clearDirty();
         pane.clearDirty();
 
@@ -201,6 +201,7 @@ public class Dragger extends Interaction implements KeyListener {
                     x = r2.x + prevX;
                     y = r2.y + prevY;
                 } else if (hasMoved(prevX, prevY)) {
+                    GridHandler gm = GridHandler.getDefault();
                     x = gm.snapX(r2.x + prevX, getPositionedBy(i));
                     y = gm.snapY(r2.y + prevY, getPositionedBy(i));
                 } else {
@@ -443,7 +444,7 @@ public class Dragger extends Interaction implements KeyListener {
 
         int n = selections.size();
 //        GridHandler gm = GridHandler.getInstance();
-        GridHandler gm = webform.getGridHandler();
+//        GridHandler gm = webform.getGridHandler();
         Composite oldComposite = null;
 
         if (DISPLAY_IMAGES) {
@@ -466,6 +467,7 @@ public class Dragger extends Interaction implements KeyListener {
                 xp = r.x + x;
                 yp = r.y + y;
             } else if (hasMoved(x, y)) {
+                GridHandler gm = GridHandler.getDefault();
                 xp = gm.snapX(r.x + x, getPositionedBy(i));
                 yp = gm.snapY(r.y + y, getPositionedBy(i));
             } else {
@@ -528,7 +530,8 @@ public class Dragger extends Interaction implements KeyListener {
         }
 
 //        if (!GridHandler.getInstance().snap() || (action == DRAG_FREE)) {
-        if (!webform.getGridHandler().snap() || (action == DRAG_FREE)) {
+//        if (!webform.getGridHandler().snap() || (action == DRAG_FREE)) {
+        if (!GridHandler.getDefault().isSnap() || (action == DRAG_FREE)) {
             return (x != startX) || (y != startY);
         }
 
@@ -897,7 +900,8 @@ public class Dragger extends Interaction implements KeyListener {
             DesignerPane pane = webform.getPane();
 
 //            GridHandler gm = GridHandler.getInstance();
-            GridHandler gm = webform.getGridHandler();
+//            GridHandler gm = webform.getGridHandler();
+            GridHandler gm = GridHandler.getDefault();
 //            DesignerPane.clearDirty();
             pane.clearDirty();
 

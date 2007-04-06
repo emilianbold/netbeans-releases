@@ -130,7 +130,8 @@ public class Marquee extends Interaction {
 
             if (snap) {
 //                GridHandler gm = GridHandler.getInstance();
-                GridHandler gm = webform.getGridHandler();
+//                GridHandler gm = webform.getGridHandler();
+                GridHandler gm = GridHandler.getDefault();
                 currentPoint.x = gm.snapX(currentPoint.x, gridBox);
                 currentPoint.y = gm.snapY(currentPoint.y, gridBox);
             }
@@ -200,7 +201,8 @@ public class Marquee extends Interaction {
                 unsnappedStartPoint = new Point(startPoint.x, startPoint.y);
 
 //                GridHandler gm = GridHandler.getInstance();
-                GridHandler gm = webform.getGridHandler();
+//                GridHandler gm = webform.getGridHandler();
+                GridHandler gm = GridHandler.getDefault();
                 startPoint.x = gm.snapX(startPoint.x, gridBox);
                 startPoint.y = gm.snapY(startPoint.y, gridBox);
             } else {

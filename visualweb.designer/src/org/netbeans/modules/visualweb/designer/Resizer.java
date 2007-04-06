@@ -173,7 +173,7 @@ public class Resizer extends Interaction implements KeyListener {
                 pane.removeKeyListener(this);
 
 //                GridHandler gm = GridHandler.getInstance();
-                GridHandler gm = webform.getGridHandler();
+//                GridHandler gm = webform.getGridHandler();
                 Rectangle r = new Rectangle();
 
                 int x;
@@ -183,6 +183,7 @@ public class Resizer extends Interaction implements KeyListener {
                     x = p.x;
                     y = p.y;
                 } else {
+                    GridHandler gm = GridHandler.getDefault();
                     x = gm.snapX(p.x, box.getPositionedBy());
                     y = gm.snapY(p.y, box.getPositionedBy());
                 }
@@ -477,12 +478,13 @@ public class Resizer extends Interaction implements KeyListener {
             }
 
 //            GridHandler gm = GridHandler.getInstance();
-            GridHandler gm = webform.getGridHandler();
+//            GridHandler gm = webform.getGridHandler();
 
             if (snapDisabled) {
                 prevX = px;
                 prevY = py;
             } else {
+                GridHandler gm = GridHandler.getDefault();
                 prevX = gm.snapX(px, box.getPositionedBy());
                 prevY = gm.snapY(py, box.getPositionedBy());
             }

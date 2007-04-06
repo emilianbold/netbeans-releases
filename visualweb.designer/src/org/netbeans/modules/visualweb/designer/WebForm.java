@@ -134,7 +134,7 @@ public class WebForm implements Designer {
     private ColorManager colors;
 //    private DesignerActions actions;
     private InteractionManager manager;
-    private GridHandler gridHandler;
+//    private GridHandler gridHandler;
 //    private boolean isFragment;
 //    private boolean isPortlet;
 //    private WebForm contextPage;
@@ -1231,12 +1231,12 @@ public class WebForm implements Designer {
         return manager;
     }
     
-    public GridHandler getGridHandler() {
-        if (gridHandler == null) {
-            gridHandler = new GridHandler(/*this*/);
-        }
-        return gridHandler;
-    }
+//    public GridHandler getGridHandler() {
+//        if (gridHandler == null) {
+//            gridHandler = new GridHandler(/*this*/);
+//        }
+//        return gridHandler;
+//    }
 
     // XXX Moved to designer/jsf/../JsfForm.
 //    /** Get the context page for this fragment. This method should only return non-null
@@ -2793,11 +2793,13 @@ public class WebForm implements Designer {
     }
     
     public int snapX(int x, Box positionedBy) {
-        return getGridHandler().snapX(x, positionedBy);
+//        return getGridHandler().snapX(x, positionedBy);
+        return GridHandler.getDefault().snapX(x, positionedBy);
     }
 
     public int snapY(int y, Box positionedBy) {
-        return getGridHandler().snapY(y, positionedBy);
+//        return getGridHandler().snapY(y, positionedBy);
+        return GridHandler.getDefault().snapY(y, positionedBy);
     }
 
     public Element getPrimarySelectedComponent() {
@@ -2941,11 +2943,13 @@ public class WebForm implements Designer {
     }
 
     public int getGridWidth() {
-        return getGridHandler().getGridWidth();
+//        return getGridHandler().getGridWidth();
+        return GridHandler.getDefault().getGridWidth();
     }
 
     public int getGridHeight() {
-        return getGridHandler().getGridHeight();
+//        return getGridHandler().getGridHeight();
+        return GridHandler.getDefault().getGridHeight();
     }
 
     public void addWeakPreferenceChangeListener(PreferenceChangeListener l) {

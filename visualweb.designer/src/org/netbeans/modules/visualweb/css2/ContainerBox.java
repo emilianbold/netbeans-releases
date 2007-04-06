@@ -2077,7 +2077,8 @@ public class ContainerBox extends CssBox {
         super.paintBox(g, x, y, w, h);
 
 //        if (grid && GridHandler.getInstance().grid()) {
-        if (grid && getWebForm().getGridHandler().grid()) {
+//        if (grid && getWebForm().getGridHandler().grid()) {
+        if (grid && GridHandler.getDefault().isGrid()) {
             if (hidden && !(this instanceof PageBox)) { // paint grid for the root pagebox!
 
                 return;
@@ -2104,7 +2105,8 @@ public class ContainerBox extends CssBox {
 //        final int gridTraceWidth = GridHandler.getInstance().getGridTraceWidth();
 //        final int gridTraceHeight = GridHandler.getInstance().getGridTraceHeight();
 //        final int gridOffset = GridHandler.getInstance().getGridOffset();
-        GridHandler gridHandler = getWebForm().getGridHandler();
+//        GridHandler gridHandler = getWebForm().getGridHandler();
+        GridHandler gridHandler = GridHandler.getDefault();
         final int gridWidth = gridHandler.getGridWidth();
         final int gridHeight = gridHandler.getGridHeight();
         final int gridTraceWidth = gridHandler.getGridTraceWidth();
