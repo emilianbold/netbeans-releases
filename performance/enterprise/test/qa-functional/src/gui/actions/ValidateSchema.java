@@ -49,7 +49,7 @@ public class ValidateSchema extends org.netbeans.performance.test.utilities.Perf
     }
     
     public ValidateSchema(String testName, String  performanceDataName) {
-        super(testName);
+        super(testName, performanceDataName);
         //TODO: Adjust expectedTime value
         expectedTime = 10000;
         WAIT_AFTER_OPEN=4000;
