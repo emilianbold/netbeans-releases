@@ -11,7 +11,7 @@ pack_component()
     gtar cvjf $dist/targz/$base_name-$component.tar.bz2 $filter
 }
 
-ANT_OPTS="-Xmx512m"
+export ANT_OPTS="-Xmx512m"
 
 if [ -z $NB_ALL ]; then
     NB_ALL=/space/NB-IDE/nb-all
