@@ -28,14 +28,6 @@ import java.io.*;
 import java.nio.CharBuffer;
 import java.util.*;
 
-/*
-import freemarker.ext.beans.BeansWrapper;
-import freemarker.template.Configuration;
-import freemarker.template.DefaultObjectWrapper;
-import freemarker.template.Template;
-import freemarker.template.TemplateModel;
-*/
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -97,7 +89,6 @@ public class JavaCodegen implements ICodeGenerator {
 	    clinfo.setComment(classifier.getDocumentation());
 
 	    File existingFile = sourceFileExists(targetFolderName, classifier);
-        
 	    if (existingFile != null) {
 
 		if (backup) {
@@ -149,11 +140,14 @@ public class JavaCodegen implements ICodeGenerator {
 		    
 		    tfo.setAttribute("javax.script.ScriptEngine", "freemarker");
 		    DataObject obj = DataObject.find(tfo);
-		    
+	    		    
 		    if (clinfo.getExportPackageFileObject() != null) {
 			
 			DataFolder folder = DataFolder.findFolder(FileUtil.toFileObject(new File(clinfo.getExportSourcePackage())));
-			Map parameters = Collections.singletonMap("classInfo", clinfo);
+			//Map parameters = Collections.singletonMap("classInfo", clinfo);
+			HashMap parameters = new HashMap();
+			parameters.put("classInfo", clinfo);
+			parameters.put("modelElement", classifier);
 			DataObject n = obj.createFromTemplate(folder, clinfo.getName(), parameters);
 
 		    } else {

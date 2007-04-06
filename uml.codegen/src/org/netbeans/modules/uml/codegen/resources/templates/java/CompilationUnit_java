@@ -10,13 +10,11 @@
 # like fields, methods, etc..., declarations 
 #   
 -->
-
-<#import "DeclLib.ftl" as lib />
-
+<#import "DeclLib.ftl" as lib 
+/>
 <@lib.PackageDeclaration classInfo 
 />
-<@lib.ImportDeclarations classInfo 
-/>
-<@lib.TypeDeclaration classInfo 0
-/>
+<@lib.ImportDeclarations classInfo />
+
+<@lib.TypeDeclaration classInfo 0 />
 

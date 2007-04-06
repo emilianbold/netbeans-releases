@@ -22,6 +22,7 @@ package org.netbeans.modules.uml.integration.ide.events;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
 
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
@@ -613,7 +614,9 @@ public class MethodInfo extends ConstructorInfo
 
 
     public boolean isAbstract() {
-	return Modifier.isAbstract(getModifiers()); 
+	return ( Modifier.isAbstract(getModifiers()) 
+		 || (getContainingClass() != null 
+		     && getContainingClass().isInterface())); 
     }
 
 
@@ -656,6 +659,7 @@ public class MethodInfo extends ConstructorInfo
 	    }
 	}
 
+	/* isn't needed as the exceptions contains fully-qualified names
 	String[] exceptions = getExceptions();
 	if (exceptions != null) {
 	    for(int i = 0; i < exceptions.length; i++)  {
@@ -669,9 +673,37 @@ public class MethodInfo extends ConstructorInfo
 		}
 	    }
 	}
-	
+	*/
+
 	return res;	
     }
 
+
+    private static final HashMap<String, String> defaultReturnValues = new HashMap<String, String>();
+
+    static {
+        defaultReturnValues.put("int", "0");
+        defaultReturnValues.put("short", "0");
+        defaultReturnValues.put("long", "0");
+        defaultReturnValues.put("float", "0.0f");
+        defaultReturnValues.put("double", "0.0");
+        defaultReturnValues.put("byte", "0");
+        defaultReturnValues.put("char", "'a'");
+        defaultReturnValues.put("boolean", "true");
+    }
+
+    public String getDefaultReturnValue() 
+    {
+	String retType = getCodeGenReturnType();
+	if (retType == null || retType.equals("void")) {
+	    return null;
+	}
+	String res = defaultReturnValues.get(retType);
+	if (res == null) {
+	    return "null";
+	}
+	return res;
+    }
+    
 
 }

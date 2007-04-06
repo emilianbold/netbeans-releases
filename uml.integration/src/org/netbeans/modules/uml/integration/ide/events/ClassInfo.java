@@ -34,8 +34,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Iterator;
 import java.util.Vector;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumerationLiteral;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -362,9 +364,17 @@ public class ClassInfo extends ElementInfo
                 return null;
             }
             
-            IPackage pack = (IPackage)owner;
-            
-            return createPath(getExportSourceFolderName(), pack.getName());
+            String packName;
+	    if (owner instanceof IProject) 
+	    {	    
+		packName = "";
+	    }
+	    else 
+	    {
+		IPackage pack = (IPackage)owner;
+		packName = pack.getName();
+	    }
+            return createPath(getExportSourceFolderName(), packName);
         }
         
         catch (Exception e)
@@ -2335,6 +2345,11 @@ public class ClassInfo extends ElementInfo
     // added for template codegen
     //
 
+    public String getShortClassName() {
+	return JavaClassUtils.getShortClassName(getName());
+    }
+
+
     public Vector getFieldsCodeGenSorted() {
 	Vector<MemberInfo> res = new Vector<MemberInfo>();	
 	Iterator fs = mMembers.iterator();
@@ -2383,24 +2398,35 @@ public class ClassInfo extends ElementInfo
     }
 
 
-    public static class StaticAndAccessModifierComparator implements Comparator<ElementInfo> {
+    public static class StaticAndAccessModifierComparator implements Comparator<ElementInfo> 
+    {
 	
-	public int compare(ElementInfo el1, ElementInfo el2) {
+	public int compare(ElementInfo el1, ElementInfo el2) 
+	{
 	    int mod1 = el1.getModifiers(); 
 	    int mod2 = el2.getModifiers();	    
 	    if (Modifier.isStatic(mod1) == Modifier.isStatic(mod2)) 
-		    return compareAccessModifiers(mod1, mod2);
+	    {
+		int res = compareAccessModifiers(mod1, mod2);
+		if (res == 0) 
+		{
+		    return compareSpecific(el1, el2);	
+		}	
+		return res;
+	    } 
 	    else if (Modifier.isStatic(mod1)) 
 		return -1;		
 	    else // (Modifier.isStatic(mod2))
 		return 1;
 	}
 
-	public int compareAccessModifiers(int mod1, int mod2) {
+	public int compareAccessModifiers(int mod1, int mod2) 
+	{
 	    return getNum(mod1) - getNum(mod2); 
 	}
 
-	int getNum(int mod) {
+	int getNum(int mod) 
+	{
 	    if (Modifier.isPublic(mod))
 		return 1;
 	    else if (Modifier.isProtected(mod))
@@ -2411,6 +2437,32 @@ public class ClassInfo extends ElementInfo
 		return 3;
 	}
 
+	/**
+	 *  additional checks, ie. for example to have 
+	 *  setters/getters together, getter first
+	 */
+	public int compareSpecific(ElementInfo el1, ElementInfo el2) 
+	{
+	    if (el1 instanceof MethodInfo && el2 instanceof MethodInfo) 
+	    {
+		MethodInfo m1 = (MethodInfo) el1;
+		MethodInfo m2 = (MethodInfo) el2;
+		String attr1 = m1.getMemberName(); 
+		String attr2 = m2.getMemberName(); 
+		if (attr1 != null && attr2 != null) 
+		{
+		    int res = attr1.compareTo(attr2);		    
+		    if (res != 0) 			
+			return res;
+		    if (m1.isAccessor()) 
+			return -1;
+		    else 
+			return 1;
+		} 
+	    }
+	    // by default we can't say nothing, ie. say that they are equal
+	    return 0;
+	}
     }
 
 
@@ -2443,6 +2495,34 @@ public class ClassInfo extends ElementInfo
 	}
 	Collections.sort(res);
 	return res;	
+    }
+
+
+    public ArrayList<ClassInfo> getMemberTypes() 
+    {	
+	IClassifier clazz = getClassElement();
+	if (clazz == null) 
+	{
+	    return null;
+	}
+	List<INamedElement> owned = clazz.getOwnedElements();
+	if (owned == null) 
+	{
+	    return null;
+	}
+	ArrayList<ClassInfo> res = new ArrayList<ClassInfo>();
+	for(INamedElement el : owned) {
+	    if (el instanceof IClass 
+		|| el instanceof IInterface 
+		|| el instanceof IEnumeration) 
+	    {
+		ClassInfo cinfo = new ClassInfo((IClassifier)el);
+		cinfo.setMethodsAndMembers((IClassifier)el);
+		cinfo.setComment(((IClassifier)el).getDocumentation());
+		res.add(cinfo);
+	    }	    
+	}
+	return res;
     }
 
 
@@ -2502,8 +2582,6 @@ public class ClassInfo extends ElementInfo
 	
 	return res;
     }
-
-
 
 
 }

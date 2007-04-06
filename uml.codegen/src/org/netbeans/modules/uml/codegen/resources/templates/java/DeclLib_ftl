@@ -12,11 +12,11 @@
 <#assign JAVA_IDENT="    " />
 <#assign BETWEEN_FIELDS_LINE_SPACING="\n" />
 <#assign BETWEEN_METHODS_LINE_SPACING="\n" />
-<#assign BETWEEN_TYPES_LINE_SPACING="\n\n" />
+<#assign BETWEEN_TYPES_LINE_SPACING="\n" />
 
 
 <#macro PackageDeclaration classInfo>
-<#if (classInfo.getPackage())?? >  
+<#if classInfo.getPackage()?? && (classInfo.getPackage()?length > 0) >  
 package ${classInfo.getPackage()};
 
 </#if>
@@ -28,7 +28,6 @@ package ${classInfo.getPackage()};
 <#list classInfo.getImportedTypes() as type>
 <@ImportDeclaration type />
 </#list>
-
 </#if>
 </#macro>
 
@@ -46,7 +45,6 @@ import ${type};
 <#else>
 <@NCDecl.NormalClassDeclaration classInfo nestingLevel />
 </#if>
-${BETWEEN_TYPES_LINE_SPACING}
 </#macro>
 
 
@@ -122,14 +120,19 @@ extends
 
 
 <#macro ClassBodyDeclaration classInfo nestingLevel >
-<@FieldDeclarations classInfo nestingLevel
-/>
-<@ConstructorDeclarations classInfo nestingLevel 
-/>
-<@MethodDeclarations classInfo nestingLevel  
-/>
-<@MemberTypeDeclarations classInfo nestingLevel 
-/>
+<@noSpaceIfEmpty >
+
+<@FieldDeclarations classInfo nestingLevel/>
+</@noSpaceIfEmpty ><@noSpaceIfEmpty >
+
+<@ConstructorDeclarations classInfo nestingLevel />
+</@noSpaceIfEmpty ><@noSpaceIfEmpty >
+
+<@MethodDeclarations classInfo nestingLevel />
+</@noSpaceIfEmpty ><@noSpaceIfEmpty >
+
+<@MemberTypeDeclarations classInfo nestingLevel />
+</@noSpaceIfEmpty >
 </#macro>
 
 
@@ -137,6 +140,7 @@ extends
 <#if classInfo.getFieldsCodeGenSorted()?? >
 <#list classInfo.getFieldsCodeGenSorted() as fieldInfo > 
 <@FieldDeclaration fieldInfo nestingLevel />
+<#if fieldInfo_has_next>${BETWEEN_FIELDS_LINE_SPACING}</#if>
 </#list>
 </#if>
 </#macro>
@@ -165,9 +169,8 @@ extends
 <@ident nestingLevel /><@compress single_line=true>
 ${classInfo.getModifierText(fieldInfo.getModifiers())} ${fieldInfo.getCodeGenType()} ${fieldInfo.getName()} 
 <#if fieldInfo.getInitializer()??> 
-= ${fieldInfo.getInitializer()} 
-</#if> 
-</@compress>;${BETWEEN_FIELDS_LINE_SPACING} 
+= ${fieldInfo.getInitializer()}
+</#if></@compress>;<#return />
 </#macro>
 
 
@@ -175,6 +178,7 @@ ${classInfo.getModifierText(fieldInfo.getModifiers())} ${fieldInfo.getCodeGenTyp
 <#if classInfo.getConstructorsCodeGenSorted()?? >
 <#list classInfo.getConstructorsCodeGenSorted() as methodInfo > 
 <@ConstructorDeclaration methodInfo nestingLevel />
+<#if methodInfo_has_next>${BETWEEN_METHODS_LINE_SPACING}</#if>
 </#list>
 </#if> 
 </#macro>
@@ -185,8 +189,15 @@ ${classInfo.getModifierText(fieldInfo.getModifiers())} ${fieldInfo.getCodeGenTyp
 <@ident nestingLevel /><@compress single_line=true>
 ${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getName()} <@MethodDeclarationFormalParameters methodInfo /> <@MethodDeclarationThrows methodInfo /> 
 </@compress> 
-<@MethodDeclarationBody methodInfo nestingLevel />
-${BETWEEN_METHODS_LINE_SPACING} 
+<@ConstructorDeclarationBody methodInfo nestingLevel />
+</#macro>
+
+
+<#macro ConstructorDeclarationBody methodInfo nestingLevel >
+ {
+<@singleline>
+<@ident nestingLevel />}
+</@singleline>
 </#macro>
 
 
@@ -194,29 +205,34 @@ ${BETWEEN_METHODS_LINE_SPACING}
 <#if classInfo.getMethodsCodeGenSorted()?? >
 <#list classInfo.getMethodsCodeGenSorted() as methodInfo > 
 <@MethodDeclaration methodInfo nestingLevel />
+<#if methodInfo_has_next>${BETWEEN_METHODS_LINE_SPACING}</#if>
 </#list>
 </#if>
-
 </#macro>
 
 
 <#macro MethodDeclaration methodInfo nestingLevel >
 <@MemberDeclarationComment methodInfo nestingLevel />
-<@ident nestingLevel /><@compress single_line=true>
+<@ident nestingLevel /><@compress single_line=true><@compress single_line=true>
 ${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getCodeGenReturnType()} ${methodInfo.getName()} <@MethodDeclarationFormalParameters methodInfo /> <@MethodDeclarationThrows methodInfo /> 
-<#if methodInfo.isAbstract() >;</#if>
+</@compress><#if methodInfo.isAbstract() >;</#if>
 </@compress> 
 <#if ! methodInfo.isAbstract() >
 <@MethodDeclarationBody methodInfo nestingLevel />
 </#if>
-${BETWEEN_METHODS_LINE_SPACING} 
 </#macro>
 
 
 <#macro MethodDeclarationBody methodInfo nestingLevel >
-<@ident nestingLevel />{
+ {
+<#if methodInfo.getMemberName()?? >
 <@MethodBodyGetterSetter methodInfo nestingLevel+1 />
+<#else>
+<@MethodBodyDefaultReturn methodInfo nestingLevel+1 />
+</#if>
+<@singleline>
 <@ident nestingLevel />}
+</@singleline>
 </#macro>
 
 
@@ -231,6 +247,17 @@ ${BETWEEN_METHODS_LINE_SPACING}
 </#if>
 </@singleline>
 
+</#if>
+</#macro>
+
+
+<#macro MethodBodyDefaultReturn methodInfo nestingLevel >
+<#if methodInfo.getDefaultReturnValue()?? >
+<@singleline>
+<@ident nestingLevel />return ${methodInfo.getDefaultReturnValue()};
+</@singleline>
+
+<#else><@singleline></@singleline>
 </#if>
 </#macro>
 
@@ -257,12 +284,40 @@ ${parameterInfo.getCodeGenType()} ${parameterInfo.getName()}<#if parameterInfo_h
 
 
 <#macro MemberTypeDeclarations classInfo nestingLevel >
-<#if classInfo.getInnerClasses()?? >
-<#list classInfo.getInnerClasses() as innerClass >
-<@TypeDeclaration innerClass nestingLevel+1 />
+<#if classInfo.getMemberTypes()?? >
+<#list classInfo.getMemberTypes() as memberType >
+<@TypeDeclaration memberType nestingLevel />
+<#if memberType_has_next>${BETWEEN_TYPES_LINE_SPACING}<#else></#if>
 </#list>
 </#if>
 </#macro>
+
+
+<#macro EnumBodyDeclaration classInfo nestingLevel >
+<@noSpaceIfEmpty >
+
+<@EnumLiterals  classInfo nestingLevel />
+
+</@noSpaceIfEmpty >
+<@ClassBodyDeclaration classInfo nestingLevel />
+</#macro>
+
+
+<#macro EnumLiterals classInfo nestingLevel >
+<#if classInfo.getLiterals()?? >
+<@ident nestingLevel /><@singleline>
+<#list classInfo.getLiterals() as literal >
+${literal.getName()}
+<#if literal_has_next>, <#else>;</#if>
+</#list>
+</@singleline>
+</#if>
+</#macro>
+
+
+<#-- 
+ #  some formatting utilities 
+ #-->
 
 
 <#macro ident nestingLevel > 
@@ -282,7 +337,8 @@ ${JAVA_IDENT}
 ${input?replace("\n","")}<#return />
 </#macro> 
 
-<#-- stndard compress somehow didn't make it into integrated version -->
+
+<#-- standard compress somehow didn't make it into integrated version -->
 <#macro compress single_line >
 <#assign input >
 <#nested />
@@ -296,7 +352,17 @@ ${input?replace("\n","")}<#return />
 </#macro> 
 
 
+<#macro noSpaceIfEmpty >
+<#assign input >
+<@compress true><#nested /></@compress>
+</#assign>
+<#assign isEmpty=input?matches("\\w*") />
+<#if isEmpty><#else><#nested /></#if><#return />
+</#macro> 
+
+
  
+
 
 
 
