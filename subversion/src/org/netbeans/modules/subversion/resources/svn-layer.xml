@@ -122,12 +122,12 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Windows2">
         <folder name="Components">
-            <file name="svnversioning.settings" url="components/svnversioning.settings"/>
+            <file name="svnversioning.settings" url="svnversioning.xml"/>
         </folder>
         <folder name="Modes">
             <folder name="output">
                 <attr name="svnversioning.wstcref/output.wstcref" boolvalue="true"/>
-                <file name="svnversioning.wstcref" url="modes/output/svnversioning.wstcref"/>
+                <file name="svnversioning.wstcref" url="svn_wstcref.xml"/>
             </folder>
         </folder>
     </folder>
