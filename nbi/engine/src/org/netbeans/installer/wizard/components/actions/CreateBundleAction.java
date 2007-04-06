@@ -79,7 +79,7 @@ public class CreateBundleAction extends WizardAction {
     public void execute() {
         LogManager.log("Creating bundle ... ");
         long started = System.currentTimeMillis();
-        LogManager.log("[bundle] ... initializing registry and required products");
+        LogManager.log("    ... initializing registry and required products");
         final Registry registry = Registry.getInstance();
         final RegistryFilter filter =
                 new SubTreeFilter(registry.getProductsToInstall());
@@ -101,8 +101,10 @@ public class CreateBundleAction extends WizardAction {
         
         JarFile         engine = null;
         JarOutputStream output = null;
-        LogManager.log("[bundle] ... creating bundle file at " + targetFile);
+        
         try {
+            LogManager.indent();
+            LogManager.log("... creating bundle file at " + targetFile);
             progress.setTitle("Creating a redistributable bundle at " + targetFile);
             progress.setDetail("Adding installer engine...");
             
@@ -112,7 +114,7 @@ public class CreateBundleAction extends WizardAction {
             
             // transfer the engine, skipping existing bundled components
             final Enumeration entries = engine.entries();
-            LogManager.log("[bundle] ... adding entries from the engine. Total : " + engine.size());
+            LogManager.log("... adding entries from the engine. Total : " + engine.size());
             while (entries.hasMoreElements()) {
                 final JarEntry entry = (JarEntry) entries.nextElement();
                 
@@ -159,14 +161,14 @@ public class CreateBundleAction extends WizardAction {
             
             
             progress.addPercentage(percentageLeak);
-            LogManager.log("[bundle] ... adding " + products.size() + " products");
+            LogManager.log("... adding " + products.size() + " products");
             for (Product product: products) {
                 // check for cancel status
                 if (canceled) return;
                 
                 progress.setDetail(
                         "Adding " + product.getDisplayName() + "...");
-                LogManager.log("[bundle] ... adding product : " + product.getDisplayName());
+                LogManager.log("... adding product : " + product.getDisplayName());
                 
                 final List<Platform> platforms = product.getPlatforms();
                 final String entryPrefix =
@@ -262,7 +264,7 @@ public class CreateBundleAction extends WizardAction {
                 // increment the progress percentage
                 progress.addPercentage(percentageChunk);
             }
-            LogManager.log("[bundle] ... adding " + groups.size() + " groups");
+            LogManager.log("... adding " + groups.size() + " groups");
             for (Group group: groups) {
                 // check for cancel status
                 if (canceled) return;
@@ -275,7 +277,7 @@ public class CreateBundleAction extends WizardAction {
                 
                 progress.setDetail(
                         "Adding " + group.getDisplayName() + "...");
-                LogManager.log("[bundle] ... adding group : " + group.getDisplayName());
+                LogManager.log("... adding group : " + group.getDisplayName());
                 final String entryPrefix =
                         EngineResources.DATA_DIRECTORY + "/" +
                         group.getUid();
@@ -324,6 +326,7 @@ public class CreateBundleAction extends WizardAction {
                     uri.setLocal(null);
                 }
             }
+            
         } catch (IOException e) {
             ErrorManager.notifyError("Failed to create the bundle", e);
         } catch (XMLException e) {
@@ -347,10 +350,10 @@ public class CreateBundleAction extends WizardAction {
                     ErrorManager.notifyDebug("Failed to close the stream", e);
                 }
             }
-            long seconds = System.currentTimeMillis() - started;
-            
-            LogManager.log("[bundle] ... generating bundle finished");
+            long seconds = System.currentTimeMillis() - started;  
+            LogManager.log("... generating bundle finished");                           
             LogManager.log("[bundle] Time : " + (seconds/1000) + "." + (seconds%1000) + " seconds");
+            LogManager.unindent();
         }
     }
     
