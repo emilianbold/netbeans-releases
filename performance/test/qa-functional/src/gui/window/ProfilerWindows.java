@@ -20,8 +20,11 @@
 package gui.window;
 
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jellytools.actions.Action;
+
+import org.netbeans.jemmy.operators.ComponentOperator;
+
+import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -29,34 +32,40 @@ import org.netbeans.jellytools.actions.Action;
  */
 public class ProfilerWindows extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    private static final String menuPrefix = "Profile|View|";
+    private static final String menuPrefix = "Profile|View|"; //NOI18N
     
     private String commandName;
     private String windowName;
     
     /**
-     * 
-     * @param testName 
+     *
+     * @param testName
      */
     public ProfilerWindows(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;        
+        expectedTime = WINDOW_OPEN;
     }
+    
     /**
-     * 
+     *
      * @param testName
-     * @param performanceDataName 
+     * @param performanceDataName
      */
     public ProfilerWindows(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;        
+        expectedTime = WINDOW_OPEN;
     }
-    /**
-     *  initialize 
-     */
-    public void initialize(){
-        log("::initialize::");
-        new TopComponentOperator(windowName).closeWindow();
+    
+    
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new ProfilerWindows("testProfilerControlPanel","Open Profiler Control Panel Window"));
+        suite.addTest(new ProfilerWindows("testProfilerTelemetryOverview","Open Profiler VM Telemetry Overview Window"));
+        suite.addTest(new ProfilerWindows("testProfilerLiveResults","Open Profiler Live Results Window"));
+        suite.addTest(new ProfilerWindows("testProfilerVMTelemetry","Open Profiler Profiler VM Telemetry Window Window"));
+        suite.addTest(new ProfilerWindows("testProfilerThreads","Open Profiler Threads Window"));
+        suite.addTest(new ProfilerWindows("testProfilerProfilingPoints","Open Profiler Profiling Pints Window"));
+        return suite;
     }
     
     public void testProfilerControlPanel() {
@@ -65,30 +74,27 @@ public class ProfilerWindows extends org.netbeans.performance.test.utilities.Per
         doMeasurement();
     }
     
-    /**
-     *  test invocation time for Telemetry Overview window
-     */
     public void testProfilerTelemetryOverview() {
         commandName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.actions.Bundle", "HINT_TelemetryOverviewAction");
-        windowName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryOverviewPanelName");     
+        windowName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryOverviewPanelName");
         doMeasurement();
     }
     
     public void testProfilerLiveResults() {
         commandName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.actions.Bundle", "LBL_ShowLiveResultsWindowAction");
-        windowName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.Bundle", "LiveResultsWindow_LiveResultsTabName");     
+        windowName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.Bundle", "LiveResultsWindow_LiveResultsTabName");
         doMeasurement();
     }
     
     public void testProfilerVMTelemetry() {
         commandName = "VM Telemetry"; //NOI18N
-        windowName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryWindowName");    
+        windowName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryWindowName");
         doMeasurement();
     }
     
     public void testProfilerThreads() {
         commandName = "Threads"; //NOI18N
-        windowName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.Bundle", "ThreadsWindow_ThreadsWindowName");      
+        windowName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.profiler.Bundle", "ThreadsWindow_ThreadsWindowName");
         doMeasurement();
     }
     
@@ -97,13 +103,10 @@ public class ProfilerWindows extends org.netbeans.performance.test.utilities.Per
         windowName = "Profiling Points"; ////NOI18N
         doMeasurement();
     }
-    /**
-     * 
-     */
+    
     public void prepare() {
-        
     }
-
+    
     public ComponentOperator open() {
         new Action(menuPrefix+commandName,null).performMenu(); // NOI18N
         return new TopComponentOperator(windowName);
@@ -113,6 +116,14 @@ public class ProfilerWindows extends org.netbeans.performance.test.utilities.Per
         if(testedComponentOperator != null && testedComponentOperator.isShowing()) {
             ((TopComponentOperator)this.testedComponentOperator).close();
         }
-        
     }
+    
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        repeat = 1;
+        junit.textui.TestRunner.run(suite());
+    }
+     
 }

@@ -104,6 +104,13 @@ public class MeasureDialogs  {
         
         suite.addTest(new SelectProfilingTaskDialog("measureTime", "Select Profiling Task dialog open"));
         
+        suite.addTest(new ProfilerWindows("testProfilerControlPanel","Open Profiler Control Panel Window"));
+        suite.addTest(new ProfilerWindows("testProfilerTelemetryOverview","Open Profiler VM Telemetry Overview Window"));
+        suite.addTest(new ProfilerWindows("testProfilerLiveResults","Open Profiler Live Results Window"));
+        suite.addTest(new ProfilerWindows("testProfilerVMTelemetry","Open Profiler Profiler VM Telemetry Window Window"));
+        suite.addTest(new ProfilerWindows("testProfilerThreads","Open Profiler Threads Window"));
+        suite.addTest(new ProfilerWindows("testProfilerProfilingPoints","Open Profiler Profiling Pints Window"));
+        
         
 //TODO failing after retouche integration        suite.addTest(new RefactorFindUsagesDialog("measureTime", "Refactor find usages dialog open"));
 //TODO failing after retouche integration        suite.addTest(new RefactorRenameDialog("measureTime", "Refactor rename dialog open"));
