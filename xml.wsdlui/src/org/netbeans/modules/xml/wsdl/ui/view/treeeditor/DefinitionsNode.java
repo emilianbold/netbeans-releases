@@ -226,9 +226,6 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode {
             //default namespace
             Node.Property defaultNamespaceProperty = new BaseAttributeProperty(mPropertyAdapter, 
                     String.class,"defaultNamespace"); //NOI18N
-            if(defaultNamespaceProperty.getValue() == null) {
-                defaultNamespaceProperty.setValue(Constants.WSDL_DEFAUL_NAMESPACE);
-            }
             
             defaultNamespaceProperty.setName(NbBundle.getMessage(DefinitionsNode.class, "PROP_DEFAULT_NAMESPACE"));//NOI18N
             defaultNamespaceProperty.setShortDescription(NbBundle.getMessage(DefinitionsNode.class, "DEFINITIONS_NODE_DEFAULTNAMESPACE_DESC"));
@@ -479,7 +476,11 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode {
         }
         
         public String getDefaultNamespace() {
-            return (String) ((AbstractDocumentComponent) getWSDLComponent()).getPrefixes().get(XMLConstants.DEFAULT_NS_PREFIX);
+            String dns = (String) ((AbstractDocumentComponent) getWSDLComponent()).getPrefixes().get(XMLConstants.DEFAULT_NS_PREFIX);
+            if(dns == null) {
+                return "";
+            }
+            return dns;
         }
     }
     
