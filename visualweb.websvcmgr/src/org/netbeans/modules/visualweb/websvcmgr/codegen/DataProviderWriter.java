@@ -1,0 +1,244 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.visualweb.websvcmgr.codegen;
+
+import org.netbeans.modules.visualweb.websvcmgr.util.Util;
+
+import com.sun.tools.ws.processor.model.java.JavaParameter;
+
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+/**
+ * Creates the DataProvider Java source code for the given method
+ * @author  cao
+ */
+public class DataProviderWriter extends java.io.PrintWriter {
+    
+    private DataProviderInfo dataProviderInfo;
+    private Set imports = new HashSet();
+    
+    public DataProviderWriter(Writer writer, DataProviderInfo dataProviderInfo ){
+        super(writer);
+        this.dataProviderInfo = dataProviderInfo;
+    }
+    
+    public void addImport(String importLine){
+        imports.add(importLine);
+    }
+    
+    public void writeClass(){
+        // package
+        println( "package " + dataProviderInfo.getPackageName() + ";" );
+        
+        // comments
+        println( "/**" );
+        println( " * Source code created on " + new Date() );
+        println( " */" );
+        println();
+        
+        // Import
+        if (!imports.isEmpty()) {
+            Iterator iter = imports.iterator();
+            while(iter.hasNext()) {
+                println("import " + iter.next() + ";");
+            }
+            println();
+        }
+        println( "import com.sun.data.provider.*;" );
+        println( "import com.sun.data.provider.impl.*;" );
+        println( "import java.lang.reflect.Method;" );
+        println( "import java.beans.*;" );
+        println( "import java.util.ArrayList;" );
+        println();
+        
+        // start of class
+        // Always extends from "MethodResultTableDataProvider
+        String dpSuperClassName = "MethodResultTableDataProvider";
+        
+        String className = dataProviderInfo.getClassName();
+        println( "public class " + className + " extends " + dpSuperClassName + " {" );
+        println();
+        
+        // Memeber variables
+        String clientWrapperClassName = dataProviderInfo.getClientWrapperClassName();
+        String clientWrapperClassVar = Util.decapitalize( clientWrapperClassName );
+        println( "    protected " + clientWrapperClassName + " " + clientWrapperClassVar + ";" );
+        println( "    protected ArrayList methodArgumentNames = new ArrayList();" );
+        println( "    // Properties. One per method parameter." );
+//        Iterator paramIter = dataProviderInfo.getJavaMethod().getParameters();
+        Iterator paramIter = dataProviderInfo.getJavaMethod().getParametersList().iterator();
+        while( paramIter.hasNext() )
+        {
+            JavaParameter param = (JavaParameter)paramIter.next();
+            println( "    protected " + param.getType().getRealName() + " " + param.getName() + ";" );
+            
+        }
+        println();
+        
+        // Default Constructor
+        println( "    public " + className + "() {" );
+        // Collect the method parameter names
+//        paramIter = dataProviderInfo.getJavaMethod().getParameters();
+        paramIter = dataProviderInfo.getJavaMethod().getParametersList().iterator();        
+        while( paramIter.hasNext() )
+        {
+            JavaParameter param = (JavaParameter)paramIter.next();
+            println( "        methodArgumentNames.add( \"" + param.getName() + "\" );" );
+            
+        }
+        println( "    }" );
+        println();
+        
+        // Getter and setter for the client wrapper class
+        println( "    public " + clientWrapperClassName + " get" + clientWrapperClassName + "() {" );
+        println( "        return  this." + clientWrapperClassVar + ";" );
+        println( "    }" );
+        println();
+        
+        println( "    public void set" + clientWrapperClassName + "( " + clientWrapperClassName + " " + clientWrapperClassVar + " ) { ");
+        println( "        this." + clientWrapperClassVar + " = " + clientWrapperClassVar + ";" );
+        println( "        super.setDataClassInstance( " + clientWrapperClassVar + ");" );
+        // Call super.setDataMethod() - need to the method name and parameter class types
+        println( "        try { " );
+        println( "            super.setDataMethod( " + clientWrapperClassName + ".class.getMethod(" );
+        println( "                \"" + dataProviderInfo.getJavaMethod().getName() + "\", new Class[] {" + getMethodParamTypes() + "} ) );" );
+        println( "        } catch( java.lang.NoSuchMethodException ne ) { " );
+        println( "            ne.printStackTrace();" );
+        println( "        }");
+        println( "    }" );
+        println();
+        
+        // Methods for get/set of the properties/method parameters
+//        paramIter = dataProviderInfo.getJavaMethod().getParameters();
+        paramIter = dataProviderInfo.getJavaMethod().getParametersList().iterator();
+        while( paramIter.hasNext() )
+        {
+            JavaParameter param = (JavaParameter)paramIter.next();
+            
+            // Getter
+            println( "    public " + param.getType().getRealName() + " get" + Util.upperCaseFirstChar( param.getName() ) + "() {" );
+            println( "        return " + param.getName() + ";");
+            println( "    }" );
+            println();
+            
+            // Setter
+            println( "    public void set" + Util.upperCaseFirstChar( param.getName() ) + "( " + param.getType().getRealName() + " " + param.getName() + " ) { " );
+            println( "        this." + param.getName() + " = " + param.getName() + ";" );
+            println( "    }" );
+            println();
+        }
+        println();
+        
+        // Implement abstract method from super class - getDataMethodArguments()
+        println( "    public Object[] getDataMethodArguments() {" );
+        if( dataProviderInfo.getJavaMethod().getParametersList().isEmpty() )
+            println( "        return new Object[0];" );
+        else {
+            println( "        try { " );
+            println( "            Object[] values = new Object[methodArgumentNames.size()];" );
+            println();
+            println( "            // Using the BeanInfo to get the property values" );
+            println( "            BeanInfo beanInfo = Introspector.getBeanInfo( this.getClass() );" );
+            println( "            PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();" );
+            println();
+            println( "            for( int i = 0; i < propertyDescriptors.length; i ++ ) {" );
+            println();
+            println( "                String propName = propertyDescriptors[i].getName();" );
+            println();
+            println( "                int argPos = findArgumentPosition( new String(propName) );" );
+            println( "                if( argPos != -1 ) {" );
+            println( "                    Method reader = propertyDescriptors[i].getReadMethod();" );
+            println( "                    if (reader != null) " );
+            println( "                        values[argPos] = reader.invoke(this, new Object[0]);" );
+            println( "                }" );
+            println( "            }" );
+            println();
+            println( "            return values;" );
+            println( "        } catch( Exception e ) { " );
+            println( "            e.printStackTrace();" );
+            println( "            return null; " );
+            println( "        }" );
+        }
+        
+        println();
+        println( "    }" );
+        println();
+        
+        println( "    private int findArgumentPosition( String propName ) {" );
+        println( "        // First try the propName itself" );
+        println( "        int index = methodArgumentNames.indexOf( propName );" );
+        println();    
+        println( "        char chars[] = propName.toCharArray();" );
+        println();  
+        println( "        if( index == -1 ) {" );
+        println( "            // fFlip the capitalization of the first char and try it again" );
+        println( "            if( Character.isUpperCase( chars[0] ) )" );
+        println( "                chars[0] = Character.toLowerCase(chars[0]);" );  
+        println( "            else" );  
+        println( "                chars[0] = Character.toUpperCase(chars[0]);" );  
+        println();
+        println( "            index = methodArgumentNames.indexOf( new String(chars) ); " );
+        println( "        }" );
+        println();    
+        println( "        return index; " );  
+        println( "    }" ); 
+        println();
+        
+        // Override getFieldKeys() method to filter out the class field
+        println( "    public FieldKey[] getFieldKeys() throws DataProviderException {" );
+        println( "        FieldKey[] fieldKeys = super.getFieldKeys(); " );
+        println( "        ArrayList finalKeys = new ArrayList(); " );
+        println( "        for( int i = 0; i < fieldKeys.length; i ++ ) { " );
+        println( "            if( !fieldKeys[i].getFieldId().equals( \"class\" ) )" );
+        println( "                finalKeys.add( fieldKeys[i] ); " );
+        println( "        } " );
+        println( "        return (FieldKey[])finalKeys.toArray( new FieldKey[0] ); " );
+        println( "    } " );
+        
+        // End of client bean clas
+        println( "}" );
+    }
+    
+    private String getMethodParamTypes()
+    {
+        StringBuffer buf = new StringBuffer();
+        boolean first = true;
+        Iterator paramIter = dataProviderInfo.getJavaMethod().getParametersList().iterator();
+        while( paramIter.hasNext() )
+        {
+            JavaParameter param = (JavaParameter)paramIter.next();
+            if( first )
+                    first = false;
+                else
+                    buf.append( ", " );
+
+                // TODO need to handle primitive type
+                buf.append( param.getType().getRealName() );
+                buf.append( ".class" ); // NOI18N
+            
+        }
+        return buf.toString();
+    }
+}

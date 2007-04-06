@@ -2,109 +2,131 @@
 <project name="Services tab web services compiling script " default="dist" basedir=".">
     <description>
         A script to wscompile/wsimport WSDL files.
-
-        Creates the directories {userdir}/[wsdlName}/JAXRPC.
+        
+        Creates the directories ${websvc.home}/${wsdlName}/jaxrpc.
         Creates build and src directories.
         Uses "wscompile" to compile the WSDL and place all generated .class and .java files into  build and src directories respectively.
         Creates the "jar" file from the ".class" files.
         Deletes "build" and "src" directories.
-
-        Creates the directories {userdir}/[wsdlName}/JAXWS.
+        
+        Creates the directories ${websvc.home}/${wsdlName}/jaxws.
         Creates build and src directories.
         Uses "wsimport" to compile the WSDL and place all generated .class and .java files into  build and src directories respectively.
         Creates the "jar" file from the ".class" files.
         Deletes "build" and "src" directories.
-        Copies the wsdl file into {userdir}/{wsdlName}/websvc.
-
+        Copies the wsdl file into ${websvc.home}/${wsdlName}/websvc.
+        
     </description>
-
-
-<!--
-
-j2ee.platform.wscompile.classpath=C:\\GlassFish_V2_Build_25\\glassfish\\lib\\j2ee.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\saaj-api.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\saaj-impl.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\jaxrpc-api.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\jaxrpc-impl.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\endorsed\\jaxp-api.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\appserv-ws.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\webservices-tools.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\webservices-rt.jar
-j2ee.platform.wsimport.classpath=C:\\GlassFish_V2_Build_25\\glassfish\\lib\\webservices-tools.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\webservices-rt.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\tools.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\appserv-jstl.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\javaee.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\appserv-ws.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\mail.jar:C:\\GlassFish_V2_Build_25\\glassfish\\lib\\activation.jar
-
--->
-
-   <target name="-init-user">
+    
+    
+    <target name="-init-user">
         <property file="${user.properties.file}"/>
     </target>
-
+    
     <target name="-init-wscompile" depends="-init-user">
-        <mkdir dir="${user.home}/${wsdlName}/websvc/JAXRPC/build"/>
-        <mkdir dir="${user.home}/${wsdlName}/websvc/JAXRPC/src"/>
-        <echo level="info">Created  '${user.home}/${wsdlName}/JAXRPC'.</echo>
+        <mkdir dir="${websvc.home}/${wsdlName}/jaxrpc/build"/>
+        <mkdir dir="${websvc.home}/${wsdlName}/jaxrpc/src"/>
+        <echo level="info">Created  '${websvc.home}/${wsdlName}/jaxrpc'.</echo>
         <echo level="info">user.properties.file =  '${user.properties.file}'.</echo>
         <echo level="info">libs.jaxrpc16.classpath =  '${libs.jaxrpc16.classpath}'.</echo>
         <echo level="info"></echo>
     </target>
-
-   <target name="run-wscompile" depends="-init-wscompile">
-       <!--
-       <fail unless="${user.home}/${wsdlName}/websvc/JAXRPC" message="Failed to create '${user.home}/${wsdlName}/JAXRPC' directory."/>
-       -->
-       <!--
-       <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile" classpath="C:\Program Files\Java\jdk1.5.0_09\jre\..\lib\tools.jar:C:\GlassFish_V2_Build_25\glassfish\lib\j2ee.jar:C:\GlassFish_V2_Build_25\glassfish\lib\saaj-api.jar:C:\GlassFish_V2_Build_25\glassfish\lib\saaj-impl.jar:C:\GlassFish_V2_Build_25\glassfish\lib\jaxrpc-api.jar:C:\GlassFish_V2_Build_25\glassfish\lib\jaxrpc-impl.jar:C:\GlassFish_V2_Build_25\glassfish\lib\endorsed\jaxp-api.jar:C:\GlassFish_V2_Build_25\glassfish\lib\appserv-ws.jar:C:\GlassFish_V2_Build_25\glassfish\lib\webservices-tools.jar:C:\GlassFish_V2_Build_25\glassfish\lib\webservices-rt.jar"/>
-       -->
-      <!--
-           replace below
-           ${config.file}
-       -->
-
-       <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile" classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}"/>
+    
+    <target name="run-wscompile" depends="-init-wscompile">
+        
+        <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile" classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}"/>
         <wscompile
             gen="true"
-            base="${user.home}\${wsdlName}\websvc\JAXRPC\build"
-            sourcebase="${user.home}\${wsdlName}\websvc\JAXRPC\src"
+            base="${websvc.home}/${wsdlName}/jaxrpc/build"
+            sourcebase="${websvc.home}/${wsdlName}/jaxrpc/src"
             debug="true"
-            config="c:\TravelWS_config.xml"
-            classpath="C:\Program Files\Java\jdk1.5.0_09\jre\..\lib\tools.jar:${libs.jaxrpc16.classpath}"/>
-        <!--
-            classpath="C:\Program Files\Java\jdk1.5.0_09\jre\..\lib\tools.jar:C:\GlassFish_V2_Build_25\glassfish\lib\j2ee.jar:C:\GlassFish_V2_Build_25\glassfish\lib\saaj-api.jar:C:\GlassFish_V2_Build_25\glassfish\lib\saaj-impl.jar:C:\GlassFish_V2_Build_25\glassfish\lib\jaxrpc-api.jar:C:\GlassFish_V2_Build_25\glassfish\lib\jaxrpc-impl.jar:C:\GlassFish_V2_Build_25\glassfish\lib\endorsed\jaxp-api.jar:C:\GlassFish_V2_Build_25\glassfish\lib\appserv-ws.jar:C:\GlassFish_V2_Build_25\glassfish\lib\webservices-tools.jar:C:\GlassFish_V2_Build_25\glassfish\lib\webservices-rt.jar"/>
-        -->
-        <jar jarfile="${user.home}\${wsdlName}\websvc\JAXRPC\${wsdlName}.jar" basedir="${user.home}\${wsdlName}\websvc\JAXRPC\build" />
-        <delete dir="${user.home}/${wsdlName}/websvc/JAXRPC/build"/>
-        <delete dir="${user.home}/${wsdlName}/websvc/JAXRPC/src"/>
+            classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}"/>
+        
+        <jar jarfile="${websvc.home}/${wsdlName}/jaxrpc/${wsdlName}-src.jar">
+            <fileset dir="${websvc.home}/${wsdlName}/jaxrpc/src">
+                <patternset includes="**/*.java"/>
+            </fileset>
+        </jar>
+        
+        <!-- We need to compile the single Client Class and add it to the build before jaring. wscompile doesn't compile it -->
+        <!--javac srcdir="${websvc.home}/${wsdlName}/src" destdir="${websvc.home}/${wsdlName}/build" classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}" debug="on" source="1.5" /-->
+        
+        <jar jarfile="${websvc.home}/${wsdlName}/jaxrpc/${wsdlName}.jar" basedir="${websvc.home}/${wsdlName}/jaxrpc/build" />
+        
+        
+        <copy file="${wsdlFileName}" tofile="${websvc.home}/${wsdlName}/${wsdlName}.wsdl"/>
+        
+        
+        <delete dir="${websvc.home}/${wsdlName}/jaxrpc/build"/>
+        <delete dir="${websvc.home}/${wsdlName}/jaxrpc/src"/>
+        
+        <!-- create  wrapper proxy client and the corresponding desgn time jar file -->
+        <mkdir dir="${websvc.home}/${wsdlName}/jaxrpc/dt/build"/>
+        
+        <!-- We need to compile the design time files. designtime.jar and dataprovider.jar need to be in the classpath -->
+        <!--javac srcdir="${websvc.home}/${wsdlName}/jaxrpc/dt/src" destdir="${websvc.home}/${wsdlName}/jaxrpc/dt/build" classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}" debug="on" source="1.5" /-->
+        
+        <copy todir="${websvc.home}/${wsdlName}/jaxrpc/dt/build">
+            <fileset dir="${websvc.home}/${wsdlName}/jaxrpc/dt/src">
+                <patternset excludes="**/*.java"/>
+            </fileset>
+        </copy>
+        <jar jarfile="${websvc.home}/${wsdlName}/jaxrpc/${wsdlName}-dt.jar" basedir="${websvc.home}/${wsdlName}/jaxrpc/dt/build" />
+        
     </target>
-
+    
+    
     <target name="-init-wsimport" depends="-init-user">
-        <mkdir dir="${user.home}/${wsdlName}/websvc/JAXWS/build"/>
-        <mkdir dir="${user.home}/${wsdlName}/websvc/JAXWS/src"/>
+        <mkdir dir="${websvc.home}/${wsdlName}/jaxws/build"/>
+        <mkdir dir="${websvc.home}/${wsdlName}/jaxws/src"/>
         <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
             <classpath path="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}"/>
         </taskdef>
-
-        <!--
-            <classpath path="${java.home}/../lib/tools.jar:C:\GlassFish_V2_Build_25\glassfish\lib\webservices-tools.jar:C:\GlassFish_V2_Build_25\glassfish\lib\webservices-rt.jar:C:\GlassFish_V2_Build_25\glassfish\lib\tools.jar:C:\GlassFish_V2_Build_25\glassfish\lib\appserv-jstl.jar:C:\GlassFish_V2_Build_25\glassfish\lib\javaee.jar:C:\GlassFish_V2_Build_25\glassfish\lib\appserv-ws.jar:C:\GlassFish_V2_Build_25\glassfish\lib\mail.jar:C:\GlassFish_V2_Build_25\glassfish\lib\activation.jar"/>
-        -->
-
-        <echo level="info">Created  '${user.home}/${wsdlName}/JAXWS'.</echo>
+        
+        <echo level="info">Created  '${websvc.home}/${wsdlName}'.</echo>
         <echo level="info"></echo>
     </target>
-
-
-   <target name="run-wsimport" depends="-init-wsimport">
-
-<!--
-Wsimport classpath:
-
-${java.home}/../lib/tools.jar:
-C:\GlassFish_V2_Build_25\glassfish\lib\webservices-tools.jar:C:\GlassFish_V2_Build_25\glassfish\lib\webservices-rt.jar:C:\GlassFish_V2_Build_25\glassfish\lib\tools.jar:C:\GlassFish_V2_Build_25\glassfish\lib\appserv-jstl.jar:C:\GlassFish_V2_Build_25\glassfish\lib\javaee.jar:C:\GlassFish_V2_Build_25\glassfish\lib\appserv-ws.jar:C:\GlassFish_V2_Build_25\glassfish\lib\mail.jar:C:\GlassFish_V2_Build_25\glassfish\lib\activation.jar
--->
-
-       <!--
-       <fail unless="${user.home}/${wsdlName}/websvc/JAXRPC" message="Failed to create '${user.home}/${wsdlName}/JAXRPC' directory."/>
-       -->
-       <!--
-           replace below
-           ${catalog.file}
-       -->
-        <wsimport sourcedestdir="${user.home}\${wsdlName}\websvc\JAXWS\src" extension="true" package="travelWS" destdir="${user.home}\${wsdlName}\websvc\JAXWS\build" wsdl="${wsdlFileName}" wsdlLocation="file:/C:/TravelWS.wsdl" catalog="c:\TravelWS_catalog.xml"/>
-        <jar jarfile="${user.home}\${wsdlName}\websvc\JAXWS\${wsdlName}.jar" basedir="${user.home}\${wsdlName}\websvc\JAXWS\build" />
-        <delete dir="${user.home}/${wsdlName}/websvc/JAXWS/build"/>
-        <delete dir="${user.home}/${wsdlName}/websvc/JAXWS/src"/>
-        <copy file="${wsdlFileName}" tofile="${user.home}/${wsdlName}/websvc/${wsdlName}.wsdl">
+    
+    <!-- Currently only JAXRC wrapper proxy client and the corresponding desgn time is created
+    We need to generate for JAX-WS aslo-->
+    
+    <target name="run-wsimport" depends="-init-wsimport">
+        <wsimport sourcedestdir="${websvc.home}/${wsdlName}/jaxws/src" extension="true" package="${packageName}" destdir="${websvc.home}/${wsdlName}/jaxws/build" wsdl="${wsdlFileName}"/>
+        
+        <jar jarfile="${websvc.home}/${wsdlName}/jaxws/${wsdlName}-src.jar">
+            <fileset dir="${websvc.home}/${wsdlName}/jaxws/src">
+                <patternset includes="**/*.java"/>
+            </fileset>
+        </jar>
+        
+        <!-- We need to compile the single Client Class and add it to the build before jaring. wsimport doesn't compile it -->
+        <!--javac srcdir="${websvc.home}/${wsdlName}/jaxws/src" destdir="${websvc.home}/${wsdlName}/jaxws/build" classpath="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}" debug="on" source="1.5" /-->
+        
+        <jar jarfile="${websvc.home}/${wsdlName}/jaxws/${wsdlName}.jar" basedir="${websvc.home}/${wsdlName}/jaxws/build" />
+        
+        <delete dir="${websvc.home}/${wsdlName}/jaxws/build"/>
+        <delete dir="${websvc.home}/${wsdlName}/jaxws/src"/>
+        
+        <echo level="info">Copying  '${wsdlFileName}' into directory '${websvc.home}/${wsdlName}/jaxws'.</echo>
+   
+        <!-- Currently only JAXRC wrapper proxy client and the corresponding desgn time is created
+        We need to generate for JAX-WS aslo-->
+        <!--
+        <mkdir dir="${websvc.home}/${wsdlName}/jaxws/dt/build"/>
+        -->
+        
+        <!-- We need to compile the design time files. designtime.jar and dataprovider.jar need to be in the classpath -->
+        <!--javac srcdir="${websvc.home}/${wsdlName}/dt/src" destdir="${websvc.home}/${wsdlName}/dt/build" classpath="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}" debug="on" source="1.5" /-->
+        <!--
+        <copy todir="${websvc.home}/${wsdlName}/jaxws/dt/build">
+            <fileset dir="${websvc.home}/${wsdlName}/jaxws/dt/src">
+                <patternset excludes="**/*.java"/>
+            </fileset>
         </copy>
-        <echo level="info">Copying  '${wsdlFileName}' into directory '${user.home}/${wsdlName}/websvc/'.</echo>
+        <jar jarfile="${websvc.home}/${wsdlName}/jaxws/${wsdlName}-dt.jar" basedir="${websvc.home}/${wsdlName}/jaxws/dt/build" />
+        -->
+        <copy file="${wsdlFileName}" tofile="${websvc.home}/${wsdlName}/${wsdlName}.wsdl"/>
     </target>
+    
+     
 </project>

@@ -25,7 +25,6 @@ import java.text.*;
 import java.io.*;
 
 import org.w3c.dom.*;
-import org.openide.*;
 
 import com.sun.tools.ws.processor.model.Port;
 import com.sun.tools.ws.processor.model.java.JavaParameter;
@@ -41,6 +40,11 @@ import com.sun.xml.rpc.processor.model.java.JavaParameter;
 */
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
 /* SD
 import org.netbeans.modules.visualweb.xml.rpc.util.JavaCompilerHelper;
 import org.netbeans.modules.visualweb.xml.rpc.processor.util.ClientProcessorEnvironment;
@@ -49,15 +53,12 @@ import org.netbeans.modules.visualweb.xml.rpc.processor.model.java.JavaParameter
 */
 import org.netbeans.modules.visualweb.websvcmgr.NotFoundException;
 import org.openide.util.NbBundle;
-
-// import org.netbeans.modules.visualweb.websvcmgr.jaxrpc.Wsdl2Java;
-import org.netbeans.modules.visualweb.websvcmgr.jaxrpc.DataProviderBeanInfoWriter;
-import org.netbeans.modules.visualweb.websvcmgr.jaxrpc.WebServiceSupportException;
-import org.netbeans.modules.visualweb.websvcmgr.jaxrpc.WebServiceSupportLibraries;
-import org.netbeans.modules.visualweb.websvcmgr.model.WebServiceData;
-import org.netbeans.modules.visualweb.websvcmgr.jaxrpc.WrapperClientBeanInfoWriter;
+import org.netbeans.modules.visualweb.websvcmgr.codegen.WebServiceSupportException;
+import org.netbeans.modules.visualweb.websvcmgr.codegen.WebServiceSupportLibraries;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.visualweb.extension.openide.awt.StatusDisplayer_RAVE;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.openide.filesystems.FileObject;
 
 // BEGIN_NOI18N
 /**
@@ -65,7 +66,7 @@ import org.netbeans.modules.visualweb.extension.openide.awt.StatusDisplayer_RAVE
  */
 public class Util {
     public static final String dataproviderJar = InstalledFileLocator.getDefault().locate("modules/ext/dataprovider.jar", null, false ).getAbsolutePath(); // NOI18N
-    public static final String designTimeJar = InstalledFileLocator.getDefault().locate( "modules/com-sun-rave-designtime.jar", null, false).getAbsolutePath(); // NOI18N
+    public static final String designTimeJar = InstalledFileLocator.getDefault().locate( "modules/org-netbeans-modules-visualweb-designtime.jar", null, false).getAbsolutePath(); // NOI18N
     
     public static final int BUFFER_SIZE = 4096;
     public static final String xsdNamespace = "xsd";
@@ -90,6 +91,49 @@ public class Util {
         char chars[] = name.toCharArray();
         chars[0] = Character.toLowerCase(chars[0]);
         return new String(chars);
+    }
+    
+    
+    /**
+     * Return the Project that is currently active according to the Designer.
+     * 
+     * @return currently active project or null, if none.
+     */
+    public static Project getActiveProject() {
+        FileObject fileObject = DesignerServiceHack.getDefault()
+                .getCurrentFile();
+        if (fileObject == null) {
+            return null;
+        }
+        return FileOwnerQuery.getOwner(fileObject);
+    }
+    
+    private void addLibraryDefsAndRefs(String libName)
+            throws IOException {
+        
+        Project project = getActiveProject();
+ 
+        Library libDef = LibraryManager.getDefault().getLibrary(libName);
+        if (libDef == null) {
+            
+        }
+
+        // If needed, create new compile-time Library Ref
+        if (!JsfProjectUtils.hasLibraryReference(project, libDef,
+                ClassPath.COMPILE)) {
+            if (!JsfProjectUtils.addLibraryReferences(project,
+                    new Library[] { libDef }, ClassPath.COMPILE)) {
+               
+            }
+        }
+
+        // If needed, create new "deploy" Library Ref
+        if (!JsfProjectUtils.hasLibraryReference(project, libDef,
+                ClassPath.EXECUTE)) {
+            if (!JsfProjectUtils.addLibraryReferences(project,
+                    new Library[] { libDef }, ClassPath.EXECUTE)) {
+            }
+        }
     }
     
     /**
