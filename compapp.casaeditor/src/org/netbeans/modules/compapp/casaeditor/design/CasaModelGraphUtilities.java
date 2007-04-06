@@ -51,10 +51,18 @@ import org.openide.util.NbBundle;
 public class CasaModelGraphUtilities {
     
     
-    public static void renderModel(CasaWrapperModel model, final CasaModelGraphScene scene)
+    public static void renderModel(final CasaWrapperModel model, final CasaModelGraphScene scene)
     {
         try {
-            safeRenderModel(model, scene);
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        safeRenderModel(model, scene);
+                    }
+                });
+            } else {
+                safeRenderModel(model, scene);
+            }
         } catch (final Throwable t) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
