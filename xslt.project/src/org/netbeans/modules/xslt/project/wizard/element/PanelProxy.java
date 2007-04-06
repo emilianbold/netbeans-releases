@@ -23,7 +23,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -167,8 +166,7 @@ final class PanelProxy<T> extends Panel<T> {
 
   private JPanel createTransformRequestPanel() {
     myRequestBox = createCheckBox(
-      i18n("LBL_Transform_Request"), // NOI18N
-      new AbstractAction(i18n("LBL_Transform_Request")) { // NOI18N
+      new ButtonAction(i18n("LBL_Transform_Request")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           update();
         }
@@ -183,8 +181,7 @@ final class PanelProxy<T> extends Panel<T> {
 
   private JPanel createTransformReplyPanel() {
     myReplyBox = createCheckBox(
-      i18n("LBL_Transform_Reply"), // NOI18N
-      new AbstractAction(i18n("LBL_Transform_Reply")) { // NOI18N
+      new ButtonAction(i18n("LBL_Transform_Reply")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           update();
         }

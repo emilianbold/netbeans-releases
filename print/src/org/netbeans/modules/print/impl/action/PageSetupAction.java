@@ -46,7 +46,7 @@ public final class PageSetupAction extends CallableSystemAction {
   @Override
   public String getName()
   {
-    return i18n(PageSetupAction.class, "CTL_PageSetup"); // NOI18N
+    return i18n(PageSetupAction.class, "CTL_PageSetup_Action"); // NOI18N
   }
   
   /**{@inheritDoc}*/

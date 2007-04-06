@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -81,8 +80,7 @@ class Export extends PrintUI {
     c.insets = new Insets(MEDIUM_INSET, 0, TINY_INSET, TINY_INSET);
     c.fill = GridBagConstraints.NONE;
     JButton button = createButton(
-      i18n("TLT_Browse"), // NOI18N
-      new AbstractAction(i18n("LBL_Browse")) { // NOI18N
+      new ButtonAction(i18n("LBL_Browse"), i18n("TLT_Browse")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           selectFile();
         }
@@ -119,8 +117,7 @@ class Export extends PrintUI {
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, TINY_INSET);
     c.fill = GridBagConstraints.NONE;
     myRunBrowser = createCheckBox(
-      i18n("LBL_Open_in_Browser"), // NOI18N
-      new AbstractAction(i18n("LBL_Open_in_Browser")) { // NOI18N
+      new ButtonAction(i18n("LBL_Open_in_Browser")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );

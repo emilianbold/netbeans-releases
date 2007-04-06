@@ -26,7 +26,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -124,8 +123,7 @@ public final class Search extends PrintUI {
 
     c.gridy++;
     myMatchCase = createCheckBox(
-      i18n("LBL_Match_Case"), // NOI18N 
-      new AbstractAction(i18n("LBL_Match_Case")) { // NOI18N
+      new ButtonAction(i18n("LBL_Match_Case")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
@@ -133,8 +131,7 @@ public final class Search extends PrintUI {
 
     c.gridy++;
     myPatternMatch = createCheckBox(
-      i18n("LBL_Match_Pattern"), // NOI18N 
-      new AbstractAction(i18n("LBL_Match_Pattern")) { // NOI18N
+      new ButtonAction(i18n("LBL_Match_Pattern")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           exclusion(myPatternMatch, myRegularExpression);
         }
@@ -146,8 +143,7 @@ public final class Search extends PrintUI {
 
     c.gridy++;
     myRegularExpression = createCheckBox(
-      i18n("LBL_Regular_Expression"), // NOI18N 
-      new AbstractAction(i18n("LBL_Regular_Expression")) { // NOI18N
+      new ButtonAction(i18n("LBL_Regular_Expression")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           exclusion(myRegularExpression, myPatternMatch);
         }
@@ -244,8 +240,7 @@ public final class Search extends PrintUI {
 
   private Object [] getButtons() {
     mySearchButton = createButton(
-      i18n("TLT_Search"), // NOI18N
-      new AbstractAction(i18n("LBL_Search")) { // NOI18N
+      new ButtonAction(i18n("LBL_Search"), i18n("TLT_Search")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );

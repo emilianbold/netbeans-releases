@@ -31,7 +31,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
-import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -115,8 +114,7 @@ final class Attribute extends PrintUI
     return new Object [] {
       DialogDescriptor.OK_OPTION,
       createButton(
-        i18n("TLT_Apply"), // NOI18N
-        new AbstractAction(i18n("LBL_Apply")) { // NOI18N
+        new ButtonAction(i18n("LBL_Apply"), i18n("TLT_Apply")) { // NOI18N
           public void actionPerformed(ActionEvent event) {
             updatePreview();
           }
@@ -238,8 +236,7 @@ final class Attribute extends PrintUI
 
     // border
     myBorder = createCheckBox(
-      i18n("LBL_Print_Border"), // NOI18N
-      new AbstractAction(i18n("LBL_Print_Border")) { // NOI18N
+      new ButtonAction(i18n("LBL_Print_Border")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myBorderColor.setEnabled(myBorder.isSelected());
         }
@@ -251,8 +248,9 @@ final class Attribute extends PrintUI
     c.weightx = 1.0;
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
     myBorderColor = createButton(
-      i18n("TLT_Border_Color"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "color")) { // NOI18N
+      new ButtonAction(
+        icon(Util.class, "color"), // NOI18N
+        i18n("TLT_Border_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           borderColor();
         }
@@ -263,8 +261,7 @@ final class Attribute extends PrintUI
     // page setup
     c.anchor = GridBagConstraints.EAST;
     JButton button = createButton(
-      i18n("TLT_Page_Setup"), // NOI18N
-      new AbstractAction(i18n("LBL_PageSetup")) { // NOI18N
+      new ButtonAction(i18n("LBL_PageSetup"), i18n("TLT_Page_Setup")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           if (Option.showPageSetup()) {
             updatePreview();
@@ -314,8 +311,7 @@ final class Attribute extends PrintUI
     c.insets = new Insets(0, 0, 0, 0);
     c.anchor = GridBagConstraints.WEST;
     myHeader = createCheckBox(
-      i18n("LBL_Print_Header"), // NOI18N
-      new AbstractAction(i18n("LBL_Print_Header")) { // NOI18N
+      new ButtonAction(i18n("LBL_Print_Header")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           boolean enabled = myHeader.isSelected();
           myHeaderLeft.setEnabled(enabled);
@@ -350,8 +346,9 @@ final class Attribute extends PrintUI
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
     myHeaderColor = createButton(
-      i18n("TLT_Header_Color"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "color")) { // NOI18N
+      new ButtonAction(
+        icon(Util.class, "color"), // NOI18N
+        i18n("TLT_Header_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           headerColor();
         }
@@ -361,8 +358,7 @@ final class Attribute extends PrintUI
 
     // header font
     myHeaderFont = createButton(
-      i18n("TLT_Header_Font"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "font")) { // NOI18N
+      new ButtonAction(icon(Util.class, "font"), i18n("TLT_Header_Font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           headerFont();
         }
@@ -377,8 +373,7 @@ final class Attribute extends PrintUI
     c.insets = new Insets(0, 0, 0, 0);
     c.anchor = GridBagConstraints.WEST;
     myFooter = createCheckBox(
-      i18n("LBL_Print_Footer"), // NOI18N
-      new AbstractAction(i18n("LBL_Print_Footer")) { // NOI18N
+      new ButtonAction(i18n("LBL_Print_Footer")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           boolean enabled = myFooter.isSelected();
           myFooterLeft.setEnabled(enabled);
@@ -412,8 +407,9 @@ final class Attribute extends PrintUI
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
     myFooterColor = createButton(
-      i18n("TLT_Footer_Color"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "color")) { // NOI18N
+      new ButtonAction(
+        icon(Util.class, "color"), // NOI18N
+        i18n("TLT_Footer_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           footerColor();
         }
@@ -423,8 +419,7 @@ final class Attribute extends PrintUI
 
     // footer font
     myFooterFont = createButton(
-      i18n("TLT_Footer_Font"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "font")) { // NOI18N
+      new ButtonAction(icon(Util.class, "font"), i18n("TLT_Footer_Font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           footerFont();
         }
@@ -508,8 +503,7 @@ final class Attribute extends PrintUI
     // line numbers
     c.gridy++;
     myLineNumbers = createCheckBox(
-      i18n("LBL_Line_Numbers"), // NOI18N
-      new AbstractAction(i18n("LBL_Line_Numbers")) { // NOI18N
+      new ButtonAction(i18n("LBL_Line_Numbers")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
@@ -517,8 +511,7 @@ final class Attribute extends PrintUI
 
     // use color
     myUseColor = createCheckBox(
-      i18n("TLT_Use_Color"), // NOI18N
-      new AbstractAction(i18n("LBL_Use_Color")) { // NOI18N
+      new ButtonAction(i18n("LBL_Use_Color"), i18n("TLT_Use_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
@@ -530,8 +523,7 @@ final class Attribute extends PrintUI
     // text color
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
     myTextColor = createButton(
-      i18n("TLT_Text_Color"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "color")) { // NOI18N
+      new ButtonAction(icon(Util.class, "color"), i18n("TLT_Text_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           textColor();
         }
@@ -541,8 +533,7 @@ final class Attribute extends PrintUI
     
     // text font
     myTextFont = createButton(
-      i18n("TLT_Text_Font"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "font")) { // NOI18N
+      new ButtonAction(icon(Util.class, "font"), i18n("TLT_Text_Font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           textFont();
         }
@@ -556,8 +547,7 @@ final class Attribute extends PrintUI
     c.gridy++;
     c.insets = new Insets(0, 0, 0, 0);
     myWrapLines = createCheckBox(
-      i18n("LBL_Wrap_Lines"), // NOI18N
-      new AbstractAction(i18n("LBL_Wrap_Lines")) { // NOI18N
+      new ButtonAction(i18n("LBL_Wrap_Lines")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
@@ -565,8 +555,7 @@ final class Attribute extends PrintUI
 
     // use font
     myUseFont = createCheckBox(
-      i18n("TLT_Use_Font"), // NOI18N
-      new AbstractAction(i18n("LBL_Use_Font")) { // NOI18N
+      new ButtonAction(i18n("LBL_Use_Font"), i18n("TLT_Use_Font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
@@ -581,8 +570,9 @@ final class Attribute extends PrintUI
     c.anchor = GridBagConstraints.WEST;
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
     myBackgroundColor = createButton(
-      i18n("TLT_Background_Color"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "color")) { // NOI18N
+      new ButtonAction(
+        icon(Util.class, "color"), // NOI18N
+        i18n("TLT_Background_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           backgroundColor();
         }

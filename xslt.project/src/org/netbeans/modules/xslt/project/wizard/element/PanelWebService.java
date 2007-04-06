@@ -25,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -92,8 +91,9 @@ final class PanelWebService<T> extends Panel<T> {
     c.fill = GridBagConstraints.NONE;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     myBrowse = createButton(
-      i18n("TLT_Browse_WSDL"), // NOI18N
-      new AbstractAction(i18n("LBL_Browse_WSDL")) { // NOI18N
+      new ButtonAction(
+        i18n("LBL_Browse_WSDL"), // NOI18N
+        i18n("TLT_Browse_WSDL")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           printInformation( // todo m
             "Dialog will be implemented by xml team," + // NOI18N

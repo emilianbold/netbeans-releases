@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -193,8 +192,9 @@ final class PanelOperation<T> extends Panel<T> {
     if ( !myIsReadOnly) {
       c.weightx = 0.0;
       button = createButton(
-        i18n("TLT_Create_Operation"), // NOI18N
-        new AbstractAction(i18n("LBL_Create_Operation")) { // NOI18N
+        new ButtonAction(
+          i18n("LBL_Create_Operation"), // NOI18N
+          i18n("TLT_Create_Operation")) { // NOI18N
           public void actionPerformed(ActionEvent event) {
             new DialogOperation<T>(
               myModel, PanelOperation.this, getPartnerRolePort()).show();
@@ -213,8 +213,7 @@ final class PanelOperation<T> extends Panel<T> {
     c.weighty = 1.0;
     c.insets = new Insets(0, 0, 0, 0);
     myTransformJBI = createCheckBox(
-      i18n("LBL_Transform_JBI"), // NOI18N
-      new AbstractAction(i18n("LBL_Transform_JBI")) { // NOI18N
+      new ButtonAction(i18n("LBL_Transform_JBI")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
@@ -286,8 +285,9 @@ final class PanelOperation<T> extends Panel<T> {
     c.weightx = 0.0;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     myInputChoose = createButton(
-      i18n("TLT_Choose_Input_Type"), // NOI18N
-      new AbstractAction(i18n("LBL_Choose_Input_Type")) { // NOI18N
+      new ButtonAction(
+        i18n("LBL_Choose_Input_Type"), // NOI18N
+        i18n("TLT_Choose_Input_Type")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           new DialogType<T>(getProject(), myModel, PanelOperation.this, true).show();
         }
@@ -314,8 +314,9 @@ final class PanelOperation<T> extends Panel<T> {
     c.weightx = 0.0;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     myOutputChoose = createButton(
-      i18n("TLT_Choose_Output_Type"), // NOI18N
-      new AbstractAction(i18n("LBL_Choose_Output_Type")) { // NOI18N
+      new ButtonAction(
+        i18n("LBL_Choose_Output_Type"), // NOI18N
+        i18n("TLT_Choose_Output_Type")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           new DialogType<T>(
             getProject(), myModel, PanelOperation.this, false).show();

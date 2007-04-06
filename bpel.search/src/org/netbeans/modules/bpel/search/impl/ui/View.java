@@ -26,7 +26,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.Date;
 
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -104,8 +103,9 @@ public final class View extends TopComponent implements FocusListener {
 
     // collapse/expand
     button = createButton(
-      i18n(View.class, "TLT_Expose"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "expose")) { // NOI18N
+      new ButtonAction(
+        icon(Util.class, "expose"), // NOI18N
+        i18n(View.class, "TLT_Expose")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myTree.expose(myTree.getSelectedNode());
         }
@@ -116,8 +116,9 @@ public final class View extends TopComponent implements FocusListener {
 
     // export
     button = createButton(
-      i18n(View.class, "TLT_Export"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "export")) { // NOI18N
+      new ButtonAction(
+        icon(Util.class, "export"), // NOI18N
+        i18n(View.class, "TLT_Export")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myTree.export(myTree.getSelectedNode());
         }
@@ -128,8 +129,9 @@ public final class View extends TopComponent implements FocusListener {
 
     // previous occurence
     button = createButton(
-      i18n(View.class, "TLT_Previous_Occurence"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "previous")) { // NOI18N
+      new ButtonAction(
+        icon(Util.class, "previous"), // NOI18N
+        i18n(View.class, "TLT_Previous_Occurence")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myTree.previousOccurence(myTree.getSelectedNode());
         }
@@ -140,8 +142,9 @@ public final class View extends TopComponent implements FocusListener {
 
     // next occurence
     button = createButton(
-      i18n(View.class, "TLT_Next_Occurence"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "next")) { // NOI18N
+      new ButtonAction(
+        icon(Util.class, "next"), // NOI18N
+        i18n(View.class, "TLT_Next_Occurence")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myTree.nextOccurence(myTree.getSelectedNode());
         }
@@ -150,12 +153,9 @@ public final class View extends TopComponent implements FocusListener {
     setSize(button);
     toolBar.add(button);
 
-    // print preview
-    button = createButton(
-      i18n(View.class, "TLT_Print_Preview"), // NOI18N
-      PrintManagerAccess.getManager().getPreviewAction()
-    );
-    button.setText(null);
+    // preview
+    button = createButton(PrintManagerAccess.getManager().getPreviewAction());
+//todo ?    button.setText(null);
     setSize(button);
     toolBar.add(button);
 

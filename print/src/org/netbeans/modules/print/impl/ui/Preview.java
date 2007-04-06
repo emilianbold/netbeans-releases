@@ -124,8 +124,7 @@ public class Preview extends PrintUI implements Percent.Listener {
     c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, MEDIUM_INSET);
     myToggle = createToggleButton(
-      i18n("TLT_Toggle"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "toggle")) { // NOI18N
+      new ButtonAction(icon(Util.class, "toggle"), i18n("TLT_Toggle")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           toggle();
         }
@@ -177,8 +176,7 @@ public class Preview extends PrintUI implements Percent.Listener {
     panel = new JPanel(new GridBagLayout());
     c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
     myFirst = createButton(
-      i18n("TLT_First"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "first")) { // NOI18N
+      new ButtonAction(icon(Util.class, "first"), i18n("TLT_First")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           first();
         }
@@ -189,8 +187,9 @@ public class Preview extends PrintUI implements Percent.Listener {
 
     // previous
     myPrevious = createButton(
-      i18n("TLT_Previous"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "previous")) { // NOI18N
+      new ButtonAction(
+        icon(Util.class, "previous"), // NOI18N
+        i18n("TLT_Previous")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           previous();
         }
@@ -235,8 +234,7 @@ public class Preview extends PrintUI implements Percent.Listener {
     
     // next
     myNext = createButton(
-      i18n("TLT_Next"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "next")) { // NOI18N
+      new ButtonAction(icon(Util.class, "next"), i18n("TLT_Next")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           next();
         }
@@ -247,8 +245,7 @@ public class Preview extends PrintUI implements Percent.Listener {
 
     // last
     myLast = createButton(
-      i18n("TLT_Last"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "last")) { // NOI18N
+      new ButtonAction(icon(Util.class, "last"), i18n("TLT_Last")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           last();
         }
@@ -268,8 +265,7 @@ public class Preview extends PrintUI implements Percent.Listener {
     // fit to window
     c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, TINY_INSET);
     myFit = createButton(
-      i18n("TLT_Fit"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "fit")) { // NOI18N
+      new ButtonAction(icon(Util.class, "fit"), i18n("TLT_Fit")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           showCustom(true);
         }
@@ -296,8 +292,7 @@ public class Preview extends PrintUI implements Percent.Listener {
     
     // decrease
     myDecrease = createButton(
-      i18n("TLT_Zoom_Out"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "minus")) { // NOI18N
+      new ButtonAction(icon(Util.class, "minus"), i18n("TLT_Zoom_Out")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myScale.decreaseValue();
         }
@@ -308,8 +303,7 @@ public class Preview extends PrintUI implements Percent.Listener {
 
     // increase
     myIncrease = createButton(
-      i18n("TLT_Zoom_In"), // NOI18N
-      new AbstractAction(null, icon(Util.class, "plus")) { // NOI18N
+      new ButtonAction(icon(Util.class, "plus"), i18n("TLT_Zoom_In")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myScale.increaseValue();
         }
@@ -694,8 +688,9 @@ public class Preview extends PrintUI implements Percent.Listener {
 
   private Object [] getButtons() {
     myPrintButton = createButton(
-      i18n("TLT_Print_Button"), // NOI18N
-      new AbstractAction(i18n("LBL_Print_Button")) { // NOI18N
+      new ButtonAction(
+        i18n("LBL_Print_Button"), // NOI18N
+        i18n("TLT_Print_Button")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           print();
         }
@@ -704,8 +699,9 @@ public class Preview extends PrintUI implements Percent.Listener {
     myPrintButton.addKeyListener(myKeyListener);
 
     myOptionButton = createButton(
-      i18n("TLT_Option_Button"), // NOI18N
-      new AbstractAction(i18n("LBL_Option_Button")) { // NOI18N
+      new ButtonAction(
+        i18n("LBL_Option_Button"), // NOI18N
+        i18n("TLT_Option_Button")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           option();
         }
@@ -714,8 +710,9 @@ public class Preview extends PrintUI implements Percent.Listener {
     myOptionButton.addKeyListener(myKeyListener);
 
     myCloseButton = createButton(
-      i18n("TLT_Close_Button"), // NOI18N
-      new AbstractAction(i18n("LBL_Close_Button")) { // NOI18N
+      new ButtonAction(
+        i18n("LBL_Close_Button"), // NOI18N
+        i18n("TLT_Close_Button")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
