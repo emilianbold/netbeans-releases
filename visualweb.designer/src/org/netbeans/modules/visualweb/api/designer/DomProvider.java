@@ -120,7 +120,7 @@ public interface DomProvider {
     //////
 
     // >>> DnD
-    public DataFlavor getImportFlavor(DataFlavor[] flavors);
+//    public DataFlavor getImportFlavor(DataFlavor[] flavors);
     public boolean canImport(JComponent comp, DataFlavor[] transferFlavors);
 //    public DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, CoordinateTranslator coordinateTranslator);
 //    public Element[] pasteComponents(Transferable t, Element parentComponentRootElement, Point location);

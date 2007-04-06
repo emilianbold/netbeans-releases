@@ -190,9 +190,9 @@ class DomProviderImpl implements DomProvider {
         jsfForm.requestTextUpdate(bean);
     }
 
-    public DataFlavor getImportFlavor(DataFlavor[] flavors) {
-        return getDndSupport().getImportFlavor(flavors);
-    }
+//    public DataFlavor getImportFlavor(DataFlavor[] flavors) {
+//        return getDndSupport().getImportFlavor(flavors);
+//    }
 
     public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
 //        return getFacesModel().getDnDSupport().canImport(comp, transferFlavors);

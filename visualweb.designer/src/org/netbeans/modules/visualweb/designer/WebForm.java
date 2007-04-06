@@ -1691,9 +1691,9 @@ public class WebForm implements Designer {
     //////
 
     // >>> DnD
-    DataFlavor getImportFlavor(DataFlavor[] flavors) {
-        return domProvider.getImportFlavor(flavors);
-    }
+//    DataFlavor getImportFlavor(DataFlavor[] flavors) {
+//        return domProvider.getImportFlavor(flavors);
+//    }
 
     boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
         return domProvider.canImport(comp, transferFlavors);
