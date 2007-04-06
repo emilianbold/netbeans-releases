@@ -59,6 +59,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ImportsTest("testRemoveBetweenImportsWithLineEndComment"));
 //        suite.addTest(new ImportsTest("testRemoveAllImports"));
 //        suite.addTest(new ImportsTest("testRemoveAllImports2"));
+//        suite.addTest(new ImportsTest("testAddFirstTwoAgain"));
 //        suite.addTest(new ImportsTest("testAddFirstTwo"));
 //        suite.addTest(new ImportsTest("testAddFirstToExisting"));
 //        suite.addTest(new ImportsTest("testRemoveInnerImport"));
@@ -129,8 +130,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "}\n"
             );
         String golden =
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "import java.io.IOException;\n" +
+            "\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "    }\n" +

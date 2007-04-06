@@ -75,6 +75,13 @@ final class EstimatorFactory {
         return new PositionEstimator.TopLevelEstimator(oldL, newL, copy);
     }
 
+    static PositionEstimator annotations(List<? extends Tree> oldL, 
+                                      List<? extends Tree> newL,
+                                      WorkingCopy copy)
+    {
+        return new PositionEstimator.AnnotationsEstimator(oldL, newL, copy);
+    }
+    
     /**
      * Provides offset positions for imports.
      * Consider compilation unit:

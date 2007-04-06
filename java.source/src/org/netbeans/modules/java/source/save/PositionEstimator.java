@@ -368,7 +368,7 @@ public abstract class PositionEstimator {
                 } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
                     break;
                 } else if (JavaTokenId.WHITESPACE == token.id()) {
-                    int indexOf = token.text().toString().lastIndexOf('\n');
+                    int indexOf = token.text().toString().indexOf('\n');
                     if (indexOf > -1) {
                         sectionEnd = seq.offset() + indexOf + 1;
                     } else {
@@ -507,9 +507,9 @@ public abstract class PositionEstimator {
     /**
      * Provides position estimator for features in type declaration.
      */
-    static class TopLevelEstimator extends PositionEstimator {
+    static class AnnotationsEstimator extends PositionEstimator {
         
-        public TopLevelEstimator(List<? extends Tree> oldL, 
+        public AnnotationsEstimator(List<? extends Tree> oldL, 
                                  List<? extends Tree> newL,
                                  WorkingCopy copy)
         {
@@ -558,7 +558,7 @@ public abstract class PositionEstimator {
             if (tokenIndex == -1) return -1;
             seq.moveIndex(tokenIndex);
             seq.moveNext();
-            int off = goAfterFirstNewLine(seq);
+            int off = goAfterLastNewLine(seq);
             return off;
         }
         
@@ -769,7 +769,6 @@ public abstract class PositionEstimator {
                 if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
                     seq.moveNext();
                 }
-                int wideStart = goAfterFirstNewLine(seq);
                 seq.move(treeStart);
                 seq.moveNext();
                 if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
@@ -934,6 +933,232 @@ public abstract class PositionEstimator {
 
     }
         
+    /**
+     * Provides position estimator for top-level classes
+     */
+    static class TopLevelEstimator extends PositionEstimator {
+        
+        private List<int[]> data;
+        
+        public TopLevelEstimator(final List<? extends Tree> oldL, 
+                                 final List<? extends Tree> newL, 
+                                 final WorkingCopy copy)
+        {
+            super(oldL, newL, copy);
+        }
+        
+        @Override()
+        public void initialize() {
+            int size = oldL.size();
+            data = new ArrayList(size);
+            SourcePositions positions = copy.getTrees().getSourcePositions();
+            CompilationUnitTree compilationUnit = copy.getCompilationUnit();
+            
+            for (Tree item : oldL) {
+                int treeStart = (int) positions.getStartPosition(compilationUnit, item);
+                int treeEnd = (int) positions.getEndPosition(compilationUnit, item);
+                
+                seq.move(treeStart);
+                seq.moveNext();
+                if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
+                    seq.moveNext();
+                }
+                seq.move(treeStart);
+                seq.moveNext();
+                if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
+                    seq.moveNext();
+                }
+                int previousEnd = seq.offset();
+                Token<JavaTokenId> token;
+                while (nonRelevant.contains((token = seq.token()).id())) {
+                    int localResult = -1;
+                    switch (token.id()) {
+                        case WHITESPACE:
+                            int indexOf = token.text().toString().indexOf('\n');
+                            if (indexOf > -1) {
+                                localResult = seq.offset() + indexOf + 1;
+                            }
+                            break;
+                        case LINE_COMMENT:
+                            previousEnd = seq.offset() + token.text().length();
+                            break;
+                    case JAVADOC_COMMENT:
+                            previousEnd = seq.offset();
+                            break;
+                    }
+                    if (localResult > 0) {
+                        previousEnd = localResult;
+                        break;
+                    }
+                    if (!seq.moveNext()) break;
+                }
+                int wideStart = previousEnd;
+                seq.move(treeStart);
+                seq.moveNext();
+                seq.movePrevious();
+                while (nonRelevant.contains((token = seq.token()).id())) {
+                    int localResult = -1;
+                    switch (token.id()) {
+                        case WHITESPACE:
+                            int indexOf = token.text().toString().lastIndexOf('\n');
+                            if (indexOf > -1) {
+                                localResult = seq.offset() + indexOf + 1;
+                            }
+                            break;
+                        case LINE_COMMENT:
+                            localResult = seq.offset() + token.text().length();
+                            break;
+                        case JAVADOC_COMMENT:
+                        case BLOCK_COMMENT:
+                            wideStart = seq.offset();
+                            break;
+                    }
+                    if (wideStart > previousEnd) {
+                        break;
+                    }
+                    if (localResult > 0) {
+                        wideStart = localResult;
+                    }
+                    if (!seq.movePrevious()) break;
+                }
+                
+                seq.move(treeEnd);
+                int wideEnd = treeEnd;
+                while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
+                    if (JavaTokenId.WHITESPACE == token.id()) {
+                        int indexOf = token.text().toString().indexOf('\n');
+                        if (indexOf > -1) {
+                            wideEnd = seq.offset() + indexOf + 1;
+                        } else {
+                            wideEnd = seq.offset();
+                        }
+                    } else if (JavaTokenId.LINE_COMMENT == token.id()) {
+                        wideEnd = seq.offset() + token.text().length();
+                        break;
+                    } else if (JavaTokenId.JAVADOC_COMMENT == token.id()) {
+                        break;
+                    }
+                    if (wideEnd > treeEnd)
+                        break;
+                }
+                if (wideEnd < treeEnd) wideEnd = treeEnd;
+                data.add(new int[] { wideStart, wideEnd, previousEnd });
+            }
+            initialized = true;
+        }
+        
+        @Override()
+        public int getInsertPos(int index) {
+            if (!initialized) initialize();
+            if (data.isEmpty()) {
+                return -1;
+            } else {
+                return index == data.size() ? data.get(index-1)[2] : data.get(index)[0];
+            }
+        }
+
+        /**
+         * Used when all elements from the list was removed.
+         */
+        public int[] sectionRemovalBounds(StringBuilder replacement) {
+            if (!initialized) initialize();
+            // this part should be generalized
+            assert !oldL.isEmpty() && newL.isEmpty(); // check the call correctness
+            SourcePositions positions = copy.getTrees().getSourcePositions();
+            CompilationUnitTree compilationUnit = copy.getCompilationUnit();
+            int sectionStart = (int) positions.getStartPosition(compilationUnit, oldL.get(0));
+            int sectionEnd = (int) positions.getEndPosition(compilationUnit, oldL.get(oldL.size()-1));
+            // end of generalization part
+            
+            seq.move(sectionStart);
+            seq.moveNext();
+            Token<JavaTokenId> token;
+            while (seq.movePrevious() && nonRelevant.contains((token = seq.token()).id())) {
+                if (JavaTokenId.LINE_COMMENT == token.id()) {
+                    seq.moveNext();
+                    sectionStart = seq.offset();
+                    break;
+                } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
+                    break;
+                } else if (JavaTokenId.WHITESPACE == token.id()) {
+                    int indexOf = token.text().toString().indexOf('\n');
+                    if (indexOf > -1) {
+                        sectionStart = seq.offset() + indexOf + 1;
+                    } else {
+                        sectionStart = seq.offset();
+                    }
+                }
+            }
+            seq.move(sectionEnd);
+            seq.movePrevious();
+            while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
+                if (JavaTokenId.LINE_COMMENT == token.id()) {
+                    sectionEnd = seq.offset();
+                    if (seq.moveNext()) {
+                        sectionEnd = seq.offset();
+                    }
+                    break;
+                } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
+                    break;
+                } else if (JavaTokenId.WHITESPACE == token.id()) {
+                    int indexOf = token.text().toString().lastIndexOf('\n');
+                    if (indexOf > -1) {
+                        sectionEnd = seq.offset() + indexOf + 1;
+                    } else {
+                        sectionEnd += seq.offset() + token.text().length();
+                    }
+                }
+            }
+            return new int[] { sectionStart, sectionEnd };
+        }
+        
+        public String head() { return ""; }
+
+        public String sep() { return ""; }
+
+        public String getIndentString() { return ""; }
+        
+        @Override()
+        public int[] getPositions(int index) {
+            if (!initialized) initialize();
+            return data.get(index);
+        }
+        
+        public LineInsertionType lineInsertType() {
+            return LineInsertionType.AFTER;
+        }
+        
+        public int prepare(int startPos, StringBuilder aHead,
+                           StringBuilder aTail) {
+            seq.move(startPos);
+            seq.moveNext();
+            moveToSrcRelevant(seq, Direction.BACKWARD);
+            while (seq.moveNext() && nonRelevant.contains(seq.token().id())) {
+                if (JavaTokenId.WHITESPACE == seq.token().id()) {
+                    int newlineInToken = seq.token().text().toString().indexOf('\n');
+                    if (newlineInToken > -1) {
+                        return seq.offset() + newlineInToken + 1;
+                    }
+                } else if (JavaTokenId.LINE_COMMENT == seq.token().id()) {
+                    return seq.offset() + seq.token().text().length();
+                }
+            }
+            return startPos;
+        }
+        
+        @Override
+        public String toString() {
+            if (!initialized) initialize();
+            String result = "";
+            for (int i = 0; i < data.size(); i++) {
+                int[] pos = data.get(i);
+                String s = copy.getText().substring(pos[0], pos[1]);
+                result += "[" + s + "]";
+            }
+            return result;
+        }
+
+    }
     ////////////////////////////////////////////////////////////////////////////
     // Utility methods
     

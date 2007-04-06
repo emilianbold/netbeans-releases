@@ -486,8 +486,10 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     public void testAnnRename() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
-                "package hierbas.del.litoral;\n\n" +
-                "import java.io.*;\n\n" +
+                "package hierbas.del.litoral;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
                 "@Annotace()\n" +
                 "public class Test {\n" +
                 "    public Test() {\n" +
@@ -495,8 +497,10 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "}\n"
                 );
         String golden =
-                "package hierbas.del.litoral;\n\n" +
-                "import java.io.*;\n\n" +
+                "package hierbas.del.litoral;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
                 "@Annotation()\n" +
                 "public class Test {\n" +
                 "    public Test() {\n" +

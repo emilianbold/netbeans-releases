@@ -167,20 +167,8 @@ public class CasualDiff {
             posHint = diffPackageStatement(oldT, newT, pointer);
             PositionEstimator est = EstimatorFactory.imports(((CompilationUnitTree) oldT).getImports(), ((CompilationUnitTree) newT).getImports(), workingCopy);
             pointer = diffListImports(oldT.getImports(), newT.getImports(), posHint, est, Measure.DEFAULT, printer);
-            if (oldT.getTypeDecls().nonEmpty()) {
-                posHint = getOldPos(oldT.getTypeDecls().head);
-            } else {
-                // todo (#pf): this has to be fixed, missing code here.
-            }
-            output.writeTo(printer.toString());
-            printer.reset(0);
             est = EstimatorFactory.toplevel(((CompilationUnitTree) oldT).getTypeDecls(), ((CompilationUnitTree) newT).getTypeDecls(), workingCopy);
-            int[] pos = diffList(oldT.getTypeDecls(), newT.getTypeDecls(), posHint, est, Measure.DEFAULT, printer);
-            if (pointer < pos[0])
-                output.writeTo(origText.substring(pointer, pos[0]));
-            if (pos[1] > pointer) {
-                pointer = pos[1];
-            }
+            pointer = diffListImports(oldT.getTypeDecls(), newT.getTypeDecls(), pointer, est, Measure.MEMBER, printer);
             output.writeTo(printer.toString());
             output.writeTo(origText.substring(pointer));
         } catch (Exception e) {
@@ -1244,7 +1232,7 @@ public class CasualDiff {
             }
         } else {
             if (oldT.annotations.isEmpty()) copyTo(lastPrinted, oldPos);
-            PositionEstimator est = EstimatorFactory.toplevel(((ModifiersTree) oldT).getAnnotations(), ((ModifiersTree) newT).getAnnotations(), workingCopy);
+            PositionEstimator est = EstimatorFactory.annotations(((ModifiersTree) oldT).getAnnotations(), ((ModifiersTree) newT).getAnnotations(), workingCopy);
             int[] res = diffList(oldT.annotations, newT.annotations, oldPos, est, Measure.DEFAULT, printer);
             lastPrinted = res[1];
             //printer.printAnnotations(newT.annotations);
@@ -1967,10 +1955,7 @@ public class CasualDiff {
                 printer.printExpr(item);
                 if (AFTER == estimator.lineInsertType()) printer.newline();
             }
-            // this should be uncommented! -- support of empty line when
-            // first import is added and there is only one empty line between
-            // package statement and type decl 0.
-            // printer.print(aTail.toString());
+            printer.print(aTail.toString());
             return pos;
         }
 
@@ -1982,7 +1967,12 @@ public class CasualDiff {
         }
         int i = 0;
         // copy to start position
-        copyTo(localPointer, localPointer = estimator.getInsertPos(0), printer);
+        int insertPos = estimator.getInsertPos(0);
+        if (insertPos > localPointer) {
+            copyTo(localPointer, localPointer = estimator.getInsertPos(0), printer);
+        } else {
+            insertPos = localPointer;
+        }
         // go on, match it!
         for (int j = 0; j < result.length; j++) {
             ResultItem<JCTree> item = result[j];
