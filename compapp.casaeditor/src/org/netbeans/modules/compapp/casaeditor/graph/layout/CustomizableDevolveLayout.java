@@ -59,10 +59,6 @@ public class CustomizableDevolveLayout extends SceneLayout {
         this.devolveLayout.setIsAnimating(isAnimating);
     }
     
-    public void setIsPersisting(boolean isPersisting) {
-        this.devolveLayout.setIsPersisting(isPersisting);
-    }
-    
     protected void performLayout () {
         devolveLayout.layout(widget);
     }

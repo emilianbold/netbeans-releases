@@ -107,9 +107,14 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         addChild(mContainerWidget);
         
         regenerateHeaderBorder();
+    }
+    
+    
+    protected void notifyAdded() {
+        super.notifyAdded();
         
         notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
-
+        
         Widget.Dependency verticalTextizer = new Widget.Dependency() {
             public void revalidateDependency() {
                 if (
@@ -125,11 +130,15 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
                 }
             }
         };
-        addDependency(verticalTextizer);
-        mDependencies.add(verticalTextizer);
+        getRegistry().registerDependency(verticalTextizer);
     }
     
-    
+    protected void notifyRemoved() {
+        super.notifyRemoved();
+        
+        mNameWidget.removeFromParent();
+    }
+
     public void initializeGlassLayer(LayerWidget layer) {
         mNameWidget = new LabelWidget(getScene());
         mNameWidget.setFont(CasaFactory.getCasaCustomizer().getFONT_BC_LABEL());
@@ -140,25 +149,26 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         Widget.Dependency nameLabeler = new Widget.Dependency() {
             public void revalidateDependency() {
                 if (
-                        getScene().getGraphics() == null ||
+                        getPreferredLocation() == null ||
                         getBounds() == null ||
                         getParentWidget() == null) {
                     return;
                 }
-                Rectangle nameRect = mNameWidget.getClientArea();
-                Rectangle myRect = getBounds();
-                int newX = (myRect.width - nameRect.width) / 2;
-                Point point = convertPreferredLocalToScene(new Point(
-                        newX,
-                        myRect.height + nameRect.height));
-                point.x = point.x < NAME_LEFT_EDGE_SPACING ?
-                    NAME_LEFT_EDGE_SPACING :
-                    point.x;
+                
+                Rectangle nameRect = mNameWidget.getBounds();
+                Rectangle nodeRect = getBounds();
+                int newX = (nodeRect.width - nameRect.width) / 2;
+                
+                Point nodeSceneLocation = getParentWidget().convertLocalToScene(getPreferredLocation());
+                Point point = new Point(
+                        nodeSceneLocation.x + newX, 
+                        nodeSceneLocation.y + getBodyHeight() + nameRect.height);
+                point.x = point.x < NAME_LEFT_EDGE_SPACING ? NAME_LEFT_EDGE_SPACING : point.x;
+                
                 mNameWidget.setPreferredLocation(point);
             }
         };
-        mDependencies.add(nameLabeler);
-        addDependency(nameLabeler);
+        getRegistry().registerDependency(nameLabeler);
     }
     
     public void setLabelFont(Font font) {
@@ -171,15 +181,6 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         mNameWidget.setForeground(color);
     }
 
-    public void removeAllDependencies() {
-        super.removeAllDependencies();
-        mNameWidget.removeFromParent();
-    }
-    
-    protected Rectangle getNameWidgetBounds() {
-        return mNameWidget.getBounds();
-    }
-    
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
         super.notifyStateChanged(previousState, state);
         if (!previousState.isSelected() && state.isSelected()) {
@@ -207,18 +208,10 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         return pinAnchor;
     }
     
-    // Our getBounds() may not yet accurately reflect the actual
-    // height of our component, so we calculate it here in case we need it now.
-    public Rectangle getEntireBounds() {
-        Point p     = getLocation();
-        Dimension d = getBounds().getSize();
-        
-        Rectangle bounds = new Rectangle(
-                Math.min(p.x, mNameWidget.getLocation().x),
-                p.y,
-                Math.max(d.width, mNameWidget.getBounds().width),
-                d.height + mNameWidget.getBounds().height);
-
+    // The height of our widget body (the visible height of the widget excluding the bottom label).
+    // We prefer this calculation of height vs. getBounds().height, as getBounds().height
+    // is erroneous depending upon the state of scene validation.
+    private int getBodyHeight() {
         int bodyHeight = VERT_TEXT_BAR_MIN_HEIGHT;
         bodyHeight = Math.max(bodyHeight, mVerticalTextImageWidget.getPreferredBounds().height);
         if (mPinsHolderWidget.getChildren().size() == 2) {
@@ -226,11 +219,20 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
                 mPinsHolderWidget.getChildren().get(0);
             bodyHeight = Math.max(bodyHeight, bindingPinChild.getPinWidgetBounds().height * 2);
         }
-        bounds.height = 
-                bodyHeight + 
-                BORDER_WIDTH * 2 + 
-                getNameWidgetBounds().height + 
-                TRAILING_VERTICAL_GAP;
+        bodyHeight += BORDER_WIDTH * 2;
+        return bodyHeight;
+    }
+    
+    // This includes our main widget body as well as the name label widget.
+    public Rectangle getEntireBounds() {
+        Point p = getLocation();
+        
+        Rectangle bounds = new Rectangle(
+                Math.min(p.x, mNameWidget.getLocation().x),
+                p.y,
+                Math.max(getBounds().width, mNameWidget.getBounds().width),
+                getBodyHeight() + mNameWidget.getBounds().height + TRAILING_VERTICAL_GAP);
+
         return bounds;
     }
 
@@ -239,8 +241,6 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         mNameWidget.setLabel(nodeName);
         // validate to trigger a bounds update
         getScene().validate();
-        // once the bounds is updated, reposition the label
-        invokeDependencies();
     }
     
     /**
@@ -280,11 +280,6 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
     }
     
     public void regenerateVerticalTextBarImage() {
-        mVerticalTextImageWidget.setImage(getVerticalTextBarImage());
-    }
-    
-    public BufferedImage getVerticalTextBarImage() {
-        
         String displayedText = mVertTextBarText;
         if (mVertTextBarText.length() > VERT_TEXT_BAR_MAX_CHAR) {
             displayedText = displayedText.substring(0, VERT_TEXT_BAR_MAX_CHAR) + NbBundle.getMessage(getClass(), "ELLIPSIS");
@@ -331,7 +326,7 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         iconsRect.height = barHeight;
         mBadges.getContainerWidget().setPreferredBounds(iconsRect);
 
-        return image;
+        mVerticalTextImageWidget.setImage(image);
     }
 
     public void setEditable(boolean bValue) {

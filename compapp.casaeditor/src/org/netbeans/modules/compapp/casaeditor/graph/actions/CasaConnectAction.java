@@ -32,7 +32,6 @@ import java.awt.event.MouseEvent;
 import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.anchor.AnchorShape;
-import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaConnectionWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaPinWidget;
@@ -74,9 +73,7 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
         
         this.decorator = new ConnectDecorator() {
             public ConnectionWidget createConnectionWidget(Scene scene) {
-                ConnectionWidget widget = new CasaConnectionWidget(
-                        scene, 
-                        RouterFactory.createDirectRouter());
+                ConnectionWidget widget = new CasaConnectionWidget(scene);
                 widget.setTargetAnchorShape(AnchorShape.TRIANGLE_FILLED);
                 return widget;
             }

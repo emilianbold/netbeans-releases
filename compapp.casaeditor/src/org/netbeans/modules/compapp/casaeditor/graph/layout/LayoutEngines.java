@@ -73,7 +73,7 @@ public final class LayoutEngines extends CustomizablePersistLayout {
                 widgetMap,
                 isAdjustingForOverlapOnly());
         for (CasaNodeWidget iterWidget : widgetMap.keySet()) {
-            moveWidget(iterWidget, widgetMap.get(iterWidget).getLocation());
+            moveWidget(iterWidget, widgetMap.get(iterWidget).getLocation(), false);
         }
         
         widget.getScene().validate();

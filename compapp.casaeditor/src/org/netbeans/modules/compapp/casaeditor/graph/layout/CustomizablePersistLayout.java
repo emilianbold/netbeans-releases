@@ -19,10 +19,12 @@
 
 package org.netbeans.modules.compapp.casaeditor.graph.layout;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
 
 /**
  *
@@ -31,7 +33,6 @@ import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 public abstract class CustomizablePersistLayout implements Layout {
     
     private int mYSpacing;
-    private boolean mIsPersisting;
     private boolean mIsAnimating;
     private boolean mIsAdjustingForOverlapOnly;
     
@@ -51,10 +52,6 @@ public abstract class CustomizablePersistLayout implements Layout {
         mIsAdjustingForOverlapOnly = isOverlapOnly;
     }
     
-    public void setIsPersisting(boolean isPersisting) {
-        mIsPersisting = isPersisting;
-    }
-
     public void setIsAnimating(boolean isAnimating) {
         mIsAnimating = isAnimating;
     }
@@ -71,18 +68,40 @@ public abstract class CustomizablePersistLayout implements Layout {
         return mIsAnimating;
     }
     
-    protected boolean isPersisting() {
-        return mIsPersisting;
-    }
-    
-    protected void moveWidget(CasaNodeWidget widget, Point location) {
-        if (isPersisting()) {
-            widget.persistLocation(location);
-        }
+    protected void moveWidget(CasaNodeWidget widget, Point location, boolean isRightAligned) {
+        location = adjustLocation(widget, location.x, location.y, isRightAligned);
         if (isAnimating()) {
             widget.getScene().getSceneAnimator().animatePreferredLocation(widget, location);
         } else {
             widget.setPreferredLocation(location);
         }
+    }
+    
+    
+    private static Point adjustLocation(
+            Widget widget,
+            int suggestedX,
+            int suggestedY,
+            boolean isRightAligned)
+    {
+        CasaRegionWidget region = (CasaRegionWidget) widget.getParentWidget();
+        // Ensure widget location is not on top of the region label.
+        if (suggestedY < region.getTitleYOffset()) {
+            suggestedY = region.getTitleYOffset();
+        }
+        Dimension widgetSize = widget.getBounds().getSize();
+        if (isRightAligned) {
+            suggestedX = region.getBounds().width - widgetSize.width;
+        } else if (suggestedX + widgetSize.width > region.getBounds().width) {
+            suggestedX =
+                    region.getBounds().width -
+                    widgetSize.width -
+                    30; // Position the widget a short gap from the right edge.
+            if (suggestedX  < 0) {
+                suggestedX = 0;
+            }
+        }
+
+        return new Point(suggestedX, suggestedY);
     }
 }

@@ -38,10 +38,8 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.visual.action.RectangularSelectDecorator;
-import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
 import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
 import org.netbeans.modules.compapp.casaeditor.Constants;
@@ -54,12 +52,11 @@ import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaPopupMenuAction
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaPopupMenuProvider;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.MouseWheelScrollAction;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.RegionResizeAction;
+import org.netbeans.modules.compapp.casaeditor.graph.layout.CasaCollisionCollector;
 import org.netbeans.modules.compapp.casaeditor.graph.layout.CasaRectangularSelectAction;
 import org.netbeans.modules.compapp.casaeditor.graph.layout.CustomizableDevolveLayout;
 import org.netbeans.modules.compapp.casaeditor.graph.layout.LayoutBindings;
 import org.netbeans.modules.compapp.casaeditor.graph.layout.LayoutEngines;
-import org.netbeans.modules.compapp.casaeditor.graph.layout.LayoutModelLoad;
-import org.netbeans.modules.compapp.casaeditor.graph.layout.ModelLoadLayoutInfo;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
@@ -228,65 +225,65 @@ implements PropertyChangeListener {
     
     public void setRouter(Router router) {
         mRouter = router;
-    }
-    
-    public void autoLayout(boolean isPersistingLocations, boolean isAnimating) {
-        if (
-                mBindingAutoLayout  != null &&
-                mEngineAutoLayout   != null &&
-                mExternalAutoLayout != null) {
-            mBindingAutoLayout.setIsAdjustingForOverlapOnly(false);
-            mEngineAutoLayout.setIsAdjustingForOverlapOnly(false);
-            mExternalAutoLayout.setIsAdjustingForOverlapOnly(false);
-            mBindingAutoLayout.setIsAnimating(isAnimating);
-            mEngineAutoLayout.setIsAnimating(isAnimating);
-            mExternalAutoLayout.setIsAnimating(isAnimating);
-            mBindingAutoLayout.setIsPersisting(isPersistingLocations);
-            mEngineAutoLayout.setIsPersisting(isPersistingLocations);
-            mExternalAutoLayout.setIsPersisting(isPersistingLocations);
-            mBindingAutoLayout.invokeLayout();
-            mEngineAutoLayout.invokeLayout();
-            mExternalAutoLayout.invokeLayout();
+        if (getEdges().size() <= CasaCollisionCollector.MAX_ORTHOGONAL_CONNECTIONS) {
+            for (CasaComponent component : getEdges()) {
+                ConnectionWidget connectionWidget = (ConnectionWidget) findWidget(component);
+                connectionWidget.setRouter(mRouter);
+            }
         }
-        // trigger the layout to actually occur
-        validate();
     }
     
     /**
-     * Performs an autolayout in only the specified region.
-     * Specifying isPreserving to be false performs a instant autolayout from scratch.
-     * Specifying isPreserving to be true only adjusts widgets (with animation) if an overlap occurs.
-     * @param regionWidget  the region to perform the layout in
-     * @param isPreserving  whether current widget locations should be preserved as best as possible
+     * Performs a layout on the scene.
+     * Pre-existing positions are mostly ignored, except that any pre-existing y locations
+     * are used as a guide when determining new widget locations.
      */
-    public void invokeRegionLayout(CasaRegionWidget regionWidget, boolean isPreserving) {
-        CustomizableDevolveLayout layout = null;
-        if        (regionWidget == mBindingRegion) {
-            layout = mBindingAutoLayout;
-        } else if (regionWidget == mEngineRegion) {
-            layout = mEngineAutoLayout;
-        } else if (regionWidget == mExternalRegion) {
-            layout = mExternalAutoLayout;
-        }
-        if (layout != null) {
-            layout.setIsAnimating(isPreserving);
-            layout.setIsAdjustingForOverlapOnly(isPreserving);
-            layout.setIsPersisting(isPreserving);
-            layout.invokeLayout();
-            // trigger the layout to actually occur
-            validate();
-        }
+    public void autoLayout(boolean isAnimating) {
+        doLayout(false, isAnimating, 
+                getBindingRegion(), getEngineRegion(), getExternalRegion());
+    }
+    
+    /**
+     * Performs a layout on the scene.
+     * Pre-existing positions are not altered, except in the case of collisions.
+     */
+    public void progressiveLayout(boolean isAnimating) {
+        doLayout(true, isAnimating, getBindingRegion(), getEngineRegion(), getExternalRegion());
     }
 
-    public void modelLoadLayout(Map<Widget, ModelLoadLayoutInfo> modelRestoreInfoMap) {
-        LayoutFactory.createDevolveWidgetLayout(
-                this,
-                new LayoutModelLoad(modelRestoreInfoMap),
-                false).invokeLayout();
+    /**
+     * Performs a layout on the region.
+     * Pre-existing positions are not altered, except in the case of collisions.
+     */
+    public void progressiveRegionLayout(CasaRegionWidget regionWidget, boolean isAnimating) {
+        doLayout(true, isAnimating, regionWidget);
+    }
+
+    private void doLayout(
+            boolean isProgressive,
+            boolean isAnimating,
+            CasaRegionWidget ... regionWidgets)
+    {
+        if (regionWidgets.length == 0) {
+            return;
+        }
+        for (CasaRegionWidget regionWidget : regionWidgets) {
+            CustomizableDevolveLayout layout = null;
+            if        (regionWidget == mBindingRegion) {
+                layout = mBindingAutoLayout;
+            } else if (regionWidget == mEngineRegion) {
+                layout = mEngineAutoLayout;
+            } else if (regionWidget == mExternalRegion) {
+                layout = mExternalAutoLayout;
+            }
+            layout.setIsAdjustingForOverlapOnly(isProgressive);
+            layout.setIsAnimating(isAnimating);
+            layout.invokeLayout();
+        }
         // trigger the layout to actually occur
         validate();
     }
-
+    
     @Override
     protected Widget attachRegionWidget(CasaComponent node) {
         CasaRegionWidget regionWidget = null;
@@ -392,7 +389,7 @@ implements PropertyChangeListener {
 
     @Override
     protected Widget attachEdgeWidget (CasaComponent edge) {
-        CasaConnectionWidget connectionWidget = new CasaConnectionWidget(this, mRouter);
+        CasaConnectionWidget connectionWidget = new CasaConnectionWidget(this);
         mConnectionLayer.addChild (connectionWidget);
 
         connectionWidget.getActions().addAction(createObjectHoverAction());
@@ -441,9 +438,6 @@ implements PropertyChangeListener {
     
     @Override
     protected void detachNodeWidget (CasaComponent node, Widget widget) {
-        if (widget instanceof CasaNodeWidget) {
-            ((CasaNodeWidget) widget).removeAllDependencies();
-        }
         super.detachNodeWidget(node, widget);
         fireSelectionChanged();
     }

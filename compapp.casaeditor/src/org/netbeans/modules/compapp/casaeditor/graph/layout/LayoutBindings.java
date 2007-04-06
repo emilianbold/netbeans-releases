@@ -73,7 +73,7 @@ public final class LayoutBindings extends CustomizablePersistLayout {
                 nextYStart += child.getEntireBounds().height + getYSpacing();
             }
             
-            moveWidget(child, new Point(x, y));
+            moveWidget(child, new Point(x, y), true);
         }
         
         widget.getScene().validate();

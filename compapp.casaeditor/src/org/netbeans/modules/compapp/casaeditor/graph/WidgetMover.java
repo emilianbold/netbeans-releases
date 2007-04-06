@@ -171,12 +171,9 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
                 // If we move a left region widget so that it overlaps another,
                 // then we invoke the region layout to ensure space.
                 CasaModelGraphScene scene = (CasaModelGraphScene) moveWidget.getScene();
-                scene.invokeRegionLayout(scene.getBindingRegion(), true);
+                scene.progressiveRegionLayout(scene.getBindingRegion(), true);
             }
         }
-        
-        // Save the widget location.
-        moveWidget.persistLocation();
     }
     
     public Point getOriginalLocation(Widget widget) {

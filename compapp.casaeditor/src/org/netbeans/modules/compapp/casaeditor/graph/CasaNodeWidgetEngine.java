@@ -27,9 +27,11 @@ import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
+import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularPainter;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularProvider;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.InnerGlowBorderDrawer;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.Painter;
+import org.netbeans.modules.compapp.casaeditor.graph.awt.PainterWidget;
 
 /**
  *
@@ -135,19 +137,25 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
             }
         };
 
-        mContainerWidget = new org.netbeans.modules.compapp.casaeditor.graph.awt.PainterWidget(scene,
-                                                                                      new org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularPainter(provider,
-                                                                                                                                                                       customWidgetPainter));
+        mContainerWidget = new PainterWidget(
+                scene, 
+                new BorderedRectangularPainter(provider, customWidgetPainter));
         mContainerWidget.setOpaque(false);
         mContainerWidget.addChild(mTitleWidget);
         
-        mContainerWidget.setLayout(org.netbeans.api.visual.layout.LayoutFactory.createVerticalLayout(org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment.LEFT_TOP,
-                                                                  PIN_VERTICAL_GAP));
+        mContainerWidget.setLayout(LayoutFactory.createVerticalLayout(
+                LayoutFactory.SerialAlignment.LEFT_TOP,
+                PIN_VERTICAL_GAP));
         addChild(mContainerWidget);
+    }
+
+    
+    protected void notifyAdded() {
+        super.notifyAdded();
         
         notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
         
-        final Widget.Dependency pinSizer = new Widget.Dependency() {
+        Widget.Dependency pinSizer = new Widget.Dependency() {
             // Maintains the height of the vertical text bar.
             public void revalidateDependency() {
                 if (
@@ -185,10 +193,8 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
             }
         };
         
-        mDependencies.add(pinSizer);
-        addDependency(pinSizer);
+        getRegistry().registerDependency(pinSizer);
     }
-
     
     public Rectangle getEntireBounds() {
         Dimension d = getBounds().getSize();
@@ -234,7 +240,6 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         getScene().revalidate();
         getScene().validate();
         mPreviousHolderSize = new Dimension();
-        invokeDependencies();
     }
 
     protected Color getBackgroundColor() {
@@ -263,10 +268,6 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
 
     
     public void initializeGlassLayer(LayerWidget layer) {
-    }
-
-    public void removeAllDependencies() {
-        super.removeAllDependencies();
     }
     
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {

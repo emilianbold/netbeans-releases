@@ -143,6 +143,15 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
         return widget;
     }
     
+//    public final Widget addEdges(List<E> edges) {
+//        assert edge != null  &&  ! edges.contains(edge);
+//        Widget widget = attachEdgeWidget(edge);
+//        addObject(edge, widget);
+//        edges.add(edge);
+//        notifyEdgeAdded(edge, widget);
+//        return widget;
+//    }
+
     /**
      * Removes an edge and detaches it from its source and target pins.
      * @param edge the edge to be removed; the edge must not be null and must be already in the model

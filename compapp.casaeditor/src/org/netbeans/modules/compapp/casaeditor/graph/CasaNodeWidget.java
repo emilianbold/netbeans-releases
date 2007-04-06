@@ -23,10 +23,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.widget.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
@@ -43,10 +39,10 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 public abstract class CasaNodeWidget extends Widget {
     
     protected Widget mContainerWidget;
-    protected List<Widget.Dependency> mDependencies = new ArrayList<Widget.Dependency>();
     
     private boolean mEditable = false;
     private boolean mWSPolicyAttached = false;
+    private DependenciesRegistry mDependenciesRegistry = new DependenciesRegistry(this);
     
     
     public CasaNodeWidget(Scene scene) {
@@ -54,34 +50,41 @@ public abstract class CasaNodeWidget extends Widget {
     }
     
     
+    @Override
+    protected void notifyAdded() {
+        Widget.Dependency locationPersister = new Widget.Dependency() {
+            public void revalidateDependency() {
+                if (
+                        getBounds() != null &&
+                        getPreferredLocation() != null)
+                {
+                    Point location = getPreferredLocation();
+                    CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
+                    CasaComponent component = (CasaComponent) scene.findObject(CasaNodeWidget.this);
+                    if (component instanceof CasaServiceEngineServiceUnit) {
+                        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) component;
+                        if (su.getX() != location.x || su.getY() != location.y) {
+                            scene.setCasaLocation(su, location.x, location.y);
+                        }
+                    } else if (component instanceof CasaPort) {
+                        CasaPort port = (CasaPort) component;
+                        if (port.getX() != location.x || port.getY() != location.y) {
+                            scene.setCasaLocation(port, location.x, location.y);
+                        }
+                    }
+                }
+            }
+        };
+        mDependenciesRegistry.registerDependency(locationPersister);
+    }
+
+    protected void notifyRemoved() {
+        getRegistry().removeAllDependencies();
+    }
+    
     public Rectangle getEntireBounds() {
         return new Rectangle(getLocation(), getBounds().getSize());
     }
-    
-    public void persistLocation() {
-        Point location = getPreferredLocation();
-        if (location == null) {
-            location = getLocation();
-        }
-        persistLocation(location);
-    }
-    
-    public void persistLocation(Point location) {
-        CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
-        CasaComponent component = (CasaComponent) scene.findObject(CasaNodeWidget.this);
-        if (component instanceof CasaServiceEngineServiceUnit) {
-            CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) component;
-            if (su.getX() != location.x || su.getY() != location.y) {
-                scene.setCasaLocation(su, location.x, location.y);
-            }
-        } else if (component instanceof CasaPort) {
-            CasaPort port = (CasaPort) component;
-            if (port.getX() != location.x || port.getY() != location.y) {
-                scene.setCasaLocation(port, location.x, location.y);
-            }
-        }
-    }
-    
     
     /**
      * Initialization for the glass layer above the widget.
@@ -123,45 +126,6 @@ public abstract class CasaNodeWidget extends Widget {
         return mContainerWidget;
     }
     
-    /**
-     * A modified version of convertLocalToScene that attempts
-     * to use preferred coordinates whenever possible.
-     */
-    public Point convertPreferredLocalToScene(Point localLocation) {
-        Point sceneLocation = new Point(localLocation);
-        Widget widget = this;
-        while (widget != null) {
-            if (widget == getScene())
-                break;
-            // check preferred location first
-            Point location = widget.getPreferredLocation();
-            if (location == null) {
-                location = widget.getLocation();
-            }
-            sceneLocation.x += location.x;
-            sceneLocation.y += location.y;
-            widget = widget.getParentWidget();
-        }
-        return sceneLocation;
-    }
-    
-    public void removeAllDependencies() {
-        for (Widget.Dependency dependency : mDependencies) {
-            removeDependency(dependency);
-        }
-    }
-    
-    public void invokeDependencies() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                for (Widget.Dependency dependency : mDependencies) {
-                    dependency.revalidateDependency();
-                }
-                getScene().validate();
-            }
-        });
-    }
-    
     public boolean isEditable() {
         return mEditable;
     }
@@ -176,5 +140,9 @@ public abstract class CasaNodeWidget extends Widget {
     
     public void setWSPolicyAttached(boolean bValue) {
         mWSPolicyAttached = bValue;
+    }
+    
+    protected DependenciesRegistry getRegistry() {
+        return mDependenciesRegistry;
     }
 } 

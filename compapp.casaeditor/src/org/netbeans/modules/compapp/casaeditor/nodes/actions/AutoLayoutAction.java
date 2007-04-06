@@ -51,7 +51,7 @@ public class AutoLayoutAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         CasaDataObject dataObject = mReference.get();
         if (dataObject != null) {
-            dataObject.getEditorSupport().getScene().autoLayout(true, true);
+            dataObject.getEditorSupport().getScene().autoLayout(true);
         }
     }
 }

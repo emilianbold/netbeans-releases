@@ -59,12 +59,11 @@ public class CasaRegionWidget extends LayerWidget {
     private Dimension mRegionPreferredSize = new Dimension();
     private boolean mIsHighlighted;
     private Widget mBorderWidget;
-    
     private LabelWidget mTitleWidget;
     private String mTitleText;
     private int mFullTitleStringWidth = -1;
-    
     private LineBreakingLabelWidget mBannerWidget;
+    private DependenciesRegistry mDependenciesRegistry = new DependenciesRegistry(this);
     
     
     /** Creates a new instance of CasaRegion */
@@ -86,9 +85,14 @@ public class CasaRegionWidget extends LayerWidget {
         mTitleWidget.setFont(titleFont);
         mTitleWidget.setPreferredLocation(new Point(20, TITLE_Y_POS));
         addChild(mTitleWidget);
-        
-        addDependency(new Widget.Dependency() {
+    }
+    
+    
+    protected void notifyAdded() {
+        mDependenciesRegistry.registerDependency(new Widget.Dependency() {
             public void revalidateDependency() {
+                
+                Scene scene = getScene();
                 if (scene.getGraphics() == null) {
                     return;
                 }
@@ -131,6 +135,9 @@ public class CasaRegionWidget extends LayerWidget {
         });
     }
     
+    protected void notifyRemoved() {
+        mDependenciesRegistry.removeAllDependencies();
+    }
     
     private void updateBannerLabel() {
         int height = CasaRegionWidget.this.getPreferredBounds().height - getTitleYOffset();
@@ -186,7 +193,7 @@ public class CasaRegionWidget extends LayerWidget {
     }
     
     public int getTitleYOffset() {
-        return mTitleWidget.getPreferredLocation().y + mTitleWidget.getPreferredBounds().height;
+        return mTitleWidget.getPreferredLocation().y + mTitleWidget.getBounds().height;
     }
     
     public void persistWidth() {

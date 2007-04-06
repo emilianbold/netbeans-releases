@@ -19,12 +19,10 @@
 
 package org.netbeans.modules.compapp.casaeditor.design;
 
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
@@ -33,7 +31,6 @@ import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities;
 import org.netbeans.modules.compapp.casaeditor.graph.layout.CasaCollisionCollector;
 import org.netbeans.modules.compapp.casaeditor.graph.layout.CasaOrthogonalSearchRouter;
-import org.netbeans.modules.compapp.casaeditor.graph.layout.ModelLoadLayoutInfo;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
@@ -54,17 +51,21 @@ import org.openide.util.NbBundle;
 public class CasaModelGraphUtilities {
     
     
-    public static void renderModel(CasaWrapperModel model, CasaModelGraphScene scene)
+    public static void renderModel(CasaWrapperModel model, final CasaModelGraphScene scene)
     {
         try {
             safeRenderModel(model, scene);
-        } catch (Throwable t) {
-            scene.autoLayout(false, false);
-            ErrorManager.getDefault().notify(t);
+        } catch (final Throwable t) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    scene.autoLayout(false);
+                    ErrorManager.getDefault().notify(t);
+                }
+            });
         }
     }
     
-    private static void safeRenderModel(CasaWrapperModel model, CasaModelGraphScene scene)
+    private static void safeRenderModel(final CasaWrapperModel model, final CasaModelGraphScene scene)
     {
         if (model == null || scene == null) {
             return;
@@ -88,35 +89,81 @@ public class CasaModelGraphUtilities {
         createRegions(model, scene);
         
         // add nodes and ports
-        for (CasaPort endpoint : model.getCasaPorts()) {
-            createNode(endpoint, model, scene, -2, -2); //null); // FIXME
+        for (CasaPort casaPort : model.getCasaPorts()) {
+            createNode(casaPort, model, scene, casaPort.getX(), casaPort.getY());
         }
         
         for (CasaServiceEngineServiceUnit su : model.getServiceEngineServiceUnits()) {
-            createNode(su, model, scene, -2, -2); //null); // FIXME
+            createNode(su, model, scene, su.getX(), su.getY());
         }
         
-        // add connections
-        for (CasaConnection connection : model.getCasaConnectionList(false)) {
-            CasaConsumes consumes = (CasaConsumes) model.getCasaEndpointRef(connection, true);
-            CasaProvides provides = (CasaProvides) model.getCasaEndpointRef(connection, false);
-            if (consumes != null && provides != null) {
-                createEdge(connection, consumes, provides, scene, false);
-            }
-        }
 
-        // layout
-        Map<Widget, ModelLoadLayoutInfo> modelRestoreInfoMap =
-                CasaModelGraphUtilities.restoreViewPositions(model, scene);
-        if (modelRestoreInfoMap == null) {
-            // We have no previously set view positions, so persist the
-            // new locations once the auto-layout determines them.
-            scene.autoLayout(true, false);
-        } else {
-            scene.modelLoadLayout(modelRestoreInfoMap);
-        }
+        // validate, and layout if required
+        scene.validate();
+        renderLayout(scene);
+        
+        
+        // add connections last
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                for (CasaConnection connection : model.getCasaConnectionList(false)) {
+                    CasaConsumes consumes = (CasaConsumes) model.getCasaEndpointRef(connection, true);
+                    CasaProvides provides = (CasaProvides) model.getCasaEndpointRef(connection, false);
+                    if (consumes != null && provides != null) {
+                        createEdge(connection, consumes, provides, scene, false);
+                    }
+                }
+                scene.setRouter(new CasaOrthogonalSearchRouter(new CasaCollisionCollector(
+                        scene.getBindingRegion(),
+                        scene.getEngineRegion(),
+                        scene.getExternalRegion(),
+                        scene.getConnectionLayer())));
+                scene.validate();
+            }
+        });
     }
 
+    private static void renderLayout(final CasaModelGraphScene scene) {
+        boolean isPartial = false;
+        boolean isFull    = true;
+        
+        // determine what kind of layout is required, if any
+        for (CasaComponent node : scene.getNodes()) {
+            Widget widget = scene.findWidget(node);
+            if (!(widget instanceof CasaNodeWidget)) {
+                continue;
+            }
+            Point point = widget.getPreferredLocation();
+            boolean isBadPoint = point == null || point.x < 0 || point.y < 0;
+            if (isBadPoint) {
+                isPartial = true;
+            }
+            if (node instanceof CasaPort && !isBadPoint) {
+                isFull = false;
+            }
+            if (node instanceof CasaServiceEngineServiceUnit) {
+                CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) node;
+                if (su.isDefined() && !isBadPoint) {
+                    isFull = false;
+                }
+                if (!su.isInternal() && !isBadPoint) {
+                    isFull = false;
+                }
+            }
+        }
+        
+        if (isPartial && !isFull) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    scene.progressiveLayout(true);
+                    RegionUtilities.stretchScene(scene);
+                }
+            });
+        } else if (isFull) {
+            scene.autoLayout(false);
+        }
+    }
+    
     /**
      * Callers to this method must remember to call scene.validate().
      */
@@ -160,11 +207,11 @@ public class CasaModelGraphUtilities {
         // modified version that can support passing in the context ConnectionWidget so that
         // connections that share endpoints do not collide with each other.
 //        scene.setRouter(RouterFactory.createOrthogonalSearchRouter(new CasaCollisionCollector(
-        scene.setRouter(new CasaOrthogonalSearchRouter(new CasaCollisionCollector(
-                bindingRegionWidget,
-                engineRegionWidget,
-                externalRegionWidget,
-                scene.getConnectionLayer())));
+//        scene.setRouter(new CasaOrthogonalSearchRouter(new CasaCollisionCollector(
+//                bindingRegionWidget,
+//                engineRegionWidget,
+//                externalRegionWidget,
+//                scene.getConnectionLayer())));
 
         // Resizers
         scene.getLeftResizer().setPreferredLocation( new Point(
@@ -200,18 +247,13 @@ public class CasaModelGraphUtilities {
         if (provides != null) {
             createPin(casaPort, provides, null, scene, false);
         }
+        scene.validate();
 
         // set the location
         if (x > 0 && y > 0) {
-            scene.validate();
-            Point pos = adjustLocation(widget, x, y, true);
-            widget.setPreferredLocation(pos);
-        } else {
-            scene.invokeRegionLayout(scene.getBindingRegion(), false);
+            widget.setPreferredLocation(new Point(x, y));
         }
-
-        widget.invokeDependencies();
-
+        
         return widget;
     }
 
@@ -230,18 +272,12 @@ public class CasaModelGraphUtilities {
         for (CasaConsumes consumes : su.getConsumes()) {
             createPin(su, consumes, consumes.getEndpointName(), scene, false);
         }
+        scene.validate();
 
         // set the location
         if (x > 0 && y > 0) {
-            scene.validate();
-            Point pos = adjustLocation(widget, x, y, false);
-            widget.setPreferredLocation(pos);
-        } else {
-            scene.invokeRegionLayout(scene.getEngineRegion(), false);
+            widget.setPreferredLocation(new Point(x, y));
         }
-
-        RegionUtilities.stretchScene(scene);
-        widget.invokeDependencies();
         
         return widget;
     }
@@ -259,11 +295,6 @@ public class CasaModelGraphUtilities {
                      NbBundle.getMessage(CasaModelGraphUtilities.class, "Error_No_Binding_Component_name_for_endpoint") + name));   // NOI18N
             return false;
         }
-        // String bindingType = model.getDefaultBindingComponents().get(bcCompName);
-//        String bindingType = casaPort.getBindingType();
-//        if (bindingType == null) {
-//            bindingType = model.getDefaultBindingComponents().get(bcCompName);
-//        }
         String bindingType = model.getBindingType(casaPort);
         if (bindingType == null) {
             ErrorManager.getDefault().notify(new UnsupportedOperationException(
@@ -299,35 +330,6 @@ public class CasaModelGraphUtilities {
         return str;
     }
 
-    // Ensure the suggestedLocation will properly fit in the widget's region.
-    // Adjust the location if necessary.
-    private static Point adjustLocation(
-            Widget widget,
-            int suggestedX,
-            int suggestedY,
-            boolean isRightAligned)
-    {
-        CasaRegionWidget region = (CasaRegionWidget) widget.getParentWidget();
-        // Ensure widget location is not on top of the region label.
-        if (suggestedY < region.getTitleYOffset()) {
-            suggestedY = region.getTitleYOffset();
-        }
-        Dimension widgetSize = widget.getBounds().getSize();
-        if (isRightAligned) {
-            suggestedX = region.getBounds().width - widgetSize.width;
-        } else if (suggestedX + widgetSize.width > region.getBounds().width) {
-            suggestedX =
-                    region.getBounds().width -
-                    widgetSize.width -
-                    30; // Position the widget a short gap from the right edge.
-            if (suggestedX  < 0) {
-                suggestedX = 0;
-            }
-        }
-
-        return new Point(suggestedX, suggestedY);
-    }
-
     public static CasaPinWidget createPin (
             CasaComponent node,
             CasaComponent pin,
@@ -342,7 +344,6 @@ public class CasaModelGraphUtilities {
         if (doUpdate) {
             scene.validate();
             CasaNodeWidget nodeWidget = (CasaNodeWidget) scene.findWidget(node);
-            nodeWidget.invokeDependencies();
         }
         return pinWidget;
     }
@@ -363,77 +364,6 @@ public class CasaModelGraphUtilities {
         if (doUpdate) {
             scene.validate();
         }
-    }
-
-    private static Map restoreViewPositions(CasaWrapperModel model, CasaModelGraphScene scene) {
-        Map<Widget, ModelLoadLayoutInfo> modelRestoreInfoMap = new HashMap<Widget, ModelLoadLayoutInfo>();
-
-        Rectangle bindingRegionBounds = scene.getBindingRegion().getBounds();
-        for (CasaPort port : model.getCasaPorts()) {
-            Point portPoint = checkServiceUnitBounds(
-                    port,
-                    port.getX(),
-                    port.getY(),
-                    bindingRegionBounds,
-                    model,
-                    scene);
-            if (portPoint != null) {
-                ModelLoadLayoutInfo info = new ModelLoadLayoutInfo(portPoint);
-                modelRestoreInfoMap.put(scene.findWidget(port), info);
-            } else {
-                return null;
-            }
-        }
-
-        Rectangle engineRegionBounds = scene.getEngineRegion().getBounds();
-        Rectangle externalRegionBounds = scene.getExternalRegion().getBounds();
-        for (CasaServiceEngineServiceUnit su : model.getServiceEngineServiceUnits()) {
-            Point suPoint = null;
-            if (!su.isInternal()) {
-                suPoint = checkServiceUnitBounds(
-                        su,
-                        su.getX(),
-                        su.getY(),
-                        externalRegionBounds,
-                        model,
-                        scene);
-            } else {
-                suPoint = checkServiceUnitBounds(
-                        su,
-                        su.getX(),
-                        su.getY(),
-                        engineRegionBounds,
-                        model,
-                        scene);
-            }
-            if (suPoint != null) {
-                ModelLoadLayoutInfo info = new ModelLoadLayoutInfo(suPoint);
-                modelRestoreInfoMap.put(scene.findWidget(su), info);
-            } else {
-                return null;
-            }
-        }
-
-        return modelRestoreInfoMap;
-    }
-
-    private static Point checkServiceUnitBounds(
-            Object modelObject,
-            int x,
-            int y,
-            Rectangle regionBounds,
-            CasaWrapperModel model,
-            CasaModelGraphScene scene)
-    {
-        if (y <= 0) {
-            return null;
-        }
-        Widget widget = scene.findWidget(modelObject);
-        if (widget == null) {
-            return null;
-        }
-        // TODO check whether widget can fit within the region boundaries?
-        return new Point(x, y);
     }
 
     public static CasaNodeWidget findNodeWidget(CasaPinWidget pinWidget) {

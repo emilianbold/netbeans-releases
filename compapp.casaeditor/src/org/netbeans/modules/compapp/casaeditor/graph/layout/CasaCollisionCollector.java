@@ -46,6 +46,8 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
  */
 public class CasaCollisionCollector {
 
+    public static final int MAX_ORTHOGONAL_CONNECTIONS = 20;
+    
     private static final int SPACING_EDGE = 4;
     private static final int SPACING_NODE = 6;
     private LayerWidget[] layers;

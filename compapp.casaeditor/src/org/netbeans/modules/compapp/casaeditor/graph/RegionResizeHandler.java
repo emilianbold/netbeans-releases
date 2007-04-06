@@ -245,12 +245,10 @@ public class RegionResizeHandler implements MoveStrategy, MoveProvider {
             if (childRect.intersects(resizerRect)) {
                 // Move child left.
                 child.setPreferredLocation(childEdgeLocation);
-                ((CasaNodeWidget) child).persistLocation();
                 
             } else if (originalChildLocation.x + childRect.width > resizerRect.x) {
                 // Move child back towards its original location - up to the resizer location.
                 child.setPreferredLocation(childEdgeLocation);
-                ((CasaNodeWidget) child).persistLocation();
             }
         }
     }

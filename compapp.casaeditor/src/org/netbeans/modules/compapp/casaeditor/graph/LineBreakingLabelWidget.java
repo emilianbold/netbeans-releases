@@ -48,10 +48,10 @@ public class LineBreakingLabelWidget extends Widget {
     private Font mFont;
     private LabelWidget[] mLabelWidgets;
     private Dimension mLastPreferredSize = new Dimension();
-    
     private LineBreakMeasurer mLineMeasurer;
     private int mParagraphStart;
     private int mParagraphEnd;
+    private DependenciesRegistry mDependenciesRegistry = new DependenciesRegistry(this);
     
     
     public LineBreakingLabelWidget(final Scene scene) {
@@ -59,19 +59,20 @@ public class LineBreakingLabelWidget extends Widget {
         
         // Set up a vertical layout of label widgets, justified to the same width.
         setLayout(LayoutFactory.createVerticalLayout(LayoutFactory.SerialAlignment.JUSTIFY, 4));
-        
-        addDependency(new Widget.Dependency() {
+    }
+    
+    
+    protected void notifyAdded() {
+        mDependenciesRegistry.registerDependency(new Widget.Dependency() {
             private boolean mIsIgnore;
             public void revalidateDependency() {
-                if (
-                        mIsIgnore ||
-                        getBounds() == null) {
+                if (mIsIgnore || getBounds() == null) {
                     return;
                 }
                 if (reBreak()) {
                     try {
                         mIsIgnore = true;
-                        scene.validate();
+                        getScene().validate();
                     } finally {
                         mIsIgnore = false;
                     }
@@ -80,6 +81,9 @@ public class LineBreakingLabelWidget extends Widget {
         });
     }
     
+    protected void notifyRemoved() {
+        mDependenciesRegistry.removeAllDependencies();
+    }
     
     public void setText(String label, Color textColor, Font font) {
         mLabel = label;

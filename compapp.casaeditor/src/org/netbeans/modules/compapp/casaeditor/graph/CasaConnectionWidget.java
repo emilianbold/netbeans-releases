@@ -21,7 +21,6 @@ package org.netbeans.modules.compapp.casaeditor.graph;
 
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.model.ObjectState;
-import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.widget.Scene;
 
 import java.awt.*;
@@ -34,9 +33,8 @@ public class CasaConnectionWidget extends ConnectionWidget {
     private static final Stroke STROKE_SELECTED = new BasicStroke (2.0f);
     
     
-    public CasaConnectionWidget (Scene scene, Router router) {
+    public CasaConnectionWidget (Scene scene) {
         super (scene);
-        setRouter (router);
         setSourceAnchorShape (AnchorShape.NONE);
         setTargetAnchorShape (AnchorShape.TRIANGLE_FILLED);
         setPaintControlPoints (true);
