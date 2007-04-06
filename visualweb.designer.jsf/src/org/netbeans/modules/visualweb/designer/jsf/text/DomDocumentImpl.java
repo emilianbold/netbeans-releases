@@ -1963,7 +1963,8 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 //    private int translateRight(int right, int x, int newWidth, CssBox box, CssBox parentBox) {
     private int translateRight(int right, int x, int newWidth, Box box, Box parentBox) {
         int rx = right - (x - box.getX()) - (newWidth - box.getWidth());
-        Point p = translateCoordinates(parentBox, rx, 0);
+//        Point p = translateCoordinates(parentBox, rx, 0);
+        Point p = JsfSupportUtilities.translateCoordinates(parentBox, rx, 0);
         rx = p.x;
 
         // The CSS "right" property is relative to the Margin edge
@@ -1974,7 +1975,8 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
     // XXX Copy also in designer/../GridHandler
 //    private int translateLeft(int x, CssBox box, CssBox parentBox) {
     private int translateLeft(int x, Box box, Box parentBox) {
-        Point p = translateCoordinates(parentBox, x, 0);
+//        Point p = translateCoordinates(parentBox, x, 0);
+        Point p = JsfSupportUtilities.translateCoordinates(parentBox, x, 0);
         x = p.x;
 
         // The CSS "left" property is relative to the Margin edge
@@ -2022,7 +2024,8 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 //    private int translateBottom(int bottom, int y, int newHeight, CssBox box, CssBox parentBox) {
     private int translateBottom(int bottom, int y, int newHeight, Box box, Box parentBox) {
         int ry = bottom - (y - box.getY()) - (newHeight - box.getHeight());
-        Point p = translateCoordinates(parentBox, 0, ry);
+//        Point p = translateCoordinates(parentBox, 0, ry);
+        Point p = JsfSupportUtilities.translateCoordinates(parentBox, 0, ry);
         ry = p.y;
 
         // The CSS "bottom" property is relative to the Margin edge
@@ -2033,7 +2036,8 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
     // XXX Copy also in designer/../GridHandler.
 //    private int translateTop(int y, CssBox box, CssBox parentBox) {
     private int translateTop(int y, Box box, Box parentBox) {
-        Point p = translateCoordinates(parentBox, 0, y);
+//        Point p = translateCoordinates(parentBox, 0, y);
+        Point p = JsfSupportUtilities.translateCoordinates(parentBox, 0, y);
         y = p.y;
 
         // The CSS "top" property is relative to the Margin edge
@@ -2069,38 +2073,38 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 //        return (int)cssValue.getFloatValue();
 //    }
 
-    // XXX Copy also in designer/../GridHandler.
-    /** Given absolute coordinates x,y in the viewport, compute
-     * the CSS coordinates to assign to a box if it's parented by
-     * the given parentBox such that the coordinates will result
-     * in a box showing up at the absolute coordinates.
-     * That was a really convoluted explanation, so to be specific:
-     * If you have an absolutely positioned <div> at 100, 100,
-     * and you drag a button into it such that it's its child,
-     * and you drag it to screen coordinate 75, 150, then, in order
-     * for the button to be rendered at 75, 150 and be a child of
-     * the div its top/left coordinates must be -25, 50.
-     */
-//    private Point translateCoordinates(CssBox parentBox, int x, int y) {
-    private Point translateCoordinates(Box parentBox, int x, int y) {
-        while (parentBox != null) {
-//            if (parentBox.getBoxType().isPositioned()) {
-            if (parentBox.isPositioned()) {
-                x -= parentBox.getAbsoluteX();
-                y -= parentBox.getAbsoluteY();
-
-                return new Point(x, y);
-            }
-
-            if (parentBox.getPositionedBy() != null) {
-                parentBox = parentBox.getPositionedBy();
-            } else {
-                parentBox = parentBox.getParent();
-            }
-        }
-
-        return new Point(x, y);
-    }
+//    // XXX Copy also in designer/../GridHandler.
+//    /** Given absolute coordinates x,y in the viewport, compute
+//     * the CSS coordinates to assign to a box if it's parented by
+//     * the given parentBox such that the coordinates will result
+//     * in a box showing up at the absolute coordinates.
+//     * That was a really convoluted explanation, so to be specific:
+//     * If you have an absolutely positioned <div> at 100, 100,
+//     * and you drag a button into it such that it's its child,
+//     * and you drag it to screen coordinate 75, 150, then, in order
+//     * for the button to be rendered at 75, 150 and be a child of
+//     * the div its top/left coordinates must be -25, 50.
+//     */
+////    private Point translateCoordinates(CssBox parentBox, int x, int y) {
+//    private Point translateCoordinates(Box parentBox, int x, int y) {
+//        while (parentBox != null) {
+////            if (parentBox.getBoxType().isPositioned()) {
+//            if (parentBox.isPositioned()) {
+//                x -= parentBox.getAbsoluteX();
+//                y -= parentBox.getAbsoluteY();
+//
+//                return new Point(x, y);
+//            }
+//
+//            if (parentBox.getPositionedBy() != null) {
+//                parentBox = parentBox.getPositionedBy();
+//            } else {
+//                parentBox = parentBox.getParent();
+//            }
+//        }
+//
+//        return new Point(x, y);
+//    }
 
     private void moveComponentTo(Box box, int x, int y) {
         Element componentRootElement = box.getComponentRootElement();

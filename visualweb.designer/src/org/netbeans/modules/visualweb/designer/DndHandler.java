@@ -389,7 +389,7 @@ public class DndHandler /*extends TransferHandler*/ {
         
         
 //        DomProvider.CoordinateTranslator coordinateTranslator = GridHandler.getInstance();
-        DomProvider.CoordinateTranslator coordinateTranslator = webform.getGridHandler();
+//        DomProvider.CoordinateTranslator coordinateTranslator = webform.getGridHandler();
   
 //        DomProvider.Location location = computeLocationForPositions(DROP_CENTER, null, getDropPoint(), insertPos, true);
         Point canvasPos = getDropPoint();
@@ -413,9 +413,9 @@ public class DndHandler /*extends TransferHandler*/ {
         
 //        DomProvider.Location location = WebForm.getDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
 //                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
-//        doImportDataDelayed(comp, t, transferData, location, coordinateTranslator);
+//        doImportDataDelayed(comp, t, transferData, location/*, coordinateTranslator*/);
         webform.importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid,
-                droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement , coordinateTranslator, dropAction);
+                droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement , /*coordinateTranslator,*/ dropAction);
         
         dropSize = null;
 //        insertPos = Position.NONE;
@@ -749,7 +749,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //        }
 //    }
 
-    void importString(String string, Point point,DomProvider.CoordinateTranslator coordinateTranslator) {
+    void importString(String string, Point point/*, DomProvider.CoordinateTranslator coordinateTranslator*/) {
         setDropPoint(point);
         //setInsertPosition(getPasteMarkupPosition());
 
@@ -777,7 +777,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //        DomProvider.Location location = WebForm.getDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
 //                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
 //        importString(string, location, coordinateTranslator);
-        webform.importString(string, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement, coordinateTranslator);
+        webform.importString(string, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement/*, coordinateTranslator*/);
     }
     
 //    void importString(String string, DomProvider.Location location, DomProvider.CoordinateTranslator coordinateTranslator) {

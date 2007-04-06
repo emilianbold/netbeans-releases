@@ -28,7 +28,6 @@ import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
 import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomDocument;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
-import org.netbeans.modules.visualweb.api.designer.DomProvider.CoordinateTranslator;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomRange;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.InlineEditorSupport;
@@ -2119,15 +2118,15 @@ public class WebForm implements Designer {
     }
 
     void importString(String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-    Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement,DomProvider.CoordinateTranslator coordinateTranslator) {
-        domProvider.importString(string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
-                droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement, coordinateTranslator);
+    Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement) {
+        domProvider.importString(this, string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+                droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement);
     }
 
     void importData(JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-    Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement, CoordinateTranslator coordinateTranslator, int dropAction) {
-        domProvider.importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
-                droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement, coordinateTranslator, dropAction);
+    Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement, int dropAction) {
+        domProvider.importData(this, comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+                droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement, dropAction);
     }
 
     // >> Designer implementation
@@ -2787,6 +2786,10 @@ public class WebForm implements Designer {
 
     public Box findBoxForComponentRootElement(Element componentRootElement) {
         return ModelViewMapper.findBoxForComponentRootElement(getPane().getPageBox(), componentRootElement);
+    }
+    
+    public Box findBoxForElement(Element element) {
+        return findCssBoxForElement(element);
     }
     
     public int snapX(int x, Box positionedBy) {

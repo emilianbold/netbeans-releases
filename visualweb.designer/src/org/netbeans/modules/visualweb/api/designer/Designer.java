@@ -166,6 +166,9 @@ public interface Designer {
     
     public Box findBoxForComponentRootElement(Element componentRootElement);
     
+    // XXX Get rid of.
+    public Box findBoxForElement(Element element);
+    
     public int snapX(int x, Box positionedBy);
     public int snapY(int y, Box positionedBy);
     // <<< Boxes stuff

@@ -85,6 +85,8 @@ import javax.swing.JRadioButton;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.visualweb.api.designer.Designer;
+import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.modules.visualweb.propertyeditors.UrlPropertyEditor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -276,8 +278,8 @@ class FacesDndSupport {
     }
     
     
-    private /*public*/ void importData(JComponent comp, Transferable t, Object transferData,
-    Dimension dropSize, Location location, CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender, int dropAction) {
+    private /*public*/ void importData(Designer designer, JComponent comp, Transferable t, Object transferData,
+    Dimension dropSize, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender, int dropAction) {
         if (!isValidTransferData(t, transferData)) {
             return;
         }
@@ -321,7 +323,7 @@ class FacesDndSupport {
 //                Location location = computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
                 // Todo: pass in a set instead
 //                doImportItem(item, null, DROP_CENTER, null, null, location);
-                importBean(new DisplayItem[] {item}, null, DROP_CENTER, null, null, location, coordinateTranslator, updateSuspender);
+                importBean(designer, new DisplayItem[] {item}, null, DROP_CENTER, null, null, location, /*coordinateTranslator,*/ updateSuspender);
             } else if (transferData instanceof DesignBean[]) {
                 DesignBean[] beans = (DesignBean[])transferData;
 //                Location location =
@@ -375,7 +377,7 @@ class FacesDndSupport {
                     if (isImage(fo.getExt())) {
 //                        Location location =
 //                            computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-                        importImage(rel, location, coordinateTranslator, updateSuspender);
+                        importImage(designer, rel, location, /*coordinateTranslator,*/ updateSuspender);
                     } else if (isStylesheet(fo.getExt())) {
                         importStylesheet(rel);
                     }
@@ -392,7 +394,7 @@ class FacesDndSupport {
             } else if (transferData instanceof File) {
                 File f = (File)transferData;
 //                Location location = computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-                importFile(f, null, location, coordinateTranslator, updateSuspender);
+                importFile(designer, f, null, location, /*coordinateTranslator,*/ updateSuspender);
             } else if (transferData instanceof String) {
                 String s = (String)transferData;
 
@@ -401,14 +403,14 @@ class FacesDndSupport {
                 if (files != null) {
                     for (int i = 0; i < files.length; i++) {
                         File file = files[i];
-                        importFile(file, null, location, coordinateTranslator, updateSuspender);
+                        importFile(designer, file, null, location, /*coordinateTranslator,*/ updateSuspender);
                     }
                 } else {
                     // XXX Why?
                     s = Util.truncateString(s, 600);
 //                    Location location =
 //                        computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-                    importString(s, location, coordinateTranslator, updateSuspender);
+                    importString(designer, s, location, /*coordinateTranslator,*/ updateSuspender);
                 }
             } else if (transferData instanceof List) {
                 // TODO: place this under a single undo unit?
@@ -422,7 +424,7 @@ class FacesDndSupport {
                     if (o instanceof File) {
                         File f = (File)o;
 //                        Location location = computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-                        panel = importFile(f, panel, location, coordinateTranslator, updateSuspender);
+                        panel = importFile(designer, f, panel, location, /*coordinateTranslator,*/ updateSuspender);
                     }
                 }
             } else {
@@ -449,8 +451,8 @@ class FacesDndSupport {
      *    if caller is not interested in the result
      * @return true iff the bean palette item was inserted successfully
      */
-    private boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos,
-    String facet, List<DesignBean> createdBeans, Location location, CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender)
+    private boolean importBean(Designer designer, DisplayItem[] items, DesignBean origParent, int nodePos,
+    String facet, List<DesignBean> createdBeans, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender)
     throws IOException {
 //        if(DesignerUtils.DEBUG) {
 //            DesignerUtils.debugLog(getClass().getName() + ".importBean(DisplayItem[], DesignBean, int, String, List)");
@@ -511,7 +513,7 @@ class FacesDndSupport {
 //                    (items.length > 1) ? "DropComponents" : "DropComponent"); // NOI18N
 //            document.writeLock(description);
 
-            List<DesignBean> beans = createBeans(location, items, beanItems, coordinateTranslator, updateSuspender);
+            List<DesignBean> beans = createBeans(designer, location, items, beanItems, /*coordinateTranslator,*/ updateSuspender);
 
             if (beans.isEmpty()) {
                 return false;
@@ -1112,8 +1114,8 @@ class FacesDndSupport {
         return list.toArray(new String[list.size()]);
     }
     
-    private List<DesignBean> createBeans(Location location, DisplayItem[] items, List<DisplayItem> beanItems,
-    CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender) throws IOException {
+    private List<DesignBean> createBeans(Designer designer, Location location, DisplayItem[] items, List<DisplayItem> beanItems,
+    /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) throws IOException {
         DesignBean droppee = location.getDroppee();
         MarkupPosition position = location.getPos();
         String facet = location.getFacet();
@@ -1272,7 +1274,7 @@ class FacesDndSupport {
 
                 if (bean instanceof MarkupDesignBean) {
                     MarkupDesignBean mbean = (MarkupDesignBean)bean;
-                    positionBean(mbean, parent, mbean.getElement(), location, coordinateTranslator, updateSuspender);
+                    positionBean(designer, mbean, parent, mbean.getElement(), location, /*coordinateTranslator,*/ updateSuspender);
 
                     if ((savedClass != null) && bean.isContainer()) {
                         DesignBean child = createBean(savedClass, bean, null, null);
@@ -1377,8 +1379,8 @@ class FacesDndSupport {
     }
     
     /** Set the absolute position of the component. **/
-    private void positionBean(MarkupDesignBean lb, DesignBean origParent, Element element,
-    Location location, CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender) {
+    private void positionBean(Designer designer, MarkupDesignBean lb, DesignBean origParent, Element element,
+    Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
         // TODO - transfer this logic to computePositions
         if ((location.getCoordinates() == null) || (element == null)) {
             return;
@@ -1428,7 +1430,7 @@ class FacesDndSupport {
 
         if (((parent == null) || grid || Util.isFormBean(facesModel, parent))) {
 //            GridHandler gm = GridHandler.getInstance();
-            setInitialPosition(facesModel, lb, element, location.getCoordinates(), location.getSize(), coordinateTranslator, updateSuspender);
+            setInitialPosition(designer, facesModel, lb, element, location.getCoordinates(), location.getSize(), /*coordinateTranslator,*/ updateSuspender);
             select = lb;
         }
     }
@@ -1444,8 +1446,8 @@ class FacesDndSupport {
      * @param size The size to assign to the component. If null, don't set a
      *              size, use the intrinsic size.
      */
-    private static void setInitialPosition(FacesModel facesModel, MarkupDesignBean bean, Element element, Point pos, Dimension size,
-    CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender) {
+    private static void setInitialPosition(Designer designer, FacesModel facesModel, MarkupDesignBean bean, Element element, Point pos, Dimension size,
+    /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
         if (pos == null) {
             return;
         }
@@ -1492,7 +1494,8 @@ class FacesDndSupport {
 //                y = p.y;
 //            }
 //            Point point = gridHandler.translateCoordinates(parent, x, y);
-            Point point = coordinateTranslator.translateCoordinates(parent, x, y);
+//            Point point = coordinateTranslator.translateCoordinates(parent, x, y);
+            Point point = translateCoordinates(designer, parent, x, y);
             x = point.x;
             y = point.y;
         }
@@ -1501,8 +1504,10 @@ class FacesDndSupport {
 //        y = snapY(y);
 //        x = gridHandler.snapX(x);
 //        y = gridHandler.snapY(y);
-        x = coordinateTranslator.snapX(x);
-        y = coordinateTranslator.snapY(y);
+//        x = coordinateTranslator.snapX(x);
+//        y = coordinateTranslator.snapY(y);
+        x = designer.snapX(x, null);
+        y = designer.snapY(y, null);
 
         // prevent multiple updates for the same element - only need a single refresh
         try {
@@ -1564,6 +1569,25 @@ class FacesDndSupport {
             updateSuspender.setSuspended(bean, false);
         }
     }
+    
+    // XXX Moved from designer/../GridHandler.
+    private static Point translateCoordinates(Designer designer, Element parent, int x, int y) {
+//        CssBox parentBox = CssBox.getBox(parent);
+//        CssBox parentBox = webForm.findCssBoxForElement(parent);
+        Box parentBox = designer.findBoxForElement(parent);
+
+        if (parentBox != null) {
+            // Translate coordinates from absolute/viewport
+            // to absolute coordinates relative to the target
+            // grid container
+//                Point p = translateCoordinates(parentBox, x, y);
+//            return translateCoordinates(parentBox, x, y);
+            return JsfSupportUtilities.translateCoordinates(parentBox, x, y);
+        }
+        
+        return new Point(x, y);
+    }
+    
 
     // Moved to Util.
 //    /** Attempt to set the given attribute on the bean to the given length
@@ -2165,7 +2189,7 @@ linkCheckFinished:
         }
     }
 
-    private void importImage(final File file, Location location, CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender) {
+    private void importImage(Designer designer, final File file, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
         try {
             URL url = file.toURI().toURL();
 
@@ -2176,13 +2200,13 @@ linkCheckFinished:
             String local = RESOURCES + UrlPropertyEditor.encodeUrl(file.getName());
             project.addResource(url, new URI(WEB + local));
 
-            importImage(local, location, coordinateTranslator, updateSuspender);
+            importImage(designer, local, location, /*coordinateTranslator,*/ updateSuspender);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
     }
 
-    private void importImage(final String local, Location location, CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender) {
+    private void importImage(Designer designer, final String local, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
         // Import the file.
         // If it's an image, just create an image component for it
         // and drop it on the page.  (If there are multiple images,
@@ -2229,7 +2253,7 @@ linkCheckFinished:
 
             if (bean instanceof MarkupDesignBean) {
                 MarkupDesignBean mbean = (MarkupDesignBean)bean;
-                positionBean(mbean, parent, mbean.getElement(), location, coordinateTranslator, updateSuspender);
+                positionBean(designer, mbean, parent, mbean.getElement(), location, /*coordinateTranslator,*/ updateSuspender);
             }
 
 //            selectBean(select);
@@ -2343,7 +2367,7 @@ linkCheckFinished:
         fireRefreshNeeded(true);
     }
 
-    private JPanel importFile(final File f, JPanel panel, Location location, CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender) {
+    private JPanel importFile(Designer designer, final File f, JPanel panel, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
         if (f.exists()) {
             String name = f.getName();
             String extension = name.substring(name.lastIndexOf(".") + 1); // NOI18N
@@ -2359,7 +2383,7 @@ linkCheckFinished:
             if (/*DesignerUtils.*/isImage(extension)) {
 //                Location location =
 //                    computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-                importImage(f, location, coordinateTranslator, updateSuspender);
+                importImage(designer, f, location, /*coordinateTranslator,*/ updateSuspender);
 
                 return panel;
             } else if (/*DesignerUtils.*/isStylesheet(extension)) {
@@ -2390,7 +2414,7 @@ linkCheckFinished:
         return panel;
     }
     
-    private /*public*/ void importString(String string, Location location, CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender) {
+    private /*public*/ void importString(Designer designer, String string, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
         // Import the string as part of an output text component
 //        Location location =
 //            computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
@@ -2429,7 +2453,7 @@ linkCheckFinished:
 
             if (bean instanceof MarkupDesignBean) {
                 MarkupDesignBean mbean = (MarkupDesignBean)bean;
-                positionBean(mbean, parent, mbean.getElement(), location, coordinateTranslator, updateSuspender);
+                positionBean(designer, mbean, parent, mbean.getElement(), location, /*coordinateTranslator,*/ updateSuspender);
             }
 
 //            selectBean(select);
@@ -3440,16 +3464,16 @@ linkCheckFinished:
         
     }
 
-    public void importString(String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dropSize, boolean isGrid,
-    Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent, CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender) {
+    public void importString(Designer designer, String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dropSize, boolean isGrid,
+    Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender) {
         Location location = computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, dropSize, isGrid, droppeeElement, droppeeBean, defaultParent);
-        importString(string, location, coordinateTranslator, updateSuspender);
+        importString(designer, string, location, /*coordinateTranslator,*/ updateSuspender);
     }
 
-    public void importData(JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dropSize, boolean isGrid,
-    Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent, CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender, int dropAction) {
+    public void importData(Designer designer, JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dropSize, boolean isGrid,
+    Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender, int dropAction) {
         Location location = computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, dropSize, isGrid, droppeeElement, droppeeBean, defaultParent);
-        importData(comp, t, transferData, dropSize, location, coordinateTranslator, updateSuspender, dropAction);
+        importData(designer, comp, t, transferData, dropSize, location, /*coordinateTranslator,*/ updateSuspender, dropAction);
     }
 
     private static boolean isValidTransferData(Transferable t, Object transferData) {
@@ -3563,11 +3587,11 @@ linkCheckFinished:
     } // End of LocationImpl.
     
     
-    public interface CoordinateTranslator {
-        public Point translateCoordinates(Element parent, int x, int y);
-        public int snapX(int x);
-        public int snapY(int y);
-    } // End of CoordinateTranslator.
+//    public interface CoordinateTranslator {
+//        public Point translateCoordinates(Element parent, int x, int y);
+//        public int snapX(int x);
+//        public int snapY(int y);
+//    } // End of CoordinateTranslator.
     
     public interface UpdateSuspender {
         public void setSuspended(MarkupDesignBean markupDesignBean, boolean suspend);

@@ -146,12 +146,12 @@ public interface DomProvider {
 //    public void updateGridMode();
     public boolean isGridMode();
     
-    // XXX
-    public interface CoordinateTranslator {
-        public Point translateCoordinates(Element parent, int x, int y);
-        public int snapX(int x);
-        public int snapY(int y);
-    }
+//    // XXX
+//    public interface CoordinateTranslator {
+//        public Point translateCoordinates(Element parent, int x, int y);
+//        public int snapX(int x);
+//        public int snapY(int y);
+//    }
     
 //    // XXX
 //    public static class Location {
@@ -344,11 +344,11 @@ public interface DomProvider {
 
 //    public void dumpHtmlMarkupForNode(org.openide.nodes.Node node);
 
-    public void importString(String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-            Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement, DomProvider.CoordinateTranslator coordinateTranslator);
+    public void importString(Designer designer, String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+            Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement/*, DomProvider.CoordinateTranslator coordinateTranslator*/);
 
-    public void importData(JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-            Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement, DomProvider.CoordinateTranslator coordinateTranslator, int dropAction);
+    public void importData(Designer designer, JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+            Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement/*, DomProvider.CoordinateTranslator coordinateTranslator*/, int dropAction);
     
     // XXX
     public Designer[] getExternalDesigners(URL url);

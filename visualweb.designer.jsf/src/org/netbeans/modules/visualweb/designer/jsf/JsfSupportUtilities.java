@@ -22,7 +22,9 @@ package org.netbeans.modules.visualweb.designer.jsf;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
+import java.awt.Point;
 import org.netbeans.modules.visualweb.api.designer.Designer;
+import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.insync.Util;
@@ -159,4 +161,36 @@ public final class JsfSupportUtilities {
         return Util.findDescendant(HtmlTag.HTML.name, df);
     }
 
+    // XXX Copy also in designer/../GridHandler.
+    /** Given absolute coordinates x,y in the viewport, compute
+     * the CSS coordinates to assign to a box if it's parented by
+     * the given parentBox such that the coordinates will result
+     * in a box showing up at the absolute coordinates.
+     * That was a really convoluted explanation, so to be specific:
+     * If you have an absolutely positioned <div> at 100, 100,
+     * and you drag a button into it such that it's its child,
+     * and you drag it to screen coordinate 75, 150, then, in order
+     * for the button to be rendered at 75, 150 and be a child of
+     * the div its top/left coordinates must be -25, 50.
+     */
+    public static Point translateCoordinates(Box parentBox, int x, int y) {
+        while (parentBox != null) {
+//            if (parentBox.getBoxType().isPositioned()) {
+            if (parentBox.isPositioned()) {
+                x -= parentBox.getAbsoluteX();
+                y -= parentBox.getAbsoluteY();
+
+                return new Point(x, y);
+            }
+
+            if (parentBox.getPositionedBy() != null) {
+                parentBox = parentBox.getPositionedBy();
+            } else {
+                parentBox = parentBox.getParent();
+            }
+        }
+
+        return new Point(x, y);
+    }
+    
 }

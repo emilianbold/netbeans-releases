@@ -200,12 +200,6 @@ class DomProviderImpl implements DomProvider {
     }
 
 //    public DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, DomProvider.CoordinateTranslator coordinateTranslator) {
-
-//    public DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, DomProvider.CoordinateTranslator coordinateTranslator) {
-
-//    public DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, DomProvider.CoordinateTranslator coordinateTranslator) {
-
-//    public DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, DomProvider.CoordinateTranslator coordinateTranslator) {
 //        return getDndSupport().pasteBeans(t, parent, pos, location, coordinateTranslator, jsfForm.getUpdateSuspender());
 //    }
     private /*public*/ Element[] pasteComponents(Transferable t, Element parentComponentRootElement, Point location) {
@@ -1156,20 +1150,20 @@ class DomProviderImpl implements DomProvider {
         return false;
     }
 
-    public void importString(String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-            Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement,DomProvider.CoordinateTranslator coordinateTranslator) {
+    public void importString(Designer designer, String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+            Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement/*,DomProvider.CoordinateTranslator coordinateTranslator*/) {
         DesignBean droppeeBean = MarkupUnit.getMarkupDesignBeanForElement(dropeeComponentRootElement);
         DesignBean defaultParent = MarkupUnit.getMarkupDesignBeanForElement(defaultParentComponentRootElement);
-        getDndSupport().importString(string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
-                droppeeElement, droppeeBean, defaultParent, coordinateTranslator);
+        getDndSupport().importString(designer, string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+                droppeeElement, droppeeBean, defaultParent/*, coordinateTranslator*/);
     }
 
-    public void importData(JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-            Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement,DomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
+    public void importData(Designer designer, JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+            Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement/*, DomProvider.CoordinateTranslator coordinateTranslator*/, int dropAction) {
         DesignBean droppeeBean = MarkupUnit.getMarkupDesignBeanForElement(dropeeComponentRootElement);
         DesignBean defaultParent = MarkupUnit.getMarkupDesignBeanForElement(defaultParentComponentRootElement);
-        getDndSupport().importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
-                droppeeElement, droppeeBean, defaultParent, coordinateTranslator, dropAction);
+        getDndSupport().importData(designer, comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+                droppeeElement, droppeeBean, defaultParent, /*coordinateTranslator,*/ dropAction);
     }
 
     public DomProvider.DomDocument getDomDocument() {

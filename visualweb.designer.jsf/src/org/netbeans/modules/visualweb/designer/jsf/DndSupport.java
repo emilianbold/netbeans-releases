@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
+import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designerapi.DesignTimeTransferDataCreator;
 import org.netbeans.modules.visualweb.insync.Util;
@@ -491,20 +492,20 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
         jsfForm.clearDropMatch();
     }
 
-    void importString(String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-            Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent,DomProvider.CoordinateTranslator coordinateTranslator) {
+    void importString(Designer designer, String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+            Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent/*, DomProvider.CoordinateTranslator coordinateTranslator*/) {
 //        getFacesModel().getDnDSupport().importString(string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
 //                droppeeElement, droppeeBean, defaultParent, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
-        facesDndSupport.importString(string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
-                droppeeElement, droppeeBean, defaultParent, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
+        facesDndSupport.importString(designer, string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+                droppeeElement, droppeeBean, defaultParent, /*new CoordinateTranslatorImpl(coordinateTranslator),*/ jsfForm.getUpdateSuspender());
     }
 
-    void importData(JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-            Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent,DomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
+    void importData(Designer designer, JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+            Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent/*, DomProvider.CoordinateTranslator coordinateTranslator*/, int dropAction) {
 //        getFacesModel().getDnDSupport().importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
 //                droppeeElement, droppeeBean, defaultParent, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender(), dropAction);
-        facesDndSupport.importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
-                droppeeElement, droppeeBean, defaultParent, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender(), dropAction);
+        facesDndSupport.importData(designer, comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+                droppeeElement, droppeeBean, defaultParent, /*new CoordinateTranslatorImpl(coordinateTranslator),*/ jsfForm.getUpdateSuspender(), dropAction);
 
     }
 
@@ -527,26 +528,26 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
     // XXX <<< JsfSupport
 
     
-    // XXX
-    private static class CoordinateTranslatorImpl implements FacesDndSupport.CoordinateTranslator {
-        private final DomProvider.CoordinateTranslator coordinateTranslator;
-        
-        public CoordinateTranslatorImpl(DomProvider.CoordinateTranslator coordinateTranslator) {
-            this.coordinateTranslator = coordinateTranslator;
-        }
-        
-        public Point translateCoordinates(Element parent, int x, int y) {
-            return coordinateTranslator.translateCoordinates(parent, x, y);
-        }
-        
-        public int snapX(int x) {
-            return coordinateTranslator.snapX(x);
-        }
-        
-        public int snapY(int y) {
-            return coordinateTranslator.snapY(y);
-        }
-    } // End of CoordinateTranslatorImpl.
+//    // XXX
+//    private static class CoordinateTranslatorImpl implements FacesDndSupport.CoordinateTranslator {
+//        private final DomProvider.CoordinateTranslator coordinateTranslator;
+//        
+//        public CoordinateTranslatorImpl(DomProvider.CoordinateTranslator coordinateTranslator) {
+//            this.coordinateTranslator = coordinateTranslator;
+//        }
+//        
+//        public Point translateCoordinates(Element parent, int x, int y) {
+//            return coordinateTranslator.translateCoordinates(parent, x, y);
+//        }
+//        
+//        public int snapX(int x) {
+//            return coordinateTranslator.snapX(x);
+//        }
+//        
+//        public int snapY(int y) {
+//            return coordinateTranslator.snapY(y);
+//        }
+//    } // End of CoordinateTranslatorImpl.
 
 //    // XXX
 //    private static class LocationImpl implements FacesDndSupport.Location {
