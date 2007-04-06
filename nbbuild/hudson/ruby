@@ -10,6 +10,9 @@ ant -f scripting/ruby/build.xml clean build-zip && \
     ant -Dnbplatform.default.netbeans.dest.dir=$PWD/nbbuild/netbeans \
         -Dnbplatform.default.harness.dir=$PWD/nbbuild/netbeans/harness \
         -f scripting/ruby/rubyide/build.xml clean build-zip && \
+    ant -Dnbplatform.default.netbeans.dest.dir=$PWD/nbbuild/netbeans \
+        -Dnbplatform.default.harness.dir=$PWD/nbbuild/netbeans/harness \
+        -f contrib/CodeTemplateTools//build.xml netbeans && \
     mv scripting/ruby/netbeans-ruby.zip scripting/ruby/netbeans-ruby-hudson-${BUILD_NUMBER}.zip && \
     mv scripting/ruby/rubyide/dist/nbrubyide.zip scripting/ruby/rubyide/dist/netbeans-rubyide-hudson-${BUILD_NUMBER}.zip && \
     source nbbuild/hudson/ruby-etcconf
