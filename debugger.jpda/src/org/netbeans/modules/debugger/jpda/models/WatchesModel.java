@@ -13,13 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
 
 import java.beans.PropertyChangeEvent;
@@ -352,9 +353,15 @@ public class WatchesModel implements TreeModel {
                 Value v = debugger.evaluateIn (expr);
                 //if (v instanceof ObjectReference)
                 //    jw = new JPDAObjectWatchImpl (debugger, w, (ObjectReference) v);
-                JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, v, this);
-                jwi.addPropertyChangeListener(this);
-                jw = jwi;
+                if (v instanceof PrimitiveValue) {
+                    JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, (PrimitiveValue) v, this);
+                    jwi.addPropertyChangeListener(this);
+                    jw = jwi;
+                } else {
+                    JPDAObjectWatchImpl jwi = new JPDAObjectWatchImpl (debugger, w, (ObjectReference) v);
+                    jwi.addPropertyChangeListener(this);
+                    jw = jwi;
+                }
             } catch (InvalidExpressionException e) {
                 JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, e, this);
                 jwi.addPropertyChangeListener(this);

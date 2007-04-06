@@ -17,41 +17,41 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.debugger.jpda.models;
+package org.netbeans.modules.debugger.jpda;
 
-import com.sun.jdi.Value;
-import org.netbeans.api.debugger.jpda.This;
-import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import com.sun.jdi.ReferenceType;
 
+import java.util.AbstractList;
+import java.util.List;
+
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 
 /**
- * @author   Jan Jancura
+ * Lazy list of class types.
+ * 
+ * @author Martin Entlicher
  */
-class ThisVariable extends AbstractObjectVariable implements This {
-
-    ThisVariable (
-        JPDADebuggerImpl debugger,
-        Value value,
-        String parentID
-    ) {
-        super (
-            debugger,
-            value,
-            parentID + ".this^"
-        );
-    }
-
-
-    // This impl................................................................
-
-    public ThisVariable clone() {
-        return new ThisVariable(getDebugger(), getJDIValue(),
-                getID().substring(0, getID().length() - ".this^".length()));
-    }
-
-    // other methods ...........................................................
+class ClassTypeList extends AbstractList<JPDAClassType> {
     
-    public String toString () {
-        return "ThisVariable this";
+    private JPDADebuggerImpl debugger;
+    private List<ReferenceType> classes;
+    
+    /** Creates a new instance of ClassTypeList */
+    ClassTypeList(JPDADebuggerImpl debugger, List<ReferenceType> classes) {
+        this.debugger = debugger;
+        this.classes = classes;
     }
+    
+    List<ReferenceType> getTypes() {
+        return classes;
+    }
+    
+    public JPDAClassType get(int i) {
+        return debugger.getClassType(classes.get(i));
+    }
+    
+    public int size() {
+        return classes.size();
+    }
+    
 }

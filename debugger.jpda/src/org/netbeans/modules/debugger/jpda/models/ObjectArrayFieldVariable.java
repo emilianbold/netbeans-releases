@@ -13,23 +13,34 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.models;
 
-import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ArrayReference;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
+import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.InvalidTypeException;
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.Value;
+
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
 /**
  * @author   Jan Jancura
  */
-class ObjectArrayFieldVariable extends ArrayFieldVariable
-implements ObjectVariable {
+class ObjectArrayFieldVariable extends AbstractObjectVariable implements
+org.netbeans.api.debugger.jpda.Field {
+
+    private final ArrayReference array;
+    private int index;
+    private int maxIndexLog;
+    private String declaredType;
 
     ObjectArrayFieldVariable (
         JPDADebuggerImpl debugger,
@@ -43,12 +54,43 @@ implements ObjectVariable {
         super (
             debugger, 
             value, 
-            declaredType,
-            array,
-            index,
-            maxIndex,
-            parentID
+            parentID + '.' + index +
+                (value instanceof ObjectReference ? "^" : "")
         );
+        this.index = index;
+        this.maxIndexLog = ArrayFieldVariable.log10(maxIndex);
+        this.declaredType = declaredType;
+        this.array = array;
+    }
+
+    public String getName () {
+        return ArrayFieldVariable.getName(maxIndexLog, index);
+    }
+    
+    public String getClassName () {
+        return getType ();
+    }
+    
+    public JPDAClassType getDeclaringClass() {
+        return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) array.type());
+    }
+
+    public boolean isStatic () {
+        return false;
+    }
+    
+    public String getDeclaredType () {
+        return declaredType;
+    }
+    
+    protected void setValue (Value value) throws InvalidExpressionException {
+        try {
+            array.setValue(index, value);
+        } catch (InvalidTypeException ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (ClassNotLoadedException ex) {
+            throw new InvalidExpressionException (ex);
+        }
     }
 
     public ObjectArrayFieldVariable clone() {

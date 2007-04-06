@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,7 +32,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  *
  * @author Martin Entlicher
  */
-public class ReturnVariableImpl extends AbstractVariable implements ReturnVariable {
+public class ReturnVariableImpl extends AbstractObjectVariable implements ReturnVariable {
     
     private String methodName;
     

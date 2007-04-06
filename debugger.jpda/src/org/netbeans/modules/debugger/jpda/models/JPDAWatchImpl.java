@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,7 @@ import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -44,7 +45,7 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
     private java.lang.ref.Reference<Object> nodeRef;
     
     
-    JPDAWatchImpl (JPDADebuggerImpl debugger, Watch watch, Value v, Object node) {
+    JPDAWatchImpl (JPDADebuggerImpl debugger, Watch watch, PrimitiveValue v, Object node) {
         super (
             debugger,
             v, 
@@ -158,6 +159,10 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         }
     }
     
+    public String getToStringValue() throws InvalidExpressionException {
+        return AbstractObjectVariable.getToStringValue(getInnerValue(), getDebugger());
+    }
+    
     void setException (String exceptionDescription) {
         setInnerValue (null);
         this.exceptionDescription = exceptionDescription;
@@ -170,7 +175,7 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
     public JPDAWatchImpl clone() {
         JPDAWatchImpl clon;
         if (exceptionDescription == null) {
-            clon = new JPDAWatchImpl(getDebugger(), watch, getJDIValue(), nodeRef.get());
+            clon = new JPDAWatchImpl(getDebugger(), watch, (PrimitiveValue) getJDIValue(), nodeRef.get());
         } else {
             clon = new JPDAWatchImpl(getDebugger(), watch, new Exception(exceptionDescription), nodeRef.get());
         }

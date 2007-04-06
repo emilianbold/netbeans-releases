@@ -29,7 +29,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  *
  * @author Martin Entlicher
  */
-public class ClassVariableImpl extends AbstractVariable implements ClassVariable {
+public class ClassVariableImpl extends AbstractObjectVariable implements ClassVariable {
     
     private ClassObjectReference clazz;
     

@@ -17,41 +17,18 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.debugger.jpda.models;
+package org.netbeans.modules.debugger.jpda.expr;
 
 import com.sun.jdi.Value;
-import org.netbeans.api.debugger.jpda.This;
-import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-
+import org.netbeans.api.debugger.jpda.Variable;
 
 /**
- * @author   Jan Jancura
+ * A primitive variable, which provides the appropriate JDI value.
+ *
+ * @author Martin Entlicher
  */
-class ThisVariable extends AbstractObjectVariable implements This {
-
-    ThisVariable (
-        JPDADebuggerImpl debugger,
-        Value value,
-        String parentID
-    ) {
-        super (
-            debugger,
-            value,
-            parentID + ".this^"
-        );
-    }
-
-
-    // This impl................................................................
-
-    public ThisVariable clone() {
-        return new ThisVariable(getDebugger(), getJDIValue(),
-                getID().substring(0, getID().length() - ".this^".length()));
-    }
-
-    // other methods ...........................................................
+public interface JDIVariable extends Variable {
     
-    public String toString () {
-        return "ThisVariable this";
-    }
+    Value getJDIValue();
+    
 }

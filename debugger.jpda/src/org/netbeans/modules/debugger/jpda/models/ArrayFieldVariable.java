@@ -13,14 +13,16 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.*;
+
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
@@ -30,14 +32,14 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 class ArrayFieldVariable extends AbstractVariable implements
 org.netbeans.api.debugger.jpda.Field {
 
-    final ArrayReference array;
-    int index;
-    int maxIndexLog;
+    private final ArrayReference array;
+    private int index;
+    private int maxIndexLog;
     private String declaredType;
 
     ArrayFieldVariable (
         JPDADebuggerImpl debugger,
-        Value value,
+        PrimitiveValue value,
         String declaredType,
         ArrayReference array,
         int index,
@@ -66,6 +68,10 @@ org.netbeans.api.debugger.jpda.Field {
     * @return string representation of type of this variable.
     */
     public String getName () {
+        return getName(maxIndexLog, index);
+    }
+    
+    static String getName(int maxIndexLog, int index) {
         int num0 = maxIndexLog - log10(index);
         if (num0 > 0) {
             return "[" + zeros(num0) + index + "]";
@@ -100,6 +106,10 @@ org.netbeans.api.debugger.jpda.Field {
      */
     public String getClassName () {
         return getType ();
+    }
+
+    public JPDAClassType getDeclaringClass() {
+        return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) array.type());
     }
 
     /**
@@ -139,7 +149,7 @@ org.netbeans.api.debugger.jpda.Field {
     public ArrayFieldVariable clone() {
         ArrayFieldVariable clon = new ArrayFieldVariable(
                 getDebugger(),
-                getJDIValue(),
+                (PrimitiveValue) getJDIValue(),
                 declaredType,
                 array,
                 index,

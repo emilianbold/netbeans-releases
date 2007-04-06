@@ -88,6 +88,7 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
 import org.netbeans.modules.debugger.jpda.models.ThreadsTreeModel;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
+import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
@@ -1416,5 +1417,78 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public JPDAStep createJPDAStep(int size, int depth) {
         Session session = (Session) lookupProvider.lookupFirst (null, Session.class);
         return new JPDAStepImpl(this, session, size, depth);
+    }
+    
+    /*public synchronized Heap getHeap() {
+        if (virtualMachine != null && canGetInstanceInfo(virtualMachine)) {
+            return new HeapImpl(virtualMachine);
+        } else {
+            return null;
+        }
+    }*/
+    
+    public List<JPDAClassType> getAllClasses() {
+        List<ReferenceType> classes;
+        synchronized (this) {
+            if (virtualMachine == null) {
+                classes = Collections.emptyList();
+            } else {
+                classes = virtualMachine.allClasses();
+            }
+        }
+        return new ClassTypeList(this, classes);
+    }
+    
+    public List<JPDAClassType> getClassesByName(String name) {
+        List<ReferenceType> classes;
+        synchronized (this) {
+            if (virtualMachine == null) {
+                classes = Collections.emptyList();
+            } else {
+                classes = virtualMachine.classesByName(name);
+            }
+        }
+        return new ClassTypeList(this, classes);
+    }
+    
+    public long[] getInstanceCounts(List<JPDAClassType> classTypes) throws UnsupportedOperationException {
+        if (Java6Methods.isJDK6()) {
+            VirtualMachine vm;
+            synchronized (this) {
+                vm = virtualMachine;
+            }
+            if (vm == null) {
+                throw new UnsupportedOperationException("No VM available.");
+            }
+            if (classTypes instanceof ClassTypeList) {
+                ClassTypeList cl = (ClassTypeList) classTypes;
+                return Java6Methods.instanceCounts(vm, cl.getTypes());
+            } else {
+                List<ReferenceType> types = new ArrayList<ReferenceType>(classTypes.size());
+                for (JPDAClassType clazz : classTypes) {
+                    types.add(((JPDAClassTypeImpl) clazz).getType());
+                }
+                return Java6Methods.instanceCounts(vm, types);
+            }
+        } else {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+    }
+    
+    public synchronized boolean canGetInstanceInfo() {
+        return virtualMachine != null && canGetInstanceInfo(virtualMachine);
+    }
+    
+    private static boolean canGetInstanceInfo(VirtualMachine vm) {
+        if (Java6Methods.isJDK6()) {
+            try {
+                java.lang.reflect.Method canGetInstanceInfoMethod = VirtualMachine.class.getMethod("canGetInstanceInfo", new Class[] {});
+                Object canGetInstanceInfo = canGetInstanceInfoMethod.invoke(vm, new Object[] {});
+                return Boolean.TRUE.equals(canGetInstanceInfo);
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+        return false;
     }
 }

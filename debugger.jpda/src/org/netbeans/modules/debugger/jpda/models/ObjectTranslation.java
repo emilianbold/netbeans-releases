@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,6 +22,7 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Mirror;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadGroupReference;
@@ -96,18 +97,18 @@ public final class ObjectTranslation {
             case LOCALS_ID:
                 if (o instanceof LocalVariable && (v == null || v instanceof Value)) {
                     LocalVariable lv = (LocalVariable) o;
-                    Local local;
+                    org.netbeans.api.debugger.jpda.LocalVariable local;
                     if (v instanceof ObjectReference) {
                         local = new ObjectLocalVariable (
                             debugger, 
-                            (Value) v, 
+                            (ObjectReference) v, 
                             null, 
                             lv, 
                             JPDADebuggerImpl.getGenericSignature (lv), 
                             null
                         );
                     } else {
-                        local = new Local (debugger, (Value) v, null, lv, null);
+                        local = new Local (debugger, (PrimitiveValue) v, null, lv, null);
                     }
                     return local;
                 }

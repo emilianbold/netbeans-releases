@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,8 +25,11 @@ import com.sun.jdi.Field;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
+
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
@@ -37,14 +40,12 @@ class FieldVariable extends AbstractVariable implements
 org.netbeans.api.debugger.jpda.Field {
 
     protected Field field;
-    //private String className;
     private ObjectReference objectReference;
-    private String genericSignature;
     
 
     FieldVariable (
         JPDADebuggerImpl debugger,
-        Value value,
+        PrimitiveValue value,
     //    String className,
         Field field,
         String parentID,
@@ -53,29 +54,13 @@ org.netbeans.api.debugger.jpda.Field {
         super (
             debugger, 
             value, 
-            parentID + '.' + field.name () +
-                (value instanceof ObjectReference ? "^" : "")
+            parentID + '.' + field.name ()
         );
         this.field = field;
         //this.className = className;
         this.objectReference = objectReference;
     }
 
-    FieldVariable (
-        JPDADebuggerImpl debugger,
-        Value value,
-       // String className,
-        Field field,
-        String parentID,
-        String genericSignature
-    ) {
-        super(debugger, value, genericSignature, parentID + '.' + field.name () +
-                (value instanceof ObjectReference ? "^" : ""));
-        this.field = field;
-        this.genericSignature = genericSignature;
-       // this.className = className;
-    }
-    
     // LocalVariable impl.......................................................
     
 
@@ -95,6 +80,10 @@ org.netbeans.api.debugger.jpda.Field {
      */
     public String getClassName () {
         return field.declaringType ().name (); //className;
+    }
+    
+    public JPDAClassType getDeclaringClass() {
+        return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) objectReference.type());
     }
 
     /**
@@ -141,15 +130,9 @@ org.netbeans.api.debugger.jpda.Field {
 
     public FieldVariable clone() {
         FieldVariable clon;
-        if (genericSignature == null) {
-            clon = new FieldVariable(getDebugger(), getJDIValue(), field,
-                    getID().substring(0, getID().length() - ("." + field.name() + (getJDIValue() instanceof ObjectReference ? "^" : "")).length()),
-                    objectReference);
-        } else {
-            clon = new FieldVariable(getDebugger(), getJDIValue(), field,
-                    getID().substring(0, getID().length() - ("." + field.name() + (getJDIValue() instanceof ObjectReference ? "^" : "")).length()),
-                    genericSignature);
-        }
+        clon = new FieldVariable(getDebugger(), (PrimitiveValue) getJDIValue(), field,
+                getID().substring(0, getID().length() - ("." + field.name() + (getJDIValue() instanceof ObjectReference ? "^" : "")).length()),
+                objectReference);
         return clon;
     }
 

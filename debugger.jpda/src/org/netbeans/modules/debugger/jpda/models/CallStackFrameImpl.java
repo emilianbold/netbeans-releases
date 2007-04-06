@@ -227,10 +227,18 @@ public class CallStackFrameImpl implements CallStackFrame {
             for (int i = 0; i < n; i++) {
                 com.sun.jdi.LocalVariable lv = (com.sun.jdi.LocalVariable) l.get (i);
                 Value v = getStackFrame ().getValue (lv);
-                Local local = (Local) debugger.getLocalVariable(lv, v);
-                local.setFrame(this);
-                local.setInnerValue(v);
-                local.setClassName(className);
+                LocalVariable local = (LocalVariable) debugger.getLocalVariable(lv, v);
+                if (local instanceof Local) {
+                    Local localImpl = (Local) local;
+                    localImpl.setFrame(this);
+                    localImpl.setInnerValue(v);
+                    localImpl.setClassName(className);
+                } else {
+                    ObjectLocalVariable localImpl = (ObjectLocalVariable) local;
+                    localImpl.setFrame(this);
+                    localImpl.setInnerValue(v);
+                    localImpl.setClassName(className);
+                }
                 locals[i] = local;
             }
             return locals;

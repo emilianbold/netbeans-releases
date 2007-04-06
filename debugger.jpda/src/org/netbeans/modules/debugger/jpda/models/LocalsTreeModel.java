@@ -107,8 +107,8 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 Object[] os = getLocalVariables (from, to);
                 return os;
             } else
-            if (o instanceof AbstractVariable) { // ThisVariable & FieldVariable
-                AbstractVariable abstractVariable = (AbstractVariable) o;
+            if (o instanceof AbstractObjectVariable) { // ThisVariable & ObjectFieldVariable
+                AbstractObjectVariable abstractVariable = (AbstractObjectVariable) o;
                 boolean isArray =
                         abstractVariable.getInnerValue () instanceof ArrayReference;
                 if (isArray) {
@@ -128,6 +128,9 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 } else {
                     return abstractVariable.getFields (from, Math.min(to, abstractVariable.getFieldsCount()));
                 }
+            } else
+            if (o instanceof AbstractVariable) { // FieldVariable
+                return new Object [0]; // No children for no-object variables
             } else
             if (o instanceof ArrayChildrenNode) {
                 return ((ArrayChildrenNode) o).getChildren();
@@ -614,16 +617,16 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
      */
     private static final class ArrayChildrenNode {
         
-        private AbstractVariable var;
+        private AbstractObjectVariable var;
         private int from = 0;
         private int length;
         private int maxIndexLog;
         
-        public ArrayChildrenNode(AbstractVariable var) {
+        public ArrayChildrenNode(AbstractObjectVariable var) {
             this(var, 0, var.getFieldsCount(), -1);
         }
         
-        private ArrayChildrenNode(AbstractVariable var, int from, int length,
+        private ArrayChildrenNode(AbstractObjectVariable var, int from, int length,
                                   int maxIndex) {
             this.var = var;
             this.from = from;
@@ -665,7 +668,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             }
         }
         
-        public void update(AbstractVariable var) {
+        public void update(AbstractObjectVariable var) {
             this.var = var;
         }
         

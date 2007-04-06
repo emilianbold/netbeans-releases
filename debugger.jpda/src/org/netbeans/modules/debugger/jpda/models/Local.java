@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,7 @@ import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -34,10 +35,10 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 /**
  * @author   Jan Jancura
  */
-class Local extends AbstractVariable implements 
+class Local extends AbstractVariable implements
 org.netbeans.api.debugger.jpda.LocalVariable {
         
-    protected LocalVariable     local;
+    LocalVariable       local;
     JPDAThread          thread;
     int                 depth;
     String              className;
@@ -45,7 +46,7 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     
     Local (
         JPDADebuggerImpl debugger,
-        Value value, 
+        PrimitiveValue value, 
         String className,
         LocalVariable local,
         CallStackFrameImpl frame
@@ -62,30 +63,6 @@ org.netbeans.api.debugger.jpda.LocalVariable {
             this.depth = frame.getFrameDepth();
         }
         this.className = className;
-    }
-
-    Local (
-        JPDADebuggerImpl debugger, 
-        Value value, 
-        String className, 
-        LocalVariable local, 
-        String genericSignature,
-        CallStackFrameImpl frame
-    ) {
-        super (
-            debugger, 
-            value, 
-            genericSignature, 
-            local.name () + local.hashCode() +
-                (value instanceof ObjectReference ? "^" : "")
-        );
-        this.local = local;
-        if (frame != null) {
-            this.thread = frame.getThread();
-            this.depth = frame.getFrameDepth();
-        }
-        this.className = className;
-        this.genericSignature = genericSignature;
     }
 
     // LocalVariable impl.......................................................
@@ -144,11 +121,7 @@ org.netbeans.api.debugger.jpda.LocalVariable {
 
     public Local clone() {
         Local clon;
-        if (genericSignature == null) {
-            clon = new Local(getDebugger(), getJDIValue(), className, local, null);
-        } else {
-            clon = new Local(getDebugger(), getJDIValue(), className, local, genericSignature, null);
-        }
+        clon = new Local(getDebugger(), (PrimitiveValue) getJDIValue(), className, local, null);
         clon.depth = this.depth;
         clon.thread = this.thread;
         return clon;

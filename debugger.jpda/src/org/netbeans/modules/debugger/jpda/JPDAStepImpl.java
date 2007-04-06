@@ -93,8 +93,6 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.step"); // NOI18N
 
-    private static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
-    
     /** The source tree with location info of this step */
     //private ASTL stepASTL;
     private Operation[] currentOperations;

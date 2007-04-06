@@ -1590,14 +1590,14 @@ public class Evaluator implements JavaParserVisitor {
         if (expression.classReplaced().equals(ctx.identifier)) {
             ReferenceType refType = frame.location().declaringType();
             JPDAClassType classType = evaluationContext.getDebugger().getClassType(refType);
-            return ((JDIObjectVariable) classType.classObject()).getJDIValue();
+            return ((JDIVariable) classType.classObject()).getJDIValue();
         }
         
         // return special variable
         if (expression.returnReplaced().equals(ctx.identifier)) {
             ThreadReference tr = frame.thread();
             JPDAThreadImpl thread = (JPDAThreadImpl) evaluationContext.getDebugger().getThread(tr);
-            JDIObjectVariable returnVar = (JDIObjectVariable) thread.getReturnVariable();
+            JDIVariable returnVar = (JDIVariable) thread.getReturnVariable();
             if (returnVar != null) {
                 return returnVar.getJDIValue();
             } else {
