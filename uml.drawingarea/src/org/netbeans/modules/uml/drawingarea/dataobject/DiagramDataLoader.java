@@ -103,7 +103,7 @@ public class DiagramDataLoader extends MultiFileLoader
         assert ETLD_EXTENSION.equals(secondaryFile.getExt());
         
         FileEntry diagramEntry = new FileEntry(obj, secondaryFile);
-        ((DiagramDataObject)obj).etldEntry = diagramEntry;
+//        ((DiagramDataObject)obj).etldEntry = diagramEntry;
         return diagramEntry;
     }
     

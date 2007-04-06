@@ -22,8 +22,6 @@ package org.netbeans.modules.uml.drawingarea.dataobject;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPreferenceManager;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
@@ -56,8 +54,8 @@ public class DiagramDataObject extends MultiDataObject
     transient private OpenViewEdit openViewEdit;
     
     /** The entries for diagram data files .etld and .etlp */
-    FileEntry etldEntry;
-    FileEntry etlpEntry;
+    FileObject etldfo;
+    FileObject etlpfo;
     
     static final long serialVersionUID =1L;
     
@@ -65,7 +63,9 @@ public class DiagramDataObject extends MultiDataObject
             throws DataObjectExistsException
     {
         super(etlpfo, loader);
-        etldEntry = (FileEntry)registerEntry(etldfo);
+        this.etlpfo = etlpfo;
+        this.etldfo = etldfo;
+        registerEntry(etldfo);
     }
     
     
@@ -124,8 +124,9 @@ public class DiagramDataObject extends MultiDataObject
                 for (IProxyDiagram diagram: diagrams)
                 {
                     File f = new File(diagram.getFilename());
-                    if (f.equals(FileUtil.toFile(etldEntry.getFile())) ||
-                        f.equals(FileUtil.toFile(etlpEntry.getFile())))
+                    
+                    if (etldfo != null && f.equals(FileUtil.toFile(etldfo)) ||
+                        etlpfo != null && f.equals(FileUtil.toFile(etlpfo)))
                         diagram.getDiagram().save();
                 }  
             }
@@ -161,14 +162,12 @@ public class DiagramDataObject extends MultiDataObject
     
     public FileObject getDiagramFile()
     {
-        return etldEntry.getFile();
+        return etldfo;
     }
     
     public boolean isReadOnly()
     {
-        FileObject etlp = etlpEntry.getFile();
-        FileObject etld = etldEntry.getFile();
-        return !etlp.canWrite() || !etld.canWrite();
+        return !etlpfo.canWrite() || !etldfo.canWrite();
     }
 
     
@@ -187,13 +186,7 @@ public class DiagramDataObject extends MultiDataObject
         return getDiagramEditorSupport();
     }
     
-    
-    FileEntry getetlpEntry()
-    {
-        return etlpEntry;
-    }
-    
-   
+
     protected Node createNodeDelegate()
     {
         return new DiagramDataNode(this);
