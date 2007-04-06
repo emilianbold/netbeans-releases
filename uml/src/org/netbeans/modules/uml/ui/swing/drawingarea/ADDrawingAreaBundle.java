@@ -24,11 +24,6 @@ import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
-
-import org.netbeans.modules.uml.ui.products.ad.drawengines.ETNodeDrawEngine;
-import com.tomsawyer.drawing.TSDGraph;
-import com.tomsawyer.editor.TSEColor;
-import com.tomsawyer.service.layout.TSLayoutConstants;
 import org.openide.util.NbBundle;
 /**
  * This class holds locale-specific objects. By changing values
@@ -76,12 +71,13 @@ public class ADDrawingAreaBundle extends ADDrawingAreaResourceBundle
 		{ "toolbar.main", "toolbar.main" }, {			
 			//"item", "main.printDiagram" }, {
                         "item", "main.select" }, {			
-			"item", "" }, {			
+//			"item", "" }, {			
 			"item", "main.pan" }, {
 			//"item", "main.changeSpacing" }, {
 			"item", "main.zoomWithMarquee" }, {
 			"item", "main.zoomInteractively" }, {
 			"item", "main.navigateLink" }, {
+                        "item", "" }, {		
                         "item", "main.previewDiagram" }, {
                         "item", "" }, {
 			"item", "main.overviewWindow" }, {
@@ -101,6 +97,7 @@ public class ADDrawingAreaBundle extends ADDrawingAreaResourceBundle
 			"item", "main.moveBackward" }, {
 			"item", "main.moveToBack" }, {
 			//"item", "main.layout.circularLayout" }, {
+                        "item", "" }, {		
 			"item", "main.layout.hierarchicalLayout" }, {
 			"item", "main.layout.orthogonalLayout" }, {
 			"item", "main.layout.symmetricLayout" }, {
@@ -152,11 +149,15 @@ public class ADDrawingAreaBundle extends ADDrawingAreaResourceBundle
 			"main.ExportAsImage.icon", "toolbar_images/ExportAsImage.png" }, {
 			"main.ExportAsImage.tooltip", mBundle.getString("main.ExportAsImage.tooltip") }, {
 
+                        "main.select.group", "select_pan_zoom" }, {
+                        "main.select.default", "true" }, {
+                        "main.select.checked", "true" }, {
 			"main.select.text", mBundle.getString("main.select.text") }, {
 			"main.select.command", ADDrawingAreaConstants.SELECT_STATE }, {
 			"main.select.icon", "toolbar_images/SelectionArrow.png" }, {
 			"main.select.tooltip", mBundle.getString("main.select.tooltip") }, {
 
+                        "main.pan.group", "select_pan_zoom" }, {    
 			"main.pan.text", mBundle.getString("main.pan.text") }, {
 			"main.pan.command", ADDrawingAreaConstants.PAN_STATE }, {
 			"main.pan.icon", "toolbar_images/Pan.png" }, {
@@ -167,16 +168,19 @@ public class ADDrawingAreaBundle extends ADDrawingAreaResourceBundle
 			"main.changeSpacing.icon", "toolbar_images/ChangeSpacing.gif" }, {
 			"main.changeSpacing.tooltip", mBundle.getString("main.changeSpacing.tooltip") }, {
 
+                        "main.zoomWithMarquee.group", "select_pan_zoom" }, {    
 			"main.zoomWithMarquee.text", mBundle.getString("main.zoomWithMarquee.text") }, {
 			"main.zoomWithMarquee.command", ADDrawingAreaConstants.ZOOM_STATE }, {
 			"main.zoomWithMarquee.icon", "toolbar_images/Magnify.png" }, {
 			"main.zoomWithMarquee.tooltip", mBundle.getString("main.zoomWithMarquee.tooltip") }, {
 
+                        "main.zoomInteractively.group", "select_pan_zoom" }, {    
 			"main.zoomInteractively.text", mBundle.getString("main.zoomInteractively.text") }, {
 			"main.zoomInteractively.command", ADDrawingAreaConstants.INTERACTIVE_ZOOM_STATE }, {
 			"main.zoomInteractively.icon", "toolbar_images/InteractiveZoom.png" }, {
 			"main.zoomInteractively.tooltip", mBundle.getString("main.zoomInteractively.tooltip") }, {
 
+                        "main.navigateLink.group", "select_pan_zoom" }, {
 			"main.navigateLink.text", mBundle.getString("main.navigateLink.text") }, {
 			"main.navigateLink.command", ADDrawingAreaConstants.EDGE_NAVIGATION_STATE }, {
 			"main.navigateLink.icon", "toolbar_images/NavigateLink.png" }, {
@@ -241,20 +245,22 @@ public class ADDrawingAreaBundle extends ADDrawingAreaResourceBundle
 			//"main.layout.circularLayout.icon", "toolbar_images/CircularLayout.gif" }, {
 			//"main.layout.circularLayout.tooltip", mBundle.getString("main.layout.circularLayout.tooltip") }, {
 			//"main.layout.circularLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + TSDGraph.CIRCULAR }, {
-
+                        
+                        "main.layout.hierarchicalLayout.group", "layout" }, {
 			"main.layout.hierarchicalLayout.text", mBundle.getString("main.layout.hierarchicalLayout.text") }, {
 			"main.layout.hierarchicalLayout.icon", "toolbar_images/HierarchicalLayout.png" }, {
 			"main.layout.hierarchicalLayout.tooltip", mBundle.getString("main.layout.hierarchicalLayout.tooltip") }, {
 			//"main.layout.hierarchicalLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + TSDGraph.HIERARCHICAL }, {
                         "main.layout.hierarchicalLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + ILayoutKind.LK_HIERARCHICAL_LAYOUT }, {
 
+                        "main.layout.orthogonalLayout.group", "layout" }, {    
 			"main.layout.orthogonalLayout.text", mBundle.getString("main.layout.orthogonalLayout.text") }, {
 			"main.layout.orthogonalLayout.icon", "toolbar_images/OrthogonalLayout.png" }, {
 			"main.layout.orthogonalLayout.tooltip", mBundle.getString("main.layout.orthogonalLayout.tooltip") }, {
 			//"main.layout.orthogonalLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + TSDGraph.ORTHOGONAL }, {
                          "main.layout.orthogonalLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + ILayoutKind.LK_ORTHOGONAL_LAYOUT}, {
-                            
-
+                          
+                        "main.layout.symmetricLayout.group", "layout" }, {     
 			"main.layout.symmetricLayout.text", mBundle.getString("main.layout.symmetricLayout.text") }, {
 			"main.layout.symmetricLayout.icon", "toolbar_images/SymmetricLayout.png" }, {
 			"main.layout.symmetricLayout.tooltip", mBundle.getString("main.layout.symmetricLayout.tooltip") }, {
@@ -277,6 +283,7 @@ public class ADDrawingAreaBundle extends ADDrawingAreaResourceBundle
 			//"main.layout.relayout.tooltip", mBundle.getString("main.layout.relayout.tooltip") }, {
 			//"main.layout.relayout.command", ADDrawingAreaConstants.APPLY_LAYOUT }, {
 
+                        "main.layout.incrementalLayout.group", "layout" }, {
 			"main.layout.incrementalLayout.text", mBundle.getString("main.layout.incrementalLayout.text") }, {
 			"main.layout.incrementalLayout.icon", "toolbar_images/IncrementalLayout.png" }, {
 			"main.layout.incrementalLayout.tooltip", mBundle.getString("main.layout.incrementalLayout.tooltip") }, {

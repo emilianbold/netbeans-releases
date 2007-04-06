@@ -134,6 +134,10 @@ import com.tomsawyer.util.TSProperty;
 import com.tomsawyer.xml.editor.TSEEnumerationTable;
 import com.tomsawyer.xml.editor.TSEVisualizationXMLReader;
 import com.tomsawyer.xml.editor.TSEVisualizationXMLWriter;
+import java.awt.Component;
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
+import javax.swing.JToggleButton;
 import org.dom4j.Document;
 import org.dom4j.Node;
 import org.netbeans.modules.uml.common.ETException;
@@ -1614,8 +1618,8 @@ public class ADDrawingAreaControl extends ApplicationView
          this.zoomComboBox.setEditable(true);
          this.zoomComboBox.setActionCommand(ADDrawingAreaConstants.ZOOM_CHANGE);
          
-         Dimension comboBoxSize = new Dimension(90, 25);
-         this.zoomComboBox.setPreferredSize(comboBoxSize);
+//         Dimension comboBoxSize = new Dimension(90, 25);
+//         this.zoomComboBox.setPreferredSize(comboBoxSize);
          
          JTextField zoomField = (JTextField) this.zoomComboBox.getEditor().getEditorComponent();
          
@@ -2630,7 +2634,8 @@ public class ADDrawingAreaControl extends ApplicationView
    
    public void switchToDefaultState()
    {
-      setGraphState(getGraphWindow().getDefaultTool());
+       getResources().setDefault();
+       setGraphState(getGraphWindow().getDefaultTool());
    }
    
    /**
@@ -11915,7 +11920,7 @@ public class ADDrawingAreaControl extends ApplicationView
    public JToolBar getToolbar()
    {
       createToolbars();
-      return umlToolBar;
+      return mainToolBar;
    }
    
    public void setShowDefaultToolbar(boolean bShow)

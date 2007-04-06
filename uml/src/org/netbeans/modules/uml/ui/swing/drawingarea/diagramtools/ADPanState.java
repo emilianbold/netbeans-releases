@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -28,28 +28,28 @@ import com.tomsawyer.editor.tool.TSEPanTool;
 
 public class ADPanState extends TSEPanTool
 {
-	public void pan(double dx, double dy)
-	{
-		super.pan(dx, dy);		
-	}
-	
-	public void onMouseReleased(MouseEvent event)
-	{
-		super.onMouseReleased(event);
-		// 6458848, hold the pan state until right click or press Esc to release
-		if (event.isPopupTrigger())
-			setDefaultState();
-	}
-	
-	protected void setDefaultState()
-	{
-		try
-		{
-			((ADGraphWindow)this.getGraphWindow()).getDrawingArea().switchToDefaultState();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();			
-		}						
-	}
+    public void pan(double dx, double dy)
+    {
+        super.pan(dx, dy);
+    }
+    
+//    public void onMouseReleased(MouseEvent event)
+//    {
+//        super.onMouseReleased(event);
+//        // 6458848, hold the pan state until right click or press Esc to release
+//        if (event.isPopupTrigger())
+//            setDefaultState();
+//    }
+    
+    protected void setDefaultState()
+    {
+        try
+        {
+            ((ADGraphWindow)this.getGraphWindow()).getDrawingArea().switchToDefaultState();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 }

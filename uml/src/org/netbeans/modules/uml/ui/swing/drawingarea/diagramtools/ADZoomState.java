@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -20,30 +20,26 @@
 
 package org.netbeans.modules.uml.ui.swing.drawingarea.diagramtools;
 
-import java.awt.event.MouseEvent;
-
 import org.netbeans.modules.uml.ui.swing.drawingarea.ADGraphWindow;
-//import com.tomsawyer.editor.state.TSEZoomState;
 import com.tomsawyer.editor.tool.TSEZoomTool;
 
-//public class ADZoomState extends TSEZoomState
 public class ADZoomState extends TSEZoomTool
 {
-	public void onMouseReleased(MouseEvent event)
-	{
-		super.onMouseReleased(event);
-		setDefaultState();
-	}
-	
-	protected void setDefaultState()
-	{
-		try
-		{
-			((ADGraphWindow)this.getGraphWindow()).getDrawingArea().switchToDefaultState();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();			
-		}						
-	}
+//    public void onMouseReleased(MouseEvent event)
+//    {
+//        super.onMouseReleased(event);
+//        setDefaultState();
+//    }
+    
+    protected void setDefaultState()
+    {
+        try
+        {
+            ((ADGraphWindow)this.getGraphWindow()).getDrawingArea().switchToDefaultState();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 }
