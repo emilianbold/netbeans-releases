@@ -162,12 +162,17 @@ public class MapActionUtility {
                             delete((Node)myObj);
                         }
                     }
-                    
-                    for( Object myObject : selectedObjects ){
-                        
-//                        if( myObject instanceof Node ) {
-//                            delete((Node)myObject);
-//                        }
+                    for( Object selectedObj : selectedObjects ){
+                        if( objScene.isEdge(selectedObj) ){
+                            delete((Node)selectedObj);
+                        } 
+                    }
+                    /* The deleted links should not be selected anymore */
+                    selectedObjects = new HashSet<Object>(objScene.getSelectedObjects());
+                    for( Object selectedObj : selectedObjects ){
+                       if( selectedObj instanceof Node ) {
+                           delete((Node)selectedObj);
+                       }
                     }
                 }
             }
