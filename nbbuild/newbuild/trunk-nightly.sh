@@ -135,10 +135,12 @@ rm -f netbeans/build_info
 #
 ###################################################################
 
+cd $NB_ALL/nbbuild
+
 #Pack all the NetBeans
 pack_component $DIST $BASENAME all-in-one netbeans
 
-cd netbeans
+cd $NB_ALL/nbbuild/netbeans
 
 #Continue with individual component
 pack_component $DIST $BASENAME uml "uml*"
