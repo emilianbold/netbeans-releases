@@ -23,16 +23,12 @@ import java.awt.Component;
 import java.awt.Window;
 import javax.swing.JOptionPane;
 
-import org.netbeans.modules.xml.xpath.AbstractXPathModelHelper;
 import org.netbeans.modules.xml.xpath.XPathStringLiteral;
-import org.netbeans.modules.xslt.mapper.model.nodes.NodeFactory;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.datatype.Duration;
-import org.netbeans.modules.soa.mapper.basicmapper.methoid.BasicField;
 import org.netbeans.modules.soa.mapper.common.basicmapper.IBasicMapper;
 import org.netbeans.modules.soa.mapper.common.basicmapper.literal.BasicLiteralEditorFactory;
 import org.netbeans.modules.soa.mapper.common.basicmapper.literal.ILiteralEditor;
@@ -40,7 +36,6 @@ import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IFieldNode;
 import org.netbeans.modules.xslt.mapper.model.nodes.CanvasNode;
 
 import org.netbeans.modules.xslt.mapper.model.nodes.LiteralCanvasNode;
-import org.netbeans.modules.xslt.mapper.model.nodes.OperationOrFunctionCanvasNode;
 
 /**
  * Updates the xpath expression for string literals.
