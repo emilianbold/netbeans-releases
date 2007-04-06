@@ -55,6 +55,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+
 // import com.ddtek.jdbc.extensions.ExtEmbeddedConnection;
 
 /**
@@ -782,5 +783,15 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
         }
         s.append(')');
         return s.toString();
+    }
+
+    // Methods added for compliance with Java 1.6
+    
+    public boolean isWrapperFor(Class iface) throws SQLException {
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+
+    public Object unwrap(Class iface) throws SQLException {
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
     }
 }

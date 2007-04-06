@@ -18,6 +18,9 @@
  */
 package org.netbeans.modules.visualweb.dataconnectivity.sql;
 
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -26,7 +29,17 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.sql.Struct;
+
+import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
+import java.util.ResourceBundle;
+
+// Added in Java 1.6
+import java.sql.NClob;
+import java.sql.SQLXML;
+import java.sql.SQLClientInfoException;
 
 /**
  * A design time only wrapper class for Connection objects.  Used to
@@ -37,6 +50,9 @@ import java.util.Map;
  * @author John Kline
  */
 public class DesignTimeConnection implements Connection {
+
+    protected static ResourceBundle rb = ResourceBundle.getBundle("org.netbeans.modules.visualweb.dataconnectivity.sql.Bundle", //NOI18N
+                                                                  Locale.getDefault());
 
     static private int           nextId = 0;
 
@@ -296,5 +312,72 @@ public class DesignTimeConnection implements Connection {
     public void setTypeMap(Map map) throws SQLException {
         Log.getLogger().entering(getClass().getName(), toString()+".setTypeMap()", map); //NOI18N
         wrappedConnection.setTypeMap(map);
+    }
+
+    // Methods added for compliance with Java 1.6
+
+    public Clob createClob() throws SQLException {
+        Log.getLogger().entering(getClass().getName(), toString()+".createClob()"); //NOI18N
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+
+    public Blob createBlob() throws SQLException {
+        Log.getLogger().entering(getClass().getName(), toString()+".createBlob()"); //NOI18N
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+
+    public NClob createNClob() throws SQLException {
+        Log.getLogger().entering(getClass().getName(), toString()+".createNClob()"); //NOI18N
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+
+    public SQLXML createSQLXML() throws SQLException {
+        Log.getLogger().entering(getClass().getName(), toString()+".createSQLXML()"); //NOI18N
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+
+    public boolean isValid(int timeout) throws SQLException {
+        Log.getLogger().entering(getClass().getName(), toString()+".isValid()", timeout); //NOI18N
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+
+    public void setClientInfo(String name, String value) throws SQLClientInfoException {
+        Log.getLogger().entering(getClass().getName(), toString()+".setClientInfo()", new Object[] { name, value}); //NOI18N
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+
+    public void setClientInfo(Properties properties) throws SQLClientInfoException {
+        Log.getLogger().entering(getClass().getName(), toString()+".setClientInfo()", properties); //NOI18N
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+
+    public String getClientInfo(String name) throws SQLException {
+        Log.getLogger().entering(getClass().getName(), toString()+".getClientInfo()", name); //NOI18N
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+
+    public Properties getClientInfo() throws SQLException {
+        Log.getLogger().entering(getClass().getName(), toString()+".getClientInfo()"); //NOI18N
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+
+    public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
+        Log.getLogger().entering(getClass().getName(), toString()+".createArrayOf()", new Object[] { typeName, elements }); //NOI18N
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+
+    public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
+        Log.getLogger().entering(getClass().getName(), toString()+".createStruct()", new Object[] { typeName, attributes }); //NOI18N
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+
+    public boolean isWrapperFor(Class iface) throws SQLException {
+        Log.getLogger().entering(getClass().getName(), toString()+".isWrapperFor()", iface); //NOI18N
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
+    }
+
+    public Object unwrap(Class iface) throws SQLException {
+        Log.getLogger().entering(getClass().getName(), toString()+".unwrap()", iface); //NOI18N
+        throw new RuntimeException(rb.getString("NOT_IMPLEMENTED"));
     }
 }
