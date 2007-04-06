@@ -23,6 +23,7 @@ package org.netbeans.modules.vmd.midp.screen.display.property;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.io.PopupUtil;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
@@ -77,8 +78,13 @@ public class ScreenStringPropertyEditor implements ScreenPropertyEditor {
         public void keyTyped (KeyEvent e) {
             if (e.getKeyChar () != KeyEvent.VK_ENTER)
                 return;
-            PropertyValue value = MidpTypes.createStringValue (getText ());
-            property.getRelatedComponent ().writeProperty (propertyName, value);
+            final DesignComponent relatedComponent = property.getRelatedComponent ();
+            relatedComponent.getDocument ().getTransactionManager ().writeAccess (new Runnable() {
+                public void run () {
+                    PropertyValue value = MidpTypes.createStringValue (getText ());
+                    relatedComponent.writeProperty (propertyName, value);
+                }
+            });
             PopupUtil.hidePopup ();
         }
 
