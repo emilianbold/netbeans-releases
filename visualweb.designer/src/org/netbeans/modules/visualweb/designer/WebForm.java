@@ -1233,7 +1233,7 @@ public class WebForm implements Designer {
     
     public GridHandler getGridHandler() {
         if (gridHandler == null) {
-            gridHandler = new GridHandler(this);
+            gridHandler = new GridHandler(/*this*/);
         }
         return gridHandler;
     }
