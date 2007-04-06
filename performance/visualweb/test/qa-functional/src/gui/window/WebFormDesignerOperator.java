@@ -55,6 +55,11 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
         super(topComponentName,Index);
     }
     
+    /**
+     * Find web designer operator located certain top component
+     * @param topComponentName name of the top component
+     * @return WebFOrmDesignerOperator
+     */
     public static WebFormDesignerOperator findWebFormDesignerOperator(String topComponentName){
         StringComparator oldOperator = Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(new DefaultStringComparator(true, true));
@@ -64,15 +69,24 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     }
     
     public void switchToDesignView() {
-        new JToggleButtonOperator(this,"Design").pushNoBlock(); // NOI18N
+        JToggleButtonOperator designViewButton = new JToggleButtonOperator(this,"Design"); // NOI18N
+        
+        if(!designViewButton.isSelected())
+            designViewButton.pushNoBlock();
     }
     
     public void switchToJSPView() {
-        new JToggleButtonOperator(this,"JSP").pushNoBlock(); // NOI18N
+        JToggleButtonOperator jspViewButton = new JToggleButtonOperator(this,"JSP"); // NOI18N
+        
+        if(!jspViewButton.isSelected())
+            jspViewButton.pushNoBlock();
     }
     
     public void switchToCodeView() {
-        new JToggleButtonOperator(this,"Java").pushNoBlock(); // NOI18N
+        JToggleButtonOperator javaViewButton = new JToggleButtonOperator(this,"Java"); // NOI18N
+        
+        if(!javaViewButton.isSelected())
+            javaViewButton.pushNoBlock();
     }
     
     public void closeDiscard() {
