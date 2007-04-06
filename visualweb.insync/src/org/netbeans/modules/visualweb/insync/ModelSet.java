@@ -77,7 +77,6 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 //NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
-import org.netbeans.modules.visualweb.insync.models.ConfigModel;
 
 /**
  * A ModelSet is a collection of Models that are organized together in a single project. The
@@ -119,8 +118,6 @@ public abstract class ModelSet implements FileChangeListener {
                         // Get the model corresponding to the fileObject
                         Model model = modelSet.getModel(fileObject);
                         // Well, if its not a model, lets not forget that ModeSet breaks up config models and "document" models
-                        if (model == null)
-                            model = modelSet.getConfigModel(fileObject);
                         // sync model if the top component is losing focus
                         if (model != null && !makeActive) {
                             model.sync();
@@ -360,8 +357,8 @@ public abstract class ModelSet implements FileChangeListener {
     protected ClassPath classPath; // needed since we add ourseleves as a dependent
     protected ClassPathListener classPathListener;
     protected FileSystem fileSystem;
+    protected Model configModel = null;  // config model
 
-    protected final IdentityHashMap configModels = new IdentityHashMap();  // specialized configuration models
     protected final IdentityHashMap models = new IdentityHashMap();        // general models
     protected final IdentityHashMap modelSetListeners = new IdentityHashMap();
 
@@ -451,11 +448,8 @@ public abstract class ModelSet implements FileChangeListener {
         for (int i = 0; i < ms.length; i++)
             ms[i].destroy();
 
-        ConfigModel[] cms = getConfigModels();
-        configModels.clear();
-        for (int i = 0; i < cms.length; i++)
-            cms[i].destroy();
-
+        configModel.destroy();
+        
         synchronized (sets) {
             sets.remove(project);
         }
@@ -603,41 +597,22 @@ public abstract class ModelSet implements FileChangeListener {
     }
     
     /**
-     * Get an array of all of the configuration models in this set.
-     * @return An array of all of the configuration Models in this set.
+     * Get the configuration model
+     * 
+     * @return th configuration model.
      */
-    public ConfigModel[] getConfigModels() {
-        return (ConfigModel[]) getConfigModelsMap().values().toArray(ConfigModel.EMPTY_ARRAY);
+    public Model getConfigModel() {
+        return configModel;
     }
     
-    protected Map getConfigModelsMap() {
-        return configModels;
-    }
-
     /**
-     * Get the corresponding configuration model for a NB file object.
+     * Set the configuration model
      * 
-     * @param file  The NB file object
-     * @return The corresponding model.
+     * @return The configuration model.
      */
-    public ConfigModel getConfigModel(FileObject file) {
-        return (ConfigModel) getConfigModelsMap().get(file);
-    }
-
-    /**
-     * Get the single instance of a configuration model given its type.
-     * 
-     * @param type  The model type to get
-     * @return  The single model instance of the given type.
-     */
-    public ConfigModel getConfigModel(Class type) {
-        for (Iterator i = getConfigModelsMap().values().iterator(); i.hasNext(); ) {
-            Model model = (Model)i.next();
-            if (type.isInstance(model))
-                return (ConfigModel)model;
-        }
-        return null;
-    }
+    public void setConfigModel(Model configModel) {
+        this.configModel = configModel;
+    }    
 
     public void addModelSetListener(ModelSetListener listener) {
         modelSetListeners.put(listener, "");
@@ -695,10 +670,7 @@ public abstract class ModelSet implements FileChangeListener {
      * @param m  The source or config model
      */
     protected void addModel(FileObject file, Model m) {
-        if (m instanceof ConfigModel)
-            configModels.put(file, m);
-        else
-            models.put(file, m);
+        models.put(file, m);
         fireModelAdded(m);
     }
     
@@ -726,21 +698,19 @@ public abstract class ModelSet implements FileChangeListener {
             modelsToSync = new HashSet();
             // Due to the fact that there is some resetting of errors and such happening on each sync,
             // we need to gather up the errors and present them at the end
-            for (Iterator i = getConfigModelsMap().values().iterator(); i.hasNext(); ) {
-                Model model = (Model)i.next();
-                if (model.isValid()) {
-                    model.sync();
-                    ParserAnnotation[] errors = model.getErrors();
-                    if (errors.length > 0) {
-                        for (int j=0, max=errors.length; j < max; j++) {
-                            errorAccumulator.add(errors[j]);
-                        }
+            Model model = configModel;
+            if (model.isValid()) {
+                ParserAnnotation[] errors = model.getErrors();
+                if (errors.length > 0) {
+                    for (int j=0, max=errors.length; j < max; j++) {
+                        errorAccumulator.add(errors[j]);
                     }
                 }
             }
+            
             Collection orderedModels = evalOrderModels(getModelsMap().values());
             for (Iterator i = orderedModels.iterator(); i.hasNext(); ) {
-                Model model = (Model)i.next();
+                model = (Model)i.next();
                 if (model.isValid()) {
                     model.sync();
                     ParserAnnotation[] errors = model.getErrors();
@@ -833,8 +803,6 @@ public abstract class ModelSet implements FileChangeListener {
     protected void flushAll() {
         for (Iterator i = getModelsMap().values().iterator(); i.hasNext(); )
             ((Model)i.next()).flush();
-        for (Iterator i = getConfigModelsMap().values().iterator(); i.hasNext(); )
-            ((Model)i.next()).flush();
     }
     
     /**
@@ -842,8 +810,6 @@ public abstract class ModelSet implements FileChangeListener {
      */
     protected void saveAll() {
         for (Iterator i = getModelsMap().values().iterator(); i.hasNext(); )
-            ((Model)i.next()).saveUnits();
-        for (Iterator i = getConfigModelsMap().values().iterator(); i.hasNext(); )
             ((Model)i.next()).saveUnits();
     }
     
@@ -858,7 +824,7 @@ public abstract class ModelSet implements FileChangeListener {
         protected ArrayList modelsAdded = new ArrayList();
         
         protected void visitImpl(FileObject file) {
-            if (!configModels.containsKey(file) && !models.containsKey(file)) {
+            if (!models.containsKey(file)) {
                 for (Iterator i = getFactories().iterator(); i.hasNext(); ) {
                     Model.Factory mf = (Model.Factory)i.next();
                     Model m = mf.newInstance(ModelSet.this, file);
@@ -1010,30 +976,24 @@ public abstract class ModelSet implements FileChangeListener {
         if (fileObject == null) {
             return;
         }
-        Model model = getModel(fileObject);
-        if (model == null) {
-            model = (Model) configModels.get(fileObject);
-            if (model == null)
-                return;
-            configModels.remove(model.getFile());
-        } else {
+        final Model model = getModel(fileObject);
+        if (model != null) {
             models.remove(model.getFile());
-        }
-        final Model finalModel = model;
 /*//NB6.0
         MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
             public void run() {
-*/
-                // There are some elements that get refreshed that assume they are on UI thread
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        removeModel(finalModel);
-                    }
-                });
+ */
+            // There are some elements that get refreshed that assume they are on UI thread
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    removeModel(model);
+                }
+            });
 /*
             }
         });
  //*/
+        }
     }
     
     public void fileRenamed(final FileRenameEvent event) {
@@ -1045,17 +1005,12 @@ public abstract class ModelSet implements FileChangeListener {
         //it is necessary to remove the model
         final boolean needToRemove = getLocalFileObject(fileObject) == null ? true : false;
         final Model[] models = getModels();
-        final Model[] configModels = getConfigModels();
 /*//NB6.0
         MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
             public void run() {
 */ 
                 for (int i=0; i < models.length; i++) {
                     Model model = models[i];
-                    model.fileRenamed(oldName, newName, extension, fileObject, needToRemove);
-                }
-                for (int i=0; i < configModels.length; i++) {
-                    Model model = configModels[i];
                     model.fileRenamed(oldName, newName, extension, fileObject, needToRemove);
                 }
 /*
@@ -1090,10 +1045,7 @@ public abstract class ModelSet implements FileChangeListener {
 
     public void removeModel(Model model) {
         FileObject fileObject = model.getFile();
-        if (model instanceof ConfigModel)
-            configModels.remove(fileObject);
-        else
-            models.remove(fileObject);
+        models.remove(fileObject);
         fireModelRemoved(model);
         model.destroy();
     }

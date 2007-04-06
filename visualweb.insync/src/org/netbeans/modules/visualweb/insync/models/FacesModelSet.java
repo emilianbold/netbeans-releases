@@ -12,7 +12,7 @@
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * The Original Software is NetBeans. The Initial Developer of the Original
+* The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
@@ -29,9 +29,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -68,23 +66,21 @@ import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.faces.FacesDesignProject;
-import com.sun.rave.designtime.DesignProject;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.event.DesignProjectListener;
 import org.netbeans.modules.visualweb.insync.Model;
 import org.netbeans.modules.visualweb.insync.ModelSet;
 import org.netbeans.modules.visualweb.insync.SourceUnit;
 import org.netbeans.modules.visualweb.insync.faces.ElAttrUpdater;
-import org.netbeans.modules.visualweb.insync.faces.config.ManagedBean;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.jsfsupport.container.FacesContainer;
 
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import java.util.Set;
 import java.util.List;
 import java.util.Collection;
 import java.util.ArrayList;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 
 /**
  * A specific concrete ModelSet class that knows all about JSF.
@@ -100,6 +96,8 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     public static final boolean LOG_SYNC_ALLS = false;
 
     protected static IdentityHashMap openProjects = new IdentityHashMap();
+    
+    FacesConfigModel facesConfigModel;
 
     // Listener to monitor file system changes. This is used to keep the folder structure under the
     // document root folder synchronized with the folder structure under the page bean root folder.
@@ -321,6 +319,10 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     public FacesModelSet(Project project) {
         super(project);
         getFacesContainer();
+        
+        facesConfigModel = new FacesConfigModel(this);
+        setConfigModel(facesConfigModel);
+
         // sync all models so that they are ready and can be cross-referenced, and remove any dead
         // ones that aborted opening.
         syncAll();
@@ -376,15 +378,11 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
         return facesContainer;
     }
 
-    ManagedBeansModel mbmodel;
-
     /**
      * @return
      */
-    public ManagedBeansModel getManagedBeansModel() {
-        if (mbmodel == null)
-            mbmodel = (ManagedBeansModel)getConfigModel(ManagedBeansModel.class);
-        return mbmodel;
+    public FacesConfigModel getFacesConfigModel() {
+        return facesConfigModel;
     }
 
     /**
@@ -504,26 +502,26 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     public void ensureXRefAccessors(FacesModel aModel, boolean fromA) {
         if (aModel.isBusted())
             return;
-        ManagedBeansModel mbm = getManagedBeansModel();
+        FacesConfigModel facesConfigModel = getFacesConfigModel();
         String aName = aModel.getBeanName();
-        ManagedBean aMb = mbm.getManagedBean(aName);
-        if (aMb != null && (fromA || aMb.getPackage().length() > 0)) {
-            ManagedBean.Scope aScope = aMb.getScope();
+        ManagedBean aMb = facesConfigModel.getManagedBean(aName);
+        if (aMb != null && (fromA || FacesConfigModel.getPackageName(aMb).length() > 0)) {
+            ManagedBean.Scope aScope = aMb.getManagedBeanScope();
             FacesModel[] bModels = getFacesModels();
             for (int i = 0; i < bModels.length; i++) {
                 if (bModels[i] != aModel && ! bModels[i].isBusted()) {
                     String bName = bModels[i].getBeanName();
                     if (bName != null) {
-                        ManagedBean bMb = mbm.getManagedBean(bName);
+                        ManagedBean bMb = facesConfigModel.getManagedBean(bName);
                         if (bMb != null) {
-                            ManagedBean.Scope bScope = bMb.getScope();
+                            ManagedBean.Scope bScope = bMb.getManagedBeanScope();
                             if (fromA) {
                                 if (isModelToXRef(aModel, aScope, bModels[i])) {
-                                    aModel.getBeansUnit().ensureXRefAccessor(bName, bMb.getClazz());
+                                    aModel.getBeansUnit().ensureXRefAccessor(bName, bMb.getManagedBeanClass());
                                 }
                             } else {
-                                if (!fromA && aScope.compareTo(bScope) < 0)
-                                    bModels[i].getBeansUnit().ensureXRefAccessor(aName, aMb.getClazz());
+                                if (!fromA && aScope.compareTo(bScope) > 0)
+                                    bModels[i].getBeansUnit().ensureXRefAccessor(aName, aMb.getManagedBeanClass());
                             }
                         }
                     }
@@ -550,16 +548,16 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
         if (!toModel.isBusted()) {
             String toName = toModel.getBeanName();
             if (toName != null) {
-                ManagedBean toMb = getManagedBeansModel().getManagedBean(toName);
+                ManagedBean toMb = getFacesConfigModel().getManagedBean(toName);
                 if (toMb != null) {
-                    ManagedBean.Scope toScope = toMb.getScope();
+                    ManagedBean.Scope toScope = toMb.getManagedBeanScope();
                     boolean include = false;
                     //Page and Request beans are of same scope, but we still
                     //need request bean accessors in page bean
                     if(fromModel.isPageBean())
-                        include = toScope.compareTo(fromScope) <= 0;
+                        include = toScope.compareTo(fromScope) >= 0;
                     else
-                        include = toScope.compareTo(fromScope) < 0;
+                        include = toScope.compareTo(fromScope) > 0;
                     //No page bean accessors are allowed
                     if (include && !toModel.isPageBean()) {
                         return true;
@@ -616,9 +614,9 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     }
     
     public DesignContext findDesignContext(String variableName, boolean ignorePage) {
-        ManagedBean mb = getManagedBeansModel().getManagedBean(variableName);
+        ManagedBean mb = getFacesConfigModel().getManagedBean(variableName);
         if(mb != null) {
-            String javaFileName = mb.getClazz().replace('.', '/') + ".java";  //NOI18N;
+            String javaFileName = mb.getManagedBeanClass().replace('.', '/') + ".java";  //NOI18N;
             Sources sources = ProjectUtils.getSources(getProject());
             SourceGroup groups[] = sources.getSourceGroups("java");
             FileObject javaFile = null;
@@ -655,16 +653,16 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     
     public DesignContext[] findDesignContexts(String[] scopes) {
         Collection scopeList = Arrays.asList(scopes);
-        ManagedBeansModel mbm = getManagedBeansModel();
-        ManagedBean[] mbs = mbm.getManagedBeans();
+        FacesConfigModel facesConfigModel = getFacesConfigModel();
+        ManagedBean[] mbs = facesConfigModel.getManagedBeans();
         List dcs = new ArrayList();
         for (int i = 0; i < mbs.length; i++) {
-            if(scopeList.contains(mbs[i].getScope().toString())) {
+            if(scopeList.contains(mbs[i].getManagedBeanScope().toString())) {
                 boolean ignorePage = false;
-                if(mbs[i].getScope().equals(ManagedBean.Scope.REQUEST)) {
+                if(mbs[i].getManagedBeanScope().equals(ManagedBean.Scope.REQUEST)) {
                     ignorePage = true;
                 }
-                DesignContext dc = findDesignContext(mbs[i].getName(), ignorePage);
+                DesignContext dc = findDesignContext(mbs[i].getManagedBeanName(), ignorePage);
                 if(dc != null)
                     dcs.add(dc);
             }
@@ -747,10 +745,10 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
             return false;
         String beanName = model.getBeanName();
         if (beanName != null) {
-            ManagedBeansModel mbm = ((FacesModelSet)model.getOwner()).getManagedBeansModel();
-            ManagedBean mb = mbm.getManagedBean(beanName);
+            FacesConfigModel facesConfigModel = ((FacesModelSet)model.getOwner()).getFacesConfigModel();
+            ManagedBean mb = facesConfigModel.getManagedBean(beanName);
             if (mb != null)
-                mbm.removeManagedBean(mb);
+                facesConfigModel.removeManagedBean(mb);
         }
         models.remove(model);
         return true;
@@ -1146,8 +1144,8 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     }
 
     protected Collection evalOrderModels(Collection modelsToOrder) {
-        ManagedBeansModel managedBeansModel = getManagedBeansModel();
-        if (managedBeansModel == null)
+        FacesConfigModel facesConfigModel = getFacesConfigModel();
+        if (facesConfigModel == null)
             return modelsToOrder;
         final HashMap modelsByName = new HashMap();
         for (Iterator iterator=modelsToOrder.iterator(); iterator.hasNext(); ) {
@@ -1164,18 +1162,18 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
             list.add(model);
         }
         ArrayList orderedModels = new ArrayList(modelsToOrder.size());
-        ManagedBean[] managedBeans = managedBeansModel.getManagedBeans();
+        ManagedBean[] managedBeans = facesConfigModel.getManagedBeans();
         Arrays.sort(managedBeans, new Comparator() {
             public int compare(Object object1, Object object2) {
                 ManagedBean managedBean1 = (ManagedBean) object1;
                 ManagedBean managedBean2 = (ManagedBean) object2;
-                int compare = managedBean1.getScope().compareTo(managedBean2.getScope());
+                int compare = managedBean1.getManagedBeanScope().compareTo(managedBean2.getManagedBeanScope());
                 if (compare != 0)
                     return compare;
-                if (managedBean1.getScope() != ManagedBean.Scope.REQUEST)
+                if (managedBean1.getManagedBeanScope() != ManagedBean.Scope.REQUEST)
                     return 0;
-                ArrayList list1  = (ArrayList) modelsByName.get(managedBean1.getName());
-                ArrayList list2 = (ArrayList) modelsByName.get(managedBean2.getName());
+                ArrayList list1  = (ArrayList) modelsByName.get(managedBean1.getManagedBeanName());
+                ArrayList list2 = (ArrayList) modelsByName.get(managedBean2.getManagedBeanName());
                 if (list1 == null || list2 == null)
                     return 0;
                 FacesModel model1 = (FacesModel) list1.get(0);
@@ -1188,11 +1186,11 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
             }
         });
         for (int i=0; i < managedBeans.length; i++) {
-            ManagedBean managedBean = managedBeans[i];
-            ArrayList list = (ArrayList) modelsByName.get(managedBean.getName());
+            ManagedBean ManagedBean = managedBeans[i];
+            ArrayList list = (ArrayList) modelsByName.get(ManagedBean.getManagedBeanName());
             if (list != null) {
                 orderedModels.addAll(list);
-                modelsByName.remove(managedBean.getName());
+                modelsByName.remove(ManagedBean.getManagedBeanName());
             }
         }
         // Add non-pages first, in order to make sure ensurexref is done properly

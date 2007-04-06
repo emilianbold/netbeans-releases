@@ -64,7 +64,6 @@ import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.event.DesignContextListener;
 import com.sun.rave.designtime.faces.FacesDesignContext;
 import com.sun.rave.designtime.faces.ResolveResult;
-import com.sun.rave.designtime.markup.MarkupPosition;
 import org.netbeans.modules.visualweb.insync.ParserAnnotation;
 import org.netbeans.modules.visualweb.insync.ResultHandler;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
@@ -78,13 +77,13 @@ import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
 import org.netbeans.modules.visualweb.insync.faces.HtmlBean;
 import org.netbeans.modules.visualweb.insync.faces.MarkupBean;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
-import org.netbeans.modules.visualweb.insync.faces.config.ManagedBean;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.visualweb.jsfsupport.container.RaveFacesContext;
 //import com.sun.rave.project.model.GenericItem;
 //import com.sun.rave.project.model.WebAppProject;
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 
 /**
  * @author Carl Quinn

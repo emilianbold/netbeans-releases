@@ -32,9 +32,9 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.insync.faces.FacesUnit;
-import org.netbeans.modules.visualweb.insync.faces.config.ManagedBean;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
-import org.netbeans.modules.visualweb.insync.models.ManagedBeansModel;
+import org.netbeans.modules.visualweb.insync.models.FacesConfigModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 
 /**
  * I represent an object that optimizes the queries that can be performed by the InSyncServiceProvider.
@@ -82,7 +82,7 @@ public class InSyncServiceProviderQuery {
             String javaClassName = relativePath.replace('/', '.');
             ManagedBean managedBean = getManagedBeanWithBeanClass(javaClassName);
             if (managedBean != null)
-                return managedBean.getName();
+                return managedBean.getManagedBeanName();
             return null;
         } else {
             // If file is not in either root, then assume we cannot compute bean name
@@ -229,7 +229,7 @@ public class InSyncServiceProviderQuery {
     }
     
     public ManagedBean getManagedBeanNamed(String name) {
-        ManagedBeansModel model = getFacesModelSet().getManagedBeansModel();
+        FacesConfigModel model = getFacesModelSet().getFacesConfigModel();
         ManagedBean result = model.getManagedBean(name);
         return result;
     }
@@ -241,12 +241,12 @@ public class InSyncServiceProviderQuery {
      * @return
      */
     public ManagedBean getManagedBeanWithBeanClass(String name) {
-        ManagedBeansModel model = getFacesModelSet().getManagedBeansModel();
+        FacesConfigModel model = getFacesModelSet().getFacesConfigModel();
         ManagedBean[] managedBeans = model.getManagedBeans();
         ManagedBean result = null;
         for (int i=0; i < managedBeans.length; i++) {
             ManagedBean managedBean = managedBeans[i];
-            if (name.equals(managedBean.getClazz())) {
+            if (name.equals(managedBean.getManagedBeanClass())) {
                 if (result == null)
                     result = managedBean;
                 else

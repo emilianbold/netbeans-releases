@@ -19,7 +19,6 @@
 package org.netbeans.modules.visualweb.insync.models;
 
 import java.beans.MethodDescriptor;
-import javax.swing.text.StyledDocument;
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
@@ -44,7 +43,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
@@ -80,14 +78,12 @@ import org.netbeans.modules.visualweb.insync.faces.ThresherFacesPageBeanStructur
 import org.netbeans.modules.visualweb.insync.faces.ThresherFacesRequestBeanStructureScanner;
 import org.netbeans.modules.visualweb.insync.faces.ThresherFacesSessionBeanStructureScanner;
 import org.netbeans.modules.visualweb.insync.faces.ThresherFacesFragmentBeanStructureScanner;
-import org.netbeans.modules.visualweb.insync.faces.config.ManagedBean;
 import org.netbeans.modules.visualweb.insync.live.BeansDesignEvent;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.live.LiveUnitWrapper;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import java.io.File;
-import java.util.List;
-import org.netbeans.modules.visualweb.insync.java.Statement;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.text.Line;
@@ -714,15 +710,15 @@ public class FacesModel extends Model {
         }
 
         // see if it is registered with MBM
-        ManagedBeansModel mbm = facesModelSet.getManagedBeansModel();
-        ManagedBean mb = mbm.getManagedBean(beanName);
+        FacesConfigModel facesConfigModel = facesModelSet.getFacesConfigModel();
+        ManagedBean mb = facesConfigModel.getManagedBean(beanName);
 
         // if so then get our package & classname from there if needed
         if (mb != null) {
             if (javaFile == null) {
                 // PROJECTTODO2: cleanup
                 // This ugly blob of code needs to go somewhere
-                String javaFileName = mb.getClazz().replace('.', '/') + ".java";  //NOI18N;
+                String javaFileName = mb.getManagedBeanClass().replace('.', '/') + ".java";  //NOI18N;
                 Sources sources = ProjectUtils.getSources(getProject());
                 // !EAT TODO: replace "java" with org.netbeans.api.java.project.JavaProjectConstants.SOURCES_TYPE_JAVA
                 SourceGroup groups[] = sources.getSourceGroups("java");
@@ -736,7 +732,7 @@ public class FacesModel extends Model {
                 sourceFolder = null;
             }
             if (javaPackage == null)
-                javaPackage = mb.getPackage();
+                javaPackage = FacesConfigModel.getPackageName(mb);
         }
         // if not then get it using the formula, & update MBM later below
         else {
@@ -870,28 +866,18 @@ public class FacesModel extends Model {
     private void ensureManagedBeansEntry() {
         String beanName = getBeanName();
         // see if it is registered with MBM
-        ManagedBeansModel mbm = facesModelSet.getManagedBeansModel();
-        if(mbm.unit.isBusted())
+        FacesConfigModel facesConfigModel = facesModelSet.getFacesConfigModel();
+        if(facesConfigModel.isBusted()) {
             return;
-        ManagedBean mb = mbm.getManagedBean(beanName);
-
+        }
+        ManagedBean mb = facesConfigModel.getManagedBean(beanName);
         // update the missing MB entry in the MBM, getting scope based on the superclass of the bean
         //!CQ consider fixing broken entry settings in some cases
         if (mb == null) {
             JavaClass javaClass = beansUnit.getThisClass();
             for(int i=0; i<managedBeanNames.length; i++) {
                 if(beansUnit.getBaseBeanClassName().equals(managedBeanNames[i])) {
-                    UndoEvent event = null;
-                    try {
-                        // No description - is this even an undoable event? In any case it should
-                        // be called within a larger undoable event that set the undo event name
-                        event = mbm.writeLock(null);
-                        mbm.ensureManagedBean(beanName, javaClass.getName(), managedBeanScopes[i]);
-                    }
-                    finally {
-                        mbm.writeUnlock(event);
-                    }
-                    
+                    facesConfigModel.ensureManagedBean(beanName, javaClass.getName(), managedBeanScopes[i]);
                     return;
                 }
             }
@@ -899,10 +885,10 @@ public class FacesModel extends Model {
     }
 
     public ManagedBean.Scope getManagedBeanEntryScope() {
-        ManagedBeansModel mbm = getFacesModelSet().getManagedBeansModel();
-        ManagedBean mb = mbm.getManagedBean(getBeanName());
+        FacesConfigModel facesConfigModel = getFacesModelSet().getFacesConfigModel();
+        ManagedBean mb = facesConfigModel.getManagedBean(getBeanName());
         if (mb != null)
-            return mb.getScope();
+            return mb.getManagedBeanScope();
         return null;
     }
 

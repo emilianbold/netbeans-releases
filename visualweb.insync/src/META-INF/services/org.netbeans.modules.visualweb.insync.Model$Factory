@@ -2,6 +2,4 @@ org.netbeans.modules.visualweb.insync.models.FacesModel$FacesFactory
 #position=10
 org.netbeans.modules.visualweb.insync.models.FacesModel$BeansFactory
 #position=20
-org.netbeans.modules.visualweb.insync.models.ManagedBeansModel$Factory
-#position=30
 

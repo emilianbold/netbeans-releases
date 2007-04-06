@@ -29,11 +29,11 @@ import java.util.List;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.DesignBean;
-import org.netbeans.modules.visualweb.insync.faces.config.ManagedBean;
 import org.netbeans.modules.visualweb.insync.java.Method;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.filesystems.FileObject;
 
 
