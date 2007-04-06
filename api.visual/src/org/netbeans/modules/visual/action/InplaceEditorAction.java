@@ -116,7 +116,7 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
 
         editor.setBounds (x, y, size.width, size.height);
         notifyEditorComponentBoundsChanged ();
-        editor.requestFocus ();
+        editor.requestFocusInWindow ();
 
         return true;
     }
@@ -139,6 +139,7 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
         Container parent = editor.getParent ();
         Rectangle bounds = parent != null ? editor.getBounds () : null;
         provider.notifyClosing (this, widget, editor, commit);
+        boolean hasFocus = editor.hasFocus ();
         if (bounds != null) {
             parent.remove (editor);
             parent.repaint (bounds.x, bounds.y, bounds.width, bounds.height);
@@ -146,6 +147,9 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
         editor = null;
         widget = null;
         rectangle = null;
+        if (hasFocus)
+            if (parent != null)
+                parent.requestFocusInWindow ();
     }
 
     public void notifyEditorComponentBoundsChanged () {
