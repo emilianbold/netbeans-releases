@@ -1294,9 +1294,10 @@ class LayoutOperations implements LayoutConstants {
                 continue;
             
             boolean updated = false;
-            for (int dim=0; dim<DIM_COUNT; dim++) {
-                LayoutInterval interval = comp.getLayoutRoot(dim);
-                updated = updated || mergeAdjacentGaps(interval, dim);
+            for (LayoutInterval[] roots : comp.getLayoutRoots()) {
+                for (int dim=0; dim<DIM_COUNT; dim++) {
+                    updated = mergeAdjacentGaps(roots[dim], dim) || updated;
+                }
             }
             if (updated) {
                 updatedContainers.add(comp);

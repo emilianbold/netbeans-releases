@@ -1,0 +1,502 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.form.editors2;
+
+import java.awt.Component;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorSupport;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
+import javax.swing.JLabel;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.event.TableColumnModelListener;
+import javax.swing.table.*;
+import org.netbeans.modules.form.*;
+import org.netbeans.modules.form.codestructure.CodeVariable;
+import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+/**
+ * Simple property editor for <code>TableColumnModel</code>.
+ *
+ * @author Jan Stola
+ */
+public class TableColumnModelEditor extends PropertyEditorSupport
+        implements NamedPropertyEditor, FormCodeAwareEditor, XMLPropertyEditor {
+
+    /** Property being edited. */
+    private FormProperty property;    
+    
+    /**
+     * Retruns display name of this property editor. 
+     * 
+     * @return diaplay name of this property editor.
+     */
+    public String getDisplayName() {
+        return NbBundle.getMessage(getClass(), "TableColumnModelEditor"); // NOI18N
+    }
+
+    /**
+     * Sets context of the property editor. 
+     * 
+     * @param formModel form model.
+     * @param property property being edited.
+     */
+    public void setContext(FormModel formModel, FormProperty property) {
+        this.property = property;
+    }
+
+    /**
+     * Determines whether this property editor supports custom editing. 
+     * 
+     * @return <code>true</code>.
+     */
+    public boolean supportsCustomEditor() {
+        return true;
+    }
+
+    /**
+     * Returns custom editor.
+     * 
+     * @return custom editor.
+     */
+    public Component getCustomEditor() {
+        JLabel label = new JLabel(NbBundle.getMessage(getClass(), "TableColumnModelEditor_Customizer")); // NOI18N
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        return label;
+    }
+
+    public String getSourceCode() {
+        RADProperty property = (RADProperty)this.property;
+        RADComponent comp = property.getRADComponent();
+        CodeVariable var = comp.getCodeExpression().getVariable();
+        String varName = (var == null) ? null : var.getName();
+        String readMethod = property.getPropertyDescriptor().getReadMethod().getName();
+        String getter = readMethod + "()"; // NOI18N
+        if (varName != null) {
+            getter = varName + '.' + getter;
+        }
+
+        Object value = getValue();
+        if (value instanceof FormTableColumnModel) {
+            FormTableColumnModel columnModel = (FormTableColumnModel)value;
+            StringBuilder code = new StringBuilder();
+
+            // selection model
+            int selectionModel = columnModel.getSelectionModel();
+            if (selectionModel > 0) {
+                code.append(getter).append(".getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel."); // NOI18N
+                switch (selectionModel) {
+                    case 1: code.append("SINGLE_SELECTION"); break; // NOI18N
+                    case 2: code.append("SINGLE_INTERVAL_SELECTION"); break; // NOI18N
+                    case 3: code.append("MULTIPLE_INTERVAL_SELECTION"); break; // NOI18N
+                }
+                code.append(");\n"); // NOI18N
+            }
+
+            // columns
+            List<FormTableColumn> columns = columnModel.getColumns();
+            for (int i=0; i<columns.size(); i++) {
+                FormTableColumn column = columns.get(i);
+                String columnGetter = getter + ".getColumn(" + i + ")"; // NOI18N
+                if (!column.isResizable()) {
+                    code.append(columnGetter).append(".setResizable(").append(Boolean.toString(column.isResizable())).append(");\n"); // NOI18N
+                }
+                if (column.getMinWidth() != -1) {
+                    code.append(columnGetter).append(".setMinWidth(").append(Integer.toString(column.getMinWidth())).append(");\n"); // NOI18N
+                }
+                if (column.getPrefWidth() != -1) {
+                    code.append(columnGetter).append(".setPreferredWidth(").append(Integer.toString(column.getPrefWidth())).append(");\n"); // NOI18N
+                }
+                if (column.getMaxWidth() != -1) {
+                    code.append(columnGetter).append(".setMaxWidth(").append(Integer.toString(column.getMaxWidth())).append(");\n"); // NOI18N
+                }
+                FormProperty prop = column.getTitle();
+                if (prop.isChanged()) {
+                    code.append(columnGetter).append(".setHeaderValue(").append(prop.getJavaInitializationString()).append(");\n"); // NOI18N
+                }
+                prop = column.getEditor();
+                if (prop.isChanged()) {
+                    code.append(columnGetter).append(".setCellEditor(").append(prop.getJavaInitializationString()).append(");\n"); // NOI18N
+                }
+                prop = column.getRenderer();
+                if (prop.isChanged()) {
+                    code.append(columnGetter).append(".setCellRenderer(").append(prop.getJavaInitializationString()).append(");\n"); // NOI18N
+                }
+            }
+            
+            return (code.length() == 0) ? null : code.toString();
+        } else {
+            return null;
+        }
+    }
+
+    private static final String XML_TABLE_COLUMN_MODEL = "TableColumnModel"; // NOI18N
+    private static final String ATTR_SELECTION_MODEL = "selectionModel"; // NOI18N
+    private static final String XML_COLUMN = "Column"; // NOI18N
+    private static final String ATTR_INDEX = "index"; // NOI18N
+    private static final String ATTR_RESIZABLE = "resizable"; // NOI18N
+    private static final String ATTR_WIDTH_MIN = "minWidth"; // NOI18N
+    private static final String ATTR_WIDTH_PREF = "prefWidth"; // NOI18N
+    private static final String ATTR_WIDTH_MAX = "maxWidth"; // NOI18N
+    private static final String XML_TITLE = "Title"; // NOI18N
+    private static final String XML_EDITOR = "Editor"; // NOI18N
+    private static final String XML_RENDERER = "Renderer"; // NOI18N
+    private static final String ATTR_PROP_EDITOR = "editor"; // NOI18N
+    private static final String ATTR_VALUE = "value"; // NOI18N
+
+    public void readFromXML(Node element) throws IOException {
+        org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
+        String selectionModelTxt = attributes.getNamedItem(ATTR_SELECTION_MODEL).getNodeValue();
+        int selectionModel = Integer.parseInt(selectionModelTxt);
+        FormTableColumnModel model = new FormTableColumnModel(property);
+        model.setSelectionModel(selectionModel);
+
+        NodeList nodes = element.getChildNodes();
+        for (int i=0; i<nodes.getLength(); i++) {
+            Node node = nodes.item(i);
+            if (XML_COLUMN.equals(node.getNodeName())) {
+                FormTableColumn column = new FormTableColumn(property);
+                
+                org.w3c.dom.NamedNodeMap colAttrs = node.getAttributes();
+                String resizableTxt = colAttrs.getNamedItem(ATTR_RESIZABLE).getNodeValue();
+                String minWidthTxt = colAttrs.getNamedItem(ATTR_WIDTH_MIN).getNodeValue();
+                String prefWidthTxt = colAttrs.getNamedItem(ATTR_WIDTH_PREF).getNodeValue();
+                String maxWidthTxt = colAttrs.getNamedItem(ATTR_WIDTH_MAX).getNodeValue();
+                boolean resizable = Boolean.parseBoolean(resizableTxt);
+                int minWidth = Integer.parseInt(minWidthTxt);
+                int prefWidth = Integer.parseInt(prefWidthTxt);
+                int maxWidth = Integer.parseInt(maxWidthTxt);
+                column.setResizable(resizable);
+                column.setMinWidth(minWidth);
+                column.setPrefWidth(prefWidth);
+                column.setMaxWidth(maxWidth);
+
+                NodeList subNodes = node.getChildNodes();
+                for (int j=0; j<subNodes.getLength(); j++) {
+                    Node subNode = subNodes.item(j);
+                    String nodeName = subNode.getNodeName();
+                    if (XML_TITLE.equals(nodeName)) {
+                        loadProperty(column.getTitle(), subNode);
+                    } else if (XML_EDITOR.equals(nodeName)) {
+                        loadProperty(column.getEditor(), subNode);
+                    } else if (XML_RENDERER.equals(nodeName)) {
+                        loadProperty(column.getRenderer(), subNode);
+                    }
+                }
+
+                model.getColumns().add(column);
+            }
+        }
+        setValue(model);
+    }
+
+    private void loadProperty(FormProperty property, Node node) {
+        org.w3c.dom.NamedNodeMap attributes = node.getAttributes();
+        Node valueNode = attributes.getNamedItem(ATTR_VALUE);
+        try {
+            if (valueNode != null) {
+                property.setValue(valueNode.getNodeValue());
+            } else {
+                NodeList nodes = node.getChildNodes();
+                for (int i=0; i<nodes.getLength(); i++) {
+                    Node subNode = nodes.item(i);
+                    if (subNode.getNodeType() == Node.ELEMENT_NODE) {
+                        FormModel formModel = property.getPropertyContext().getFormModel();
+                        String propEdName = attributes.getNamedItem(ATTR_PROP_EDITOR).getNodeValue();
+                        XMLPropertyEditor xmlPropEd = null;
+                        if (propEdName.equals(RADConnectionPropertyEditor.class.getName())) {
+                            xmlPropEd = new RADConnectionPropertyEditor(property.getValueType());
+                            ((FormAwareEditor)xmlPropEd).setContext(formModel, property);
+                        } else {
+                            Class propEdClass = PersistenceObjectRegistry.loadClass(propEdName,
+                                FormEditor.getFormDataObject(formModel).getFormFile());
+                            Object propEd = propEdClass.newInstance();
+                            if (propEd instanceof XMLPropertyEditor) {
+                                xmlPropEd = (XMLPropertyEditor)propEd;
+                                if (propEd instanceof FormAwareEditor) {
+                                    ((FormAwareEditor)propEd).setContext(formModel, property);
+                                }
+                            }
+                        }
+                        if (xmlPropEd != null) {
+                            xmlPropEd.readFromXML(subNode);
+                            property.setValue(new FormProperty.ValueWithEditor(xmlPropEd.getValue(), xmlPropEd));                            
+                        }
+                        break;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public Node storeToXML(Document doc) {
+        Object value = getValue();
+        org.w3c.dom.Element el = null;
+        if (value instanceof FormTableColumnModel) {
+            FormTableColumnModel model = (FormTableColumnModel)value;
+            el = doc.createElement(XML_TABLE_COLUMN_MODEL);
+            el.setAttribute(ATTR_SELECTION_MODEL, Integer.toString(model.getSelectionModel()));
+            
+            for (FormTableColumn column : model.getColumns()) {
+                org.w3c.dom.Element columnEl = doc.createElement(XML_COLUMN);
+                columnEl.setAttribute(ATTR_RESIZABLE, Boolean.toString(column.isResizable()));
+                columnEl.setAttribute(ATTR_WIDTH_MIN, Integer.toString(column.getMinWidth()));
+                columnEl.setAttribute(ATTR_WIDTH_PREF, Integer.toString(column.getPrefWidth()));
+                columnEl.setAttribute(ATTR_WIDTH_MAX, Integer.toString(column.getMaxWidth()));
+                
+                org.w3c.dom.Element titleEl = doc.createElement(XML_TITLE);
+                org.w3c.dom.Element editorEl = doc.createElement(XML_EDITOR);
+                org.w3c.dom.Element rendererEl = doc.createElement(XML_RENDERER);
+                storeProperty(doc, titleEl, column.getTitle());
+                storeProperty(doc, editorEl, column.getEditor());
+                storeProperty(doc, rendererEl, column.getRenderer());
+                columnEl.appendChild(titleEl);
+                columnEl.appendChild(editorEl);
+                columnEl.appendChild(rendererEl);
+                el.appendChild(columnEl);
+            }
+        }
+        return el;
+    }
+
+    private void storeProperty(Document doc, org.w3c.dom.Element element, FormProperty property) {
+        if (property.isChanged()) {
+            PropertyEditor editor = property.getCurrentEditor();
+            if (editor instanceof XMLPropertyEditor) {
+                element.setAttribute(ATTR_PROP_EDITOR, editor.getClass().getName());
+                Node node = ((XMLPropertyEditor)editor).storeToXML(doc);
+                element.appendChild(node);
+            } else {
+                try {
+                    Object value = property.getValue();
+                    if (value instanceof String) {
+                        element.setAttribute(ATTR_VALUE, (String)value);
+                    } else {
+                        System.err.println("Unable to store " + property); // NOI18N
+                    }
+                } catch (IllegalAccessException iaex) {
+                    iaex.printStackTrace();
+                } catch (InvocationTargetException itex) {
+                    itex.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static class FormTableColumnModel extends FormDesignValueAdapter {
+        private FormProperty property;
+        private int selectionModel;
+        private List<FormTableColumn> columns;
+
+        public FormTableColumnModel(FormProperty property) {
+            this.property = property;
+            columns = new LinkedList<FormTableColumn>();
+        }
+
+        public void setSelectionModel(int selectionModel) {
+            this.selectionModel = selectionModel;
+        }
+
+        public int getSelectionModel() {
+            return selectionModel;
+        }
+
+        public List<FormTableColumn> getColumns() {
+            return columns;
+        }
+
+        public Object getDesignValue() {
+            Object value = null;
+            try {
+                value = property.getTargetValue();
+                if (value instanceof TableColumnModel) {
+                    TableColumnModel columnModel = (TableColumnModel)value;
+                    designValue(columnModel);
+                }
+            } catch (IllegalAccessException iaex) {
+                iaex.printStackTrace();
+            } catch (InvocationTargetException itex) {
+                itex.printStackTrace();
+            }
+            return value;
+        }
+
+        public Object getDesignValue(Object target) {
+            TableColumnModel columnModel = null;
+            if (target instanceof javax.swing.JTable) {
+                columnModel = ((javax.swing.JTable)target).getColumnModel();
+                designValue(columnModel);
+            }
+            return columnModel;
+        }
+
+        private void designValue(TableColumnModel columnModel) {
+            int selectionModel = getSelectionModel();
+            switch (selectionModel) {
+                case 0: break; // not allowed - default value
+                case 1: columnModel.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION); break;
+                case 2: columnModel.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION); break;
+                case 3: columnModel.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION); break;
+            }
+            for (int i=0; i<columns.size() && i<columnModel.getColumnCount(); i++) {
+                FormTableColumn formColumn = columns.get(i);
+                TableColumn column = columnModel.getColumn(i);
+                column.setResizable(formColumn.isResizable());
+                int width = (formColumn.getMinWidth() == -1) ? defaultColumn().getMinWidth() : formColumn.getMinWidth();
+                column.setMinWidth(width);
+                width = (formColumn.getPrefWidth() == -1) ? defaultColumn().getPreferredWidth() : formColumn.getPrefWidth();
+                column.setPreferredWidth(width);
+                width = (formColumn.getMaxWidth() == -1) ? defaultColumn().getMaxWidth() : formColumn.getMaxWidth();
+                column.setMaxWidth(width);
+                FormProperty prop = formColumn.getTitle();
+                try {
+                    if (prop.isChanged()) {
+                        column.setHeaderValue(prop.getRealValue());
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                prop = formColumn.getEditor();
+                try {
+                    if (prop.isChanged()) {
+                        Object editor = prop.getRealValue();
+                        if (editor instanceof TableCellEditor) {
+                            column.setCellEditor((TableCellEditor)editor);
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                prop = formColumn.getRenderer();
+                try {
+                    if (prop.isChanged()) {
+                        Object renderer = prop.getRealValue();
+                        if (renderer instanceof TableCellRenderer) {
+                            column.setCellRenderer((TableCellRenderer)renderer);
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        private TableColumn defaultColumn;
+        private TableColumn defaultColumn() {
+            if (defaultColumn == null) {
+                defaultColumn = new TableColumn();
+            }
+            return defaultColumn;
+        }
+
+    }
+
+    public static class FormTableColumn {
+        private int minWidth;
+        private int prefWidth;
+        private int maxWidth;
+        private boolean resizable;
+        private Property title;
+        private Property editor;
+        private Property renderer;
+
+        public FormTableColumn(FormProperty prop) {
+            minWidth = -1;
+            prefWidth = -1;
+            maxWidth = -1;
+            resizable = true;
+            title = new Property(prop, "title", String.class, null, null); // NOI18N
+            editor = new Property(prop, "editor", TableCellEditor.class, null, null); // NOI18N
+            renderer = new Property(prop, "renderer", TableCellRenderer.class, null, null); // NOI18N
+        }
+
+        public int getMinWidth() {
+            return minWidth;
+        }
+
+        public void setMinWidth(int minWidth) {
+            this.minWidth = minWidth;
+        }
+
+        public int getPrefWidth() {
+            return prefWidth;
+        }
+
+        public void setPrefWidth(int prefWidth) {
+            this.prefWidth = prefWidth;
+        }
+
+        public int getMaxWidth() {
+            return maxWidth;
+        }
+
+        public void setMaxWidth(int maxWidth) {
+            this.maxWidth = maxWidth;
+        }
+
+        public boolean isResizable() {
+            return resizable;
+        }
+
+        public void setResizable(boolean resizable) {
+            this.resizable = resizable;
+        }
+
+        public FormProperty getTitle() {
+            return title;
+        }
+
+        public FormProperty getEditor() {
+            return editor;
+        }
+
+        public FormProperty getRenderer() {
+            return renderer;
+        }
+    }
+
+    static class Property extends FormProperty {
+        private Object value;
+
+        Property(FormProperty prop, String name, Class type, String displayName, String description) {
+            // PENDING override getContextPath
+            super(new FormPropertyContext.SubProperty(prop), name, type, displayName, description);
+        }
+
+        public Object getTargetValue() throws IllegalAccessException, InvocationTargetException {
+            return value;
+        }
+
+        public void setTargetValue(Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            this.value = value;
+        }
+    }
+
+}

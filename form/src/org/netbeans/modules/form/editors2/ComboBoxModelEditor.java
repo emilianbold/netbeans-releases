@@ -78,10 +78,4 @@ public class ComboBoxModelEditor extends StringArrayEditor {
     static ComboBoxModel getModelForData(String[] data) {
         return new DefaultComboBoxModel(data);
     }
-    
-    // NamedPropertyEditor implementation
-    public String getDisplayName() {
-        return NbBundle.getBundle(getClass()).getString("CTL_ComboBoxModelEditor_DisplayName"); // NOI18N
-    }
-
 }

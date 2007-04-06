@@ -23,12 +23,10 @@ import java.util.ArrayList;
 import java.awt.datatransfer.*;
 
 import org.openide.nodes.*;
-import org.openide.cookies.*;
 import org.openide.actions.*;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.actions.AddAction;
-import org.netbeans.modules.form.project.ClassSource;
 
 /**
  * This class represents the root node of "Other Components".
@@ -72,37 +70,7 @@ class FormOthersNode extends FormNode {
     }
 
     protected void createPasteTypes(Transferable t, java.util.List s) {
-        FormModel formModel = getFormModel();
-        if (formModel.isReadOnly())
-            return;
-
-        boolean copy = t.isDataFlavorSupported(
-                             CopySupport.getComponentCopyFlavor());
-        boolean cut = t.isDataFlavorSupported(
-                            CopySupport.getComponentCutFlavor());
-
-        if (copy || cut) { // copy or cut some RADComponent
-            RADComponent transComp = null;
-            try {
-                Object data = t.getTransferData(t.getTransferDataFlavors()[0]);
-                if (data instanceof RADComponent)
-                    transComp = (RADComponent) data;
-            }
-            catch (UnsupportedFlavorException e) {} // should not happen
-            catch (java.io.IOException e) {} // should not happen
-
-            if (transComp != null
-                && (!cut || CopySupport.canPasteCut(transComp, formModel, null)))
-            {
-                s.add(new CopySupport.RADPaste(t, formModel, null));
-            }
-        }
-        else { // java or class node could be copied
-            ClassSource classSource = CopySupport.getCopiedBeanClassSource(t);
-            if (classSource != null) {
-                s.add(new CopySupport.ClassPaste(t, classSource, formModel, null));
-            }
-        }
+        CopySupport.createPasteTypes(t, s, getFormModel(), null);
     }
 
     // -------------

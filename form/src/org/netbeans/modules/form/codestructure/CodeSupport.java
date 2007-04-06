@@ -215,6 +215,12 @@ class CodeSupport {
             }
 
             buf.append(getSourceClassName(variable.getDeclaredType()));
+            
+            String typeParameters = variable.getDeclaredTypeParameters();
+            if ((typeParameters != null) && !"".equals(typeParameters)) { // NOI18N
+                buf.append(typeParameters);
+            }
+
             buf.append(" "); // NOI18N
             buf.append(variable.getName());
             buf.append(";"); // NOI18N

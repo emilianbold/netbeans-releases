@@ -28,6 +28,8 @@ import org.netbeans.modules.form.project.ClassPathUtils;
  * @author Jan Stola
  */
 public class FormSettings {
+    /** Prefix for session settings. */
+    private static final String SESSION_PREFIX = "Session_"; // NOI18N
     private FormModel formModel;
     private Map settings = new TreeMap();
 
@@ -127,44 +129,92 @@ public class FormSettings {
     }
 
     // -----
-    // internationalization
+    // resource management / internationalization
 
-    public void setI18nAutoMode(boolean value) {
-        settings.put(FormLoaderSettings.PROP_AUTO_I18N, value ? Boolean.TRUE : Boolean.FALSE);
+    // for compatibility
+    private static final String PROP_AUTO_I18N = "i18nAutoMode"; // NOI18N
+
+    void setResourceAutoMode(int value) {
+        settings.put(ResourceSupport.PROP_AUTO_RESOURCING, value);
+        settings.put(PROP_AUTO_I18N, value == ResourceSupport.AUTO_I18N); // for compatibility
     }
 
-    public boolean getI18nAutoMode() {
-        Boolean i18nSetting = (Boolean) settings.get(FormLoaderSettings.PROP_AUTO_I18N);
-        boolean i18nAutoMode;
-        if (i18nSetting != null) {
-            i18nAutoMode = i18nSetting.booleanValue();
+    int getResourceAutoMode() {
+        Integer resSetting = (Integer) settings.get(ResourceSupport.PROP_AUTO_RESOURCING);
+        int resAutoMode = ResourceSupport.AUTO_OFF;
+        if (resSetting != null) {
+            resAutoMode = resSetting.intValue();
         }
-        else { // no setting available
-            if (FormEditor.getFormEditor(formModel).needPostCreationUpdate()) {
-                int globalI18nAutoMode = FormLoaderSettings.getInstance().getI18nAutoMode();
-                if (globalI18nAutoMode == FormLoaderSettings.AUTO_I18N_DEFAULT) { // detect
-                    i18nAutoMode = FormEditor.getI18nSupport(formModel).isDefaultInternationalizableProject();
-                }
-                else i18nAutoMode = (globalI18nAutoMode == FormLoaderSettings.AUTO_I18N_ON);
+        else {
+            Boolean i18nSetting = (Boolean) settings.get(PROP_AUTO_I18N);
+            if (i18nSetting != null) {
+                if (Boolean.TRUE.equals(i18nSetting))
+                    resAutoMode = ResourceSupport.AUTO_I18N;
             }
-            else i18nAutoMode = false;
-            setI18nAutoMode(i18nAutoMode);
+            else { // no setting available
+                if (FormEditor.getFormEditor(formModel).needPostCreationUpdate()) {
+                    int globalResAutoMode = FormLoaderSettings.getInstance().getI18nAutoMode();
+                    if (globalResAutoMode == FormLoaderSettings.AUTO_RESOURCE_ON) {
+                        ResourceSupport resourceSupport = FormEditor.getResourceSupport(formModel);
+                        if (resourceSupport.projectUsesResources())
+                            resAutoMode = ResourceSupport.AUTO_RESOURCING; // only if app framework already on cp
+                        else
+                            resAutoMode = ResourceSupport.AUTO_I18N;
+                    }
+                    else if (globalResAutoMode == FormLoaderSettings.AUTO_RESOURCE_DEFAULT) { // detect
+                        ResourceSupport resourceSupport = FormEditor.getResourceSupport(formModel);
+                        if (resourceSupport.projectUsesResources())
+                            resAutoMode = ResourceSupport.AUTO_RESOURCING; // only if app framework already on cp
+                        else if (resourceSupport.isDefaultInternationalizableProject())
+                            resAutoMode = ResourceSupport.AUTO_I18N; // NBM project
+                    }
+                }
+                setResourceAutoMode(resAutoMode);
+            }
         }
-        return i18nAutoMode;
+        return resAutoMode;
+    }
+
+    public boolean isI18nAutoMode() {
+        return getResourceAutoMode() == ResourceSupport.AUTO_I18N;
     }
 
     public void setFormBundle(String bundleName) {
-        settings.put(I18nSupport.PROP_FORM_BUNDLE, bundleName);
+        settings.put(ResourceSupport.PROP_FORM_BUNDLE, bundleName);
     }
 
     public String getFormBundle() {
-        return (String) settings.get(I18nSupport.PROP_FORM_BUNDLE);
+        return (String) settings.get(ResourceSupport.PROP_FORM_BUNDLE);
     }
+
+    // design locale is not persisted in settings
 
     // -----
 
-    void set(String name, Object value) {
+
+    public void set(String name, Object value) {
+        set(name, value, false);
+    }
+
+    public void set(String name, Object value, boolean session) {
+        if (session) {
+            name = SESSION_PREFIX + name;
+        }
         settings.put(name, value);
+    }
+    
+    public Object get(String name) {
+        Object value;
+        if (settings.containsKey(name)) {
+            value = settings.get(name);
+        } else {
+            value = settings.get(SESSION_PREFIX + name);
+        }
+        return value;
+    }
+
+    boolean isSessionSetting(String name) {
+        return name.startsWith(SESSION_PREFIX);
     }
     
     Map allSettings() {

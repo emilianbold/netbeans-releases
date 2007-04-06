@@ -29,7 +29,10 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.FileEntry;
 
 import org.openide.loaders.MultiDataObject;
@@ -343,7 +346,30 @@ public final class Util extends Object {
                     new Object[] {locale}), NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(msg);
     }
-    
+
+    /**
+     * Creates a new PropertiesDataObject (properties file).
+     * @param folder FileObject folder where to create the properties file
+     * @param fileName String name of the file without the extension, can include
+     *        relative path underneath the folder
+     * @return created PropertiesDataObjet
+     */
+    public static PropertiesDataObject createPropertiesDataObject(FileObject folder, String fileName)
+        throws IOException
+    {
+        int idx = fileName.lastIndexOf('/');
+        if (idx > 0) {
+            String folderPath = fileName.substring(0, idx);
+            folder = FileUtil.createFolder(folder, folderPath);
+            fileName = fileName.substring(idx + 1);
+        }
+        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
+        FileObject templateFO = defaultFS.findResource("Templates/Other/properties.properties"); // NOI18N
+        DataObject template = DataObject.find(templateFO);
+        return (PropertiesDataObject)
+               template.createFromTemplate(DataFolder.findFolder(folder), fileName);
+    }
+
     public static void createLocaleFile(PropertiesDataObject propertiesDataObject,
                                         String locale,
                                         boolean copyInitialContent)

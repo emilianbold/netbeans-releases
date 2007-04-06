@@ -379,6 +379,10 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         return layoutDelegate.isDedicated();
     }
 
+    public Class getSupportedClass() {
+        return layoutDelegate.getSupportedClass();
+    }
+
     // node presentation
     public boolean shouldHaveNode() {
         return layoutDelegate.shouldHaveNode();

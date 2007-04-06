@@ -37,6 +37,11 @@ import org.netbeans.modules.form.layoutdesign.*;
  */
 public class SwingLayoutBuilder {
 
+    /**
+     * Default value for PADDING_SEPARATED type of gap.
+     */
+    public static final int PADDING_SEPARATE_VALUE = 18;
+
     private LayoutModel layoutModel;
 
     /**
@@ -124,12 +129,29 @@ public class SwingLayoutBuilder {
         try {
             GroupLayout layout = new GroupLayout(container);
             container.setLayout(layout);
-            LayoutInterval horizontalInterval = containerLC.getLayoutRoot(LayoutConstants.HORIZONTAL);
-            GroupLayout.Group horizontalGroup = composeGroup(layout, horizontalInterval, true, true);
-            layout.setHorizontalGroup(horizontalGroup);
-            LayoutInterval verticalInterval = containerLC.getLayoutRoot(LayoutConstants.VERTICAL);
-            GroupLayout.Group verticalGroup = composeGroup(layout, verticalInterval, true, true);
-            layout.setVerticalGroup(verticalGroup);
+            GroupLayout.Group[] layoutGroups = new GroupLayout.Group[2];
+            // with multiple roots add the highest roots first so the components appear at the top
+            for (int i=containerLC.getLayoutRootCount()-1; i >= 0; i--) {
+                for (int dim=0; dim < layoutGroups.length; dim++) {
+                    LayoutInterval interval = containerLC.getLayoutRoot(i, dim);
+                    GroupLayout.Group group = composeGroup(layout, interval, true, true);
+                    if (layoutGroups[dim] == null) {
+                        layoutGroups[dim] = group;
+                    } else { // add multiple roots into one parallel group
+                        GroupLayout.ParallelGroup parallel;
+                        if (!(layoutGroups[dim] instanceof GroupLayout.ParallelGroup)) {
+                            parallel = layout.createParallelGroup();
+                            parallel.add(layoutGroups[dim]);
+                            layoutGroups[dim] = parallel;
+                        } else {
+                            parallel = (GroupLayout.ParallelGroup) layoutGroups[dim];
+                        }
+                        parallel.add(group);
+                    }
+                }
+            }
+            layout.setHorizontalGroup(layoutGroups[0]);
+            layout.setVerticalGroup(layoutGroups[1]);
             composeLinks(layout);
             // Try to create the layout (to be able to reset it in case of some problem)
             layout.layoutContainer(container);
@@ -230,7 +252,24 @@ public class SwingLayoutBuilder {
                     if (first || last) {
                         seqGroup.addContainerGap(pref, max);
                     } else {
-                        seqGroup.addPreferredGap(LayoutStyle.RELATED, pref, max);
+                        LayoutConstants.PaddingType paddingType = interval.getPaddingType();
+                        if (paddingType == null || paddingType == LayoutConstants.PaddingType.RELATED) {
+                            seqGroup.addPreferredGap(LayoutStyle.RELATED, pref, max);
+                        } else if (paddingType == LayoutConstants.PaddingType.UNRELATED) {
+                            seqGroup.addPreferredGap(LayoutStyle.UNRELATED, pref, max);
+                        } else if (paddingType == LayoutConstants.PaddingType.SEPARATE) {
+                            // special case - SEPARATE padding not known by LayoutStyle
+                            if (pref == GroupLayout.DEFAULT_SIZE) {
+                                pref = PADDING_SEPARATE_VALUE;
+                            }
+                            if (max == GroupLayout.DEFAULT_SIZE) {
+                                max = PADDING_SEPARATE_VALUE;
+                            }
+                            seqGroup.add(PADDING_SEPARATE_VALUE, pref, max);
+                        } else {
+                            assert paddingType == LayoutConstants.PaddingType.INDENT;
+                            // TBD
+                        }
                     }
                 } else {
                     if (min < 0) min = pref; // min == GroupLayout.PREFERRED_SIZE

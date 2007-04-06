@@ -39,6 +39,15 @@ public interface LayoutConstants {
      */
     int USE_PREFERRED_SIZE = -2;
 
+    /**
+     * Possible types of preferred default gaps (paddings).
+     */
+    enum PaddingType { RELATED, UNRELATED, INDENT, SEPARATE }
+    // keep this order for old tests using int (so the index matches the old number)
+
+    final PaddingType[] PADDINGS = { PaddingType.RELATED, PaddingType.UNRELATED,
+                                     PaddingType.INDENT, PaddingType.SEPARATE };
+
     // structure type constants
 
     /**

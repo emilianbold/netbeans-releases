@@ -96,6 +96,9 @@ class LayoutDragger implements LayoutConstants {
     // container the components are being moved in/over
     private LayoutComponent targetContainer;
 
+    // relevant root intervals where the moving/resizing components are targeted to
+    private LayoutInterval[] targetRoots;
+
     // actual components' bounds of moving/resizing components
     private LayoutRegion[] movingBounds;
 
@@ -205,7 +208,8 @@ class LayoutDragger implements LayoutConstants {
                 sizing[i] = sizeDef;
                 sizeDef.originalSize = space.size(i);
                 if (comp.isLayoutContainer()) {
-                    LayoutInterval resGap = findResizingGap(comp.getLayoutRoot(i));
+                    // [TODO: ideally the resizing gap should be handled for each layer]
+                    LayoutInterval resGap = findResizingGap(comp.getDefaultLayoutRoot(i));
                     if (resGap != null) {
                         sizeDef.resizingGap = resGap;
                         sizeDef.originalGapSize = LayoutInterval.getIntervalCurrentSize(resGap, i);
@@ -253,12 +257,17 @@ class LayoutDragger implements LayoutConstants {
             || LayoutInterval.getNeighbor(gap, TRAILING, false, true, false) == null;
     }
 
-    void setTargetContainer(LayoutComponent container) {
+    void setTargetContainer(LayoutComponent container, LayoutInterval[] roots) {
         targetContainer = container;
+        targetRoots = roots;
     }
 
     LayoutComponent getTargetContainer() {
         return targetContainer;
+    }
+
+    LayoutInterval[] getTargetRoots() {
+        return targetRoots;
     }
 
     boolean isResizing() {
@@ -452,7 +461,7 @@ class LayoutDragger implements LayoutConstants {
                     }
                 } while (parentUsed);
                 LayoutRegion posRegion = interval.getCurrentSpace();
-                LayoutRegion contRegion = targetContainer.getLayoutRoot(0).getCurrentSpace();
+                LayoutRegion contRegion = targetRoots[0].getCurrentSpace();
                 int conty1 = contRegion.positions[dir][LEADING];
                 int conty2 = contRegion.positions[dir][TRAILING];
                 int posx = posRegion.positions[i][(inRoot || !position.nextTo) ? align : 1-align];
@@ -468,10 +477,38 @@ class LayoutDragger implements LayoutConstants {
                 Stroke oldStroke = g.getStroke();
                 g.setStroke(dashedStroke);
                 if (position.nextTo) { // adding next to
+                    int padIndex = -1;
+                    int paintedPad = 0;
+                    if (position.paddingSizes != null && position.paddingSizes.length > 1) {
+                        // more padding variants possible
+                        assert position.paddingType != null && position.snapped;
+                        for (int j=0; j < PADDINGS.length; j++) {
+                            if (PADDINGS[j] == position.paddingType) {
+                                padIndex = j;
+                                if (j > 0) {
+                                    paintedPad = position.paddingSizes[j];
+                                } 
+                                break;
+                            }
+                        }
+                    }
                     if (i == HORIZONTAL) {
                         g.drawLine(x, Math.min(y1, posy1), x, Math.max(y2, posy2));
                     } else {
                         g.drawLine(Math.min(y1, posy1), x, Math.max(y2, posy2), x);
+                    }
+                    while (--padIndex >= 0) { // paint additional lines indicating smaller paddings
+                        if (PADDINGS[padIndex] != PaddingType.INDENT) {
+                            int pad = position.paddingSizes[padIndex];
+                            int dx = paintedPad - pad;
+                            x -= (align == LEADING ? dx : -dx);
+                            if (i == HORIZONTAL) {
+                                g.drawLine(x, Math.min(y1, posy1), x, Math.max(y2, posy2));
+                            } else {
+                                g.drawLine(Math.min(y1, posy1), x, Math.max(y2, posy2), x);
+                            }
+                            paintedPad = pad;
+                        }
                     }
                 } else { // adding aligned
                     //int ay1 = Math.min(y1, posy1);
@@ -521,7 +558,10 @@ class LayoutDragger implements LayoutConstants {
             if (position != null) {
                 int alignment = position.alignment;
                 if (position.nextTo) { // adding next to
-                    code[i] = "nextTo" + dimensionCode(i) + alignmentCode(alignment); // NOI18N
+                    String paddingCode = position.interval.getParent() == null// == targetContainer.getLayoutRoot(i)
+                        ? "Container" : paddingTypeCode(position.paddingType); // NOI18N
+                    code[i] = "nextTo" + paddingCode // NOI18N
+                            + dimensionCode(i) + alignmentCode(alignment);
                 } else { // adding aligned
                     int x = movingSpace.positions[i][alignment];
                     int posx = position.interval.getCurrentSpace().positions[i][alignment];
@@ -559,6 +599,16 @@ class LayoutDragger implements LayoutConstants {
         return code;
     }
 
+    private static String paddingTypeCode(PaddingType paddingType) {
+        if (paddingType == PaddingType.UNRELATED) {
+            return "Unrelated"; // NOI18N
+        } else if (paddingType == PaddingType.SEPARATE) {
+            return "Separate"; // NOI18N
+        } else {
+            return "Related"; // NOI18N
+        }
+    }
+
     // -----
     // finding position in the layout
 
@@ -574,7 +624,7 @@ class LayoutDragger implements LayoutConstants {
         if (targetContainer != null) {
             PositionDef bestNextTo;
             PositionDef bestAligned;
-            LayoutInterval layoutRoot = targetContainer.getLayoutRoot(dimension);
+            LayoutInterval layoutRoot = targetRoots[dimension];
             int edges = movingEdges[dimension];
 
             // [we could probably find the best position directly in scanning, not
@@ -672,8 +722,8 @@ class LayoutDragger implements LayoutConstants {
                 assert distance != LayoutRegion.UNKNOWN;
                 if (snapping) {
                     // PENDING consider the resulting interval when moving more components
-                    int pad = findPadding(null, movingComponents[0].getLayoutInterval(dimension),
-                        dimension, i); // [limitation: only one component can be moved]
+                    int pad = findPaddings(null, movingComponents[0].getLayoutInterval(dimension),
+                                           null, dimension, i)[0];
                     distance += (i == LEADING ? -pad : pad);
                 }
 
@@ -685,6 +735,8 @@ class LayoutDragger implements LayoutConstants {
                     bestSoFar.distance = distance;
                     bestSoFar.nextTo = true;
                     bestSoFar.snapped = snapping && Math.abs(distance) < SNAP_DISTANCE;
+                    bestSoFar.paddingType = null;
+                    bestSoFar.paddingSizes = null;
                 }
             }
         }
@@ -857,11 +909,40 @@ class LayoutDragger implements LayoutConstants {
             boolean validDistance;
             int distance = LayoutRegion.distance(subSpace, movingSpace,
                                                  dimension, i^1, i);
+            PaddingType paddingType = null;
+            int[] pads = null;
             if (snapping) {
+                // if the examined interval already has neighbor default gap,
+                // then use its padding type and don't check other
+                LayoutInterval gap = LayoutInterval.getNeighbor(sub, i^1, false, true, false);
+                if (gap != null && LayoutInterval.isFixedDefaultPadding(gap)) {
+                    LayoutInterval neighbor = LayoutInterval.getNeighbor(gap, i^1, true, true, false);
+                    if (neighbor != null && isValidInterval(neighbor)) {
+                        paddingType = gap.getPaddingType();
+                        if (paddingType == null) {
+                            paddingType = PaddingType.RELATED;
+                        }
+                    } // otherwise the gap is next to the moving interval, so not relevant
+                }
                 // PENDING consider the resulting interval when moving more components
-                int pad = findPadding(sub, movingComponents[0].getLayoutInterval(dimension),
-                    dimension, i);// [limitation: only one component can be moved]
-                distance += (i == LEADING ? -pad : pad);
+                pads = findPaddings(sub, movingComponents[0].getLayoutInterval(dimension),
+                                          paddingType, dimension, i);
+                int orient = (i == LEADING ? -1 : 1);
+                int padDst = distance + (orient * pads[0]);
+                if (paddingType == null) {
+                    // find out the closest padding position and adjust the distance
+                    paddingType = PaddingType.RELATED;
+                    for (int j=1; j < pads.length; j++) {
+                        if (PADDINGS[j] != PaddingType.INDENT) {
+                            int d = distance + (orient * pads[j]);
+                            if (Math.abs(d) < Math.abs(padDst)) {
+                                padDst = d;
+                                paddingType = PADDINGS[j];
+                            }
+                        }
+                    }
+                }
+                distance = padDst;
                 validDistance = Math.abs(distance) < SNAP_DISTANCE;
             }
             else {
@@ -877,6 +958,8 @@ class LayoutDragger implements LayoutConstants {
                     bestSoFar.distance = distance;
                     bestSoFar.nextTo = true;
                     bestSoFar.snapped = snapping;
+                    bestSoFar.paddingType = paddingType;
+                    bestSoFar.paddingSizes = pads;
                 }
             }
         }
@@ -1109,7 +1192,7 @@ class LayoutDragger implements LayoutConstants {
                     return true;
                 }
             }
-            return !contentOverlap(targetContainer.getLayoutRoot(dimension),
+            return !contentOverlap(targetRoots[dimension],
                                    x1, x2, y1, y2, dimension);
         }
         return false;
@@ -1543,7 +1626,9 @@ class LayoutDragger implements LayoutConstants {
      * interval.
      * @param alignment edge of the component
      */
-    int findPadding(LayoutInterval interval, LayoutInterval moving, int dimension, int alignment) {
+    int[] findPaddings(LayoutInterval interval, LayoutInterval moving, PaddingType paddingType,
+                       int dimension, int alignment)
+    {
         int oppAlignment = (alignment == LEADING) ? TRAILING : LEADING;
         List movingComps = LayoutUtils.edgeSubComponents(moving, alignment);
         List fixedComps = LayoutUtils.edgeSubComponents(interval, oppAlignment);
@@ -1553,8 +1638,8 @@ class LayoutDragger implements LayoutConstants {
         for (int i=0; i<movingComponents.length; i++) {
             map.put(movingComponents[i].getId(), movingBounds[i]);
         }
-        return LayoutUtils.getSizeOfDefaultGap(sources, targets, visualMapper,
-                                               targetContainer.getId(), map);
+        return LayoutUtils.getSizesOfDefaultGap(sources, targets, paddingType,
+                                                visualMapper, targetContainer.getId(), map);
     }
 
     /**
@@ -1564,7 +1649,7 @@ class LayoutDragger implements LayoutConstants {
                           int dimension, int alignment)
     {
         return visualMapper.getPreferredPadding(mainComp.getId(), indentedComp.getId(),
-            dimension, alignment, VisualMapper.INDENT);
+            dimension, alignment, PaddingType.INDENT);
     }
 
     // -----
@@ -1577,7 +1662,8 @@ class LayoutDragger implements LayoutConstants {
         int alignment = LayoutRegion.NO_POINT;
         boolean nextTo;
         boolean snapped;
-//        boolean padding;
+        PaddingType paddingType;
+        private int[] paddingSizes; // remembered for painting
 
         private void reset() {
             distance = LayoutRegion.UNKNOWN;

@@ -76,9 +76,9 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         cbListenerStyle.addItem(loc("Anonymous")); // NOI18N
         cbListenerStyle.addItem(loc("InnerClass")); // NOI18N
         cbListenerStyle.addItem(loc("MainClass")); // NOI18N
-        cbAutoI18n.addItem(loc("CTL_AUTO_I18N_DEFAULT")); // NOI18N
-        cbAutoI18n.addItem(loc("CTL_AUTO_I18N_ON")); // NOI18N
-        cbAutoI18n.addItem(loc("CTL_AUTO_I18N_OFF")); // NOI18N
+        cbAutoI18n.addItem(loc("CTL_AUTO_RESOURCE_DEFAULT")); // NOI18N
+        cbAutoI18n.addItem(loc("CTL_AUTO_RESOURCE_ON")); // NOI18N
+        cbAutoI18n.addItem(loc("CTL_AUTO_RESOURCE_OFF")); // NOI18N
 
         JLabel generateComponetsLabel = new JLabel(loc("Generate_Components")); // NOI18N
         JLabel variableModifierLabel = new JLabel(loc("Variable_Modifier")); // NOI18N
@@ -88,7 +88,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         generateComponetsLabel.setToolTipText(loc("Generate_Components_Hint")); // NOI18N
         variableModifierLabel.setToolTipText(loc("HINT_VARIABLES_MODIFIER")); // NOI18N
         listenerStyleLabel.setToolTipText(loc("HINT_LISTENER_GENERATION_STYLE")); // NOI18N
-        autoI18nLabel.setToolTipText(loc("HINT_AUTO_I18N_GLOBAL")); // NOI18N
+        autoI18nLabel.setToolTipText(loc("HINT_AUTO_RESOURCE_GLOBAL")); // NOI18N
         cbFold.setToolTipText(loc("HINT_FOLD_GENERATED_CODE")); // NOI18N
         cbAssistant.setToolTipText(loc("HINT_ASSISTANT_SHOWN")); // NOI18N
 

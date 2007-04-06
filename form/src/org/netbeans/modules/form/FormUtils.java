@@ -23,16 +23,14 @@ import java.awt.*;
 import java.beans.*;
 import java.io.*;
 import java.util.*;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.List;
 import javax.swing.border.TitledBorder;
-import java.text.MessageFormat;
 
 import org.openide.ErrorManager;
 import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileObject;
-
 import org.netbeans.modules.form.project.ClassPathUtils;
 
 /**
@@ -142,6 +140,7 @@ public class FormUtils
         { "javax.swing.JTextField", CLASS_AND_SWING_SUBCLASSES,
                 "horizontalVisibility", PROP_HIDDEN },
         { "javax.swing.JFormattedTextField", CLASS_EXACTLY,
+                "formatterFactory", PROP_PREFERRED,
                 "formatter", PROP_HIDDEN },
         { "javax.swing.JPasswordField", CLASS_EXACTLY,
                 "password", PROP_HIDDEN },
@@ -324,7 +323,10 @@ public class FormUtils
                   "selectedComponent", PROP_REQUIRES_CHILDREN },
         { "javax.swing.JInternalFrame", CLASS_AND_SUBCLASSES,
                   "maximum", PROP_REQUIRES_PARENT,
-                  "icon", PROP_REQUIRES_PARENT }
+                  "icon", PROP_REQUIRES_PARENT },
+        // columnModel can be set by binding property
+        { "javax.swing.JTable", CLASS_AND_SUBCLASSES,
+                  "columnModel", PROP_REQUIRES_PARENT }
     };
 
     /** Table defining order of dependent properties. */
@@ -354,6 +356,13 @@ public class FormUtils
         { "javax.swing.JEditorPane",
             "contentType", "text",
             "editorKit", "text" }
+    };
+
+    /** Table enumerating properties that can hold HTML text. */
+    private static Object[][] swingTextProperties = {
+        { "javax.swing.JComponent", FormUtils.CLASS_AND_SUBCLASSES,
+            "text", Boolean.TRUE,
+            "toolTipText", Boolean.TRUE }
     };
 
     /** List of components that should never be containers; some of them are
@@ -398,8 +407,7 @@ public class FormUtils
     public static String getFormattedBundleString(String key,
                                                   Object[] arguments)
     {
-        ResourceBundle bundle = NbBundle.getBundle(FormUtils.class);
-        return MessageFormat.format(bundle.getString(key), arguments);
+        return NbBundle.getMessage(FormUtils.class, key, arguments);
     }
 
     /** Utility method that tries to clone an object. Objects of explicitly
@@ -425,8 +433,7 @@ public class FormUtils
             return o;
         }
         // Issue 49973
-        if ((o.getClass() == TitledBorder.class)
-            && (Utilities.isMac())) {
+        if ((o.getClass() == TitledBorder.class) && Utilities.isMac()) {
             TitledBorder border = (TitledBorder)o;
             return new TitledBorder(
                 border.getBorder(),
@@ -652,12 +659,19 @@ public class FormUtils
                                                              targetBean.getClass()))
                     continue;
 
-                Object realValue = prop.getRealValue();
-                if (realValue == FormDesignValue.IGNORED_VALUE)
-                    continue; // ignore this value, as it is not a real value
+                Object value = prop.getValue();
+                Object newValue = null;
+                if (value instanceof FormDesignValue) {
+                    newValue = ((FormDesignValue)value).getDesignValue(targetBean);
+                }
+                if (newValue == null) {
+                    Object realValue = prop.getRealValue();
+                    if (realValue == FormDesignValue.IGNORED_VALUE)
+                        continue; // ignore this value, as it is not a real value
 
-                realValue = FormUtils.cloneObject(realValue, props[i].getPropertyContext().getFormModel());
-                writeMethod.invoke(targetBean, new Object[] { realValue });
+                    newValue = FormUtils.cloneObject(realValue, props[i].getPropertyContext().getFormModel());
+                }
+                writeMethod.invoke(targetBean, new Object[] { newValue });
             }
             catch (CloneNotSupportedException ex) { // ignore, don't report
             }
@@ -799,7 +813,7 @@ public class FormUtils
      * properties classification for given bean class (returned from
      * getPropertiesCategoryClsf method).
      */
-    static Object getPropertyCategory(PropertyDescriptor pd,
+    static Object getPropertyCategory(FeatureDescriptor pd,
                                       Object[] propsClsf)
     {
         Object cat = findPropertyClsf(pd.getName(), propsClsf);
@@ -842,6 +856,25 @@ public class FormUtils
                                                  Object[] propClsf)
     {
         return (String) findPropertyClsf(pd.getName(), propClsf);
+    }
+
+    /**
+     * Finds out if given property can hold text with <html> prefix. Basically
+     * it must be a text property of a Swing component. Used by String property
+     * editor.
+     * @return true if the property can hold <html> text
+     */
+    public static boolean isHTMLTextProperty(Node.Property property) {
+        if (property.getValueType() == String.class) {
+            if (property instanceof RADProperty) {
+                Class beanClass = ((RADProperty)property).getRADComponent().getBeanClass();
+                Object[] clsf = collectPropertiesClsf(beanClass, swingTextProperties, null);
+                return findPropertyClsf(property.getName(), clsf) != null;
+            } else if (property.getName().equals("TabConstraints.tabTitle")) { // NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 
     private static Object[] collectPropertiesClsf(Class beanClass,
@@ -1065,7 +1098,9 @@ public class FormUtils
                         visCont = visCont.getParentContainer();
                     }
 
-                    if (isInTopDesignComponent(visComp) && (visCont!= null) && (visCont.getLayoutSupport() == null)) {
+                    if (isInTopDesignComponent(visComp) && (visCont!= null)
+                            && (visCont.getLayoutSupport() == null)
+                            && !visComp.isMenuComponent()) {
                         components.add(visComp);
                     } else {
                         return null;
@@ -1099,6 +1134,131 @@ public class FormUtils
         } while ((superClass = superClass.getSuperclass()) != null);
         return superClasses;
     }
+
+    /**
+     * "Un-generifies" the given type.
+     *
+     * @param type type to "un-generify".
+     * @return "un-generified" type.
+     */
+    public static Class typeToClass(TypeHelper type) {
+        Class clazz = Object.class;
+        Type t = type.getType();
+        if (t instanceof Class) {
+            clazz = (Class)t;
+        } else if (t instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType)t;
+            clazz = (Class)pt.getRawType();
+        } else if (t instanceof WildcardType) {
+            WildcardType wt = (WildcardType)t;
+            for (Type bound : wt.getUpperBounds()) {
+                clazz = typeToClass(new TypeHelper(bound, type.getActualTypeArgs()));
+                if (!Object.class.equals(clazz) && !clazz.isInterface()) break;
+            }
+        } else if (t instanceof TypeVariable) {
+            TypeVariable tv = (TypeVariable)t;
+            Map<String,Type> actualTypeArgs = type.getActualTypeArgs();
+            if (actualTypeArgs != null) {
+                Type tt = actualTypeArgs.get(tv.getName());
+                if (tt != null) {
+                    clazz = typeToClass(new TypeHelper(tt, actualTypeArgs));
+                }
+            }
+        }
+        return clazz;
+    }
+
+    /**
+     * Represents generified type with (possibly) some type parameters set.
+     */
+    public static class TypeHelper {
+        /** The type. */
+        private Type type;
+        /** Type parameters that has been set. */
+        private Map<String,Type> actualTypeArgs;
+
+        /**
+         * Creates <code>TypeHelper</code> that represents <code>Object</code>.
+         */
+        public TypeHelper() {
+            this(Object.class, null);
+        }
+
+        /**
+         * Creates <code>TypeHelper</code> that represents given type with
+         * no type arguments set.
+         *
+         * @param type type.
+         */
+        public TypeHelper(Type type) {
+            this(type, null);
+        }
+
+        /**
+         * Creates <code>TypeHelper</code> that represents given type with
+         * some type arguments set.
+         *
+         * @param type type.
+         * @param actualTypeArgs type parameters that has been set.
+         */
+        public TypeHelper(Type type, Map<String,Type> actualTypeArgs) {
+            this.type = type;
+            this.actualTypeArgs = actualTypeArgs;
+        }
+
+        /**
+         * Returns generified type represented by this instance.
+         *
+         * @return generified type represented by this instance.
+         */
+        public Type getType() {
+            return type;
+        }
+
+        /**
+         * Returns map of type parameters that has been set.
+         *
+         * @return map or <code>null</code> if the type is not generified
+         * or none of its type parameters has been set.
+         */
+        public Map<String,Type> getActualTypeArgs() {
+            return actualTypeArgs;
+        }
+
+        /**
+         * Returns (undefined ;-)) normalized form of this type.
+         */
+        TypeHelper normalize() {
+            Type t = type;
+            Map<String,Type> newMap = null;
+            if (type instanceof TypeVariable) {
+                if (actualTypeArgs != null) {
+                    TypeVariable tv = (TypeVariable)type;
+                    t = actualTypeArgs.get(tv.getName());
+                }
+            } else if (type instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType)type;
+                Class clazz = (Class)pt.getRawType();
+                newMap = new HashMap();
+                Type[] args = pt.getActualTypeArguments();
+                TypeVariable[] tvar = clazz.getTypeParameters();
+                for (int i=0; i<tvar.length; i++) {
+                    Type arg = args[i];
+                    TypeHelper sub = new TypeHelper(arg, actualTypeArgs).normalize();
+                    newMap.put(tvar[i].getName(), sub.getType());
+                }
+                t = clazz;
+            } else if (type instanceof WildcardType) {
+                WildcardType wt = (WildcardType)type;
+                // PENDING more upper bounds
+                TypeHelper sub = new TypeHelper(wt.getUpperBounds()[0], actualTypeArgs).normalize();
+                t = sub.getType();
+            }
+            if (t == null) t = Object.class;
+            return new TypeHelper(t, newMap);
+        }
+    }
+ 
     /*
      * Calls Introspector.getBeanInfo() more safely to handle 3rd party BeanInfos
      * that may be broken or malformed. This is a replacement for Introspector.getBeanInfo().

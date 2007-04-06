@@ -19,9 +19,7 @@
 
 package org.netbeans.modules.form;
 
-import org.openide.*;
 import org.openide.awt.Mnemonics;
-import org.openide.nodes.*;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -31,6 +29,8 @@ import org.openide.util.Utilities;
 import java.awt.*;
 import java.beans.PropertyEditor;
 import javax.swing.*;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 
 /**
  *
@@ -49,57 +49,44 @@ public class FormCustomEditor extends JPanel
     private PropertyEditor[] allEditors;
     private Component[] allCustomEditors;
     private boolean[] validValues;
+    private int originalEditorIndex;
 
-    private String preCode;
-    private String postCode;
+    private javax.swing.JPanel cardPanel;
+    private javax.swing.JComboBox editorsCombo;
 
     /** Creates new form FormCustomEditor */
     public FormCustomEditor(FormPropertyEditor editor,
                             Component currentCustomEditor)
     {
-        initComponents();
+        JLabel modeLabel = new JLabel();
+        editorsCombo = new JComboBox();
+        editorsCombo.setRenderer(new EditorComboRenderer());
+        JPanel borderPanel = new JPanel(); // panel with a border containing the panel with editors (cardPanel)
+        borderPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEtchedBorder(), BorderFactory.createEmptyBorder(1, 1, 2, 2)));
+        borderPanel.setLayout(new BorderLayout());
+        cardPanel = new JPanel();
+        cardPanel.setLayout(new CardLayout());
+        borderPanel.add(cardPanel, BorderLayout.CENTER);
 
-        advancedButton.setText(FormUtils.getBundleString("CTL_Advanced")); // NOI18N
-//        advancedButton.setMnemonic(FormUtils.getBundleString(
-//                                      "CTL_Advanced_mnemonic").charAt(0)); // NOI18N
-        if (editor.getProperty() instanceof RADProperty)
-            advancedButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    showAdvancedSettings();
-                }
-            });
-        else
-            advancedButton.setEnabled(false);
+        FormProperty property = editor.getProperty();
+        String selectModeText;
+        if (property instanceof RADProperty) {
+            selectModeText = FormUtils.getFormattedBundleString("FMT_EditingModeLabel1", // NOI18N
+                new Object[] { ((RADProperty)property).getRADComponent().getName(),
+                                property.getName() });
+        } else {
+            selectModeText = FormUtils.getFormattedBundleString("FMT_EditingModeLabel2", // NOI18N
+                new Object[] { property.getName() });
+        }
+        Mnemonics.setLocalizedText(modeLabel, selectModeText);
+        editorsCombo.setToolTipText(FormUtils.getBundleString("EditingMode_Hint")); // NOI18N
+        modeLabel.setLabelFor(editorsCombo);
 
-        Mnemonics.setLocalizedText(jLabel1, FormUtils.getBundleString("LAB_SelectMode")); // NOI18N
-        jLabel1.setLabelFor(editorsCombo);
-        
         this.editor = editor;
-        preCode = editor.getProperty().getPreCode();
-        postCode = editor.getProperty().getPostCode();
         allEditors = editor.getAllEditors();
 
         PropertyEditor currentEditor = editor.getCurrentEditor();
-        int currentIndex;
-
-        if (currentEditor != null) {
-            currentIndex = -1;
-            for (int i=0; i < allEditors.length; i++)
-                if (currentEditor.getClass().equals(allEditors[i].getClass())) {
-                    currentIndex = i;
-                    allEditors[i] = currentEditor;
-                    break;
-                }
-            if (currentIndex == -1) {
-                // this should not happen, but we cannot exclude it
-                PropertyEditor[] editors = new PropertyEditor[allEditors.length+1];
-                editors[0] = currentEditor;
-                System.arraycopy(allEditors, 0, editors, 1, allEditors.length);
-                allEditors = editors;
-                currentIndex = 0;
-            }
-        }
-        else currentIndex = 0;
 
         allCustomEditors = new Component[allEditors.length];
         validValues = new boolean[allEditors.length];
@@ -111,13 +98,16 @@ public class FormCustomEditor extends JPanel
         // setup their custom editors
         for (int i=0; i < allEditors.length; i++) {
             PropertyEditor prEd = allEditors[i];
-            editor.getPropertyContext().initPropertyEditor(prEd);
-
+            boolean current = currentEditor == prEd;
             boolean valueSet = false;
-            if (i == currentIndex) { // this is the currently used editor
+            Component custEd = null;
+
+            if (current) {
                 valueSet = true;
+                custEd = currentCustomEditor;
             }
             else {
+                editor.getPropertyContext().initPropertyEditor(prEd, property);
                 if (env != null && prEd instanceof ExPropertyEditor)
                     ((ExPropertyEditor)prEd).attachEnv(env);
 
@@ -147,7 +137,7 @@ public class FormCustomEditor extends JPanel
                 if (!valueSet) {
                     // no reasonable value for this property editor, try to
                     // set the default value
-                    Object defaultValue = editor.getProperty().getDefaultValue();
+                    Object defaultValue = property.getDefaultValue();
                     if (defaultValue != BeanSupport.NO_VALUE) {
                         prEd.setValue(defaultValue);
                         valueSet = true;
@@ -156,18 +146,21 @@ public class FormCustomEditor extends JPanel
                     // switch to this property editor and enter something - see
                     // getPropertyValue() - it returns BeanSupport.NO_VALUE]
                 }
+
+                if (prEd.supportsCustomEditor())
+                    custEd = prEd.getCustomEditor();
             }
+
             validValues[i] = valueSet;
 
-            String editorName = prEd instanceof NamedPropertyEditor ?
-                        ((NamedPropertyEditor)prEd).getDisplayName() :
-                        Utilities.getShortClassName(prEd.getClass());
-
-            Component custEd = null;
-            if (i == currentIndex)
-                custEd = currentCustomEditor;
-            else if (prEd.supportsCustomEditor())
-                custEd = prEd.getCustomEditor();
+            String editorName;
+            if (prEd instanceof NamedPropertyEditor) {
+                editorName = ((NamedPropertyEditor)prEd).getDisplayName();
+            } else {
+                editorName = i == 0 ?
+                    FormUtils.getBundleString("CTL_DefaultEditor_DisplayName") // NOI18N
+                    : Utilities.getShortClassName(prEd.getClass());
+            }
 
             if (custEd == null || custEd instanceof Window) {
                 JPanel p = new JPanel(new GridBagLayout());
@@ -181,9 +174,35 @@ public class FormCustomEditor extends JPanel
             allCustomEditors[i] = custEd;
             cardPanel.add(editorName, custEd);
             editorsCombo.addItem(editorName);
+            if (current) {
+                originalEditorIndex = i;
+                editorsCombo.setSelectedIndex(i);
+                updateAccessibleDescription(custEd);
+            }
         }
 
-        editorsCombo.setSelectedIndex(currentIndex);
+        // build layout when the combo box is filled
+        GroupLayout layout = new GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(layout.createSequentialGroup()
+            .addContainerGap()
+            .add(layout.createParallelGroup(GroupLayout.LEADING)
+                .add(borderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(layout.createSequentialGroup()
+                    .add(modeLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(LayoutStyle.RELATED)
+                    .add(editorsCombo, GroupLayout.PREFERRED_SIZE, editorsCombo.getPreferredSize().width*5/4, GroupLayout.PREFERRED_SIZE)))
+            .addContainerGap()
+        );
+        layout.setVerticalGroup(layout.createSequentialGroup()
+            .addContainerGap()
+            .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                .add(modeLabel)
+                .add(editorsCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addPreferredGap(LayoutStyle.UNRELATED)
+            .add(borderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
         CardLayout cl = (CardLayout) cardPanel.getLayout();
         cl.show(cardPanel, (String) editorsCombo.getSelectedItem());
 
@@ -197,16 +216,13 @@ public class FormCustomEditor extends JPanel
                                   HelpCtx.findHelp(cardPanel.getComponent(i));
                 String helpID = helpCtx != null ? helpCtx.getHelpID() : ""; // NOI18N
                 HelpCtx.setHelpIDString(FormCustomEditor.this, helpID);
-                
+
                 updateAccessibleDescription(i < 0 ? null : cardPanel.getComponent(i));
             }
         });
 
-        updateAccessibleDescription(cardPanel.getComponent(currentIndex));
-        advancedButton.getAccessibleContext().setAccessibleDescription(
-            FormUtils.getBundleString("ACSD_CTL_Advanced")); // NOI18N
         editorsCombo.getAccessibleContext().setAccessibleDescription(
-            FormUtils.getBundleString("ACSD_BTN_SelectMode")); // NOI18N
+            FormUtils.getBundleString("ACSD_EditingMode")); // NOI18N
     }
     
     private void updateAccessibleDescription(Component comp) {
@@ -226,104 +242,21 @@ public class FormCustomEditor extends JPanel
         }
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
-    private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
-
-        editorsCombo = new javax.swing.JComboBox();
-        jLabel1 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        cardPanel = new javax.swing.JPanel();
-        advancedButton = new javax.swing.JButton();
-
-        setLayout(new java.awt.GridBagLayout());
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 11);
-        add(editorsCombo, gridBagConstraints);
-
-        jLabel1.setLabelFor(editorsCombo);
-        jLabel1.setText("jLabel1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(jLabel1, gridBagConstraints);
-
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        cardPanel.setLayout(new java.awt.CardLayout());
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 7, 7);
-        jPanel1.add(cardPanel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
-        add(jPanel1, gridBagConstraints);
-
-        advancedButton.setText("jButton1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
-        add(advancedButton, gridBagConstraints);
-
-    }// </editor-fold>//GEN-END:initComponents
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton advancedButton;
-    private javax.swing.JPanel cardPanel;
-    private javax.swing.JComboBox editorsCombo;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
-    // End of variables declaration//GEN-END:variables
-    
     public Dimension getPreferredSize() {
         Dimension inh = super.getPreferredSize();
         return new Dimension(Math.max(inh.width, DEFAULT_WIDTH), Math.max(inh.height, DEFAULT_HEIGHT));
     }
-    
-    private void showAdvancedSettings() {
-        FormCustomEditorAdvanced fcea = new FormCustomEditorAdvanced(preCode, postCode);
-        DialogDescriptor dd = new DialogDescriptor(
-            fcea,
-            FormUtils.getFormattedBundleString(
-                "FMT_CTL_AdvancedInitializationCode", // NOI18N
-                 new Object[] { editor.getProperty().getName() }));
 
-        dd.setHelpCtx(new HelpCtx("gui.source.modifying.property")); // NOI18N
-        DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
-
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            preCode = fcea.getPreCode();
-            postCode = fcea.getPostCode();
+    private class EditorComboRenderer extends DefaultListCellRenderer {
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (index == originalEditorIndex && editorsCombo.isPopupVisible()) {
+                setFont(list.getFont().deriveFont(Font.BOLD));
+            }
+            return this;
         }
     }
-    
+
     // -----------------------------------------------------------------------------
     // EnhancedCustomPropertyEditor implementation
 
@@ -357,36 +290,9 @@ public class FormCustomEditor extends JPanel
         if (currentIndex > -1) {
             Object[] nodes = editor.getPropertyEnv().getBeans();
             if (nodes == null || nodes.length <= 1) {
-                FormProperty prop = editor.getProperty();
-
-                prop.setPreCode(preCode);
-                prop.setPostCode(postCode);
-
                 value = new FormProperty.ValueWithEditor(value, currentEditor);
-
-                I18nSupport.propertyEditorChanging(prop, currentEditor);
             }
             else { // there are more nodes selected
-                String propName = editor.getProperty().getName();
-
-                for (int i=0; i < nodes.length; i++) {
-                    if (!(nodes[i] instanceof Node))
-                        break; // these are not nodes...
-
-                    Node node = (Node) nodes[i];
-                    FormPropertyCookie propCookie = (FormPropertyCookie)
-                        node.getCookie(FormPropertyCookie.class);
-                    if (propCookie == null)
-                        break; // not form nodes...
-
-                    FormProperty prop = propCookie.getProperty(propName);
-                    if (prop == null)
-                        continue; // property not known
-
-                    prop.setPreCode(preCode);
-                    prop.setPostCode(postCode);
-                }
-
                 value = new FormProperty.ValueWithEditor(value, currentIndex);
             }
         }

@@ -24,16 +24,17 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.beans.*;
-import java.util.prefs.PreferenceChangeListener;
 import javax.swing.undo.UndoableEdit;
 
 import org.jdesktop.layout.Baseline;
 import org.jdesktop.layout.LayoutStyle;
 
 import org.netbeans.core.spi.multiview.*;
+import org.netbeans.modules.form.menu.MenuEditLayer;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -52,6 +53,8 @@ import org.netbeans.modules.form.assistant.*;
 import org.netbeans.modules.form.wizard.ConnectionWizard;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 import org.netbeans.modules.form.layoutdesign.*;
+import org.netbeans.modules.form.layoutdesign.LayoutConstants.PaddingType;
+import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 import org.netbeans.modules.form.palette.PaletteUtils;
 
 
@@ -85,6 +88,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private InPlaceEditLayer textEditLayer;
     private FormProperty editedProperty;
     private InPlaceEditLayer.FinishListener finnishListener;
+    
+    private MenuEditLayer menuEditLayer;
             
     // metadata
     private FormModel formModel;
@@ -262,7 +267,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             new Class[] { Window.class,
                           java.applet.Applet.class,
                           MenuComponent.class },
-            VisualReplicator.ATTACH_FAKE_PEERS | VisualReplicator.DISABLE_FOCUSING);
+            VisualReplicator.ATTACH_FAKE_PEERS | VisualReplicator.DISABLE_FOCUSING,
+            FormEditor.getBindingSupport(formModel));
 
         resetTopDesignComponent(false);
         handleLayer.setViewOnly(formModel.isReadOnly());
@@ -303,6 +309,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             }
             textEditLayer.removeFinishListener(getFinnishListener());
             textEditLayer=null;               
+        }
+        
+        if(menuEditLayer!=null) {
+            menuEditLayer = null;
         }
                 
         if (formModel != null) {
@@ -426,6 +436,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                       boolean update) {
         
         highlightTopDesignComponentName(false);
+        // TODO need to remove bindings of the current cloned view (or clone bound components as well)
         topDesignComponent = component;
         highlightTopDesignComponentName(!isTopRADComponent());        
         
@@ -526,7 +537,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             new Mutex.ExceptionAction () {
                 public Object run() throws Exception {
                     VisualReplicator r = new VisualReplicator(
-                        contClass, null, 0);
+                        contClass, null, 0, null);
                     r.setTopMetaComponent(metacomp);
                     Object container = r.createClone();
                     if (container instanceof RootPaneContainer) {
@@ -569,7 +580,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     private static Locale switchToDesignLocale(FormModel formModel) {
         Locale defaultLocale = null;
-        String locale = FormEditor.getI18nSupport(formModel).getDesignLocale();
+        String locale = FormEditor.getResourceSupport(formModel).getDesignLocale();
         if (locale != null && !locale.equals("")) { // NOI18N
             defaultLocale = Locale.getDefault();
 
@@ -838,7 +849,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     // ---------
     // components selection
 
-    java.util.List getSelectedComponents() {
+    public java.util.List getSelectedComponents() {
         return selectedComponents;
     }
 
@@ -861,7 +872,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         return selectedComponents.contains(metacomp);
     }
 
-    void setSelectedComponent(RADComponent metacomp) {
+    public void setSelectedComponent(RADComponent metacomp) {
         clearSelectionImpl();
         addComponentToSelectionImpl(metacomp);
         repaintSelection();
@@ -943,14 +954,16 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     RADVisualComponent componentToLayoutComponent(RADComponent metacomp) {
         if (metacomp instanceof RADVisualComponent) {
             RADVisualComponent visualComp = (RADVisualComponent) metacomp;
-            RADVisualContainer metacont = visualComp.getParentContainer();
-            if ((metacont != null) && JScrollPane.class.isAssignableFrom(metacont.getBeanInstance().getClass())
-                 && isInDesignedTree(metacont))
-            {   // substitute with scroll pane...
-                return metacont;
+            if (!visualComp.isMenuComponent()) {
+                RADVisualContainer metacont = visualComp.getParentContainer();
+                if ((metacont != null) && JScrollPane.class.isAssignableFrom(metacont.getBeanInstance().getClass())
+                     && isInDesignedTree(metacont))
+                {   // substitute with scroll pane...
+                    return metacont;
+                }
+                // otherwise just check if it is visible in the designer
+                return isInDesignedTree(visualComp) ? visualComp : null;
             }
-            // otherwise just check if it is visible in the designer
-            return isInDesignedTree(visualComp) ? visualComp : null;
         }
         return null;
     }
@@ -1231,17 +1244,21 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             // Grouping actions
             designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.LEADING, true));
             designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.TRAILING, true));
+            designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.CENTER, true));
             designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.LEADING, true));
             designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.TRAILING, true));
+            designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.CENTER, true));
             // Align actions
             designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.LEADING, false));
             designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.TRAILING, false));
+            designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.CENTER, false));
             designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.LEADING, false));
             designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.TRAILING, false));
+            designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.CENTER, false));
         }
-        return forToolbar ? designerActions.subList(0, 4) : designerActions;
+        return forToolbar ? designerActions.subList(0, designerActions.size()/2) : designerActions;
     }
-    
+
     public Collection getResizabilityActions() {
         if (resizabilityActions == null) {
             resizabilityActions = new LinkedList();
@@ -1529,10 +1546,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 ex.printStackTrace();
             }
         }
-	
-        textEditLayer.setVisible(false);
-        handleLayer.setVisible(true);
-        handleLayer.requestFocus();
+	if (handleLayer != null) {
+            textEditLayer.setVisible(false);
+            handleLayer.setVisible(true);
+            handleLayer.requestFocus();
+        }
         editedProperty = null;
     }
 
@@ -1564,6 +1582,20 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 NotifyDescriptor.WARNING_MESSAGE));
     }
 
+    
+    // -----------------
+    // menu editing
+    
+    public void openMenu(RADComponent metacomp) {
+        MenuEditLayer menuEditLayer = getMenuEditLayer();
+        Component comp = (Component) getComponent(metacomp);
+        menuEditLayer.setVisible(true);
+        //handleLayer.setVisible(false);
+        menuEditLayer.requestFocus();
+        menuEditLayer.openMenu(metacomp,comp);
+        
+    }
+    
     // --------
     // methods of TopComponent
 
@@ -1722,10 +1754,18 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             MultiViewFactory.NOOP_CLOSE_ACTION);
     }
 
+    MenuEditLayer getMenuEditLayer() {
+        if(menuEditLayer == null) {
+            menuEditLayer = new MenuEditLayer(this);
+            menuEditLayer.setVisible(false);
+            layeredPane.add(menuEditLayer, new Integer(2003));
+        }
+        return menuEditLayer;
+    }
     // -----------
     // innerclasses
 
-    private class LayoutMapper implements VisualMapper, LayoutConstants {
+    private class LayoutMapper implements VisualMapper {
 
         // -------
 
@@ -1843,11 +1883,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                        String comp2Id,
                                        int dimension,
                                        int comp2Alignment,
-                                       int paddingType)
+                                       PaddingType paddingType)
         {
             String id = null;
 	    if (getLayoutDesigner().logTestCode()) {
-		id = comp1Id + "-" + comp2Id + "-" + dimension + "-" + comp2Alignment + "-" + paddingType; //NOI18N
+		id = comp1Id + "-" + comp2Id + "-" + dimension + "-" + comp2Alignment + "-" // NOI18N
+                     + (paddingType != null ? paddingType.ordinal() : 0);
 	    }
             
             JComponent comp1 = (JComponent) getVisualComponent(comp1Id, true, true);
@@ -1862,13 +1903,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
             assert dimension == HORIZONTAL || dimension == VERTICAL;
             assert comp2Alignment == LEADING || comp2Alignment == TRAILING;
-            assert paddingType == PADDING_RELATED || paddingType == PADDING_UNRELATED || paddingType == INDENT;
 
-            int type = paddingType == INDENT ? LayoutStyle.INDENT :
-                (paddingType == PADDING_RELATED ? LayoutStyle.RELATED : LayoutStyle.UNRELATED);
+            int type = paddingType == PaddingType.INDENT ? LayoutStyle.INDENT :
+                (paddingType == PaddingType.RELATED ? LayoutStyle.RELATED : LayoutStyle.UNRELATED);
             int position = 0;
             if (dimension == HORIZONTAL) {
-                if (paddingType == INDENT) {
+                if (paddingType == PaddingType.INDENT) {
                     position = comp2Alignment == LEADING ?
                                SwingConstants.WEST : SwingConstants.EAST;
                 } else {
@@ -1881,8 +1921,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                            SwingConstants.SOUTH : SwingConstants.NORTH;
             }
 
-            int prefPadding = FormLAF.getDesignerLayoutStyle().getPreferredGap(comp1, comp2, type, position, null);
-            
+            int prefPadding = paddingType != PaddingType.SEPARATE ?
+                FormLAF.getDesignerLayoutStyle().getPreferredGap(comp1, comp2, type, position, null)
+                : SwingLayoutBuilder.PADDING_SEPARATE_VALUE; // not in LayoutStyle
+
             if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  prefPadding.put(\"" + id + "\", new Integer(" + prefPadding +   //NOI18N
 				")); // comp1Id-comp2Id-dimension-comp2Alignment-paddingType");			    //NOI18N
@@ -1959,6 +2001,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             replicator.getLayoutBuilder(contId).doLayout();
         }
 
+        public void setComponentVisibility(String componentId, boolean visible) {
+            Object comp = getComponent(componentId);
+            if (comp instanceof Component) {
+                ((Component)comp).setVisible(visible);
+            }
+        }
+
         // -------
 
         private RADComponent getMetaComponent(String compId) {
@@ -2011,7 +2060,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         }
         return componentIds;
     }
-    
+
+
     // Listener on FormModel - ensures updating of designer view.
     private class FormListener implements FormModelListener, Runnable {
 
@@ -2131,6 +2181,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                             || prevContainer != metacont))
                     {
                         replicator.updateAddedComponents(metacont);
+                        // Note: replicator calls BindingDesignSupport to establish
+                        // bindings for the the cloned instance (e.g. in remove undo)
                         updateDone = true;
                     }
                 }
@@ -2152,6 +2204,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                                    ev.getContainer());
                         updateDone = true;
                     }
+                    // Note: BindingDesignSupport takes care of removing bindings
                 }
                 else if (type == FormModelEvent.COMPONENTS_REORDERED) {
                     if (prevType != FormModelEvent.COMPONENTS_REORDERED
@@ -2169,6 +2222,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     replicator.updateComponentProperty(eventProperty);
                     updateConnectedProperties(eventProperty, eventComponent);
                     
+                    updateDone = true;
+                }
+                else if (type == FormModelEvent.BINDING_PROPERTY_CHANGED) {
+                    replicator.updateBinding(ev.getNewBinding());
+                    // Note: BindingDesignSupport takes care of removing the old binding
                     updateDone = true;
                 }
                 else if (type == FormModelEvent.SYNTHETIC_PROPERTY_CHANGED

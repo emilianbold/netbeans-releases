@@ -200,7 +200,7 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
         }
 
         int x = 0, y1 = 0, y2 = 0;
-        
+
         if ((newIndex <= 0) || ((components.length == 1) && (draggedIndex != -1))) {
             if ((components.length == 0) || ((components.length == 1) && (draggedIndex != -1))) {
                 if (alignment == FlowLayout.RIGHT) {

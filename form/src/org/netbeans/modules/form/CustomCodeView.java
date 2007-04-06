@@ -43,6 +43,8 @@ import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.ExtCaret;
 
 import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
@@ -156,6 +158,12 @@ class CustomCodeView extends javax.swing.JPanel {
 
         initCodeEditor.setContentType("text/x-java"); // NOI18N
         declareCodeEditor.setContentType("text/x-java"); // NOI18N
+
+        // do not highlight current row
+        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(initCodeEditor);
+        eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        eui = org.netbeans.editor.Utilities.getEditorUI(declareCodeEditor);
+        eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
 
         this.codeData = codeData;
         selectInComboBox(componentCombo, componentName);
@@ -991,30 +999,24 @@ class CustomCodeView extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        javax.swing.JLabel declarationCodeLabel;
-        javax.swing.JLabel initCodeLabel;
-        javax.swing.JLabel selectComponentLabel;
-        javax.swing.JLabel variableAccessLabel;
-        javax.swing.JLabel variableScopeLabel;
 
-        initCodeLabel = new javax.swing.JLabel();
+        javax.swing.JLabel initCodeLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         initCodeEditor = new javax.swing.JEditorPane();
-        declarationCodeLabel = new javax.swing.JLabel();
+        javax.swing.JLabel declarationCodeLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         declareCodeEditor = new javax.swing.JEditorPane();
-        selectComponentLabel = new javax.swing.JLabel();
+        javax.swing.JLabel selectComponentLabel = new javax.swing.JLabel();
         componentCombo = new javax.swing.JComboBox();
         renameButton = new javax.swing.JButton();
-        variableScopeLabel = new javax.swing.JLabel();
+        javax.swing.JLabel variableScopeLabel = new javax.swing.JLabel();
         variableCombo = new javax.swing.JComboBox();
-        variableAccessLabel = new javax.swing.JLabel();
+        javax.swing.JLabel variableAccessLabel = new javax.swing.JLabel();
         accessCombo = new javax.swing.JComboBox();
         staticCheckBox = new javax.swing.JCheckBox();
         finalCheckBox = new javax.swing.JCheckBox();
         transientCheckBox = new javax.swing.JCheckBox();
         volatileCheckBox = new javax.swing.JCheckBox();
-        infoLabel = new javax.swing.JLabel();
 
         FormListener formListener = new FormListener();
 
@@ -1063,8 +1065,6 @@ class CustomCodeView extends javax.swing.JPanel {
         volatileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         volatileCheckBox.addActionListener(formListener);
 
-        infoLabel.setText(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.infoLabel.text")); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -1092,16 +1092,12 @@ class CustomCodeView extends javax.swing.JPanel {
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 652, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, declarationCodeLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(selectComponentLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(componentCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(renameButton))
-                            .add(initCodeLabel))
-                        .add(20, 20, 20)
-                        .add(infoLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)))
+                        .add(selectComponentLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(componentCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(renameButton))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, initCodeLabel))
                 .addContainerGap())
         );
 
@@ -1111,15 +1107,12 @@ class CustomCodeView extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(selectComponentLabel)
-                            .add(componentCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(renameButton))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(initCodeLabel))
-                    .add(infoLabel))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(selectComponentLabel)
+                    .add(componentCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(renameButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(initCodeLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
                 .add(11, 11, 11)
@@ -1196,7 +1189,6 @@ class CustomCodeView extends javax.swing.JPanel {
     private javax.swing.JComboBox componentCombo;
     private javax.swing.JEditorPane declareCodeEditor;
     private javax.swing.JCheckBox finalCheckBox;
-    private javax.swing.JLabel infoLabel;
     private javax.swing.JEditorPane initCodeEditor;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

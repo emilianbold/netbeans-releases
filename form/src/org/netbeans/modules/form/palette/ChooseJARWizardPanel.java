@@ -76,7 +76,10 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel {
 
             fileChooser.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ev) {
-                    wizard.stepToNext();
+                    if (JFileChooser.APPROVE_SELECTION.equals(ev.getActionCommand()))
+                        wizard.stepToNext();
+                    else if (JFileChooser.CANCEL_SELECTION.equals(ev.getActionCommand()))
+                        fileChooser.getTopLevelAncestor().setVisible(false);
                 }
             });
 

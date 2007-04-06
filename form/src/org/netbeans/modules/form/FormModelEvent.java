@@ -47,6 +47,7 @@ public class FormModelEvent extends EventObject
     public static final int COMPONENT_REMOVED = 8;
     public static final int COMPONENTS_REORDERED = 9;
     public static final int COMPONENT_PROPERTY_CHANGED = 10;
+    public static final int BINDING_PROPERTY_CHANGED = 16;
     public static final int SYNTHETIC_PROPERTY_CHANGED = 11;
     public static final int EVENT_HANDLER_ADDED = 12;
     public static final int EVENT_HANDLER_REMOVED = 13;
@@ -234,6 +235,14 @@ public class FormModelEvent extends EventObject
 
     public final Object getNewPropertyValue() {
         return newPropertyValue;
+    }
+
+    public final MetaBinding getOldBinding() {
+        return (MetaBinding) oldPropertyValue;
+    }
+
+    public final MetaBinding getNewBinding() {
+        return (MetaBinding) newPropertyValue;
     }
 
     public final LayoutSupportDelegate getOldLayoutSupport() {

@@ -23,6 +23,9 @@ import java.awt.*;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.form.RADVisualComponent.MenuType;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 import org.netbeans.modules.form.layoutsupport.*;
@@ -34,12 +37,12 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     private LayoutSupportManager layoutSupport; // = new LayoutSupportManager();
     private LayoutNode layoutNode; // [move to LayoutSupportManager?]
 
-    private RADMenuComponent containerMenu;
+    private RADComponent containerMenu;
 
     private Method containerDelegateGetter;
     private boolean noContainerDelegate;
 
-
+    private static Map<MenuType, Class[]> supportedMenus;
 //    public boolean initialize(FormModel formModel) {
 //        if (super.initialize(formModel)) {
 //            if (getBeanClass() != null)
@@ -100,8 +103,14 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
 
     public static boolean isInFreeDesign(RADComponent metacomp) {
-        return metacomp instanceof RADVisualComponent
-               && isFreeDesignContainer(metacomp.getParentComponent());
+        if (metacomp instanceof RADVisualComponent) {
+            RADVisualContainer parent = (RADVisualContainer) metacomp.getParentComponent();
+            if (parent != null && parent.getLayoutSupport() == null
+                    && metacomp != parent.getContainerMenu()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     void setOldLayoutSupport(boolean old) {
@@ -216,8 +225,38 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         return layoutSupport != null && layoutSupport.shouldHaveNode();
     }
 
-    RADMenuComponent getContainerMenu() {
+    public RADComponent getContainerMenu() {
         return containerMenu;
+    }
+
+    public boolean canAddComponent(Class compClass) {
+        if (isMenuTypeComponent()) {
+            // this is a menu container accepting certain types of menus
+            Class[] possibleClasses = getPossibleSubmenus(getMenuType(getBeanClass()));
+            if (possibleClasses != null) {
+                for (Class cls : possibleClasses) {
+                    if (cls.isAssignableFrom(compClass)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else if (getContainerMenu() == null && canHaveMenu(compClass)) {
+            // visual container that can have a menubar
+            return true;
+        } else if (getMenuType(compClass) != null && !JSeparator.class.isAssignableFrom(compClass)) {
+            // otherwise don't accept menu components
+            return false;
+        } else if (Component.class.isAssignableFrom(compClass)) {
+            // visual component can be added to visual container
+            // exception: avoid adding components to scroll pane that already contains something
+            if (JScrollPane.class.isAssignableFrom(getBeanClass())
+                    && ((JScrollPane)getBeanInstance()).getViewport().getView() != null) {
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     boolean canHaveMenu(Class menuClass) {
@@ -227,6 +266,26 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
                (MenuBar.class.isAssignableFrom(menuClass)
                   && Frame.class.isAssignableFrom(getBeanClass())
                   && !JFrame.class.isAssignableFrom(getBeanClass()));
+    }
+
+    private static Class[] getPossibleSubmenus(MenuType menuContainerType) {
+        if (supportedMenus == null) {
+            supportedMenus = new HashMap<MenuType, Class[]>();
+            supportedMenus.put(MenuType.JMenuBar, new Class[] { JMenu.class });
+            supportedMenus.put(MenuType.JMenu,
+                               new Class[] { JMenuItem.class,
+                                             JCheckBoxMenuItem.class,
+                                             JRadioButtonMenuItem.class,
+                                             JMenu.class,
+                                             JSeparator.class });
+            supportedMenus.put(MenuType.JPopupMenu,
+                               new Class[] { JMenuItem.class,
+                                             JCheckBoxMenuItem.class,
+                                             JRadioButtonMenuItem.class,
+                                             JMenu.class,
+                                             JSeparator.class });
+        }
+        return supportedMenus.get(menuContainerType);
     }
 
     // -----------------------------------------------------------------------------
@@ -269,14 +328,11 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
         for (int i=0; i < initComponents.length; i++) {
             RADComponent metacomp = initComponents[i];
-
-            if (metacomp instanceof RADVisualComponent)
+            if (i == 0 && !isMenuTypeComponent() && canHaveMenu(metacomp.getBeanClass())) {
+                containerMenu = metacomp;
+            } else {
                 subComponents.add((RADVisualComponent)metacomp);
-            else if (metacomp instanceof RADMenuComponent)
-                containerMenu = (RADMenuComponent) metacomp; // [what with the current menu?]
-            else
-                continue; // [just ignore?]
-
+            }
             metacomp.setParentComponent(this);
         }
 
@@ -316,9 +372,12 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
 
     public void add(RADComponent metacomp, int index) {
-        RADVisualComponent visual = metacomp instanceof RADVisualComponent ?
-                                    (RADVisualComponent) metacomp : null;
-        if (visual != null) {
+        RADVisualComponent visual;
+        if (index <= 0 && !isMenuTypeComponent() && canHaveMenu(metacomp.getBeanClass())) {
+            containerMenu = metacomp;
+            visual = null;
+        } else {
+            visual = (RADVisualComponent) metacomp;
             if (index == -1) {
                 index = subComponents.size();
                 subComponents.add(visual);
@@ -333,10 +392,6 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
                 getContainerDelegate(getBeanInstance()).add(comp, index);
             }
         }
-        else if (metacomp instanceof RADMenuComponent)
-            containerMenu = (RADMenuComponent) metacomp;  // [what with the current menu?]
-        else
-            return; // [just ignore?]
 
         metacomp.setParentComponent(this);
         if (visual != null) { // force constraints properties creation
@@ -345,7 +400,10 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
 
     public void remove(RADComponent comp) {
-        if (comp instanceof RADVisualComponent) {
+        if (comp == containerMenu) {
+            containerMenu = null;
+            comp.setParentComponent(null);
+        } else if (comp instanceof RADVisualComponent) {
             int index = subComponents.indexOf(comp);
             if (layoutSupport != null) {
                 layoutSupport.removeComponent((RADVisualComponent) comp, index);
@@ -356,11 +414,6 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             if (subComponents.remove(comp))
                 comp.setParentComponent(null);
         }
-        else if (comp == containerMenu) {
-            containerMenu = null;
-            comp.setParentComponent(null);
-        }
-        else return;
     }
 
     public int getIndexOf(RADComponent comp) {

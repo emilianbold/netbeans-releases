@@ -89,10 +89,4 @@ public class ListModelEditor extends StringArrayEditor {
             model.addElement(data[i]);
         return model;
     }
-    
-    // NamedPropertyEditor implementation
-    public String getDisplayName() {
-        return NbBundle.getBundle(getClass()).getString("CTL_ListModelEditor_DisplayName"); // NOI18N
-    }
-
 }

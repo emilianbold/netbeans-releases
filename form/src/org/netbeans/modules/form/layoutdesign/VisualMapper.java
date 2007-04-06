@@ -22,11 +22,7 @@ package org.netbeans.modules.form.layoutdesign;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 
-public interface VisualMapper {
-
-    int PADDING_RELATED = 0;
-    int PADDING_UNRELATED = 1;
-    int INDENT = 2;
+public interface VisualMapper extends LayoutConstants  {
 
 //    String getTopComponentId();
 
@@ -65,14 +61,14 @@ public interface VisualMapper {
      *        components are positioned
      * @param comp2Alignment the edge (LEADING or TRAILING) at which the second
      *        component is placed next to the first component
-     * @param paddingType padding type (PADDING_RELATED, PADDING_UNRELATED or INDENT)
+     * @param paddingType padding type (RELATED, UNRELATED, SEPARATE or INDENT)
      * @return preferred padding (amount of space) between the given components
      */
     int getPreferredPadding(String component1Id,
                             String component2Id,
                             int dimension,
                             int comp2Alignment,
-                            int paddingType);
+                            PaddingType paddingType);
 
     /**
      * Provides preferred padding (optimal amount of space) between a component
@@ -100,4 +96,6 @@ public interface VisualMapper {
      * immediate update of the layout according to the model.
      */
     void rebuildLayout(String containerId);
+
+    void setComponentVisibility(String componentId, boolean visible);
 }

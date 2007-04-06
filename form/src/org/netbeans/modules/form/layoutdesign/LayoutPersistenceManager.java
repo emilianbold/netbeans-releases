@@ -30,8 +30,10 @@ import org.w3c.dom.*;
 class LayoutPersistenceManager implements LayoutConstants {
     /** Layout model to load/save. */
     private LayoutModel layoutModel;
-    /** Currently processed layout root. */
-    private LayoutComponent root;
+    /** Currently processed layout container. */
+    private LayoutComponent layoutContainer;
+    /** Index of the currently processed layout root interval. */
+    private int rootIndex;
     /** Currently processed dimension. */
     private int dimension;
     /** Map from component IDs to names or vice versa. */
@@ -41,7 +43,7 @@ class LayoutPersistenceManager implements LayoutConstants {
     /** Size of current indent. */
     private int indent;
     /** String buffer used to save layout. */
-    private StringBuffer sb;
+    private StringBuilder sb;
     
     // elements names
     static final String XML_DIMENSION_LAYOUT = "DimensionLayout"; // NOI18N
@@ -52,6 +54,7 @@ class LayoutPersistenceManager implements LayoutConstants {
     // attributes names
     static final String ATTR_DIMENSION_DIM = "dim"; // NOI18N
     static final String ATTR_GROUP_TYPE = "type"; // NOI18N
+    static final String ATTR_PADDING_TYPE = "type"; // NOI18N
     static final String ATTR_SIZE_MIN = "min"; // NOI18N
     static final String ATTR_SIZE_PREF = "pref"; // NOI18N
     static final String ATTR_SIZE_MAX = "max"; // NOI18N
@@ -60,6 +63,7 @@ class LayoutPersistenceManager implements LayoutConstants {
     static final String ATTR_LINK_SIZE = "linkSize"; // NOI18N
     static final String ATTR_COMPONENT_ID = "id"; // NOI18N
     static final String ATTR_ATTRIBUTES = "attributes"; // NOI18N
+    static final String ATTR_ROOT_INDEX = "rootIndex"; // NOI18N
     
     // attribute values
     static final String VALUE_DIMENSION_HORIZONTAL = "horizontal"; // NOI18N
@@ -72,66 +76,85 @@ class LayoutPersistenceManager implements LayoutConstants {
     static final String VALUE_SIZE_MAX = "Short.MAX_VALUE"; // NOI18N
     static final String VALUE_GROUP_PARALLEL = "parallel"; // NOI18N
     static final String VALUE_GROUP_SEQUENTIAL = "sequential"; // NOI18N
+    static final String VALUE_PADDING_RELATED = "related"; // NOI18N
+    static final String VALUE_PADDING_UNRELATED = "unrelated"; // NOI18N
+    static final String VALUE_PADDING_SEPARATE = "separate"; // NOI18N
+    static final String VALUE_PADDING_INDENT = "indent"; // NOI18N
 
     /**
      * Creates new <code>LayoutPersistenceManager</code>.
      *
      * @param layoutModel layout model to load/save.
      */
-    LayoutPersistenceManager(LayoutModel layoutModel) {
+    private LayoutPersistenceManager(LayoutModel layoutModel) {
         this.layoutModel = layoutModel;
     }
 
     /**
-     * Returns dump of the layout model.
+     * Returns the layout model saved as XML in a String.
      *
-     * @param indent determines size of indentation.
-     * @param root container layout model should be dumped.
+     * @param layoutModel layout model to save
+     * @param container the layout container to be saved
+     * @param idToNameMap map for translating component Ids to names suitable
+     *        for saving
+     * @param indent determines size of indentation
      * @param humanReadable determines whether constants should be replaced
-     * by human readable expressions.
-     * @return dump of the layout model.
+     * by human readable expressions
+     * @return the layout model saved in a String
      */
-    String saveLayout(int indent, LayoutComponent root, Map idToNameMap, boolean humanReadable) {
-        this.root = root;
-        this.indent = indent;
-        this.idNameMap = idToNameMap;
-        this.humanReadable = humanReadable;
-        sb = new StringBuffer();
-        for (int i=0; i < DIM_COUNT; i++) {
+    static String saveContainer(LayoutModel layoutModel, LayoutComponent container,
+                                Map idToNameMap, int indent, boolean humanReadable)
+    {
+        LayoutPersistenceManager lpm = new LayoutPersistenceManager(layoutModel);
+        lpm.layoutContainer = container;
+        lpm.idNameMap = idToNameMap;
+        lpm.indent = indent;
+        lpm.humanReadable = humanReadable;
+        return lpm.saveLayout();
+    }
+
+    private String saveLayout() {
+        sb = new StringBuilder();
+        for (dimension=0; dimension < DIM_COUNT; dimension++) {
             indent().append('<').append(XML_DIMENSION_LAYOUT);
             sb.append(' ').append(ATTR_DIMENSION_DIM).append("=\""); // NOI18N
             if (humanReadable) {
-                switch (i) {
+                switch (dimension) {
                     case HORIZONTAL: sb.append(VALUE_DIMENSION_HORIZONTAL); break;
                     case VERTICAL: sb.append(VALUE_DIMENSION_VERTICAL); break;
-                    default: sb.append(i); break;
+                    default: sb.append(dimension); break;
                 }
             } else {
-                sb.append(i);
+                sb.append(dimension);
             }
             sb.append("\">\n"); // NOI18N
-            LayoutInterval interval = root.getLayoutRoot(i);
-            saveInterval(interval, i);
+            // in case of multiple roots save the additional roots under the first one
+            rootIndex = 0;
+            saveInterval(layoutContainer.getLayoutRoot(0, dimension));
             indent().append("</").append(XML_DIMENSION_LAYOUT).append(">\n"); // NOI18N
         }
         return sb.toString();
     }
-    
+
     /**
      * Returns dump of the layout interval.
      *
-     * @param indent determines size of indentation.
-     * @param root container layout model should be dumped.
-     * @param humanReadable determines whether constants should be replaced
-     * by human readable expressions.
-     * @return dump of the layout model.
+     * @param layoutModel layout model to dump
+     * @param interval the layout interval that should be dumped
+     * @param dimension the dimension where the interval belongs
+     * @param indent determines size of indentation
+     * @return dump of the layout model
      */
-    String saveIntervalLayout(int indent, LayoutInterval interval, int dimension) {
-        this.indent = indent;
-        humanReadable = true;
-        sb = new StringBuffer();
-        saveInterval(interval, dimension);
-        return sb.toString();
+    static String dumpInterval(LayoutModel layoutModel, LayoutInterval interval,
+                               int dimension, int indent)
+    {
+        LayoutPersistenceManager lpm = new LayoutPersistenceManager(layoutModel);
+        lpm.indent = indent;
+        lpm.humanReadable = true;
+        lpm.dimension = dimension;
+        lpm.sb = new StringBuilder();
+        lpm.saveInterval(interval);
+        return lpm.sb.toString();
     }
     
     /**
@@ -139,7 +162,7 @@ class LayoutPersistenceManager implements LayoutConstants {
      *
      * @param interval layout interval to dump.
      */
-    private void saveInterval(LayoutInterval interval, int dimension) {
+    private void saveInterval(LayoutInterval interval) {
         indent++;
         indent();
         if (interval.isGroup()) {
@@ -151,6 +174,12 @@ class LayoutPersistenceManager implements LayoutConstants {
                 sb.append(interval.getType());
             }
             sb.append("\""); // NOI18N
+            if (interval.getParent() == null && rootIndex > 0) {
+                // mark the additional roots by a root index attribute
+                sb.append(" ").append(ATTR_ROOT_INDEX).append("=\""); // NOI18N
+                sb.append(rootIndex);
+                sb.append("\""); // NOI18N
+            }
             saveAlignment(interval.getRawAlignment(), false);
             if (interval.isParallel()) {
                 saveAlignment(interval.getGroupAlignment(), true);
@@ -163,7 +192,14 @@ class LayoutPersistenceManager implements LayoutConstants {
             Iterator iter = interval.getSubIntervals();
             while (iter.hasNext()) {
                 LayoutInterval subInterval = (LayoutInterval)iter.next();
-                saveInterval(subInterval, dimension);
+                saveInterval(subInterval);
+            }
+            if (interval.getParent() == null && rootIndex == 0 && layoutContainer != null) {
+                // save the additional roots under the main one
+                for (int i=1; i < layoutContainer.getLayoutRootCount(); i++) {
+                    rootIndex = i;
+                    saveInterval(layoutContainer.getLayoutRoot(rootIndex, dimension));
+                }
             }
             indent--;
             indent().append("</").append(XML_GROUP).append(">\n"); // NOI18N
@@ -180,6 +216,10 @@ class LayoutPersistenceManager implements LayoutConstants {
                 saveAlignment(interval.getRawAlignment(), false);
             } else if (interval.isEmptySpace()) {
                 sb.append('<').append(XML_EMPTY_SPACE);
+                if (interval.isDefaultPadding(false)) {
+                    savePaddingType(interval.getPaddingType());
+                    // TBD save components for indent gap
+                }
             } else {
                 assert false;
             }
@@ -259,6 +299,20 @@ class LayoutPersistenceManager implements LayoutConstants {
         }
     }
 
+    private void savePaddingType(LayoutConstants.PaddingType paddingType) {
+        if (paddingType != null && paddingType != LayoutConstants.PaddingType.RELATED) {
+            sb.append(' ').append(ATTR_PADDING_TYPE).append("=\""); // NOI18N
+            String str;
+            switch (paddingType) {
+                case UNRELATED: str = VALUE_PADDING_UNRELATED; break;
+                case SEPARATE: str = VALUE_PADDING_SEPARATE; break;
+                case INDENT: str = VALUE_PADDING_INDENT; break;
+                default: str = VALUE_PADDING_RELATED; break;
+            }
+            sb.append(str).append("\""); // NOI18N
+        }
+    }
+
     /**
      * Saves attributes of some layout interval.
      *
@@ -270,13 +324,13 @@ class LayoutPersistenceManager implements LayoutConstants {
         sb.append(' ').append(ATTR_ATTRIBUTES).append("=\""); // NOI18N
         sb.append(attributes).append("\""); // NOI18N
     }
-    
+
     /**
      * Performs indentation.
      *
      * @return indented <code>StringBuffer</code>.
      */
-    private StringBuffer indent() {
+    private StringBuilder indent() {
         char[] spaces = new char[2*indent];
         Arrays.fill(spaces, ' ');
         return sb.append(spaces);
@@ -286,35 +340,47 @@ class LayoutPersistenceManager implements LayoutConstants {
      * Loads the layout of the given container. Does not load containers
      * recursively, is called for each container separately.
      *
-     * @param rootId ID of the layout root (the container whose layout should be loaded).
-     * @param dimLayoutList nodes holding the information about the layout.
-     * @param nameToIdMap map from component names to component IDs.
+     * @param layoutModel layout model to load
+     * @param containerId ID of the layout container to be loaded
+     * @param layoutNodeList XML data to load
+     * @param nameToIdMap map from component names to component IDs
      */
-    void loadModel(String rootId, NodeList dimLayoutList, Map nameToIdMap)
+    static void loadContainer(LayoutModel layoutModel, String containerId,
+                              NodeList layoutNodeList, Map nameToIdMap)
         throws java.io.IOException
     {
-        this.idNameMap = nameToIdMap;
-        resetMissingName(); // prepare for error recovery
-        LayoutComponent root = layoutModel.getLayoutComponent(rootId);
-        if (root == null) {
-            root = new LayoutComponent(rootId, true);
-            layoutModel.addRootComponent(root);
-        }
-        this.root = root;
+        LayoutPersistenceManager lpm = new LayoutPersistenceManager(layoutModel);
+        lpm.idNameMap = nameToIdMap;
+        lpm.loadLayout(containerId, layoutNodeList);
+    }
 
-        for (int i=0; i<dimLayoutList.getLength(); i++) {
-            Node dimLayoutNode = dimLayoutList.item(i);
-            if (!(dimLayoutNode instanceof Element))
+    // should be called only on newly created LayoutPersistenceManager for each
+    // loaded container (don't call repeatedly)
+    private void loadLayout(String containerId, NodeList layoutNodeList)
+        throws java.io.IOException
+    {
+        layoutContainer = layoutModel.getLayoutComponent(containerId);
+        if (layoutContainer == null) {
+            layoutContainer = new LayoutComponent(containerId, true);
+            layoutModel.addRootComponent(layoutContainer);
+        }
+
+        for (int i=0; i<layoutNodeList.getLength(); i++) {
+            Node dimLayoutNode = layoutNodeList.item(i);
+            if (!(dimLayoutNode instanceof Element)
+                    || !dimLayoutNode.getNodeName().equals(XML_DIMENSION_LAYOUT)) {
                 continue;
+            }
             Node dimAttrNode = dimLayoutNode.getAttributes().getNamedItem(ATTR_DIMENSION_DIM);
             dimension = integerFromNode(dimAttrNode);
-            LayoutInterval dimLayoutInterval = root.getLayoutRoot(dimension);
-            NodeList childs = dimLayoutNode.getChildNodes();
-            for (int j=0; j<childs.getLength(); j++) {
-                Node node = childs.item(j);
+            rootIndex = 0;
+            LayoutInterval layoutRoot = layoutContainer.getLayoutRoot(0, dimension);
+            NodeList subNodes = dimLayoutNode.getChildNodes();
+            for (int j=0; j<subNodes.getLength(); j++) {
+                Node node = subNodes.item(j);
                 if (node instanceof Element) {
-                    loadGroup(dimLayoutInterval, node, dimension);
-                    break;
+                    loadGroup(layoutRoot, node);
+                    break; // just one root is loaded
                 }
             }
         }
@@ -328,7 +394,7 @@ class LayoutPersistenceManager implements LayoutConstants {
      * @param group group whose layout information should be loaded.
      * @param groupNode node holding the information about the layout of the group.
      */
-    private void loadGroup(LayoutInterval group, Node groupNode, int dimension)
+    private void loadGroup(LayoutInterval group, Node groupNode)
         throws java.io.IOException
     {
         NamedNodeMap attrMap = groupNode.getAttributes();
@@ -352,24 +418,39 @@ class LayoutPersistenceManager implements LayoutConstants {
         NodeList subNodes = groupNode.getChildNodes();
         for (int i=0; i<subNodes.getLength(); i++) {
             Node subNode = subNodes.item(i);
-            if (!(subNode instanceof Element))
+            if (!(subNode instanceof Element)) {
                 continue;
+            }
             String nodeName = subNode.getNodeName();
             if (XML_GROUP.equals(nodeName)) {
-                Node typeNode = subNode.getAttributes().getNamedItem(ATTR_GROUP_TYPE);
-                int type = integerFromNode(typeNode);
-                LayoutInterval subGroup = new LayoutInterval(type);
-                group.add(subGroup, -1);
-                loadGroup(subGroup, subNode, dimension);
+                LayoutInterval subGroup = null;
+                int groupType = integerFromNode(subNode.getAttributes().getNamedItem(ATTR_GROUP_TYPE));
+                // the sub-group might represent an additional separate root
+                if (group.getParent() == null && groupType == PARALLEL) {
+                    Node rootIndexNode = subNode.getAttributes().getNamedItem(ATTR_ROOT_INDEX);
+                    if (rootIndexNode != null) {
+                        rootIndex = integerFromNode(rootIndexNode);
+                        while (rootIndex >= layoutContainer.getLayoutRootCount()) {
+                            layoutContainer.addNewLayoutRoots();
+                        }
+                        subGroup = layoutContainer.getLayoutRoot(rootIndex, dimension);
+                    }
+                }
+                if (subGroup == null) { // this is a normal group
+                    subGroup = new LayoutInterval(groupType);
+                    group.add(subGroup, -1);
+                }
+                loadGroup(subGroup, subNode);
             } else if (XML_EMPTY_SPACE.equals(nodeName)) {
                 loadEmptySpace(group, subNode);
             } else {
                 assert XML_COMPONENT.equals(nodeName);
-                loadComponent(group, subNode, dimension);
+                loadComponent(group, subNode);
             }
         }
-        if (dimension == VERTICAL)
+        if (dimension == VERTICAL) {
             checkAndFixGroup(group);
+        }
     }
 
     /**
@@ -391,9 +472,8 @@ class LayoutPersistenceManager implements LayoutConstants {
      *
      * @param parent layout parent of the loaded layout interval.
      * @param componentNode node with the information about the component.
-     * @param dimension loaded dimension
      */
-    private void loadComponent(LayoutInterval parent, Node componentNode, int dimension)
+    private void loadComponent(LayoutInterval parent, Node componentNode)
         throws java.io.IOException
     {
         NamedNodeMap attrMap = componentNode.getAttributes();
@@ -407,10 +487,13 @@ class LayoutPersistenceManager implements LayoutConstants {
         int alignment = (alignmentNode == null) ? DEFAULT : integerFromNode(alignmentNode);
         LayoutComponent layoutComponent = layoutModel.getLayoutComponent(id);
         if (layoutComponent == null) {
-            layoutComponent = new LayoutComponent(id, false  /*PENDING*/);
+            layoutComponent = new LayoutComponent(id, false);
+            // assuming the layout tree is loaded from bottom, so if a component
+            // is not yet in the model at this point, it can only be a component,
+            // not a container (that would be already loaded)
         }
         if (layoutComponent.getParent() == null) {
-            layoutModel.addComponent(layoutComponent, root, -1);
+            layoutModel.addComponent(layoutComponent, layoutContainer, -1);
         }
         LayoutInterval interval = layoutComponent.getLayoutInterval(dimension);
         interval.setAlignment(alignment);
@@ -436,6 +519,25 @@ class LayoutPersistenceManager implements LayoutConstants {
         int pref = (prefNode == null) ? NOT_EXPLICITLY_DEFINED : integerFromNode(prefNode);
         int max = (maxNode == null) ? NOT_EXPLICITLY_DEFINED : integerFromNode(maxNode);
         interval.setSizes(min, pref, max);
+
+        if (interval.isDefaultPadding(false)) {
+            Node paddingNode = attrMap.getNamedItem(ATTR_PADDING_TYPE);
+            String paddingStr = paddingNode != null ? paddingNode.getNodeValue() : null;
+            PaddingType paddingType = null;
+            if (paddingStr != null && !paddingStr.equals(VALUE_PADDING_RELATED)) {
+                if (paddingStr.equals(VALUE_PADDING_UNRELATED)) {
+                    paddingType = LayoutConstants.PaddingType.UNRELATED;
+                } else if (paddingStr.equals(VALUE_PADDING_SEPARATE)) {
+                    paddingType = LayoutConstants.PaddingType.SEPARATE;
+                } else if (paddingStr.equals(VALUE_PADDING_INDENT)) {
+                    paddingType = LayoutConstants.PaddingType.INDENT;
+                }
+            }
+            if (paddingType != null) {
+                interval.setPaddingType(paddingType);
+                // TBD read components for indent
+            }
+        }
     }
     
     /**
@@ -481,7 +583,7 @@ class LayoutPersistenceManager implements LayoutConstants {
      * BASELINE can be set only on individual components.
      * LEADING, TRAILING and CENTER alignments can be combined freely.
      */
-    void checkAndFixGroup(LayoutInterval group) {
+    private void checkAndFixGroup(LayoutInterval group) {
         if (group.isParallel()) {
             int groupAlign = group.getGroupAlignment();
             int baselineCount = 0;
@@ -544,10 +646,6 @@ class LayoutPersistenceManager implements LayoutConstants {
     private String missingNameH;
     private String missingNameV;
 
-    private void resetMissingName() {
-        missingNameH = missingNameV = null;
-    }
-
     private String useTemporaryId(String name) throws java.io.IOException {
         if (dimension == HORIZONTAL) {
             if (missingNameH == null && (missingNameV == null || missingNameV.equals(name))) {
@@ -569,7 +667,7 @@ class LayoutPersistenceManager implements LayoutConstants {
             return; // no problem
 
         if (missingNameH != null && missingNameV != null && missingNameH.equals(missingNameV)
-            && idNameMap.size() == root.getSubComponentCount())
+            && idNameMap.size() == layoutContainer.getSubComponentCount())
         {   // we have one unknown name in each dimension, let's infer it from the idNameMap
             for (Map.Entry<String, String> e : idNameMap.entrySet()) { // name -> id
                 String id = e.getValue();
@@ -588,13 +686,11 @@ class LayoutPersistenceManager implements LayoutConstants {
                 layoutModel.setCorrected();
                 System.err.println("WARNING: Invalid component name in layout: "+missingNameH // NOI18N
                             +", corrected automatically to: "+e.getKey()); // NOI18N
-                resetMissingName();
                 return;
             }
         }
 
         layoutModel.removeComponent(TEMPORARY_ID, true);
-        resetMissingName();
         throw new java.io.IOException("Undefined component referenced in layout: " // NOI18N
                 + (missingNameH != null ? missingNameH : missingNameV));
     }

@@ -59,14 +59,18 @@ public class SwingLayoutCodeGenerator {
      * code is written to the <code>writer</code>.
      *
      * @param writer the writer to generate the code into.
-     * @param container container whose code should be generated.
-     * @param contVarName code expression for the container.
-     * @param compIds IDs of subcomponents.
-     * @param compVarNames code expressions of subcomponents.
+     * @param container the container whose code should be generated.
+     * @param contExprStr code expression representing the container.
+     * @param contVarName variable name of the container, used to derive the
+     *        local variable name for the layout instance
+     * @param infos data about subcomponents.
+     * @param useLibrary whether to use swing-layout library or Java 6 code
      */
     public void generateContainerLayout(Writer writer, LayoutComponent container,
-        String contExprStr, String contVarName, ComponentInfo infos[],
-        boolean useLibrary) throws IOException {
+            String contExprStr, String contVarName, ComponentInfo infos[],
+            boolean useLibrary)
+        throws IOException
+    {
         useLayoutLibrary = useLibrary;
         if (contVarName == null) {
             layoutVarName = LAYOUT_VAR_NAME;
@@ -76,28 +80,34 @@ public class SwingLayoutCodeGenerator {
         }
         fillMap(infos);
         generateInstantiation(writer, contExprStr);
-        StringBuffer sb = new StringBuffer();
-        LayoutInterval horizontalInterval = container.getLayoutRoot(LayoutConstants.HORIZONTAL);
-        composeGroup(sb, horizontalInterval, true, true);
-        String horizontalGroup = sb.toString();
-        writer.write(layoutVarName + ".setHorizontalGroup(\n" + horizontalGroup + "\n);\n"); // NOI18N
-                
-        sb = new StringBuffer();
-        composeLinks(sb, container, layoutVarName, LayoutConstants.HORIZONTAL);
-        String horizontalLinks = sb.toString();
-        writer.write(horizontalLinks);
 
-        sb = new StringBuffer();
-        LayoutInterval verticalInterval = container.getLayoutRoot(LayoutConstants.VERTICAL);
-        composeGroup(sb, verticalInterval, true, true);
-        String verticalGroup = sb.toString();
-        writer.write(layoutVarName + ".setVerticalGroup(\n" + verticalGroup + "\n);\n"); // NOI18N
+        LayoutInterval[][] extraRoots;
+        int rootCount = container.getLayoutRootCount();
+        if (rootCount > 1) {
+            // prepare generating multiple roots into one group
+            extraRoots = new LayoutInterval[LayoutConstants.DIM_COUNT][rootCount-1];
+            for (int i=1; i < rootCount; i++) {
+                for (int dim=0; dim < LayoutConstants.DIM_COUNT; dim++) {
+                    extraRoots[dim][i-1] = container.getLayoutRoot(i, dim);
+                    assert extraRoots[dim][i-1].isParallel();
+                }
+            }
+        } else {
+            extraRoots = null;
+        }
+        for (int dim=0; dim < LayoutConstants.DIM_COUNT; dim++) {
+            StringBuilder sb = new StringBuilder();
+            composeGroup(sb, container.getLayoutRoot(0, dim),
+                         extraRoots != null ? extraRoots[dim] : null,
+                         true, true);
+            writer.write(layoutVarName
+                    + (dim == LayoutConstants.HORIZONTAL ? ".setHorizontalGroup(\n" : ".setVerticalGroup(\n") // NOI18N
+                    + sb.toString() + "\n);\n"); // NOI18N
 
-
-        sb = new StringBuffer();
-        composeLinks(sb, container, layoutVarName, LayoutConstants.VERTICAL);
-        String verticalLinks = sb.toString();
-        writer.write(verticalLinks);
+            sb = new StringBuilder();
+            composeLinks(sb, container, layoutVarName, dim);
+            writer.write(sb.toString());
+        }
     }                                       
 
     /**
@@ -128,43 +138,42 @@ public class SwingLayoutCodeGenerator {
      * @param layout buffer to generate the code into.
      * @param interval layout model of the group.
      */
-    private void composeGroup(StringBuffer layout, LayoutInterval interval,
-        boolean first, boolean last) throws IOException {
-        if (interval.isGroup()) {
-            int groupAlignment = interval.getGroupAlignment();
-            if (interval.isParallel()) {
-                boolean notResizable = interval.getMaximumSize(false) == LayoutConstants.USE_PREFERRED_SIZE;
-                String alignmentStr = convertAlignment(groupAlignment);
-                layout.append(layoutVarName).append(".createParallelGroup("); // NOI18N
-                layout.append(alignmentStr);
-                if (notResizable) {
-                    layout.append(", false"); // NOI18N
-                }
-                layout.append(")"); // NOI18N
-            } else if (interval.isSequential()) {
-                layout.append(layoutVarName).append(".createSequentialGroup()"); // NOI18N
-            } else {
-                assert false;
+    private void composeGroup(StringBuilder layout,
+                              LayoutInterval group, LayoutInterval[] extraGroups,
+                              boolean first, boolean last)
+        throws IOException
+    {
+        int groupAlignment = group.getGroupAlignment();
+        if (group.isParallel()) {
+            boolean notResizable = group.getMaximumSize(false) == LayoutConstants.USE_PREFERRED_SIZE;
+            String alignmentStr = convertAlignment(groupAlignment);
+            layout.append(layoutVarName).append(".createParallelGroup("); // NOI18N
+            layout.append(alignmentStr);
+            if (notResizable) {
+                layout.append(", false"); // NOI18N
             }
-            if (interval.getSubIntervalCount() > 0) {
-                layout.append("\n"); // NOI18N
-            }
-            Iterator subIntervals = interval.getSubIntervals();
-            while (subIntervals.hasNext()) {
-                LayoutInterval subInterval = (LayoutInterval)subIntervals.next();
-                fillGroup(layout, subInterval, first,
-                          last && (!interval.isSequential() || !subIntervals.hasNext()),
-                          groupAlignment);
-                if (first && interval.isSequential()) {
-                    first = false;
-                }
-                if (subIntervals.hasNext()) {
-                    layout.append("\n"); // NOI18N
-                }
-            }
+            layout.append(")"); // NOI18N
         } else {
-            layout.append(layoutVarName).append(".createSequentialGroup()\n"); // NOI18N
-            fillGroup(layout, interval, true, true, LayoutConstants.DEFAULT);
+            layout.append(layoutVarName).append(".createSequentialGroup()"); // NOI18N
+        }
+
+        Iterator subIntervals = group.getSubIntervals();
+        while (subIntervals.hasNext()) {
+            layout.append("\n"); // NOI18N
+            LayoutInterval subInterval = (LayoutInterval)subIntervals.next();
+            fillGroup(layout, subInterval, first,
+                      last && (!group.isSequential() || (!subIntervals.hasNext() && extraGroups == null)),
+                      groupAlignment);
+            if (first && group.isSequential()) {
+                first = false;
+            }
+        }
+        if (extraGroups != null) {
+            for (LayoutInterval g : extraGroups) {
+                layout.append("\n"); // NOI18N
+                fillGroup(layout, g, first, last, groupAlignment);
+                // assuming extra groups are always parallel 
+            }
         }
     }
     
@@ -175,7 +184,7 @@ public class SwingLayoutCodeGenerator {
      * @param interval layout model of the element.
      * @param groupAlignment alignment of the enclosing group.
      */
-    private void fillGroup(StringBuffer layout, LayoutInterval interval,
+    private void fillGroup(StringBuilder layout, LayoutInterval interval,
         boolean first, boolean last, int groupAlignment) throws IOException {
         if (interval.isGroup()) {
             layout.append(getAddGroupStr());
@@ -185,7 +194,7 @@ public class SwingLayoutCodeGenerator {
                 String alignmentStr = convertAlignment(alignment);
                 layout.append(alignmentStr).append(", "); // NOI18N
             }
-            composeGroup(layout, interval, first, last);
+            composeGroup(layout, interval, null, first, last);
         } else {
             int min = interval.getMinimumSize(false);
             int pref = interval.getPreferredSize(false);
@@ -235,15 +244,34 @@ public class SwingLayoutCodeGenerator {
                     generateSizeParams(layout, min, pref, max);
                 }
             } else if (interval.isEmptySpace()) {
+                boolean preferredGap;
+                LayoutConstants.PaddingType gapType = interval.getPaddingType();
                 if (interval.isDefaultPadding(false)) {
+                    if (gapType != null && gapType == LayoutConstants.PaddingType.SEPARATE) {
+                        // special case - SEPARATE padding not known by LayoutStyle
+                        preferredGap = false;
+                        if (min == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
+                            min = SwingLayoutBuilder.PADDING_SEPARATE_VALUE;
+                        }
+                        if (pref == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
+                            pref = SwingLayoutBuilder.PADDING_SEPARATE_VALUE;
+                        }
+                    } else {
+                        preferredGap = true;
+                    }
+                } else {
+                    preferredGap = false;
+                }
+                if (preferredGap) {
                     if (first || last) {
                         layout.append(getAddContainerGapStr());
                     } else {
                         layout.append(getAddPreferredGapStr());
-                        layout.append(getLayoutStyleName());
-                        if (!useLayoutLibrary())
-                            layout.append(".ComponentPlacement"); // NOI18N
-                        layout.append(".RELATED"); // NOI18N
+                        if (gapType == LayoutConstants.PaddingType.INDENT) {
+                            // TBD: comp1, comp2
+                            pref = max = LayoutConstants.NOT_EXPLICITLY_DEFINED; // always fixed
+                        }
+                        layout.append(getPaddingTypeStr(gapType));
                     }
                     if ((pref != LayoutConstants.NOT_EXPLICITLY_DEFINED)
                         || ((max != LayoutConstants.NOT_EXPLICITLY_DEFINED)
@@ -283,7 +311,7 @@ public class SwingLayoutCodeGenerator {
      * @param pref preffered size.
      * @param max maximum size.
      */
-    private void generateSizeParams(StringBuffer layout, int min, int pref, int max) {
+    private void generateSizeParams(StringBuilder layout, int min, int pref, int max) {
         layout.append(convertSize(min)).append(", "); // NOI18N
         layout.append(convertSize(pref)).append(", "); // NOI18N
         layout.append(convertSize(max));
@@ -330,7 +358,7 @@ public class SwingLayoutCodeGenerator {
         return convertedSize;
     }
 
-    private void composeLinks(StringBuffer layout, LayoutComponent containerLC, String layoutVarName, int dimension) throws IOException {
+    private void composeLinks(StringBuilder layout, LayoutComponent containerLC, String layoutVarName, int dimension) throws IOException {
 
         Map linkSizeGroups = SwingLayoutUtils.createLinkSizeGroups(containerLC, dimension);
         
@@ -432,5 +460,21 @@ public class SwingLayoutCodeGenerator {
 
     private String getAddGroupStr() {
         return useLayoutLibrary() ? ".add(" : ".addGroup("; // NOI18N
+    }
+
+    private String getPaddingTypeStr(LayoutConstants.PaddingType paddingType) {
+        String str;
+        if (paddingType == null || paddingType == LayoutConstants.PaddingType.RELATED) {
+            str = ".RELATED"; // NOI18N
+        } else if (paddingType == LayoutConstants.PaddingType.UNRELATED) {
+            str = ".UNRELATED"; // NOI18N
+        } else if (paddingType == LayoutConstants.PaddingType.INDENT) {
+            str = ".INDENT"; // NOI18N
+        } else {
+            return null;
+        }
+        
+        return getLayoutStyleName() + (useLayoutLibrary ? "" : ".ComponentPlacement") // NOI18N
+                + str;
     }
 }

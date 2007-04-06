@@ -34,7 +34,7 @@ import org.netbeans.modules.form.actions.*;
 
 class FormRootNode extends FormNode {
     private Node.Property[] codeGenProperties;
-    private Node.Property[] i18nProperties;
+    private Node.Property[] resourceProperties;
     private Node.Property[] allProperties;
 
     public FormRootNode(FormModel formModel) {
@@ -85,16 +85,16 @@ class FormRootNode extends FormNode {
                 return getCodeGenProperties();
             }
         };
-        Node.PropertySet i18nSet = new Node.PropertySet(
-                "i18n", // NOI18N
-                FormUtils.getBundleString("CTL_I18nTab"), // NOI18N
-                FormUtils.getBundleString("CTL_I18nTabHint")) // NOI18N
+        Node.PropertySet resourceSet = new Node.PropertySet(
+                "resources", // NOI18N
+                FormUtils.getBundleString("CTL_ResourceTab"), // NOI18N
+                FormUtils.getBundleString("CTL_ResourceTabHint")) // NOI18N
         {
             public Node.Property[] getProperties() {
-                return getI18nProperties();
+                return getResourceProperties();
             }
         };
-        return new Node.PropertySet[] { codeSet, i18nSet };
+        return new Node.PropertySet[] { codeSet, resourceSet };
     }
 
     Node.Property[] getCodeGenProperties() {
@@ -107,23 +107,23 @@ class FormRootNode extends FormNode {
         return FormEditor.getCodeGenerator(getFormModel()).getSyntheticProperties(null);
     }
 
-    Node.Property[] getI18nProperties() {
-        if (i18nProperties == null)
-            i18nProperties = createI18nProperties();
-        return i18nProperties;
+    Node.Property[] getResourceProperties() {
+        if (resourceProperties == null)
+            resourceProperties = createResourceProperties();
+        return resourceProperties;
     }
     
-    private Node.Property[] createI18nProperties() {
-        return FormEditor.getI18nSupport(getFormModel()).createFormProperties();
+    private Node.Property[] createResourceProperties() {
+        return FormEditor.getResourceSupport(getFormModel()).createFormProperties();
     }
 
     Node.Property[] getAllProperties() {
         if (allProperties == null) {
             int codeGenCount = getCodeGenProperties().length;
-            int i18nCount = getI18nProperties().length;
-            allProperties = new Node.Property[codeGenCount + i18nCount];
+            int resCount = getResourceProperties().length;
+            allProperties = new Node.Property[codeGenCount + resCount];
             System.arraycopy(codeGenProperties, 0, allProperties, 0, codeGenCount);
-            System.arraycopy(i18nProperties, 0, allProperties, codeGenCount, i18nCount);
+            System.arraycopy(resourceProperties, 0, allProperties, codeGenCount, resCount);
         }
         return allProperties;
     }

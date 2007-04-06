@@ -19,26 +19,31 @@
 
 package org.netbeans.modules.form;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.io.IOException;
-import org.netbeans.modules.form.layoutdesign.LayoutComponent;
-import org.netbeans.modules.form.layoutdesign.LayoutModel;
-import org.netbeans.modules.form.palette.BeanInstaller;
-import org.netbeans.modules.form.project.ClassPathUtils;
-import org.netbeans.modules.form.project.ClassSource;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
+import java.awt.datatransfer.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import javax.swing.undo.UndoableEdit;
+import org.openide.*;
+import org.openide.nodes.*;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeTransfer;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.datatransfer.MultiTransferObject;
+import org.openide.ErrorManager;
+import org.openide.loaders.DataObject;
+import org.netbeans.modules.form.project.*;
+import org.netbeans.modules.form.layoutdesign.*;
+import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
+import org.netbeans.modules.form.palette.BeanInstaller;
 
 /**
  * Support class for copy/cut/paste operations in form editor.
@@ -131,25 +136,132 @@ class CopySupport {
 
     // -----------
 
-    /** Paste type for meta components.
+    static void createPasteTypes(Transferable trans, java.util.List s,
+                                 FormModel targetForm, RADComponent targetComponent) {
+        if (targetForm.isReadOnly()) {
+            return;
+        }
+
+        Transferable[] allTrans;
+        if (trans.isDataFlavorSupported(ExTransferable.multiFlavor)) {
+            try {
+                MultiTransferObject transObj = (MultiTransferObject)
+                        trans.getTransferData(ExTransferable.multiFlavor);
+                allTrans = new Transferable[transObj.getCount()];
+                for (int i=0; i < allTrans.length; i++) {
+                    allTrans[i] = transObj.getTransferableAt(i);
+                }
+            } catch (UnsupportedFlavorException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                return;
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                return;
+            }
+        } else {
+            allTrans = new Transferable[] { trans };
+        }
+
+        boolean canPaste = false;
+        boolean cut = false; // true - cut, false - copy
+        List<RADComponent> sourceComponents = null;
+
+        for (int i=0; i < allTrans.length; i++) {
+            Transferable t = allTrans[i];
+            boolean metaCompTransfer;
+            if (t.isDataFlavorSupported(getComponentCopyFlavor())) {
+                assert !cut;
+                metaCompTransfer = true;
+            } else if (t.isDataFlavorSupported(getComponentCutFlavor())) {
+                assert cut || sourceComponents == null;
+                metaCompTransfer = true;
+                cut = true;
+            } else {
+                metaCompTransfer = false;
+            }
+            if (metaCompTransfer) {
+                RADComponent transComp = null;
+                try {
+                    Object data = t.getTransferData(t.getTransferDataFlavors()[0]);
+                    if (data instanceof RADComponent) {
+                        transComp = (RADComponent) data;
+                    }
+                }
+                catch (UnsupportedFlavorException e) {} // should not happen
+                catch (java.io.IOException e) {} // should not happen
+
+                if (transComp != null
+                    // only cut to another container
+                    && (!cut || canPasteCut(transComp, targetForm, targetComponent))
+                    // must be a valid source/target combination
+                    && (MetaComponentCreator.canAddComponent(transComp.getBeanClass(),
+                                                             targetComponent)
+                        || (!cut && MetaComponentCreator.canApplyComponent(transComp.getBeanClass(),
+                                                                           targetComponent)))
+                    // hack needed due to screwed design of menu metacomponents
+                    && (!(targetComponent instanceof RADMenuComponent)
+                          || transComp instanceof RADMenuItemComponent))
+                {   // pasting this meta component is allowed
+                    if (sourceComponents == null) {
+                        sourceComponents = new LinkedList<RADComponent>();
+                    }
+                    sourceComponents.add(getComponentToCopy(transComp, targetComponent, cut));
+                    canPaste = true;
+                }
+            } else { // java node (compiled class) could be copied
+                ClassSource classSource = CopySupport.getCopiedBeanClassSource(t);
+                if (classSource != null) {
+                //                && (MetaComponentCreator.canAddComponent(cls, component)
+                //                   || MetaComponentCreator.canApplyComponent(cls, component)))
+                    s.add(new ClassPaste(t, classSource, targetForm, targetComponent));
+                    canPaste = true;
+                }
+            }
+        }
+
+        if (sourceComponents != null) {
+            s.add(new RADPaste(sourceComponents, targetForm, targetComponent, cut));
+        }
+
+        if (!canPaste && targetComponent != null
+                && (!(targetComponent instanceof ComponentContainer)
+                    || MetaComponentCreator.isTransparentLayoutComponent(targetComponent))
+                && targetComponent.getParentComponent() != null) {
+            // allow paste on non-container component - try its parent
+            createPasteTypes(trans, s, targetForm, targetComponent.getParentComponent());
+        }
+    }
+
+    private static RADComponent getComponentToCopy(RADComponent metacomp, RADComponent targetComp, boolean cut) {
+        RADComponent parent = metacomp.getParentComponent();
+        if (MetaComponentCreator.isTransparentLayoutComponent(parent)
+                && (!cut || parent.getParentComponent() != targetComp)) {
+            return parent;
+        }
+        return metacomp;
+    }
+
+    /**
+     * Paste type for meta components.
      */
-    static class RADPaste extends PasteType implements Mutex.ExceptionAction {
-        private Transferable transferable;
+    private static class RADPaste extends PasteType implements Mutex.ExceptionAction {
+        private List<RADComponent> sourceComponents;
         private FormModel targetForm;
         private RADComponent targetComponent;
+        private boolean fromCut;
 
-        public RADPaste(Transferable t,
-                        FormModel targetForm,
-                        RADComponent targetComponent)
+        RADPaste(List<RADComponent> sourceComponents,
+                 FormModel targetForm, RADComponent targetComponent,
+                 boolean cut)
         {
-            this.transferable = t;
+            this.sourceComponents = sourceComponents;
             this.targetForm = targetForm;
             this.targetComponent = targetComponent;
+            this.fromCut = cut;
         }
 
         public String getName() {
-            return FormUtils.getBundleString(isComponentCut() ?
-                                             "CTL_CutPaste" : "CTL_CopyPaste"); // NOI18N
+            return FormUtils.getBundleString(fromCut ? "CTL_CutPaste" : "CTL_CopyPaste"); // NOI18N
         }
 
         public Transferable paste() throws IOException {
@@ -176,171 +288,190 @@ class CopySupport {
         }
 
         private Transferable doPaste() throws IOException {
-            boolean fromCut = isComponentCut();
-            RADComponent sourceComponent = getSourceComponent(fromCut);
-
-            if (sourceComponent == null)
+            if (sourceComponents == null || sourceComponents.isEmpty()) {
                 return null;
-
-            if (!fromCut || sourceComponent.getCodeExpression() == null) {
-                // pasting copy of RADComponent
-                targetForm.getComponentCreator()
-                              .copyComponent(sourceComponent, targetComponent);
-                return null;
-//                return new RADTransferable(getComponentCopyFalvor(),
-//                                           sourceComponent);
             }
 
-            // pasting cut
-            FormModel sourceForm = sourceComponent.getFormModel();
-            if (sourceForm != targetForm
-                || (targetComponent != null
-                    && !sourceComponent.getClass().isAssignableFrom(
-                                         targetComponent.getClass())))
-            {   // cut from another form or pasting to an incompatible container
-                if (targetForm.getComponentCreator()
-                                .copyComponent(sourceComponent, targetComponent)
-                    != null)
-                {
-                    Node sourceNode = sourceComponent.getNodeReference();
-                    // delete component in the source form
-                    if (sourceNode != null)
-                        sourceNode.destroy();
-                    else throw new IllegalStateException();
-                }
-                else return null; // paste not performed
-            }
-            else { // moving component within the same form
-                if (!canPasteCut(sourceComponent, targetForm, targetComponent)
-                    || !MetaComponentCreator.canAddComponent(
-                                               sourceComponent.getBeanClass(),
-                                               targetComponent))
-                    return null; // not allowed, ignore paste
+            FormModel sourceForm = sourceComponents.get(0).getFormModel();
+            boolean move = fromCut && sourceForm == targetForm;
+            boolean autoUndo = true; // in case of unexpected error, for robustness
+            LayoutModel sourceLayout = sourceForm.getLayoutModel();
+            LayoutModel targetLayout = targetForm.getLayoutModel();
+            List<RADComponent> copiedComponents = null; // only for new-to-new layout copy
 
-                sourceForm.startCompoundEdit(true);
-                boolean resetConstraintProperties = false;
-                LayoutModel layoutModel = sourceForm.getLayoutModel();
-                LayoutComponent layoutComponent = null;
-                if (layoutModel != null) {
-                    layoutComponent = layoutModel.getLayoutComponent(sourceComponent.getId());
-                    if (layoutComponent != null) {
-                        resetConstraintProperties = true;
-                        Object layoutUndoMark = layoutModel.getChangeMark();
-                        javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
-                        boolean autoUndo = true;
-                        boolean fromModel = (!(targetComponent instanceof RADVisualContainer)
-                                            || ((RADVisualContainer)targetComponent).getLayoutSupport() != null)
-                                            && !layoutComponent.isLayoutContainer();
-                        try {
-                            layoutModel.removeComponent(sourceComponent.getId(), fromModel);
-                            autoUndo = false;
-                        } finally {
-                            if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                                sourceForm.addUndoableEdit(ue);
-                            }
-                            if (autoUndo) {
-                                sourceForm.forceUndoOfCompoundEdit();
-                            }
+            // is the target container a visual container with new layout?
+            boolean targetNewLayout = targetComponent instanceof RADVisualContainer
+                    && ((RADVisualContainer)targetComponent).getLayoutSupport() == null;
+            RADVisualContainer sourceContainer = null;
+            Object layoutUndoMark = null;
+            UndoableEdit layoutEdit = null;
+            Map<String, String> sourceToTargetId = null; // for new-to-new layout copy
+            Map<String, Rectangle> idToBounds = null; // for old-to-new layout copy
+
+            if (targetNewLayout) {
+                // do all source components come from a visual container from which
+                // we can copy the layout to the new layout?
+                for (RADComponent sourceComp : sourceComponents) {
+                    if (sourceComp instanceof RADVisualComponent) {
+                        RADVisualContainer parent = ((RADVisualComponent)sourceComp).getParentContainer();
+                        if (sourceContainer == null) {
+                            sourceContainer = parent;
+                        } else if (parent != sourceContainer) {
+                            sourceContainer = null;
+                            break;
                         }
+                    } else {
+                        sourceContainer = null;
+                        break;
                     }
                 }
-                
-                // remove source component from its parent
-                sourceForm.removeComponent(sourceComponent, false);
-
-                if (sourceComponent instanceof RADVisualComponent
-                    && targetComponent instanceof RADVisualContainer)
-                {
-                    RADVisualComponent visualComp = (RADVisualComponent) sourceComponent;
-                    RADVisualContainer visualCont = (RADVisualContainer) targetComponent;
-
-                    if (visualCont.getLayoutSupport() == null) {
-                        targetForm.addComponent(visualComp, visualCont, false);
-                        LayoutComponent parent = layoutModel.getLayoutComponent(visualCont.getId());
-                        Object layoutUndoMark = layoutModel.getChangeMark();
-                        javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
-                        boolean autoUndo = true;
-                        if (layoutComponent == null) {
-                            layoutComponent = new LayoutComponent(visualComp.getId(),
-                                MetaComponentCreator.shouldBeLayoutContainer(visualComp));
-                        }
-                        resetConstraintProperties = true;
-                        try {
-                            layoutModel.addNewComponent(layoutComponent, parent, null);
-                            autoUndo = false;
-                        } finally {
-                            if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                                sourceForm.addUndoableEdit(ue);
-                            }
-                            if (autoUndo) {
-                                sourceForm.forceUndoOfCompoundEdit();
-                            }
-                        }
-                    }
-                    else {
-                        try {
-                            targetForm.addVisualComponent(visualComp, visualCont,
-                                    visualCont.getLayoutSupport().getStoredConstraints(visualComp),
-                                    false);
-                        }
-                        catch (RuntimeException ex) {
-                            // layout support does not accept the component
-                            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-                            return transferable;
-                        }
-                    }
+                if (sourceContainer != null && sourceContainer.getLayoutSupport() != null
+                    && (getComponentBounds(sourceComponents.get(0)) == null
+                        || !isConvertibleLayout(sourceContainer))) {
+                    sourceContainer = null; // old layout not suitable for conversion
                 }
-                else {
-                    ComponentContainer targetContainer =
-                        targetComponent instanceof ComponentContainer ?
-                            (ComponentContainer) targetComponent : null;
-
-                    // add the component to the target container
-                    targetForm.addComponent(sourceComponent, targetContainer, false);
-                }
-                if (resetConstraintProperties) {
-                    ((RADVisualComponent)sourceComponent).resetConstraintsProperties();
-                }
+                // take care about undo in target layout model
+                layoutUndoMark = targetLayout.getChangeMark();
+                layoutEdit = targetLayout.getUndoableEdit();
             }
 
-            return ExTransferable.EMPTY;
-        }
-
-        boolean isComponentCut() {
-            return transferable.isDataFlavorSupported(getComponentCutFlavor());
-        }
-
-        RADComponent getSourceComponent(boolean fromCut) throws IOException {
-            RADComponent sourceComponent = null;
             try {
-                Object obj = transferable.getTransferData(
-                               fromCut ? getComponentCutFlavor() :
-                                         getComponentCopyFlavor());
-                if (obj instanceof RADComponent)
-                    sourceComponent = (RADComponent) obj;
-            }
-            catch (UnsupportedFlavorException e) { // ignore - should not happen
+                // copy or move the components
+                for (RADComponent sourceComp : sourceComponents) {
+                    RADComponent copiedComp;
+                    if (!move) {
+                        copiedComp = targetForm.getComponentCreator().copyComponent(sourceComp, targetComponent);
+                        if (copiedComp == null) {
+                            return null; // copy failed...
+                        }
+                    } else {//if (canPasteCut(sourceComp, targetForm, targetComponent)
+                            //   && MetaComponentCreator.canAddComponent(sourceComp.getBeanClass(), targetComponent)) {
+                        targetForm.getComponentCreator().moveComponent(sourceComp, targetComponent);
+                        copiedComp = sourceComp;
+                    }
+
+                    // for visual components we must care about the layout model (new layout)
+                    if (targetNewLayout) {
+                        RADVisualContainer targetContainer = (RADVisualContainer) targetComponent;
+                        if (sourceContainer != null) { // source is one visual container, we can copy the layout
+                            if (sourceContainer.getLayoutSupport() == null) { // copying from new layout
+                                if (sourceToTargetId == null) {
+                                    sourceToTargetId = new HashMap<String, String>();
+                                }
+                                sourceToTargetId.put(sourceComp.getId(), copiedComp.getId());
+                                // remember the copied component - for next paste operation
+                                if (copiedComp != sourceComp) {
+                                    if (copiedComponents == null) {
+                                        copiedComponents = new ArrayList<RADComponent>(sourceComponents.size());
+                                    }
+                                    copiedComponents.add(copiedComp);
+                                }
+                            } else { // copying from old layout - requires conversion
+                                if (idToBounds == null) {
+                                    idToBounds = new HashMap<String, Rectangle>();
+                                }
+                                idToBounds.put(copiedComp.getId(), getComponentBounds(sourceComp));
+                            }
+                        } else { // layout can't be copied, place component on a default location
+                            getLayoutDesigner().addUnspecifiedComponent(copiedComp.getId(),
+                                    sourceComp.getId(), getComponentSize(sourceComp),
+                                    targetComponent.getId());
+                        }
+                    } else if (move && sourceLayout != null) { // new-to-old layout copy
+                        // need to remove layout component
+                        LayoutComponent layoutComp = sourceLayout.getLayoutComponent(sourceComp.getId());
+                        if (layoutComp != null) {
+                            sourceLayout.removeComponent(sourceComp.getId(), layoutComp.isLayoutContainer());
+                        }
+                    } // old-to-old layout copy is fully handled by MetaComponentCreator
+                }
+
+                // copy the layout for all visual components together
+                if (sourceToTargetId != null) { // new layout to new layout
+                    getLayoutDesigner().copyLayout(sourceLayout, sourceToTargetId, targetComponent.getId());
+                } else if (idToBounds != null) { // old layout to new layout
+                    getLayoutDesigner().copyLayoutFromOutside(idToBounds, targetComponent.getId(), true);
+                }
+
+                autoUndo = false;
+            } finally {
+                if (layoutUndoMark != null && !layoutUndoMark.equals(targetLayout.getChangeMark())) {
+                    sourceForm.addUndoableEdit(layoutEdit);
+                }
+                if (autoUndo) {
+                    targetForm.forceUndoOfCompoundEdit();
+                    // [don't expect problems in source form...]
+                }
             }
 
-            return sourceComponent;
+            // remove components if cut from another form (the components have been copied)
+            if (fromCut && sourceForm != targetForm) {
+                for (RADComponent sourceComp : sourceComponents) {
+                    Node sourceNode = sourceComp.getNodeReference();
+                    if (sourceNode != null) {
+                        sourceNode.destroy();
+                    }
+                }
+            }
+
+            // return Transferable object for the next paste operation
+            if (fromCut) { // cut - can't be pasted again
+                return ExTransferable.EMPTY;
+            } else if (copiedComponents != null) {
+                // make the newly copied components the source for the next paste
+                if (copiedComponents.size() == 1) {
+                    return new RADTransferable(getComponentCopyFlavor(), copiedComponents.get(0));
+                } else {
+                    Transferable[] trans = new Transferable[copiedComponents.size()];
+                    int i = 0;
+                    for (RADComponent comp : copiedComponents) {
+                        trans[i++] = new RADTransferable(getComponentCopyFlavor(), comp);
+                    }
+                    return new ExTransferable.Multi(trans);
+                }
+            } else { // keep the original clipboard content
+                return null;
+            }
+            // TODO: menu components edge cases
+        }
+
+        private static Rectangle getComponentBounds(RADComponent sourceComp) {
+            FormDesigner designer = FormEditor.getFormDesigner(sourceComp.getFormModel());
+            Component comp = (Component) designer.getComponent(sourceComp);
+            return comp != null ? comp.getBounds() : null;
+        }
+
+        private static Dimension getComponentSize(RADComponent sourceComp) {
+            FormDesigner designer = FormEditor.getFormDesigner(sourceComp.getFormModel());
+            Component comp = (Component) designer.getComponent(sourceComp);
+            return comp != null ? comp.getSize() : null;
+        }
+
+        private static boolean isConvertibleLayout(RADVisualContainer metaCont) {
+            LayoutSupportManager ls = metaCont.getLayoutSupport();
+            return !ls.isDedicated() && ls.getSupportedClass() != java.awt.CardLayout.class;
+        }
+
+        private LayoutDesigner getLayoutDesigner() {
+            return FormEditor.getFormDesigner(targetForm).getLayoutDesigner();
         }
     }
 
     // ------------
 
-    /** Paste type for a class (java node).
+    /**
+     * Paste type for a class (java node).
      */
-    static class ClassPaste extends PasteType implements Mutex.ExceptionAction {
-
+    private static class ClassPaste extends PasteType implements Mutex.ExceptionAction {
         private Transferable transferable;
         private ClassSource classSource;
         private FormModel targetForm;
         private RADComponent targetComponent; // may be null if pasting to Other Components
 
-        public ClassPaste(Transferable t,
-                          ClassSource classSource,
-                          FormModel targetForm,
-                          RADComponent targetComponent)
+        ClassPaste(Transferable t,
+                   ClassSource classSource,
+                   FormModel targetForm,
+                   RADComponent targetComponent)
         {
             this.transferable = t;
             this.classSource = classSource;
@@ -386,7 +517,7 @@ class CopySupport {
         }
     }
 
-    static String getCopiedBeanClassName(final FileObject fo) {
+    static String getCopiedBeanClassName(FileObject fo) {
         return BeanInstaller.findJavaBeanName(fo);
     }
 

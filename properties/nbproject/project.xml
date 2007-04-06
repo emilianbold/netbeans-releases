@@ -106,6 +106,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.i18n</friend>
                 <friend>org.netbeans.modules.i18n.form</friend>
                 <friend>org.netbeans.modules.properties.syntax</friend>
+                <friend>org.netbeans.modules.swingapp</friend>
                 <package>org.netbeans.modules.properties</package>
             </friend-packages>
         </data>

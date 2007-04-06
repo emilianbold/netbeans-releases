@@ -67,7 +67,7 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
     FormI18nString(DataObject srcDataObject) {
         super(new FormI18nSupport.Factory().createI18nSupport(srcDataObject));
 
-        boolean nbBundle = org.netbeans.modules.i18n.Util.isNbBundleAvailable(srcDataObject);
+        boolean nbBundle = I18nServiceImpl.isNbBundleAvailable(srcDataObject.getPrimaryFile());
         if (I18nUtil.getDefaultReplaceFormat(!nbBundle).equals(getReplaceFormat())) {
             setReplaceFormat(I18nUtil.getDefaultReplaceFormat(nbBundle));
         }
@@ -93,25 +93,22 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
         if (sourceDO == null)
             return getValue();
 
-        boolean sameForm = (sourceDO == support.getSourceDataObject());
-        boolean autoMode = form.getSettings().getI18nAutoMode();
-        DataObject resource = sameForm || !autoMode ?
-                              support.getResourceHolder().getResource() : null;
-        I18nSupport newSupport = createNewSupport(sourceDO, resource);
-
         FormI18nString newI18nString;
-        if (autoMode) { // need auto-generated key (form module must provide)
-            newI18nString = new FormI18nString(newSupport,
+        if (form.getSettings().isI18nAutoMode()) { // target form is in auto-i18n mode
+            // need new key (auto-generated; form module must provide)
+            newI18nString = new FormI18nString(createNewSupport(sourceDO, null),
                                 COMPUTE_AUTO_KEY, getValue(), getComment(),
                                 getArguments(), getReplaceFormat());
             JavaResourceHolder jrh = (JavaResourceHolder) support.getResourceHolder();
             newI18nString.allData = jrh.getAllData(getKey());
         }
-        else {
+        else { // same key, same properties file
+            I18nSupport newSupport = createNewSupport(sourceDO, support.getResourceHolder().getResource());
             newI18nString = new FormI18nString(newSupport,
                                 getKey(), getValue(), getComment(),
                                 getArguments(), getReplaceFormat());
-            if (!sameForm) { // make sure the value is actual according to the target locale
+            if (sourceDO != support.getSourceDataObject()) { // different form target
+                // make sure the value is actual according to the target locale
                 ResourceHolder rh = newSupport.getResourceHolder();
                 newI18nString.value = rh.getValueForKey(getKey());
                 newI18nString.comment = rh.getCommentForKey(getKey());
@@ -146,6 +143,10 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
             return FormDesignValue.IGNORED_VALUE;
         else
             return designValue;
+    }
+
+    public Object getDesignValue(Object target) {
+        return null;
     }
     
     /** Gets description of the design value. Implements <code>FormDesignValue</code> interface.

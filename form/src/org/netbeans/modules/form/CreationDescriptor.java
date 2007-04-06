@@ -150,6 +150,11 @@ public class CreationDescriptor {
         
         defaultParams = defParams == null ? emptyParams : defParams;
     }
+    
+    public void addCreator(Creator creator, Object[] defaultParams) {
+        creators.add(creator);
+        this.defaultParams = defaultParams;
+    }
 
     private void setDescribedClass(Class descClass) throws IllegalArgumentException {
         if(describedClass==null){
@@ -183,6 +188,16 @@ public class CreationDescriptor {
 
     public Class getDescribedClass() {
         return describedClass;
+    }
+    
+    /**
+     * This method allows sub-classes to return name of the
+     * described class without the need to load the class itself.
+     *
+     * @return name of the described class e.g. (<code>getDescribedClass().getName()</code>).
+     */
+    public String getDescribedClassName() {
+        return getDescribedClass().getName();
     }
 
     public Creator[] getCreators() {

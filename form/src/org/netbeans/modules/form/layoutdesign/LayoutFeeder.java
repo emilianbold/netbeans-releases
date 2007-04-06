@@ -63,6 +63,7 @@ class LayoutFeeder implements LayoutConstants {
     private int aEdge;
     private LayoutInterval aSnappedParallel;
     private LayoutInterval aSnappedNextTo;
+    private PaddingType aPaddingType;
 
     private static class IncludeDesc {
         LayoutInterval parent;
@@ -71,6 +72,7 @@ class LayoutFeeder implements LayoutConstants {
         LayoutInterval neighbor; // if included in a sequence with single interval (which is not in sequence yet)
         LayoutInterval snappedParallel; // not null if aligning in parallel
         LayoutInterval snappedNextTo; // not null if snapped next to (can but need not be 'neighbor')
+        PaddingType paddingType; // type of padding if snapped (next to)
         int alignment; // the edge this object defines (leading or trailing or default)
         boolean fixedPosition; // whether distance from the neighbor is definitely fixed
         int distance = Integer.MAX_VALUE;
@@ -175,12 +177,14 @@ class LayoutFeeder implements LayoutConstants {
                 aEdge = originalPos1.alignment;
                 aSnappedParallel = originalPos1.snappedParallel;
                 aSnappedNextTo = originalPos1.snappedNextTo;
+                aPaddingType = originalPos1.paddingType;
             }
             // if snapped in dragger then always find the position
             else if (newPos != null) {
                 aEdge = newPos.alignment;
                 aSnappedParallel = !newPos.nextTo ? newPos.interval : null;
                 aSnappedNextTo = newPos.snapped && newPos.nextTo ? newPos.interval : null;
+                aPaddingType = newPos.paddingType;
                 // if resizing only in this dimension then preserve the original position
                 preserveOriginal = dragger.isResizing(dim);
             }
@@ -190,15 +194,17 @@ class LayoutFeeder implements LayoutConstants {
                 aEdge = originalPos1.alignment;
                 aSnappedParallel = originalPos1.snappedParallel;
                 aSnappedNextTo = originalPos1.snappedNextTo;
+                aPaddingType = originalPos1.paddingType;
                 preserveOriginal = true;
             }
             // otherwise plain moving without snap
             else {
                 aEdge = DEFAULT;
                 aSnappedParallel = aSnappedNextTo = null;
+                aPaddingType = null;
             }
 
-            LayoutInterval root = dragger.getTargetContainer().getLayoutRoot(dim);
+            LayoutInterval root = dragger.getTargetRoots()[dim];
             analyzeParallel(root, inclusions);
 
             // make sure an inclusion for parallel aligning is considered, choose best inclusion
@@ -240,12 +246,14 @@ class LayoutFeeder implements LayoutConstants {
                         aEdge = newPos.alignment;
                         aSnappedParallel = !newPos.nextTo ? newPos.interval : null;
                         aSnappedNextTo = newPos.snapped && newPos.nextTo ? newPos.interval : null;
+                        aPaddingType = newPos.paddingType;
                     }
                     else { // need to renew the original position
                         assert !dragger.isResizing(dim);
                         aEdge = originalPos2.alignment;
                         aSnappedParallel = originalPos2.snappedParallel;
                         aSnappedNextTo = originalPos2.snappedNextTo;
+                        aPaddingType = originalPos2.paddingType;
                     }
                     // second round searching
                     analyzeParallel(root, inclusions);
@@ -366,6 +374,7 @@ class LayoutFeeder implements LayoutConstants {
                                == gap.getParent().getCurrentSpace().positions[dimension][alignment])
                         {   // the next interval is really at preferred distance
                             iDesc.snappedNextTo = next;
+                            iDesc.paddingType = gap.getPaddingType();
                         }
                     }
                     else { // likely next to the root group border
@@ -503,7 +512,7 @@ class LayoutFeeder implements LayoutConstants {
         if (positions[VERTICAL] != null && positions[VERTICAL].nextTo && positions[VERTICAL].snapped
             && (positions[VERTICAL].interval.getParent() == null)) {
             int alignment = positions[VERTICAL].alignment;
-            int[][] overlapSides = overlappingGapSides(dragger.getTargetContainer().getLayoutRoot(HORIZONTAL),
+            int[][] overlapSides = overlappingGapSides(dragger.getTargetRoots()[HORIZONTAL],
                                                        dragger.getMovingSpace());
             if (((alignment == LEADING) || (alignment == TRAILING))
                 && (overlapSides[VERTICAL][1-alignment] != 0)
@@ -513,7 +522,7 @@ class LayoutFeeder implements LayoutConstants {
         }
         if ((positions[HORIZONTAL] == null || !positions[HORIZONTAL].snapped)
             && (positions[VERTICAL] == null || !positions[VERTICAL].snapped)) {
-            boolean[] overlapDim = overlappingGapDimensions(dragger.getTargetContainer().getLayoutRoot(HORIZONTAL),
+            boolean[] overlapDim = overlappingGapDimensions(dragger.getTargetRoots()[HORIZONTAL],
                                                             dragger.getMovingSpace());
             if (overlapDim[VERTICAL] && !overlapDim[HORIZONTAL]) {
                 return VERTICAL;
@@ -928,28 +937,32 @@ class LayoutFeeder implements LayoutConstants {
             }
 
             LayoutInterval gap = new LayoutInterval(SINGLE);
-            if (!minorGap && (iiDesc == null || iiDesc.snappedNextTo == null)) {
-                // the gap possibly needs an explicit size
-                LayoutRegion space = iiDesc != null && iiDesc.snappedParallel != null ?
-                                     iiDesc.snappedParallel.getCurrentSpace() : addingSpace;
-                int distance = neighbors[i] != null ?
-                    LayoutRegion.distance(neighbors[i].getCurrentSpace(), space, dimension, i^1, i) :
-                    LayoutRegion.distance(parent.getCurrentSpace(), space, dimension, i, i);
-                if (i == TRAILING)
-                    distance *= -1;
+            if (!minorGap) {
+                if (iiDesc == null || iiDesc.snappedNextTo == null) {
+                    // the gap possibly needs an explicit size
+                    LayoutRegion space = iiDesc != null && iiDesc.snappedParallel != null ?
+                                         iiDesc.snappedParallel.getCurrentSpace() : addingSpace;
+                    int distance = neighbors[i] != null ?
+                        LayoutRegion.distance(neighbors[i].getCurrentSpace(), space, dimension, i^1, i) :
+                        LayoutRegion.distance(parent.getCurrentSpace(), space, dimension, i, i);
+                    if (i == TRAILING)
+                        distance *= -1;
 
-                if (distance > 0) {
-                    int pad = neighbors[i] != null
-                              || LayoutInterval.getNeighbor(parent, i, false, true, false) == null ?
-                        determineExpectingPadding(addingInterval, neighbors[i], seq, i) :
-                        Short.MIN_VALUE; // has no neighbor, but is not related to container border
-                    if (distance > pad || (fixedGap && distance != pad)) {
-                        gap.setPreferredSize(distance);
-                        if (fixedGap) {
-                            gap.setMinimumSize(USE_PREFERRED_SIZE);
-                            gap.setMaximumSize(USE_PREFERRED_SIZE);
+                    if (distance > 0) {
+                        int pad = neighbors[i] != null
+                                  || LayoutInterval.getNeighbor(parent, i, false, true, false) == null ?
+                            determineExpectingPadding(addingInterval, neighbors[i], seq, i) :
+                            Short.MIN_VALUE; // has no neighbor, but is not related to container border
+                        if (distance > pad || (fixedGap && distance != pad)) {
+                            gap.setPreferredSize(distance);
+                            if (fixedGap) {
+                                gap.setMinimumSize(USE_PREFERRED_SIZE);
+                                gap.setMaximumSize(USE_PREFERRED_SIZE);
+                            }
                         }
                     }
+                } else {
+                    gap.setPaddingType(iiDesc.paddingType);
                 }
             }
             if (!fixedGap) {
@@ -1387,7 +1400,7 @@ class LayoutFeeder implements LayoutConstants {
             }
             // otherwise look for a gap to reduce
             else if (li.isEmptySpace() && li.getPreferredSize() != NOT_EXPLICITLY_DEFINED) {
-                int pad = determinePadding(interval, dimension, alignment);
+                int pad = determinePadding(interval, li.getPaddingType(), dimension, alignment);
                 int currentSize = LayoutInterval.getIntervalCurrentSize(li, dimension);
 
                 int size = currentSize - increment;
@@ -1856,9 +1869,14 @@ class LayoutFeeder implements LayoutConstants {
         return pos;
     }
 
-    private int determinePadding(LayoutInterval interval, int dimension, int alignment) {
+    private int determinePadding(LayoutInterval interval, PaddingType paddingType,
+                                 int dimension, int alignment)
+    {
         LayoutInterval neighbor = LayoutInterval.getNeighbor(interval, alignment, true, true, false);
-        return dragger.findPadding(neighbor, interval, dimension, alignment);
+        if (paddingType == null) {
+            paddingType = PaddingType.RELATED;
+        }
+        return dragger.findPaddings(neighbor, interval, paddingType, dimension, alignment)[0];
         // need to go through dragger as the component of 'interval' is not in model yet
     }
 
@@ -1875,7 +1893,7 @@ class LayoutFeeder implements LayoutConstants {
         if (baseInt == null) {
             baseInt = LayoutInterval.getNeighbor(baseParent, SEQUENTIAL, alignment);
         }
-        return dragger.findPadding(baseInt, addingInt, dimension, alignment);
+        return dragger.findPaddings(baseInt, addingInt, PaddingType.RELATED, dimension, alignment)[0];
     }
 
     // -----
@@ -2184,6 +2202,7 @@ class LayoutFeeder implements LayoutConstants {
         iDesc.snappedParallel = aSnappedParallel;
         if (distance == -1) {
             iDesc.snappedNextTo = aSnappedNextTo;
+            iDesc.paddingType = aPaddingType;
             iDesc.fixedPosition = true;
         }
         iDesc.distance = distance;

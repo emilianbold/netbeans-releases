@@ -23,8 +23,10 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="absolutelayout.xml" url="absolutelayout.xml"/>
+            <file name="beans_binding.xml" url="beans_binding.xml"/>
         </folder>
     </folder>
+
     <folder name="UI">
       <folder name="Services">
         <folder name="Editing">
@@ -32,9 +34,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.form.FormLoaderSettings.createViewNode"/>
             </file>
         </folder> <!-- Editing -->
-
       </folder> <!-- Services -->
-
     </folder> <!-- UI -->
 
     <folder name="Actions">
@@ -99,8 +99,13 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
 
             <file name="JMenuBar.palette_item" url="palette/JMenuBar.palette_item" />
+            <file name="JMenu.palette_item" url="palette/JMenu.palette_item" />
+            <file name="JMenuItem.palette_item" url="palette/JMenuItem.palette_item" />
+            <file name="JCheckBoxMenuItem.palette_item" url="palette/JCheckBoxMenuItem.palette_item" />
+            <file name="JRadioButtonMenuItem.palette_item" url="palette/JRadioButtonMenuItem.palette_item" />
             <file name="JPopupMenu.palette_item" url="palette/JPopupMenu.palette_item" />
-
+            <file name="JSeparator.palette_item" url="palette/JSeparator.palette_item" />
+            
             <attr name="JMenuBar.palette_item/JPopupMenu.palette_item" boolvalue="true" />
         </folder>
 
@@ -503,8 +508,8 @@ Microsystems, Inc. All Rights Reserved.
 
     </folder>
 
-    <!-- form class loader type registration -->
     <folder name="org-netbeans-modules-form">
+        <!-- form class loader type registration -->
         <folder name="classloader">
             <folder name="system">
                 <file name="SystemClasses.txt" url="SystemClasses.txt" />

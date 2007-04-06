@@ -228,10 +228,19 @@ public class FormModel
         return Collections.unmodifiableCollection(idToComponents.values());
     }
 
-    public Collection<RADComponent> getNonVisualComponents() {
+    public List<RADComponent> getNonVisualComponents() {
         List<RADComponent> list = new ArrayList<RADComponent>(otherComponents.size());
         for (RADComponent metacomp : otherComponents) {
             if (!java.awt.Component.class.isAssignableFrom(metacomp.getBeanClass()))
+                list.add(metacomp);
+        }
+        return list;
+    }
+
+    public List<RADComponent> getVisualComponents() {
+        List<RADComponent> list = new ArrayList(idToComponents.size());
+        for (RADComponent metacomp : idToComponents.values()) {
+            if (java.awt.Component.class.isAssignableFrom(metacomp.getBeanClass()))
                 list.add(metacomp);
         }
         return list;
@@ -848,6 +857,22 @@ public class FormModel
         return ev;
     }
 
+    public FormModelEvent fireBindingChanged(RADComponent metacomp,
+                                             String path,
+                                             MetaBinding oldValue,
+                                             MetaBinding newValue)
+    {
+        FormModelEvent ev = new FormModelEvent(this, FormModelEvent.BINDING_PROPERTY_CHANGED);
+        ev.setComponentAndContainer(metacomp, null);
+        ev.setProperty(path, oldValue, newValue);
+        sendEvent(ev);
+
+        if (undoRedoRecording && oldValue != newValue) {
+            addUndoableEdit(ev.getUndoableEdit());
+        }
+
+        return ev;
+    }
 
     /** Fires an event informing about changing a synthetic property of
      * a component. An undoable edit is created and registered automatically. */
@@ -967,7 +992,7 @@ public class FormModel
     void sendEvent(FormModelEvent ev) {
         EventBroker broker = getEventBroker();
         if (broker != null)
-            broker.sendEvent(ev);
+            broker.sendEvent(ev); // let the broker decide when to fire
         else {
             t("no event broker, firing event directly: "+ev.getChangeType()); // NOI18N
             fireEvents(new FormModelEvent[] { ev });
@@ -985,7 +1010,13 @@ public class FormModel
     }
 
     void sendEventImmediately(FormModelEvent ev) {
-        fireEvents(new FormModelEvent[] { ev });
+        EventBroker broker = getEventBroker();
+        if (broker != null)
+            broker.sendEventImmediately(ev);
+        else {
+            t("no event broker, firing event directly: "+ev.getChangeType()); // NOI18N
+            fireEvents(new FormModelEvent[] { ev });
+        }
     }
 
     EventBroker getEventBroker() {
@@ -1015,7 +1046,10 @@ public class FormModel
 
         public void sendEventImmediately(FormModelEvent ev) {
             t("firing event directly from event broker: "+ev.getChangeType()); // NOI18N
-            FormModel.this.fireEvents(new FormModelEvent[] { ev });
+            if (eventList == null)
+                eventList = new ArrayList();
+            eventList.add(ev);
+            run();
         }
 
         public void sendEventLater(FormModelEvent ev) {
@@ -1078,7 +1112,7 @@ public class FormModel
 
     // -------------
 
-    CodeStructure getCodeStructure() {
+    public CodeStructure getCodeStructure() {
         return codeStructure;
     }
     

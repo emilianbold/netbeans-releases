@@ -16,13 +16,13 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.form.editors2;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ResourceBundle;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -35,8 +35,6 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 
 import org.openide.awt.Mnemonics;
-import org.openide.explorer.propertysheet.ExPropertyEditor;
-import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.NbBundle;
 
@@ -44,79 +42,54 @@ import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.codestructure.CodeVariable;
 
 /**
- * Font property editor that supports relative changes of the font.
+ * Font property editor that wraps a default property editor for fonts plus it
+ * adds the ability to specify relative changes to the font.
+ * As ResourceWrapperEditor subclass it also allows to wrap the font in a
+ * ResourceValue (store as a resource). This "resource wrapping" is only used
+ * for absolute fonts (relative changes can't be resources).
  *
- * @author Jan Stola
+ * @author Jan Stola, Tomas Pavek
  */
-public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
-    FormAwareEditor, PropertyChangeListener {
-    /**
-     * Property editor delegate used for static/absolute values.
-     */
-    private PropertyEditor delegate;
-    /**
-     * The current value of the property maintained by this property editor.
-     */
-    private NbFont propertyValue;
-    /**
-     * Edited property.
-     */
-    private RADProperty property;
-    /**
-     * Property change support.
-     */
-    private PropertyChangeSupport propChangeSupport;
-    /**
-     * Determines whether (internal) updates should be ignored.
-     */
-    private boolean ignoreUpdates = true;
+public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEditor {
     
     public FontEditor() {
-        propertyValue = new NbFont();
-        propChangeSupport = new PropertyChangeSupport(this);
-        delegate = PropertyEditorManager.findEditor(Font.class);
-        if (delegate == null) {
-            throw new IllegalStateException("FontEditor delegate not found."); // NOI18N
-        }
-        if (!(delegate instanceof XMLPropertyEditor)) {
-            throw new IllegalStateException("FontEditor delegate doesn't implement XMLPropertyEditor."); // NOI18N
-        }
-        delegate.addPropertyChangeListener(this);
+        super(PropertyEditorManager.findEditor(Font.class));
     }
 
-    public void setValue(Object value) {
-        if ((value instanceof Font) || (value == null)) {
-            propertyValue = new NbFont();
-            propertyValue.absolute = true;
-            propertyValue.font = (Font)value;
-        } else if (value instanceof NbFont) {
-            propertyValue = ((NbFont)value).copy();
-        } else {
-            throw new IllegalArgumentException();
-        }
-        if (property != null) {
-            propertyValue.property = property;
-        }
-        delegate.setValue(propertyValue.getDesignValue());
+    public PropertyEditor getDelegatedPropertyEditor() {
+        // hack for saving: this is not only a wrapper of FontEditor for
+        // absolute fonts, but also a complete property editor for relative
+        // fonts - in which case it returns itself as the property editor
+        // responsible for saving
+        Object value = getValue();
+        if (!(value instanceof NbFont))
+            return super.getDelegatedPropertyEditor();
+        else
+            return this;
     }
 
-    public Object getValue() {
-        return propertyValue.absolute ? propertyValue.font : propertyValue;
+    public Object getUnwrappedValue() {
+        // NbFont can't be stored in the delegate FontEditor, so we can't use
+        // delegateEditor.getValue() to get the unwrapped value
+        Object value = getValue();
+        return value instanceof ResourceValue ?
+            ((ResourceValue)value).getDesignValue() : value;
     }
 
-    public boolean isPaintable() {
-        return delegate.isPaintable();
-    }
-
-    public void paintValue(Graphics gfx, Rectangle box) {
-        delegate.paintValue(gfx, box);
+    protected void setValueToDelegate(Object value) {
+        if (value instanceof ResourceValue)
+            value = ((ResourceValue)value).getValue();
+        if (value instanceof NbFont)
+            value = ((NbFont)value).getDesignValue();
+        delegateEditor.setValue(value);
     }
 
     public String getJavaInitializationString() {
         String exp;
-        if (propertyValue.absolute) {
-            exp = delegate.getJavaInitializationString();
-        } else {
+        Object value = getValue();
+        if (value instanceof NbFont) {
+            NbFont propertyValue = (NbFont) value;
+            RADProperty property = (RADProperty) this.property;
             RADComponent comp = property.getRADComponent();
             CodeVariable var = comp.getCodeExpression().getVariable();
             String varName = (var == null) ? null : var.getName();
@@ -176,43 +149,39 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
                     exp += ")"; // NOI18N
                 }
             }
+        } else if (value instanceof Font) {
+            // plain font - let the default editor handle the code
+            exp = delegateEditor.getJavaInitializationString();
+            if (ResourceSupport.isResourceableProperty(property)
+                && ResourceSupport.isExcludedProperty(property))
+            {   // add NOI18N comment - font name is a string
+                exp = "*/\n\\1NOI18N*/\n\\0" + exp; // NOI18N
+                // */\n\\1 is a special code mark for line comment
+                // */\n\\0 is a special code mark to indicate that a real code follows
+            }
+        } else { // neither NbFont nor Font - let ResourceWrapperEditor handle it
+            exp = super.getJavaInitializationString();
         }
         return exp;
     }
 
     public String getAsText() {
-        return propertyValue.absolute ? delegate.getAsText() : propertyValue.getDescription();
+        Object value = getValue();
+        return value instanceof NbFont ? ((NbFont)value).getDescription() : super.getAsText();
     }
 
-    public void setAsText(String text) {
-        return;
-    }
+    protected Component createCustomEditorGUI(final Component resourcePanelGUI) {
+        Object value = getUnwrappedValue();
+        boolean absolute = !(value instanceof NbFont);
 
-    public String[] getTags() {
-        return null;
-    }
-
-    // Hack for ugly behaviour of property sheet - it sometimes calls
-    // getCustomEditor() before attachEnv()
-    private WeakReference lastSwitchBox;
-    public Component getCustomEditor() {
-        // The custom editor changes iternals of NbFont
-        // We must edit another instance because user can cancel the changes
-        // and they would remain in the original NbFont
-        propertyValue = ((NbFont)propertyValue).copy();
-        final Component absolute = propertyValue.absolute ? delegate.getCustomEditor() : null;
-        String switchBoxText = NbBundle.getMessage(FontEditor.class, "CTL_DeriveFont"); // NOI18N
+        final Component absoluteComp = absolute ? createAbsolutePanel(resourcePanelGUI) : null;
         final JCheckBox switchBox = new JCheckBox();
-        lastSwitchBox = new WeakReference(switchBox);
-        if (property == null) {
-            switchBox.setVisible(false);
-        } else {
-            Mnemonics.setLocalizedText(switchBox, switchBoxText);
-            switchBox.setSelected(!propertyValue.absolute);
-        }
-        final RelativeFontPanel relative = new RelativeFontPanel();
-        Component pane = propertyValue.absolute ? absolute : relative;
-        if (!propertyValue.absolute) relative.updateFromPropertyValue();
+        Mnemonics.setLocalizedText(switchBox, NbBundle.getMessage(FontEditor.class, "CTL_DeriveFont")); // NOI18N
+        switchBox.setSelected(!absolute);
+        final RelativeFontPanel relativeComp = new RelativeFontPanel();
+        Component pane = absolute ? absoluteComp : relativeComp;
+        if (!absolute)
+            relativeComp.updateFromPropertyValue();
 
         final JPanel editor = new JPanel();
         final GroupLayout layout = new GroupLayout(editor);
@@ -226,23 +195,21 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
             .addContainerGap()
             .add(switchBox)
             .addPreferredGap(LayoutStyle.RELATED)
-            .add(pane)
-            .addContainerGap());
+            .add(pane));
+//            .addContainerGap());
 
         switchBox.addItemListener(new ItemListener() {
-            private Component absoluteInLayout = absolute;
+            private Component absoluteInLayout = absoluteComp;
             public void itemStateChanged(ItemEvent e) {
                 if (switchBox.isSelected()) {
-                    layout.replace(absoluteInLayout, relative);
-                    propertyValue.absolute = false;
+                    layout.replace(absoluteInLayout, relativeComp);
                     convertToRelative();
-                    relative.updateFromPropertyValue();
+                    relativeComp.updateFromPropertyValue();
                 } else {
-                    absoluteInLayout = delegate.getCustomEditor();
-                    layout.replace(relative, absoluteInLayout);
-                    propertyValue.absolute = true;
+                    absoluteInLayout = createAbsolutePanel(resourcePanelGUI);
+                    layout.replace(relativeComp, absoluteInLayout);
+                    convertToAbsolute();
                 }
-                firePropertyChange();
                 editor.revalidate();
                 editor.repaint();
             }
@@ -251,17 +218,41 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
         return editor;
     }
 
+    private Component createAbsolutePanel(Component resourcePanelGUI) {
+        Component fontEditor = delegateEditor.getCustomEditor();
+        if (resourcePanelGUI == null)
+            return fontEditor;
+
+        JPanel panel = new JPanel();
+        GroupLayout layout = new GroupLayout(panel);
+
+        layout.setAutocreateGaps(true);
+        panel.setLayout(layout);
+        layout.setHorizontalGroup(layout.createParallelGroup()
+                .add(fontEditor).add(resourcePanelGUI));
+        layout.setVerticalGroup(layout.createSequentialGroup()
+                .add(fontEditor).add(resourcePanelGUI));
+        return panel;
+    }
+
     private void convertToRelative() {
-        if (propertyValue.font == null) return;
+        Object value = getUnwrappedValue();
+        if (!(value instanceof Font)) {
+            return;
+        }
+        Font font = (Font) value;
+        NbFont propertyValue = new NbFont();
+        propertyValue.property = property;
+
         Font defaultFont = (Font)property.getDefaultValue();
         if (propertyValue.absoluteSize) {
-            propertyValue.size = propertyValue.font.getSize();
+            propertyValue.size = font.getSize();
         } else {
             if (defaultFont == null) return;
-            propertyValue.size = propertyValue.font.getSize() - defaultFont.getSize();
+            propertyValue.size = font.getSize() - defaultFont.getSize();
         }
         if (defaultFont == null) return;
-        int absoluteStyle = propertyValue.font.getStyle();
+        int absoluteStyle = font.getStyle();
         int defaultStyle = defaultFont.getStyle();
         boolean aItalic = ((absoluteStyle & Font.ITALIC) != 0);
         boolean dItalic = ((defaultStyle & Font.ITALIC) != 0);
@@ -287,60 +278,13 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
             && (aBold != propertyValue.bold.booleanValue())) {
             propertyValue.bold = null;
         }
+        setValue(propertyValue);
     }
 
-    public boolean supportsCustomEditor() {
-        return true;
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propChangeSupport.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propChangeSupport.removePropertyChangeListener(listener);
-    }
-
-    // PropertyChangeListener implementation
-    public void propertyChange(PropertyChangeEvent evt) {
-        Font font = (Font)delegate.getValue();
-        propertyValue.font = font;
-        if (!ignoreUpdates) {
-            firePropertyChange();
-        }
-    }
-
-    private void updateDelegate() {
-        ignoreUpdates = true;
-        delegate.setValue(propertyValue.getDesignValue());
-        ignoreUpdates = false;
-        firePropertyChange();
-    }
-
-    private void firePropertyChange() {
-        propChangeSupport.firePropertyChange("", null, null); // NOI18N
-    }
-
-    // ExPropertyEditor implementation
-    public void attachEnv(PropertyEnv env) {
-        FeatureDescriptor prop = env.getFeatureDescriptor();
-        // Don't support relative changes for nested properties
-        // (for example Font property of TitledBorder)
-        if ((prop instanceof RADProperty) && (env.getBeans().length == 1)) {
-            property = (RADProperty)prop;
-            if (propertyValue != null) {
-                propertyValue.property = property;
-            }
-        } else {
-            if (lastSwitchBox != null) { // Hack - see comment for lastSwitchBox field
-                Object switchBox = lastSwitchBox.get();
-                if (switchBox != null) {
-                    AbstractButton button = ((AbstractButton)switchBox);
-                    button.setVisible(false);
-                    if (button.isSelected()) button.setSelected(false);
-                }
-            }
-            property = null;
+    private void convertToAbsolute() {
+        Object value = getUnwrappedValue();
+        if (value instanceof NbFont) {
+            setValue(((NbFont)value).getDesignValue());
         }
     }
 
@@ -366,15 +310,13 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
 
     public void readFromXML(Node element) throws IOException {
         if (!XML_FONT_ROOT.equals(element.getNodeName())) {
-            // Backward compatibility with openide's FontEditor
-            ((XMLPropertyEditor)delegate).readFromXML(element);
-            setValue(delegate.getValue());
+            // Backward compatibility with the default FontEditor from core
+            ((XMLPropertyEditor)delegateEditor).readFromXML(element);
+            setValue(delegateEditor.getValue());
             return;
         }
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
         boolean relative = Boolean.valueOf(attributes.getNamedItem(ATTR_RELATIVE).getNodeValue()).booleanValue();
-        propertyValue = new NbFont();
-        propertyValue.absolute = !relative;
         org.w3c.dom.NodeList subnodes = element.getChildNodes();
         for (int i=0; i<subnodes.getLength(); i++){
             org.w3c.dom.Node subnode = subnodes.item(i);
@@ -383,6 +325,8 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
                     if (!XML_FONT.equals(subnode.getNodeName())) {
                         throw new java.io.IOException();
                     }
+                    NbFont propertyValue = new NbFont();
+                    propertyValue.property = property;
                     attributes = subnode.getAttributes();
                     propertyValue.absoluteSize = !Boolean.valueOf(attributes.getNamedItem(ATTR_RELATIVE_SIZE).getNodeValue()).booleanValue();
                     propertyValue.size = Integer.parseInt(attributes.getNamedItem(ATTR_SIZE).getNodeValue());
@@ -394,15 +338,9 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
                     if (boldChange != null) {
                         propertyValue.bold = Boolean.valueOf(boldChange.getNodeValue());
                     }
-                    String compName = attributes.getNamedItem(ATTR_COMP_NAME).getNodeValue();
-                    RADComponent component = formModel.findRADComponent(compName);
-                    String propName = attributes.getNamedItem(ATTR_PROP_NAME).getNodeValue();
-                    property = (RADProperty)component.getPropertyByName(propName);
-                    propertyValue.property = property;
-                    delegate.setValue(propertyValue.getDesignValue());
+                    setValue(propertyValue);
                 } else {
-                    ((XMLPropertyEditor)delegate).readFromXML(subnode);
-                    propertyValue.font = (Font)delegate.getValue();
+                    ((XMLPropertyEditor)delegateEditor).readFromXML(subnode);
                 }
                 break;
             }
@@ -410,12 +348,14 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
     }
 
     public Node storeToXML(Document doc) {
+        Object value = getUnwrappedValue();
         org.w3c.dom.Element el = doc.createElement(XML_FONT_ROOT);
-        el.setAttribute(ATTR_RELATIVE, Boolean.toString(!propertyValue.absolute));
-        if (propertyValue.absolute) {
-            org.w3c.dom.Node absNode = ((XMLPropertyEditor)delegate).storeToXML(doc);
+        el.setAttribute(ATTR_RELATIVE, Boolean.TRUE.toString());
+        if (!(value instanceof NbFont)) {// || propertyValue.absolute) {
+            org.w3c.dom.Node absNode = ((XMLPropertyEditor)delegateEditor).storeToXML(doc);
             el.appendChild(absNode);
         } else {
+            NbFont propertyValue = (NbFont) value;
             org.w3c.dom.Element subel = doc.createElement(XML_FONT);
             el.appendChild(subel);
             subel.setAttribute(ATTR_RELATIVE_SIZE, Boolean.toString(!propertyValue.absoluteSize));
@@ -426,28 +366,13 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
             if (propertyValue.bold != null) {
                 subel.setAttribute(ATTR_BOLD_CHANGE, propertyValue.bold.toString());
             }
-            subel.setAttribute(ATTR_COMP_NAME, property.getRADComponent().getName());
+            subel.setAttribute(ATTR_COMP_NAME, ((RADProperty)property).getRADComponent().getName());
             subel.setAttribute(ATTR_PROP_NAME, property.getName());
         }
         return el;
     }
 
-    // FormAwarePropertyEditor implementation
-    private FormModel formModel;
-    public void setFormModel(FormModel model) {
-        this.formModel = model;
-    }
-
-    static class NbFont implements FormDesignValue {
-        /**
-         * Determines whether this is an absolute/static value
-         * or relative/dynamic value.
-         */
-        boolean absolute = false;
-        /**
-         * Absolute/static value of the font.
-         */
-        Font font;
+    static class NbFont extends FormDesignValueAdapter {
         /**
          * Describes the relative change of italic.
          * <code>true = add italic, false = remove italic, null = leave it as it is</code>
@@ -473,38 +398,33 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
         FormProperty property;
 
         public Object getDesignValue() {
-            Font value;
-            if (absolute) {
-                value = font;
-            } else {
-                value = defaultValue(property);
-                if (value != null) {
-                    int origStyle = value.getStyle();
-                    int style = origStyle;
-                    if (italic != null) {
-                        if (italic.booleanValue()) {
-                            style |= Font.ITALIC;
-                        } else {
-                            style &= ~Font.ITALIC;
-                        }
+            Font value = defaultValue(property);
+            if (value != null) {
+                int origStyle = value.getStyle();
+                int style = origStyle;
+                if (italic != null) {
+                    if (italic.booleanValue()) {
+                        style |= Font.ITALIC;
+                    } else {
+                        style &= ~Font.ITALIC;
                     }
-                    if (bold != null) {
-                        if (bold.booleanValue()) {
-                            style |= Font.BOLD;
-                        } else {
-                            style &= ~Font.BOLD;
-                        }
+                }
+                if (bold != null) {
+                    if (bold.booleanValue()) {
+                        style |= Font.BOLD;
+                    } else {
+                        style &= ~Font.BOLD;
                     }
-                    int origSize = value.getSize();
-                    int newSize = (absoluteSize) ? size : (size + origSize);
-                    if ((style != origStyle) || (origSize != newSize)) {
-                        value = value.deriveFont(style, newSize);
-                    }
+                }
+                int origSize = value.getSize();
+                int newSize = (absoluteSize) ? size : (size + origSize);
+                if ((style != origStyle) || (origSize != newSize)) {
+                    value = value.deriveFont(style, newSize);
                 }
             }
             return value;
         }
-        
+
         private Font defaultValue(FormProperty property) {
             if ((property instanceof RADProperty) && FormLAF.getUsePreviewDefaults()) {
                 RADProperty radProp = (RADProperty)property;
@@ -525,29 +445,17 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
         public String getDescription() {
             ResourceBundle bundle = NbBundle.getBundle(FontEditor.class);
             String description;
-            if (absolute) {
-                String style = null;
-                switch (font.getStyle()) {
-                    case Font.PLAIN: style = bundle.getString("CTL_FontStylePlain"); break; // NOI18N
-                    case Font.BOLD: style = bundle.getString("CTL_FontStyleBold"); break; // NOI18N
-                    case Font.ITALIC: style = bundle.getString("CTL_FontStyleItalic"); break; // NOI18N
-                    case Font.BOLD|Font.ITALIC: style = bundle.getString("CTL_FontStyleBoldItalic"); break; // NOI18N
-                    default: style = Integer.toString(font.getStyle()); break;
-                }
-                description = font.getName() + ' ' + font.getSize() + ' ' + style;
-            } else {
-                description = Integer.toString(size);
-                if (!absoluteSize && (size > 0)) {
-                    description = '+' + description;
-                }
-                if (italic != null) {
-                    description += " " + (italic.booleanValue() ? '+' : '-') + bundle.getString("CTL_FontStyleItalic"); // NOI18N
-                }
-                if (bold != null) {
-                    description += " " + (bold.booleanValue() ? '+' : '-') + bundle.getString("CTL_FontStyleBold"); // NOI18N
-                }
-                if (description.charAt(0) == '0') description = description.substring(Math.min(2, description.length()));
+            description = Integer.toString(size);
+            if (!absoluteSize && (size > 0)) {
+                description = '+' + description;
             }
+            if (italic != null) {
+                description += " " + (italic.booleanValue() ? '+' : '-') + bundle.getString("CTL_FontStyleItalic"); // NOI18N
+            }
+            if (bold != null) {
+                description += " " + (bold.booleanValue() ? '+' : '-') + bundle.getString("CTL_FontStyleBold"); // NOI18N
+            }
+            if (description.charAt(0) == '0') description = description.substring(Math.min(2, description.length()));
             return description;
         }
 
@@ -559,8 +467,6 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
 
         NbFont copy() {
             NbFont newValue = new NbFont();
-            newValue.absolute = absolute;
-            newValue.font = font;
             newValue.italic = italic;
             newValue.bold = bold;
             newValue.absoluteSize = absoluteSize;
@@ -568,11 +474,10 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
             newValue.property = property;
             return newValue;
         }
-
     }
 
     /**
-     * Panel used to configurate the relative change.
+     * Panel used to configure the relative change.
      */
     private class RelativeFontPanel extends JPanel {
         private JRadioButton absoluteChoice;
@@ -586,11 +491,15 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
         private JRadioButton removeItalicChoice;
         private JCheckBox thicknessCheckBox;
 
+        private boolean ignoreUpdates;
+
         RelativeFontPanel() {
             initComponents();
         }
 
         void updateFromPropertyValue() {
+            NbFont propertyValue = (NbFont) getUnwrappedValue();
+
             ignoreUpdates = true;
             boolean changeItalic = (propertyValue.italic != null);
             italicCheckBox.setSelected(changeItalic);
@@ -619,16 +528,16 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
             if (propertyValue.absoluteSize) {
                 absoluteSize.setValue(new Integer(propertyValue.size));
                 absoluteChoice.setSelected(true);
-                synchronizeSizeControls();
+                synchronizeSizeControls(propertyValue);
             } else {
                 relativeSize.setValue(new Integer(propertyValue.size));
                 relativeChoice.setSelected(true);
-                synchronizeSizeControls();
+                synchronizeSizeControls(propertyValue);
             }
             ignoreUpdates = false;
         }
 
-        private void synchronizeSizeControls() {
+        private void synchronizeSizeControls(NbFont propertyValue) {
             if (propertyValue.absoluteSize) {
                 Font defaultFont = (Font)property.getDefaultValue();
                 if (defaultFont != null) {
@@ -772,13 +681,15 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(removeItalicChoice)
                     .add(removeBoldChoice))
-                .addContainerGap());
+                .addContainerGap(260, 260));
         }
 
         private class Listener implements ItemListener, ChangeListener {
+            // called when some of the checkboxes/radiobuttons is selected/unselected
             public void itemStateChanged(ItemEvent e) {
                 if (ignoreUpdates) return;
                 ignoreUpdates = true;
+                NbFont propertyValue = ((NbFont)getUnwrappedValue()).copy();
                 Object source = e.getSource();
                 if (source == relativeChoice) {
                     boolean relative = relativeChoice.isSelected();
@@ -802,22 +713,24 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
                     propertyValue.italic = Boolean.valueOf(addItalicChoice.isSelected());
                 }
                 ignoreUpdates = false;
-                updateDelegate();
+                setValue(propertyValue);
             }
 
+            // called when the size of the font is changed in one of the spinners
             public void stateChanged(ChangeEvent e) {
                 if (ignoreUpdates) return;
                 ignoreUpdates = true;
+                NbFont propertyValue = ((NbFont)getUnwrappedValue()).copy();
                 Object source = e.getSource();
                 if (source == relativeSize) {
                     propertyValue.size = ((Number)relativeSize.getValue()).intValue();
-                    synchronizeSizeControls();
+                    synchronizeSizeControls(propertyValue);
                 } else if(source == absoluteSize) {
                     propertyValue.size = ((Number)absoluteSize.getValue()).intValue();
-                    synchronizeSizeControls();
+                    synchronizeSizeControls(propertyValue);
                 }
                 ignoreUpdates = false;
-                updateDelegate();
+                setValue(propertyValue);
             }
         }
     }

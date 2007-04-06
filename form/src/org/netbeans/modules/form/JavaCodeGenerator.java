@@ -19,6 +19,17 @@
 
 package org.netbeans.modules.form;
 
+import javax.swing.JEditorPane;
+
+import org.openide.*;
+import org.openide.filesystems.*;
+import org.openide.nodes.*;
+import org.openide.text.IndentEngine;
+
+import org.netbeans.api.editor.fold.*;
+
+import org.netbeans.api.java.classpath.ClassPath;
+
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
@@ -36,16 +47,8 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+
 import org.netbeans.modules.form.editors.ModifierEditor;
-import org.openide.*;
-import org.openide.filesystems.*;
-import org.openide.nodes.*;
-import org.openide.text.IndentEngine;
-
-import org.netbeans.api.editor.fold.*;
-
-import org.netbeans.api.java.classpath.ClassPath;
-
 import org.netbeans.modules.form.editors.CustomCodeEditor;
 import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
@@ -68,6 +71,7 @@ import java.util.*;
 class JavaCodeGenerator extends CodeGenerator {
 
     static final String PROP_VARIABLE_MODIFIER = "modifiers"; // NOI18N
+    static final String PROP_TYPE_PARAMETERS = "typeParameters"; // NOI18N
     static final String PROP_VARIABLE_LOCAL = "useLocalVariable"; // NOI18N
     static final String PROP_SERIALIZE_TO = "serializeTo"; // NOI18N
     static final String PROP_CODE_GENERATION = "codeGeneration"; // NOI18N
@@ -89,6 +93,8 @@ class JavaCodeGenerator extends CodeGenerator {
 
     static final String AUX_VARIABLE_MODIFIER =
         "JavaCodeGenerator_VariableModifier"; // NOI18N
+    static final String AUX_TYPE_PARAMETERS =
+        "JavaCodeGenerator_TypeParameters"; // NOI18N
     static final String AUX_VARIABLE_LOCAL =
         "JavaCodeGenerator_VariableLocal"; // NOI18N
     static final String AUX_SERIALIZE_TO =
@@ -148,13 +154,15 @@ class JavaCodeGenerator extends CodeGenerator {
     private static final String RESOURCE_BUNDLE_CLOSING_CODE = ")."; // NOI18N
     private Map<String,String> bundleVariables;
 
+    private static Class bindingContextClass = javax.beans.binding.BindingContext.class;
+    private String bindingContextVariable;
+    private Map<String,String> bindingVariables;
     private static String variablesHeader;
     private static String variablesFooter;
     private static String eventDispatchCodeComment;
 
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormLoaderSettings.getInstance();
-                   
 
     private FormModel formModel;
     private FormEditorSupport formEditorSupport;
@@ -189,6 +197,7 @@ class JavaCodeGenerator extends CodeGenerator {
 	
         public boolean accept(FormProperty property) {	    		     
 	    return (property.isChanged()
+                       && !ResourceSupport.isInjectedProperty(property)
                        && (properties == null
                            || !properties.contains(property)))
                     || property.getPreCode() != null
@@ -304,9 +313,10 @@ class JavaCodeGenerator extends CodeGenerator {
                         }
                     }
 
+                    String typeParameters = exp.getVariable().getDeclaredTypeParameters();
                     codeStructure.removeExpressionFromVariable(exp);
                     codeStructure.createVariableForExpression(
-                                         exp, varType, varName);
+                                         exp, varType, typeParameters, varName);
                 }
 
                 public Object getTargetValue() {
@@ -360,6 +370,69 @@ class JavaCodeGenerator extends CodeGenerator {
             };
             modifProp.setShortDescription(bundle.getString("MSG_JC_VariableModifiersDesc")); // NOI18N
             propList.add(modifProp);
+            
+            final FormProperty paramTypesProp = new FormProperty(
+                PROP_TYPE_PARAMETERS,
+                String.class,
+                bundle.getString("MSG_JC_TypeParameters"), // NOI18N
+                null)
+            {
+                public void setTargetValue(Object value) {
+                    if ((value != null) && !(value instanceof String))
+                        throw new IllegalArgumentException();
+                    
+                    // PENDING check for syntax of the value
+                    
+                    component.setAuxValue(AUX_TYPE_PARAMETERS, value);
+
+                    CodeStructure codeStructure = formModel.getCodeStructure();
+                    CodeExpression exp = component.getCodeExpression();
+                    int varType = exp.getVariable().getType();
+                    String varName = component.getName();
+
+                    codeStructure.removeExpressionFromVariable(exp);
+                    codeStructure.createVariableForExpression(
+                                         exp, varType, (String)value, varName);
+                }
+
+                public Object getTargetValue() {
+                    Object value = component.getAuxValue(AUX_TYPE_PARAMETERS);
+                    return (value == null) ? "" : value; // NOI18N
+                }
+
+                public boolean supportsDefaultValue() {
+                    return true;
+                }
+
+                public Object getDefaultValue() {
+                    return ""; // NOI18N
+                }
+
+                protected void propertyValueChanged(Object old, Object current) {
+                    super.propertyValueChanged(old, current);
+                    if (isChangeFiring()) {
+                        formModel.fireSyntheticPropertyChanged(
+                            component, getName(), old, current);
+                        if (component.getNodeReference() != null) {
+                            component.getNodeReference().firePropertyChangeHelper(
+                                getName(), null, null);
+                        }
+                    }
+                }
+
+                public boolean canWrite() {
+                    return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
+                }
+
+                public PropertyEditor getExpliciteEditor() {
+                    // PENDING replace by property editor that is able to determine
+                    // formal type parameters of this class and can offer you
+                    // a nice visual customizer
+                    return super.getExpliciteEditor();
+                }
+            };
+            paramTypesProp.setShortDescription(bundle.getString("MSG_JC_TypeParametersDesc")); // NOI18N
+            propList.add(paramTypesProp);
 
             FormProperty localProp = new FormProperty(
                 PROP_VARIABLE_LOCAL,
@@ -411,9 +484,10 @@ class JavaCodeGenerator extends CodeGenerator {
                         }
                     }
 
+                    String typeParameters = exp.getVariable().getDeclaredTypeParameters();
                     codeStructure.removeExpressionFromVariable(exp);
                     codeStructure.createVariableForExpression(
-                                         exp, varType, varName);
+                                         exp, varType, typeParameters, varName);
                 }
 
                 public Object getTargetValue() {
@@ -778,6 +852,10 @@ class JavaCodeGenerator extends CodeGenerator {
 
             addLocalVariables(writer);
 
+            if (bindingContextVariable != null) {
+                initCodeWriter.write(bindingContextVariable + " = new " + bindingContextClass.getName() + "();\n\n"); // NOI18N
+            }
+
             emptyLineRequest++;
             Collection<RADComponent> otherComps = formModel.getOtherComponents();
             for (RADComponent metacomp : otherComps) {
@@ -798,7 +876,13 @@ class JavaCodeGenerator extends CodeGenerator {
             }
             addInitCode(top, initCodeWriter, null);
 
+            if (bindingContextVariable != null) {
+                initCodeWriter.write("\n" + bindingContextVariable + ".bind();\n"); // NOI18N
+            }
+
             generateFormSizeCode(writer);
+            bindingContextVariable = null;
+            bindingVariables = null;
 
             writer.write("}"); // no new line because of fold footer // NOI18N
 
@@ -857,6 +941,11 @@ class JavaCodeGenerator extends CodeGenerator {
             childrenDependentProperties.clear();
         formModel.getCodeStructure().clearExternalVariableNames();
         bundleVariables = null;
+        // preventive cleanup
+        if (bindingContextVariable != null) { // we need to keep this variable registered
+            bindingContextVariable = formModel.getCodeStructure().getExternalVariableName(
+                    bindingContextClass, bindingContextVariable, true);
+        }
     }
 
     private void regenerateVariables() {
@@ -869,7 +958,7 @@ class JavaCodeGenerator extends CodeGenerator {
         StringWriter variablesBuffer = new StringWriter(1024);
         CodeWriter variablesWriter;
         final SimpleSection variablesSection = formEditorSupport.getVariablesSection();
-        
+
         if (formSettings.getUseIndentEngine()) {
             variablesWriter = new CodeWriter(
                     indentEngine.createWriter(formEditorSupport.getDocument(),
@@ -961,11 +1050,12 @@ class JavaCodeGenerator extends CodeGenerator {
                     emptyLineRequest++;
                     generateFreeDesignLayoutCode(visualCont, initCodeWriter); // this always generates something
                     emptyLineRequest++;
-                    // some code for belonging to sub-components is generated
-                    // after adding (a11y, after-all-set)
+                    // some code of sub-components is generated after adding
+                    // them to the container (a11y, after-all-set)
                     for (RADComponent subcomp : visualCont.getSubComponents()) { // excluding menu
                         generateComponentAddPost(subcomp, initCodeWriter, null);
                         generateAccessibilityCode(subcomp, initCodeWriter, null);
+                        generateInjectionCode(subcomp, writer, null);
                         generateAfterAllSetCode(subcomp, writer, null);
                     }
                     emptyLineRequest++;
@@ -1005,6 +1095,8 @@ class JavaCodeGenerator extends CodeGenerator {
             boolean endingCode = false;
             if (generateAccessibilityCode(comp, initCodeWriter, codeData))
                 endingCode = true;
+            if (generateInjectionCode(comp, writer, codeData))
+                endingCode = true;
             if (generateAfterAllSetCode(comp, writer, codeData))
                 endingCode = true;
             if (endingCode)
@@ -1019,6 +1111,7 @@ class JavaCodeGenerator extends CodeGenerator {
             codeData.addGuardedBlock(substCode);
             generateComponentAddPost(comp, initCodeWriter, codeData);
             generateAccessibilityCode(comp, initCodeWriter, codeData);
+            generateInjectionCode(comp, writer, codeData);
             generateAfterAllSetCode(comp, writer, codeData);
         }
     }
@@ -1173,6 +1266,12 @@ class JavaCodeGenerator extends CodeGenerator {
                                 varType & CodeVariable.ALL_MODIF_MASK));
                 varBuf.append(" "); // NOI18N
                 varBuf.append(getSourceClassName(comp.getBeanClass()));
+                
+                String typeParameters = var.getDeclaredTypeParameters();
+                if ((typeParameters != null) && !"".equals(typeParameters)) { // NOI18N
+                    varBuf.append(typeParameters);
+                }
+
                 varBuf.append(" "); // NOI18N
             }
 
@@ -1360,6 +1459,8 @@ class JavaCodeGenerator extends CodeGenerator {
             }
         }
 
+        generateComponentBindings(comp, initCodeWriter);
+
         String postCode = (String) comp.getAuxValue(AUX_INIT_CODE_POST);
         if (codeData != null) { // build code data for editing
             codeData.addEditableBlock(postCode,
@@ -1373,6 +1474,178 @@ class JavaCodeGenerator extends CodeGenerator {
             writer.write(postCode);
             if (!postCode.endsWith("\n")) // NOI18N
                 writer.write("\n"); // NOI18N
+        }
+    }
+    
+    private void generateComponentBindings(RADComponent comp,
+                                           CodeWriter initCodeWriter)
+        throws IOException
+    {
+        boolean anyBinding = false;
+        for (BindingProperty prop : comp.getKnownBindingProperties()) {
+            MetaBinding bindingDef = (MetaBinding) prop.getValue();
+            if (bindingDef != null) {
+                if (!anyBinding) {
+                    initCodeWriter.write("\n"); // NOI18N
+                    anyBinding = true;
+                }
+                StringBuilder buf = new StringBuilder();
+                Class descriptionType = BindingDesignSupport.getBindingDescriptionType(bindingDef);
+                int updateStrategy = bindingDef.getUpdateStratedy();
+                String variable = null;
+                if (bindingDef.hasSubBindings()) {
+                    variable = getBindingDescriptionVariable(descriptionType, buf);
+                    buf.append(variable);
+                    buf.append(" = new "); // NOI18N
+                    buf.append(descriptionType.getName());
+                    buf.append("("); // NOI18N
+                    buildBindingParamsCode(bindingDef, buf);
+                    buf.append(");\n"); // NOI18N
+                    initCodeWriter.write(buf.toString());
+
+                    for (MetaBinding sub : bindingDef.getSubBindings()) {
+                        buf = new StringBuilder();
+                        buf.append(variable);
+                        buf.append(".addBinding("); // NOI18N
+                        buf.append("\""); // NOI18N
+                        buf.append(sub.getSourcePath());
+                        buf.append("\", "); // NOI18N
+                        buf.append(sub.getTargetPath());
+                        Map parameters = sub.getParameters();
+                        Iterator<Map.Entry> iter = parameters.entrySet().iterator();
+                        while (iter.hasNext()) {
+                            Map.Entry entry = iter.next();
+                            buf.append(", "); // NOI18N
+                            buf.append(entry.getKey());
+                            buf.append(", "); // NOI18N
+                            buf.append(entry.getValue());
+                        }
+                        buf.append(");\n"); // NOI18N
+                        initCodeWriter.write(buf.toString());
+                    }
+                }
+                else {
+                    boolean useVariable = (updateStrategy != MetaBinding.UPDATE_STRATEGY_READ_WRITE)
+                        || bindingDef.isIncompletePathValueSpecified()
+                        || bindingDef.isNullValueSpecified()
+                        || bindingDef.isConverterSpecified()
+                        || bindingDef.isValidatorSpecified()
+                        || bindingDef.isBindImmediately();
+                    if (!useVariable) {
+                        buf.append(bindingContextVariable);
+                        buf.append(".addBinding("); // NOI18N                        
+                    } else {
+                        variable = getBindingDescriptionVariable(descriptionType, buf);
+                        buf.append(variable);
+                        buf.append(" = "); // NOI18N
+                        buf.append("new "); // NOI18N
+                        buf.append(descriptionType.getName());
+                        buf.append("("); // NOI18N
+                    }
+                    buildBindingParamsCode(bindingDef, buf);
+                    buf.append(");\n"); // NOI18N
+                    initCodeWriter.write(buf.toString());
+                }
+                if (updateStrategy != MetaBinding.UPDATE_STRATEGY_READ_WRITE) {
+                    initCodeWriter.write(variable + ".setUpdateStrategy(javax.beans.binding.Binding.UpdateStrategy."); // NOI18N
+                    if (updateStrategy == MetaBinding.UPDATE_STRATEGY_READ_FROM_SOURCE) {
+                        initCodeWriter.write("READ_FROM_SOURCE);\n"); // NOI18N
+                    } else {
+                        assert (updateStrategy == MetaBinding.UPDATE_STRATEGY_READ_ONCE);
+                        initCodeWriter.write("READ_ONCE);\n"); // NOI18N
+                    }
+                }
+                if (bindingDef.isNullValueSpecified()) {
+                    generateComponentBinding0(initCodeWriter, prop.getNullValueProperty(), variable + ".setNullSourceValue"); // NOI18N
+                }
+                if (bindingDef.isIncompletePathValueSpecified()) {
+                    generateComponentBinding0(initCodeWriter, prop.getIncompleteValueProperty(), variable + ".setValueForIncompleteSourcePath"); // NOI18N
+                }
+                if (bindingDef.isConverterSpecified()) {
+                    generateComponentBinding0(initCodeWriter, prop.getConverterProperty(), variable + ".setConverter"); // NOI18N
+                }
+                if (bindingDef.isValidatorSpecified()) {
+                    generateComponentBinding0(initCodeWriter, prop.getValidatorProperty(), variable + ".setValidator"); // NOI18N
+                }
+                if (variable != null) {
+                    // PENDING the following check should not be there - the binding should be always
+                    // added to context, but BindingContext.bindingBecameBound() must be fixed before that
+                    // e.g. bindingBecameBound() should contain unbound.remove(binding);
+                    if (!bindingDef.isBindImmediately()) {
+                        initCodeWriter.write(bindingContextVariable + ".addBinding(" + variable + ");\n"); // NOI18N
+                    }
+                    if (bindingDef.isBindImmediately()) {
+                        initCodeWriter.write(variable + ".bind();"); // NOI18N
+                    }
+                }
+            }
+        }
+        if (anyBinding) {
+            initCodeWriter.write("\n"); // NOI18N
+        }
+    }
+
+    private void generateComponentBinding0(CodeWriter initCodeWriter, FormProperty property, String method) throws IOException {
+        try {
+            Object value = property.getValue();
+            if (value != null) {
+                initCodeWriter.write(method + "(" + property.getJavaInitializationString() + ");\n"); // NOI18N
+            }
+        } catch (IllegalAccessException iaex) {
+            iaex.printStackTrace();
+        } catch (InvocationTargetException itex) {
+            itex.printStackTrace();
+        }
+    }
+
+    private String getBindingDescriptionVariable(Class descriptionType, StringBuilder buf) {
+        String variable = null;
+        if (bindingVariables == null)
+            bindingVariables = new HashMap();
+        else
+            variable = bindingVariables.get(descriptionType.getName());
+
+        if (variable == null) {
+            String name = descriptionType.getSimpleName();
+            name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
+            variable = formModel.getCodeStructure().getExternalVariableName(
+                    descriptionType, name, true);
+            bindingVariables.put(descriptionType.getName(), variable);
+
+            buf.append(descriptionType.getName());
+            buf.append(" "); // NOI18N
+        }
+        return variable;
+    }
+
+    private static void buildBindingParamsCode(MetaBinding bindingDef, StringBuilder buf) {
+        String sourcePath = bindingDef.getSourcePath();
+        String targetPath = bindingDef.getTargetPath();
+        buf.append(getExpressionJavaString(bindingDef.getSource().getCodeExpression(), "this")); // NOI18N
+        buf.append(", "); // NOI18N
+        if (sourcePath != null) {
+            buf.append("\""); // NOI18N
+            buf.append(sourcePath);
+            buf.append("\""); // NOI18N
+        }
+        else buf.append("null"); // NOI18N
+        buf.append(", "); // NOI18N
+        buf.append(getExpressionJavaString(bindingDef.getTarget().getCodeExpression(), "this")); // NOI18N
+        buf.append(", "); // NOI18N
+        if (targetPath != null) {
+            buf.append("\""); // NOI18N
+            buf.append(targetPath);
+            buf.append("\""); // NOI18N
+        }
+        else buf.append("null"); // NOI18N
+        Map parameters = bindingDef.getParameters();
+        Iterator<Map.Entry> iter = parameters.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry entry = iter.next();
+            buf.append(", "); // NOI18N
+            buf.append(entry.getKey());
+            buf.append(", "); // NOI18N
+            buf.append(entry.getValue());
         }
     }
 
@@ -1389,8 +1662,6 @@ class JavaCodeGenerator extends CodeGenerator {
             FormProperty[] props;
             if (comp instanceof RADVisualComponent)
                 props = ((RADVisualComponent)comp).getAccessibilityProperties();
-            else if (comp instanceof RADMenuItemComponent)
-                props = ((RADMenuItemComponent)comp).getAccessibilityProperties();
             else return false;
 
             for (int i=0; i < props.length; i++) {
@@ -1400,6 +1671,26 @@ class JavaCodeGenerator extends CodeGenerator {
             }
         }
         return generated;
+    }
+
+    private boolean generateInjectionCode(RADComponent metacomp, Writer writer, CustomCodeData codeData)
+        throws IOException
+    {
+        String injectionCode = ResourceSupport.getInjectionCode(
+                metacomp, getComponentParameterString(metacomp, true));
+        if (injectionCode != null) {
+            if (!injectionCode.endsWith("\n")) // NOI18N
+                injectionCode = injectionCode + "\n"; // NOI18N
+            if (codeData == null) {
+                writer.write(injectionCode);
+            }
+            else { // build code data for editing
+                String code = indentCode(injectionCode);
+                codeData.addGuardedBlock(code);
+            }
+            return true;
+        }
+        else return false;
     }
 
     private void generateComponentAddCode(RADComponent comp,
@@ -1417,50 +1708,50 @@ class JavaCodeGenerator extends CodeGenerator {
         generateComponentAddPre(comp, initCodeWriter.getWriter(), codeData);
 
         if (comp instanceof RADVisualComponent) {
-            // adding visual component to container with old layout support
-            LayoutSupportManager laysup = ((RADVisualComponent)comp).getParentLayoutSupport();
-            CodeGroup componentCode = laysup != null ?
-                laysup.getComponentCode((RADVisualComponent)comp) : null;
-            if (componentCode != null) {
-                Iterator it = componentCode.getStatementsIterator();
-                if (codeData == null && it.hasNext())
+            if (comp == ((RADVisualContainer)parent).getContainerMenu()) { // 
+                assert comp.getBeanInstance() instanceof javax.swing.JMenuBar
+                       && parent.getBeanInstance() instanceof javax.swing.RootPaneContainer;
+                if (codeData == null) {
                     generateEmptyLineIfNeeded(writer);
-                while (it.hasNext()) {
-                    CodeStatement statement = (CodeStatement) it.next();
-                    initCodeWriter.write(getStatementJavaString(statement, "")); // NOI18N
-                    initCodeWriter.write("\n"); // NOI18N
                 }
-            }
-        }
-        else if (comp instanceof RADMenuItemComponent) {
-            RADMenuItemComponent menuComp = (RADMenuItemComponent) comp;
-            if (parent instanceof RADVisualContainer) { // menu bar to visual container
-                String menuCode;
-                Class contClass = parent.getBeanClass();
-
-                if (menuComp.getMenuItemType() == RADMenuItemComponent.T_JMENUBAR
-                        && javax.swing.RootPaneContainer.class.isAssignableFrom(contClass))
-                    menuCode = "setJMenuBar"; // NOI18N
-                else if (menuComp.getMenuItemType() == RADMenuItemComponent.T_MENUBAR
-                         && java.awt.Frame.class.isAssignableFrom(contClass))
-                    menuCode = "setMenuBar"; // NOI18N
-                else
-                    menuCode = null;
-
-                if (menuCode != null) {
-                    if (codeData == null)
+                writer.write(getComponentInvokeString(parent, true));
+                writer.write("setJMenuBar("); // NOI18N
+                writer.write(getComponentParameterString(comp, true));
+                writer.write(");\n"); // NOI18N
+            } else { // adding visual component to container with old layout support
+                LayoutSupportManager laysup = ((RADVisualComponent)comp).getParentLayoutSupport();
+                CodeGroup componentCode = laysup != null ?
+                    laysup.getComponentCode((RADVisualComponent)comp) : null;
+                if (componentCode != null) {
+                    Iterator it = componentCode.getStatementsIterator();
+                    if (codeData == null && it.hasNext())
                         generateEmptyLineIfNeeded(writer);
-                    writer.write(getComponentInvokeString(parent, true));
-                    writer.write(menuCode);
-                    writer.write("("); // NOI18N
-                    writer.write(getComponentParameterString(menuComp, true));
-                    writer.write(");\n"); // NOI18N
+                    while (it.hasNext()) {
+                        CodeStatement statement = (CodeStatement) it.next();
+                        initCodeWriter.write(getStatementJavaString(statement, "")); // NOI18N
+                        initCodeWriter.write("\n"); // NOI18N
+                    }
                 }
+            } // this method is not called for visual components in freee design
+        }
+        else if (comp instanceof RADMenuItemComponent) { // AWT menu
+            if (parent instanceof RADVisualContainer) { // menu bar to visual container
+                assert comp.getBeanInstance() instanceof java.awt.MenuBar //getMenuItemType() == RADMenuItemComponent.T_MENUBAR
+                       && parent.getBeanInstance() instanceof java.awt.Frame;
+                if (codeData == null) {
+                    generateEmptyLineIfNeeded(writer);
+                }
+                writer.write(getComponentInvokeString(parent, true));
+                writer.write("setMenuBar("); // NOI18N
+                writer.write(getComponentParameterString(comp, true));
+                writer.write(");\n"); // NOI18N
             }
             else { // menu component to another component
                 assert parent instanceof RADMenuComponent;
-                if (codeData == null)
+                RADMenuItemComponent menuComp = (RADMenuItemComponent) comp;
+                if (codeData == null) {
                     generateEmptyLineIfNeeded(writer);
+                }
                 if (menuComp.getMenuItemType() == RADMenuItemComponent.T_SEPARATOR) {
                     // treat AWT Separator specially - it is not a regular component
                     writer.write(getComponentInvokeString(parent, true));
@@ -1745,7 +2036,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 
         // 2. property setter code
-        if (valueSet) {
+        if (valueSet && !ResourceSupport.isInjectedProperty(prop)) {
 	    if (setterVariable == null)
 		setterVariable = getComponentInvokeString(comp, true);
 
@@ -1821,10 +2112,18 @@ class JavaCodeGenerator extends CodeGenerator {
             return;
         }
 
-        if( prop.getCurrentEditor() instanceof BeanPropertyEditor && value != null) {
+        PropertyEditor currentEditor = prop.getCurrentEditor();
+        if (currentEditor instanceof BeanPropertyEditor && value != null) {
             generatePropertyBeanSetterCode(prop, value, setterVariable, initCodeWriter, codeData);
-        }
-        else {
+        } else if (currentEditor instanceof FormCodeAwareEditor) {
+            if (currentEditor.getValue() != value) {
+                currentEditor.setValue(value);
+            }
+            String code = ((FormCodeAwareEditor)currentEditor).getSourceCode();
+            if (code != null) {
+                initCodeWriter.write(code);
+            }
+        } else {
             String propValueCode = prop.getJavaInitializationString();
             if (codeData != null) // building code data for editing
                 propValueCode = CUSTOM_CODE_MARK + propValueCode + CUSTOM_CODE_MARK;
@@ -2165,6 +2464,16 @@ class JavaCodeGenerator extends CodeGenerator {
             if (metacomp != null)
                 generateComponentFieldVariable(metacomp, variablesWriter, null);
             // there should not be other than component variables as fields
+        }
+
+        // is there any binding?
+        for (RADComponent metacomp : formModel.getAllComponents()) {
+            if (metacomp.hasBindings()) {
+                bindingContextVariable = formModel.getCodeStructure().getExternalVariableName(
+                        bindingContextClass, "bindingContext", true); // NOI18N
+                variablesWriter.write("private " + bindingContextClass.getName() + " " + bindingContextVariable + ";\n"); // NOI18N
+                break;
+            }
         }
     }
 
@@ -2532,7 +2841,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 
         final Set<String> toRemove = new HashSet<String>();
-        if (listenersInMainClass_lastSet != null)
+        if (listenersInMainClass_lastSet != null) {
             for (int i=0; i < listenersInMainClass_lastSet.length; i++) {
                 Class cls = listenersInMainClass_lastSet[i];
                 boolean remains = false;
@@ -2546,8 +2855,8 @@ class JavaCodeGenerator extends CodeGenerator {
                     toRemove.add(cls.getName());
                 }
             }
+        }
 
-        
         final FileObject fo = formEditorSupport.getFormDataObject().getPrimaryFile();
         JavaSource js = JavaSource.forFileObject(fo);
         try {
@@ -2610,7 +2919,7 @@ class JavaCodeGenerator extends CodeGenerator {
             Logger.getLogger(JavaCodeGenerator.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
         }
     }
-    
+
     private static ClassTree findMainClass(CompilationController controller, String name) {
         for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
             if (t.getKind() == Tree.Kind.CLASS &&
@@ -2755,10 +3064,11 @@ class JavaCodeGenerator extends CodeGenerator {
                         buffer);
 
         try {
-            if (sec == null)
+            if (sec == null) {
                 sec = formEditorSupport.getGuardedSectionManager().createInteriorSection(
                           formEditorSupport.getDocument().createPosition(initComponentsSection.getEndPosition().getOffset() + 1),
                           getEventSectionName(handlerName));
+            }
             int i1, i2;
 
             generateListenerMethodHeader(handlerName, originalMethod, codeWriter);
@@ -2860,8 +3170,9 @@ class JavaCodeGenerator extends CodeGenerator {
     /** Focuses the specified event handler in the editor. */
     private void gotoEventHandler(String handlerName) {
         InteriorSection sec = getEventHandlerSection(handlerName);
-        if (sec != null && initialized)
+        if (sec != null && initialized) {
             formEditorSupport.openAt(sec.getCaretPosition());
+        }
     }
 
     /** Gets the body (text) of event handler of given name. */

@@ -314,8 +314,8 @@ public class ComponentInspector extends TopComponent
 
     private void updatePasteActionInAwtThread() {
         Node[] selected = getExplorerManager().getSelectedNodes();
-        if (selected != null && selected.length == 1) {
-            // exactly one node must be selected
+        if (selected != null && selected.length >= 1) {
+            // pasting considered only on the first selected node
             Clipboard clipboard = getClipboard();
             Transferable trans = clipboard.getContents(this); // [this??]
             if (trans != null) {

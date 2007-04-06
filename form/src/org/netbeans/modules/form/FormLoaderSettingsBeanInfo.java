@@ -146,7 +146,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        FormLoaderSettings.class,
                                        "getAssistantShown", // NOI18N
                                        "setAssistantShown"), // NOI18N
-                new PropertyDescriptor(FormLoaderSettings.PROP_AUTO_I18N,
+                new PropertyDescriptor(FormLoaderSettings.PROP_AUTO_RESOURCING,
                                        FormLoaderSettings.class,
                                        "getI18nAutoMode", // NOI18N
                                        "setI18nAutoMode") // NOI18N
@@ -243,9 +243,9 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[i].setShortDescription(bundle.getString("HINT_ASSISTANT_SHOWN")); // NOI18N
             desc[i].setPreferred(true);
 
-            desc[++i].setDisplayName(bundle.getString("PROP_AUTO_I18N")); // NOI18N
-            desc[i].setShortDescription(bundle.getString("HINT_AUTO_I18N_GLOBAL")); // NOI18N
-            desc[i].setPropertyEditorClass(I18nModeEditor.class);
+            desc[++i].setDisplayName(bundle.getString("PROP_AUTO_RESOURCE")); // NOI18N
+            desc[i].setShortDescription(bundle.getString("HINT_AUTO_RESOURCE_GLOBAL")); // NOI18N
+            desc[i].setPropertyEditorClass(ResourceModeEditor.class);
             desc[i].setPreferred(true);
 
             return desc;
@@ -262,21 +262,18 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                        || type == java.beans.BeanInfo.ICON_MONO_16x16 ?
                    iconURL : icon32URL);
     }
-    
+
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor retval = new BeanDescriptor(FormLoaderSettings.class , null );
-        retval.setDisplayName(NbBundle.getMessage(FormLoaderSettings.class, "CTL_FormSettings"));//NOI18N
+        retval.setDisplayName(NbBundle.getMessage(FormLoaderSettings.class, "CTL_FormSettings")); // NOI18N
         return retval;
     }
-    
 
     // --------
 
     /** Property editor for variables modifiers.
      */
-    final public static class FieldModifierPropertyEditor
-        extends ModifierEditor
-    {
+    final public static class FieldModifierPropertyEditor extends ModifierEditor {
         static final long serialVersionUID =7628317154007139777L;
         /** Construct new editor with mask for fields. */
         public FieldModifierPropertyEditor() {
@@ -336,19 +333,19 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
         }
     }
 
-    public final static class I18nModeEditor
+    public final static class ResourceModeEditor
                       extends org.netbeans.modules.form.editors.EnumEditor
     {
-        public I18nModeEditor() {
+        public ResourceModeEditor() {
             super(new Object[] {
-                    FormUtils.getBundleString("CTL_AUTO_I18N_DEFAULT"), // NOI18N
-                    new Integer(FormLoaderSettings.AUTO_I18N_DEFAULT),
+                    FormUtils.getBundleString("CTL_AUTO_RESOURCE_DEFAULT"), // NOI18N
+                    new Integer(FormLoaderSettings.AUTO_RESOURCE_DEFAULT),
                     "", // NOI18N
-                    FormUtils.getBundleString("CTL_AUTO_I18N_ON"), // NOI18N
-                    new Integer(FormLoaderSettings.AUTO_I18N_ON),
+                    FormUtils.getBundleString("CTL_AUTO_RESOURCE_ON"), // NOI18N
+                    new Integer(FormLoaderSettings.AUTO_RESOURCE_ON),
                     "", // NOI18N
-                    FormUtils.getBundleString("CTL_AUTO_I18N_OFF"), // NOI18N
-                    new Integer(FormLoaderSettings.AUTO_I18N_OFF),
+                    FormUtils.getBundleString("CTL_AUTO_RESOURCE_OFF"), // NOI18N
+                    new Integer(FormLoaderSettings.AUTO_RESOURCE_OFF),
                     "" // NOI18N
                 });
         }

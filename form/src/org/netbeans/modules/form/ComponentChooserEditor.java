@@ -188,7 +188,7 @@ public class ComponentChooserEditor implements PropertyEditor,
     // ----------------
 
     // FormAwareEditor implementation
-    public void setFormModel(FormModel model) {
+    public void setContext(FormModel model, FormProperty prop) {
         formModel = model;
     }
 
@@ -315,8 +315,7 @@ public class ComponentChooserEditor implements PropertyEditor,
 
     // ------------
 
-    private class ComponentRef implements RADComponent.ComponentReference, 
-                                             FormDesignValue
+    private class ComponentRef extends FormDesignValueAdapter implements RADComponent.ComponentReference
     {
         private String componentName;
         private RADComponent component;
@@ -330,10 +329,6 @@ public class ComponentChooserEditor implements PropertyEditor,
             component = metacomp;
         }
 
-        public FormDesignValue copy(FormProperty formProperty) {
-            return null;
-        }
-        
         public boolean equals(Object obj) {
             boolean equal;
             

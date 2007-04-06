@@ -103,10 +103,7 @@ public class SwingLayoutUtils {
         Map linkSizeGroup = new HashMap();
         
         if (layoutComponent.isLayoutContainer()) {
-            Iterator i = layoutComponent.getSubcomponents();
-            
-            while (i.hasNext()) {
-                LayoutComponent lc = (LayoutComponent)i.next();
+            for (LayoutComponent lc : layoutComponent.getSubcomponents()) {
                 if (lc != null) {
                     if (lc.isLinkSized(dimension)) {
                         String cid = lc.getId();

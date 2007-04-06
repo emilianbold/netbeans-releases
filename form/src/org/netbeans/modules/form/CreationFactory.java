@@ -118,12 +118,12 @@ public class CreationFactory {
     }
 
     public static void registerDescriptor(CreationDescriptor desc) {
-        getRegistry().put(desc.getDescribedClass().getName(), desc);
+        getRegistry().put(desc.getDescribedClassName(), desc);
     }
     
     public static void unregisterDescriptor(CreationDescriptor desc) {
         if (registry != null)
-            registry.remove(desc.getDescribedClass().getName());
+            registry.remove(desc.getDescribedClassName());
     }
 
     // -----------

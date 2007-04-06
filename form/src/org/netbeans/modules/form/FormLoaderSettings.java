@@ -100,12 +100,13 @@ public class FormLoaderSettings  {
     /** Property name of the layout code target property. */
     public static final String PROP_LAYOUT_CODE_TARGET = "layoutCodeTarget"; // NOI18N
 
-    /** Name of the automatic i18n property. */
-    public static final String PROP_AUTO_I18N = "i18nAutoMode"; // NOI18N
-    static final int AUTO_I18N_DEFAULT = 0;
-    static final int AUTO_I18N_ON = 1;
-    static final int AUTO_I18N_OFF = 2;
-//    public static final String PROP_CONTAINER_BEANS = "containerBeans"; // NOI18N
+    /** Name of the property for automatic resources/i18n management.
+     * The name refers only to i18n for compatibility reasons. */
+    public static final String PROP_AUTO_RESOURCING = "i18nAutoMode"; // NOI18N
+    static final int AUTO_RESOURCE_DEFAULT = 0;
+    static final int AUTO_RESOURCE_ON = 1;
+    static final int AUTO_RESOURCE_OFF = 2;
+    //    public static final String PROP_CONTAINER_BEANS = "containerBeans"; // NOI18N
 
     // ------------------------------------------
     /** The color of the drag border on selection border */
@@ -302,8 +303,6 @@ public class FormLoaderSettings  {
             variablesModifier &= CodeVariable.FINAL;
             setVariablesModifier(variablesModifier);
         }
-            
-
     }
 
     /** Getter for the variablesModifier option */
@@ -349,7 +348,7 @@ public class FormLoaderSettings  {
     public String[] getEditorSearchPath() {
         if (editorSearchPath == null) {
             editorSearchPath = translatedEditorSearchPath(
-                    toArray(getPreferences().get(PROP_EDITOR_SEARCH_PATH, "org.netbeans.modules.form.editors2")));
+                    toArray(getPreferences().get(PROP_EDITOR_SEARCH_PATH, "org.netbeans.modules.form.editors2 , org.netbeans.modules.swingapp"))); // NOI18N
         }
         return editorSearchPath;
     }
@@ -450,11 +449,11 @@ public class FormLoaderSettings  {
     }
 
     public int getI18nAutoMode() {
-        return getPreferences().getInt(PROP_AUTO_I18N, 0);    
+        return getPreferences().getInt(PROP_AUTO_RESOURCING, 0);    
     }
 
     public void setI18nAutoMode(int mode) {
-        getPreferences().putInt(PROP_AUTO_I18N, mode);    
+        getPreferences().putInt(PROP_AUTO_RESOURCING, mode);    
     }
 
     private static String[][] toArray2(String esp) {

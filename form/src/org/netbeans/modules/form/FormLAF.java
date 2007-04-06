@@ -33,6 +33,7 @@ import org.openide.ErrorManager;
  * @author Jan Stola, Tran Duc Trung
  */
 public class FormLAF {
+    private static final String SWING_NOXP = "swing.noxp"; // NOI18N
     /** Determines whether the FormLAF has been initialized (e.g. DelegatingDefaults has been installed). */
     private static boolean initialized = false;
     /** Determines whether we already are in LAF block. */
@@ -69,9 +70,26 @@ public class FormLAF {
                     MetalLookAndFeel.setCurrentTheme(theme);
                 }
             }
-            previewLookAndFeel.initialize();
 
-            UIDefaults previewDefaults = previewLookAndFeel.getDefaults();
+            String noxp = null;
+            boolean classic = isClassicWinLAF(lafClass.getName());
+            if (classic) {
+                noxp = System.getProperty(SWING_NOXP);
+                System.setProperty(SWING_NOXP, "y"); // NOI18N
+            }
+            UIDefaults previewDefaults = null;
+            try {
+                previewLookAndFeel.initialize();
+                previewDefaults = previewLookAndFeel.getDefaults();
+            } finally {
+                if (classic) {
+                    if (noxp == null) {
+                        System.getProperties().remove(SWING_NOXP);
+                    } else {
+                        System.setProperty(SWING_NOXP, noxp);
+                    }
+                }
+            }
 
             if (previewLafIsMetal && ideLafIsMetal) {
                 LookAndFeel ideLaf = UIManager.getLookAndFeel();
@@ -97,6 +115,21 @@ public class FormLAF {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         return null;
+    }
+
+    private static boolean isClassicWinLAF(String className) {
+        return "com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel".equals(className); // NOI18N
+    }
+
+    private static void invalidateXPStyle() {
+        try {
+            Class xpStyle = Class.forName("com.sun.java.swing.plaf.windows.XPStyle"); // NOI18N
+            java.lang.reflect.Method method = xpStyle.getDeclaredMethod("invalidateStyle", null); // NOI18N
+            method.setAccessible(true);
+            method.invoke(null);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private static void initialize() throws Exception {
@@ -277,11 +310,30 @@ public class FormLAF {
         delDefaults.setDelegating(designerDefaults);
     }
 
+    static String oldNoXP;
     static void setUsePreviewDefaults(boolean previewing, Class previewLAF, UIDefaults uiDefaults) {
+        boolean classic = (previewLAF == null)
+            ? ((previewLaf == null) ? false : isClassicWinLAF(previewLaf.getName()))
+            : isClassicWinLAF(previewLAF.getName());
         preview = previewing;
         previewLaf = previewLAF;
         if (previewing) {
+            if (classic) {
+                oldNoXP = System.getProperty(SWING_NOXP);
+                System.setProperty(SWING_NOXP, "y"); // NOI18N
+                invalidateXPStyle();
+            }
             delDefaults.setPreviewDefaults(uiDefaults);
+        } else {
+            if (classic) {
+                if (oldNoXP == null) {
+                    System.getProperties().remove(SWING_NOXP);
+                } else {
+                    System.setProperty(SWING_NOXP, oldNoXP);
+                }
+                invalidateXPStyle();
+            }
+            oldNoXP = null;
         }
         delDefaults.setPreviewing(previewing);
     }
@@ -291,7 +343,8 @@ public class FormLAF {
     }
 
     static void setCustomizingUIClasses(boolean customizing) {
-        delDefaults.setCustomizingUIClasses(customizing);
+        if (delDefaults != null)
+            delDefaults.setCustomizingUIClasses(customizing);
     }
 
     /**

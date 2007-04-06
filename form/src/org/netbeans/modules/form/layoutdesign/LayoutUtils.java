@@ -36,35 +36,48 @@ public class LayoutUtils implements LayoutConstants {
 
     public static LayoutInterval getAdjacentEmptySpace(LayoutComponent comp, int dimension, int direction) {
         LayoutInterval interval = comp.getLayoutInterval(dimension);
-        LayoutInterval parent;
-        while ((parent = interval.getParent()) != null) {
-            if (parent.isSequential()) {
-                int index = parent.indexOf(interval);
-                if (direction == LEADING) {
-                    if (index == 0) {
-                        interval = parent;
-                    } else {
-                        LayoutInterval candidate = parent.getSubInterval(index-1);
-                        return candidate.isEmptySpace() ? candidate : null;
-                    }
-                } else {
-                    if (index == parent.getSubIntervalCount()-1) {
-                        interval = parent;
-                    } else {
-                        LayoutInterval candidate = parent.getSubInterval(index+1);
-                        return candidate.isEmptySpace() ? candidate : null;                        
-                    }
-                }
-            } else {
-                // PENDING how should we determine the space: isAlignedAtBorder, isPlacedAtBorder, any?
-                if (LayoutInterval.isPlacedAtBorder(interval, dimension, direction)) {
-                    interval = parent;
-                } else {
-                    return null;
-                }
+        LayoutInterval gap = LayoutInterval.getNeighbor(interval, direction, false, true, false);
+        if (gap != null && gap.isEmptySpace()) {
+            LayoutInterval gapNeighbor = LayoutInterval.getDirectNeighbor(gap, direction^1, true);
+            if (gapNeighbor == interval || LayoutInterval.isPlacedAtBorder(interval, gapNeighbor, dimension, direction)) {
+                return gap;
             }
         }
         return null;
+//        LayoutInterval parent;
+//        while ((parent = interval.getParent()) != null) {
+//            if (parent.isSequential()) {
+//                int index = parent.indexOf(interval);
+//                if (direction == LEADING) {
+//                    if (index == 0) {
+//                        interval = parent;
+//                    } else {
+//                        LayoutInterval candidate = parent.getSubInterval(index-1);
+//                        return candidate.isEmptySpace() ? candidate : null;
+//                    }
+//                } else {
+//                    if (index == parent.getSubIntervalCount()-1) {
+//                        interval = parent;
+//                    } else {
+//                        LayoutInterval candidate = parent.getSubInterval(index+1);
+//                        return candidate.isEmptySpace() ? candidate : null;                        
+//                    }
+//                }
+//            } else {
+//                // PENDING how should we determine the space: isAlignedAtBorder, isPlacedAtBorder, any?
+//                if (LayoutInterval.isPlacedAtBorder(interval, dimension, direction)) {
+//                    interval = parent;
+//                } else {
+//                    return null;
+//                }
+//            }
+//        }
+//        return null;
+    }
+
+    public static boolean hasAdjacentComponent(LayoutComponent comp, int dimension, int direction) {
+        return LayoutInterval.getNeighbor(comp.getLayoutInterval(dimension), direction, true, true, false)
+                != null;
     }
 
     // -----
@@ -156,24 +169,33 @@ public class LayoutUtils implements LayoutConstants {
         List targets = edgeSubComponents(targetInt, LEADING);        
 
         // Calculate size of gap from sources and targets and their positions
-        return getSizeOfDefaultGap(sources, targets, visualMapper, null, Collections.EMPTY_MAP);
+        return getSizesOfDefaultGap(sources, targets, interval.getPaddingType(),
+                                    visualMapper, null, Collections.EMPTY_MAP)[0];
     }
 
-    static int getSizeOfDefaultGap(List sources, List targets, VisualMapper visualMapper,
-                                   String contId, Map boundsMap) {
+    /**
+     * Finds out the sizes of given types of default gaps between the trailing
+     * edge of a set of "source" components and the leading edge of a set of
+     * "target" components.
+     * @param gapType the padding type whose size should be returned, or null
+     *        if all types should be determined
+     * @return array of sizes - one element if specific padding type is asked or
+     *         four elements if null is provided
+     */
+    static int[] getSizesOfDefaultGap(List sources, List targets, PaddingType gapType,
+                VisualMapper visualMapper, String contId, Map boundsMap) {
         if (((sources != null) && (sources.isEmpty()))
             || ((targets != null) && (targets.isEmpty()))) {
-            return 0; // Preferred gap not between components
+            return new int[] { 0 }; // Preferred gap not between components
         }
         sources = (sources == null) ? Collections.EMPTY_LIST : sources;
         targets = (targets == null) ? Collections.EMPTY_LIST : targets;
-        int size = 0;
         boolean containerGap = false;
         int containerGapAlignment = -1;
         LayoutInterval temp = null;
         if (sources.isEmpty()) {
             if (targets.isEmpty()) {
-                return 0;
+                return new int[] { 0 };
             } else {
                 // Leading container gap
                 containerGap = true;
@@ -215,7 +237,10 @@ public class LayoutUtils implements LayoutConstants {
                 min = Math.min(min, leading);
             }
         }
+
+        int[] sizes;
         if (containerGap) {
+            sizes = new int[1];
             iter = sources.isEmpty() ? targets.iterator() : sources.iterator();
             while (iter.hasNext()) {
                 LayoutInterval interval = (LayoutInterval)iter.next();
@@ -226,9 +251,12 @@ public class LayoutUtils implements LayoutConstants {
                 int position = region.positions[dimension][containerGapAlignment];
                 int delta = (containerGapAlignment == LEADING) ? (position - min) : (max - position);
                 if (!positionsNotUpdated) padding -= delta;
-                size = Math.max(size, padding);
+                sizes[0] = Math.max(sizes[0], padding);
             }            
         } else {
+            PaddingType[] paddingTypes = // just one, or all types of gaps
+                    gapType != null ? new PaddingType[] { gapType } : PADDINGS;
+            sizes = new int[paddingTypes.length]; 
             Iterator srcIter = sources.iterator();
             while (srcIter.hasNext()) {
                 LayoutInterval srcCandidate = (LayoutInterval)srcIter.next();                
@@ -241,14 +269,17 @@ public class LayoutUtils implements LayoutConstants {
                     String targetId = targetCandidate.getComponent().getId();
                     LayoutRegion targetRegion = sizeOfEmptySpaceHelper(targetCandidate, boundsMap);
                     int targetDelta = targetRegion.positions[dimension][LEADING] - min;
-                    int padding = visualMapper.getPreferredPadding(srcId,
-                        targetId, dimension, LEADING, VisualMapper.PADDING_RELATED);
-                    if (!positionsNotUpdated) padding -= srcDelta + targetDelta;
-                    size = Math.max(size, padding);
+                    for (int i=0; i < paddingTypes.length; i++) {
+                        PaddingType type = paddingTypes[i];
+                        int padding = visualMapper.getPreferredPadding(srcId,
+                            targetId, dimension, LEADING, type);
+                        if (!positionsNotUpdated) padding -= srcDelta + targetDelta;
+                        sizes[i] = Math.max(sizes[i], padding);
+                    }
                 }
             }
         }
-        return size;        
+        return sizes;
     }
 
     private static LayoutRegion sizeOfEmptySpaceHelper(LayoutInterval interval, Map boundsMap) {

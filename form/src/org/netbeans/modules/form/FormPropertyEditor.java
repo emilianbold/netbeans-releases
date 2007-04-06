@@ -21,14 +21,12 @@ package org.netbeans.modules.form;
 
 import java.awt.*;
 import java.beans.*;
-import java.util.*;
 import java.lang.ref.WeakReference;
 import java.security.*;
 
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
-import org.openide.nodes.*;
 
 /** A multiplexing PropertyEditor used in the form editor.
  * It allows multiple editors to be used with one currently selected.
@@ -49,6 +47,8 @@ public class FormPropertyEditor implements PropertyEditor,
     private WeakReference propertyEnv;
 
     private PropertyEditor[] allEditors;
+    private PropertyEditor lastCurrentEditor;
+
     private PropertyChangeSupport changeSupport;
     
     /** Crates a new FormPropertyEditor */
@@ -247,6 +247,14 @@ public class FormPropertyEditor implements PropertyEditor,
      */
 
     public Component getCustomEditor() {
+        // hack: PropertyPicker wants code regenerated - it might lead to
+        // setting values to property editors
+        FormModel formModel = property.getPropertyContext().getFormModel();
+        if (formModel != null) {
+            JavaCodeGenerator codeGen = (JavaCodeGenerator) FormEditor.getCodeGenerator(formModel);
+            codeGen.regenerateCode();
+        }
+
         Component customEditor;
 
         PropertyEditor prEd = property.getCurrentEditor();
@@ -286,23 +294,81 @@ public class FormPropertyEditor implements PropertyEditor,
     }
 
     synchronized PropertyEditor[] getAllEditors() {
+        if (allEditors != null) {
+            // the current property editor might have changed and so not
+            // present among the cached editors
+            PropertyEditor currentEditor = property.getCurrentEditor();
+            if (currentEditor != lastCurrentEditor) {
+                allEditors = null;
+            }
+        }
+
         if (allEditors == null) {
             PropertyEditor expliciteEditor = property.getExpliciteEditor();
-            PropertyEditor[] typeEditors =
-                FormPropertyEditorManager.getAllEditors(property);
-            if (expliciteEditor != null) {
-                // expliciteEditor could be already in typeEditors
-                for (int i=0; i < typeEditors.length; i++)
-                    if (expliciteEditor.getClass().equals(typeEditors[i].getClass())) {
-                        typeEditors[i] = expliciteEditor;
-                        expliciteEditor = null;
-                        break;
-                    }
+            PropertyEditor currentEditor = property.getCurrentEditor();
+            lastCurrentEditor = currentEditor;
+            if (expliciteEditor != null && currentEditor != null
+                    && expliciteEditor.getClass().equals(currentEditor.getClass()))
+            {   // they are the same, take care about the current editor only
+                expliciteEditor = null;
             }
-            if (expliciteEditor != null) {
-                allEditors = new PropertyEditor[typeEditors.length+1];
-                allEditors[0] = expliciteEditor;
-                System.arraycopy(typeEditors, 0, allEditors, 1, typeEditors.length);
+            PropertyEditor[] typeEditors = FormPropertyEditorManager.getAllEditors(property);
+
+            // Explicite editor should be added to editors (if not already present).
+            // The current editor should replace the corresponding default editor.
+            // Replace the delegate editor in ResourceWrapperEditor if needed.
+            for (int i=0; i < typeEditors.length && (expliciteEditor != null || currentEditor != null); i++) {
+                PropertyEditor prEd = typeEditors[i];
+                ResourceWrapperEditor wrapper = null;
+                if (prEd instanceof ResourceWrapperEditor && !(currentEditor instanceof ResourceWrapperEditor)) {
+                    // the current editor might be just loaded and thus not wrapped...
+                    wrapper = (ResourceWrapperEditor) prEd;
+                    prEd = wrapper.getDelegatedPropertyEditor();
+                }
+                if (currentEditor != null && currentEditor.getClass().equals(prEd.getClass())) {
+                    // current editor matches
+                    if (wrapper != null) { // silently make it the current editor
+                        wrapper.setDelegatedPropertyEditor(currentEditor);
+                        boolean fire = property.isChangeFiring();
+                        property.setChangeFiring(false);
+                        property.setCurrentEditor(wrapper);
+                        property.setChangeFiring(fire);
+                        PropertyEnv env = getPropertyEnv();
+                        if (env != null)
+                            wrapper.attachEnv(env);
+                    }
+                    else {
+                        if (prEd instanceof RADConnectionPropertyEditor
+                            && ((RADConnectionPropertyEditor)prEd).getEditorType()
+                                != ((RADConnectionPropertyEditor)currentEditor).getEditorType()) {
+                            continue; // there are two types of RAD... editors
+                        }
+                        typeEditors[i] = currentEditor;
+                    }
+                    currentEditor = null;
+                }
+                else if (expliciteEditor != null && expliciteEditor.getClass().equals(prEd.getClass())) {
+                    if (wrapper != null)
+                        wrapper.setDelegatedPropertyEditor(expliciteEditor);
+                    else
+                        typeEditors[i] = expliciteEditor;
+                    expliciteEditor = null;
+                }
+            }
+
+            int count = typeEditors.length;
+            if (expliciteEditor != null)
+                count++;
+            if (currentEditor != null)
+                count++;
+            if (count > typeEditors.length) {
+                allEditors = new PropertyEditor[count];
+                int index = 0;
+                if (currentEditor != null)
+                    allEditors[index++] = currentEditor;
+                if (expliciteEditor != null)
+                    allEditors[index++] = expliciteEditor;
+                System.arraycopy(typeEditors, 0, allEditors, index, typeEditors.length);
             }
             else allEditors = typeEditors;
         }
@@ -338,7 +404,8 @@ public class FormPropertyEditor implements PropertyEditor,
     public boolean supportsEditingTaggedValues() {
         PropertyEditor prEd = property.getCurrentEditor();
         return prEd instanceof EnhancedPropertyEditor ?
-               ((EnhancedPropertyEditor)prEd).supportsEditingTaggedValues() : false;
+               ((EnhancedPropertyEditor)prEd).supportsEditingTaggedValues() :
+               Boolean.TRUE.equals(property.getValue("canEditAsText")); // NOI18N
     }
 
     // -------------------------------------------------------------

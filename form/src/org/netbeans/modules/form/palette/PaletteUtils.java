@@ -64,7 +64,7 @@ public final class PaletteUtils {
         List<PropertyChangeListener> paletteListeners;
 
         PaletteController getPalette() {
-            return paletteLookup.lookup(PaletteController.class);
+            return (PaletteController)paletteLookup.lookup(PaletteController.class);
         }
     }
 
@@ -283,8 +283,9 @@ public final class PaletteUtils {
     
     public static PaletteItem getSelectedItem() {
         PaletteController palette = getPalette();
-        if( null == palette )
+        if (palette == null) {
             return null;
+        }
         Lookup lkp = palette.getSelectedItem();
         
         return (PaletteItem)lkp.lookup( PaletteItem.class );
@@ -477,7 +478,7 @@ public final class PaletteUtils {
         }
 
         public boolean isValidCategory(Lookup lkp) {
-            Node categoryNode = lkp.lookup(Node.class);
+            Node categoryNode = (Node)lkp.lookup(Node.class);
             if (!representsShowableCategory(categoryNode))
                 return false; // filter out categories that should never be visible (e.g. Layouts)
 

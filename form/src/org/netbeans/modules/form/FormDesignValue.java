@@ -59,6 +59,8 @@ public interface FormDesignValue extends java.io.Serializable {
      * @return the real property value to be used during design-time
      */
     public Object getDesignValue();
+    
+    public Object getDesignValue(Object target);
 
     /** Returns description of the design value. Can be useful when
      * the real value for design-time is not provided.

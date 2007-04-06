@@ -333,8 +333,13 @@ public abstract class FormProperty extends Node.Property {
      * this method to provide additional conversions.
      */
     protected Object getRealValue(Object value) {
-        return value instanceof FormDesignValue ?
-                 ((FormDesignValue)value).getDesignValue() : value;
+        while (value instanceof FormDesignValue) {
+            Object prev = value;
+            value = ((FormDesignValue)value).getDesignValue();
+            if (value == prev)
+                break;
+        }
+        return value;
     }
 
     /** Returns whether this property has a default value (false by default).
@@ -538,7 +543,7 @@ public abstract class FormProperty extends Node.Property {
         if (currentEditor == null) {
             currentEditor = findDefaultEditor();
             if (currentEditor != null)
-                propertyContext.initPropertyEditor(currentEditor);
+                propertyContext.initPropertyEditor(currentEditor, this);
         }
         return currentEditor;
     }
@@ -549,7 +554,7 @@ public abstract class FormProperty extends Node.Property {
     public final void setCurrentEditor(PropertyEditor newEditor) {
         if (newEditor != currentEditor) {
             if (newEditor != null)
-                propertyContext.initPropertyEditor(newEditor);
+                propertyContext.initPropertyEditor(newEditor, this);
 
             if (formPropertyEditor != null) {
                 if (currentEditor != null)
@@ -691,7 +696,7 @@ public abstract class FormProperty extends Node.Property {
         propertyContext = newContext;
 
         if (currentEditor != null)
-            propertyContext.initPropertyEditor(currentEditor);
+            propertyContext.initPropertyEditor(currentEditor, this);
     }
 
     public int getAccessType() {
@@ -844,22 +849,19 @@ public abstract class FormProperty extends Node.Property {
 
             if (isExternalChangeMonitoring()) {
                 value = getTargetValue();
-                if (!equals(value, lastRealValue)
-                    && (value == null || propertyValue == null
-                        || value.getClass().isAssignableFrom(propertyValue.getClass())))
-                {   // the value is different from the one last set
-                    valueSet = false;
-                    setChanged(false);
-//                    if (value == null
-//                        || ((value.getClass().isPrimitive() || value instanceof String)
-//                            && !value.equals(lastRealValue)))
-//                    {   // the real value of the property was changed "externally"
-//                        // e.g. like label of JButton is changed when text is set
-//                        setChanged(false);
-//                    }
-                    lastRealValue = null;
-                    return value;
-                    // [fire property editor change - for refreshing property sheet??]
+                if (!equals(value, lastRealValue)) {
+                    // the value is different from the one last set
+                    Object propValue = (propertyValue instanceof FormDesignValue) ?
+                        ((FormDesignValue)propertyValue).getDesignValue() : propertyValue;
+                    if (propValue != FormDesignValue.IGNORED_VALUE) {
+                        // TODO check type of the value, beware of boolean != Boolean
+//                        assert (propValue == null) || getValueType().isAssignableFrom(propValue.getClass());
+                        valueSet = false;
+                        setChanged(false);
+                        lastRealValue = null;
+                        return value;
+                        // [fire property editor change - for refreshing property sheet??]
+                    }
                 }
             }
             return propertyValue;
@@ -1035,7 +1037,7 @@ public abstract class FormProperty extends Node.Property {
         private PropertyEditor propertyEditor;
         private int propertyEditorIndex;
 
-        ValueWithEditor(Object value, PropertyEditor propertyEditor) {
+        public ValueWithEditor(Object value, PropertyEditor propertyEditor) {
             this.value = value;
             this.propertyEditor = propertyEditor;
         }

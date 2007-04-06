@@ -105,7 +105,7 @@ public class ALT_Resizing09Test extends LayoutTestCase {
         prefPadding.put("jLabel1-jTextField2-0-0-0", new Integer(4)); // comp1Id-comp2Id-dimension-comp2Alignment-paddingType
         // > MOVE
         {
-            Point p = new Point(51,20);
+            Point p = new Point(49,20);
             String containerId= "Form";
             boolean autoPositioning = true;
             boolean lockDimension = false;

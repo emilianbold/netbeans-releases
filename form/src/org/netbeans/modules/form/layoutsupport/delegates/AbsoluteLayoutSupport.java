@@ -26,7 +26,6 @@ import java.lang.reflect.Constructor;
 
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
-import org.openide.util.SharedClassObject;
 
 import org.netbeans.lib.awtextra.AbsoluteLayout;
 import org.netbeans.lib.awtextra.AbsoluteConstraints;

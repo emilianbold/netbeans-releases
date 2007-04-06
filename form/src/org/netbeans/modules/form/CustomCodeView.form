@@ -37,19 +37,13 @@
                   <Component id="jScrollPane2" alignment="0" pref="652" max="32767" attributes="0"/>
                   <Component id="declarationCodeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="selectComponentLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="componentCombo" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="renameButton" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="initCodeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
-                      <Component id="infoLabel" pref="449" max="32767" attributes="0"/>
+                      <Component id="selectComponentLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="componentCombo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="renameButton" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="initCodeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -59,18 +53,13 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Group type="102" attributes="1">
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="selectComponentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="componentCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="renameButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="32767" attributes="0"/>
-                      <Component id="initCodeLabel" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="infoLabel" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="selectComponentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="componentCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="renameButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="32767" attributes="0"/>
+              <Component id="initCodeLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jScrollPane1" pref="348" max="32767" attributes="0"/>
               <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
@@ -277,13 +266,6 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="declControlActionPerformed"/>
       </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="infoLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/form/Bundle.properties" key="CustomCodeView.infoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
     </Component>
   </SubComponents>
 </Form>

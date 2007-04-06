@@ -22,68 +22,119 @@ package org.netbeans.modules.form;
 import java.beans.*;
 
 /**
- * An interface for working with "context" of properties
- * (of FormProperty type). The interface has three methods.
- * First:
- *     boolean useMultipleEditors();
- * describes whether the FormPropertyEditor can be used for editing properties.
- * This property editor encapsulates multiple property editors which can be used
- * for given property - this feature is not suitable e.g. for event properties,
- * and sometimes not possible beacuase of restrictions in XML storage format
- * (which must stay compatible with previous versions).
- *
- * Second:
- *     void initPropertyEditor(PropertyEditor prEd);
- * initializes property editor for a property - property editors are usually
- * constructed with no parameters, but often needs some context
- * (e.g. FormAwareEditor needs FormModel).
- *
- * Third:
- *     FormModel getFormModel();
- * provides the form the property belongs to. The context is needed for loading
- * classes of property editors (from the right classpath).
+ * An interface representing a context of a FormProperty.
  *
  * @author Tomas Pavek
  */
 
 public interface FormPropertyContext {
 
+    /**
+     * Describes whether the FormPropertyEditor can be used for editing properties.
+     * This property editor encapsulates multiple property editors which can be used
+     * for given property - this feature is not suitable e.g. for event properties,
+     * and sometimes not possible beacuase of restrictions in XML storage format
+     * (which must stay compatible with previous versions).
+     * @return true if multiple property editors can be used (FormPropertyEditor)
+     */
     public boolean useMultipleEditors();
 
-    public void initPropertyEditor(PropertyEditor prEd);
+    /**
+     * Initializes property editor for a property - property editors are usually
+     * constructed with no parameters, but often needs some context
+     * (e.g. FormAwareEditor needs FormModel and FormProperty).
+     */
+    public void initPropertyEditor(PropertyEditor prEd, FormProperty property);
 
+    /**
+     * Provides the form the property belongs to. The context is needed for loading
+     * classes of property editors (from the right classpath).
+     * @return FormModel this property belong to
+     */
     public FormModel getFormModel();
 
-    /** 
-     * Support for default implementation of FormPropertyContext interface.
-     * A FormModel must be supplied in addition to use this support.
+    /**
+     * Returns relative path of the property within the form. Together with the
+     * name of the property (which is not included) the path can be used to
+     * identify the property. E.g. all bean properties of a component has the
+     * component name as their context path. Nested properties also have the
+     * parent property name in the path.
+     * @return String relative path of the property within the form
      */
-    public static abstract class DefaultSupport implements FormPropertyContext {
+    public String getContextPath();
+
+    /**
+     * Returns the type of the object the property belongs to (which it is
+     * a property of).
+     * @return type of the parent object of the property
+     */
+    public Class getParentObjectType();
+
+    /**
+     * Implementation of FormPropertyContext for component properties.
+     */
+    public static class Component implements FormPropertyContext {
+        private RADComponent component;
+
+        public Component(RADComponent metacomp) {
+            component = metacomp;
+        }
 
         public boolean useMultipleEditors() {
-            FormModel formModel = getFormModel();
-            return formModel != null;
+            return true;
         }
 
-        public void initPropertyEditor(PropertyEditor prEd) {
-            FormModel formModel = getFormModel();
-
-            if (formModel != null && prEd instanceof FormAwareEditor)
-                ((FormAwareEditor)prEd).setFormModel(formModel);
-        }
-    }
-
-    /** Defualt implementation of FormPropertyContext interface. */
-    public static class DefaultImpl extends DefaultSupport {
-
-        FormModel formModel;
-
-        public DefaultImpl(FormModel form) {
-            formModel = form;
+        public void initPropertyEditor(PropertyEditor prEd, FormProperty property) {
+            if (prEd instanceof FormAwareEditor)
+                ((FormAwareEditor)prEd).setContext(getFormModel(), property);
         }
 
         public FormModel getFormModel() {
-            return formModel;
+            return component.getFormModel();
+        }
+
+        public String getContextPath() {
+            return component != getFormModel().getTopRADComponent() ?
+                   component.getName() : ""; // NOI18N
+        }
+
+        public Class getParentObjectType() {
+            return component.getBeanClass();
+        }
+    }
+
+    /**
+     * Implementation of FormPropertyContext for a property that is a
+     * "sub-property" of another property (e.g. border support properties).
+     */
+    public static class SubProperty implements FormPropertyContext {
+        private FormProperty parentProperty;
+
+        public SubProperty(FormProperty parentProp) {
+            this.parentProperty = parentProp;
+        }
+
+        public boolean useMultipleEditors() {
+            return parentProperty.getPropertyContext().useMultipleEditors();
+        }
+
+        public void initPropertyEditor(PropertyEditor prEd, FormProperty property) {
+            parentProperty.getPropertyContext().initPropertyEditor(prEd, property);
+        }
+
+        public FormModel getFormModel() {
+            return parentProperty.getPropertyContext().getFormModel();
+        }
+
+        public String getContextPath() {
+            String parentPath = parentProperty.getPropertyContext().getContextPath();
+            return parentPath != null && !parentPath.equals("") ? // NOI18N
+                   parentPath + "." + parentProperty.getName() : // NOI18N
+                   parentProperty.getName();
+        }
+
+        public Class getParentObjectType() {
+            return parentProperty.getValueType();
         }
     }
 
@@ -94,11 +145,22 @@ public interface FormPropertyContext {
             return false;
         }
 
-        public void initPropertyEditor(PropertyEditor prEd) {
+        public void initPropertyEditor(PropertyEditor prEd, FormProperty property) {
+            if (prEd instanceof FormAwareEditor) {
+                ((FormAwareEditor)prEd).setContext(getFormModel(), property);
+            }
         }
 
         public FormModel getFormModel() {
             return null;
+        }
+
+        public String getContextPath() {
+            return ""; // NOI18N
+        }
+
+        public Class getParentObjectType() {
+            return Object.class;
         }
 
         // ------

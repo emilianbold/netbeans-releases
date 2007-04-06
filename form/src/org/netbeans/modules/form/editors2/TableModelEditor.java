@@ -30,7 +30,7 @@ import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.netbeans.modules.form.NamedPropertyEditor;
 
 /**
-* A property editor for jjavax.swing.table.TableModel.
+* A property editor for javax.swing.table.TableModel.
 * @author Ian Formanek, Tomas Pavek
 */
 
@@ -614,7 +614,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor, Name
         }
 
         // adds one row at the index
-        void addRow(int index) {
+        public void addRow(int index) {
             if (index >= 0 && index <= rowCount) {
                 for (int i=0, n=columns.size(); i < n; i++)
                     ((ColumnItem)columns.get(i)).rows.add(index, null);
@@ -625,7 +625,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor, Name
         }
 
         // removes one row from index
-        void removeRow(int index) {
+        public void removeRow(int index) {
             if (index >= 0 && index < rowCount) {
                 for (int i=0, n=columns.size(); i < n; i++)
                     ((ColumnItem)columns.get(i)).rows.remove(index);
@@ -635,7 +635,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor, Name
             }
         }
 
-        void moveRow(int fromIndex, int toIndex) {
+        public void moveRow(int fromIndex, int toIndex) {
             if (columns.size() > 0
                     && fromIndex >= 0 && fromIndex < rowCount
                     && toIndex >= 0 && toIndex < rowCount
@@ -669,7 +669,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor, Name
         }
 
         // adds one column at index
-        void addColumn(int index) {
+        public void addColumn(int index) {
             if (index >=0 && index <= columns.size()) {
                 columns.add(index, new ColumnItem(getBundle().getString("CTL_Title")+" "+Integer.toString(index+1),
                                                   Object.class, true, rowCount));
@@ -683,7 +683,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor, Name
         }
 
         // removes one column at index
-        void removeColumn(int index) {
+        public void removeColumn(int index) {
             if (index >=0 && index < columns.size()) {
                 columns.remove(index);
 
@@ -696,7 +696,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor, Name
             }
         }
 
-        void moveColumn(int fromIndex,int toIndex) {
+        public void moveColumn(int fromIndex,int toIndex) {
             if (fromIndex >= 0 && fromIndex < columns.size()
                     && toIndex >= 0 && toIndex < columns.size()
                     && fromIndex != toIndex) {

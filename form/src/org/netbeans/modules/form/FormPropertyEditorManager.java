@@ -99,6 +99,13 @@ final public class FormPropertyEditorManager extends Object
         return typeName;
     }
 
+    private static boolean hasWrappingEditor(Class type) {
+        return type == String.class
+               || type == java.awt.Font.class
+               || type == java.awt.Color.class
+               || type == javax.swing.Icon.class;
+    }
+
     private static Class[] findEditorClasses(Class type, FormModel form) {
         // try the editors cache
         Class[] edClasses = (Class[]) editorsCache.get(type);
@@ -110,8 +117,8 @@ final public class FormPropertyEditorManager extends Object
         ArrayList editorsList = new ArrayList(5);
 
         // 1st - try standard way through PropertyEditorManager
-        PropertyEditor stdPropEd = (type == Object.class || type == java.awt.Font.class) ? null :
-                                     PropertyEditorManager.findEditor(type);
+        PropertyEditor stdPropEd = (type != Object.class && !hasWrappingEditor(type)) ?
+                                   PropertyEditorManager.findEditor(type) : null;
         if (stdPropEd != null) {
             editorsList.add(stdPropEd.getClass());
         }
@@ -174,6 +181,7 @@ final public class FormPropertyEditorManager extends Object
 
         // 6th - add the RADConnectionPropertyEditor for all values
         editorsList.add(RADConnectionPropertyEditor.class);
+        editorsList.add(RADConnectionPropertyEditor.class);  // hack: two types of RAD... editors
 
         edClasses = new Class[editorsList.size()];
         editorsList.toArray(edClasses);
@@ -185,11 +193,16 @@ final public class FormPropertyEditorManager extends Object
     private static PropertyEditor[] createEditorInstances(Class[] edClasses,
                                                           Class propertyType) {
         ArrayList instancesList = new ArrayList(edClasses.length);
+        boolean connectionPrEdCreated = false; // hack for two types of RAD... editors
 
         for (int i = 0; i < edClasses.length; i++) {
             Class edType = edClasses[i];
             if (RADConnectionPropertyEditor.class.isAssignableFrom(edType)) {
-                instancesList.add(new RADConnectionPropertyEditor(propertyType));
+                instancesList.add(new RADConnectionPropertyEditor(propertyType,
+                        connectionPrEdCreated ?
+                            RADConnectionPropertyEditor.Type.CustomCode :
+                            RADConnectionPropertyEditor.Type.FormConnection));
+                connectionPrEdCreated = !connectionPrEdCreated;
             }
             else if (ComponentChooserEditor.class.isAssignableFrom(edType)) {
                 instancesList.add(new ComponentChooserEditor(

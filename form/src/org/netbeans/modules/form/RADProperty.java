@@ -22,6 +22,7 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import java.lang.reflect.*;
+import org.netbeans.modules.form.editors.AbstractFormatterFactoryEditor;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.form.editors.*;
@@ -44,8 +45,8 @@ public class RADProperty extends FormProperty {
     private RADComponent component;
     private PropertyDescriptor desc;
 
-    RADProperty(RADComponent metacomp, PropertyDescriptor propdesc) {
-        super(new RADPropertyContext(metacomp),
+    public RADProperty(RADComponent metacomp, PropertyDescriptor propdesc) {
+        super(new FormPropertyContext.Component(metacomp),//new RADPropertyContext(metacomp),
               propdesc.getName(),
               propdesc.getPropertyType(),
               propdesc.getDisplayName(),
@@ -189,7 +190,13 @@ public class RADProperty extends FormProperty {
                 || "displayedMnemonic".equals(descriptor.getName()))) { // NOI18N
                 prEd = new MnemonicEditor();
         } else {
+            if ("editor".equals(descriptor.getName()) && (javax.swing.JSpinner.class.isAssignableFrom(component.getBeanClass()))) { // NOI18N
+                prEd = new SpinnerEditorEditor();
+            } else if ("formatterFactory".equals(descriptor.getName()) && (javax.swing.JFormattedTextField.class.isAssignableFrom(component.getBeanClass()))) { // NOI18N
+                prEd = new AbstractFormatterFactoryEditor();
+            } else {
                 prEd = createEnumEditor(descriptor);
+            }
         }
 
         if (prEd == null) {
@@ -292,18 +299,6 @@ public class RADProperty extends FormProperty {
 
     // -------------------
     // innerclasses
-
-    static class RADPropertyContext extends FormPropertyContext.DefaultSupport {
-        RADComponent component;
-
-        RADPropertyContext(RADComponent comp) {
-            component = comp;
-        }
-
-        public FormModel getFormModel() {
-            return component.getFormModel();
-        }
-    }
 
     // Descriptor for fake-properties (not real, design-time only) that
     // need to pretend they are of certain type although without both

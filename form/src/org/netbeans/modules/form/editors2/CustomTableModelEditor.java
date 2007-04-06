@@ -236,7 +236,8 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         buttonsPanel.setLayout(new GridBagLayout());
 
         JPanel colButtonsPanel = new JPanel(new GridLayout(4, 0, 0, 3));
-        JLabel colLabel = new JLabel(bundle.getString("CTL_Columns")); // NOI18N
+        JLabel colLabel = new JLabel();
+        Mnemonics.setLocalizedText(colLabel, bundle.getString("CTL_ColumnsPanel")); // NOI18N
         colLabel.setLabelFor(colButtonsPanel);
         java.awt.GridBagConstraints gridBagConstraints1;
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -292,7 +293,8 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         });
 
         JPanel rowButtonsPanel = new JPanel(new GridLayout(4, 0, 0, 3));
-        JLabel rowLabel = new JLabel(bundle.getString("CTL_Rows")); // NOI18N
+        JLabel rowLabel = new JLabel(); // NOI18N
+        Mnemonics.setLocalizedText(rowLabel, bundle.getString("CTL_RowsPanel")); // NOI18N
         rowLabel.setLabelFor(rowButtonsPanel);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.insets = new java.awt.Insets(0, 0, 2, 0);

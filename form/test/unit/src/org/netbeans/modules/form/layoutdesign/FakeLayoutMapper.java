@@ -29,7 +29,7 @@ import org.netbeans.modules.form.FormModel;
  * bounds and baseline positions.
  */
 
-public class FakeLayoutMapper implements VisualMapper, LayoutConstants {
+public class FakeLayoutMapper implements VisualMapper {
 
     private FormModel fm = null;
     private HashMap contInterior = null;
@@ -92,9 +92,10 @@ public class FakeLayoutMapper implements VisualMapper, LayoutConstants {
                                    String comp2Id,
                                    int dimension,
                                    int comp2Alignment,
-                                   int paddingType)
+                                   PaddingType paddingType)
     {
-        String id = comp1Id + "-" + comp2Id  + "-" + dimension + "-" + comp2Alignment + "-" + paddingType; //NOI18N
+        String id = comp1Id + "-" + comp2Id  + "-" + dimension + "-" + comp2Alignment + "-" // NOI18N
+                    + (paddingType != null ? paddingType.ordinal() : 0);
         Integer pad = (Integer) prefPadding.get(id);
         return pad != null ? pad.intValue() : 6;
     }
@@ -116,5 +117,7 @@ public class FakeLayoutMapper implements VisualMapper, LayoutConstants {
 
     public void rebuildLayout(String contId) {
     }
-    
+
+    public void setComponentVisibility(String componentId, boolean visible) {
+    }
 }

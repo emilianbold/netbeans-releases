@@ -27,6 +27,8 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
 import javax.swing.text.Document;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.ExtCaret;
 import org.netbeans.modules.form.assistant.AssistantModel;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.spi.palette.PaletteController;
@@ -68,8 +70,11 @@ public class FormEditor {
     /** The FormJavaSource for the form */
     private FormJavaSource formJavaSource;
     
-    /** I18nSupport instance for the form */
-    private I18nSupport i18nSupport;
+    /** ResourceSupport instance for the form */
+    private ResourceSupport resourceSupport;
+
+    /** Instance of binding support for the form.*/
+    private BindingDesignSupport bindingSupport;
 
     /** List of exceptions occurred during the last persistence operation */
     private List persistenceErrors;
@@ -128,11 +133,19 @@ public class FormEditor {
         return codeGenerator;
     }
 
-    I18nSupport getI18nSupport() {
-        if (i18nSupport == null && formModel != null) {
-            i18nSupport = new I18nSupport(formModel);
+    ResourceSupport getResourceSupport() {
+        if (resourceSupport == null && formModel != null) {
+            resourceSupport = new ResourceSupport(formModel);
+            resourceSupport.init();
         }
-        return i18nSupport;
+        return resourceSupport;
+    }
+
+    BindingDesignSupport getBindingSupport() {
+        if (bindingSupport == null && formModel != null) {
+            bindingSupport = new BindingDesignSupport(formModel);
+        }
+        return bindingSupport;
     }
 
     boolean isFormLoaded() {
@@ -261,8 +274,9 @@ public class FormEditor {
         formLoaded = true;
 	
         getCodeGenerator().initialize(formModel);
-        getI18nSupport(); // creates and inits I18nSupport
+        getResourceSupport(); // make sure ResourceSupport is created and initialized
 
+        getBindingSupport();
         formModel.fireFormLoaded();
         if (formModel.wasCorrected()) // model repaired or upgraded
             formModel.fireFormChanged(false);
@@ -534,17 +548,26 @@ public class FormEditor {
     /**
      * Form just created by the user via the New wizard may need some additional
      * setup that can't be ensured by the static template. For example the type
-     * of layout code generation needs to be honored.
+     * of layout code generation needs to be honored, or properties
+     * internationalized or converted to resources.
      */
     private void postCreationUpdate() {
         if (formLoaded && formModel != null && !formModel.isReadOnly()
             && needPostCreationUpdate()) // just created via New wizard
-        {   // regenerate code according to actual settings and save
-            formModel.getSettings().getLayoutCodeTarget(); // make sure layout gen. target is detected
-            formModel.getSettings().getI18nAutoMode(); // make sure auto i18n is detected
-            formModel.fireFormChanged(true); // hack: regenerate code immediately
+        {   // detect settings, update the form, regenerate code, save
+            if (formModel.getSettings().getResourceAutoMode() != ResourceSupport.AUTO_OFF) {
+                // templates don't contain internationalized texts or resources
+                getResourceSupport().switchFormToResources();
+            }
+            // make sure layout code generation type is detected
+            formModel.getSettings().getLayoutCodeTarget();
+            // hack: regenerate code immediately
+            // - needs to be forced since there might be no change fired
+            // - don't wait for the next round, we want to save now
+            formModel.fireFormChanged(true);
+            // save the form if changed
             FormEditorSupport fes = formDataObject.getFormEditorSupport();
-            try { // save the form if changed
+            try {
                 if (fes.isModified()) {
                     saveFormData();
                     fes.saveSourceOnly();
@@ -626,7 +649,8 @@ public class FormEditor {
             formModel = null;
             codeGenerator = null;
 	    formJavaSource = null;
-            i18nSupport = null;
+            resourceSupport = null;
+            bindingSupport = null;
         }
     }
     
@@ -793,32 +817,31 @@ public class FormEditor {
             return;
 
         settingsListener = new PreferenceChangeListener() {
-
             public void preferenceChange(PreferenceChangeEvent evt) {
                 Iterator iter = openForms.keySet().iterator();
-
                 while (iter.hasNext()) {
                     FormModel formModel = (FormModel) iter.next();
                     String propName = evt.getKey();
 
                     if (FormLoaderSettings.PROP_USE_INDENT_ENGINE.equals(propName)) {
                         formModel.fireSyntheticPropertyChanged(null, propName,
-                                                               null,
-                                                               evt.getNewValue());
-                    } else if (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE.equals(propName) ||
-                               FormLoaderSettings.PROP_SELECTION_BORDER_COLOR.equals(propName) ||
-                               FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR.equals(propName) ||
-                               FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR.equals(propName) ||
-                               FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR.equals(propName)) {
+                                                               null, evt.getNewValue());
+                    } else if (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE.equals(propName)                    
+                          || FormLoaderSettings.PROP_SELECTION_BORDER_COLOR.equals(propName)
+                          || FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR.equals(propName)
+                          || FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR.equals(propName)
+                          || FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR.equals(propName))
+                    {
                         FormDesigner designer = getFormDesigner(formModel);
-
-                        if (designer != null)
+                        if (designer != null) {
                             designer.updateVisualSettings();
+                        }
                     } else if (FormLoaderSettings.PROP_PALETTE_IN_TOOLBAR.equals(propName)) {
                         FormDesigner designer = getFormDesigner(formModel);
-
-                        if (designer != null)
-                            designer.getFormToolBar().showPaletteButton(FormLoaderSettings.getInstance().isPaletteInToolBar());
+                        if (designer != null) {
+                            designer.getFormToolBar().showPaletteButton(
+                                FormLoaderSettings.getInstance().isPaletteInToolBar());
+                        }
                     }
                 }
             }
@@ -889,6 +912,8 @@ public class FormEditor {
     public static JEditorPane createCodeEditorPane(FormModel formModel) {                        
         JEditorPane codePane = new JEditorPane();
         codePane.setContentType("text/x-java");  // NOI18N
+        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(codePane);
+        eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
         codePane.getDocument().putProperty(Document.StreamDescriptionProperty, getFormDataObject(formModel));
         JavaCodeGenerator codeGen = (JavaCodeGenerator) FormEditor.getCodeGenerator(formModel);
         codeGen.regenerateCode();                                                    
@@ -929,10 +954,16 @@ public class FormEditor {
         return formEditor != null ? formEditor.getFormJavaSource() : null;
     }
 
-    /** @return I18nSupport of given form */
-    static I18nSupport getI18nSupport(FormModel formModel) {
+    /** @return ResourceSupport of given form */
+    static ResourceSupport getResourceSupport(FormModel formModel) {
         FormEditor formEditor = (FormEditor) openForms.get(formModel);
-        return formEditor != null ? formEditor.getI18nSupport() : null;
+        return formEditor != null ? formEditor.getResourceSupport() : null;
+    }
+
+    /** @return BindingDesignSupport of given form */
+    static BindingDesignSupport getBindingSupport(FormModel formModel) {
+        FormEditor formEditor = (FormEditor) openForms.get(formModel);
+        return formEditor != null ? formEditor.getBindingSupport() : null;
     }
 
     /** @return FormEditor instance for given form */
@@ -968,6 +999,24 @@ public class FormEditor {
             ClassSource cs = new ClassSource("org.jdesktop.layout.*", // class name actually not needed // NOI18N
                                              new String[] { ClassSource.LIBRARY_SOURCE },
                                              new String[] { "swing-layout" }); // NOI18N
+            return ClassPathUtils.updateProject(formDataObject.getFormFile(), cs);
+        }
+        catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        return false;
+    }
+
+    /**
+     * Updates project classpath with the beans binding library.
+     */
+    public boolean updateProjectForBeansBinding() {
+        try {
+            // TODO we should check if the library isn't there already
+            // e.g. check that some class (javax.beans.binding.Binding) is on the classpath
+            ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
+                                             new String[] { ClassSource.LIBRARY_SOURCE },
+                                             new String[] { "beans-binding" }); // NOI18N
             return ClassPathUtils.updateProject(formDataObject.getFormFile(), cs);
         }
         catch (IOException ex) {

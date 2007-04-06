@@ -22,12 +22,19 @@ package org.netbeans.modules.form;
 import java.util.*;
 import java.beans.*;
 import javax.accessibility.*;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JSeparator;
+import javax.swing.MenuElement;
 
 import org.openide.nodes.*;
 
 import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.layoutsupport.*;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -52,6 +59,9 @@ public class RADVisualComponent extends RADComponent {
 
     private MetaAccessibleContext accessibilityData;
     private FormProperty[] accessibilityProperties;
+
+    enum MenuType { JMenuItem, JCheckBoxMenuItem, JRadioButtonMenuItem,
+                    JMenu, JMenuBar, JPopupMenu, JSeparator }
 
     // -----------------------------------------------------------------------------
     // Initialization
@@ -100,6 +110,56 @@ public class RADVisualComponent extends RADComponent {
     final LayoutSupportManager getParentLayoutSupport() {
         RADVisualContainer parent = (RADVisualContainer) getParentComponent();
         return parent != null ? parent.getLayoutSupport() : null;
+    }
+
+    boolean isMenuTypeComponent() {
+        return MenuElement.class.isAssignableFrom(getBeanClass());
+    }
+
+    /**
+     * Returns whether this component is treated specially as a menu component.
+     * Not only it must be of particluar Swing menu class, but must also be used
+     * as a menu, not as normal visual component. Technically it must be either
+     * contained in another menu, or be a menu bar of a window.
+     * @return whether the component is a menu used in another menu or as menu
+     *         bar in a window
+     */
+    public boolean isMenuComponent() {
+        if (isMenuTypeComponent()) {
+            RADVisualContainer parent = getParentContainer();
+            if ((parent == null && !isInModel())
+                || (parent != null
+                    && (parent.isMenuTypeComponent() || this == parent.getContainerMenu()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static MenuType getMenuType(Class cl) {
+        if (MenuElement.class.isAssignableFrom(cl)) {
+            if (JMenu.class.isAssignableFrom(cl)) {
+                return MenuType.JMenu;
+            }
+            if (JMenuBar.class.isAssignableFrom(cl)) {
+                return MenuType.JMenuBar;
+            }
+            if (JCheckBoxMenuItem.class.isAssignableFrom(cl)) {
+                return MenuType.JCheckBoxMenuItem;
+            }
+            if (JRadioButtonMenuItem.class.isAssignableFrom(cl)) {
+                return MenuType.JRadioButtonMenuItem;
+            }
+            if (JMenuItem.class.isAssignableFrom(cl)) {
+                return MenuType.JMenuItem;
+            }
+            if (JPopupMenu.class.isAssignableFrom(cl)) {
+                return MenuType.JPopupMenu;
+            }
+        } else if (JSeparator.class.isAssignableFrom(cl)) {
+            return MenuType.JSeparator;
+        }
+        return null;
     }
 
     // -----------------------------------------------------------------------------
@@ -296,8 +356,7 @@ public class RADVisualComponent extends RADComponent {
                 prop.addPropertyChangeListener(getConstraintsListener());
                 prop.addValueConvertor(getConstraintsListener());
 
-                prop.setPropertyContext(
-                    new RADProperty.RADPropertyContext(this));
+                prop.setPropertyContext(new FormPropertyContext.Component(this));
 
                 if (isReadOnly() || !isValid()) {
                     int type = prop.getAccessType() | FormProperty.NO_WRITE;
@@ -326,7 +385,7 @@ public class RADVisualComponent extends RADComponent {
                 && (FormProperty.PROP_VALUE.equals(eventName)
                     || FormProperty.PROP_VALUE_AND_EDITOR.equals(eventName)))
             {
-                i18nPropertyChanged(ev);
+                resourcePropertyChanged(ev);
 
                 LayoutSupportManager layoutSupport = getParentLayoutSupport();
                 int index = getComponentIndex();
@@ -362,7 +421,7 @@ public class RADVisualComponent extends RADComponent {
         }
 
         public Object convert(Object value, FormProperty property) {
-            return i18nPropertyConvert(value, property);
+            return resourcePropertyConvert(value, property);
         }
     }
 
@@ -387,8 +446,7 @@ public class RADVisualComponent extends RADComponent {
             for (int i=0; i < accessibilityProperties.length; i++) {
                 FormProperty prop = accessibilityProperties[i];
                 setPropertyListener(prop);
-                prop.setPropertyContext(
-                    new RADProperty.RADPropertyContext(this));
+                prop.setPropertyContext(new FormPropertyContext.Component(this));
                 nameToProperty.put(prop.getName(), prop);
             }
         }
@@ -533,10 +591,6 @@ public class RADVisualComponent extends RADComponent {
         public AccessibleParentEditor() {
             super();
             setBeanTypes(new Class[] { Accessible.class });
-        }
-        
-        public String getDisplayName() {
-            return NbBundle.getBundle(getClass()).getString("CTL_AccessibleParentEditor_DisplayName"); // NOI18N
         }
     }
     

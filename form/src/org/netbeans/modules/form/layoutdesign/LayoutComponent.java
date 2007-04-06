@@ -57,10 +57,10 @@ public final class LayoutComponent implements LayoutConstants {
     // Root layout intervals of a container layout. There is one interval for
     // each dimension. Defined by components that are layout containers, i.e.
     // managing layout of their subcomponents. Otherwise the array is null.
-    private LayoutInterval[] layoutRoots;
+    private List<LayoutInterval[]> layoutRoots;
 
     // Subcomponents of this component.
-    private java.util.List subComponents;
+    private List<LayoutComponent> subComponents;
     
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -86,23 +86,18 @@ public final class LayoutComponent implements LayoutConstants {
                                         USE_PREFERRED_SIZE);
         }
         if (isContainer) {
-            layoutRoots = new LayoutInterval[DIM_COUNT];
-            for (int i=0; i < DIM_COUNT; i++) {
-                layoutRoots[i] = new LayoutInterval(PARALLEL);
-//                layoutRoots[i].setSizes(NOT_EXPLICITLY_DEFINED,
-//                                        NOT_EXPLICITLY_DEFINED,
-//                                        Short.MAX_VALUE);
-            }
+            createRoots();
         }
     }
 
     public LayoutComponent(String id, boolean isContainer, int initialWidth, int initialHeight) {
         this(id, isContainer);
         if (isContainer) {
+            LayoutInterval[] defaultRoots = layoutRoots.get(0);
             for (int i=0; i < DIM_COUNT; i++) {
                 LayoutInterval gap = new LayoutInterval(SINGLE);
                 gap.setSizes(0, i==HORIZONTAL ? initialWidth : initialHeight, Short.MAX_VALUE);
-                layoutRoots[i].add(gap, 0);
+                defaultRoots[i].add(gap, 0);
             }
         }
         else {
@@ -111,24 +106,16 @@ public final class LayoutComponent implements LayoutConstants {
         }
     }
 
+    private void createRoots() {
+        layoutRoots = new LinkedList<LayoutInterval[]>();
+        addNewLayoutRoots();
+    }
+
+    // -----
+
     void setId(String id) {
         componentId = id;
     }
-
-    void setLayoutInterval(LayoutInterval interval, int dimension) {
-        layoutIntervals[dimension] = interval;
-    }
-
-    void setResizability(boolean[] resizability) {
-        this.resizability = resizability;
-    }
-
-    boolean[] getResizability() {
-        return resizability;
-    }
-
-    // -------
-    // public methods
 
     public String getId() {
         return componentId;
@@ -147,94 +134,6 @@ public final class LayoutComponent implements LayoutConstants {
         while (comp != null);
         return false;
     }
-
-    public LayoutInterval getLayoutInterval(int dimension) {
-        return layoutIntervals[dimension];
-    }
-
-    public boolean isLayoutContainer() {
-        return layoutRoots != null;
-    }
-
-    public LayoutInterval getLayoutRoot(int dimension) {
-        return layoutRoots[dimension];
-    }
-    
-    LayoutInterval[] getLayoutRoots() {
-        return layoutRoots;
-    }
-
-    // --------
-
-    public Iterator getSubcomponents() {
-        return subComponents != null && subComponents.size() > 0 ?
-               subComponents.iterator() : Collections.EMPTY_LIST.iterator();
-    }
-    
-    int getSubComponentCount() {
-        return (subComponents == null) ? 0 : subComponents.size();
-    }
-    
-    LayoutComponent getSubComponent(int index) {
-        return (LayoutComponent)subComponents.get(index);
-    }
-
-    int indexOf(LayoutComponent comp) {
-        return subComponents != null ? subComponents.indexOf(comp) : -1;
-    }
-
-//    int add(LayoutComponent comp) {
-//        return add(comp, -1);
-//    }
-
-    int add(LayoutComponent comp, int index) {
-        assert isLayoutContainer();
-
-        if (subComponents == null) {
-            subComponents = new LinkedList();
-        }
-        if (index < 0) {
-            index = subComponents.size();
-        }
-        subComponents.add(index, comp);
-        comp.parentComponent = this;
-
-        return index;
-    }
-
-    int remove(LayoutComponent comp) {
-        int index;
-        if (subComponents != null) {
-            index = subComponents.indexOf(comp);
-            if (index >= 0) {
-                subComponents.remove(index);
-                comp.parentComponent = null;
-            }
-        }
-        else index = -1;
-        return index;
-    }
-
-    void setLayoutContainer(boolean isContainer, LayoutInterval[] roots) {
-        if (isContainer != isLayoutContainer()) {
-            if (isContainer) {
-                if (roots == null) {
-                    layoutRoots = new LayoutInterval[DIM_COUNT];
-                    for (int i=0; i < DIM_COUNT; i++) {
-                        layoutRoots[i] = new LayoutInterval(PARALLEL);
-                    }
-                } else {
-                    layoutRoots = roots;
-                }
-            }
-            else {
-                layoutRoots = null;
-                subComponents = null;
-            }
-        }
-    }
-
-    // -----
 
     static LayoutComponent getCommonParent(LayoutComponent comp1, LayoutComponent comp2) {
         // Find all parents of given components
@@ -270,6 +169,181 @@ public final class LayoutComponent implements LayoutConstants {
         return parents;
     }
 
+    public LayoutInterval getLayoutInterval(int dimension) {
+        return layoutIntervals[dimension];
+    }
+
+    void setLayoutInterval(LayoutInterval interval, int dimension) {
+        layoutIntervals[dimension] = interval;
+    }
+
+    public boolean isLayoutContainer() {
+        return layoutRoots != null;
+    }
+
+    void setResizability(boolean[] resizability) {
+        this.resizability = resizability;
+    }
+
+    boolean[] getResizability() {
+        return resizability;
+    }
+
+    // -----
+    // subcomponents
+
+    public List<LayoutComponent> getSubcomponents() {
+        return subComponents != null && subComponents.size() > 0 ?
+               Collections.unmodifiableList(subComponents) : Collections.EMPTY_LIST;
+    }
+
+    int getSubComponentCount() {
+        return (subComponents == null) ? 0 : subComponents.size();
+    }
+    
+    LayoutComponent getSubComponent(int index) {
+        return subComponents.get(index);
+    }
+
+    int indexOf(LayoutComponent comp) {
+        return subComponents != null ? subComponents.indexOf(comp) : -1;
+    }
+
+//    int add(LayoutComponent comp) {
+//        return add(comp, -1);
+//    }
+
+    int addComponent(LayoutComponent comp, int index) {
+        assert isLayoutContainer();
+
+        if (subComponents == null) {
+            subComponents = new LinkedList<LayoutComponent>();
+        }
+        if (index < 0) {
+            index = subComponents.size();
+        }
+        subComponents.add(index, comp);
+        comp.parentComponent = this;
+
+        return index;
+    }
+
+    int removeComponent(LayoutComponent comp) {
+        if (subComponents != null) {
+            Iterator it = subComponents.iterator();
+            int index = -1;
+            while (it.hasNext()) {
+                index++;
+                if (comp == it.next()) {
+                    it.remove();
+                    comp.parentComponent = null;
+                    return index;
+                }
+            }
+        }
+        return -1;
+    }
+
+    // -----
+    // container's layout roots
+
+    public int getLayoutRootCount() {
+        return layoutRoots != null ? layoutRoots.size() : 0;
+    }
+
+    public LayoutInterval getLayoutRoot(int rootIndex, int dimension) {
+        return layoutRoots.get(rootIndex)[dimension];
+    }
+
+    LayoutInterval getDefaultLayoutRoot(int dimension) {
+        return layoutRoots.get(0)[dimension];
+    }
+
+    List<LayoutInterval[]> getLayoutRoots() {
+        return layoutRoots;
+    }
+
+    void setLayoutRoots(List<LayoutInterval[]> roots) {
+        if (roots == null && layoutRoots != null) {
+            // instead of no roots create default empty roots (to keep this a container)
+            // for no roots use setLayoutContainer(false, null)
+            createRoots();
+        } else {
+            layoutRoots = roots;
+        }
+    }
+
+    LayoutInterval[] getLayoutRoots(LayoutInterval interval) {
+        interval = LayoutInterval.getRoot(interval);
+        for (LayoutInterval[] roots : layoutRoots) {
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                if (interval == roots[dim]) {
+                    return roots;
+                }
+            }
+        }
+        return null;
+    }
+
+    int getLayoutRootsIndex(LayoutInterval interval) {
+        interval = LayoutInterval.getRoot(interval);
+        int index = -1;
+        for (LayoutInterval[] roots : layoutRoots) {
+            index++;
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                if (interval == roots[dim]) {
+                    return index;
+                }
+            }
+        }
+        return -1;
+    }
+
+    void addLayoutRoots(LayoutInterval[] roots, int index) {
+        if (index < 0) {
+            index = layoutRoots.size();
+        }
+        layoutRoots.add(index, roots);
+    }
+
+    int removeLayoutRoots(LayoutInterval[] roots) {
+        Iterator it = layoutRoots.iterator();
+        int index = -1;
+        while (it.hasNext()) {
+            index++;
+            if (roots == it.next()) {
+                it.remove();
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    LayoutInterval[] addNewLayoutRoots() {
+        LayoutInterval[] roots = new LayoutInterval[DIM_COUNT];
+        for (int i=0; i < DIM_COUNT; i++) {
+            roots[i] = new LayoutInterval(PARALLEL);
+        }
+        layoutRoots.add(roots);
+        return roots;
+    }
+
+    void setLayoutContainer(boolean isContainer, List<LayoutInterval[]> roots) {
+        if (isContainer != isLayoutContainer()) {
+            if (isContainer) {
+                if (roots == null) {
+                    createRoots();
+                } else {
+                    layoutRoots = roots;
+                }
+            }
+            else {
+                layoutRoots = null;
+                subComponents = null;
+            }
+        }
+    }
+
     // -----
     // current state of the layout - current position and size of component
     // kept to be available quickly for the layout designer
@@ -284,17 +358,21 @@ public final class LayoutComponent implements LayoutConstants {
 
     void setCurrentInterior(Rectangle bounds) {
         LayoutRegion space = null;
-        for (int i=0; i < layoutRoots.length; i++) {
-            if (space == null) {
-                space = layoutRoots[i].getCurrentSpace();
-                space.set(bounds, LayoutRegion.UNKNOWN);
-            }
-            else {
-                layoutRoots[i].setCurrentSpace(space);
+        for (LayoutInterval[] roots : layoutRoots) {
+            for (int i=0; i < roots.length; i++) {
+                if (space == null) {
+                    space = roots[i].getCurrentSpace();
+                    space.set(bounds, LayoutRegion.UNKNOWN);
+                }
+                else {
+                    roots[i].setCurrentSpace(space);
+                }
             }
         }
     }
-    
+
+    // -----
+
     /**
      * @return whether this intervals size is linked with some other component in a direction horizontal or vertical
      */
@@ -326,8 +404,10 @@ public final class LayoutComponent implements LayoutConstants {
         }
         
     }
-    
-    // Listener support
+
+    // -----
+    // listener support
+
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(listener);
     }

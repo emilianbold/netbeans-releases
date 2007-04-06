@@ -103,12 +103,12 @@ public class LayoutModel implements LayoutConstants {
         }
         for (int i=component.getSubComponentCount()-1; i>=0; i--) {
             LayoutComponent sub = component.getSubComponent(i);
-            removeComponentAndIntervals(sub, !sub.isLayoutContainer());
+            removeComponent(sub, !sub.isLayoutContainer());
         }
         if (component.getParent() == null) { // non-container without a parent
             removeComponent(component, true);
         }
-        setLayoutContainer(component, false); // this removes everything from the component
+        setLayoutContainer(component, false); // this removes interval roots of the container
         return true;
     }
 
@@ -117,8 +117,8 @@ public class LayoutModel implements LayoutConstants {
     void registerComponent(LayoutComponent comp, boolean recursive) {
         registerComponentImpl(comp);
         if (recursive && comp.isLayoutContainer()) {
-            for (Iterator it=comp.getSubcomponents(); it.hasNext(); ) {
-                registerComponent((LayoutComponent)it.next(), recursive);
+            for (LayoutComponent subComp : comp.getSubcomponents()) {
+                registerComponent(subComp, recursive);
             }
         }
     }
@@ -128,7 +128,7 @@ public class LayoutModel implements LayoutConstants {
 
         if (lc != comp) {
             // record undo/redo and fire event
-            LayoutEvent ev = new LayoutEvent(this, LayoutEvent.COMPONENT_REGISTERED);
+            LayoutEvent.Component ev = new LayoutEvent.Component(this, LayoutEvent.COMPONENT_REGISTERED);
             ev.setComponent(comp);
             addChange(ev);
             fireEvent(ev);
@@ -137,8 +137,8 @@ public class LayoutModel implements LayoutConstants {
 
     void unregisterComponent(LayoutComponent comp, boolean recursive) {
         if (recursive && comp.isLayoutContainer()) {
-            for (Iterator it=comp.getSubcomponents(); it.hasNext(); ) {
-                unregisterComponent((LayoutComponent)it.next(), recursive);
+            for (LayoutComponent subComp : comp.getSubcomponents()) {
+                unregisterComponent(subComp, recursive);
             }
         }
         removeComponentFromLinkSizedGroup(comp, HORIZONTAL);
@@ -151,7 +151,7 @@ public class LayoutModel implements LayoutConstants {
 
         if (lc != null) {
             // record undo/redo and fire event
-            LayoutEvent ev = new LayoutEvent(this, LayoutEvent.COMPONENT_UNREGISTERED);
+            LayoutEvent.Component ev = new LayoutEvent.Component(this, LayoutEvent.COMPONENT_UNREGISTERED);
             ev.setComponent(comp);
             addChange(ev);
             fireEvent(ev);
@@ -193,22 +193,6 @@ public class LayoutModel implements LayoutConstants {
         return idToComponents.values().iterator();
     }
 
-    public void addNewComponent(LayoutComponent component, LayoutComponent parent, LayoutComponent prototype) {
-        for (int i=0; i<DIM_COUNT; i++) {
-            LayoutInterval interval = component.getLayoutInterval(i);
-            if (parent != null) {
-                addInterval(interval, parent.getLayoutRoot(i), -1);
-            }
-            setIntervalAlignment(interval, DEFAULT);
-//            setIntervalSize(interval, USE_PREFERRED_SIZE, interval.getPreferredSize(), USE_PREFERRED_SIZE);
-            if (prototype != null) {
-                LayoutInterval pInt = prototype.getLayoutInterval(i);
-                setIntervalSize(interval, interval.getMinimumSize(), pInt.getPreferredSize(), interval.getMaximumSize());
-            }
-        }
-        addComponent(component, parent, -1);
-    }
-
     // Note this method does not care about adding the layout intervals of the
     // component, it must be done in advance.
     void addComponent(LayoutComponent component, LayoutComponent parent, int index) {
@@ -221,23 +205,19 @@ public class LayoutModel implements LayoutConstants {
 
         if (parent != null) {
             assert getLayoutComponent(parent.getId()) == parent;
-            index = parent.add(component, index);
+            index = parent.addComponent(component, index);
         }
         else {
             assert component.isLayoutContainer();
         }
 
         // record undo/redo and fire event
-        LayoutEvent ev = new LayoutEvent(this, LayoutEvent.COMPONENT_ADDED);
+        LayoutEvent.Component ev = new LayoutEvent.Component(this, LayoutEvent.COMPONENT_ADDED);
         ev.setComponent(component, parent, index);
         addChange(ev);
         fireEvent(ev);
     }
 
-    void removeComponent(LayoutComponent component) {
-        removeComponent(component, true);
-    }
-    
     // Low level removal - removes the component from parent, unregisters it,
     // records the change for undo/redo, and fires an event. Does nothing to
     // the layout intervals of the component.
@@ -252,13 +232,13 @@ public class LayoutModel implements LayoutConstants {
         int index;
         LayoutComponent parent = component.getParent();
         if (parent != null) {
-            index = parent.remove(component);
+            index = parent.removeComponent(component);
         } else {
             return -1; // the removal operation is "noop"
         }
 
         // record undo/redo and fire event
-        LayoutEvent ev = new LayoutEvent(this, LayoutEvent.COMPONENT_REMOVED);
+        LayoutEvent.Component ev = new LayoutEvent.Component(this, LayoutEvent.COMPONENT_REMOVED);
         ev.setComponent(component, parent, index);
         addChange(ev);
         fireEvent(ev);
@@ -267,15 +247,39 @@ public class LayoutModel implements LayoutConstants {
     }
 
     void removeComponentAndIntervals(LayoutComponent comp, boolean fromModel) {
-        boolean wasRoot = (comp.getParent() == null);
-        removeComponent(comp, fromModel);
-        if (!wasRoot) {
+        if (comp.getParent() != null) {
             for (int i=0; i < DIM_COUNT; i++) {
                 LayoutInterval interval = comp.getLayoutInterval(i);
-                if (interval.getParent() != null)
+                if (interval.getParent() != null) {
                     removeInterval(interval);
+                }
             }
         }
+        removeComponent(comp, fromModel);
+    }
+
+    LayoutInterval[] addNewLayoutRoots(LayoutComponent container) {
+        LayoutInterval[] newRoots = container.addNewLayoutRoots();
+
+        // record undo/redo (don't fire event)
+        LayoutEvent.Component ev = new LayoutEvent.Component(this, LayoutEvent.LAYOUT_ROOTS_ADDED);
+        ev.setLayoutRoots(container, newRoots, -1);
+        addChange(ev);
+
+        return newRoots;
+    }
+
+    LayoutInterval[] removeLayoutRoots(LayoutComponent container, LayoutInterval oneRoot) {
+        LayoutInterval[] roots = container.getLayoutRoots(oneRoot);
+        if (roots != null) {
+            int index = container.removeLayoutRoots(roots);
+
+            // record undo/redo (don't fire event)
+            LayoutEvent.Component ev = new LayoutEvent.Component(this, LayoutEvent.LAYOUT_ROOTS_REMOVED);
+            ev.setLayoutRoots(container, roots, index);
+            addChange(ev);
+        }
+        return roots;
     }
 
     void addInterval(LayoutInterval interval, LayoutInterval parent, int index) {
@@ -284,7 +288,7 @@ public class LayoutModel implements LayoutConstants {
         index = parent.add(interval, index);
 
         // record undo/redo and fire event
-        LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_ADDED);
+        LayoutEvent.Interval ev = new LayoutEvent.Interval(this, LayoutEvent.INTERVAL_ADDED);
         ev.setInterval(interval, parent, index);
         addChange(ev);
         fireEvent(ev);
@@ -297,7 +301,7 @@ public class LayoutModel implements LayoutConstants {
         int index = parent.remove(interval);
 
         // record undo/redo and fire event
-        LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_REMOVED);
+        LayoutEvent.Interval ev = new LayoutEvent.Interval(this, LayoutEvent.INTERVAL_REMOVED);
         ev.setInterval(interval, parent, index);
         addChange(ev);
         fireEvent(ev);
@@ -309,7 +313,7 @@ public class LayoutModel implements LayoutConstants {
         LayoutInterval interval = parent.remove(index);
 
         // record undo/redo and fire event
-        LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_REMOVED);
+        LayoutEvent.Interval ev = new LayoutEvent.Interval(this, LayoutEvent.INTERVAL_REMOVED);
         ev.setInterval(interval, parent, index);
         addChange(ev);
         fireEvent(ev);
@@ -327,7 +331,7 @@ public class LayoutModel implements LayoutConstants {
         int newAttributes = interval.getAttributes();
         
         // record undo/redo (don't fire event)
-        LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_ATTRIBUTES_CHANGED);
+        LayoutEvent.Interval ev = new LayoutEvent.Interval(this, LayoutEvent.INTERVAL_ATTRIBUTES_CHANGED);
         ev.setAttributes(interval, oldAttributes, newAttributes);
         addChange(ev);
     }
@@ -337,7 +341,7 @@ public class LayoutModel implements LayoutConstants {
         interval.setAlignment(alignment);
 
         // record undo/redo (don't fire event)
-        LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_ALIGNMENT_CHANGED);
+        LayoutEvent.Interval ev = new LayoutEvent.Interval(this, LayoutEvent.INTERVAL_ALIGNMENT_CHANGED);
         ev.setAlignment(interval, oldAlignment, alignment);
         addChange(ev);
     }
@@ -350,7 +354,7 @@ public class LayoutModel implements LayoutConstants {
         group.setGroupAlignment(alignment);
 
         // record undo/redo (don't fire event)
-        LayoutEvent ev = new LayoutEvent(this, LayoutEvent.GROUP_ALIGNMENT_CHANGED);
+        LayoutEvent.Interval ev = new LayoutEvent.Interval(this, LayoutEvent.GROUP_ALIGNMENT_CHANGED);
         ev.setAlignment(group, oldAlignment, alignment);
         addChange(ev);
     }
@@ -358,11 +362,11 @@ public class LayoutModel implements LayoutConstants {
     void setLayoutContainer(LayoutComponent component, boolean container) {
         boolean oldContainer = component.isLayoutContainer();
         if (oldContainer != container) {
-            LayoutInterval[] roots = component.getLayoutRoots();
+            List<LayoutInterval[]> roots = component.getLayoutRoots();
             component.setLayoutContainer(container, null);
 
             // record undo/redo (don't fire event)
-            LayoutEvent ev = new LayoutEvent(this, LayoutEvent.CONTAINER_ATTR_CHANGED);
+            LayoutEvent.Component ev = new LayoutEvent.Component(this, LayoutEvent.CONTAINER_ATTR_CHANGED);
             ev.setContainer(component, roots);
             addChange(ev);            
         }
@@ -394,13 +398,36 @@ public class LayoutModel implements LayoutConstants {
         }
 
         // record undo/redo (don't fire event)
-        LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_SIZE_CHANGED);
+        LayoutEvent.Interval ev = new LayoutEvent.Interval(this, LayoutEvent.INTERVAL_SIZE_CHANGED);
         ev.setSize(interval, oldMin, oldPref, oldMax, min, pref, max);
         addChange(ev);
     }
-    
-    public void copyModelFrom(LayoutModel sourceModel, Map/*<String,String>*/ sourceToTargetIds,
-            String sourceContainerId, String targetContainerId) {
+
+    public void setPaddingType(LayoutInterval interval, PaddingType paddingType) {
+        PaddingType oldPadding = interval.getPaddingType();
+        if (oldPadding != paddingType) {
+            interval.setPaddingType(paddingType);
+
+            // record undo/redo (don't fire event)
+            LayoutEvent.Interval ev = new LayoutEvent.Interval(this, LayoutEvent.INTERVAL_PADDING_TYPE_CHANGED);
+            ev.setPaddingType(interval, oldPadding, paddingType);
+            addChange(ev);
+        }
+    }
+
+    /**
+     * Does a non-recursive copy of components and layout of given source
+     * container. Assuming the target container is empty (or does not exist yet).
+     * LayoutComponent instances are created automatically as needed, using the
+     * provided IDs.
+     * @param sourceModel the source LayoutModel
+     * @param sourceContainerId ID of the source container
+     * @param sourceToTargetId mapping between the original and the copied
+     *        components' IDs
+     * @param targetContainerId ID of the target container
+     */
+    public void copyContainerLayout(LayoutModel sourceModel, String sourceContainerId,
+                Map<String, String> sourceToTargetId, String targetContainerId) {
         LayoutComponent sourceContainer = sourceModel.getLayoutComponent(sourceContainerId);
         LayoutComponent targetContainer = getLayoutComponent(targetContainerId);
         if (targetContainer == null) {
@@ -409,30 +436,36 @@ public class LayoutModel implements LayoutConstants {
         } else if (!targetContainer.isLayoutContainer()) {
             changeComponentToContainer(targetContainerId);
         }
+        copyContainerLayout(sourceContainer, sourceToTargetId, targetContainer);
+    }
+
+    void copyContainerLayout(LayoutComponent sourceContainer,
+            Map<String, String> sourceToTargetId, LayoutComponent targetContainer) {
         // Create LayoutComponents
-        Iterator iter = sourceToTargetIds.entrySet().iterator();
-        while (iter.hasNext()) {
-            Map.Entry entry = (Map.Entry)iter.next();
-            String targetId = (String)entry.getValue();
-            LayoutComponent targetLC = getLayoutComponent(targetId);
-            if (targetLC == null) {
-                String sourceId = (String)entry.getKey();
-                LayoutComponent sourceLC = sourceModel.getLayoutComponent(sourceId);
-                targetLC = new LayoutComponent(targetId, sourceLC.isLayoutContainer());
+        for (LayoutComponent sourceComp : sourceContainer.getSubcomponents()) {
+            String targetId = sourceToTargetId.get(sourceComp.getId());
+            LayoutComponent targetComp = getLayoutComponent(targetId);
+            if (targetComp == null) {
+                targetComp = new LayoutComponent(targetId, sourceComp.isLayoutContainer());
             }
-            if (targetLC.getParent() == null) {
-                addComponent(targetLC, targetContainer, -1);
+            if (targetComp.getParent() == null) {
+                addComponent(targetComp, targetContainer, -1);
             }
         }
         // Copy LayoutIntervals
-        for (int dim=0; dim<DIM_COUNT; dim++) {
-            LayoutInterval sourceInterval = sourceContainer.getLayoutRoot(dim);
-            LayoutInterval targetInterval = targetContainer.getLayoutRoot(dim);
-            copyInterval(sourceInterval, targetInterval, sourceToTargetIds);
+        int i = 0;
+        for (LayoutInterval[] sourceRoots : sourceContainer.getLayoutRoots()) {
+            if (i == targetContainer.getLayoutRootCount()) {
+                addNewLayoutRoots(targetContainer);
+            }
+            for (int dim=0; dim<DIM_COUNT; dim++) {
+                copySubIntervals(sourceRoots[dim], targetContainer.getLayoutRoot(i, dim), sourceToTargetId);
+            }
+            i++;
         }
     }
-    
-    private void copyInterval(LayoutInterval sourceInterval, LayoutInterval targetInterval, Map/*<String,String>*/ sourceToTargetIds) {
+
+    private void copySubIntervals(LayoutInterval sourceInterval, LayoutInterval targetInterval, Map/*<String,String>*/ sourceToTargetIds) {
         Iterator iter = sourceInterval.getSubIntervals();
         while (iter.hasNext()) {
             LayoutInterval sourceSub = (LayoutInterval)iter.next();
@@ -445,79 +478,40 @@ public class LayoutModel implements LayoutConstants {
             }
             LayoutInterval targetSub = LayoutInterval.cloneInterval(sourceSub, clone);
             if (sourceSub.isGroup()) {
-                copyInterval(sourceSub, targetSub, sourceToTargetIds);
+                copySubIntervals(sourceSub, targetSub, sourceToTargetIds);
             }
             addInterval(targetSub, targetInterval, -1);
         }
     }
-    
-    /**
-     * Creates layout model based on the current layout represented
-     * by bounds of given components.
-     *
-     * @param idToComponent maps component Id to <code>Component</code>.
-     */
-    public void createModel(String containerId, Container cont, Map idToComponent) {
-        if (idToComponent.isEmpty()) return;
-        LayoutComponent lCont = getLayoutComponent(containerId);
-        assert (lCont != null);
-        Insets insets = new Insets(0, 0, 0, 0);
-        if (cont instanceof javax.swing.JComponent) {
-            javax.swing.border.Border border = ((javax.swing.JComponent)cont).getBorder();
-            if (border != null) {
-                insets = border.getBorderInsets(cont);
-            }
+
+    // assuming target container is empty
+    void moveContainerLayout(LayoutComponent sourceContainer, LayoutComponent targetContainer) {
+        if (!sourceContainer.isLayoutContainer() || !targetContainer.isLayoutContainer()
+                || targetContainer.getSubComponentCount() > 0) {
+            throw new IllegalArgumentException();
         }
-        Map idToBounds = new HashMap();
-        Iterator iter = idToComponent.entrySet().iterator();
-        Rectangle notKnown = new Rectangle();
-        while (iter.hasNext()) {
-            Map.Entry entry = (Map.Entry)iter.next();
-            String id = (String)entry.getKey();
-            Component component = (Component)entry.getValue();
-            LayoutComponent lComp = getLayoutComponent(id);
-            if (lComp == null) {
-                lComp = new LayoutComponent(id, false);
-            }
-            addComponent(lComp, lCont, -1);
-            Rectangle bounds = component.getBounds();
-            Dimension dim = component.getPreferredSize();
-            if (bounds.equals(notKnown)) { // Issue 65919
-                bounds.setSize(dim);
-            }
-            bounds = new Rectangle(bounds.x - insets.left, bounds.y - insets.top, bounds.width, bounds.height);
-            idToBounds.put(id, bounds);
-            if (dim.width != bounds.width) {
-                LayoutInterval interval = lComp.getLayoutInterval(HORIZONTAL);
-                setIntervalSize(interval, interval.getMinimumSize(), bounds.width, interval.getMaximumSize());
-            }
-            if (dim.height != bounds.height) {
-                LayoutInterval interval = lComp.getLayoutInterval(VERTICAL);
-                setIntervalSize(interval, interval.getMinimumSize(), bounds.height, interval.getMaximumSize());
-            }
+
+        while (sourceContainer.getSubComponentCount() > 0) {
+            LayoutComponent sub = sourceContainer.getSubComponent(0);
+            removeComponent(sub, false);
+            addComponent(sub, targetContainer, -1);
         }
-        RegionInfo region = new RegionInfo(idToBounds);
-        region.calculateIntervals();
-        // PENDING don't insert parallel group to parallel group
-        addInterval(region.getInterval(HORIZONTAL), lCont.getLayoutRoot(HORIZONTAL), -1);
-        addInterval(region.getInterval(VERTICAL), lCont.getLayoutRoot(VERTICAL), -1);
+
+        List<LayoutInterval[]> sourceRoots = sourceContainer.getLayoutRoots();
+
+        sourceContainer.setLayoutRoots(null); // clear
+        LayoutEvent.Component ev = new LayoutEvent.Component(this, LayoutEvent.LAYOUT_ROOTS_CHANGED);
+        ev.setLayoutRoots(sourceContainer, sourceRoots, null);
+        addChange(ev);
+
+        targetContainer.setLayoutRoots(sourceRoots);
+        ev = new LayoutEvent.Component(this, LayoutEvent.LAYOUT_ROOTS_CHANGED);
+        ev.setLayoutRoots(targetContainer, null, sourceRoots);
+        addChange(ev);
     }
 
-    public LayoutInterval[] createIntervalsFromBounds(LayoutRegion space, LayoutComponent[] components, LayoutRegion[] bounds) {
-        Map idToBounds = new HashMap();
-        for (int i=0; i<components.length; i++) {
-            for (int dim=0; dim<DIM_COUNT; dim++) {
-                LayoutInterval interval = components[i].getLayoutInterval(dim);
-                setIntervalSize(interval, interval.getMinimumSize(), bounds[i].size(dim), interval.getMaximumSize());
-            }
-            Rectangle compBounds = new Rectangle(
-                bounds[i].positions[HORIZONTAL][LEADING]-space.positions[HORIZONTAL][LEADING],
-                bounds[i].positions[VERTICAL][LEADING]-space.positions[VERTICAL][LEADING],
-                bounds[i].size(HORIZONTAL),
-                bounds[i].size(VERTICAL));
-            idToBounds.put(components[i].getId(), compBounds);
-        }
-        RegionInfo region = new RegionInfo(idToBounds);
+    static LayoutInterval[] createIntervalsFromBounds(Map<LayoutComponent, Rectangle> compToBounds) {
+        RegionInfo region = new RegionInfo(compToBounds);
         region.calculateIntervals();
         LayoutInterval[] result = new LayoutInterval[DIM_COUNT];
         for (int dim=0; dim<DIM_COUNT; dim++) {
@@ -526,35 +520,33 @@ public class LayoutModel implements LayoutConstants {
         return result;
     }
 
-    private class RegionInfo {
+    private static class RegionInfo {
         private LayoutInterval horizontal = null;
         private LayoutInterval vertical = null;
-        private Map idToBounds;
+        private Map<LayoutComponent, Rectangle> compToBounds;
         private int minx;
         private int maxx;
         private int miny;
         private int maxy;
         private int dimension;
 
-        public RegionInfo(Map idToBounds) {
-            this.idToBounds = idToBounds;
+        public RegionInfo(Map<LayoutComponent, Rectangle> compToBounds) {
+            this.compToBounds = compToBounds;
             this.dimension = -1;
             minx = miny = 0;
             updateRegionBounds();
         }
-        
-        private RegionInfo(Map idToBounds, int dimension) {
-            this.idToBounds = idToBounds;
+
+        private RegionInfo(Map<LayoutComponent, Rectangle> compToBounds, int dimension) {
+            this.compToBounds = compToBounds;
             this.dimension = dimension;
             minx = miny = Short.MAX_VALUE;
             updateRegionBounds();
         }
-        
+
         private void updateRegionBounds() {
             maxy = maxx = Short.MIN_VALUE;
-            Iterator iter = idToBounds.values().iterator();
-            while (iter.hasNext()) {
-                Rectangle bounds = (Rectangle)iter.next();
+            for (Rectangle bounds : compToBounds.values()) {
                 minx = Math.min(minx, bounds.x);
                 miny = Math.min(miny, bounds.y);
                 maxx = Math.max(maxx, bounds.x + bounds.width);
@@ -563,10 +555,10 @@ public class LayoutModel implements LayoutConstants {
         }
 
         public void calculateIntervals() {
-            if (idToBounds.size() == 1) {
-                String id = (String)idToBounds.keySet().iterator().next();
-                Rectangle bounds = (Rectangle)idToBounds.get(id);
-                LayoutComponent comp = getLayoutComponent(id);
+            if (compToBounds.size() == 1) {
+                Map.Entry<LayoutComponent, Rectangle> e = compToBounds.entrySet().iterator().next();
+                LayoutComponent comp = e.getKey();
+                Rectangle bounds = e.getValue();
                 horizontal = comp.getLayoutInterval(HORIZONTAL);
                 horizontal = prefixByGap(horizontal, bounds.x - minx);
                 vertical = comp.getLayoutInterval(VERTICAL);
@@ -575,7 +567,7 @@ public class LayoutModel implements LayoutConstants {
             }
             int effDim = -1;
             List parts = null;
-            Map removedIdToBounds = null;
+            Map<LayoutComponent, Rectangle> removedCompToBounds = null;
             do {                
                 boolean remove = ((dimension == -1) && (effDim == HORIZONTAL))
                     || ((dimension != -1) && (effDim != -1));
@@ -592,16 +584,17 @@ public class LayoutModel implements LayoutConstants {
                     effDim = dimension;
                 }
                 if (remove) { // no cut found, remove some component
-                    String id = (String)idToBounds.keySet().iterator().next();
-                    Rectangle bounds = (Rectangle)idToBounds.remove(id);
-                    if (removedIdToBounds == null) {
-                        removedIdToBounds = new HashMap();
+                    Map.Entry<LayoutComponent, Rectangle> e = compToBounds.entrySet().iterator().next();
+                    LayoutComponent comp = e.getKey();
+                    Rectangle bounds = e.getValue();
+                    if (removedCompToBounds == null) {
+                        removedCompToBounds = new HashMap<LayoutComponent, Rectangle>();
                     }
-                    removedIdToBounds.put(id, bounds);
+                    removedCompToBounds.put(comp, bounds);
                 }
                 Set cutSet = createPossibleCuts(effDim);
                 parts = cutIntoParts(cutSet, effDim);            
-            } while (!idToBounds.isEmpty() && parts.isEmpty());
+            } while (!compToBounds.isEmpty() && parts.isEmpty());
             dimension = effDim;
             List regions = new LinkedList();
             Iterator iter = parts.iterator();
@@ -612,13 +605,12 @@ public class LayoutModel implements LayoutConstants {
                 regions.add(region);
             }
             mergeSubRegions(regions, dimension);
-            if (removedIdToBounds != null) {
+            if (removedCompToBounds != null) {
                 for (int dim = HORIZONTAL; dim <= VERTICAL; dim++) {
-                    iter = removedIdToBounds.entrySet().iterator();
                     LayoutInterval parent = (dim == HORIZONTAL) ? horizontal : vertical;
                     if (!parent.isParallel()) {
                         LayoutInterval parGroup = new LayoutInterval(PARALLEL);
-                        addInterval(parent, parGroup, -1);
+                        parGroup.add(parent, -1);
                         if (dim == HORIZONTAL) {
                             horizontal = parGroup;
                         } else {
@@ -626,15 +618,13 @@ public class LayoutModel implements LayoutConstants {
                         }
                         parent = parGroup;
                     }
-                    while (iter.hasNext()) {
-                        Map.Entry entry = (Map.Entry)iter.next();
-                        String id = (String)entry.getKey();
-                        Rectangle bounds = (Rectangle)entry.getValue();
-                        LayoutComponent comp = getLayoutComponent(id);
+                    for (Map.Entry<LayoutComponent, Rectangle> entry : removedCompToBounds.entrySet()) {
+                        LayoutComponent comp = entry.getKey();
+                        Rectangle bounds = entry.getValue();
                         LayoutInterval interval = comp.getLayoutInterval(dim);
                         int gap = (dim == HORIZONTAL) ? bounds.x - minx : bounds.y - miny;
                         interval = prefixByGap(interval, gap);
-                        addInterval(interval, parent, -1);
+                        parent.add(interval, -1);
                     }
                 }
             }
@@ -642,10 +632,7 @@ public class LayoutModel implements LayoutConstants {
         
         private SortedSet createPossibleCuts(int dimension) {
             SortedSet cutSet = new TreeSet();
-            Iterator iter = idToBounds.keySet().iterator();
-            while (iter.hasNext()) {
-                String id = (String)iter.next();
-                Rectangle bounds = (Rectangle)idToBounds.get(id);
+            for (Rectangle bounds : compToBounds.values()) {
                 // Leading lines are sufficient
                 int leading = (dimension == HORIZONTAL) ? bounds.x : bounds.y;
                 cutSet.add(new Integer(leading));
@@ -661,28 +648,28 @@ public class LayoutModel implements LayoutConstants {
                 Integer cutInt = (Integer)iter.next();
                 int cut = cutInt.intValue();
                 boolean isCut = true;
-                Map preIdToBounds = new HashMap();
-                Map postIdToBounds = new HashMap();
-                Iterator it = idToBounds.entrySet().iterator();                
+                Map<LayoutComponent, Rectangle> preCompToBounds = new HashMap<LayoutComponent, Rectangle>();
+                Map<LayoutComponent, Rectangle> postCompToBounds = new HashMap<LayoutComponent, Rectangle>();
+                Iterator<Map.Entry<LayoutComponent, Rectangle>> it = compToBounds.entrySet().iterator();                
                 while (isCut && it.hasNext()) {
-                    Map.Entry entry = (Map.Entry)it.next();
-                    String id = (String)entry.getKey();
-                    Rectangle bounds = (Rectangle)entry.getValue();
+                    Map.Entry<LayoutComponent, Rectangle> entry = it.next();
+                    LayoutComponent comp = entry.getKey();
+                    Rectangle bounds = entry.getValue();
                     int leading = (dimension == HORIZONTAL) ? bounds.x : bounds.y;
                     int trailing = leading + ((dimension == HORIZONTAL) ? bounds.width : bounds.height);
                     if (leading >= cut) {
-                        postIdToBounds.put(id, bounds);
+                        postCompToBounds.put(comp, bounds);
                     } else if (trailing <= cut) {
-                        preIdToBounds.put(id, bounds);
+                        preCompToBounds.put(comp, bounds);
                     } else {
                         isCut = false;
                     }
                 }
-                if (isCut && !preIdToBounds.isEmpty()
+                if (isCut && !preCompToBounds.isEmpty()
                     // the last cut candidate (end of the region) cannot be the first cut
-                    && (!parts.isEmpty() || (preIdToBounds.size() != idToBounds.size()))) {
-                    idToBounds.keySet().removeAll(preIdToBounds.keySet());
-                    parts.add(preIdToBounds);
+                    && (!parts.isEmpty() || (preCompToBounds.size() != compToBounds.size()))) {
+                    compToBounds.keySet().removeAll(preCompToBounds.keySet());
+                    parts.add(preCompToBounds);
                 }
             }
             return parts;
@@ -721,11 +708,11 @@ public class LayoutModel implements LayoutConstants {
                 if (seqGap > 0) {
                     LayoutInterval gap = new LayoutInterval(SINGLE);
                     gap.setSize(seqGap);
-                    addInterval(gap, seqGroup, -1);
+                    seqGroup.add(gap, -1);
                 }
-                addInterval(seqInterval, seqGroup, -1);
+                seqGroup.add(seqInterval, -1);
                 parInterval = prefixByGap(parInterval, parGap);
-                addInterval(parInterval, parGroup, -1);
+                parGroup.add(parInterval, -1);
             }
             if (dimension == HORIZONTAL) {
                 horizontal = seqGroup;
@@ -741,11 +728,11 @@ public class LayoutModel implements LayoutConstants {
                 LayoutInterval gap = new LayoutInterval(SINGLE);
                 gap.setSize(size);
                 if (interval.isSequential()) {
-                    addInterval(gap, interval, 0);
+                    interval.add(gap, 0);
                 } else {
                     LayoutInterval group = new LayoutInterval(SEQUENTIAL);
-                    addInterval(gap, group, -1);
-                    addInterval(interval, group, -1);
+                    group.add(gap, -1);
+                    group.add(interval, -1);
                     interval = group;
                 }
             }
@@ -993,7 +980,7 @@ public class LayoutModel implements LayoutConstants {
                 roots.add(comp);
             }
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("<LayoutModel>\n"); // NOI18N
         Iterator rootIter = roots.iterator();
         while (rootIter.hasNext()) {
@@ -1006,7 +993,7 @@ public class LayoutModel implements LayoutConstants {
                 sb.append("  <Root id=\""+rootId+"\">\n"); // NOI18N
             else
                 sb.append("  <Root>\n"); // NOI18N
-            sb.append(dumpLayout(2, root, idToNameMap, true));
+            sb.append(saveContainerLayout(root, idToNameMap, 2, true));
             sb.append("  </Root>\n"); // NOI18N
         }
         sb.append("</LayoutModel>\n"); // NOI18N
@@ -1020,33 +1007,35 @@ public class LayoutModel implements LayoutConstants {
      * @param dimension dimension in which the layout interval resides.
      */
     public String dump(LayoutInterval interval, int dimension) {
-        return new LayoutPersistenceManager(this).saveIntervalLayout(2, interval, dimension);
+        return LayoutPersistenceManager.dumpInterval(this, interval, dimension, 2);
     }
     
     /**
-     * Returns dump of the layout model.
+     * Saves given layout container into a String.
      *
-     * @param indent determines size of indentation.
-     * @param root container layout model should be dumped.
+     * @param container the layout container to be saved
+     * @param idToNameMap map for translating component Ids to names suitable
+     *        for saving
+     * @param indent determines size of indentation
      * @param humanReadable determines whether constants should be replaced
-     * by human readable expressions.
-     * @return dump of the layout model.
+     * by human readable expressions
+     * @return dump of the layout model of given container
      */
-    public String dumpLayout(int indent, LayoutComponent root, Map idToNameMap, boolean humanReadable) {
-        return new LayoutPersistenceManager(this).saveLayout(indent, root, idToNameMap, humanReadable);
+    public String saveContainerLayout(LayoutComponent container, Map idToNameMap, int indent, boolean humanReadable) {
+        return LayoutPersistenceManager.saveContainer(this, container, idToNameMap, indent, humanReadable);
     }
-    
+
     /**
      * Loads the layout of the given container.
      *
-     * @param rootId ID of the layout root (the container whose layout should be loaded).
-     * @param dimLayoutList nodes holding the information about the layout.
-     * @param nameToIdMap map from component names to component IDs.
+     * @param containerId ID of the layout container to be loaded
+     * @param layoutNodeList XML data to load
+     * @param nameToIdMap map from component names to component IDs
      */
-    public void loadModel(String rootId, org.w3c.dom.NodeList dimLayoutList, Map nameToIdMap)
+    public void loadContainerLayout(String containerId, org.w3c.dom.NodeList layoutNodeList, Map nameToIdMap)
         throws java.io.IOException
     {
-        new LayoutPersistenceManager(this).loadModel(rootId, dimLayoutList, nameToIdMap);
+        LayoutPersistenceManager.loadContainer(this, containerId, layoutNodeList, nameToIdMap);
     }
 
     /**
@@ -1107,7 +1096,7 @@ public class LayoutModel implements LayoutConstants {
         lc.setLinkSizeId(groupId, dimension);
         
         // record undo/redo and fire event
-        LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_LINKSIZE_CHANGED);
+        LayoutEvent.Component ev = new LayoutEvent.Component(this, LayoutEvent.INTERVAL_LINKSIZE_CHANGED);
         ev.setLinkSizeGroup(lc, oldLinkSizeId, groupId, dimension);
         addChange(ev);
         fireEvent(ev);
@@ -1140,7 +1129,7 @@ public class LayoutModel implements LayoutConstants {
                 lc.setLinkSizeId(NOT_EXPLICITLY_DEFINED, dimension);
                 map.remove(linkIdInt);
                 // record undo/redo and fire event
-                LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_LINKSIZE_CHANGED);
+                LayoutEvent.Component ev = new LayoutEvent.Component(this, LayoutEvent.INTERVAL_LINKSIZE_CHANGED);
                 ev.setLinkSizeGroup(lc, oldLinkSizeId, NOT_EXPLICITLY_DEFINED, dimension);
                 addChange(ev);
                 fireEvent(ev);
@@ -1151,7 +1140,7 @@ public class LayoutModel implements LayoutConstants {
             }
 
             // record undo/redo and fire event
-            LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_LINKSIZE_CHANGED);
+            LayoutEvent.Component ev = new LayoutEvent.Component(this, LayoutEvent.INTERVAL_LINKSIZE_CHANGED);
             ev.setLinkSizeGroup(comp, linkId, NOT_EXPLICITLY_DEFINED, dimension);
             addChange(ev);
             fireEvent(ev);

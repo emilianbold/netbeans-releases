@@ -86,8 +86,8 @@ public class FilteredNode extends FilterNode {
       return new FilteredNode(node, this.filter);
     }
 
-    protected Node[] createNodes(Object key) {
-      if (filter.acceptNode((Node)key)) 
+    protected Node[] createNodes(Node key) {
+      if (filter.acceptNode(key)) 
 	return super.createNodes(key);
       else 
 	return new Node [0];

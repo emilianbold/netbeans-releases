@@ -20,17 +20,13 @@
 
 package org.netbeans.modules.form;
 
-/** FormAwareEditor is an interface implemented by property editors
- * and Customizers, which want to be aware of extended design-time
- * information about the form - e.g. other components.
- * @author Ian Formanek
+/**
+ * Interface implemented by property editors that need to know the context
+ * where they are used (FormModel and the property they edit).
+ * 
+ * @author Tomas Pavek
  */
 public interface FormAwareEditor {
 
-    /** If a property editor or customizer implements the FormAwareEditor
-     * interface, this method is called immediately after the PropertyEditor
-     * instance is created or the Customizer is obtained from getCustomizer().
-     * @model The FormModel representing meta-data of current form
-     */
-    public void setFormModel(FormModel model);
+    void setContext(FormModel formModel, FormProperty property);
 }

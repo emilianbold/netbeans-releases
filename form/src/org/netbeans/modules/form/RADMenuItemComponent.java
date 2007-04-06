@@ -20,12 +20,6 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
-import javax.swing.*;
-import javax.accessibility.*;
-import java.beans.PropertyEditor;
-
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
 /**
  * RADMenuItemComponent represents one menu item component in the Form.
@@ -35,8 +29,8 @@ import org.openide.util.NbBundle;
 
 public class RADMenuItemComponent extends RADComponent {
 
-    private MetaAccessibleContext accessibilityData;
-    private FormProperty[] accessibilityProperties;
+//    private MetaAccessibleContext accessibilityData;
+//    private FormProperty[] accessibilityProperties;
 
     /** Type of menu */
     private int type;
@@ -48,19 +42,19 @@ public class RADMenuItemComponent extends RADComponent {
     static final int T_MENU                 = 0x00113;
     static final int T_POPUPMENU            = 0x01114;
 
-    static final int T_JPOPUPMENU           = 0x01125;
-    static final int T_JMENUBAR             = 0x01126;
-    static final int T_JMENUITEM            = 0x00027;
-    static final int T_JCHECKBOXMENUITEM    = 0x00028;
-    static final int T_JMENU                = 0x00129;
-    static final int T_JRADIOBUTTONMENUITEM = 0x0002A;
+//    static final int T_JPOPUPMENU           = 0x01125;
+//    static final int T_JMENUBAR             = 0x01126;
+//    static final int T_JMENUITEM            = 0x00027;
+//    static final int T_JCHECKBOXMENUITEM    = 0x00028;
+//    static final int T_JMENU                = 0x00129;
+//    static final int T_JRADIOBUTTONMENUITEM = 0x0002A;
 
     static final int T_SEPARATOR            = 0x1001B;
-    static final int T_JSEPARATOR           = 0x1002C;
+//    static final int T_JSEPARATOR           = 0x1002C;
 
     /** Masks for the T_XXX constants */
     static final int MASK_AWT               = 0x00010;
-    static final int MASK_SWING             = 0x00020;
+//    static final int MASK_SWING             = 0x00020;
     static final int MASK_CONTAINER         = 0x00100;
     static final int MASK_ROOT              = 0x01000;
     static final int MASK_SEPARATOR         = 0x10000;
@@ -87,8 +81,8 @@ public class RADMenuItemComponent extends RADComponent {
      * @return adequate T_XXX constant
      */
     static int recognizeType(Class cl) {
-        if (JSeparator.class.isAssignableFrom(cl))
-            return T_JSEPARATOR;
+//        if (JSeparator.class.isAssignableFrom(cl))
+//            return T_JSEPARATOR;
         if (org.netbeans.modules.form.Separator.class.isAssignableFrom(cl))
             return T_SEPARATOR;
         if (PopupMenu.class.isAssignableFrom(cl))
@@ -101,18 +95,18 @@ public class RADMenuItemComponent extends RADComponent {
             return  T_MENUITEM;
         if (MenuBar.class.isAssignableFrom(cl))
             return T_MENUBAR;
-        if (JRadioButtonMenuItem.class.isAssignableFrom(cl))
-            return T_JRADIOBUTTONMENUITEM;
-        if (JMenu.class.isAssignableFrom(cl))
-            return T_JMENU;
-        if (JCheckBoxMenuItem.class.isAssignableFrom(cl))
-            return T_JCHECKBOXMENUITEM;
-        if (JMenuItem.class.isAssignableFrom(cl))
-            return T_JMENUITEM;
-        if (JMenuBar.class.isAssignableFrom(cl))
-            return T_JMENUBAR;
-        if (JPopupMenu.class.isAssignableFrom(cl))
-            return T_JPOPUPMENU;
+//        if (JRadioButtonMenuItem.class.isAssignableFrom(cl))
+//            return T_JRADIOBUTTONMENUITEM;
+//        if (JMenu.class.isAssignableFrom(cl))
+//            return T_JMENU;
+//        if (JCheckBoxMenuItem.class.isAssignableFrom(cl))
+//            return T_JCHECKBOXMENUITEM;
+//        if (JMenuItem.class.isAssignableFrom(cl))
+//            return T_JMENUITEM;
+//        if (JMenuBar.class.isAssignableFrom(cl))
+//            return T_JMENUBAR;
+//        if (JPopupMenu.class.isAssignableFrom(cl))
+//            return T_JPOPUPMENU;
 
         throw new IllegalArgumentException("Cannot create RADMenuItemComponent for class: "+cl.getName()); // NOI18N
     }
@@ -123,6 +117,7 @@ public class RADMenuItemComponent extends RADComponent {
         return super.cloneBeanInstance(relativeProperties);
     }
 
+    /*
     // ----------
     // accessibility properties
 
@@ -180,8 +175,7 @@ public class RADMenuItemComponent extends RADComponent {
             for (int i=0; i < accessibilityProperties.length; i++) {
                 FormProperty prop = accessibilityProperties[i];
                 setPropertyListener(prop);
-                prop.setPropertyContext(
-                    new RADProperty.RADPropertyContext(this));
+                prop.setPropertyContext(new FormPropertyContext.Component(this));
                 nameToProperty.put(prop.getName(), prop);
             }
         }
@@ -324,9 +318,5 @@ public class RADMenuItemComponent extends RADComponent {
             super();
             setBeanTypes(new Class[] { Accessible.class });
         }
-
-        public String getDisplayName() {
-            return NbBundle.getBundle(getClass()).getString("CTL_AccessibleParentEditor_DisplayName"); // NOI18N
-        }
-    }
+    } */
 }

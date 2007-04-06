@@ -21,18 +21,23 @@ package org.netbeans.modules.form.actions;
 
 import java.util.ArrayList;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.*;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.*;
-import org.netbeans.modules.form.layoutdesign.LayoutModel;
-import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
-import org.netbeans.modules.form.palette.PaletteUtils;
-
+import javax.swing.border.Border;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.nodes.Node;
-import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.*;
+import org.netbeans.modules.form.palette.PaletteItem;
+import org.netbeans.modules.form.layoutdesign.LayoutModel;
+import org.netbeans.modules.form.palette.PaletteUtils;
 
 /**
  * Action for setting layout on selected container(s). Presented only in
@@ -206,43 +211,65 @@ public class SelectLayoutAction extends CallableSystemAction {
                 if (container == null)
                     continue;
 
-                FormModel formModel = container.getFormModel();
                 if (paletteItem != null) {
                     // set the selected layout on the container
-                    formModel.getComponentCreator().createComponent(
+                    container.getFormModel().getComponentCreator().createComponent(
                         paletteItem.getComponentClassSource(), container, null);
                 }
-                else {
-                    LayoutSupportManager currentLS = container.getLayoutSupport();
-                    boolean convertToNew = (currentLS != null) && (currentLS.getLayoutDelegate() != null);
-                    LayoutModel layoutModel = formModel.getLayoutModel();
-                    Object layoutUndoMark = layoutModel.getChangeMark();
-                    javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
-                    boolean autoUndo = true;
-                    try {
-                        formModel.setNaturalContainerLayout(container);
-                        if (convertToNew) {
-                            RADVisualComponent[] components = container.getSubComponents();
-                            java.util.Map idToComponent = new java.util.HashMap();
-                            FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
-                            for (int j=0; j<components.length; j++) {
-                                Component comp = (Component)formDesigner.getComponent(components[j]);
-                                if (comp == null) comp = (Component)components[j].getBeanInstance(); // Issue 65919
-                                idToComponent.put(components[j].getId(), comp);
-                            }
-                            layoutModel.createModel(container.getId(), (java.awt.Container)formDesigner.getComponent(container), idToComponent);
-                        }
-                        autoUndo = false;
-                    } finally {
-                        if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                            formModel.addUndoableEdit(ue);
-                        }
-                        if (autoUndo) {
-                            formModel.forceUndoOfCompoundEdit();
-                        }
-                    }
-                    FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
+                else if (container.getLayoutSupport() != null) {
+                    convertToNewLayout(container);
                 }
+            }
+        }
+    }
+
+    private static void convertToNewLayout(RADVisualContainer metacont) {
+        FormModel formModel = metacont.getFormModel();
+        LayoutModel layoutModel = formModel.getLayoutModel();
+
+        Object layoutUndoMark = layoutModel.getChangeMark();
+        javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+        boolean autoUndo = true;
+        try {
+            formModel.setNaturalContainerLayout(metacont);
+
+            FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
+            Container cont = metacont.getContainerDelegate(formDesigner.getComponent(metacont));
+            Insets insets = new Insets(0, 0, 0, 0);
+            if (cont instanceof JComponent) {
+                Border border = ((JComponent)cont).getBorder();
+                if (border != null) {
+                    insets = border.getBorderInsets(cont);
+                }
+            }
+
+            Map<String, Rectangle> idToBounds = new HashMap<String, Rectangle>();
+            Rectangle notKnown = new Rectangle();
+            for (RADVisualComponent metacomp : metacont.getSubComponents()) {
+                Component comp = (Component)formDesigner.getComponent(metacomp);
+                if (comp == null) {
+                    comp = (Component)metacomp.getBeanInstance(); // Issue 65919
+                }
+                Rectangle bounds = comp.getBounds();
+                Dimension dim = comp.getPreferredSize();
+                if (bounds.equals(notKnown)) { // Issue 65919
+                    bounds.setSize(dim);
+                }
+                bounds = new Rectangle(bounds.x - insets.left, bounds.y - insets.top, bounds.width, bounds.height);
+                idToBounds.put(metacomp.getId(), bounds);
+            }
+
+            formDesigner.getLayoutDesigner().copyLayoutFromOutside(idToBounds, metacont.getId(), false);
+
+            autoUndo = false;
+        } finally {
+            if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                formModel.addUndoableEdit(ue);
+            }
+            if (autoUndo) {
+                formModel.forceUndoOfCompoundEdit();
+            } else {
+                FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
             }
         }
     }

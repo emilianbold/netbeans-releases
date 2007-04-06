@@ -26,6 +26,7 @@ import org.netbeans.modules.form.RADProperty.FakePropertyDescriptor;
 
 import org.openide.*;
 import org.openide.nodes.*;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
 
@@ -47,6 +48,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
 
     static final NewType[] NO_NEW_TYPES = {};
     static final RADProperty[] NO_PROPERTIES = {};
+    static final BindingProperty[] NO_BINDINGS = {};
 
     // -----------------------------------------------------------------------------
     // Private variables
@@ -68,6 +70,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
     private Node.Property[] syntheticProperties;
     private RADProperty[] beanProperties1;
     private RADProperty[] beanProperties2;
+    private BindingProperty[][] bindingProperties;
     private EventProperty[] eventProperties;
     private Map otherProperties;
     private List actionProperties;
@@ -238,6 +241,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
             formModel.getCodeStructure().createVariableForExpression(
                                            componentCodeExpression,
                                            0x30DF, // default type
+                                           (String)getAuxValue("JavaCodeGenerator_TypeParameters"), //NOI18N
                                            storedName);
         }
     }
@@ -441,7 +445,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
             throw iae;
         }
 
-        i18nComponentRename(name); // do before the component has new name
+        resourceComponentRename(name); // do before the component has new name
 
         String oldName = var.getName();
 
@@ -458,7 +462,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
             getNodeReference().updateName();
     }
 
-    void setStoredName(String name) {
+    public void setStoredName(String name) {
         storedName = name;
     }
 
@@ -609,6 +613,44 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
                    filter);
     }
 
+    public BindingProperty[] getAllBindingProperties() {
+        BindingProperty[][] bprop = getBindingProperties();
+        BindingProperty[] prop = new BindingProperty[bprop[0].length + bprop[1].length + bprop[2].length];
+        System.arraycopy(bprop[0], 0, prop, 0, bprop[0].length);
+        System.arraycopy(bprop[1], 0, prop, bprop[0].length, bprop[1].length);
+        System.arraycopy(bprop[2], 0, prop, bprop[0].length+bprop[1].length, bprop[2].length);
+        return prop;
+    }
+    
+    public BindingProperty[][] getBindingProperties() {
+        if (bindingProperties == null) {
+            createBindingProperties();
+        }
+        return bindingProperties;
+    }
+
+    public final BindingProperty getBindingProperty(String name) {
+        for (BindingProperty prop : getAllBindingProperties()) {
+            if (prop.getName().equals(name))
+                return prop;
+        }
+        return null;
+    }
+
+    BindingProperty[] getKnownBindingProperties() {
+        return bindingProperties != null ? getAllBindingProperties() : NO_BINDINGS;
+    }
+
+    boolean hasBindings() {
+        if (bindingProperties != null) {
+            for (BindingProperty p : getAllBindingProperties()) {
+                if (p.getValue() != null)
+                    return true;
+            }
+        }
+        return false;
+    }
+
     /** Provides access to the Node which represents this RADComponent
      * @return the RADComponentNode which represents this RADComponent
      */
@@ -670,6 +712,8 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
     }
 
     /**
+     * Returns property of given name corresponding to a property or event.
+     * Forces creation of all property objects.
      * @return bean or event property
      */
     public Node.Property getPropertyByName(String name) {
@@ -680,7 +724,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         return (RADProperty) getPropertyByName(name, RADProperty.class, true);
     }
 
-    final Node.Property getSyntheticProperty(String name) {
+    public final Node.Property getSyntheticProperty(String name) {
         for (Node.Property prop : getSyntheticProperties()) {
             if (prop.getName().equals(name))
                 return prop;
@@ -696,7 +740,13 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         }
         return getBeanProperties(propNames);
     }   
-    
+
+    /**
+     * Returns bean properties of given names. Creates the properties if not
+     * created yet, but does not force creation of all bean properties.
+     * @return array of properties corresponding to the names; may contain
+     *         null if there is no property of given name
+     */
     public RADProperty[] getBeanProperties(String[] propNames) {
         RADProperty[] properties = new RADProperty[propNames.length];        
         PropertyDescriptor[] descriptors = null;
@@ -1005,7 +1055,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
                 propSets.add(ps);
             }
         
-            if (beanProperties2.length > 0)
+            if (beanProperties2.length > 0) {
                 propSets.add(new Node.PropertySet(
                         "properties2", // NOI18N
                         bundle.getString("CTL_Properties2Tab"), // NOI18N
@@ -1015,7 +1065,26 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
                         return getBeanProperties2();
                     }
                 });
-        
+            }
+
+            if (getAllBindingProperties().length > 0) {
+                BindingProperty[][] bprop = getBindingProperties();
+                for (int i=0; i<bprop.length; i++) {
+                    final int index = i;
+                    ps = new Node.PropertySet(
+                            "binding" + i, // NOI18N
+                            bundle.getString("CTL_BindingTab" + i), // NOI18N
+                            bundle.getString("CTL_BindingTabHint" + i)) // NOI18N
+                    {
+                        public Node.Property[] getProperties() {
+                            return getBindingProperties()[index];
+                        }
+                    };
+                    ps.setValue("tabName", bundle.getString("CTL_BindingTab")); // NOI18N
+                    propSets.add(ps);
+                }
+            }
+
             ps = new Node.PropertySet(
                     "events", // NOI18N
                     bundle.getString("CTL_EventsTab"), // NOI18N
@@ -1091,6 +1160,10 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
 
             if (prop != null) {
                 listToAdd.add(prop);
+                if ("action".equals(pd.getName()) && (listToAdd == prefProps) && javax.swing.Action.class.isAssignableFrom(pd.getPropertyType())) { // NOI18N
+                    action = true;
+                    prop.setValue("actionName", FormUtils.getBundleString("CTL_SetAction")); // NOI18N
+                }
                 if (action) {
                     Object actionName = pd.getValue("actionName"); // NOI18N
                     if (actionName instanceof String) {
@@ -1163,6 +1236,18 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         }
 
         actionProperties = actionProps;
+    }
+
+    private void createBindingProperties() {
+        Collection<BindingDescriptor>[] props = FormEditor.getBindingSupport(formModel).getBindingDescriptors(this);
+        bindingProperties = new BindingProperty[props.length][];
+        for (int i=0; i<props.length; i++) {
+            bindingProperties[i] = new BindingProperty[props[i].size()];
+            int j = 0;
+            for (BindingDescriptor desc : props[i]) {
+                bindingProperties[i][j++] = new BindingProperty(this, desc);
+            }
+        }       
     }
 
     private void createEventProperties() {
@@ -1248,7 +1333,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
                                               List normalProps,
                                               List expertProps) {
          // hack for buttons - add fake property for ButtonGroup
-        if (getBeanInstance() instanceof javax.swing.AbstractButton)
+        if (getBeanInstance() instanceof javax.swing.AbstractButton) {
             try {
                 RADProperty prop = new ButtonGroupProperty(this);
                 setPropertyListener(prop);
@@ -1265,6 +1350,32 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
                 else normalProps.add(prop);
             }
             catch (IntrospectionException ex) {} // should not happen
+        }
+        
+        // PENDING improve performance - keep lookup result, listen on it etc.
+        boolean modified = false;
+        Lookup.Template template = new Lookup.Template(PropertyModifier.class);
+        Collection<PropertyModifier> modifiers = Lookup.getDefault().lookup(template).allInstances();
+        for (PropertyModifier modifier : modifiers) {
+            modified |= modifier.modifyProperties(this, prefProps, normalProps, expertProps);
+        }
+        
+        if (modified) {
+            checkForAddedProperties(prefProps);
+            checkForAddedProperties(normalProps);
+            checkForAddedProperties(expertProps);
+        }
+    }
+    
+    private void checkForAddedProperties(List props) {
+        for (Object o : props) {
+            FormProperty prop = (FormProperty)o;
+            String propName = prop.getName();
+            if (!nameToProperty.containsKey(propName)) {
+                nameToProperty.put(propName, prop);
+                setPropertyListener(prop);
+            }
+        }
     }
 
     protected PropertyChangeListener createPropertyListener() {
@@ -1301,7 +1412,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
             if (FormProperty.PROP_VALUE.equals(eventName)
                 || FormProperty.PROP_VALUE_AND_EDITOR.equals(eventName))
             {   // property value has changed (or value and editor together)
-                i18nPropertyChanged(evt);
+                resourcePropertyChanged(evt);
 
                 Object oldValue = evt.getOldValue();
                 Object newValue = evt.getNewValue();
@@ -1329,37 +1440,36 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         }
 
         public Object convert(Object value, FormProperty property) {
-            return i18nPropertyConvert(value, property);
+            return resourcePropertyConvert(value, property);
         }
     }
 
     // -----
-    // i18n automation
+    // resources/i18n automation
 
-    Object i18nPropertyConvert(Object value, FormProperty property) {
+    Object resourcePropertyConvert(Object value, FormProperty property) {
         if (isInModel() && formModel.isUndoRedoRecording()
                 && property.getPropertyContext().getFormModel() != null) {
             Object val = FormProperty.getEnclosedValue(value);
-            Object intVal = I18nSupport.internationalizeProperty(val, property, RADComponent.this);
-            if (intVal != val)
-                return intVal;
+            Object resVal = ResourceSupport.makeResource(val, property);
+            if (resVal != val)
+                return resVal;
         }
         return value; // do nothing
     }
 
-    void i18nComponentRename(String newName) {
+    void resourceComponentRename(String newName) {
         if (isInModel()) {
-            I18nSupport.componentRenamed(this, newName);
+            ResourceSupport.componentRenamed(this, newName);
         }
     }
 
-    void i18nPropertyChanged(PropertyChangeEvent ev) {
+    void resourcePropertyChanged(PropertyChangeEvent ev) {
         if (isInModel() && formModel.isFormLoaded()) {
-            I18nSupport.updateStoredValue(
+            ResourceSupport.updateStoredValue(
                     FormProperty.getEnclosedValue(ev.getOldValue()), // in case it is ValueWithEditor
                     FormProperty.getEnclosedValue(ev.getNewValue()), // in case it is ValueWithEditor
-                    (FormProperty)ev.getSource(),
-                    RADComponent.this);
+                    (FormProperty)ev.getSource());
         }
     }
 

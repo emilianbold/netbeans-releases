@@ -102,40 +102,59 @@ public class AlignAction extends NodeAction {
                     bundle.getString("CTL_GroupRight"), // NOI18N
                     components,
                     1);
+            JMenuItem centerHGroupItem = new AlignMenuItem(
+                    bundle.getString("CTL_GroupHCenter"), // NOI18N
+                    components,
+                    2);
             JMenuItem upGroupItem = new AlignMenuItem(
                     bundle.getString("CTL_GroupUp"), // NOI18N
                     components,
-                    2);
+                    3);
             JMenuItem downGroupItem = new AlignMenuItem(
                     bundle.getString("CTL_GroupDown"), // NOI18N
                     components,
-                    3);
+                    4);
+            JMenuItem centerVGroupItem = new AlignMenuItem(
+                    bundle.getString("CTL_GroupVCenter"), // NOI18N
+                    components,
+                    5);
             JMenuItem leftItem = new AlignMenuItem(
                     bundle.getString("CTL_AlignLeft"), // NOI18N
                     components,
-                    4);
+                    6);
             JMenuItem rightItem = new AlignMenuItem(
                     bundle.getString("CTL_AlignRight"), // NOI18N
                     components,
-                    5);
+                    7);
+            JMenuItem centerHItem = new AlignMenuItem(
+                    bundle.getString("CTL_AlignHCenter"), // NOI18N
+                    components,
+                    8);
             JMenuItem upItem = new AlignMenuItem(
                     bundle.getString("CTL_AlignUp"), // NOI18N
                     components,
-                    6);
+                    9);
             JMenuItem downItem = new AlignMenuItem(
                     bundle.getString("CTL_AlignDown"), // NOI18N
                     components,
-                    7);
-            items = new JMenuItem[] {leftGroupItem, rightGroupItem, upGroupItem,
-                downGroupItem, leftItem, rightItem, upItem, downItem};
-            for (int i=0; i<8; i++) {
+                    10);
+            JMenuItem centerVItem = new AlignMenuItem(
+                    bundle.getString("CTL_AlignVCenter"), // NOI18N
+                    components,
+                    11);
+            items = new JMenuItem[] {leftGroupItem, rightGroupItem, centerHGroupItem,
+                upGroupItem, downGroupItem, centerVGroupItem, leftItem, rightItem,
+                centerHItem, upItem, downItem, centerVItem};
+            for (int i=0; i < items.length; i++) {
                 items[i].addActionListener(getMenuItemListener());
                 items[i].setEnabled(false);
                 HelpCtx.setHelpIDString(items[i], AlignAction.class.getName());
                 menu.add(items[i]);
-                if (i == 3) menu.addSeparator();
+                if (i+1 == items.length/2) {
+                    menu.addSeparator();
+                }
             }
-        }        
+        }
         updateState(components);
     }
 
@@ -145,10 +164,13 @@ public class AlignAction extends NodeAction {
         }
         RADComponent rc = (RADComponent)components.get(0);
         FormDesigner formDesigner = FormEditor.getFormDesigner(rc.getFormModel());
-        for (int i=0; i<4; i++) {
-            Action a = (Action)formDesigner.getDesignerActions(true).toArray()[i];
-            items[i].setEnabled(a.isEnabled());
-            items[i+4].setEnabled(a.isEnabled());
+        java.util.Collection col = formDesigner.getDesignerActions(true);
+        int n = col.size();
+        assert n == (items.length / 2);
+        Action[] actions = (Action[]) col.toArray(new Action[n]);
+        for (int i=0; i < n; i++) {
+            items[i].setEnabled(actions[i].isEnabled());
+            items[i+n].setEnabled(actions[i].isEnabled());
         }
     }
     

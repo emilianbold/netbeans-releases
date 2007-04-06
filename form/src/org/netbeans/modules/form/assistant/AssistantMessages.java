@@ -47,6 +47,13 @@ public class AssistantMessages {
         return messages;
     }
 
+    public void setMessages(String context, String... messages) {
+        if (!initialized) {
+            initialize();
+        }
+        contextToMessages.put(context, messages);
+    }
+
     private void initialize() {
         Map contextToSet = new HashMap();
         ResourceBundle bundle = NbBundle.getBundle(AssistantMessages.class);
@@ -72,6 +79,8 @@ public class AssistantMessages {
             String[] messages = (String[])value.toArray(new String[value.size()]);
             contextToMessages.put(key, messages);
         }
+        
+        initialized = true;
     }
 
     private String getContext(String bundleKey) {

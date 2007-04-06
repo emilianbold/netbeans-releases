@@ -70,6 +70,8 @@ public interface CodeVariable {
     public int getType();
 
     public Class getDeclaredType();
+    
+    public String getDeclaredTypeParameters();
 
     public String getName();
 

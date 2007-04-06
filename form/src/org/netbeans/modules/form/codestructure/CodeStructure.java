@@ -394,7 +394,7 @@ public class CodeStructure {
         if (type < 0 || name == null)
             throw new IllegalArgumentException();
 
-        Variable var = new Variable(type, declaredType, name);
+        Variable var = new Variable(type, declaredType, "", name); // NOI18N
         namesToVariables.put(name, var);
 	
         if (undoRedoRecording)
@@ -450,11 +450,20 @@ public class CodeStructure {
         return namesToVariables.get(name) != null || javaSource.containsField(name, true);
     }
 
+    public CodeVariable createVariableForExpression(CodeExpression expression,
+                                                    int type,
+                                                    String name) {
+        CodeVariable var = (expression == null) ? null : expression.getVariable();
+        String typeParameters = (var == null) ? "" : var.getDeclaredTypeParameters(); // NOI18N
+        return createVariableForExpression(expression, type, typeParameters, name);
+    }
+    
     /** Creates a new variable and attaches given expression to it. If the
      * requested name is already in use, then a free name is found. If null
      * is provided as the name, then expression's short class name is used. */
     public CodeVariable createVariableForExpression(CodeExpression expression,
                                                     int type,
+                                                    String typeParameters,
                                                     String name)
     {
         if (expression == null)
@@ -473,6 +482,7 @@ public class CodeStructure {
 
         Variable var = new Variable(type,
                                     expression.getOrigin().getType(),
+                                    typeParameters,
                                     name);
         CodeStatement statement = createVariableAssignment(var, expression);
         var.addCodeExpression(expression, statement);
@@ -843,15 +853,17 @@ public class CodeStructure {
     final class Variable implements CodeVariable {
         private int type;
         private Class declaredType;
+        private String declaredTypeParameters;
         private String name;
         private Map expressionsMap;
         private CodeStatement declarationStatement;
 
-        Variable(int type, Class declaredType, String name) {
+        Variable(int type, Class declaredType, String declaredTypeParameters, String name) {
             if ((type & FINAL) != 0)
                 type &= ~EXPLICIT_DECLARATION;
             this.type = type;
             this.declaredType = declaredType;
+            this.declaredTypeParameters = declaredTypeParameters;
             this.name = name;
         }
 
@@ -866,6 +878,10 @@ public class CodeStructure {
 
         public Class getDeclaredType() {
             return declaredType;
+        }
+
+        public String getDeclaredTypeParameters() {
+            return declaredTypeParameters;
         }
 
         public Collection getAttachedExpressions() {

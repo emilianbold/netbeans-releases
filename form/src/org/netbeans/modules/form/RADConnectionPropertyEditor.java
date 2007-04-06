@@ -42,16 +42,29 @@ public class RADConnectionPropertyEditor
                XMLPropertyEditor,
                NamedPropertyEditor
 {
-    protected PropertyChangeSupport support;
+    public enum Type { FormConnection, CustomCode }
+    private Type editorType;
+
+    protected PropertyChangeSupport support = new PropertyChangeSupport(this);
     private Class propertyType;
     private FormModel formModel = null;
+    private FormProperty property;
     private RADConnectionDesignValue designValue = null;
     private Object realValue = null;
 
     /** Creates a new RADConnectionPropertyEditor */
     public RADConnectionPropertyEditor(Class propertyType) {
-        support = new PropertyChangeSupport(this);
         this.propertyType = propertyType;
+        this.editorType = Type.FormConnection;
+    }
+
+    public RADConnectionPropertyEditor(Class propertyType, Type editorType) {
+        this.propertyType = propertyType;
+        this.editorType = editorType;
+    }
+
+    public Type getEditorType() {
+        return editorType;
     }
 
     /** If a property editor or customizer implements the FormAwareEditor
@@ -59,8 +72,9 @@ public class RADConnectionPropertyEditor
      * instance is created or the Customizer is obtained from getCustomizer().
      * @param model  The FormModel representing data of opened form.
      */
-    public void setFormModel(FormModel model) {
+    public void setContext(FormModel model, FormProperty prop) {
         formModel = model;
+        property = prop;
     }
 
     // -----------------------------------------------------------------------------
@@ -72,10 +86,10 @@ public class RADConnectionPropertyEditor
     }
 
     public void setValue(Object value) {
-        
-
         if (value instanceof RADConnectionDesignValue) {
             designValue =(RADConnectionDesignValue)value;
+            editorType = designValue.getType() == RADConnectionDesignValue.TYPE_CODE ?
+                Type.CustomCode : Type.FormConnection;
         } else {
             designValue = null;
             realValue = value;
@@ -109,9 +123,16 @@ public class RADConnectionPropertyEditor
     }
 
     public java.awt.Component getCustomEditor() {
-        ParametersPicker pp = new ParametersPicker(formModel, propertyType);
-        pp.setPropertyValue(designValue, realValue);
-        return pp;
+        if (editorType == Type.FormConnection) {
+            ConnectionCustomEditor cust = new ConnectionCustomEditor(this, formModel, propertyType);
+            cust.setValue(designValue);
+            return cust;
+        }
+        else {
+            CodeCustomEditor cust = new CodeCustomEditor(this, formModel, property);
+            cust.setValue(designValue);
+            return cust;
+        }
     }
 
     public String getJavaInitializationString() {
@@ -182,7 +203,8 @@ public class RADConnectionPropertyEditor
 
     /** @return display name of the property editor */
     public String getDisplayName() {
-        return FormUtils.getBundleString("CTL_RADConn_DisplayName"); // NOI18N
+        return FormUtils.getBundleString(editorType == Type.FormConnection ?
+                "CTL_FormConnection_DisplayName" : "CTL_CustomCode_DisplayName"); // NOI18N
     }
 
     // ------------------------------------------
@@ -443,6 +465,10 @@ public class RADConnectionPropertyEditor
                 default:
                     return FormDesignValue.IGNORED_VALUE;
             }
+        }
+
+        public Object getDesignValue(Object target) {
+            return null;
         }
 
         public String getDescription() {

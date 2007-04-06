@@ -19,30 +19,35 @@
 
 package org.netbeans.modules.form;
 
+import java.awt.dnd.DropTargetDragEvent;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.form.palette.PaletteItem;
 
 /**
- * Cookie allowing drag and drop of nodes to form module.
+ * Interface allowing drag and drop of nodes to form module.
  *
  * @author Jan Stola, Tomas Pavek
  */
-public interface NewComponentDrop extends Node.Cookie {
+public interface NewComponentDrop {
 
     /**
      * Describes the primary component that should be added.
+     *
+     * @param dtde corresponding drop target drag event.
+     * @return palette item that describes the component that should be added.
      */
-    PaletteItem getPaletteItem();
+    PaletteItem getPaletteItem(DropTargetDragEvent dtde);
 
     /**
      * Callback method that notifies about the added component. You should
      * set properties of the added component or add other beans to the model
      * in this method.
      *
-     * @param model model of the form.
      * @param componentId ID of the newly added component.
+     * @param droppedOverId ID of a component the new component has been dropped over;
+     * used only if the dropped component is non-visual, it is <code>null</code> otherwise.
      */
-    void componentAdded(FormModel model, String componentId);
+    void componentAdded(String componentId, String droppedOverId);
 
 }

@@ -26,25 +26,29 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyEditor;
 import java.io.IOException;
 import java.util.*;
+
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.*;
 import org.openide.cookies.SaveCookie;
-import org.openide.cookies.EditorCookie;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+
 import org.netbeans.modules.properties.*;
 import org.netbeans.modules.i18n.*;
 import org.netbeans.modules.i18n.java.JavaResourceHolder;
+
 import org.netbeans.modules.form.I18nService;
 import org.netbeans.modules.form.I18nValue;
 
@@ -60,7 +64,7 @@ public class I18nServiceImpl implements I18nService {
     private Map/*<DataObject, Map<DataObject, ChangeInfo>>*/ changesMap = new HashMap();
 
     private static class ChangeInfo {
-        Map/*<String, Object]>*/ changed = new HashMap(); // for each key holds all data across all locales
+        Map/*<String, Object[]>*/ changed = new HashMap(); // for each key holds all data across all locales
         Set/*<String>*/ added = new HashSet(); // holds keys that were not originally present
     }
 
@@ -169,22 +173,21 @@ public class I18nServiceImpl implements I18nService {
                 }
 
                 if (newI18nString == null
-                    && oldRes == getPropertiesDataObject(srcDataObject, bundleName))
+                    && oldRes == getPropertiesDataObject(srcDataObject.getPrimaryFile(), bundleName))
                 {   // forget the resource bundle file - may want different next time
                     oldRH.setResource(null);
                 }
             }
         }
 
-        if (newI18nString != null && newI18nString.getKey() != null
-                && newI18nString.getKey() != I18nValue.NOI18N_KEY)
-        {   // valid new value - make sure it is up-to-date in the properties file
+        if (newI18nString != null && newI18nString.getKey() != null) {
+            // valid new value - make sure it is up-to-date in the properties file
             JavaResourceHolder rh = (JavaResourceHolder) newI18nString.getSupport().getResourceHolder();
 
             if (rh.getResource() == null) { // find or create properties file
-                DataObject propertiesDO = getPropertiesDataObject(srcDataObject, bundleName);
+                DataObject propertiesDO = getPropertiesDataObject(srcDataObject.getPrimaryFile(), bundleName);
                 if (propertiesDO == null) { // create new properties file
-                    propertiesDO = createPropertiesDataObject(srcDataObject, bundleName);
+                    propertiesDO = createPropertiesDataObject(srcDataObject.getPrimaryFile(), bundleName);
                     if (propertiesDO == null)
                         return;
                 }
@@ -234,21 +237,6 @@ public class I18nServiceImpl implements I18nService {
         return existing instanceof FormI18nStringEditor ? existing : new FormI18nStringEditor();
     }
 
-    /**
-     * Evaluates the effect of changing a property editor. The property editor
-     * determines whether a property can hold internationalized value.
-     * @return -1 if an i18n editor is changed to plain type editor,
-     *         0 if the type of editor does no change,
-     *         1 if a plain type editor is changed to i18n one
-     */
-    public int analyzePropertyEditorChange(PropertyEditor oldPE, PropertyEditor newPE) {
-        if (oldPE instanceof FormI18nStringEditor)
-            return isPlainStringEditor(newPE) ? -1 : 0;
-        if (isPlainStringEditor(oldPE))
-            return newPE instanceof FormI18nStringEditor ? 1 : 0;
-        return 0;
-    }
-
     private static boolean isPlainStringEditor(PropertyEditor pe) {
         return pe != null && pe.getClass().getName().endsWith(".StringEditor"); // NOI18N
     }
@@ -260,9 +248,9 @@ public class I18nServiceImpl implements I18nService {
      * written to the given property editor (via setValue) as a resource name
      * string.
      */
-    public Component getBundleSelectionComponent(final PropertyEditor prEd, DataObject srcDataObject) {
+    public Component getBundleSelectionComponent(final PropertyEditor prEd, FileObject srcFile) {
         try {
-            final FileSelector fs = new FileSelector(srcDataObject.getPrimaryFile(), JavaResourceHolder.getTemplate());
+            final FileSelector fs = new FileSelector(srcFile, JavaResourceHolder.getTemplate());
             return fs.getDialog(NbBundle.getMessage(I18nServiceImpl.class, "CTL_SELECT_BUNDLE_TITLE"), // NOI18N
                                 new ActionListener()
             {
@@ -290,10 +278,10 @@ public class I18nServiceImpl implements I18nService {
      * os strings. The first one containes locale suffixes, the second one
      * corresponding display names for the user (should be unique).
      */
-    public String[][] getAvailableLocales(DataObject srcDataObject, String bundleName) {
+    public String[][] getAvailableLocales(FileObject srcFile, String bundleName) {
         PropertiesDataObject dobj = null;
         try {
-            dobj = getPropertiesDataObject(srcDataObject, bundleName);
+            dobj = getPropertiesDataObject(srcFile, bundleName);
         }
         catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -328,10 +316,10 @@ public class I18nServiceImpl implements I18nService {
      * bundle name provided). The created locale should be written as a string
      * (locale suffix) to the given propery editor.
      */
-    public Component getCreateLocaleComponent(final PropertyEditor prEd, DataObject srcDataObject, String bundleName) {
+    public Component getCreateLocaleComponent(final PropertyEditor prEd, FileObject srcFile, String bundleName) {
         final PropertiesDataObject propertiesDO;
         try {
-            propertiesDO = getPropertiesDataObject(srcDataObject, bundleName);
+            propertiesDO = getPropertiesDataObject(srcFile, bundleName);
         }
         catch (DataObjectNotFoundException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -433,21 +421,39 @@ public class I18nServiceImpl implements I18nService {
      * [If we decide all projects should be internationalized, we can remove
      *  this method.]
      */
-    public boolean isDefaultInternationalizableProject(DataObject srcDataObject) {
-        return org.netbeans.modules.i18n.Util.isNbBundleAvailable(srcDataObject);
+    public boolean isDefaultInternationalizableProject(FileObject srcFile) {
+        return isNbBundleAvailable(srcFile);
+    }
+
+    static boolean isNbBundleAvailable(FileObject srcFile) {
+        // is there a good way to recognize that NbBundle is available?
+        // - execution CP may not work if everything is cleaned
+        // - looking for NbBundle.java in sources of execution CP roots is expensive
+        // - checking project impl. class name is ugly
+        // - don't know how to check if there is "org.openide.util" module
+        ClassPath classPath = ClassPath.getClassPath(srcFile, ClassPath.EXECUTE);
+        if (classPath != null && classPath.findResource("org/openide/util/NbBundle.class") != null) // NOI18N
+            return true;
+
+        // hack: check project impl. class name
+        Project p = FileOwnerQuery.getOwner(srcFile);
+        if (p != null && p.getClass().getName().startsWith("org.netbeans.modules.apisupport.") // NOI18N
+                && p.getClass().getName().endsWith("Project")) // NOI18N
+            return true;
+
+        return false;
     }
 
     // -----
 
-    private static PropertiesDataObject getPropertiesDataObject(DataObject srcDataObject, String bundleName)
+    private static PropertiesDataObject getPropertiesDataObject(FileObject srcFile, String bundleName)
         throws DataObjectNotFoundException
     {
         if (bundleName.startsWith("/")) // NOI18N
             bundleName = bundleName.substring(1);
         if (!bundleName.toLowerCase().endsWith(".properties")) // NOI18N
             bundleName = bundleName + ".properties"; // NOI18N
-        FileObject bundleFile = org.netbeans.modules.i18n.Util
-                .getResource(srcDataObject.getPrimaryFile(), bundleName);
+        FileObject bundleFile = org.netbeans.modules.i18n.Util.getResource(srcFile, bundleName);
         if (bundleFile != null) {
             DataObject dobj = DataObject.find(bundleFile);
             if (dobj instanceof PropertiesDataObject)
@@ -456,47 +462,28 @@ public class I18nServiceImpl implements I18nService {
         return null;
     }
 
-    private static DataObject createPropertiesDataObject(DataObject srcDataObject,
+    private static DataObject createPropertiesDataObject(FileObject srcFile,
                                                          String filePath)
         throws IOException
     {
         if (filePath == null)
             return null;
 
-        FileObject folder;
-        ClassPath cp = ClassPath.getClassPath(srcDataObject.getPrimaryFile(), ClassPath.SOURCE);
-        FileObject root = cp.getRoots()[0];
-        String fileName;
-        int idx = filePath.lastIndexOf('/');
-        boolean hasCustomRes = false;
-        Project owner = FileOwnerQuery.getOwner(srcDataObject.getPrimaryFile());
+        FileObject root = null;
+        Project owner = FileOwnerQuery.getOwner(srcFile);
         if (owner != null) {
             // this is for projects that have split sources/resources folder structures.
             Sources srcs = ProjectUtils.getSources(owner);
             SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
             if (grps != null && grps.length > 0) {
-                hasCustomRes = true;
                 root = grps[0].getRootFolder();
             }
         }
-        if (idx < 0) { // default package
-            folder = root;
-            fileName = filePath;
+        if (root == null) {
+            root = ClassPath.getClassPath(srcFile, ClassPath.SOURCE).getRoots()[0];
         }
-        else {
-            String folderPath = filePath.substring(0, idx);
-            folder = cp.findResource(folderPath);
-            if (folder == null || hasCustomRes) {
-                folder = FileUtil.createFolder(root, folderPath);
-            }
-            fileName = filePath.substring(idx + 1);
-        }
-        if (folder != null) {
-            DataObject template = JavaResourceHolder.getTemplate();
-            return template.createFromTemplate(DataFolder.findFolder(folder), fileName);
-            // [set auto-create attribute?]
-        }
-        return null; // [throw exception - can't create properties file?]
+
+        return org.netbeans.modules.properties.Util.createPropertiesDataObject(root, filePath);
     }
 
     /**

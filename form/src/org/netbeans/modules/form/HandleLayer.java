@@ -29,6 +29,7 @@ import javax.swing.*;
 import java.util.*;
 import java.text.MessageFormat;
 import javax.swing.undo.UndoableEdit;
+import org.netbeans.modules.form.assistant.AssistantModel;
 import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.DialogDisplayer;
@@ -36,7 +37,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.NodeTransfer;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
@@ -61,7 +61,7 @@ import org.openide.util.Lookup;
 class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 {
     // constants for mode parameter of getMetaComponentAt(Point,int) method
-    static final int COMP_DEEPEST = 0; // get the deepest component (at given point)
+    static final int COMP_DEEPEST = 0; // get the deepest component (at given position)
     static final int COMP_SELECTED = 1; // get the deepest selected component
     static final int COMP_ABOVE_SELECTED = 2; // get the component above the deepest selected component
     static final int COMP_UNDER_SELECTED = 3; // get the component under the deepest selected component
@@ -464,10 +464,11 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     // -------
 
     /**
-     * Returns metacomponent at given position.
-     * @param point - position on component layer
-     * @param mode - what to get:
-     *   COMP_DEEPEST - get the deepest component
+     * Returns metacomponent for visual component at given location.
+     * @param point - location in component layer's coordinates
+     * @param mode - defines what level in the hierarchy to prefer (in order to
+     *        distinguish between the leaf components and their parents):
+     *   COMP_DEEPEST - get the component which is the deepest in the hierarchy (leaf component)
      *   COMP_SELECTED - get the deepest selected component
      *   COMP_ABOVE_SELECTED - get the component above the deepest selected component
      *   COMP_UNDER_SELECTED - get the component under the deepest selected component
@@ -475,15 +476,16 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
      *   If no component is currently selected then:
      *     for COMP_SELECTED the deepest component is returned
      *     for COMP_ABOVE_SELECTED the deepest component is returned
-     *     for COMP_UNDER_SELETCED the top component is returned
+     *     for COMP_UNDER_SELECTED the top component is returned
      */
     private RADComponent getMetaComponentAt(Point point, int mode) {
         Component[] deepComps = getDeepestComponentsAt(
                                     formDesigner.getComponentLayer(), point);
-        if (deepComps.length == 0)
+        if (deepComps == null) {
             return null;
+        }
 
-        int dIndex = mode == COMP_DEEPEST ? deepComps.length - 1 : 0;
+        int dIndex = 0;
         Component comp = deepComps[dIndex];
 
         // find the component satisfying point and mode
@@ -537,55 +539,38 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         return firstMetaComp;
     }
 
-    // [TODO would be nice to rewrite this method not to produce garbage, it is
-    // called for each mouse move several times]
     private static Component[] getDeepestComponentsAt(Container parent,
                                                       Point point)
     {
-        Component comp = SwingUtilities.getDeepestComponentAt(parent,
-                                                              point.x,
-                                                              point.y);
-        if (comp == null)
-            return new Component[0];
+        Component deepestComp = SwingUtilities.getDeepestComponentAt(parent, point.x, point.y);
+        if (deepestComp == null) {
+            return null;
+        }
 
-        Container deepestParent = comp.getParent();
-        Component[] deepestComponents = deepestParent.getComponents();
-        Point deepestPosition =
-            SwingUtilities.convertPoint(parent, point, deepestParent);
-
-        // in most cases there will be just one component...
-        Component[] componentsAtPoint = new Component[1];
-        ArrayList compList = null;
-
-        for (int i=0; i < deepestComponents.length; i++) {
-            comp = deepestComponents[i];
+        Container deepestParent = deepestComp.getParent();
+        Point deepestPosition = SwingUtilities.convertPoint(parent, point, deepestParent);
+        java.util.List<Component> compList = null; // in most cases there will be just one component
+        for (int i=0, n=deepestParent.getComponentCount(); i < n; i++) {
+            Component comp = deepestParent.getComponent(i);
             Point p = comp.getLocation();
-            if (comp.isVisible()
-                && comp.contains(deepestPosition.x - p.x,
-                                 deepestPosition.y - p.y))
-            {
-                if (componentsAtPoint[0] == null)
-                    componentsAtPoint[0] = comp;
-                else {
-                    if (compList == null) {
-                        compList = new ArrayList();
-                        compList.add(componentsAtPoint[0]);
-                    }
-                    compList.add(comp);
+            if (comp != deepestComp && comp.isVisible()
+                    && comp.contains(deepestPosition.x - p.x, deepestPosition.y - p.y)) {
+                if (compList == null) {
+                    compList = new ArrayList<Component>(n - i + 1);
+                    compList.add(deepestComp);
                 }
+                compList.add(comp);
             }
         }
 
-        if (compList == null)
-            return componentsAtPoint[0] != null ?
-                     componentsAtPoint : new Component[0];
-
-        componentsAtPoint = new Component[compList.size()];
-        compList.toArray(componentsAtPoint);
-        return componentsAtPoint;
+        if (compList == null) { // just one component
+            return new Component[] { deepestComp };
+        } else {
+            return compList.toArray(new Component[compList.size()]);
+        }
     }
 
-    RADVisualContainer getMetaContainerAt(Point point, int mode) {
+    private RADVisualContainer getMetaContainerAt(Point point, int mode) {
         RADComponent metacomp = getMetaComponentAt(point, mode);
         if (metacomp == null)
             return null;
@@ -755,6 +740,21 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     private void processMouseClickInLayoutSupport(RADComponent metacomp,
                                                   MouseEvent e)
     {
+        if(formDesigner.getMenuEditLayer().isVisible()) {
+            if(!formDesigner.getMenuEditLayer().isMenuLayerComponent(metacomp)) {
+                formDesigner.getMenuEditLayer().hideMenuLayer();
+            }
+        }
+        if(metacomp.getBeanClass().getName().equals(javax.swing.JMenu.class.getName())) {
+            formDesigner.openMenu(metacomp);
+        }
+        // this clause may be dead now
+        if(metacomp instanceof RADMenuComponent) {
+            formDesigner.openMenu(metacomp);
+            //System.out.println("real = : " + ((RADMenuComponent)metacomp).getBeanInstance());
+            //final JMenu menu = (JMenu) ((RADMenuComponent)metacomp).getBeanInstance();
+        }
+        //System.out.println("is vis : " + (metacomp instanceof RADVisualComponent));
         if (!(metacomp instanceof RADVisualComponent))
             return;
 
@@ -798,7 +798,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         // all selected components must be visible in the designer and have the
         // same parent; redundant sub-contained components must be filtered out
         java.util.List selectedComps = formDesigner.getSelectedComponents();
-        java.util.List workingComps = new ArrayList(selectedComps.size());
+        java.util.List<RADComponent> workingComps = new ArrayList(selectedComps.size());
+        java.util.List<String> workingIds = null;
         RADVisualContainer parent = null;
 
         for (Iterator it = selectedComps.iterator(); it.hasNext(); ) {
@@ -834,8 +835,25 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                         return null;
                     }
                     parent = metacont;
+                    if (metacont.getLayoutSupport() == null) { // new layout
+                        workingIds = new ArrayList(selectedComps.size());
+                    }
                 }
                 workingComps.add(metacomp);
+                if (workingIds != null) {
+                    workingIds.add(metacomp.getId());
+                }
+            }
+        }
+
+        if (parent.getLayoutSupport() == null) { // new layout may impose more limitation
+            workingIds = formDesigner.getLayoutDesigner().getDraggableComponents(workingIds);
+            if (workingIds.size() != workingComps.size()) {
+                workingComps.clear();
+                FormModel formModel = getFormModel();
+                for (String compId : workingIds) {
+                    workingComps.add(formModel.getMetaComponent(compId));
+                }
             }
         }
 
@@ -913,8 +931,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     // Highlights panel below mouse cursor.
     private void highlightPanel(MouseEvent e, boolean recheck) {
         Component[] comps = getDeepestComponentsAt(formDesigner.getComponentLayer(), e.getPoint());
-        if (comps.length == 0)
+        if (comps == null) {
             return;
+        }
         Component comp = comps[comps.length-1];
         RADComponent radcomp = formDesigner.getMetaComponent(comp);
         if ((radcomp != null) && !(radcomp instanceof RADVisualContainer)) {
@@ -1528,6 +1547,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                              && (!e.isShiftDown() || e.isAltDown())) // selection with shift only on mouse release
                     {   // no resizing, no doubleclick - select component
                         RADComponent hitMetaComp = selectComponent(e); 
+                        
                         if (hitMetaComp != null && !modifier) // plain single click
                             processMouseClickInLayoutSupport(hitMetaComp, e);
                     }
@@ -1558,7 +1578,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     public void mouseDragged(MouseEvent e) {
         if (formDesigner.getDesignerMode() != FormDesigner.MODE_SELECT)
             return; // dragging makes sense only selection mode
-        
         Point p = e.getPoint();
         if (lastMousePosition != null) {
             lastXPosDiff = p.x - lastMousePosition.x;
@@ -1792,6 +1811,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
     private abstract class ComponentDrag {
         RADVisualComponent[] movingComponents;
+        boolean draggableLayoutComponents;
         RADVisualContainer targetContainer;
         RADVisualContainer fixedTarget;
         Component[] showingComponents;
@@ -1817,7 +1837,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         // ctor for moving and resizing
         ComponentDrag(RADVisualComponent[] components, Point hotspot) {
             this();
-            this.movingComponents = components;
+            setMovingComponents(components);
 
             int count = components.length;
             showingComponents = new Component[count]; // [provisional - just one component can be moved]
@@ -1839,6 +1859,15 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 new Point(hotspot.x - convertPoint.x, hotspot.y - convertPoint.y);
         }
 
+        final void setMovingComponents(RADVisualComponent[] components) {
+            this.movingComponents = components;
+            if (components != null && components.length > 0 && components[0] != null) {
+                draggableLayoutComponents = !components[0].isMenuComponent();
+            } else {
+                draggableLayoutComponents = false;
+            }
+        }
+
         final RADVisualContainer getSourceContainer() {
             return movingComponents != null && formDesigner.getTopDesignComponent() != movingComponents[0] ?
                    movingComponents[0].getParentContainer() : null;
@@ -1847,7 +1876,11 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         final boolean isTopComponent() {
             return movingComponents != null && formDesigner.getTopDesignComponent() == movingComponents[0];
         }
-                
+
+        final boolean isDraggableLayoutComponent() {
+            return draggableLayoutComponents;
+        }
+
         final RADVisualContainer getTargetContainer(Point p, int modifiers) {
             if (fixedTarget != null) {
                 return fixedTarget;
@@ -1940,7 +1973,22 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
             targetContainer = getTargetContainer(p, modifiers);
 
-            if (newDrag && targetContainer != null && targetContainer.getLayoutSupport() == null) {
+            
+            // support for highlights in menu containers
+            // hack: this only checks the first component.
+            if(this.movingComponents != null) {
+                RADVisualComponent moveComp = this.movingComponents[0];
+                // if  have a menu component over a menu container then do a highlight
+                // hack: this only works for new comps, not moving existing comps
+                if(newDrag && formDesigner.getMenuEditLayer().canHighlightContainer(targetContainer,moveComp)) {
+                    formDesigner.getMenuEditLayer().rolloverContainer(targetContainer);
+                } else {
+                    formDesigner.getMenuEditLayer().rolloverContainer(null);
+                }
+            }
+            
+            if (newDrag && isDraggableLayoutComponent()
+                    && targetContainer != null && targetContainer.getLayoutSupport() == null) {
                 p.x -= convertPoint.x;
                 p.y -= convertPoint.y;
                 formDesigner.getLayoutDesigner().move(p,
@@ -1951,7 +1999,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 String[] position = formDesigner.getLayoutDesigner().positionCode();
                 FormEditor.getAssistantModel(getFormModel()).setContext(position[0], position[1]);
             }
-            else if (oldDrag && targetContainer != null && targetContainer.getLayoutSupport() != null) {
+            else if (oldDrag && isDraggableLayoutComponent()
+                     && targetContainer != null && targetContainer.getLayoutSupport() != null) {
                 oldMove(p);
                 for (int i=0; i<movingBounds.length; i++) {
                     movingBounds[i].x = p.x - convertPoint.x - hotSpot.x + originalBounds[i].x - convertPoint.x;
@@ -1986,7 +2035,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                                        movingBounds[i].width + 1,
                                        movingBounds[i].height + 1);
 
-                if (newDrag
+                if (newDrag && isDraggableLayoutComponent()
                     && ((targetContainer != null && targetContainer.getLayoutSupport() == null)
                         || (targetContainer == null && isTopComponent())))
                 {   // new layout support
@@ -2006,8 +2055,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     formDesigner.getLayoutDesigner().paintMoveFeedback(g);
                     g.translate(-convertPoint.x, -convertPoint.y);
                 }
-                else if (oldDrag && ((targetContainer != null && targetContainer.getLayoutSupport() != null)
-                        || (targetContainer == null && isTopComponent()))) {
+                else if (oldDrag && isDraggableLayoutComponent()
+                        && ((targetContainer != null && targetContainer.getLayoutSupport() != null)
+                             || (targetContainer == null && isTopComponent()))) {
                     if (!isTopComponent()) {
                         doLayout(showingComponents[i]);
                         oldPaintFeedback(g, gg, i);
@@ -2085,6 +2135,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
 
         boolean end(Point p, int modifiers) {
+            // clear the rollover just in case it was set
+            formDesigner.getMenuEditLayer().clearRollover();
             return true;
         }
 
@@ -2201,6 +2253,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
 
         boolean end(Point p, int modifiers) {    
+            // clear the rollover just in case it was set
+            formDesigner.getMenuEditLayer().clearRollover();
+            
             RADVisualContainer originalCont = getSourceContainer();
             if (p != null) {
                 if (targetContainer == null || targetContainer.getLayoutSupport() != null) {
@@ -2501,12 +2556,16 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
             if (precreated != null) {
                 if (movingComponents == null) {
-                    movingComponents = new RADVisualComponent[1];
+                    setMovingComponents(new RADVisualComponent[] { precreated });
+                } else { // continuing adding - new instance of the same component
+                    movingComponents[0] = precreated;
                 }
-                movingComponents[0] = precreated;
-                LayoutComponent precreatedLC = getComponentCreator().getPrecreatedLayoutComponent();
-                LayoutComponent[] layoutComponents = new LayoutComponent[] { precreatedLC };
                  
+                LayoutComponent precreatedLC = isDraggableLayoutComponent()
+                        ? getComponentCreator().getPrecreatedLayoutComponent() : null;
+                // (precreating LayoutComponent also adjusts the initial size of
+                // the visual component which is used below)
+
                 showingComponents[0] = (Component) precreated.getBeanInstance();
                 // Force creation of peer - AWT components don't have preferred size otherwise
                 if (!(showingComponents[0] instanceof JComponent)) {
@@ -2536,10 +2595,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 if (hotSpot.x < movingBounds[0].x)
                     hotSpot.x = movingBounds[0].x;
 
-                if (formDesigner.getLayoutDesigner() != null) {
-                    formDesigner.getLayoutDesigner().startAdding(
-                            layoutComponents, movingBounds, hotSpot,
-                            targetContainer != null ? targetContainer.getId() : null);
+                if (precreatedLC != null) {
+                    LayoutComponent[] layoutComponents = new LayoutComponent[] { precreatedLC };
+                    if (formDesigner.getLayoutDesigner() != null) {
+                        formDesigner.getLayoutDesigner().startAdding(
+                                layoutComponents, movingBounds, hotSpot,
+                                targetContainer != null ? targetContainer.getId() : null);
+                    }
                 }
 
                 newDrag = oldDrag = true;
@@ -2548,9 +2610,15 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 if (paletteItem.getComponentClass() != null) {
                     // non-visual component - present it as icon
                     Node node = paletteItem.getNode();
-                    Image icon = (node == null) ?
-                        Utilities.loadImage("org/netbeans/modules/form/resources/form.gif") // NOI18N
-                        : node.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+                    Image icon;
+                    if (node == null) {
+                        icon = paletteItem.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+                        if (icon == null) {
+                            icon = Utilities.loadImage("org/netbeans/modules/form/resources/form.gif"); // NOI18N
+                        }
+                    } else {
+                        icon = node.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+                    }
                     showingComponents[0] = new JLabel(new ImageIcon(icon));
                     Dimension dim = showingComponents[0].getPreferredSize();
                     hotSpot = new Point(dim.width/2, dim.height/2);
@@ -2577,30 +2645,36 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             super.init();
         }
 
+        /** Overrides end(Point,int) in ComponentDrag to support adding new components
+         */
         boolean end(Point p, int modifiers) {
+            // clear the rollover just in case it was set
+            formDesigner.getMenuEditLayer().clearRollover();
+            
             if (p != null) {
                 targetContainer = getTargetContainer(p, modifiers);
 
-                boolean newLayout;
-                boolean oldLayout;
-                if (targetContainer != null && movingComponents != null) {
-                    newLayout = targetContainer.getLayoutSupport() == null;
-                    oldLayout = !newLayout;
-                }
-                else newLayout = oldLayout = false;
-
-                Object constraints;
-                if (oldLayout) {
-                    constraints = !paletteItem.isMenu() && paletteItem.isVisual() ?
-                        getConstraintsAtPoint(targetContainer, p, hotSpot) : null;
-                }
-                else constraints = null;
-
                 if (movingComponents != null) { // there is a precreated visual component
+                    boolean newLayout;
+                    boolean oldLayout;
+                    Object constraints; // for old layout
+                    if (targetContainer != null) {
+                        newLayout = targetContainer.getLayoutSupport() == null;
+                        oldLayout = !newLayout;
+                        constraints = oldLayout && isDraggableLayoutComponent()
+                            ? getConstraintsAtPoint(targetContainer, p, hotSpot) : null;
+                    }
+                    else {
+                        newLayout = oldLayout = false;
+                        constraints = null;
+                    }
                     addedComponent = movingComponents[0];
-                    LayoutComponent layoutComponent = getComponentCreator().getPrecreatedLayoutComponent();
+                    LayoutComponent layoutComponent = isDraggableLayoutComponent()
+                            ? getComponentCreator().getPrecreatedLayoutComponent() : null;
+                    // add the component to FormModel
                     boolean added = getComponentCreator().addPrecreatedComponent(targetContainer, constraints);
-                    if (getLayoutModel() != null) { // Some beans don't have layout
+                    // add the cmponent to LayoutModel
+                    if (layoutComponent != null && getLayoutModel() != null) { // Some beans don't have layout
                         createLayoutUndoableEdit();
                         boolean autoUndo = true;
                         try {
@@ -2627,9 +2701,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                         targetComponent = HandleLayer.this.getMetaComponentAt(p, mode);
                     }
                     addedComponent = getComponentCreator().createComponent(
-                            paletteItem.getComponentClassSource(),
-                            targetComponent,
-                            constraints);
+                            paletteItem.getComponentClassSource(), targetComponent, null);
                     if (addedComponent == null) {
                         repaint();
                     }
@@ -2697,9 +2769,17 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     }
     
     private class NewComponentDropListener implements DropTargetListener {
+        private NewComponentDrop newComponentDrop;
+        private int dropAction;
+        /** Assistant context requested by newComponentDrop. */
+        private String dropContext;
+        /** Additional assistant context requested by newComponentDrop. */
+        private String additionalDropContext;
         
         public void dragEnter(DropTargetDragEvent dtde) {
             try {
+                dropAction = dtde.getDropAction();
+                newComponentDrop = null;
                 Transferable transferable = dtde.getTransferable();
                 PaletteItem item = null;
                 if (dtde.isDataFlavorSupported(PaletteController.ITEM_DATA_FLAVOR)) {
@@ -2708,13 +2788,24 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 } else {
                     ClassSource classSource = CopySupport.getCopiedBeanClassSource(transferable);
                     if (classSource != null) {
-                        item = new PaletteItem(classSource);
+                        Class componentClass = getComponentCreator().prepareClass(classSource);
+                        item = new PaletteItem(classSource, componentClass);
                     } else {
-                        Node node = NodeTransfer.node(transferable, NodeTransfer.DND_COPY);
-                        if(node != null) {
-                            NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
+                        Lookup.Template template = new Lookup.Template(NewComponentDropProvider.class);
+                        Collection<NewComponentDropProvider> providers = Lookup.getDefault().lookup(template).allInstances();
+                        for (NewComponentDropProvider provider : providers) {
+                            newComponentDrop = provider.processTransferable(getFormModel(), transferable);
                             if (newComponentDrop != null) {
-                                item = newComponentDrop.getPaletteItem();
+                                dropContext = null;
+                                AssistantModel aModel = FormEditor.getAssistantModel(getFormModel());
+                                String preContext = aModel.getContext();
+                                item = newComponentDrop.getPaletteItem(dtde);
+                                String postContext = aModel.getContext();
+                                if (!preContext.equals(postContext)) {
+                                    dropContext = postContext;
+                                    additionalDropContext = aModel.getAdditionalContext();
+                                }
+                                break;
                             }
                         }
                     }
@@ -2736,7 +2827,15 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         
         public void dragOver(java.awt.dnd.DropTargetDragEvent dtde) {
             if (draggedComponent != null) {
+                if ((newComponentDrop != null) && (dropAction != dtde.getDropAction())) {
+                    dragExit(dtde);
+                    dragEnter(dtde);
+                    return;
+                }
                 draggedComponent.move(dtde.getLocation(), 0);
+                if (dropContext != null) {
+                    FormEditor.getAssistantModel(getFormModel()).setContext(dropContext, additionalDropContext);
+                }
                 repaint();
             }
         }
@@ -2762,12 +2861,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 }
                 if (newComponentDrag.addedComponent != null) {
                     String id = newComponentDrag.addedComponent.getId();
-                    Node node = NodeTransfer.node(dtde.getTransferable(), NodeTransfer.DND_COPY);
-                    if (node != null) {
-                        NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
-                        if (newComponentDrop != null) {
-                            newComponentDrop.componentAdded(getFormModel(), id);
+                    if (newComponentDrop != null) {
+                        String droppedOverId = null;
+                        if (!(newComponentDrag.addedComponent instanceof RADVisualComponent)) {
+                            RADComponent comp = getMetaComponentAt(dtde.getLocation(), COMP_DEEPEST);
+                            if (comp != null) droppedOverId = comp.getId();
                         }
+                        newComponentDrop.componentAdded(id, droppedOverId);
                     }
                 }
                 formDesigner.toggleSelectionMode();

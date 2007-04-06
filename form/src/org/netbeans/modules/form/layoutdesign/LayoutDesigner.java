@@ -120,8 +120,9 @@ public class LayoutDesigner implements LayoutConstants {
         while (it.hasNext()) {
             LayoutComponent comp = (LayoutComponent) it.next();
             if (comp.isLayoutContainer()) {
-                for (int i=0; i < DIM_COUNT; i++) {
-                    cleanDesignAttrs(comp.getLayoutRoot(i));
+                LayoutInterval[] roots = getActiveLayoutRoots(comp);
+                for (int dim=0; dim < DIM_COUNT; dim++) {
+                    cleanDesignAttrs(roots[dim]);
                 }
             }
         }
@@ -138,13 +139,17 @@ public class LayoutDesigner implements LayoutConstants {
                 // make sure the layout definition reflects the current size
                 if (imposeCurrentContainerSize(comp, null, false)) {
                     updatedContainers.add(comp);
-                    for (int i=0; i < DIM_COUNT; i++) {
-                        LayoutInterval root = comp.getLayoutRoot(i);
-                        if (optimizeStructure) {
-                            optimizeGaps(root, i, true);
-                            destroyRedundantGroups(root);
+                    if (optimizeStructure) {
+                        for (LayoutInterval[] roots : comp.getLayoutRoots()) {
+                            for (int dim=0; dim < DIM_COUNT; dim++) {
+                                optimizeGaps(roots[dim], dim, true);
+                                destroyRedundantGroups(roots[dim]);
+                            }
                         }
-                        updateDesignModifications(root, i);
+                    }
+                    LayoutInterval[] roots = getActiveLayoutRoots(comp);
+                    for (int dim=0; dim < DIM_COUNT; dim++) {
+                        updateDesignModifications(roots[dim], dim);
                     }
                 }
             }
@@ -152,15 +157,15 @@ public class LayoutDesigner implements LayoutConstants {
                 Rectangle bounds = visualMapper.getContainerInterior(comp.getId());
                 if (bounds != null) {
                     comp.setCurrentInterior(bounds);
-                    Iterator it2 = comp.getSubcomponents();
-                    while (it2.hasNext()) {
-                        LayoutComponent subComp = (LayoutComponent) it2.next();
+                    for (LayoutComponent subComp : comp.getSubcomponents()) {
                         bounds = visualMapper.getComponentBounds(subComp.getId());
                         int baseline = visualMapper.getBaselinePosition(subComp.getId(), bounds.width, bounds.height);
                         subComp.setCurrentBounds(bounds, baseline);
                     }
-                    for (int i=0; i < DIM_COUNT; i++) {
-                        updateLayoutStructure(comp.getLayoutRoot(i), i, false);
+                    for (LayoutInterval[] roots : comp.getLayoutRoots()) {
+                        for (int i=0; i < DIM_COUNT; i++) {
+                            updateLayoutStructure(roots[i], i, false);
+                        }
                     }
                 }
             }
@@ -329,6 +334,45 @@ public class LayoutDesigner implements LayoutConstants {
     // -----
     // adding, moving, resizing
 
+    /**
+     * Determines a subset of components that can be visually dragged together.
+     * If the components are in diferrent containers then no dragging is
+     * possible (returns empty list). Otherwise the components that have the
+     * same parent and are under the same layout roots are returned.
+     * Nonexisting or parent-less components are ignored.
+     * @param component Ids of components selected for dragging
+     * @return List of Ids of components that can be dragged together
+     */
+    public List<String> getDraggableComponents(List<String> componentIds) {
+        LayoutComponent container = null;
+        List<String> draggable = null;
+        int commonLayer = -1;
+        for (String compId : componentIds) {
+            LayoutComponent comp = layoutModel.getLayoutComponent(compId);
+            if (comp == null || comp.getParent() == null) {
+                continue;
+            }
+            if (container == null) {
+                container = comp.getParent();
+            } else if (comp.getParent() != container) {
+                return Collections.EMPTY_LIST;
+            }
+
+            int layerIndex = container.getLayoutRootsIndex(comp.getLayoutInterval(HORIZONTAL));
+            assert layerIndex >= 0;
+            if (layerIndex >= commonLayer) {
+                if (commonLayer < 0) {
+                    draggable = new ArrayList<String>(componentIds.size());
+                } else if (layerIndex > commonLayer) {
+                    draggable.clear();
+                }
+                commonLayer = layerIndex;
+                draggable.add(compId);
+            }
+        }
+        return draggable;
+    }
+
     public void startAdding(LayoutComponent[] comps,
                             Rectangle[] bounds,
                             Point hotspot,
@@ -349,8 +393,9 @@ public class LayoutDesigner implements LayoutConstants {
             testCode.add("ld.startAdding(comps, bounds, hotspot, defaultContId);");			    //NOI18N
             testCode.add("}");										    //NOI18N
         }
-        if (defaultContId != null)
-            dragger.setTargetContainer(layoutModel.getLayoutComponent(defaultContId));
+        if (defaultContId != null) {
+            setDragTarget(layoutModel.getLayoutComponent(defaultContId));
+        }
         if (logTestCode()) {
             testCode.add("// < START ADDING"); //NOI18N
 	}
@@ -377,7 +422,7 @@ public class LayoutDesigner implements LayoutConstants {
             testCode.add("}"); //NOI18N
         }
         
-        dragger.setTargetContainer(comps[0].getParent());
+        setDragTarget(comps[0].getParent());
 
         if (logTestCode()) {
             testCode.add("// < START MOVING"); //NOI18N
@@ -420,7 +465,7 @@ public class LayoutDesigner implements LayoutConstants {
             testCode.add("}"); //NOI18N
         }
 
-        dragger.setTargetContainer(inLayout ? comps[0].getParent() : null);
+        setDragTarget(inLayout ? comps[0].getParent() : null);
 
         if (logTestCode()) {
             testCode.add("// < START RESIZING"); //NOI18N
@@ -500,7 +545,7 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         if (!dragger.isResizing() && (!lockDimension || dragger.getTargetContainer() == null)) {
-            dragger.setTargetContainer(layoutModel.getLayoutComponent(containerId));
+            setDragTarget(layoutModel.getLayoutComponent(containerId));
         }
 
         cursorPos[HORIZONTAL] = p.x;
@@ -531,6 +576,41 @@ public class LayoutDesigner implements LayoutConstants {
         }
     }
 
+    private void setDragTarget(LayoutComponent targetContainer) {
+        LayoutComponent prevContainer = dragger.getTargetContainer();
+        LayoutInterval[] roots;
+        if (targetContainer != null) {
+            roots = getActiveLayoutRoots(targetContainer);
+        } else {
+            roots = null;
+        }
+        dragger.setTargetContainer(targetContainer, roots);
+
+        if (prevContainer != targetContainer) {
+            updateDraggingVisibility(prevContainer, false);
+            updateDraggingVisibility(targetContainer, true);
+        }
+    }
+
+    // temporarily hide components from other layers when dragging in a container
+    private void updateDraggingVisibility(LayoutComponent container, boolean draggingIn) {
+        if (container != null) {
+            LayoutComponent[] movingComps = dragger.getMovingComponents();
+            LayoutInterval[] targetRoots = getActiveLayoutRoots(container);
+            for (LayoutComponent comp : container.getSubcomponents()) {
+                for (LayoutComponent m : movingComps) {
+                    if (m == comp) {
+                        comp = null;
+                        break;
+                    }
+                }
+                if (comp != null && container.getLayoutRoots(comp.getLayoutInterval(HORIZONTAL)) != targetRoots) {
+                    visualMapper.setComponentVisibility(comp.getId(), !draggingIn);
+                }
+            }
+        }
+    }
+
     public void endMoving(boolean committed) {
         if (!committed && dragger == null)
             return; // redundant call
@@ -547,114 +627,80 @@ public class LayoutDesigner implements LayoutConstants {
             isMoving = false;
         }
         try {
+            LayoutComponent targetContainer = dragger.getTargetContainer();
+            updateDraggingVisibility(targetContainer, false);
+
             if (committed) {
                 LayoutComponent[] components = dragger.getMovingComponents();
-                LayoutComponent targetContainer = dragger.getTargetContainer();
 
                 if (targetContainer != null) {
-                    boolean newComponent = components[0].getParent() == null;
-                    // Determine intervals that should be added
-                    LayoutInterval[] addingInts = new LayoutInterval[DIM_COUNT];
-                    LayoutRegion origSpace = null;
-                    for (int dim=0; dim < DIM_COUNT; dim++) {
-                        if (components.length > 1) {
-                            if (newComponent) {
-                                // Moving several components from old layout
-                                for (int i=0; i<components.length; i++) {
-                                    layoutModel.addComponent(components[i], targetContainer, -1);
-                                }
-                                addingInts = layoutModel.createIntervalsFromBounds(dragger.getMovingSpace(), components, dragger.getMovingBounds());
-                                break;
-                            } else {
-                                if (origSpace == null) {
-                                    origSpace = new LayoutRegion();
-                                    // Calculate original space
-                                    for (int i=0; i < components.length; i++) {
-                                        origSpace.expand(components[i].getLayoutInterval(0).getCurrentSpace());
+                    boolean newComponents = components[0].getParent() == null;
+                    // determine the interval to add in each dimension
+                    LayoutInterval[] addingInts;
+                    if (components.length > 1) {
+                        if (newComponents) { // adding multiple new components (not in layout)
+                            // (special case - moving multiple components from another layout)
+                            LayoutRegion movingSpace = dragger.getMovingSpace();
+                            int dx = movingSpace.positions[HORIZONTAL][LEADING];
+                            int dy = movingSpace.positions[HORIZONTAL][LEADING];
+                            LayoutRegion[] movingBounds = dragger.getMovingBounds();
+                            Map<LayoutComponent, Rectangle> compToRect = new HashMap<LayoutComponent, Rectangle>();
+                            for (int i=0; i < components.length; i++) {
+                                Rectangle r = movingBounds[i].toRectangle(new Rectangle());
+                                r.x -= dx;
+                                r.y -= dy;
+                                compToRect.put(components[i], r);
+                            }
+                            addingInts = layoutModel.createIntervalsFromBounds(compToRect);
+                        } else { // moving multiple existing components (already in layout, no resizing)
+                            LayoutInterval[] commonParents = new LayoutInterval[DIM_COUNT];
+                            Map<LayoutComponent, LayoutComponent> compMap = new HashMap<LayoutComponent, LayoutComponent>();
+                            LayoutRegion origSpace = new LayoutRegion();
+                            for (LayoutComponent comp : components) {
+                                for (int dim=0; dim < DIM_COUNT; dim++) {
+                                    if (commonParents[dim] == null) {
+                                        commonParents[dim] = comp.getLayoutInterval(dim);
+                                    } else {
+                                        commonParents[dim] = LayoutInterval.getCommonParent(
+                                                commonParents[dim], comp.getLayoutInterval(dim));
                                     }
                                 }
-                                LayoutInterval[] children = new LayoutInterval[components.length];
-                                for (int i=0; i<components.length; i++) {
-                                    children[i] = components[i].getLayoutInterval(dim);
-                                }
-                                LayoutInterval parent = LayoutInterval.getCommonParent(children);
-                                // Restriction of the layout model of the common parent
-                                // in the original layout (this also removes the original intervals)
-                                addingInts[dim] = restrictedCopy(parent, components, origSpace, dim, null);
+                                compMap.put(comp, comp); // moving the same components
+                                origSpace.expand(comp.getLayoutInterval(HORIZONTAL).getCurrentSpace());
                             }
-                        } else {
-                            addingInts[dim] = components[0].getLayoutInterval(dim);
-                            if (newComponent) { // Ensure correct size when the component comes from old layout
-                                Dimension preferred = visualMapper.getComponentPreferredSize(components[0].getId());
-                                int size = dragger.getMovingBounds()[0].size(dim);
-                                if (size != ((dim == HORIZONTAL) ? preferred.width : preferred.height)) {
-                                    LayoutInterval intr = addingInts[dim];
-                                    layoutModel.setIntervalSize(intr, intr.getMinimumSize(), size, intr.getMaximumSize());
-                                }
+                            addingInts = new LayoutInterval[DIM_COUNT];
+                            for (int dim=0; dim < DIM_COUNT; dim++) {
+                                addingInts[dim] = restrictedCopy(commonParents[dim], compMap, origSpace, dim, null);
                             }
-                        }
-                    }
-
-                    LayoutFeeder layoutFeeder = new LayoutFeeder(operations, dragger, addingInts);
-
-                    // Remove components from original location
-                    for (int i=0; i<components.length; i++) {
-                        if (components[i].getParent() != null) {
-                            LayoutComponent comp = components[i];
-                            if (components[i].getParent() != null) {
-                                if (dragger.isResizing(HORIZONTAL)) {
-                                    layoutModel.removeComponentFromLinkSizedGroup(components[i], HORIZONTAL);
-                                }
-                                if (dragger.isResizing(VERTICAL)) {
-                                    layoutModel.removeComponentFromLinkSizedGroup(components[i], VERTICAL);
-                                }
-                            }
-                            if (components.length == 1) { // remove also the intervals
-                                layoutModel.removeComponentAndIntervals(comp, false);
-                            }
-                            else { // Don't remove layout intervals of components if
-                                // moving multiple components - the intervals are placed
-                                // in the adding group already (by restrictedCopy)
+                            // component intervals were moved to the new enclosing group,
+                            // so also remove the components from their container
+                            for (LayoutComponent comp : components) {
                                 layoutModel.removeComponent(comp, false);
                             }
                         }
-                    }
-
-                    modelListener.deactivate(); // from now do not react on model changes
-
-                    // Add components to the target container
-                    for (int i=0; i<components.length; i++) {
-                        layoutModel.addComponent(components[i], targetContainer, -1);
-                    }
-
-                    // add the intervals
-                    layoutFeeder.add();
-                    if (layoutFeeder.imposeSize)
-                        imposeSize = true;
-                    if (layoutFeeder.optimizeStructure)
-                        optimizeStructure = true;
-                    // if an overlap occurred we can't calculate the correct sizes
-                    // of resizing intervals, thus need to do real layout first (to
-                    // get the right picture), then update the actual sizes, and then
-                    // re-layout with design specific attributes (container resizing gap)
-
-                    for (int dim=0; dim < DIM_COUNT; dim++) {
-                        destroyGroupIfRedundant(addingInts[dim], addingInts[dim].getParent());
-                    }
-
-                    if (components[0].isLayoutContainer() && (dragger.isResizing() || newComponent)) {
-                        // container size needs to be defined from inside in advance
-                        imposeCurrentContainerSize(components[0], dragger.getSizes(), true);
-                    }
-                    else if (dragger.isResizing() && !components[0].isLayoutContainer()) {
-                        // component might be resized to default size
-                        for (int i=0; i < DIM_COUNT; i++) {
-                            if (dragger.snappedToDefaultSize(i))
-                               operations.resizeInterval(components[0].getLayoutInterval(i), NOT_EXPLICITLY_DEFINED);
+                    } else { // one component (adding/moving/resizing)
+                        addingInts = new LayoutInterval[DIM_COUNT];
+                        LayoutComponent comp = components[0];
+                        for (int dim=0; dim < DIM_COUNT; dim++) {
+                            addingInts[dim] = comp.getLayoutInterval(dim);
                         }
                     }
 
-                    updateDesignModifications(targetContainer);
+                    if (newComponents) { // ensure the interval size matches the real component size
+                        LayoutRegion[] movingBounds = dragger.getMovingBounds();
+                        for (int i=0; i < components.length; i++) {
+                            LayoutComponent comp = components[i];
+                            Dimension preferred = visualMapper.getComponentPreferredSize(comp.getId());
+                            for (int dim=0; dim < DIM_COUNT; dim++) {
+                                int size = movingBounds[i].size(dim);
+                                if (preferred == null || size != ((dim == HORIZONTAL) ? preferred.width : preferred.height)) {
+                                    comp.getLayoutInterval(dim).setPreferredSize(size);
+                                }
+                            }
+                        }
+                    }
+
+                    addComponents(components, targetContainer, addingInts, newComponents);
                 }
                 else { // resizing root container
                     assert dragger.isResizing();
@@ -676,11 +722,120 @@ public class LayoutDesigner implements LayoutConstants {
                 visualStateUpToDate = false;
             }
         } finally {
-            modelListener.activate();
             dragger = null;
             if (logTestCode()) {
                 testCode.add("ld.endMoving(" + committed + ");"); //NOI18N
                 testCode.add("// < END MOVING"); //NOI18N
+            }
+        }
+    }
+
+    private void addComponents(LayoutComponent[] components, LayoutComponent targetContainer, LayoutInterval[] addingInts, boolean freshComponents) {
+        try {
+            LayoutFeeder layoutFeeder = new LayoutFeeder(operations, dragger, addingInts);
+
+            // remove the components from original location if still there
+            // (in case of resizing the feeder needed to know the original positions)
+            for (LayoutComponent comp : components) {
+                if (comp.getParent() != null) {
+                    if (dragger.isResizing(HORIZONTAL)) {
+                        layoutModel.removeComponentFromLinkSizedGroup(comp, HORIZONTAL);
+                    }
+                    if (dragger.isResizing(VERTICAL)) {
+                        layoutModel.removeComponentFromLinkSizedGroup(comp, VERTICAL);
+                    }
+                    layoutModel.removeComponentAndIntervals(comp, false);
+                }
+            }
+
+            modelListener.deactivate(); // do not react on model changes during adding
+
+            // add the components to the model (to the target container)
+            for (LayoutComponent comp : components) {
+                layoutModel.addComponent(comp, targetContainer, -1);
+            }
+
+            // add the components' intervals
+            layoutFeeder.add();
+            if (layoutFeeder.imposeSize) {
+                imposeSize = true;
+            }
+            if (layoutFeeder.optimizeStructure) {
+                optimizeStructure = true;
+            } // if an overlap occurred we can't calculate the correct sizes
+              // of resizing intervals, thus need to do real layout first (to
+              // get the right picture), then update the actual sizes, and then
+              // re-layout with design specific attributes (container resizing gap)
+
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                destroyGroupIfRedundant(addingInts[dim], addingInts[dim].getParent());
+            }
+
+            for (LayoutComponent comp : components) {
+                if ((freshComponents || dragger.isResizing()) && comp.isLayoutContainer()) {
+                    // container size needs to be defined from inside before the layout is built
+                    imposeCurrentContainerSize(components[0], dragger.getSizes(), true);
+                } else if (dragger.isResizing()) {
+                    // component might be resized to default size
+                    for (int i=0; i < DIM_COUNT; i++) {
+                        if (dragger.snappedToDefaultSize(i))
+                           operations.resizeInterval(comp.getLayoutInterval(i), NOT_EXPLICITLY_DEFINED);
+                    }
+                }
+            }
+
+            updateDesignModifications(targetContainer);
+        } finally {
+            if (!modelListener.isActive()) {
+                modelListener.activate();
+            }
+        }
+    }
+
+    private void addUnspecified(LayoutComponent[] components, LayoutComponent targetContainer, LayoutInterval[] addingInts) {
+        // add the components to the model (to the target container)
+        for (LayoutComponent comp : components) {
+            layoutModel.addComponent(comp, targetContainer, -1);
+        }
+        LayoutInterval[] targetRoots = layoutModel.addNewLayoutRoots(targetContainer);
+        for (int dim=0; dim < DIM_COUNT; dim++) {
+            LayoutInterval interval = addingInts[dim];
+            LayoutInterval seq = interval.isSequential() ? interval : new LayoutInterval(SEQUENTIAL);
+            LayoutInterval gap = new LayoutInterval(SINGLE);
+            boolean resizing = LayoutInterval.wantResize(interval);
+            if (!resizing) {
+                gap.setSizes(0, 0, Short.MAX_VALUE);
+            }
+            seq.add(gap, 0);
+            if (interval != seq) {
+                seq.add(interval, -1);
+                interval.setAlignment(DEFAULT);
+            }
+            gap = new LayoutInterval(SINGLE);
+            if (!resizing) {
+                gap.setSizes(0, 0, Short.MAX_VALUE);
+            }
+            seq.add(gap, -1);
+            targetRoots[dim].add(seq, -1);
+        }
+    }
+
+    private void addToEmpty(LayoutComponent[] components, LayoutComponent targetContainer, LayoutInterval[] addingInts) {
+        assert targetContainer.getSubComponentCount() == 0;
+        for (LayoutComponent comp : components) {
+            layoutModel.addComponent(comp, targetContainer, -1);
+        }
+        LayoutInterval[] roots = getActiveLayoutRoots(targetContainer);
+        for (int dim=0; dim < DIM_COUNT; dim++) {
+            LayoutInterval root = roots[dim];
+            assert root.isParallel();
+            LayoutInterval interval = addingInts[dim];
+            if (!interval.isParallel()) {
+                layoutModel.addInterval(interval, root, -1);
+            } else {
+                while (interval.getSubIntervalCount() > 0) {
+                    layoutModel.addInterval(interval.remove(0), root, -1);
+                }
             }
         }
     }
@@ -690,27 +845,21 @@ public class LayoutDesigner implements LayoutConstants {
      * and region (<code>space</code>).
      *
      * @param interval interval whose restricted copy should be created.
-     * @param components components that determine the restriction.
+     * @param componentMap components that determine the restriction.
      * @param space region (current space) that determine the restriction.
      * @param dimension dimension that restricted layout interval belongs to.
      * @param temp internal helper parameter for recursive invocation.
      * Pass <code>null</code> when you invoke this method.
      */
     private LayoutInterval restrictedCopy(LayoutInterval interval,
-        LayoutComponent[] components, LayoutRegion space, int dimension, List temp) {
+        Map<LayoutComponent, LayoutComponent> componentMap, LayoutRegion space, int dimension, List temp) {
         boolean processTemp = (temp == null);
         if (temp == null) {
             temp = new LinkedList();
         }
         if (interval.isGroup()) {
             boolean parallel = interval.isParallel();
-            LayoutInterval copy = new LayoutInterval(parallel ? PARALLEL : SEQUENTIAL);
-            copy.setAlignment(interval.getAlignment());
-            copy.setAttributes(interval.getAttributes());
-            copy.setSizes(interval.getMinimumSize(), interval.getPreferredSize(), interval.getMaximumSize());
-            if (parallel) {                
-                copy.setGroupAlignment(interval.getGroupAlignment());
-            }
+            LayoutInterval copy = LayoutInterval.cloneInterval(interval, null);
             Iterator iter = interval.getSubIntervals();
             int compCount = 0; // Number of components already copied to the group
             boolean includeGap = false; // Helper variables that allow us to insert gaps
@@ -718,7 +867,7 @@ public class LayoutDesigner implements LayoutConstants {
             int gapStart = interval.getCurrentSpace().positions[dimension][LEADING];
             while (iter.hasNext()) {
                 LayoutInterval sub = (LayoutInterval)iter.next();
-                LayoutInterval subCopy = restrictedCopy(sub, components, space, dimension, temp);
+                LayoutInterval subCopy = restrictedCopy(sub, componentMap, space, dimension, temp);
                 if (subCopy != null) {
                     if (!sub.isEmptySpace()) {
                         if (includeGap) {
@@ -763,7 +912,9 @@ public class LayoutDesigner implements LayoutConstants {
                         LayoutInterval parent = (LayoutInterval)iter.next();
                         int alignment = ((Integer)iter.next()).intValue();
                         int index = ((Integer)iter.next()).intValue();
-                        layoutModel.removeInterval(comp);
+                        if (comp.getParent() != null) { // component reused - not copied, just moved
+                            layoutModel.removeInterval(comp);
+                        }
                         layoutModel.setIntervalAlignment(comp, alignment);
                         layoutModel.addInterval(comp, parent, index);
                     }
@@ -808,11 +959,15 @@ public class LayoutDesigner implements LayoutConstants {
                 return null;
             }
         } else if (interval.isComponent()) {
-            LayoutComponent comp = interval.getComponent();
-            if (Arrays.asList(components).contains(comp)) {
-                return interval; // Don't copy layout component's intervals
+            LayoutComponent comp = componentMap.get(interval.getComponent());
+            if (comp != null) {
+                if (comp != interval.getComponent()) { // there is a copied component available
+                    interval = LayoutInterval.cloneInterval(interval, comp.getLayoutInterval(dimension));
+                } // otherwise the component will be moved from its original location
+                return interval;
+            } else { // skip this component
+                return null;
             }
-            return null;
         } else {
             assert interval.isEmptySpace();
             int[] bounds = emptySpaceBounds(interval, dimension);
@@ -1252,6 +1407,329 @@ public class LayoutDesigner implements LayoutConstants {
     }
 
     // -----
+    // copying
+
+    /**
+     * Copy components with layout specified by sourceToTargetId map to
+     * the given target container. Assuming all components come from one
+     * container and one layer (layout roots pair), i.e. forming one piece of
+     * layout.
+     * If copying all components of one container to an empty container then
+     * exact 1:1 copy is created, otherwise the layout copy is placed into a
+     * separate layer not to interact with the existing layout.
+     * If copying within the same container, the copied components are placed
+     * slightly shifted from the original ones. Otherwise placed in the center.
+     * This method requires Ids for the copied components provided
+     * (LayoutComponent instances are cretated automatically).
+     * @param sourceModel the source LayoutModel
+     * @param sourceToTargetId components mapping between the original and the copied
+     *        components' Ids; same Ids can be used - then the components are
+     *        moved
+     * @param targetContainerId the Id of the target container
+     */
+    public void copyLayout(LayoutModel sourceModel, Map<String, String> sourceToTargetId, String targetContainerId) {
+        if (sourceToTargetId.size() == 0) {
+            return;
+        }
+        if (sourceModel == null) {
+            sourceModel = layoutModel;
+        }
+
+        Map.Entry<String, String> firstEntry = sourceToTargetId.entrySet().iterator().next();
+        LayoutComponent sourceContainer = sourceModel.getLayoutComponent(firstEntry.getKey()).getParent();
+        LayoutComponent targetContainer = layoutModel.getLayoutComponent(targetContainerId);
+        if (sourceContainer != targetContainer
+                && sourceContainer.getSubComponentCount() == sourceToTargetId.size()
+                && (targetContainer == null || targetContainer.getSubComponentCount() == 0)) {
+            // copying/moving entire content of a container into an empty target container
+            if (sourceModel != layoutModel || !firstEntry.getKey().equals(firstEntry.getValue())) {
+                layoutModel.copyContainerLayout(sourceContainer, sourceToTargetId, targetContainer);
+            } else { // same source and target component - don't copy, just move
+                layoutModel.moveContainerLayout(sourceContainer, targetContainer);
+            }
+        } else { // copying part of the layout
+            // collect the components, create new if needed, compute bounds, ...
+            Map<LayoutComponent, LayoutComponent> sourceToTargetComp
+                        = new HashMap<LayoutComponent, LayoutComponent>();
+            LayoutComponent[] sourceComponents = new LayoutComponent[sourceToTargetId.size()];
+            LayoutComponent[] targetComponents = new LayoutComponent[sourceToTargetId.size()];
+            Rectangle[] bounds = new Rectangle[sourceToTargetId.size()];
+            LayoutRegion overallSpace = new LayoutRegion();
+            LayoutInterval[] commonParents = new LayoutInterval[DIM_COUNT];
+            int i = 0;
+            for (Map.Entry<String, String> entry : sourceToTargetId.entrySet()) {
+                String sourceId = entry.getKey();
+                LayoutComponent sourceLC = sourceModel.getLayoutComponent(sourceId);
+                String targetId = entry.getValue();
+                LayoutComponent targetLC = layoutModel.getLayoutComponent(targetId);
+                if (targetLC == null) {
+                    targetLC = new LayoutComponent(targetId, sourceLC.isLayoutContainer());
+                } else if (targetLC.getParent() == targetContainer) {
+                    throw new IllegalArgumentException("The component is already placed in the target layout container"); // NOI18N
+                }
+                sourceToTargetComp.put(sourceLC, targetLC);
+                targetComponents[i] = targetLC;
+
+                LayoutRegion space = sourceLC.getLayoutInterval(0).getCurrentSpace();
+                overallSpace.expand(space);
+                bounds[i] = space.toRectangle(new Rectangle());
+                sourceComponents[i] = sourceLC;
+                i++;
+
+                for (int dim=0; dim < DIM_COUNT; dim++) {
+                    if (commonParents[dim] == null) {
+                        commonParents[dim] = sourceLC.getLayoutInterval(dim);
+                    } else {
+                        commonParents[dim] = LayoutInterval.getCommonParent(
+                                commonParents[dim], sourceLC.getLayoutInterval(dim));
+                    }
+                }
+            }
+
+            // copy the intervals
+            LayoutInterval[] addingInts = new LayoutInterval[DIM_COUNT];
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                addingInts[dim] = restrictedCopy(commonParents[dim], sourceToTargetComp, overallSpace, dim, null);
+            }
+
+            // place the copied intervals
+            int[] shift = getCopyShift(sourceComponents, targetContainer, overallSpace, sourceContainer == targetContainer);
+            if (shift != null) {
+                prepareDragger(targetComponents, bounds, new Point(0, 0), LayoutDragger.ALL_EDGES);
+                dragger.setTargetContainer(targetContainer, getTargetRootsForCopy(targetContainer));
+                dragger.move(shift, false, false);
+                addComponents(targetComponents, targetContainer, addingInts, false);
+                dragger = null;
+            } else {
+                addUnspecified(targetComponents, targetContainer, addingInts);
+            }
+        }
+        visualStateUpToDate = false;
+    }
+
+    /**
+     * Copy components without layout to the given target container. The layout
+     * is determined from the visual bounds of the components. Can be used for
+     * copying external components (from different layout) to a container, or
+     * for converting container's layout to this layout model. New
+     * LayoutComponent instances are created as needed, added all to the
+     * specified target container (centered, in separate layer of layout roots).
+     * @param idToBounds mapping component Ids to the visual bounds
+     * @param targetContainerId the Id of the target container
+     * @param relative if true then the position of the entire formation
+     *        is set to 0, 0 before the conversion starts
+     */
+    public void copyLayoutFromOutside(Map<String, Rectangle> idToBounds, String targetContainerId, boolean relative) {
+        LayoutComponent targetContainer = layoutModel.getLayoutComponent(targetContainerId);
+        if (targetContainer.getSubComponentCount() > 0) {
+            relative = true;
+        }
+        Map<LayoutComponent, Rectangle> compToBounds = new HashMap<LayoutComponent, Rectangle>();
+        LayoutComponent[] components = new LayoutComponent[idToBounds.size()];
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int i = 0;
+        for (Map.Entry<String, Rectangle> entry : idToBounds.entrySet()) {
+            String targetId = entry.getKey();
+            LayoutComponent targetLC = layoutModel.getLayoutComponent(targetId);
+            if (targetLC == null) {
+                targetLC = new LayoutComponent(targetId, false);
+            } else if (targetLC.getParent() != null) {
+                throw new IllegalArgumentException("Target component already exists and is placed in the layout"); // NOI18N
+            }
+            Rectangle r = new Rectangle(entry.getValue());
+            compToBounds.put(targetLC, r);
+            components[i] = targetLC;
+            LayoutRegion compSpace = new LayoutRegion(r, LayoutRegion.UNKNOWN);
+            Dimension preferred = visualMapper.getComponentPreferredSize(targetId);
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                int size = compSpace.size(dim);
+                if (preferred == null || size != ((dim == HORIZONTAL) ? preferred.width : preferred.height)) {
+                    targetLC.getLayoutInterval(dim).setPreferredSize(compSpace.size(dim));
+                }
+            }
+            if (relative) {
+                minX = Math.min(minX, compSpace.positions[HORIZONTAL][LEADING]);
+                minY = Math.min(minY, compSpace.positions[VERTICAL][LEADING]);
+            }
+            i++;
+        }
+        if (relative) {
+            // need the overall bounds enclosure based on 0, 0
+            for (Rectangle r : compToBounds.values()) {
+                r.x -= minX;
+                r.y -= minY;
+            }
+        }
+        LayoutInterval[] addingInts = layoutModel.createIntervalsFromBounds(compToBounds);
+        if (relative) {
+            addUnspecified(components, targetContainer, addingInts);
+        } else {
+            addToEmpty(components, targetContainer, addingInts);
+        }
+        visualStateUpToDate = false;
+    }
+
+    /**
+     * Add a single new component (targetId) to given target container. No layout
+     * information is provided, so the component is placed on a default location
+     * in the layout. This means centered within the container, in a separate
+     * layer of layout roots (not to interact with the rest of the layout).
+     * The size of the component can be determined either by a "source"
+     * component (typically if adding a copy of another component), or by
+     * provided Dimension object (compSize).
+     * @param targetId Id of the added component; may already be in the model,
+     *        but not in a container; created automatically if needed
+     * @param sourceId Id of the source component - optional - if provided, the
+     *        size definition of this component is copied to the added component
+     * @param compSize the size of the component - used if the source component
+     *        is not provided to determine the size from; can be null
+     * @param targetContainerId the Id of the target container (must exist in the model)
+     */
+    public void addUnspecifiedComponent(String targetId,
+                                        String sourceId, Dimension compSize,
+                                        String targetContainerId) {
+        LayoutComponent targetContainer = layoutModel.getLayoutComponent(targetContainerId);
+        LayoutComponent targetLC = layoutModel.getLayoutComponent(targetId);
+        if (targetLC == null) {
+            targetLC = new LayoutComponent(targetId, false);
+        } else if (targetLC.getParent() != null) {
+            throw new IllegalArgumentException("Target component already exists and is placed in the layout"); // NOI18N
+        }
+        LayoutComponent sourceLC = layoutModel.getLayoutComponent(sourceId);
+        LayoutInterval[] addingInts = new LayoutInterval[DIM_COUNT];
+        if (sourceLC != null) {
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                LayoutInterval li = sourceLC.getLayoutInterval(dim);
+                addingInts[dim] = LayoutInterval.cloneInterval(li, targetLC.getLayoutInterval(dim));
+            }
+        } else {
+            Dimension preferred = compSize != null
+                    ? visualMapper.getComponentPreferredSize(targetId) : null;
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                LayoutInterval li = targetLC.getLayoutInterval(dim);
+                addingInts[dim] = li;
+                if (preferred != null) {
+                    int size = (dim == HORIZONTAL) ? compSize.width : compSize.height;
+                    int pref = (dim == HORIZONTAL) ? preferred.width : preferred.height;
+                    if (size != pref) {
+                        li.setPreferredSize(size);
+                    }
+                }
+            }
+        }
+        addUnspecified(new LayoutComponent[] { targetLC }, targetContainer, /*getTargetRootsForCopy(targetContainer),*/ addingInts);
+        visualStateUpToDate = false;
+    }
+
+    /**
+     * Add a new component to the target layout. No layout information is
+     * provided, so the component is added to a default location. (This means
+     * centered within the container, in a separate layer of layout roots - not
+     * to interact with the rest of the layout.)
+     * @param component the component to be added; may already exist in the model,
+     *        but not placed in a container
+     * @param targetContainerId Id of the target container; can be null
+     */
+    public void addUnspecifiedComponent(LayoutComponent component, String targetContainerId) {
+        if (component.getParent() != null) {
+            throw new IllegalArgumentException("The component already exists and is placed in the layout"); // NOI18N
+        }
+        LayoutComponent targetContainer = layoutModel.getLayoutComponent(targetContainerId);
+        if (targetContainer == null) {
+            layoutModel.addRootComponent(component);
+        } else {
+            LayoutInterval[] addingInts = new LayoutInterval[DIM_COUNT];
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                addingInts[dim] = component.getLayoutInterval(dim);
+            }
+            addUnspecified(new LayoutComponent[] { component }, targetContainer, addingInts);
+            visualStateUpToDate = false;
+        }
+    }
+
+    private LayoutInterval[] getTargetRootsForCopy(LayoutComponent targetContainer) {
+        LayoutInterval[] roots = layoutModel.addNewLayoutRoots(targetContainer);
+        LayoutRegion space = getContainerSpace(targetContainer);
+        for (int i=0; i < DIM_COUNT; i++) {
+            roots[i].setCurrentSpace(space);
+        }
+        return roots;
+    }
+
+    private static int[] getCopyShift(LayoutComponent[] sourceComponents, LayoutComponent targetContainer, LayoutRegion compSpace, boolean relative) {
+        LayoutRegion contSpace = getContainerSpace(targetContainer);
+        if (!compSpace.isSet() || !contSpace.isSet()) {
+            return null;
+        }
+        int[] move = new int[DIM_COUNT];
+        if (relative) {
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                move[dim] = suggestCopyShift(sourceComponents, dim);
+            }
+            if (move[HORIZONTAL] == 0 && move[VERTICAL] == 0) {
+                move[HORIZONTAL] = move[VERTICAL] = 10;
+            }
+        } else {
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                move[dim] = (contSpace.size(dim) - compSpace.size(dim))/2
+                            - compSpace.positions[dim][LEADING]
+                            + contSpace.positions[dim][LEADING];
+            }            
+
+        }
+        return move;
+    }
+
+    private static int suggestCopyShift(LayoutComponent[] sourceComponents, int dimension) {
+        if (!isAnyComponentSnappedToRoot(sourceComponents, dimension, TRAILING)) {
+            return 10;
+        } else if (!isAnyComponentSnappedToRoot(sourceComponents, dimension, LEADING)) {
+            return -10;
+        } else {
+            return 0; // snapped to root border on both sides
+        }
+    }
+
+    private static boolean isAnyComponentSnappedToRoot(LayoutComponent[] components, int dimension, int alignment) {
+        LayoutInterval root = null;
+        for (LayoutComponent comp : components) {
+            LayoutInterval compInt = comp.getLayoutInterval(dimension);
+            if (root == null) {
+                root = LayoutInterval.getRoot(compInt);
+            }
+            if (LayoutInterval.isPlacedAtBorder(compInt, root, dimension, alignment)
+                    || isSnappedNextToInParent(compInt, root, dimension, alignment)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // [move this to LayoutInterval?]
+    private static boolean isSnappedNextToInParent(LayoutInterval interval, LayoutInterval parent, int dimension, int alignment) {
+        LayoutInterval gap = LayoutInterval.getNeighbor(interval, alignment, false, true, false);
+        if (gap != null && LayoutInterval.isFixedDefaultPadding(gap) && parent.isParentOf(gap)) {
+            LayoutInterval back = LayoutInterval.getDirectNeighbor(gap, alignment^1, true);
+            if ((back == interval || LayoutInterval.isPlacedAtBorder(interval, back, dimension, alignment))
+                    && LayoutInterval.getNeighbor(gap, alignment, true, true, false) == null
+                    && LayoutInterval.isPlacedAtBorder(gap.getParent(), parent, dimension, alignment)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static LayoutRegion getContainerSpace(LayoutComponent container) {
+        return container.getDefaultLayoutRoot(HORIZONTAL).getCurrentSpace();
+    }
+
+    private LayoutInterval[] getActiveLayoutRoots(LayoutComponent container) {
+        return container.getLayoutRoots().get(0);
+        // [in future we may keep the default "layer" for each container stored somewhere]
+    }
+
+    // -----
     // LayoutModel.Listener implementation & related
 
     class Listener implements LayoutModel.Listener {
@@ -1276,11 +1754,12 @@ public class LayoutDesigner implements LayoutConstants {
         boolean isActive() {
             return active;
         }
-    };
+    }
 
-    private void layoutChanged(LayoutEvent ev) {
-        if (ev.getType() == LayoutEvent.INTERVAL_REMOVED) {
+    private void layoutChanged(LayoutEvent e) {
+        if (e.getType() == LayoutEvent.INTERVAL_REMOVED) {
             // component interval was removed - need to clear neighbor gaps etc.
+            LayoutEvent.Interval ev = (LayoutEvent.Interval) e;
             LayoutInterval interval = ev.getInterval();
             LayoutComponent comp = interval.getComponent();
             if (comp != null) {
@@ -1292,16 +1771,18 @@ public class LayoutDesigner implements LayoutConstants {
                     }
                 }
                 assert dim > -1;
+                LayoutInterval root = LayoutInterval.getRoot(ev.getParentInterval());
                 intervalRemoved(ev.getParentInterval(),
                                 ev.getIndex(),
                                 true,
-                                LayoutInterval.wantResize(ev.getInterval()),
+                                LayoutInterval.wantResize(interval),
                                 dim);
-                if (comp.getParent() != null) {
-                    updateDesignModifications(comp.getParent().getLayoutRoot(dim), dim);
-                    // [maybe set imposeGaps or optimizeStructure to true if can't
-                    //  ensure that removing handles gaps properly]
-                    visualStateUpToDate = false;
+                if (comp.getParent() != null && root.getSubIntervalCount() == 0) {
+                    if (root == getActiveLayoutRoots(comp.getParent())[dim]) {
+                        propEmptyContainer(root, dim);
+                    } else {
+                        layoutModel.removeLayoutRoots(comp.getParent(), root);
+                    }
                 }
             }
         }
@@ -1905,9 +2386,10 @@ public class LayoutDesigner implements LayoutConstants {
                 continue;
             
             boolean updated = false;
-            for (int dim=0; dim<DIM_COUNT; dim++) {
-                LayoutInterval interval = comp.getLayoutRoot(dim);
-                updated = updated || destroyRedundantGroups(interval);
+            for (LayoutInterval[] roots : comp.getLayoutRoots()) {
+                for (int dim=0; dim<DIM_COUNT; dim++) {
+                    updated = destroyRedundantGroups(roots[dim]) || updated;
+                }
             }
             if (updated) {
                 updatedContainers.add(comp);
@@ -2316,13 +2798,15 @@ public class LayoutDesigner implements LayoutConstants {
     private void setDefaultSize(LayoutComponent component) {
         imposeSize = true;
         if (component.isLayoutContainer()) {
-            for (Iterator it=component.getSubcomponents(); it.hasNext(); ) {
-                LayoutComponent comp = (LayoutComponent) it.next();
+            for (LayoutComponent comp : component.getSubcomponents()) {
                 if (comp.isLayoutContainer())
                     setDefaultSize(comp);
             }
-            setDefaultSizeInContainer(component.getLayoutRoot(HORIZONTAL));
-            setDefaultSizeInContainer(component.getLayoutRoot(VERTICAL));
+            for (LayoutInterval[] roots : component.getLayoutRoots()) {
+                for (int dim=0; dim < DIM_COUNT; dim++) {
+                    setDefaultSizeInContainer(roots[dim]);
+                }
+            }
             updateDesignModifications(component);
         }
         else {
@@ -2346,14 +2830,18 @@ public class LayoutDesigner implements LayoutConstants {
 
     private void updateDesignModifications(LayoutComponent container) {
         if (imposeSize || optimizeStructure) {
-            // additional update (after layout) is going to happen - so now just
-            // clean the design attrs, container resizing gap will be found later
-            cleanDesignAttrs(container.getLayoutRoot(HORIZONTAL));
-            cleanDesignAttrs(container.getLayoutRoot(VERTICAL));
+            // additional update is going to happen after building the layout, so now
+            // just clean the design attrs, container resizing gap will be found later
+            LayoutInterval[] roots = getActiveLayoutRoots(container);
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                cleanDesignAttrs(roots[dim]);
+            }
         }
         else {
-            updateDesignModifications(container.getLayoutRoot(HORIZONTAL), HORIZONTAL);
-            updateDesignModifications(container.getLayoutRoot(VERTICAL), VERTICAL);
+            LayoutInterval[] roots = getActiveLayoutRoots(container);
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                updateDesignModifications(roots[dim], dim);
+            }
         }
     }
 
@@ -2533,8 +3021,7 @@ public class LayoutDesigner implements LayoutConstants {
             component.setCurrentBounds(bounds,
                 visualMapper.getBaselinePosition(component.getId(), bounds.width, bounds.height));
         }
-        for (Iterator it=component.getSubcomponents(); it.hasNext(); ) {
-            LayoutComponent subComp = (LayoutComponent) it.next();
+        for (LayoutComponent subComp : component.getSubcomponents()) {
             Rectangle bounds = visualMapper.getComponentBounds(subComp.getId());
             subComp.setCurrentBounds(bounds,
                                      visualMapper.getBaselinePosition(subComp.getId(), bounds.width, bounds.height));
@@ -2549,7 +3036,7 @@ public class LayoutDesigner implements LayoutConstants {
         for (int i=0; i < DIM_COUNT; i++) {
             LayoutInterval outer = component.getLayoutInterval(i);
             int currentSize = outer.getCurrentSpace().size(i);
-            LayoutInterval root = component.getLayoutRoot(i);
+            LayoutInterval root = component.getDefaultLayoutRoot(i);
             if (root.getSubIntervalCount() == 0) { // empty root group - add a filling gap
                 propEmptyContainer(root, i);
             }
@@ -2763,9 +3250,9 @@ public class LayoutDesigner implements LayoutConstants {
                 if (superParent.getParent() != null) {
                     intervalRemoved(superParent, idx, false, wasResizing, dimension);
                 }
-                else if (superParent.getSubIntervalCount() == 0) { // empty root group - add a filling gap
-                    propEmptyContainer(superParent, dimension);
-                }
+//                else if (superParent.getSubIntervalCount() == 0) { // empty root group - add a filling gap
+//                    propEmptyContainer(superParent, dimension);
+//                }
             }
             else { // the sequence remains
                 boolean restResizing = LayoutInterval.contentWantResize(parent);
@@ -2862,7 +3349,7 @@ public class LayoutDesigner implements LayoutConstants {
             }
         }
     }
-    
+
     private void eliminateConsecutiveGaps(LayoutInterval group, int index, int dimension) {
         assert group.isSequential();
         if (index > 0)

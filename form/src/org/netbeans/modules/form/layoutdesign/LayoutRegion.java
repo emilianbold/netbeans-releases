@@ -58,6 +58,11 @@ class LayoutRegion implements LayoutConstants {
         set(reg);
     }
 
+    LayoutRegion(Rectangle bounds, int baselinePos) {
+        this();
+        set(bounds, baselinePos);
+    }
+
     boolean isSet() {
         return isSet(HORIZONTAL) && isSet(VERTICAL);
     }

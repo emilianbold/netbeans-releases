@@ -152,9 +152,18 @@ public class TestAction extends CallableSystemAction implements Runnable {
                                      == RADVisualFormContainer.GEN_BOUNDS
                 && formContainer.getGenerateSize())
             {
-                frame.setSize(formContainer.getFormSize());
+                Dimension size = formContainer.getFormSize();
+                if (frame.isUndecorated()) { // will be shown as decorated anyway
+                    Dimension diffSize = formContainer.getDecoratedWindowContentDimensionDiff();
+                    size = new Dimension(size.width + diffSize.width, size.height + diffSize.height);
+                }
+                frame.setSize(size);
             }
-            else shouldPack = true;
+            else {
+                shouldPack = true;
+            }
+            frame.setUndecorated(false);
+            frame.setFocusableWindowState(true);
 
             // Issue 66594 and 12084
             final boolean pack = shouldPack;

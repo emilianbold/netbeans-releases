@@ -247,7 +247,7 @@ public class StringArrayEditor implements XMLPropertyEditor,
     
     // NamedPropertyEditor implementation
     public String getDisplayName() {
-        return NbBundle.getBundle(getClass()).getString("CTL_StringArrayEditor_DisplayName"); // NOI18N
+        return NbBundle.getBundle(StringArrayEditor.class).getString("CTL_StringArrayEditor_DisplayName"); // NOI18N
     }
 
 }

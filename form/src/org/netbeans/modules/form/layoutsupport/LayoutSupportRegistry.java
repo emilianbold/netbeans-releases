@@ -355,6 +355,15 @@ public class LayoutSupportRegistry {
             containerToLayoutDelegate.put(
                 "javax.swing.JToolBar", // NOI18N
                 "org.netbeans.modules.form.layoutsupport.delegates.JToolBarSupport"); // NOI18N
+            containerToLayoutDelegate.put(
+                "javax.swing.JMenuBar", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.MenuFakeSupport"); // NOI18N
+            containerToLayoutDelegate.put(
+                "javax.swing.JMenu", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.MenuFakeSupport"); // NOI18N
+            containerToLayoutDelegate.put(
+                "javax.swing.JPopupMenu", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.MenuFakeSupport"); // NOI18N
         }
         return containerToLayoutDelegate;
     }

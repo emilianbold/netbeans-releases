@@ -20,13 +20,17 @@
 package org.netbeans.modules.form;
 
 /**
- * Interface representing an internationalized value. Implementation is provided
+ * Interface representing an internationalized value. Difffers from
+ * ExternalValue only in that the represented value is always a String.
+ * Instanceas are obtained via I18nService interface. Implementation is provided
  * by i18n/form module.
+ * 
+ * @author Tomas Pavek
  */
-public interface I18nValue extends org.netbeans.modules.form.FormDesignValue {
-    String NOI18N_KEY = "noi18n"; // NOI18N
-    String COMPUTE_AUTO_KEY = "auto"; // NOI18N
-
-    String getKey();
+public interface I18nValue extends ExternalValue, FormDesignValue {
+    /**
+     * Returns the represented value stored in a resource bundle (always a String).
+     * @return String value stored in the resource bundle
+     */
     String getValue();
 }

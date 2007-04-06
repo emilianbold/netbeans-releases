@@ -4,3 +4,5 @@ org.netbeans.modules.i18n.form.*
 org.netbeans.lib.awtextra.*
 org.openide.explorer.propertysheet.editors.*
 org.jdesktop.layout.*
+org.netbeans.modules.swingapp.*
+javax.beans.binding.*

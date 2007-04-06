@@ -22,6 +22,7 @@ package org.netbeans.modules.form;
 import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.io.IOException;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
 /**
@@ -75,29 +76,20 @@ public interface I18nService {
     PropertyEditor getPropertyEditor(Class type, PropertyEditor existing);
 
     /**
-     * Evaluates the effect of changing a property editor. The property editor
-     * determines whether a property can hold internationalized value.
-     * @return -1 if an i18n editor is changed to plain type editor,
-     *         0 if the type of editor does no change,
-     *         1 if a plain type editor is changed to i18n one
-     */
-    int analyzePropertyEditorChange(PropertyEditor oldPE, PropertyEditor newPE);
-
-    /**
      * Provides a component usable as property customizer (so typically a modal
      * dialog) that allows to choose (or create) a properties bundle file within
      * the project of given form data object. The selected file should be
      * written to the given property editor (via setValue) as a resource name
      * string.
      */
-    Component getBundleSelectionComponent(PropertyEditor pe, DataObject srcDataObject);
+    Component getBundleSelectionComponent(PropertyEditor pe, FileObject srcFile);
 
     /**
      * Returns all currently available locales for given bundle in two arrays
-     * os strings. The first one containes locale suffixes, the second one
+     * of strings. The first one containes locale suffixes, the second one
      * corresponding display names for the user (should be unique).
      */
-    String[][] getAvailableLocales(DataObject srcDataObject, String bundleName);
+    String[][] getAvailableLocales(FileObject srcFile, String bundleName);
 
     /**
      * Provides a visual component (modal dialog) usable as a property
@@ -105,7 +97,7 @@ public interface I18nService {
      * bundle name provided). The created locale should be written as a string
      * (locale suffix) to the given propery editor.
      */
-    Component getCreateLocaleComponent(PropertyEditor pe, DataObject srcDataObject, String bundleName);
+    Component getCreateLocaleComponent(PropertyEditor pe, FileObject srcFile, String bundleName);
 
     /**
      * Saves properties files edited for given source object (form). This method
@@ -127,5 +119,5 @@ public interface I18nService {
      * [If we decide all projects should be internationalized, we can remove
      *  this method.]
      */
-    boolean isDefaultInternationalizableProject(DataObject srcDataObject);
+    boolean isDefaultInternationalizableProject(FileObject srcFile);
 }

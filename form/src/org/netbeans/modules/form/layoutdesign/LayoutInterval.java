@@ -73,7 +73,9 @@ public final class LayoutInterval implements LayoutConstants {
     // associated LayoutComponent (if any)
     private LayoutComponent layoutComponent;
 
-//    private boolean defaultPadding; // String[] surroundingComps
+    // type of padding (default gap; if this is a preferred gap)
+    private PaddingType paddingType;
+    private String[] paddingDefComps; // 2 components, needed for INDENT gap
 
     // minimum, preferred, and maximum size definitions
     private int minSize;
@@ -156,6 +158,22 @@ public final class LayoutInterval implements LayoutConstants {
 
     int getMaximumSize() {
         return maxSize;
+    }
+
+    void setPaddingType(PaddingType type) {
+        paddingType = type;
+    }
+
+    String[] getPaddingDefComponents() {
+        return paddingDefComps;
+    }
+
+    void setPaddingDefComponents(String compId1, String compId2) {
+        if (compId1 == null) {
+            paddingDefComps = null;
+        } else {
+            paddingDefComps = new String[] { compId1, compId2 };
+        }
     }
 
     // ---------
@@ -308,6 +326,10 @@ public final class LayoutInterval implements LayoutConstants {
     public boolean isDefaultPadding(boolean designTime) {
         return isEmptySpace() && (getMinimumSize(designTime) == NOT_EXPLICITLY_DEFINED
                                   || getPreferredSize(designTime) == NOT_EXPLICITLY_DEFINED);
+    }
+
+    public PaddingType getPaddingType() {
+        return paddingType;
     }
 
     public boolean isSingle() {
@@ -494,7 +516,9 @@ public final class LayoutInterval implements LayoutConstants {
     }
 
     /**
-     * Finds common parent of two given intervals.
+     * Finds common parent of two given intervals. In case one interval is
+     * parent of the other then this interval is returned directly, not its
+     * parent.
      *
      * @param interval1 interval whose parent should be found.
      * @param interval2 interval whose parent should be found.
@@ -531,8 +555,8 @@ public final class LayoutInterval implements LayoutConstants {
      *
      * @param interval interval whose parents should be found.
      * @return <code>List</code> of <code>LayoutInterval</code> objects that
-     * are parents of the given interval. The immediate parent of the interval
-     * is at the end of the list.
+     * are parents of the given interval. The root is the first in the list;
+     * the interval itelf is also included - at the end.
      */
     private static List parentsOfInterval(LayoutInterval interval) {
         List parents = new LinkedList();
@@ -904,6 +928,7 @@ public final class LayoutInterval implements LayoutConstants {
         }
 
         return posT - posL;
+
     }
 
     /**
@@ -1023,7 +1048,8 @@ public final class LayoutInterval implements LayoutConstants {
     }
 
     /**
-     * Creates clone of the given interval. Doesn't clone content of groups.
+     * Creates clone of the given interval. Doesn't clone content of groups, nor
+     * it sets LayoutComponent. Just the type, alignments and sizes are copied.
      *
      * @param interval interval to be cloned.
      * @param clone interval that should contain cloned data. Can be <code>null</code>.
@@ -1032,11 +1058,14 @@ public final class LayoutInterval implements LayoutConstants {
     static LayoutInterval cloneInterval(LayoutInterval interval, LayoutInterval clone) {        
         clone = (clone == null) ? new LayoutInterval(interval.getType()) : clone;
         clone.setAlignment(interval.getAlignment());
-        clone.setAttributes(interval.getAttributes());
+        clone.setAttributes(interval.getAttributes() & ATTR_PERSISTENT_MASK);
         if (interval.getType() == PARALLEL) {
             clone.setGroupAlignment(interval.getGroupAlignment());
         }
         clone.setSizes(interval.getMinimumSize(), interval.getPreferredSize(), interval.getMaximumSize());
+        if (isDefaultPadding(interval)) {
+            clone.setPaddingType(interval.getPaddingType());
+        }
         return clone;
     }
 }

@@ -43,6 +43,7 @@ public final class PaletteItem implements Node.Cookie {
     ClassSource componentClassSource;
 //    Boolean isContainer_explicit;
     String componentType_explicit;
+    Image icon;
 
     // resolved data (derived from the raw data)
     private Class componentClass;
@@ -63,8 +64,9 @@ public final class PaletteItem implements Node.Cookie {
         itemDataObject = dobj;
     }
 
-    public PaletteItem(ClassSource componentClassSource) {
+    public PaletteItem(ClassSource componentClassSource, Class componentClass) {
         this.componentClassSource = componentClassSource;
+        this.componentClass = componentClass;
     }
 
     public void setComponentClassSource(String className,
@@ -186,9 +188,14 @@ public final class PaletteItem implements Node.Cookie {
         return bd != null ? bd.getShortDescription() : null;
     }
 
-    Image getIcon(int type) {
+    public Image getIcon(int type) {
+        if (icon != null) return icon;
         BeanInfo bi = getBeanInfo();
         return bi != null ? bi.getIcon(type) : null;
+    }
+
+    public void setIcon(Image icon) {
+        this.icon = icon;
     }
 
     void reset() {

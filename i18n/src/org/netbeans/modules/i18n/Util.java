@@ -169,23 +169,4 @@ public class Util {
         return null;
         
     }
-
-    public static boolean isNbBundleAvailable(DataObject srcDataObject) {
-        // is there a good way to recognize that NbBundle is available?
-        // - execution CP may not work if everything is cleaned
-        // - looking for NbBundle.java in sources of execution CP roots is expensive
-        // - checking project impl. class name is ugly
-        // - don't know how to check if there is "org.openide.util" module
-        ClassPath classPath = ClassPath.getClassPath(srcDataObject.getPrimaryFile(), ClassPath.EXECUTE);
-        if (classPath != null && classPath.findResource("org/openide/util/NbBundle.class") != null) // NOI18N
-            return true;
-
-        // hack: check project impl. class name
-        Project p = FileOwnerQuery.getOwner(srcDataObject.getPrimaryFile());
-        if (p != null && p.getClass().getName().startsWith("org.netbeans.modules.apisupport.") // NOI18N
-                && p.getClass().getName().endsWith("Project")) // NOI18N
-            return true;
-
-        return false;
-    }
 }

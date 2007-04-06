@@ -54,20 +54,20 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
                                          CheckboxMenuItem.class,
                                          Menu.class,
                                          Separator.class });
-        supportedMenus.put(new Integer(T_JMENUBAR),
-                           new Class[] { JMenu.class });
-        supportedMenus.put(new Integer(T_JMENU),
-                           new Class[] { JMenuItem.class,
-                                         JCheckBoxMenuItem.class,
-                                         JRadioButtonMenuItem.class,
-                                         JMenu.class,
-                                         JSeparator.class });
-        supportedMenus.put(new Integer(T_JPOPUPMENU),
-                           new Class[] { JMenuItem.class,
-                                         JCheckBoxMenuItem.class,
-                                         JRadioButtonMenuItem.class,
-                                         JMenu.class,
-                                         JSeparator.class });
+//        supportedMenus.put(new Integer(T_JMENUBAR),
+//                           new Class[] { JMenu.class });
+//        supportedMenus.put(new Integer(T_JMENU),
+//                           new Class[] { JMenuItem.class,
+//                                         JCheckBoxMenuItem.class,
+//                                         JRadioButtonMenuItem.class,
+//                                         JMenu.class,
+//                                         JSeparator.class });
+//        supportedMenus.put(new Integer(T_JPOPUPMENU),
+//                           new Class[] { JMenuItem.class,
+//                                         JCheckBoxMenuItem.class,
+//                                         JRadioButtonMenuItem.class,
+//                                         JMenu.class,
+//                                         JSeparator.class });
     }
 
     // -----------------------------------------------------------------------------

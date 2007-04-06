@@ -146,7 +146,6 @@ private static class EmptySpaceCustomizer extends JPanel {
     JCheckBox bottomResizable = new JCheckBox();
     LayoutModel model;
     String compId;
-    String padding;
 
     EmptySpaceCustomizer(LayoutModel model, String compId) {
         this.model = model;
@@ -158,13 +157,29 @@ private static class EmptySpaceCustomizer extends JPanel {
         initValues(comp, LayoutConstants.VERTICAL, LayoutConstants.LEADING, topSize, topResizable);
         initValues(comp, LayoutConstants.VERTICAL, LayoutConstants.TRAILING, bottomSize, bottomResizable);
     }
-    
+
     private void initValues(LayoutComponent comp, int dimension, int direction, JComboBox size, JCheckBox resizable) {
         LayoutInterval space = LayoutUtils.getAdjacentEmptySpace(comp, dimension, direction);
         if (space != null) {
+            String[] paddings;
+            ResourceBundle bundle = NbBundle.getBundle(EmptySpaceCustomizer.class);
+            if (LayoutUtils.hasAdjacentComponent(comp, dimension, direction)) {
+                // there are three types of default gaps between components
+                paddings = new String[] {
+                        bundle.getString("VALUE_PaddingRelated"), // NOI18N
+                        bundle.getString("VALUE_PaddingUnrelated"), // NOI18N
+                        bundle.getString("VALUE_PaddingSeparate") }; // NOI18N
+            } else { // just one type of default gap
+                paddings = new String[] { bundle.getString("VALUE_PaddingDefault") }; // NOI18N
+            }
+            size.setModel(new DefaultComboBoxModel(paddings));
             int pref = space.getPreferredSize(false);
             int max = space.getMaximumSize(false);
-            size.setSelectedItem((pref == LayoutConstants.NOT_EXPLICITLY_DEFINED) ? padding : ("" + pref));
+            if (pref == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
+                size.setSelectedItem(getPaddingString(paddings, space.getPaddingType()));
+            } else {
+                size.setSelectedItem(Integer.toString(pref));
+            }
             resizable.setSelected((max != LayoutConstants.USE_PREFERRED_SIZE) && (max != pref));
         } else {
             size.setSelectedItem(NbBundle.getMessage(CustomizeEmptySpaceAction.class, "VALUE_NoEmptySpace"));
@@ -172,14 +187,53 @@ private static class EmptySpaceCustomizer extends JPanel {
             resizable.setEnabled(false);
         }
     }
-    
+
+    // converts PaddingType to String
+    private static String getPaddingString(String[] paddingStrings, LayoutConstants.PaddingType paddingType) {
+        if (paddingType == LayoutConstants.PaddingType.UNRELATED) {
+            return paddingStrings[1];
+        } else if (paddingType == LayoutConstants.PaddingType.SEPARATE) {
+            return paddingStrings[2];
+        } else {
+            return paddingStrings[0];
+        }
+    }
+
+    private static LayoutConstants.PaddingType getSelectedPaddingType(JComboBox combo) {
+        if (combo.getItemCount() == 3) { // configuring a gap between components
+            Object selSize = combo.getSelectedItem();
+            if (selSize != null) {
+                if (selSize.equals(combo.getItemAt(0))) {
+                    return LayoutConstants.PaddingType.RELATED;
+                } else if (selSize.equals(combo.getItemAt(1))) {
+                    return LayoutConstants.PaddingType.UNRELATED;
+                } else if (selSize.equals(combo.getItemAt(2))) {
+                    return LayoutConstants.PaddingType.SEPARATE;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean isDefaultSizeSelected(JComboBox combo) {
+        Object selSize = combo.getSelectedItem();
+        if (selSize != null) {
+            for (int i=0; i < combo.getItemCount(); i++) {
+                if (selSize.equals(combo.getItemAt(i))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     boolean checkValues() {
         return checkValue(leftSize) && checkValue(rightSize) && checkValue(topSize) && checkValue(bottomSize);
     }
 
     private boolean checkValue(JComboBox size) {
         Object selSize = size.getSelectedItem();
-        if (size.isEnabled() && !selSize.equals(padding)) {
+        if (size.isEnabled() && !isDefaultSizeSelected(size)) {
             try {
                 int newPref = Integer.parseInt((String)selSize);
                 if (newPref < 0) {
@@ -219,13 +273,14 @@ private static class EmptySpaceCustomizer extends JPanel {
         LayoutInterval space = LayoutUtils.getAdjacentEmptySpace(comp, dimension, direction);
         if (space != null) {
             int pref = space.getPreferredSize(false);
-            int max = space.getMaximumSize(false);
-            boolean oldResizable = (max != LayoutConstants.USE_PREFERRED_SIZE) && (max != pref);
             boolean newResizable = resizable.isSelected();
             Object selSize = size.getSelectedItem();
             int newPref;
-            if (selSize.equals(padding)){
+            LayoutConstants.PaddingType oldPadType = space.getPaddingType();
+            LayoutConstants.PaddingType newPadType;
+            if (isDefaultSizeSelected(size)) {
                 newPref = LayoutConstants.NOT_EXPLICITLY_DEFINED;
+                newPadType = getSelectedPaddingType(size);
             } else {
                 try {
                     newPref = Integer.parseInt((String)selSize);
@@ -235,13 +290,15 @@ private static class EmptySpaceCustomizer extends JPanel {
                 } catch (NumberFormatException nfex) {
                     newPref = pref; // Use old value instead
                 }
+                newPadType = null;
             }
-            if ((pref != newPref) || (oldResizable != newResizable)) {
-                model.setIntervalSize(space,
-                    newResizable ? LayoutConstants.NOT_EXPLICITLY_DEFINED : LayoutConstants.USE_PREFERRED_SIZE,
-                    newPref,
-                    newResizable ? Short.MAX_VALUE : LayoutConstants.USE_PREFERRED_SIZE);
-            }
+            model.setIntervalSize(space,
+                newResizable ? LayoutConstants.NOT_EXPLICITLY_DEFINED : LayoutConstants.USE_PREFERRED_SIZE,
+                newPref,
+                newResizable ? Short.MAX_VALUE : LayoutConstants.USE_PREFERRED_SIZE);
+            if (oldPadType != null || newPadType != LayoutConstants.PaddingType.RELATED) {
+                model.setPaddingType(space, newPadType);
+            } // need not change null to RELATED
         }
     }
 
@@ -312,12 +369,6 @@ private static class EmptySpaceCustomizer extends JPanel {
         rightSize.setEditable(true);
         topSize.setEditable(true);
         bottomSize.setEditable(true);
-
-        padding = bundle.getString("VALUE_DefaultPadding"); // NOI18N
-        leftSize.setModel(new DefaultComboBoxModel(new String[] {padding}));
-        rightSize.setModel(new DefaultComboBoxModel(new String[] {padding}));
-        topSize.setModel(new DefaultComboBoxModel(new String[] {padding}));
-        bottomSize.setModel(new DefaultComboBoxModel(new String[] {padding}));
 
         leftResizable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_LeftResizable")); // NOI18N
         rightResizable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RightResizable")); // NOI18N

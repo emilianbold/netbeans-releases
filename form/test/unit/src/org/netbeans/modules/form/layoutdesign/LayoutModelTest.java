@@ -109,7 +109,7 @@ public class LayoutModelTest extends TestCase {
         li = new LayoutInterval(LayoutInterval.SINGLE);
         li.setSizes(LayoutConstants.NOT_EXPLICITLY_DEFINED, 100,  Short.MAX_VALUE);
         group.add(li, -1);
-        container.getLayoutRoot(LayoutConstants.HORIZONTAL).add(group, -1);
+        container.getDefaultLayoutRoot(LayoutConstants.HORIZONTAL).add(group, -1);
 
         // horizontal, second row
         group = new LayoutInterval(LayoutInterval.SEQUENTIAL);
@@ -126,7 +126,7 @@ public class LayoutModelTest extends TestCase {
         li.setSizes(0, LayoutConstants.NOT_EXPLICITLY_DEFINED, Short.MAX_VALUE);
         group.add(li, -1);
         group.add(new LayoutInterval(LayoutInterval.SINGLE), -1);
-        container.getLayoutRoot(LayoutConstants.HORIZONTAL).add(group, -1);
+        container.getDefaultLayoutRoot(LayoutConstants.HORIZONTAL).add(group, -1);
 
         // vertical, first row
         group = new LayoutInterval(LayoutInterval.SEQUENTIAL);
@@ -151,7 +151,7 @@ public class LayoutModelTest extends TestCase {
         li.setSizes(LayoutConstants.NOT_EXPLICITLY_DEFINED, 50,  Short.MAX_VALUE);
         group.add(li, -1);
 
-        container.getLayoutRoot(LayoutConstants.VERTICAL).add(group, -1);
+        container.getDefaultLayoutRoot(LayoutConstants.VERTICAL).add(group, -1);
     }
 
     private void writeWrongDump(String dump) throws IOException {
