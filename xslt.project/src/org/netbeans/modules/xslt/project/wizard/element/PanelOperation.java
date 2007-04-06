@@ -99,11 +99,13 @@ final class PanelOperation<T> extends Panel<T> {
   @Override
   protected String getError()
   {
-    String name = addExtension(myFile.getText().trim());
-    FileObject file = getFolder().getFileObject(name);
+    if (myFileName != null) {
+      String name = addExtension(myFile.getText().trim());
+      FileObject file = getFolder().getFileObject(name);
 
-    if (file != null) {
-      return i18n("ERR_File_Already_Exists", name); // NOI18N
+      if (file != null) {
+        return i18n("ERR_File_Already_Exists", name); // NOI18N
+      }
     }
     Operation operation = getOperation();
 
@@ -132,21 +134,28 @@ final class PanelOperation<T> extends Panel<T> {
 
   public void storeSettings(Object object) {
     WizardDescriptor descriptor = (WizardDescriptor) object;
-    String file = addExtension(myFile.getText().trim());
 
+    if (myFileName != null) {
+      String file = addExtension(myFile.getText().trim());
+
+      if (myIsInput) {
+        descriptor.putProperty(INPUT_FILE, file);
+        descriptor.putProperty(
+          INPUT_TRANSFORM_JBI, new Boolean(myTransformJBI.isSelected()));
+      }
+      else {
+        descriptor.putProperty(OUTPUT_FILE, file);
+        descriptor.putProperty(
+          OUTPUT_TRANSFORM_JBI, new Boolean(myTransformJBI.isSelected()));
+      }
+    }
     if (myIsInput) {
-      descriptor.putProperty(INPUT_FILE, file);
       descriptor.putProperty(INPUT_OPERATION, getOperation());
       descriptor.putProperty(INPUT_PARTNER_ROLE_PORT, getPartnerRolePort());
-      descriptor.putProperty(
-        INPUT_TRANSFORM_JBI, new Boolean(myTransformJBI.isSelected()));
     }
     else {
-      descriptor.putProperty(OUTPUT_FILE, file);
       descriptor.putProperty(OUTPUT_OPERATION, getOperation());
       descriptor.putProperty(OUTPUT_PARTNER_ROLE_PORT, getPartnerRolePort());
-      descriptor.putProperty(
-        OUTPUT_TRANSFORM_JBI, new Boolean(myTransformJBI.isSelected()));
     }
   }
 
@@ -208,17 +217,18 @@ final class PanelOperation<T> extends Panel<T> {
     }
 
     // transform JBI
-    c.gridy++;
-    c.weightx = 0.0;
-    c.weighty = 1.0;
-    c.insets = new Insets(0, 0, 0, 0);
-    myTransformJBI = createCheckBox(
-      new ButtonAction(i18n("LBL_Transform_JBI")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {}
-      }
-    );
-    panel.add(myTransformJBI, c);
-
+    if (myFileName != null) {
+      c.gridy++;
+      c.weightx = 0.0;
+      c.weighty = 1.0;
+      c.insets = new Insets(0, 0, 0, 0);
+      myTransformJBI = createCheckBox(
+        new ButtonAction(i18n("LBL_Transform_JBI")) { // NOI18N
+          public void actionPerformed(ActionEvent event) {}
+        }
+      );
+      panel.add(myTransformJBI, c);
+    }
     updatePartnerRolePorts(null);
     mainPanel.add(panel, cc);
   }
@@ -227,18 +237,19 @@ final class PanelOperation<T> extends Panel<T> {
     JLabel label;
 
     // xsl file
-    c.gridy++;
-    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
-    label = createLabel(i18n("LBL_XSL_File")); // NOI18N
-    panel.add(label, c);
+    if (myFileName != null) {
+      c.gridy++;
+      c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+      label = createLabel(i18n("LBL_XSL_File")); // NOI18N
+      panel.add(label, c);
 
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.weightx = 1.0;
-    myFile = new JTextField(myFileName);
-    label.setLabelFor(myFile);
-    panel.add(myFile, c);
-    
+      c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+      c.fill = GridBagConstraints.HORIZONTAL;
+      c.weightx = 1.0;
+      myFile = new JTextField(myFileName);
+      label.setLabelFor(myFile);
+      panel.add(myFile, c);
+    }
     // Partner/Role/Port
     c.gridy++;
     c.weightx = 0.0;
@@ -607,8 +618,10 @@ final class PanelOperation<T> extends Panel<T> {
   @Override
   protected void setEnabled(boolean enabled)
   {
-    myFile.setEnabled(enabled);
-    myTransformJBI.setEnabled(enabled);
+    if (myFileName != null) {
+      myFile.setEnabled(enabled);
+      myTransformJBI.setEnabled(enabled);
+    }
   }
 
   private void updateTypes() {

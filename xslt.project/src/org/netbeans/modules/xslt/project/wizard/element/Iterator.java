@@ -114,16 +114,24 @@ public final class Iterator implements TemplateWizard.Iterator {
 
     if (Panel.CHOICE_REQUEST_REPLY.equals(choice)) {
       use = createRequestReply(model, wizard);
-      file = createXslFile(project, (String) wizard.getProperty(Panel.INPUT_FILE));
+      file = createXslFile(
+        project, (String) wizard.getProperty(Panel.INPUT_FILE),
+        ((Boolean) wizard.getProperty(Panel.INPUT_TRANSFORM_JBI)).booleanValue());
     }
     else if (Panel.CHOICE_FILTER_ONE_WAY.equals(choice)) {
       use = createFilterOneWay(model, wizard);
-      file = createXslFile(project, (String) wizard.getProperty(Panel.INPUT_FILE));
+      file = createXslFile(
+        project, (String) wizard.getProperty(Panel.INPUT_FILE),
+        ((Boolean) wizard.getProperty(Panel.INPUT_TRANSFORM_JBI)).booleanValue());
     }
     else if (Panel.CHOICE_FILTER_REQUEST_REPLY.equals(choice)) {
       use = createFilterRequestReply(model, wizard);
-      file = createXslFile(project, (String) wizard.getProperty(Panel.INPUT_FILE));
-      file = createXslFile(project, (String) wizard.getProperty(Panel.OUTPUT_FILE));
+      file = createXslFile(
+        project, (String) wizard.getProperty(Panel.INPUT_FILE),
+        ((Boolean) wizard.getProperty(Panel.INPUT_TRANSFORM_JBI)).booleanValue());
+      file = createXslFile(
+        project, (String) wizard.getProperty(Panel.OUTPUT_FILE),
+        ((Boolean) wizard.getProperty(Panel.OUTPUT_TRANSFORM_JBI)).booleanValue());
     }
     model.addTransformationUC(use);
     model.sync();
@@ -202,14 +210,39 @@ public final class Iterator implements TemplateWizard.Iterator {
     description.setFile(file);
   }
 
-  private FileObject createXslFile(Project project, String file) throws IOException {
-    String text =
-      "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform" + // NOI18N
-      "\" version=\"1.0\">" + LS + // NOI18N
-      "    <xsl:template match=\"/\">" + LS + // NOI18N
-      "    </xsl:template>" + LS + // NOI18N
-      "</xsl:stylesheet>"; // NOI18N
+  private FileObject createXslFile(
+    Project project,
+    String file,
+    boolean transformJBI) throws IOException
+  {
+    String text;
 
+    if (transformJBI) {
+      text = 
+        "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"" + // NOI18N
+        " version=\"1.0\">" + LS + // NOI18N
+        "    <xsl:template match=\"/\">" + LS + // NOI18N
+        "        <jbi:message xmlns:ns2=\"http://sun.com/EmplOutput\"" + // NOI18N
+        " type=\"ns2:output-msg\" version=\"1.0\"" + // NOI18N
+        " xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\">" + LS + // NOI18N
+        "            <jbi:part>" + LS + // NOI18N
+        "                <xsl:apply-templates/>" + LS + // NOI18N
+        "            </jbi:part>" + LS + // NOI18N
+        "            <jbi:part>" + LS + // NOI18N
+        "                <xsl:apply-templates/>" + LS + // NOI18N
+        "            </jbi:part>" + LS + // NOI18N
+        "        </jbi:message>" + LS + // NOI18N
+        "    </xsl:template>" + LS + // NOI18N
+        "</xsl:stylesheet>" + LS; // NOI18N
+    }
+    else {
+      text =
+        "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform" + // NOI18N
+        "\" version=\"1.0\">" + LS + // NOI18N
+        "    <xsl:template match=\"/\">" + LS + // NOI18N
+        "    </xsl:template>" + LS + // NOI18N
+        "</xsl:stylesheet>" + LS; // NOI18N
+    }
     return Util.createFile(Util.getSrcFolder(project), file, text);
   }
 

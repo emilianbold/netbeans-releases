@@ -30,6 +30,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -49,14 +51,15 @@ final class PanelProxy<T> extends Panel<T> {
     WSDLModel modelCall)
   {
     super(project, parent);
-    int numberImplement = getXslFileNumber(1);
-    int numberCall = getXslFileNumber(numberImplement + 1);
+    //todo r
+//    int numberImplement = getXslFileNumber(1);
+//    int numberCall = getXslFileNumber(numberImplement + 1);
 
     myOperationImplement = new PanelOperation<T>(
-      project, this, modelImplement, getXslFileName(numberImplement), true, true);
+      project, this, modelImplement, null/*getXslFileName(numberImplement) todo */, true, true);
 
     myOperationCall = new PanelOperation<T>(
-      project, this, modelCall, getXslFileName(numberCall), true, false);
+      project, this, modelCall, null/*todo getXslFileName(numberCall)*/, true, false);
  }
 
   @Override
@@ -68,6 +71,18 @@ final class PanelProxy<T> extends Panel<T> {
   @Override
   protected String getError()
   {
+    String name = addExtension(myReplyFile.getText().trim());
+    FileObject file = getFolder().getFileObject(name);
+
+    if (file != null) {
+      return i18n("ERR_File_Already_Exists", name); // NOI18N
+    }
+    name = addExtension(myRequestFile.getText().trim());
+    file = getFolder().getFileObject(name);
+
+    if (file != null) {
+      return i18n("ERR_File_Already_Exists", name); // NOI18N
+    }
     return getError(myOperationImplement.getError(), myOperationCall.getError());
   }
 
@@ -76,6 +91,16 @@ final class PanelProxy<T> extends Panel<T> {
     myOperationImplement.storeSettings(object);
     myOperationCall.storeSettings(object);
 
+    descriptor.putProperty(INPUT_FILE,
+      addExtension(myRequestFile.getText().trim()));
+    descriptor.putProperty(
+      INPUT_TRANSFORM_JBI, new Boolean(myRequestJBI.isSelected()));
+
+    descriptor.putProperty(OUTPUT_FILE,
+      addExtension(myReplyFile.getText().trim()));
+    descriptor.putProperty(
+      OUTPUT_TRANSFORM_JBI, new Boolean(myReplyJBI.isSelected()));
+    
     if (myReplyBox.isSelected()) {
       descriptor.putProperty(CHOICE, CHOICE_FILTER_REQUEST_REPLY);
     }
@@ -103,11 +128,14 @@ final class PanelProxy<T> extends Panel<T> {
     panel.add(createSeparator(i18n("LBL_We_Call")), c); // NOI18N
     myOperationCall.createPanel(panel, c);
 
+    int number1 = getXslFileNumber(1);
+    int number2 = getXslFileNumber(number1 + 1);
+
     // transform request
-    panel.add(createTransformRequestPanel(), c);
+    panel.add(createTransformRequestPanel(getXslFileName(number1)), c);
 
     // transform reply
-    panel.add(createTransformReplyPanel(), c);
+    panel.add(createTransformReplyPanel(getXslFileName(number2)), c);
 
     update();
     mainPanel.add(panel, cc);
@@ -122,23 +150,45 @@ final class PanelProxy<T> extends Panel<T> {
     myOperationImplement.setEnabled(myRequestBox.isSelected());
     myOperationCall.setEnabled(myReplyBox.isSelected());
 
+    myRequestFile.setEnabled(myRequestBox.isSelected());
+    myRequestJBI.setEnabled(myRequestBox.isSelected());
+
+    myReplyFile.setEnabled(myReplyBox.isSelected());
+    myReplyJBI.setEnabled(myReplyBox.isSelected());
+
     myOperationImplement.setRequirement(
       myRequestBox.isSelected(), myReplyBox.isSelected());
 
     myOperationCall.setRequirement(
       myRequestBox.isSelected(), myReplyBox.isSelected());
 
-    updateText(
-      myRequestText,
-      true,
-      (Operation) myOperationImplement.getResult(),
-      (Operation) myOperationCall.getResult());
+    if (myRequestJBI.isSelected()) {
+      updateText(
+        myRequestText,
+        i18n("LBL_JBI_Message"), // NOI18N
+        i18n("LBL_JBI_Message")); // NOI18N
+    }
+    else {
+      updateText(
+        myRequestText,
+        true,
+        (Operation) myOperationImplement.getResult(),
+        (Operation) myOperationCall.getResult());
+    }
 
-    updateText(
-      myReplyText,
-      false,
-      (Operation) myOperationCall.getResult(),
-      (Operation) myOperationImplement.getResult());
+    if (myReplyJBI.isSelected()) {
+      updateText(
+        myReplyText,
+        i18n("LBL_JBI_Message"), // NOI18N
+        i18n("LBL_JBI_Message")); // NOI18N
+     }
+     else {
+      updateText(
+        myReplyText,
+        false,
+        (Operation) myOperationCall.getResult(),
+        (Operation) myOperationImplement.getResult());
+     }
   }
 
   private void updateText(
@@ -147,9 +197,15 @@ final class PanelProxy<T> extends Panel<T> {
     Operation operation1,
     Operation operation2)
   {
-    String type1 = getType(operation1, isInput);
-    String type2 = getType(operation2, isInput);
-    text.setText(i18n("LBL_From_To", type1, type2)); // NOI18N
+    updateText(text, getType(operation1, isInput), getType(operation2, isInput));
+  }
+
+  private void updateText(
+    JTextField text, 
+    String text1,
+    String text2)
+  {
+    text.setText(i18n("LBL_From_To", text1, text2)); // NOI18N
   }
 
   private String getType(Operation operation, boolean isInput) {
@@ -164,7 +220,7 @@ final class PanelProxy<T> extends Panel<T> {
     }
   }
 
-  private JPanel createTransformRequestPanel() {
+  private JPanel createTransformRequestPanel(String fileName) {
     myRequestBox = createCheckBox(
       new ButtonAction(i18n("LBL_Transform_Request")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -174,12 +230,22 @@ final class PanelProxy<T> extends Panel<T> {
     );
     myRequestBox.setEnabled(false);
     myRequestBox.setSelected(true);
+    
+    myRequestJBI = createCheckBox(
+      new ButtonAction(i18n("LBL_Transform_JBI")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          update();
+        }
+      }
+    );
     myRequestText = new JTextField();
+    myRequestFile = new JTextField(fileName);
 
-    return createTransformPanel(myRequestBox, myRequestText);
+    return createTransformPanel(
+      myRequestBox, myRequestJBI, myRequestText, myRequestFile);
   }
 
-  private JPanel createTransformReplyPanel() {
+  private JPanel createTransformReplyPanel(String fileName) {
     myReplyBox = createCheckBox(
       new ButtonAction(i18n("LBL_Transform_Reply")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -189,32 +255,72 @@ final class PanelProxy<T> extends Panel<T> {
     );
     myReplyBox.setEnabled(true);
     myReplyBox.setSelected(false);
-    myReplyText = new JTextField();
 
-    return createTransformPanel(myReplyBox, myReplyText);
+    myReplyJBI = createCheckBox(
+      new ButtonAction(i18n("LBL_Transform_JBI")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          update();
+        }
+      }
+    );
+    myReplyText = new JTextField();
+    myReplyFile = new JTextField(fileName);
+
+    return createTransformPanel(
+      myReplyBox, myReplyJBI, myReplyText, myReplyFile);
   }
 
-  private JPanel createTransformPanel(JCheckBox checkBox, JTextField text)  {
+  private JPanel createTransformPanel(
+    JCheckBox checkBox,
+    JCheckBox transformBox,
+    JTextField text,
+    JTextField file)
+  {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.WEST;
     JButton button;
-    JLabel label;
 
-    // check box
+    // check
     c.gridy++;
+    c.gridwidth = 2;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
     panel.add(checkBox, c);
 
-    // text
+    // transform
     c.gridy++;
+    c.gridwidth = 1;
     c.insets = new Insets(
-      SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET, TINY_INSET, 0);
+      SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET + TINY_INSET, TINY_INSET, 0);
+    c.fill = GridBagConstraints.NONE;
+    c.weightx = 0.0;
+    panel.add(transformBox, c);
+
+    // text
+    c.insets = new Insets(
+      SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     text.setEnabled(false);
     panel.add(text, c);
     
+    // label
+    c.gridy++;
+    c.anchor = GridBagConstraints.EAST;
+    c.insets = new Insets(
+      SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET + TINY_INSET, TINY_INSET, SMALL_INSET);
+    c.fill = GridBagConstraints.NONE;
+    c.weightx = 0.0;
+    panel.add(createLabel(i18n("LBL_XSL_File")), c); // NOI18N
+
+    // file
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 1.0;
+    c.anchor = GridBagConstraints.WEST;
+    c.insets = new Insets(
+      SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
+    panel.add(file, c);
+
     return panel;
   }
 
@@ -223,5 +329,9 @@ final class PanelProxy<T> extends Panel<T> {
   private JCheckBox myRequestBox; 
   private JCheckBox myReplyBox; 
   private JTextField myRequestText; 
-  private JTextField myReplyText; 
+  private JTextField myReplyText;
+  private JCheckBox myRequestJBI;
+  private JCheckBox myReplyJBI;
+  private JTextField myRequestFile;
+  private JTextField myReplyFile;
 }

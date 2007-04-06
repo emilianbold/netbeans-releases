@@ -71,8 +71,7 @@ final class PanelStartup<T> extends Panel<T> {
     // (o) Request-Reply Service
     c.gridy++;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    myTransformation = createRadioButton(i18n("LBL_Transformation")); // NOI18N
-    myTransformation.setSelected(true);
+    myTransformation = createRadioButton(i18n("LBL_Service")); // NOI18N
     panel.add(myTransformation, c);
     group.add(myTransformation);
 
@@ -80,21 +79,23 @@ final class PanelStartup<T> extends Panel<T> {
     c.gridy++;
     c.insets = new Insets(
       SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET, TINY_INSET, 0);
-    panel.add(createTextArea(TEXT_WIDTH, i18n("LBL_Transformation_Text")),c);//NOI18N
+    panel.add(createTextArea(TEXT_WIDTH, i18n("LBL_Service_Text")),c);//NOI18N
 
     // (o) Proxy Service
     c.gridy++;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    myProxy = createRadioButton(i18n("LBL_Proxy")); // NOI18N
-    myProxy.setSelected(false);
+    myProxy = createRadioButton(i18n("LBL_Bridge")); // NOI18N
     panel.add(myProxy, c);
     group.add(myProxy);
+
+    myTransformation.setSelected(true);
+    myProxy.setSelected(true);// todo r
 
     // text
     c.gridy++;
     c.insets = new Insets(
       SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET, TINY_INSET, 0);
-    panel.add(createTextArea(TEXT_WIDTH, i18n("LBL_Proxy_Text")), c); // NOI18N
+    panel.add(createTextArea(TEXT_WIDTH, i18n("LBL_Bridge_Text")), c); // NOI18N
 
 //  panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.blue));
     mainPanel.add(panel, cc);

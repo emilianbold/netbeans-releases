@@ -58,7 +58,7 @@ final class PanelWSDL<T> extends Panel<T> {
   @Override
   protected Panel<T> getNext()
   {
-    return new PanelTransformation<T>(getProject(), this, myModel);
+    return new PanelService<T>(getProject(), this, myModel);
   }
 
   @Override
