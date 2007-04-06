@@ -30,7 +30,6 @@ import javax.swing.JTree;
 import javax.swing.Timer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.soa.mapper.common.IMapperEvent;
 import org.netbeans.modules.soa.mapper.common.IMapperLink;

@@ -46,7 +46,7 @@ import org.netbeans.modules.xslt.model.XslComponent;
  *
  * @author Alexey
  */
-public class AttributeDeclarationNode extends DeclarationNode 
+public class AttributeDeclarationNode extends DeclarationNode
         implements TooltipTextProvider {
     
     /** Creates a new instance of AttributeDeclarationNode */
@@ -84,20 +84,12 @@ public class AttributeDeclarationNode extends DeclarationNode
     }
     public AXIComponent getType() {
         Element parent_type = (Element) getParent().getType();
+        XslComponent component = getComponent();        
         
         if (parent_type != null){
-            Attribute attr = (Attribute) getComponent();
-            QName attrQName = attr.getName().getQName();
-            if (attrQName != null) {
-                for (org.netbeans.modules.xml.axi.AbstractAttribute a: parent_type.getAttributes()){
-                    String aName = a.getName();
-                    String namespace = a.getTargetNamespace();
-                    QName aQName = namespace == null ?
-                        new QName(aName) : new QName(namespace, aName);
-                    //
-                    if (attrQName.equals(aQName)) {
-                        return a;
-                    }
+            for (AXIComponent c: parent_type.getAttributes()){
+                if (AXIUtils.isSameSchemaType(component, c)){
+                    return c;
                 }
             }
         }

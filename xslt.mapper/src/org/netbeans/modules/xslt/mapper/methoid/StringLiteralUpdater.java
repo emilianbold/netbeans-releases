@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -32,12 +32,15 @@ import org.openide.windows.WindowManager;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.datatype.Duration;
+import org.netbeans.modules.soa.mapper.basicmapper.methoid.BasicField;
 import org.netbeans.modules.soa.mapper.common.basicmapper.IBasicMapper;
 import org.netbeans.modules.soa.mapper.common.basicmapper.literal.BasicLiteralEditorFactory;
 import org.netbeans.modules.soa.mapper.common.basicmapper.literal.ILiteralEditor;
 import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IFieldNode;
+import org.netbeans.modules.xslt.mapper.model.nodes.CanvasNode;
 
 import org.netbeans.modules.xslt.mapper.model.nodes.LiteralCanvasNode;
+import org.netbeans.modules.xslt.mapper.model.nodes.OperationOrFunctionCanvasNode;
 
 /**
  * Updates the xpath expression for string literals.
@@ -61,16 +64,16 @@ public class StringLiteralUpdater extends AbstractLiteralUpdater {
                 names.add(name);
             }
         }
-// TODO reimplement
-//        for (String value: names) {
-//            try {
-//                Duration duration = Duration.parse(value);
-//                return new DurationLiteralEditor(getWindowOwner(basicMapper),
-//                        basicMapper, field, this);
-//            } catch (Throwable t) {
-//                // value does not represent a XML Schema duration, continue.
-//            }
-//        }
+        // TODO reimplement
+        //        for (String value: names) {
+        //            try {
+        //                Duration duration = Duration.parse(value);
+        //                return new DurationLiteralEditor(getWindowOwner(basicMapper),
+        //                        basicMapper, field, this);
+        //            } catch (Throwable t) {
+        //                // value does not represent a XML Schema duration, continue.
+        //            }
+        //        }
         return BasicLiteralEditorFactory.createBasicStringEditor(basicMapper, field, this);
     }
     
@@ -103,22 +106,21 @@ public class StringLiteralUpdater extends AbstractLiteralUpdater {
                     JOptionPane.ERROR_MESSAGE);
             return null;
         }
-// TODO reimplement
-//        XPathLiteralNodeImpl literalNode = (XPathLiteralNodeImpl) fieldNode.getNodeObject();
-//        if (literalNode == null) {
-//            XPathStringLiteral stringLiteral = AbstractXPathModelHelper.getInstance().newXPathStringLiteral(newValue);
-//            literalNode = new XPathLiteralNodeImpl(stringLiteral);
-//        } else {
-//            XPathStringLiteral stringLiteral = (XPathStringLiteral) literalNode.getLiteral();
-//            stringLiteral.setValue(newValue);
-//        }
-//        super.applyLiteral(fieldNode, newValue, literalNode);
+        // TODO reimplement
+        //        XPathLiteralNodeImpl literalNode = (XPathLiteralNodeImpl) fieldNode.getNodeObject();
+        //        if (literalNode == null) {
+        //            XPathStringLiteral stringLiteral = AbstractXPathModelHelper.getInstance().newXPathStringLiteral(newValue);
+        //            literalNode = new XPathLiteralNodeImpl(stringLiteral);
+        //        } else {
+        //            XPathStringLiteral stringLiteral = (XPathStringLiteral) literalNode.getLiteral();
+        //            stringLiteral.setValue(newValue);
+        //        }
+        //        super.applyLiteral(fieldNode, newValue, literalNode);
         
-        LiteralCanvasNode literalNode = 
-                (LiteralCanvasNode) fieldNode.getGroupNode().getNodeObject();
-        if (literalNode != null) { 
+        CanvasNode canvasNode = (CanvasNode) fieldNode.getGroupNode().getNodeObject();
+        if (canvasNode != null && canvasNode instanceof LiteralCanvasNode) {
             XPathStringLiteral literal = 
-                    (XPathStringLiteral)literalNode.getDataObject();
+                    (XPathStringLiteral)canvasNode.getDataObject();
             literal.setValue(newValue);
         }
         mProcessor.updateNodeExpression(fieldNode);

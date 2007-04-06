@@ -38,6 +38,7 @@ import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IMethoidNode;
 import org.netbeans.modules.soa.mapper.common.gtk.ICanvasMouseData;
 import org.netbeans.modules.soa.mapper.common.gtk.ICanvasMouseListener;
 import org.netbeans.modules.xslt.mapper.methoid.Constants;
+import org.netbeans.modules.xslt.mapper.model.nodes.LiteralCanvasNode;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -72,6 +73,11 @@ public class LiteralEditListener
         IMethoidNode methoidNode = canvasMethoidNode.getMethoidNode();
         if (methoidNode == null) {
             return false;
+        }
+        Object nodeObject = methoidNode.getNodeObject();
+        if (nodeObject == null || !(nodeObject instanceof LiteralCanvasNode)) {
+            // Only Literals are supported.
+            return false; 
         }
         ICanvasFieldNode canvasFieldNode =
                 canvas.getCanvasFieldNodeByPoint(point);

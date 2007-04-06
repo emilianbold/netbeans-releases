@@ -20,7 +20,6 @@ package org.netbeans.modules.xslt.mapper.model.targettree;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils.PathItem;
