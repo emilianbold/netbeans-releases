@@ -23,15 +23,12 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="resultValueLabel" pref="34" max="32767" attributes="0"/>
-                              <EmptySpace min="286" pref="286" max="286" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="jComboBox1" pref="203" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="jComboBox1" min="-2" pref="203" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="1"/>
                               <Component id="idTextField" min="-2" pref="111" max="-2" attributes="0"/>
                           </Group>
+                          <Component id="resultValueLabel" pref="320" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
