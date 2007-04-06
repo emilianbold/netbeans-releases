@@ -143,7 +143,6 @@ public class MenuEditLayer extends JPanel {
         if(metacomp instanceof RADVisualContainer) {
             currentMenuRAD = (RADVisualContainer)metacomp;
             menuBarRAD = currentMenuRAD.getParentContainer();
-            registerForm((RADVisualContainer)metacomp);
         }
     }
     
@@ -219,6 +218,8 @@ public class MenuEditLayer extends JPanel {
         
         configMouseListener(menu);
         
+        RADVisualContainer menuRAD = (RADVisualContainer) formDesigner.getMetaComponent(menu);
+        registerForm(menuRAD);
         
         // recurse for sub-menus
         for(Component c : subComps) {
