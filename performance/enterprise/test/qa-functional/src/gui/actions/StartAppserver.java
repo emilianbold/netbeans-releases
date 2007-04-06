@@ -21,54 +21,90 @@ package gui.actions;
 
 
 
+import java.io.PrintStream;
 import javax.swing.tree.TreePath;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.progress.module.Controller;
+import org.netbeans.progress.spi.InternalHandle;
+import org.netbeans.progress.spi.TaskModel;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ * Measure application server Startup time via NetBeans TaskModel API.
  *
- * @author rashid@netbeans.org
+ * @author rashid@netbeans.org, mkhramov@netbeans.org
  *
  */
 public class StartAppserver extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
    private String  project_name;
+   private RuntimeTabOperator rto;
+   private Node asNode;
    
-    /** Creates a new instance of StartAppserver */
+   private static PrintStream logger;
+   
+    /** Creates a new instance of StartAppserver 
+     *
+     *  @param testName
+     * 
+     **/
     public StartAppserver(String testName) {
         super(testName);
+        logger = this.getLog();
         //TODO: Adjust expectedTime value        
         expectedTime = 45000;
         WAIT_AFTER_OPEN=4000;        
     }
+    /** Creates a new instance of StartAppserver 
+     *
+     *  @param testName
+     *  @param performanceDataName
+     * 
+     **/    
     public StartAppserver(String testName, String  performanceDataName) {
         super(testName);
+        logger = this.getLog();
+        
         //TODO: Adjust expectedTime value
         expectedTime = 45000;
-        WAIT_AFTER_OPEN=4000;                
+        WAIT_AFTER_OPEN=4000;
+        
     }
     
 
    
     public void prepare() {
         log(":: prepare");
+        rto = RuntimeTabOperator.invoke();
+        TreePath path = null;
+        
+        try {
+            path = rto.tree().findPath("Servers|Sun Java System Application Server"); // NOI18N
+        } catch (TimeoutExpiredException exc) {
+            exc.printStackTrace(System.err);
+            throw new Error("Cannot find Application Server Node");
+        }
+        
+        asNode = new Node(rto.tree(),path);
+        asNode.select();
     }
 
     public ComponentOperator open() {
         log("::open");
-    RuntimeTabOperator rto = new RuntimeTabOperator().invoke();
-    gui.Utilities.performApplicationServerStartup(rto);
-
-
+        String serverIDEName = asNode.getText();
+        
+        JPopupMenuOperator popup = asNode.callPopup();
+        if (popup == null) {
+            throw new Error("Cannot get context menu for Application server node ");
+        }
+        boolean startEnabled = popup.showMenuItem("Start").isEnabled(); // NOI18N
+        if(startEnabled) {
+            popup.pushMenuNoBlock("Start"); // NOI18N
+        }        
+        waitForAppServerTask("Starting", serverIDEName);
         return null;
     }
     
@@ -79,20 +115,69 @@ public class StartAppserver extends org.netbeans.performance.test.utilities.Perf
 
   public void close(){
         log("::close");
-       RuntimeTabOperator rto = new RuntimeTabOperator().invoke();
-
-        TreePath path = rto.tree().findPath("Servers|Sun Java System Application Server");
-        rto.tree().selectPath(path);
-      new EventTool().waitNoEvent(5000);
-        new Node(rto.tree(),path).performPopupAction("Stop");
-        new EventTool().waitNoEvent(10000);
-          OutputOperator oot = new OutputOperator();
-          oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);                           OutputTabOperator asot = oot.getOutputTab("Sun Java System Application Server");
-          asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
-          asot.waitText("Server shutdown complete");  
+        String serverIDEName = asNode.getText();
+        
+        JPopupMenuOperator popup = asNode.callPopup();
+        if (popup == null) {
+            throw new Error("Cannot get context menu for Application server node ");
+        }
+        boolean startEnabled = popup.showMenuItem("Stop").isEnabled(); // NOI18N
+        if(startEnabled) {
+            popup.pushMenuNoBlock("Stop"); // NOI18N
+        }          
+        waitForAppServerTask("Stopping", serverIDEName);
 
 
     } 
+ private static void waitForAppServerTask(String taskName, String serverIDEName) {
+        Controller controller = Controller.getDefault();
+        TaskModel model = controller.getModel();
+     
+        InternalHandle task = waitServerTaskHandle(model,taskName+" "+serverIDEName);
+        long taskTimestamp = task.getTimeStampStarted();
+        
+        logger.print("task started at : "+taskTimestamp);
+        
+        while(1!=0) {
+            int state = task.getState();
+            if(state == task.STATE_FINISHED) { return; }
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException exc) {
+                exc.printStackTrace(System.err);
+                return;
+            }            
+        }
+        
+    }
+    private static InternalHandle waitServerTaskHandle(TaskModel model, String serverIDEName) {
+        while(1!=0) {
+            InternalHandle[] handles =  model.getHandles();
+            InternalHandle  serverTask = getServerTaskHandle(handles,serverIDEName);            
+            if(serverTask != null) {
+                logger.print("Returning task handle");
+                return serverTask; 
+            }
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException exc) {
+                exc.printStackTrace(System.err);
+            }              
+        }
+    }
+    private static InternalHandle getServerTaskHandle(InternalHandle[] handles, String taskName) {
+       if(handles.length == 0)  { 
+            logger.print("Empty tasks queue");
+           return null; 
+       }
+       for(int i=0;i<handles.length;i++) {
+           if(handles[i].getDisplayName().equals(taskName)) {
+               logger.print("Expected task found...");
+               return handles[i];
+           }
+       }
+       return null;
+    }
     
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new StartAppserver("measureTime"));
