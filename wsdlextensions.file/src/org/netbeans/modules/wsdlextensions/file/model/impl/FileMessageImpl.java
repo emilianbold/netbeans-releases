@@ -164,4 +164,82 @@ public class FileMessageImpl extends FileComponentImpl implements FileMessage {
         return getAttribute(FileAttribute.FILE_MESSAGE_PART_PROPERTY);
     }
 
+    public boolean getArchiveEnabled() {
+        String s = getAttribute(FileAttribute.FILE_MESSAGE_ARCHIVE_PROPERTY);
+        return s != null && s.equals("true");
+    }
+
+    public void setArchiveEnabled(boolean b) {
+        setAttribute(ATTR_ARCHIVE_ENABLED, FileAttribute.FILE_MESSAGE_ARCHIVE_PROPERTY, b? "true" : "false");
+    }
+
+    public boolean getProtectEnabled() {
+        String s = getAttribute(FileAttribute.FILE_MESSAGE_PROTECT_PROPERTY);
+        return s != null && s.equals("true");
+    }
+
+    public void setProtectEnabled(boolean b) {
+        setAttribute(ATTR_PROTECT_ENABLED, FileAttribute.FILE_MESSAGE_PROTECT_PROPERTY, b? "true" : "false");
+    }
+
+    public boolean getStagingEnabled() {
+        String s = getAttribute(FileAttribute.FILE_MESSAGE_STAGE_PROPERTY);
+        return s != null && s.equals("true");
+    }
+
+    public void setStagingEnabled(boolean b) {
+        setAttribute(ATTR_STAGING_ENABLED, FileAttribute.FILE_MESSAGE_STAGE_PROPERTY, b? "true" : "false");
+    }
+
+    public String getArchiveDirectory() {
+        return getAttribute(FileAttribute.FILE_MESSAGE_ARCHIVE_DIR_PROPERTY);
+    }
+
+    public void setArchiveDirectory(String s) {
+        setAttribute(ATTR_ARCHIVE_DIR, FileAttribute.FILE_MESSAGE_ARCHIVE_DIR_PROPERTY, s);
+    }
+
+    public String getProtectDirectory() {
+        return getAttribute(FileAttribute.FILE_MESSAGE_PROTECT_DIR_PROPERTY);
+    }
+
+    public void setProtectDirectory(String s) {
+        setAttribute(ATTR_PROTECT_DIR, FileAttribute.FILE_MESSAGE_PROTECT_DIR_PROPERTY, s);
+    }
+
+    public String getStagingDirectory() {
+        return getAttribute(FileAttribute.FILE_MESSAGE_STAGE_DIR_PROPERTY);
+    }
+
+    public void setStagingDirectory(String s) {
+        setAttribute(ATTR_STAGING_DIR, FileAttribute.FILE_MESSAGE_STAGE_DIR_PROPERTY, s);
+    }
+
+    public boolean getArchiveDirIsRelative() {
+        String s = getAttribute(FileAttribute.FILE_MESSAGE_ARCHIVE_DIR_IS_RELATIVE);
+        return s != null && s.equals("true");
+    }
+
+    public void setArchiveDirIsRelative(boolean b) {
+        setAttribute(ATTR_ARCHIVE_DIR_IS_RELATIVE, FileAttribute.FILE_MESSAGE_ARCHIVE_DIR_IS_RELATIVE, b? "true" : "false");
+    }
+
+    public boolean getProtectDirIsRelative() {
+        String s = getAttribute(FileAttribute.FILE_MESSAGE_PROTECT_DIR_IS_RELATIVE);
+        return s != null && s.equals("true");
+    }
+
+    public void setProtectDirIsRelative(boolean b) {
+        setAttribute(ATTR_PROTECT_DIR_IS_RELATIVE, FileAttribute.FILE_MESSAGE_PROTECT_DIR_IS_RELATIVE, b? "true" : "false");
+    }
+
+    public boolean getStagingDirIsRelative() {
+        String s = getAttribute(FileAttribute.FILE_MESSAGE_STAGE_DIR_IS_RELATIVE);
+        return s != null && s.equals("true");
+    }
+
+    public void setStagingDirIsRelative(boolean b) {
+        setAttribute(ATTR_STAGING_DIR_IS_RELATIVE, FileAttribute.FILE_MESSAGE_STAGE_DIR_IS_RELATIVE, b? "true" : "false");
+    }
+
 }

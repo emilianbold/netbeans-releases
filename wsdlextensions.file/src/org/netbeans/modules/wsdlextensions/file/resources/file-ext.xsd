@@ -111,6 +111,51 @@
 					<xs:documentation>Defines the record delimiter when multiple records are present. This value of this attribute is considered only if multipleRecordsPerFile is true. If no value is specified for this attribute but maxBytesPerRecord is defined when reading a file, it is assumed that each record is of fixed length with the length being the value defined for maxBytesPerRecord; Otherwise, the default record delimiter is line feed.</xs:documentation>
 				    </xs:annotation>
 				</xs:attribute>
+                                <xs:attribute name="archive" type="xs:boolean" use="optional">
+                                    <xs:annotation>
+                                        <xs:documentation>Indicate if archive is required for processed (read) message, when true, processed message is archived, otherwise, it is removed, default is 'false'.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+				<xs:attribute name="archiveDirectory" type="xs:string" use="optional">
+				    <xs:annotation>
+					<xs:documentation>Directory where processed (read) message will be moved to, note, the message moved here is UUID tagged to avoid file name conflict in archive area, the value can be either an absolute or relative (relative to fileDirectory of &lt;file:address&gt;) directory, when left unspecified, 'archive' (relative to fileDirectory) is assumed.</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+                                <xs:attribute name="archiveDirIsRelative" type="xs:boolean" use="optional">
+                                    <xs:annotation>
+                                        <xs:documentation>Indicate if archiveDirectory is relative to fileDirectory in &lt;ftp:message&gt;, default is 'true'.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="protect" type="xs:boolean" use="optional">
+                                    <xs:annotation>
+                                        <xs:documentation>Indicate if overwrite protection is required for message write, when true, existing message will be moved to a directory before the current message is written, otherwise, existing message will be overwritten, default is 'false'.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+				<xs:attribute name="protectDirectory" type="xs:string" use="optional">
+				    <xs:annotation>
+					<xs:documentation>Directory where 'in the way' message will be moved to in order to avoid being overwritten by incoming message (with same file name), note, the message moved here is UUID tagged to avoid file name conflict in protect area, the value can be either an absolute or relative (relative to fileDirectory of &lt;file:address&gt;) directory, when left unspecified, 'protect' (relative to fileDirectory) is assumed.</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+                                <xs:attribute name="protectDirIsRelative" type="xs:boolean" use="optional">
+                                    <xs:annotation>
+                                        <xs:documentation>Indicate if protectDirectory is relative to fileDirectory in &lt;ftp:message&gt;, default is 'true'.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="stage" type="xs:boolean" use="optional">
+                                    <xs:annotation>
+                                        <xs:documentation>Indicate if staging is enabled for message write, i.e. the message is written to a staging area and moved to its destination when the complete message is written, default is 'false'.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+				<xs:attribute name="stageDirectory" type="xs:string" use="optional">
+				    <xs:annotation>
+					<xs:documentation>Directory for staging message write, note, the message moved here is UUID tagged to avoid being overwritten by other messages in staging area, the value can be either an absolute or relative (relative to fileDirectory of &lt;file:address&gt;) directory, when left unspecified, 'stage' (relative to fileDirectory) is assumed.</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+                                <xs:attribute name="stageDirIsRelative" type="xs:boolean" use="optional">
+                                    <xs:annotation>
+                                        <xs:documentation>Indicate if stageDirectory is relative to fileDirectory in &lt;ftp:message&gt;, default is 'true'.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>

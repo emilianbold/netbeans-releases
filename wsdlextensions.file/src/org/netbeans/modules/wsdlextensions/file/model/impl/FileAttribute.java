@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.wsdlextensions.file.model.impl;
 
-import java.util.Collection;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 
 /**
@@ -41,7 +40,16 @@ public enum FileAttribute implements Attribute {
     FILE_MESSAGE_ADDEOL_PROPERTY("addEOL"),
     FILE_MESSAGE_MULTIPLERECORDSPERFILE_MESSAGE__PROPERTY("multipleRecordsPerFile"),
     FILE_MESSAGE_RECORDDELIMITER_PROPERTY("recordDelimiter"),
-    FILE_MESSAGE_MAXBYTESPERRECORD_PROPERTY("maxBytesPerRecord");
+    FILE_MESSAGE_MAXBYTESPERRECORD_PROPERTY("maxBytesPerRecord"),
+    FILE_MESSAGE_PROTECT_PROPERTY("protect"),
+    FILE_MESSAGE_ARCHIVE_PROPERTY("archive"),
+    FILE_MESSAGE_STAGE_PROPERTY("stage"),
+    FILE_MESSAGE_PROTECT_DIR_PROPERTY("protectDirectory"),
+    FILE_MESSAGE_ARCHIVE_DIR_PROPERTY("archiveDirectory"),
+    FILE_MESSAGE_STAGE_DIR_PROPERTY("stageDirectory"),
+    FILE_MESSAGE_PROTECT_DIR_IS_RELATIVE("protectDirIsRelative"),
+    FILE_MESSAGE_ARCHIVE_DIR_IS_RELATIVE("archiveDirIsRelative"),
+    FILE_MESSAGE_STAGE_DIR_IS_RELATIVE("stageDirIsRelative");
     
     private String name;
     private Class type;

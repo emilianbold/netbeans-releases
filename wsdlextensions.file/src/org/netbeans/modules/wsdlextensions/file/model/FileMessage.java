@@ -1,4 +1,5 @@
 /*
+ *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
@@ -22,41 +23,229 @@ package org.netbeans.modules.wsdlextensions.file.model;
  * @author sweng
  */
 public interface FileMessage extends FileComponent {
+    /**
+     * 
+     */
     public static final String ATTR_FILE_USE = "use";
+    /**
+     * 
+     */
     public static final String ATTR_FILE_ENCODING_STYLE = "encodingStyle";
+    /**
+     * 
+     */
     public static final String ATTR_FILE_TYPE = "fileType";
+    /**
+     * 
+     */
     public static final String ATTR_FILE_NAME_IS_PATTERN = "fileNameIsPattern";
+    /**
+     * 
+     */
     public static final String ATTR_FILE_NAME = "fileName";
+    /**
+     * 
+     */
     public static final String ATTR_POLLING_INTERVAL = "pollingInterval";
+    /**
+     * 
+     */
     public static final String ATTR_REMOVE_EOL = "removeEOL";
+    /**
+     * 
+     */
     public static final String ATTR_ADD_EOL = "addEOL";
+    /**
+     * 
+     */
     public static final String ATTR_MULTIPLE_RECORDS_PER_FILE = "multipleRecordsPerFile";
+    /**
+     * 
+     */
     public static final String ATTR_RECORD_DELIM = "recordDelimiter";
+    /**
+     * 
+     */
     public static final String ATTR_MAX_BYTES_PER_RECORD = "maxBytesPerRecord";
+    /**
+     * 
+     */
     public static final String ATTR_PART = "part";
+
+    /**
+     * 
+     */
+    public static final String ATTR_PROTECT_ENABLED = "protect";
+    /**
+     * 
+     */
+    public static final String ATTR_ARCHIVE_ENABLED = "archive";
+    /**
+     * 
+     */
+    public static final String ATTR_STAGING_ENABLED = "stage";
+
+    /**
+     * 
+     */
+    public static final String ATTR_PROTECT_DIR = "protectDirectory";
+    public static final String ATTR_PROTECT_DIR_IS_RELATIVE = "protectDirIsRelative";
+    /**
+     * 
+     */
+    public static final String ATTR_ARCHIVE_DIR = "archiveDirectory";
+    public static final String ATTR_ARCHIVE_DIR_IS_RELATIVE = "archiveDirIsRelative";
+    /**
+     * 
+     */
+    public static final String ATTR_STAGING_DIR = "stageDirectory";
+    public static final String ATTR_STAGING_DIR_IS_RELATIVE = "stageDirIsRelative";
     
+    /**
+     * 
+     * @param val 
+     */
     public void setFileUseType(String val);
+    /**
+     * 
+     * @return 
+     */
     public String getFileUseType();
+    /**
+     * 
+     * @param val 
+     */
     public void setFileEncodingStyle(String val);
+    /**
+     * 
+     * @return 
+     */
     public String getFileEncodingStyle();
+    /**
+     * 
+     * @param val 
+     */
     public void setFileType(String val);
+    /**
+     * 
+     * @return 
+     */
     public String getFileType();
+    /**
+     * 
+     * @param val 
+     */
     public void setFileName(String val);
+    /**
+     * 
+     * @return 
+     */
     public String getFileName();
+    /**
+     * 
+     * @param val 
+     */
     public void setFileNameIsPattern(boolean val);
+    /**
+     * 
+     * @return 
+     */
     public boolean getFileNameIsPattern();
+    /**
+     * 
+     * @param val 
+     */
     public void setPollingInterval(long val);
+    /**
+     * 
+     * @return 
+     */
     public Long getPollingInterval();
+    /**
+     * 
+     * @param val 
+     */
     public void setMaxBytesPerRecord(long val);
+    /**
+     * 
+     * @return 
+     */
     public Long getMaxBytesPerRecord();
+    /**
+     * 
+     * @param val 
+     */
     public void setRecordDelimiter(String val);
+    /**
+     * 
+     * @return 
+     */
     public String getRecordDelimiter();
+    /**
+     * 
+     * @param val 
+     */
     public void setAddEOL(boolean val);
+    /**
+     * 
+     * @return 
+     */
     public boolean getAddEOL();
+    /**
+     * 
+     * @param val 
+     */
     public void setRemoveEOL(boolean val);
+    /**
+     * 
+     * @return 
+     */
     public boolean getRemoveEOL();
+    /**
+     * 
+     * @param val 
+     */
     public void setMultipleRecordsPerFile(boolean val);
+    /**
+     * 
+     * @return 
+     */
     public boolean getMultipleRecordsPerFile();
+    /**
+     * 
+     * @param val 
+     */
     public void setPart(String val);
+    /**
+     * 
+     * @return 
+     */
     public String getPart();
+
+    public boolean getArchiveEnabled();
+    public void setArchiveEnabled(boolean b);
+    
+    public boolean getProtectEnabled();
+    public void setProtectEnabled(boolean b);
+
+    public boolean getStagingEnabled();
+    public void setStagingEnabled(boolean b);
+
+    public String getArchiveDirectory();
+    public void setArchiveDirectory(String s);
+    
+    public String getProtectDirectory();
+    public void setProtectDirectory(String s);
+
+    public String getStagingDirectory();
+    public void setStagingDirectory(String s);
+
+    public boolean getArchiveDirIsRelative();
+    public void setArchiveDirIsRelative(boolean b);
+    
+    public boolean getProtectDirIsRelative();
+    public void setProtectDirIsRelative(boolean b);
+
+    public boolean getStagingDirIsRelative();
+    public void setStagingDirIsRelative(boolean b);
 }
