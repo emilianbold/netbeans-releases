@@ -46,6 +46,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -252,7 +253,7 @@ public class JavaSourceHelper {
                     targetFolder, packageName, className).getPrimaryFile();
             return JavaSource.forFileObject(fobj);
         } catch (IOException ex) {
-            
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         
         return null;
