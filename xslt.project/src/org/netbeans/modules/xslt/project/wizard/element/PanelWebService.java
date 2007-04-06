@@ -95,7 +95,7 @@ final class PanelWebService<T> extends Panel<T> {
         i18n("LBL_Browse_WSDL"), // NOI18N
         i18n("TLT_Browse_WSDL")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
-          printInformation( // todo m
+          printInformation( // to do m
             "Dialog will be implemented by xml team," + // NOI18N
             " see issue 93596."); // NOI18N
         }

@@ -89,7 +89,6 @@ final class PanelStartup<T> extends Panel<T> {
     group.add(myProxy);
 
     myTransformation.setSelected(true);
-    myProxy.setSelected(true);// todo r
 
     // text
     c.gridy++;

@@ -51,15 +51,11 @@ final class PanelProxy<T> extends Panel<T> {
     WSDLModel modelCall)
   {
     super(project, parent);
-    //todo r
-//    int numberImplement = getXslFileNumber(1);
-//    int numberCall = getXslFileNumber(numberImplement + 1);
-
     myOperationImplement = new PanelOperation<T>(
-      project, this, modelImplement, null/*getXslFileName(numberImplement) todo */, true, true);
+      project, this, modelImplement, null, true, true);
 
     myOperationCall = new PanelOperation<T>(
-      project, this, modelCall, null/*todo getXslFileName(numberCall)*/, true, false);
+      project, this, modelCall, null, true, false);
  }
 
   @Override
