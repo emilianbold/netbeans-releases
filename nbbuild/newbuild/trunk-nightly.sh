@@ -9,7 +9,7 @@ pack_component()
     filter=$4
     zip -r $dist/zip/$base_name-$component.zip $filter
     gtar cvzf $dist/targz/$base_name-$component.tar.gz $filter
-    gtar cvjf $dist/tarbz/$base_name-$component.tar.bz2 $filter
+    gtar cvjf $dist/tarbz2/$base_name-$component.tar.bz2 $filter
 }
 
 init()
@@ -17,8 +17,8 @@ init()
    export ANT_OPTS="-Xmx512m"
    export JAVA_HOME=$JDK_HOME
 
-   DATESTAMP=`date -u +%Y%m%d%M`
-   BUILDNUM=trunk-nightly-all-$DATESTAMP
+   DATESTAMP=`date -u +%Y%m%d`
+   BUILDNUM=trunk-nightly-$DATESTAMP
    
    if [ -z $BASE_DIR ]; then
        echo BASE_DIR variable not defined, using the default one: /space/NB-IDE
@@ -26,6 +26,15 @@ init()
        echo to define a BASE_DIR variable in your environment
 
        BASE_DIR=/space/NB-IDE
+   fi
+
+   if [ -z $DIST_SERVER ]; then
+       echo DIST_SERVER not defined: Upload will no work
+   fi
+
+   if [ -z $DIST_SERVER_PATH ]; then
+       echo DIST_SERVER_PATH not defined using default
+       DIST_SERVER_PATH=/releng/www/netbeans/6.0/nightly
    fi
 
    NB_ALL=$BASE_DIR/nb-all
@@ -38,7 +47,7 @@ init()
 
    mkdir -p $DIST/zip
    mkdir -p $DIST/targz
-   mkdir -p $DIST/tarbz
+   mkdir -p $DIST/tarbz2
    mkdir -p $LOGS
 
    echo "To be written" > $DIST/INSTALL.txt
@@ -174,3 +183,17 @@ pack_component $DIST $BASENAME soa "soa*"
 rm -rf soa*
 
 pack_component $DIST $BASENAME nb6.0-etc "*"
+
+
+###################################################################
+#
+# Deploy bits to the storage server
+#
+###################################################################
+
+if [ -z $DIST_SERVER ]; then
+    exit 0;
+fi
+
+ssh -p 222 $DIST_SERVER mkdir -p $DIST_SERVER_PATH/$DATESTAMP
+scp -q -r $DIST/* $DIST_SERVER:$DIST_SERVER_PATH/$DATESTAMP
