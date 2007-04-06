@@ -74,7 +74,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                 ec = ecUC;
                 ec.updateStatus();
 
-                EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbedding();
+                EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
                 while (etl != null) {
                     if (language == null || etl.languagePath().innerLanguage() == language) {
                         @SuppressWarnings("unchecked")
@@ -82,7 +82,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                         return etlUC;
                     }
                     lastEtl = etl;
-                    etl = etl.nextEmbedding();
+                    etl = etl.nextEmbeddedTokenList();
                 }
                 token = ec.token();
             } else {
@@ -112,9 +112,9 @@ public final class EmbeddingContainer<T extends TokenId> {
                 EmbeddedTokenList<ET> etl = new EmbeddedTokenList<ET>(ec,
                         embeddedLanguagePath, embedding, null);
                 if (lastEtl != null)
-                    lastEtl.setNextEmbedding(etl);
+                    lastEtl.setNextEmbeddedTokenList(etl);
                 else
-                    ec.setFirstEmbedding(etl);
+                    ec.setFirstEmbeddedTokenList(etl);
                 return etl;
             }
             return null;
@@ -127,7 +127,7 @@ public final class EmbeddingContainer<T extends TokenId> {
             EmbeddingContainer<? extends TokenId> ec
                     = (EmbeddingContainer<? extends TokenId>)tokenOrEmbeddingContainer;
             ec.updateStatus();
-            EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbedding();
+            EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
             return etl;
         } else {
             return null;
@@ -169,12 +169,12 @@ public final class EmbeddingContainer<T extends TokenId> {
                 @SuppressWarnings("unchecked")
                 EmbeddingContainer<T> ecUC = (EmbeddingContainer<T>)tokenOrEmbeddingContainer;
                 ec = ecUC;
-                EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbedding();
+                EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
                 while (etl != null) {
                     if (embeddedLanguage == etl.languagePath().innerLanguage()) {
                         return false; // already exists
                     }
-                    etl = etl.nextEmbedding();
+                    etl = etl.nextEmbeddedTokenList();
                 }
                 token = ec.token();
             } else {
@@ -202,9 +202,10 @@ public final class EmbeddingContainer<T extends TokenId> {
             LanguagePath languagePath = tokenList.languagePath();
             LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath, embeddedLanguage);
             // Make the embedded token list to be the first in the list
+            // Make the embedded token list to be the first in the list
             etl = new EmbeddedTokenList<ET>(
-                    ec, embeddedLanguagePath, embedding, ec.firstEmbedding());
-            ec.setFirstEmbedding(etl);
+                    ec, embeddedLanguagePath, embedding, ec.firstEmbeddedTokenList());
+            ec.setFirstEmbeddedTokenList(etl);
             // Increment mod count? - not in this case
         }
 
@@ -270,7 +271,7 @@ public final class EmbeddingContainer<T extends TokenId> {
     /**
      * First embedded token list in the single-linked list.
      */
-    private EmbeddedTokenList<? extends TokenId> firstEmbedding; // 32 bytes
+    private EmbeddedTokenList<? extends TokenId> firstEmbeddedTokenList; // 32 bytes
 
     /**
      * Difference between start offset of the first token in this token list
@@ -319,10 +320,14 @@ public final class EmbeddingContainer<T extends TokenId> {
         return rootToken.charAt(rootTokenOffsetShift + tokenRelOffset);
     }
     
-    public EmbeddedTokenList<? extends TokenId> firstEmbedding() {
-        return firstEmbedding;
+    public EmbeddedTokenList<? extends TokenId> firstEmbeddedTokenList() {
+        return firstEmbeddedTokenList;
     }
     
+    void setFirstEmbeddedTokenList(EmbeddedTokenList<? extends TokenId> firstEmbeddedTokenList) {
+        this.firstEmbeddedTokenList = firstEmbeddedTokenList;
+    }
+
     public boolean updateStatus() {
         synchronized (rootTokenList) {
             rootToken = updateStatusImpl();
@@ -349,10 +354,6 @@ public final class EmbeddingContainer<T extends TokenId> {
             }
         }
         return rootToken;
-    }
-
-    void setFirstEmbedding(EmbeddedTokenList<? extends TokenId> firstEmbedding) {
-        this.firstEmbedding = firstEmbedding;
     }
 
 }

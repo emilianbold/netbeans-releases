@@ -160,7 +160,9 @@ public final class TokenListChange<T extends TokenId> {
 
     public String toString(int indent) {
         StringBuilder sb = new StringBuilder();
-        sb.append("index=");
+        sb.append('"');
+        sb.append(languagePath().innerLanguage().mimeType());
+        sb.append("\", index=");
         sb.append(index());
         sb.append(", offset=");
         sb.append(offset());

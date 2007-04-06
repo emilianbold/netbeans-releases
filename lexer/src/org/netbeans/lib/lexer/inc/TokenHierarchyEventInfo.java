@@ -157,8 +157,23 @@ public final class TokenHierarchyEventInfo {
     }
     
     public String toString() {
-        return "modOffset=" + modificationOffset() // NOI18N
-                + ", removedLength=" + removedLength + ", insertedLength=" + insertedLength; // NOI18N
+        StringBuilder sb = new StringBuilder();
+        sb.append("modOffset="); // NOI18N
+        sb.append(modificationOffset());
+        if (removedLength() > 0) {
+            sb.append(", removedLength=");
+            sb.append(removedLength());
+        }
+        if (insertedLength() > 0) {
+            sb.append(", insertedLength=");
+            sb.append(insertedLength()); // NOI18N
+        }
+        sb.append(", Affected(");
+        sb.append(affectedStartOffset());
+        sb.append(",");
+        sb.append(affectedEndOffset());
+        sb.append(')');
+        return sb.toString();
     }
 
 }

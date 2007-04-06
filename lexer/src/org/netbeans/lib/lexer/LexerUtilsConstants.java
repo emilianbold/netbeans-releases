@@ -32,7 +32,6 @@ import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
  * Various utility methods and constants in lexer module.
@@ -269,7 +268,7 @@ public final class LexerUtilsConstants {
             EmbeddingContainer<? extends TokenId> ec
                     = (EmbeddingContainer<? extends TokenId>)tokenOrEmbeddingContainer;
             sb.append("E[");
-            EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbedding();
+            EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
             boolean first = true;
             while (etl != null) {
                 sb.append('"');
@@ -279,7 +278,7 @@ public final class LexerUtilsConstants {
                     first = false;
                 else
                     sb.append(',');
-                etl = etl.nextEmbedding();
+                etl = etl.nextEmbeddedTokenList();
             }
             sb.append("] ");
             appendIdentityHashCode(sb, ec);

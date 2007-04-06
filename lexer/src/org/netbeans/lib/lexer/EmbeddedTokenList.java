@@ -84,7 +84,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     /**
      * Next embedded token list forming a single-linked list.
      */
-    private EmbeddedTokenList<? extends TokenId> nextEmbedding; // 52 bytes
+    private EmbeddedTokenList<? extends TokenId> nextEmbeddedTokenList; // 52 bytes
     
     public EmbeddedTokenList(EmbeddingContainer<? extends TokenId> embeddingContainer,
     LanguagePath languagePath, LanguageEmbedding<T> embedding,
@@ -92,7 +92,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         this.embeddingContainer = embeddingContainer;
         this.languagePath = languagePath;
         this.embedding = embedding;
-        this.nextEmbedding = nextEmbedding;
+        this.nextEmbeddedTokenList = nextEmbedding;
 
         if (modCount() != -1 || testing) {
             this.laState = LAState.empty(); // Store lookaheads and states
@@ -123,16 +123,20 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
             laState.trimToSize();
     }
     
-    EmbeddedTokenList<? extends TokenId> nextEmbedding() {
-        return nextEmbedding;
+    EmbeddedTokenList<? extends TokenId> nextEmbeddedTokenList() {
+        return nextEmbeddedTokenList;
     }
     
-    void setNextEmbedding(EmbeddedTokenList<? extends TokenId> nextEmbedding) {
-        this.nextEmbedding = nextEmbedding;
+    void setNextEmbeddedTokenList(EmbeddedTokenList<? extends TokenId> nextEmbeddedTokenList) {
+        this.nextEmbeddedTokenList = nextEmbeddedTokenList;
     }
     
     public LanguagePath languagePath() {
         return languagePath;
+    }
+    
+    public LanguageEmbedding embedding() {
+        return embedding;
     }
 
     public int tokenCount() {

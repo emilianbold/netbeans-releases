@@ -30,6 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -257,7 +258,8 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             TokenListChange<T> change = new TokenListChange<T>(incTokenList);
             TokenListUpdater.update(incTokenList, eventInfo, change);
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("LEXER CHANGE: " + eventInfo + "\nROOT CHANGE: " + change.toString(0) + "\n"); // NOI18N
+                LOG.fine("<<<<<<<<<<<<<<<<<< LEXER CHANGE START ------------------\n"); // NOI18N
+                LOG.fine("ROOT CHANGE: " + change.toString(0) + "\n"); // NOI18N
             }
             if (!incTokenList.isFullyLexed())
                 incTokenList.refreshLexerInputOperation();
@@ -287,7 +289,17 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 eventInfo.setAffectedEndOffset(change.addedEndOffset());
             }
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("------------------ LEXER CHANGE END -------------------------\n"); // NOI18N
+                LOG.fine("EVENT: " + eventInfo + "\n"); // NOI18N
+                String extraMsg = "";
+                if (LOG.isLoggable(Level.FINER)) {
+                    // Check consistency of the whole token hierarchy
+                    String error = checkConsistency();
+                    if (error != null)
+                        LOG.finer("!!!CONSISTENCY-ERROR!!!: " + error + "\n");
+                    else
+                        extraMsg = "(TokenHierarchy Check OK) ";
+                }
+                LOG.fine(">>>>>>>>>>>>>>>>>> LEXER CHANGE END " + extraMsg + "------------------\n"); // NOI18N
             }
             fireTokenHierarchyChanged(
                 LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
@@ -311,7 +323,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             @SuppressWarnings("unchecked")
             EmbeddingContainer<TX> newEC = new EmbeddingContainer<TX>(
                     (AbstractToken<TX>)change.addedTokensOrBranches().get(0));
-            newEC.setFirstEmbedding(etl);
+            newEC.setFirstEmbeddedTokenList(etl);
             change.tokenList().wrapToken(change.index(), newEC);
             do {
                 etl.setEmbeddingContainer(newEC);
@@ -338,7 +350,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                     eventInfo.setMinAffectedStartOffset(nestedChange.offset());
                     eventInfo.setMaxAffectedEndOffset(nestedChange.addedEndOffset());
                 }
-                etl = etl.nextEmbedding();
+                etl = etl.nextEmbeddedTokenList();
             } while (etl != null);
         } 
     }
@@ -498,7 +510,70 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     public int tokenShiftEndOffset() {
         return isSnapshot() ? ((SnapshotTokenList)tokenList).tokenShiftEndOffset() : -1;
     }
-
+    
+    /**
+     * Check consistency of the whole token hierarchy.
+     * @return string describing the problem or null if the hierarchy is consistent.
+     */
+    public String checkConsistency() {
+        return checkConsistencyTokenList(checkedTokenList(), ArrayUtilities.emptyIntArray(), 0);
+    }
+    
+    private String checkConsistencyTokenList(TokenList<? extends TokenId> tokenList,
+    int[] parentIndexes, int firstTokenOffset) {
+        int tokenCountCurrent = tokenList.tokenCountCurrent();
+        int[] indexes = ArrayUtilities.intArray(parentIndexes, parentIndexes.length + 1);
+        boolean continuous = tokenList.isContinuous();
+        int lastOffset = firstTokenOffset;
+        for (int i = 0; i < tokenCountCurrent; i++) {
+            Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(i);
+            if (tokenOrEmbeddingContainer == null) {
+                return dumpContext("Null token", tokenList, i, parentIndexes); // NOI18N
+            }
+            Token<?> token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
+            int offset = (token.isFlyweight()) ? lastOffset : token.offset(null);
+            if (offset < 0) {
+                return dumpContext("Token offset=" + offset + " < 0", tokenList, i, parentIndexes); // NOI18N
+            }
+            if (offset < lastOffset) {
+                return dumpContext("Token offset=" + offset + " < lastOffset=" + lastOffset,
+                        tokenList, i, parentIndexes);
+            }
+            if (offset > lastOffset && continuous) {
+                return dumpContext("Gap between tokens; offset=" + offset + ", lastOffset=" + lastOffset,
+                        tokenList, i, parentIndexes);
+            }
+            lastOffset = offset + token.length();
+            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
+                EmbeddingContainer<?> ec = (EmbeddingContainer<?>)tokenOrEmbeddingContainer;
+                EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
+                while (etl != null) {
+                    String error = checkConsistencyTokenList(etl, indexes, offset + etl.embedding().startSkipLength());
+                    if (error != null)
+                        return error;
+                    etl = etl.nextEmbeddedTokenList();
+                }
+            }
+        }
+        return null;
+    }
+    
+    private String dumpContext(String msg, TokenList<?> tokenList, int index, int[] parentIndexes) {
+        return  msg + " at index=" + index // NOI18N
+                + " of tokens of language " + tokenList.languagePath().innerLanguage().mimeType() // NOI18N
+                + "\nParents:\n" // NOI18N
+                + tracePath(parentIndexes, tokenList.languagePath());
+    }
+    
+    private String tracePath(int[] indexes, LanguagePath languagePath) {
+        StringBuilder sb  = new StringBuilder();
+        TokenList<?> tokenList = checkedTokenList();
+        for (int i = 0; i < indexes.length; i++) {
+            LexerUtilsConstants.appendTokenInfo(sb, tokenList.tokenOrEmbeddingContainer(i));
+            tokenList = EmbeddingContainer.getEmbedding(tokenList, indexes[i], languagePath.language(i));
+        }
+        return sb.toString();
+    }
     
     private final class SnapshotRef extends WeakReference<TokenHierarchyOperation<I,T>> implements Runnable {
         
