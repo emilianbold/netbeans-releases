@@ -29,7 +29,11 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.UiUtils;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
+
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -293,7 +297,12 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }
 
         protected void openElementHandle() {
-            if (elementHandle == null) {
+            if (fileObject == null) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaMembersModel.class, "MSG_CouldNotOpenElement", getLabel()));
+                return;
+            }
+            
+            if (elementHandle == null) {                
                 return;
             }
 
