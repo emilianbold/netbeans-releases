@@ -18,5 +18,5 @@
   Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="websvc/wsitconf">
-    <import file="nbproject/build-impl.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 </project>

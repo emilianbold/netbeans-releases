@@ -27,6 +27,8 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
         <property file="nbproject/private/private.properties"/>
         <property file="nbproject/project.properties"/>
+        <property name="proxy.host" value="webcache.czech.sun.com" />
+        <property name="proxy.port" value="8080" />
         <!-- Do not try to set module.classpath here, in particular: -->
         <!-- during a clean, the ${foo/bar.dir} properties may not be set. -->
         <parseprojectxml project="." codenamebasedashesproperty="code.name.base.dashes" codenamebaseslashesproperty="code.name.base.slashes"/>

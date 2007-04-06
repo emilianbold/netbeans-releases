@@ -395,6 +395,8 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../websvc/serviceapi</project>
                 <project>../websvc/websvcapi</project>
                 <project>../websvc/websvcddapi</project>
+                <project>../websvc/wsitmodelext</project>
+                <project>../websvc/wsitconf</project>
                 <project>../xml/api</project>
                 <project>../xml/catalog</project>
                 <project>../xml/core</project>
