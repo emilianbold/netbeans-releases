@@ -161,8 +161,6 @@ public class SunDDHelper {
     }
     
     public void addSecurityRoleMapping() {
-        System.out.println("addSecurityRoleMapping");
-        
         //final FileChangeListener fcl = new FileChangeAdapter() {
         //    public void fileChanged(FileEvent event) {
         boolean isModified = false;
@@ -187,8 +185,7 @@ public class SunDDHelper {
                 isModified = true;
             }
         }
-        
-        System.out.println("isModified = " + isModified);
+ 
         if (isModified) writeDocument();
         
         //sunDD.removeFileChangeListener(this);

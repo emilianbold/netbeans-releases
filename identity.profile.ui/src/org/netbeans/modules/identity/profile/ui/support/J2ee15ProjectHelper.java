@@ -9,6 +9,10 @@
 
 package org.netbeans.modules.identity.profile.ui.support;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,6 +22,7 @@ import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
@@ -51,10 +56,10 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
             JavaSource source = JavaSource.forFileObject(getJavaSource());
             
             if (source != null)
-                portComponentName = JavaSourceHelper.getClassName(source);
+                portComponentName = getClassName(source);
         }
         
-        System.out.println("J2ee15ProjectHelper.portComponentName = " + portComponentName);
+        //System.out.println("J2ee15ProjectHelper.portComponentName = " + portComponentName);
         return portComponentName;
     }
     
@@ -63,7 +68,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
             JavaSource source = JavaSource.forFileObject(getJavaSource());
             
             if (source != null) {
-                serviceDescriptionName = JavaSourceHelper.getServiceName(source);
+                serviceDescriptionName = getServiceName(source);
                 
                 if (serviceDescriptionName == null) {
                     serviceDescriptionName = getPortComponentName();
@@ -71,7 +76,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
             }
         }
         
-        System.out.println("J2ee15ProjectHelper.serviceDescriptionName = " + serviceDescriptionName);
+        //System.out.println("J2ee15ProjectHelper.serviceDescriptionName = " + serviceDescriptionName);
         return serviceDescriptionName;
     }
     
@@ -81,12 +86,9 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
             serviceRefs = new ArrayList<ServiceRef>();
             List<ServiceRef> refs = getServiceRefsFromSources();
             String wsdlUri = getClient().getWsdlUrl();
-            
-            System.out.println("wsdlUri = " + wsdlUri);
-            
+ 
             for (ServiceRef ref : refs) {
                 if (ref.getWsdlLocation().equals(wsdlUri)) {
-                    System.out.println("adding serviceRefName = " + ref.getName());
                     serviceRefNames.add(ref.getName());
                     serviceRefs.add(ref);
                 }
@@ -170,13 +172,74 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
         }
     }
     
+      
+    private String getClassName(JavaSource source) {
+        final String[] className = new String[1];
+        
+        try {
+            source.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    ClassTree tree = getTopLevelClassTree(controller);
+                    className[0] = tree.getSimpleName().toString();
+                }
+            }, true);
+        } catch (IOException ex) {
+            
+        }
+        
+        return className[0];
+    }
+    
+    private String getServiceName(JavaSource source) {
+        final String[] serviceName = new String[1];
+        
+        try {
+            source.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement classElement = getTopLevelClassElement(controller);
+                    
+                    if (classElement == null) {
+                        //System.out.println("Cannot resolve class!");
+                    } else {
+                        List<? extends AnnotationMirror> annotations =
+                                controller.getElements().getAllAnnotationMirrors(classElement);
+                        
+                        for (AnnotationMirror annotation : annotations) {
+                            if (annotation.toString().startsWith("@javax.jws.WebService")) {    //NOI18N
+                                
+                                Map<? extends ExecutableElement, ? extends AnnotationValue> values = annotation.getElementValues();
+                                
+                                for (ExecutableElement key : values.keySet()) {
+                                    if (key.getSimpleName().toString().equals("serviceName")) { //NOI18N
+                                        String name = values.get(key).toString();                        
+                                        serviceName[0] =  name.replace("\"", "");               //NOI18N
+                                        
+                                        return;
+                                    }
+                             
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            
+        }
+        
+        return serviceName[0];
+    }
+    
     private List<ServiceRef> getServiceRefsFromSources() {
         FileObject[] sourceRoots = getProvider().getSourceRoots();
         List<ServiceRef> refs = new ArrayList<ServiceRef>();
         
         for (FileObject root : sourceRoots) {
-            System.out.println("root = " + root);
-            if (root.getName().endsWith("conf")) {
+            String name = root.getName();
+            
+            if (name.equals("conf") || name.equals("web") || name.equals("test")) {      //NOI18N
                 continue;
             }
             
@@ -185,8 +248,8 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
             while (dataFiles.hasMoreElements()) {
                 FileObject fobj = dataFiles.nextElement();
                 
-                if (fobj.getExt().equals("java")) {
-                    System.out.println("source fobj = " + fobj);
+                if (fobj.getExt().equals("java")) {     //NOI18N
+                    //System.out.println("source fobj = " + fobj);
                     JavaSource source = JavaSource.forFileObject(fobj);
                     
                     refs.addAll(getServiceRefsFromSource(source));
@@ -205,28 +268,23 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     
-                    TypeElement classElement = JavaSourceHelper.getTopLevelClassElement(controller);
+                    TypeElement classElement = getTopLevelClassElement(controller);
                     List<VariableElement> fields = ElementFilter.fieldsIn(classElement.getEnclosedElements());
                     
                     for (VariableElement field : fields) {
-                        System.out.println("field = " + field);
                         List<? extends AnnotationMirror> annotations = field.getAnnotationMirrors();
                         
                         for (AnnotationMirror annotation : annotations) {
-                            System.out.println("annotation = " + annotation);
-                            if (annotation.toString().startsWith("@javax.xml.ws.WebServiceRef")) {    //NOI18N
-                                
+                            if (annotation.toString().startsWith("@javax.xml.ws.WebServiceRef")) {    //NOI18N            
                                 Map<? extends ExecutableElement, ? extends AnnotationValue> values = annotation.getElementValues();
                                 
                                 for (ExecutableElement key : values.keySet()) {
-                                    System.out.println("key = " + key.getSimpleName());
-                                    System.out.println("value = " + values.get(key));
-                                    
-                                    if (key.getSimpleName().toString().equals("wsdlLocation")) { //NOI18N
-                                        String wsdlLocation = values.get(key).toString().replace("\"", "");
-                                        String refName = classElement.getQualifiedName().toString() + "/" +
+                                    if (key.getSimpleName().toString().equals("wsdlLocation")) {        //NOI18N
+                                        String wsdlLocation = values.get(key).toString().replace("\"", "");     //NOI18N
+                                        String refName = classElement.getQualifiedName().toString() + "/" +     //NOI18N
                                                 field.getSimpleName().toString();
                                         String className = classElement.getSimpleName().toString();
+                                        
                                         refs.add(new ServiceRef(refName, wsdlLocation, className));
                                     }
                                 }
@@ -243,6 +301,33 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
         return refs;
     }
     
+    private ClassTree getTopLevelClassTree(CompilationController controller) {
+        String className = controller.getFileObject().getName();
+        
+        List<? extends Tree> decls = controller.getCompilationUnit().getTypeDecls();
+        
+        for (Tree decl : decls) {
+            if (decl.getKind() != Tree.Kind.CLASS) {
+                continue;
+            }
+            
+            ClassTree classTree = (ClassTree) decl;
+            
+            if (classTree.getSimpleName().contentEquals(className) &&
+                    classTree.getModifiers().getFlags().contains(Modifier.PUBLIC))
+                return classTree;
+        }
+        
+        return null;
+    }
+    
+    private TypeElement getTopLevelClassElement(CompilationController controller) {
+        ClassTree classTree = getTopLevelClassTree(controller);
+        Trees trees = controller.getTrees();
+        TreePath path = trees.getPath(controller.getCompilationUnit(), classTree);
+        
+        return (TypeElement) trees.getElement(path);
+    }
     
     private static class ServiceRef {
         private String name;
@@ -265,11 +350,6 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
         
         public String getClassName() {
             return className;
-        }
-        
-        public String toString() {
-            return "name:" + name + " wsdlLocation: " + wsdlLocation +
-                    " className = " + className;
         }
     }
 }

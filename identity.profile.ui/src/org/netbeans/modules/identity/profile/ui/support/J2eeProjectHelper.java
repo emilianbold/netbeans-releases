@@ -170,15 +170,10 @@ public class J2eeProjectHelper {
         this.model = model;
     }
     
-    public boolean isSecurable() {
-        System.out.println("isSecurable() project = " + getProject() +
-                " provider = " + getProvider());
-        
+    public boolean isSecurable() {  
         if (getProject() == null || getProvider() == null)
             return false;
-        
-        System.out.println("isServer = " + isServer());
-        
+  
         if (isServer()) {
             if (getPortComponentName() != null &&
                     getServiceDescriptionName() != null)
@@ -350,8 +345,7 @@ public class J2eeProjectHelper {
                 sunDD = FileUtil.toFile(fobj);
             }
         }
-        
-        System.out.println("sunDD = " + sunDD);
+    
         return sunDD;
         /*
         if (sunDD == null) {
@@ -384,7 +378,6 @@ public class J2eeProjectHelper {
         FileObject[] fobjs = getProvider().getConfigurationFiles();
         
         if (fobjs.length > 0) {
-            System.out.println("sunDD fobj = " + fobjs[0]);
             return fobjs[0];
         }
         
@@ -1110,7 +1103,6 @@ public class J2eeProjectHelper {
     }
     
      protected FileObject getJavaSource() {
-        System.out.println("getJavaSource() = " + node.getLookup().lookup(FileObject.class));
         return (FileObject)node.getLookup().lookup(FileObject.class);
     }
 
