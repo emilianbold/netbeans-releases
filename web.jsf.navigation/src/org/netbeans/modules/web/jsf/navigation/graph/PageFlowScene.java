@@ -23,6 +23,8 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collection;
+import java.util.Set;
+import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.LinkCreateProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
@@ -40,10 +42,13 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -52,6 +57,8 @@ import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
+import org.netbeans.api.visual.model.ObjectSceneEventType;
+import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
@@ -63,10 +70,14 @@ import org.netbeans.modules.web.jsf.navigation.PageFlowNode;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.PinNode;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.MapActionUtility;
+import org.netbeans.modules.web.jsf.navigation.graph.actions.MapActionUtility.HandleDeleteAction2;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
+import org.openide.actions.DeleteAction;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  * This class represents a GraphPinScene for the Navigation Editor which is soon to be the Page Flow Editor.
@@ -125,7 +136,11 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         actions.addAction(ActionFactory.createPanAction());
         actions.addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
         actions.addAction(popupGraphAction);
-        actions.addAction(dragNdropAction);
+        
+        addObjectSceneListener(new MyObjectSceneListener(), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        //        actions.addAction(dragNdropAction);
+        //        actions.addAction(selectAction);
+        
         
         //        GridGraphLayout<PageFlowNode, NavigationCaseNode> gglayout = new GridGraphLayout<PageFlowNode, NavigationCaseNode> ();
         //        gglayout.setChecker(true);
@@ -143,10 +158,17 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         
     }
     
-     
+    
     
     private WidgetAction createActionMap() {
+        
+        ActionMap actionMap = tc.getActionMap();
+        CallbackSystemAction a = (CallbackSystemAction)SystemAction.get(DeleteAction.class);
+        Action action = new HandleDeleteAction2(this);
+        actionMap.put(a.getActionMapKey(), new MapActionUtility.HandleDeleteAction2(this));
+        
         return ActionFactory.createActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());
+        
     }
     
     
@@ -436,9 +458,11 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
                 if (getSelectedObjects().contains(object))
                     return;
                 userSelectionSuggested(Collections.singleton(object), invertSelection);
-                tc.setActivatedNodes(new Node[]{(Node)object});
-            } else
+                //                tc.setActivatedNodes(new Node[]{(Node)object});
+            } else {
                 userSelectionSuggested(Collections.emptySet(), invertSelection);
+                //                ((PageFlowScene)widget.getScene()).getPageFlowView().setDefaultActivatedNode();
+            }
         }
     }
     
@@ -468,7 +492,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
             ((LabelWidget)widget).setLabel(newName);
             
             // XXX HACK XXX - A JToolbar is stealing my  much need focus.
-            EventQueue.invokeLater(new Runnable(){                
+            EventQueue.invokeLater(new Runnable(){
                 public void run() {
                     tc.requestMultiViewActive();
                 }
@@ -515,13 +539,69 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
             }
             
             // XXX HACK XXX - A JToolbar is stealing my  much need focus.
-            EventQueue.invokeLater(new Runnable(){                
+            EventQueue.invokeLater(new Runnable(){
                 public void run() {
                     tc.requestMultiViewActive();
                 }
             });
         }
         
+    }
+    
+    
+    
+    private class MyObjectSceneListener implements ObjectSceneListener{
+        public void objectAdded(ObjectSceneEvent event, Object addedObject) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+        public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+        public void objectStateChanged(ObjectSceneEvent event,
+                Object changedObject,
+                ObjectState previousState,
+                ObjectState newState) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+        public void selectionChanged(ObjectSceneEvent event,
+                Set<Object> previousSelection,
+                Set<Object> newSelection) {
+            
+            Set<Node> selected = new HashSet<Node>();
+            for( Object obj : newSelection ){
+                if( obj instanceof Node ) {
+                    selected.add((Node)obj);
+                }
+            }
+            
+            if( selected.size() == 0 ){
+                tc.setDefaultActivatedNode();
+            } else {
+                tc.setActivatedNodes(selected.toArray(new Node[selected.size()]));
+            }
+            
+        }
+        
+        public void highlightingChanged(ObjectSceneEvent event,
+                Set<Object> previousHighlighting,
+                Set<Object> newHighlighting) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+        public void hoverChanged(ObjectSceneEvent event,
+                Object previousHoveredObject,
+                Object newHoveredObject) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+        public void focusChanged(ObjectSceneEvent event,
+                Object previousFocusedObject,
+                Object newFocusedObject) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
     
     //    private void renamePin( Node pageNode, PinNode oldPinName, PinNode newPinName ){

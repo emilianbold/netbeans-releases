@@ -38,7 +38,6 @@ import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.navigation.JSFPageFlowMultiviewDescriptor.PageFlowElement;
@@ -69,17 +68,19 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     
     PageFlowView(PageFlowElement multiview, JSFConfigEditorContext context){
         this.multiview = multiview;
+        this.context = context;
         init();
         pfc = new PageFlowController( context,  this );
         setFocusable(true);
+        
         //        this(context, new InstanceContent());
     }
     
     public void requestMultiViewActive() {
         multiview.getMultiViewCallback().requestActive();
-        requestFocus();  //This is a hack because requestActive does not call requestFocus when it is already active (BUT IT SHOULD).        
+        requestFocus();  //This is a hack because requestActive does not call requestFocus when it is already active (BUT IT SHOULD).
     }
-            
+    
     
     
     /**
@@ -156,11 +157,17 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
         add(pane, BorderLayout.CENTER);
         
+        setDefaultActivatedNode();
+        
+    }
+    
+    public void setDefaultActivatedNode() {
         try{
             Node node = DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
             setActivatedNodes(new Node[] { node });
-        } catch (Exception e){}
-        
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
     
     
@@ -333,7 +340,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
                 if ( event.getStateChange() == ItemEvent.SELECTED ) {
                     pfu.setCurrentScope((String)event.getItem());
                     pfc.setupGraph();
-                }                
+                }
                 requestMultiViewActive();
             }
         });
@@ -399,7 +406,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return view.requestFocusInWindow();
     }
     
-
+    
     
     
     

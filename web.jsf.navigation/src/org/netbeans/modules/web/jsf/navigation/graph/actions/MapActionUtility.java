@@ -20,21 +20,18 @@
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.lang.Object;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import org.netbeans.api.visual.graph.GraphPinScene;
-import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.web.jsf.navigation.PageFlowController;
@@ -46,8 +43,8 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-
+import java.lang.*;
+import java.lang.Object;
 /**
  *
  * @author joelle
@@ -143,7 +140,9 @@ public class MapActionUtility {
         return inputMap;
     }
     
+    
     public static Action handleDeleteKey = new AbstractAction() {
+        
         public void actionPerformed(ActionEvent event) {
             //            System.out.println("Action Event: " + event);
             Object obj = event.getSource();
@@ -169,14 +168,14 @@ public class MapActionUtility {
                     for( Object selectedObj : selectedObjects ){
                         if( objScene.isEdge(selectedObj) ){
                             delete((Node)selectedObj);
-                        } 
+                        }
                     }
                     /* The deleted links should not be selected anymore */
                     selectedObjects = new HashSet<Object>(objScene.getSelectedObjects());
                     for( Object selectedObj : selectedObjects ){
-                       if( selectedObj instanceof Node ) {
-                           delete((Node)selectedObj);
-                       }
+                        if( selectedObj instanceof Node ) {
+                            delete((Node)selectedObj);
+                        }
                     }
                 }
             }
@@ -193,7 +192,77 @@ public class MapActionUtility {
         }
     };
     
-    
+    /**
+     *
+     */
+    public static class HandleDeleteAction2 extends AbstractAction {
+        PageFlowScene scene;
+        /**
+         *
+         * @param scene
+         */
+        public HandleDeleteAction2( PageFlowScene scene ){
+            this.scene = scene;
+        }
+        
+        @Override
+        public boolean isEnabled() { 
+            //Workaround: Temporarily Wrapping Collection because of Issue: 100127
+            Set<Object> selectedObjs = (Set<Object>) scene.getSelectedObjects();
+            if (selectedObjs.size() == 0 ){
+                return false;
+            } 
+            
+            for( Object selectedObj : selectedObjs ){
+                if(!( selectedObj instanceof Node )){
+                    return false;
+                }
+            }
+            
+            return super.isEnabled();           
+        }
+        
+        
+        
+        public void actionPerformed(ActionEvent event) {
+                
+                //Workaround: Temporarily Wrapping Collection because of Issue: 100127
+                Set<Object> selectedObjects = new HashSet<Object>(scene.getSelectedObjects());
+                
+                /*.When deleteing only one item. */
+                if (selectedObjects.size() == 1){
+                    Object myObj = selectedObjects.toArray()[0];
+                    if( myObj instanceof Node ) {
+                        delete((Node)myObj);
+                    }
+                }
+                
+                /* When deleting multiple objects, make sure delete all the links first. */
+                for( Object selectedObj : selectedObjects ){
+                    if( scene.isEdge(selectedObj) ){
+                        delete((Node)selectedObj);
+                    }
+                }
+                /* The deleted links should not be selected anymore */
+                selectedObjects = new HashSet<Object>(scene.getSelectedObjects());
+                for( Object selectedObj : selectedObjects ){
+                    if( selectedObj instanceof Node ) {
+                        delete((Node)selectedObj);
+                    }
+                }
+            
+        }
+        
+        private void delete( Node node ){
+            if ( node.canDestroy() ){
+                try                 {
+                    node.destroy();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    };
     
     
     public static Action handleNewWebForm = new AbstractAction() {

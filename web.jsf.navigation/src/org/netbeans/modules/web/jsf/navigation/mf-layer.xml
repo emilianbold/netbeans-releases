@@ -21,13 +21,19 @@
     <folder name="PageFlowEditor">
         <folder name="PopupActions">
             <file name="org-netbeans-modules-web-jsf-navigation-graph-actions-AddPageActionProvider.instance"/>
+            <file name="OpenAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />                
+            </file>
             <file name="NewAction.instance">
                     <attr name="instanceClass" stringvalue="org.openide.actions.NewAction" />
             </file>
             <file name="RenameAction.instance">
                     <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />                
             </file>
-            <file name="org-netbeans-modules-web-jsf-navigation-graph-actions-ConnectToAction.instance"/>
+            <file name="DeleteAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />                
+            </file>
+            <!--<file name="org-netbeans-modules-web-jsf-navigation-graph-actions-ConnectToAction.instance"/>-->
         </folder>
         <folder name="Palette">
             <folder name="Category1">
