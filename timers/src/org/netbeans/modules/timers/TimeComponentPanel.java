@@ -146,7 +146,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
     private Map<String, Integer> key2RowNumber;
     
     private void fillTimeTable() {
-        FileObject fo = (FileObject) jList1.getSelectedValue();
+        Object fo = jList1.getSelectedValue();
         DefaultTableModel model = (DefaultTableModel) times.getModel();
         
         while (model.getRowCount() > 0) {
@@ -155,34 +155,29 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         
         key2RowNumber.clear();
         
-        if (fo != null) {
-            Collection<String> keys = TimesCollectorPeer.getDefault().getKeysForFile(fo);
-            
+        Collection<String> keys = TimesCollectorPeer.getDefault().getKeysForFile(fo);
+        synchronized(keys) {
             for (String key : keys) {
                 changeRow(fo, key);
             }
         }
-        
-        Collection<String> keys = TimesCollectorPeer.getDefault().getKeysForFile(fo);
-        
-        for (String key : keys) {
-            changeRow(fo, key);
-        }
     }
 
-    private TimesCollectorPeer.Description getDescForRow(FileObject fo, int row) {
+    private TimesCollectorPeer.Description getDescForRow(Object fo, int row) {
         Collection<String> keys = TimesCollectorPeer.getDefault().getKeysForFile(fo);
-        Iterator<String> it = keys.iterator();
-        String key = null;
-        for (int i= 0; i<=row; i++) {
-            assert (it.hasNext());
-            key = it.next();
+        synchronized (keys) {
+            Iterator<String> it = keys.iterator();
+            String key = null;
+            for (int i= 0; i<=row; i++) {
+                assert (it.hasNext());
+                key = it.next();
+            }
+            return TimesCollectorPeer.getDefault().getDescription(fo, key);
         }
-        return TimesCollectorPeer.getDefault().getDescription(fo, key);
     }
 
     
-    private void changeRow(FileObject fo, String key) {
+    private void changeRow(Object fo, String key) {
         Integer row = key2RowNumber.get(key);
         DefaultTableModel model = (DefaultTableModel) times.getModel();
         
@@ -208,7 +203,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
 
         model.removeAllElements();
 
-        for (FileObject f : TimesCollectorPeer.getDefault().getFiles()) {
+        for (Object f : TimesCollectorPeer.getDefault().getFiles()) {
             model.addElement(f);
         }
     }
@@ -227,7 +222,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
                 }
                 
                 if ("PROP".equals(evt.getPropertyName())) {
-                    FileObject fo  = (FileObject) evt.getOldValue();
+                    Object fo  = evt.getOldValue();
                     String     key = (String) evt.getNewValue();
                     
                     if (fo == jList1.getSelectedValue() || fo == null) {
@@ -236,7 +231,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
                 }
                 
                 if ("selected".equals(evt.getPropertyName())) {
-                    FileObject fo = (FileObject) evt.getNewValue();
+                    Object fo = evt.getNewValue();
                     
                     jList1.setSelectedValue(fo, true);
                 }
@@ -317,7 +312,8 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         }
         
         void createPopup(int x, int y, int row) {
-            TimesCollectorPeer.Description desc = getDescForRow((FileObject) jList1.getSelectedValue(), row);
+            Object fo = jList1.getSelectedValue();
+            TimesCollectorPeer.Description desc = getDescForRow(fo, row);
             if (!(desc instanceof TimesCollectorPeer.ObjectCountDescripton)) return;
             
             final TimesCollectorPeer.ObjectCountDescripton oc = (TimesCollectorPeer.ObjectCountDescripton) desc;
@@ -351,13 +347,15 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         }
         
         void createPopup(int x, int y, int row) {
-            final FileObject[] fo = new FileObject[] {(FileObject) jList1.getSelectedValue()};
+            final Object[] fo = new Object[] {jList1.getSelectedValue()};
+            if (! (fo[0] instanceof FileObject)) return;
+
             JPopupMenu popup = new JPopupMenu();
             popup.add(new AbstractAction("Find refs") {
 
                 public void actionPerformed(ActionEvent arg0) {
                     try {
-                        FileObject f = fo[0];
+                        FileObject f = (FileObject)fo[0];
 
                         fo[0] = null;
                         // hack - DO.find, we'not really interrested in

@@ -24,15 +24,13 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -42,8 +40,8 @@ import org.openide.util.Utilities;
  */
 public final class TimesCollectorPeer {
     
-    private List<Reference<FileObject>> files;
-    private Map<FileObject, Map<String, Description>> fo2Key2Desc;
+    private List<Reference<Object>> files;
+    private Map<Object, Map<String, Description>> fo2Key2Desc;
     
     private static final TimesCollectorPeer INSTANCE = new TimesCollectorPeer();
     
@@ -55,13 +53,13 @@ public final class TimesCollectorPeer {
     
     /** Creates a new instance of TimesCollectorPeer */
     private TimesCollectorPeer() {
-        files = new ArrayList<Reference<FileObject>>();
-        fo2Key2Desc = new WeakHashMap<FileObject, Map<String, Description>>();
+        files = new ArrayList<Reference<Object>>();
+        fo2Key2Desc = new WeakHashMap<Object, Map<String, Description>>();
         
         pcs = new PropertyChangeSupport(this);
     }
     
-    public void reportTime(FileObject fo, String key, String message, long time) {
+    public void reportTime(Object fo, String key, String message, long time) {
         Map<String, Description> key2Desc = getKey2Desc(fo);
         Description desc = new Description(message, time);
         
@@ -70,7 +68,7 @@ public final class TimesCollectorPeer {
         pcs.firePropertyChange("PROP", fo, key);
     }
     
-    public void reportReference( FileObject fo, String key, String message, Object object ) {
+    public void reportReference( Object fo, String key, String message, Object object ) {
         Map<String, Description> key2Desc = getKey2Desc(fo);
         
         // Little bit more complicated here
@@ -84,45 +82,31 @@ public final class TimesCollectorPeer {
         pcs.firePropertyChange("PROP", fo, key);
     }
     
-    private synchronized Map<String, Description> getKey2Desc(final FileObject fo) {
+    private synchronized Map<String, Description> getKey2Desc(final Object fo) {
         Map<String, Description> result = fo2Key2Desc.get(fo);
         
         if (result == null) {
-            files.add(new CleanableWeakReference<FileObject>(fo));
-            fo2Key2Desc.put(fo, result = new LinkedHashMap<String, Description>());
+            files.add(new CleanableWeakReference<Object>(fo));
+            fo2Key2Desc.put(fo, result = Collections.synchronizedMap(new LinkedHashMap<String, Description>()));
             pcs.firePropertyChange("fos", null, fo);
-            if (fo != null) {
-                fo.addFileChangeListener(new FileChangeAdapter() {
-                    public void fileDeleted(FileEvent ev) {
-                        for (Reference<FileObject> r : files) {
-                            if (r.get() == fo) {
-                                files.remove(r);
-                                break;
-                            }
-                        }
-                        fo2Key2Desc.remove(fo);
-                        pcs.firePropertyChange("fos", null, null);
-                    }
-                });
-            }
         }
         
          return result;
     }
     
-    public Description getDescription(FileObject fo, String key) {
+    public Description getDescription(Object fo, String key) {
         return getKey2Desc(fo).get(key);
     }
     
-    public Collection<String> getKeysForFile(FileObject fo) {
+    public Collection<String> getKeysForFile(Object fo) {
         return getKey2Desc(fo).keySet();
     }
     
-    public Collection<FileObject> getFiles() {
-        List<FileObject> result = new ArrayList<FileObject>();
+    public Collection<Object> getFiles() {
+        List<Object> result = new ArrayList<Object>();
         
-        for (Reference<FileObject> r : files) {
-            FileObject f = r.get();
+        for (Reference<Object> r : files) {
+            Object f = r.get();
             
             if (f != null)
                 result.add(f);
@@ -138,7 +122,7 @@ public final class TimesCollectorPeer {
         pcs.removePropertyChangeListener(l);
     }
 
-    public void select(FileObject fo) {
+    public void select(Object fo) {
         getKey2Desc(fo);
         pcs.firePropertyChange("selected", null, fo);
     }
@@ -165,15 +149,15 @@ public final class TimesCollectorPeer {
     public static class ObjectCountDescripton extends Description implements ChangeListener {
         
         private TimesCollectorPeer tcp;
-        private Reference<FileObject> fo;
+        private Reference<Object> fo;
         private String key;
         private InstanceWatcher iw = new InstanceWatcher();
         
         
-        public ObjectCountDescripton( TimesCollectorPeer tcp, FileObject fo, String key, String message ) {
+        public ObjectCountDescripton( TimesCollectorPeer tcp, Object fo, String key, String message ) {
             super( message, 0 );
             this.tcp = tcp;
-            this.fo = new WeakReference<FileObject>(fo);
+            this.fo = new WeakReference<Object>(fo);
             this.key = key;
             iw.addChangeListener( this );
         }
@@ -191,7 +175,7 @@ public final class TimesCollectorPeer {
         } 
         
         public void stateChanged(ChangeEvent e) {
-            FileObject file = fo.get();
+            Object file = fo.get();
             
             if (file != null) {
                 tcp.pcs.firePropertyChange("PROP", file, key);
