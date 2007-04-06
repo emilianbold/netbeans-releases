@@ -45,7 +45,8 @@ import org.openide.util.WeakSet;
 
 /**
  * A more or less <em>deprecated</em> system of managing, annotating, and classifying errors
- *  and log messages.
+ *  and log messages. Instead of <code>ErrorManager</code> use
+ * {@link Logger} as described in <a href="@TOP@/org/openide/util/doc-files/logging.html">NetBeans logging guide</a>.
  * <p>
  * Rather then using the {@link ErrorManager} consider using JDK's {@link Logger}
  * for reporting log events, unwanted exceptions, etc.  The methods

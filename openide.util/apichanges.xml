@@ -215,8 +215,8 @@ Microsystems, Inc. All Rights Reserved.
           is no longer the recommended way to do logging in NetBeans based
           application. Instead NetBeans now fully support logging two JDK's
           standard <a href="@JDK@/java/util/logging/Logger.html">Logger</a>.
-          See logging
-          <a href="@TOP@/org/openide/util/doc-files/logging.html">tutorial</a>
+          See the
+          <a href="@TOP@/org/openide/util/doc-files/logging.html">NetBeans logging guide</a>
           to learn the best practises for logging in NetBeans.
           <br/>
           <a href="@TOP@/org/openide/ErrorManager.html">ErrorManager</a>
