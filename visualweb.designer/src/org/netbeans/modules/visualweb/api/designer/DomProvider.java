@@ -549,7 +549,7 @@ public interface DomProvider {
     public void tcShowPopupMenuForEvent(Designer designer, MouseEvent evt);
     
     public boolean tcImportComponentData(Designer designer, JComponent comp, Transferable t);
-    public Point tcGetPastePosition(Designer designer);
+//    public Point tcGetPastePosition(Designer designer);
     public void tcRepaint(Designer designer);
     public boolean tcSeenEscape(Designer designer, ActionEvent evt);
     

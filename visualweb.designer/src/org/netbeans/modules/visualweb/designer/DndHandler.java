@@ -301,7 +301,8 @@ public class DndHandler /*extends TransferHandler*/ {
 //                    dropPoint = new Point(0,0);
 //                }
 //            }
-            dropPoint = webform.tcGetPastePosition();
+//            dropPoint = webform.tcGetPastePosition();
+            dropPoint = webform.getPastePoint();
         }
 
         // Delay this operation so that the other listener, DesignerPane.

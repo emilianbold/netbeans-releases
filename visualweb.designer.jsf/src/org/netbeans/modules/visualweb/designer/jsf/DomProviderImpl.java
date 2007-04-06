@@ -1343,14 +1343,14 @@ class DomProviderImpl implements DomProvider {
         
     }
 
-    public Point tcGetPastePosition(Designer designer) {
-//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-//        if (jsfMultiViewElement == null) {
-//            return new Point(0, 0);
-//        }
-//        return jsfMultiViewElement.getJsfTopComponent().getPastePosition();
-        return designer.getPastePoint();
-    }
+//    public Point tcGetPastePosition(Designer designer) {
+////        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+////        if (jsfMultiViewElement == null) {
+////            return new Point(0, 0);
+////        }
+////        return jsfMultiViewElement.getJsfTopComponent().getPastePosition();
+//        return designer.getPastePoint();
+//    }
 
     public void tcRepaint(Designer designer) {
         JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
