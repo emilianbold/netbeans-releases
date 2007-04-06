@@ -347,7 +347,7 @@ public interface DomProvider {
     public void importString(Designer designer, String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
             Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement/*, DomProvider.CoordinateTranslator coordinateTranslator*/);
 
-    public void importData(Designer designer, JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+    public void importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
             Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement/*, DomProvider.CoordinateTranslator coordinateTranslator*/, int dropAction);
     
     // XXX
@@ -548,7 +548,7 @@ public interface DomProvider {
     public void tcShowPopupMenu(Designer designer, JPopupMenu popup, int x, int y);
     public void tcShowPopupMenuForEvent(Designer designer, MouseEvent evt);
     
-    public boolean tcImportComponentData(Designer designer, JComponent comp, Transferable t);
+//    public boolean tcImportComponentData(Designer designer, JComponent comp, Transferable t);
 //    public Point tcGetPastePosition(Designer designer);
     public void tcRepaint(Designer designer);
     public boolean tcSeenEscape(Designer designer, ActionEvent evt);

@@ -28,6 +28,7 @@ import java.util.prefs.PreferenceChangeListener;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomRange;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -205,6 +206,7 @@ public interface Designer {
     public void updatePaneViewPort();
     
     public boolean hasPaneCaret();
+    public DomRange getPaneCaretRange();
     public void setPaneCaret(DomPosition pos);
     
     public void resetPanePageBox();

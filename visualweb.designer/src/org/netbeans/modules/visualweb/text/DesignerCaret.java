@@ -127,6 +127,11 @@ import org.w3c.dom.Node;
         async = false;
     }
 
+    
+    public DomRange getRange() {
+        return range;
+    }
+    
     /**
      * Get the flag that determines whether or not asynchronous updates will move the caret.
      * Normally the caret is moved by events from the event thread such as mouse or keyboard events.

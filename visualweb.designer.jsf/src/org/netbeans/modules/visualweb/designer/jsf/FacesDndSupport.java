@@ -40,6 +40,7 @@ import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.markup.MarkupMouseRegion;
 import com.sun.rave.designtime.markup.MarkupPosition;
+import java.awt.Component;
 import org.netbeans.modules.visualweb.insync.InSyncServiceProvider;
 import org.netbeans.modules.visualweb.insync.ResultHandler;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
@@ -78,15 +79,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.ButtonGroup;
+import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
+import org.netbeans.modules.visualweb.designer.jsf.ui.JsfTopComponent;
 import org.netbeans.modules.visualweb.propertyeditors.UrlPropertyEditor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -135,7 +140,9 @@ class FacesDndSupport {
     /** Directory prefix under the web folder root to place the resource files */
     private static final String RESOURCES = "/resources/"; // NOI18N
 
-    
+
+    private final JsfForm jsfForm;
+    // XXX TODO Get rid of this.
     private final FacesModel facesModel;
     
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -149,11 +156,13 @@ class FacesDndSupport {
     
     
     /** Creates a new instance of FacesDnDSupport */
-    public FacesDndSupport(FacesModel facesModel) {
-        if (facesModel == null) {
-            throw new IllegalArgumentException("Null FacesModel."); // NOI18N
+    public FacesDndSupport(JsfForm jsfForm) {
+        if (jsfForm == null) {
+            throw new NullPointerException("Null argument is not allowed."); // NOI18N
         }
-        this.facesModel = facesModel;
+        this.jsfForm = jsfForm;
+//        this.facesModel = facesModel;
+        this.facesModel = jsfForm.getFacesModel();
     }
 
     
@@ -278,8 +287,58 @@ class FacesDndSupport {
     }
     
     
-    private /*public*/ void importData(Designer designer, JComponent comp, Transferable t, Object transferData,
+    private /*public*/ void importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/
     Dimension dropSize, Location location, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender, int dropAction) {
+        Object transferData = null;
+        try {
+//            DataFlavor importFlavor = webform.getImportFlavor(t.getTransferDataFlavors());
+            DataFlavor importFlavor = getImportFlavor(t.getTransferDataFlavors());
+
+            if (importFlavor == null) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+                        new IllegalStateException("Unusable transfer flavors " + Arrays.asList(t.getTransferDataFlavors()))); // NOI18N
+
+                return /*false*/;
+            }
+
+            // XXX What was before in SelectionTopComp.
+            if (importFlavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
+//                /*return*/ webform.tcImportComponentData(comp, t);
+                importComponentData(designer, comp, t);
+            } // TEMP
+
+            Class rc = importFlavor.getRepresentationClass();
+
+            transferData = t.getTransferData(importFlavor);
+
+            if (rc == String.class) {
+                // XXX #6332049 When in inline editing we shouldn't steal the paste
+                // (at least for the JTextComponent's.
+                // This is just a workaround, it shouldn't be done this way.
+                // actions should be created based on context (and inline editing
+                // context is diff from the designer pane one).
+//                if(webform.getManager().isInlineEditing()) {
+                if (designer.isInlineEditing()) {
+                    Component focusOwner = FocusManager.getCurrentManager().getFocusOwner();
+                    if(focusOwner instanceof JTextComponent) {
+                        JTextComponent textComp = (JTextComponent)focusOwner;
+                        textComp.paste();
+                        return /*true*/;
+                    } 
+                }
+
+                // XXX Flowlayout mode?
+//                if (webform.getPane().getCaret() != null) {
+//                if (webform.getPane().hasCaret()) {
+                if (designer.hasPaneCaret()) {
+//                    webform.getPane().getCaret().replaceSelection((String)transferData);
+//                    webform.getPane().replaceSelection((String)transferData);
+                    jsfForm.getDomDocumentImpl().insertString(designer, designer.getPaneCaretRange(), (String)transferData);
+                    return /*true*/;
+                }
+            }
+        
+        
         if (!isValidTransferData(t, transferData)) {
             return;
         }
@@ -431,7 +490,7 @@ class FacesDndSupport {
                 assert false : transferData;
             }
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
 
             return;
         } finally {
@@ -443,6 +502,10 @@ class FacesDndSupport {
 //            dropPoint = null;
 
 //            clearDropMatch();
+        }
+        
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
     
@@ -3470,10 +3533,10 @@ linkCheckFinished:
         importString(designer, string, location, /*coordinateTranslator,*/ updateSuspender);
     }
 
-    public void importData(Designer designer, JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dropSize, boolean isGrid,
+    public void importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dropSize, boolean isGrid,
     Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent, /*CoordinateTranslator coordinateTranslator,*/ UpdateSuspender updateSuspender, int dropAction) {
         Location location = computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, dropSize, isGrid, droppeeElement, droppeeBean, defaultParent);
-        importData(designer, comp, t, transferData, dropSize, location, /*coordinateTranslator,*/ updateSuspender, dropAction);
+        importData(designer, comp, t, /*transferData,*/ dropSize, location, /*coordinateTranslator,*/ updateSuspender, dropAction);
     }
 
     private static boolean isValidTransferData(Transferable t, Object transferData) {
@@ -3623,5 +3686,73 @@ linkCheckFinished:
         }
     } // End of DropInfo.
 
+    
+    private boolean importComponentData(Designer designer, JComponent comp, Transferable t) {
+//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+//        if (jsfMultiViewElement == null) {
+//            return false;
+//        }
+        
+        JsfTopComponent jsfTopComponent;
+
+        if (comp instanceof JsfTopComponent) {
+            jsfTopComponent = (JsfTopComponent)comp;
+        } else {
+            jsfTopComponent = (JsfTopComponent)SwingUtilities.getAncestorOfClass(JsfTopComponent.class, comp);
+        }
+
+        if (jsfTopComponent == null) {
+            // XXX
+            return false;
+        }
+
+//                DesignBean parent = selectionTopComp.getPasteParent();
+        Element parentComponentRootElement = jsfTopComponent.getPasteParentComponent();
+//                MarkupPosition pos = selectionTopComp.getPasteMarkupPosition();
+//        Point location = jsfTopComponent.getPastePosition();
+        Point location = designer.getPastePoint();
+//                DesignBean[] beans = selectionTopComp.pasteBeans(webform, t, parent, pos, location);
+//                Element[] componentRootElements = SelectionTopComp.pasteComponents(webform, t, parentComponentRootElement, location);
+
+        if (location != null) {
+//            GridHandler gridHandler = webform.getGridHandler();
+//            location.x = gridHandler.snapX(location.x);
+//            location.y = gridHandler.snapY(location.y);
+            location.x = designer.snapX(location.x, null);
+            location.y = designer.snapY(location.y, null);
+        }
+//        Element[] componentRootElements = webform.pasteComponents(t, parentComponentRootElement, location);
+        Element[] componentRootElements = pasteComponents(t, parentComponentRootElement, location, jsfForm.getUpdateSuspender());
+
+//                if ((beans != null) && (beans.length > 0)) {
+//                    selectionTopComp.selectBeans(beans);
+//                }
+        if (componentRootElements.length > 0) {
+//            selectionTopComp.selectComponents(componentRootElements);
+            jsfTopComponent.selectComponents(componentRootElements);
+        }
+        return true;
+        
+    }
+
+    private /*public*/ Element[] pasteComponents(Transferable t, Element parentComponentRootElement, Point location, UpdateSuspender updateSuspender) {
+        MarkupDesignBean parent = MarkupUnit.getMarkupDesignBeanForElement(parentComponentRootElement);
+        DesignBean[] designBeans = pasteBeans(t, parent, null, location, /*jsfForm.getUpdateSuspender()*/updateSuspender);
+        
+        if (designBeans == null) {
+            return new Element[0];
+        }
+        
+        List<Element> elements = new ArrayList<Element>();
+        for (DesignBean designBean : designBeans) {
+            if (designBean instanceof MarkupDesignBean) {
+                Element element = JsfSupportUtilities.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean);
+                if (element != null) {
+                    elements.add(element);
+                }
+            }
+        }
+        return elements.toArray(new Element[elements.size()]);
+    }
     
 }

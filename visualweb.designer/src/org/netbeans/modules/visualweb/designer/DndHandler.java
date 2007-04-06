@@ -421,60 +421,60 @@ public class DndHandler /*extends TransferHandler*/ {
 //        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
         
         
-        Object transferData = null;
-        try {
-            DataFlavor importFlavor = webform.getImportFlavor(t.getTransferDataFlavors());
-
-            if (importFlavor == null) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                        new IllegalStateException("Unusable transfer flavors " + Arrays.asList(t.getTransferDataFlavors()))); // NOI18N
-
-                return /*false*/;
-            }
-
-            // XXX What was before in SelectionTopComp.
-            if (importFlavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
-                /*return*/ webform.tcImportComponentData(comp, t);
-            } // TEMP
-
-            Class rc = importFlavor.getRepresentationClass();
-
-            transferData = t.getTransferData(importFlavor);
-
-            if (rc == String.class) {
-                // XXX #6332049 When in inline editing we shouldn't steal the paste
-                // (at least for the JTextComponent's.
-                // This is just a workaround, it shouldn't be done this way.
-                // actions should be created based on context (and inline editing
-                // context is diff from the designer pane one).
-                if(webform.getManager().isInlineEditing()) {
-                    Component focusOwner = FocusManager.getCurrentManager().getFocusOwner();
-                    if(focusOwner instanceof JTextComponent) {
-                        JTextComponent textComp = (JTextComponent)focusOwner;
-                        textComp.paste();
-                        return /*true*/;
-                    } 
-                }
-
-                // XXX Flowlayout mode?
-//                if (webform.getPane().getCaret() != null) {
-                if (webform.getPane().hasCaret()) {
-//                    webform.getPane().getCaret().replaceSelection((String)transferData);
-                    webform.getPane().replaceSelection((String)transferData);
-                    return /*true*/;
-                }
-            }
+//        Object transferData = null;
+//        try {
+//            DataFlavor importFlavor = webform.getImportFlavor(t.getTransferDataFlavors());
+//
+//            if (importFlavor == null) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+//                        new IllegalStateException("Unusable transfer flavors " + Arrays.asList(t.getTransferDataFlavors()))); // NOI18N
+//
+//                return /*false*/;
+//            }
+//
+//            // XXX What was before in SelectionTopComp.
+//            if (importFlavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
+//                /*return*/ webform.tcImportComponentData(comp, t);
+//            } // TEMP
+//
+//            Class rc = importFlavor.getRepresentationClass();
+//
+//            transferData = t.getTransferData(importFlavor);
+//
+//            if (rc == String.class) {
+//                // XXX #6332049 When in inline editing we shouldn't steal the paste
+//                // (at least for the JTextComponent's.
+//                // This is just a workaround, it shouldn't be done this way.
+//                // actions should be created based on context (and inline editing
+//                // context is diff from the designer pane one).
+//                if(webform.getManager().isInlineEditing()) {
+//                    Component focusOwner = FocusManager.getCurrentManager().getFocusOwner();
+//                    if(focusOwner instanceof JTextComponent) {
+//                        JTextComponent textComp = (JTextComponent)focusOwner;
+//                        textComp.paste();
+//                        return /*true*/;
+//                    } 
+//                }
+//
+//                // XXX Flowlayout mode?
+////                if (webform.getPane().getCaret() != null) {
+//                if (webform.getPane().hasCaret()) {
+////                    webform.getPane().getCaret().replaceSelection((String)transferData);
+//                    webform.getPane().replaceSelection((String)transferData);
+//                    return /*true*/;
+//                }
+//            }
         
 //        DomProvider.Location location = WebForm.getDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
 //                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
 //        doImportDataDelayed(comp, t, transferData, location/*, coordinateTranslator*/);
-            webform.importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid,
+            webform.importData(comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid,
                     droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement , /*coordinateTranslator,*/ dropAction);
 
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-//            return /*false*/;
-        }
+//        } catch (Exception e) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+////            return /*false*/;
+//        }
         
         dropSize = null;
 //        insertPos = Position.NONE;

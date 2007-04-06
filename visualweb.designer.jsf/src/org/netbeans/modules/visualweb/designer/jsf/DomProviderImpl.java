@@ -202,25 +202,26 @@ class DomProviderImpl implements DomProvider {
 //    public DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, DomProvider.CoordinateTranslator coordinateTranslator) {
 //        return getDndSupport().pasteBeans(t, parent, pos, location, coordinateTranslator, jsfForm.getUpdateSuspender());
 //    }
-    private /*public*/ Element[] pasteComponents(Transferable t, Element parentComponentRootElement, Point location) {
-        MarkupDesignBean parent = MarkupUnit.getMarkupDesignBeanForElement(parentComponentRootElement);
-        DesignBean[] designBeans = getDndSupport().pasteBeans(t, parent, null, location, jsfForm.getUpdateSuspender());
-        
-        if (designBeans == null) {
-            return new Element[0];
-        }
-        
-        List<Element> elements = new ArrayList<Element>();
-        for (DesignBean designBean : designBeans) {
-            if (designBean instanceof MarkupDesignBean) {
-                Element element = getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean);
-                if (element != null) {
-                    elements.add(element);
-                }
-            }
-        }
-        return elements.toArray(new Element[elements.size()]);
-    }
+    // XXX Moved to FacesDnDSupport
+//    private /*public*/ Element[] pasteComponents(Transferable t, Element parentComponentRootElement, Point location) {
+//        MarkupDesignBean parent = MarkupUnit.getMarkupDesignBeanForElement(parentComponentRootElement);
+//        DesignBean[] designBeans = getDndSupport().pasteBeans(t, parent, null, location, jsfForm.getUpdateSuspender());
+//        
+//        if (designBeans == null) {
+//            return new Element[0];
+//        }
+//        
+//        List<Element> elements = new ArrayList<Element>();
+//        for (DesignBean designBean : designBeans) {
+//            if (designBean instanceof MarkupDesignBean) {
+//                Element element = getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean);
+//                if (element != null) {
+//                    elements.add(element);
+//                }
+//            }
+//        }
+//        return elements.toArray(new Element[elements.size()]);
+//    }
 
 //    public void importData(JComponent comp, Transferable t, Object transferData, Dimension dimension,
 
@@ -1158,11 +1159,11 @@ class DomProviderImpl implements DomProvider {
                 droppeeElement, droppeeBean, defaultParent/*, coordinateTranslator*/);
     }
 
-    public void importData(Designer designer, JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+    public void importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
             Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement/*, DomProvider.CoordinateTranslator coordinateTranslator*/, int dropAction) {
         DesignBean droppeeBean = MarkupUnit.getMarkupDesignBeanForElement(dropeeComponentRootElement);
         DesignBean defaultParent = MarkupUnit.getMarkupDesignBeanForElement(defaultParentComponentRootElement);
-        getDndSupport().importData(designer, comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+        getDndSupport().importData(designer, comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
                 droppeeElement, droppeeBean, defaultParent, /*coordinateTranslator,*/ dropAction);
     }
 
@@ -1295,53 +1296,54 @@ class DomProviderImpl implements DomProvider {
         jsfTopComponent.showPopupMenu(p.x, p.y);
     }
 
-    public boolean tcImportComponentData(Designer designer, JComponent comp, Transferable t) {
-//        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
-//        if (jsfMultiViewElement == null) {
+    // XXX Moved to FacesDnDSupport.
+//    public boolean tcImportComponentData(Designer designer, JComponent comp, Transferable t) {
+////        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);
+////        if (jsfMultiViewElement == null) {
+////            return false;
+////        }
+//        
+//        JsfTopComponent jsfTopComponent;
+//
+//        if (comp instanceof JsfTopComponent) {
+//            jsfTopComponent = (JsfTopComponent)comp;
+//        } else {
+//            jsfTopComponent = (JsfTopComponent)SwingUtilities.getAncestorOfClass(JsfTopComponent.class, comp);
+//        }
+//
+//        if (jsfTopComponent == null) {
+//            // XXX
 //            return false;
 //        }
-        
-        JsfTopComponent jsfTopComponent;
-
-        if (comp instanceof JsfTopComponent) {
-            jsfTopComponent = (JsfTopComponent)comp;
-        } else {
-            jsfTopComponent = (JsfTopComponent)SwingUtilities.getAncestorOfClass(JsfTopComponent.class, comp);
-        }
-
-        if (jsfTopComponent == null) {
-            // XXX
-            return false;
-        }
-
-//                DesignBean parent = selectionTopComp.getPasteParent();
-        Element parentComponentRootElement = jsfTopComponent.getPasteParentComponent();
-//                MarkupPosition pos = selectionTopComp.getPasteMarkupPosition();
-//        Point location = jsfTopComponent.getPastePosition();
-        Point location = designer.getPastePoint();
-//                DesignBean[] beans = selectionTopComp.pasteBeans(webform, t, parent, pos, location);
-//                Element[] componentRootElements = SelectionTopComp.pasteComponents(webform, t, parentComponentRootElement, location);
-
-        if (location != null) {
-//            GridHandler gridHandler = webform.getGridHandler();
-//            location.x = gridHandler.snapX(location.x);
-//            location.y = gridHandler.snapY(location.y);
-            location.x = designer.snapX(location.x, null);
-            location.y = designer.snapY(location.y, null);
-        }
-//        Element[] componentRootElements = webform.pasteComponents(t, parentComponentRootElement, location);
-        Element[] componentRootElements = pasteComponents(t, parentComponentRootElement, location);
-
-//                if ((beans != null) && (beans.length > 0)) {
-//                    selectionTopComp.selectBeans(beans);
-//                }
-        if (componentRootElements.length > 0) {
-//            selectionTopComp.selectComponents(componentRootElements);
-            jsfTopComponent.selectComponents(componentRootElements);
-        }
-        return true;
-        
-    }
+//
+////                DesignBean parent = selectionTopComp.getPasteParent();
+//        Element parentComponentRootElement = jsfTopComponent.getPasteParentComponent();
+////                MarkupPosition pos = selectionTopComp.getPasteMarkupPosition();
+////        Point location = jsfTopComponent.getPastePosition();
+//        Point location = designer.getPastePoint();
+////                DesignBean[] beans = selectionTopComp.pasteBeans(webform, t, parent, pos, location);
+////                Element[] componentRootElements = SelectionTopComp.pasteComponents(webform, t, parentComponentRootElement, location);
+//
+//        if (location != null) {
+////            GridHandler gridHandler = webform.getGridHandler();
+////            location.x = gridHandler.snapX(location.x);
+////            location.y = gridHandler.snapY(location.y);
+//            location.x = designer.snapX(location.x, null);
+//            location.y = designer.snapY(location.y, null);
+//        }
+////        Element[] componentRootElements = webform.pasteComponents(t, parentComponentRootElement, location);
+//        Element[] componentRootElements = pasteComponents(t, parentComponentRootElement, location);
+//
+////                if ((beans != null) && (beans.length > 0)) {
+////                    selectionTopComp.selectBeans(beans);
+////                }
+//        if (componentRootElements.length > 0) {
+////            selectionTopComp.selectComponents(componentRootElements);
+//            jsfTopComponent.selectComponents(componentRootElements);
+//        }
+//        return true;
+//        
+//    }
 
 //    public Point tcGetPastePosition(Designer designer) {
 ////        JsfMultiViewElement jsfMultiViewElement = JsfForm.findJsfMultiViewElementForDesigner(designer);

@@ -50,6 +50,7 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.text.Keymap;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomRange;
 
 import org.netbeans.modules.visualweb.text.actions.BeginLineAction;
 import org.netbeans.modules.visualweb.text.actions.BeginWordAction;
@@ -1668,6 +1669,10 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
         return caret == null ? false : caret.removePreviousChar();
     }
 
+    public DomRange getCaretRange() {
+        return caret == null ? null : caret.getRange();
+    }
+    
     public void setCaretDot(DomPosition dot) {
         if (caret != null) {
             caret.setDot(dot);

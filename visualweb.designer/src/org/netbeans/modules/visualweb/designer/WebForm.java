@@ -2123,9 +2123,9 @@ public class WebForm implements Designer {
                 droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement);
     }
 
-    void importData(JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+    void importData(JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
     Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement, int dropAction) {
-        domProvider.importData(this, comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+        domProvider.importData(this, comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
                 droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement, dropAction);
     }
 
@@ -2980,6 +2980,10 @@ public class WebForm implements Designer {
         return getPane().hasCaret();
     }
 
+    public DomRange getPaneCaretRange() {
+        return getPane().getCaretRange();
+    }
+    
     public void setPaneCaret(DomPosition pos) {
         getPane().setCaretDot(pos);
     }
@@ -3029,9 +3033,9 @@ public class WebForm implements Designer {
         domProvider.tcShowPopupMenuForEvent(this, evt);
     }
     
-    public boolean tcImportComponentData(JComponent comp, Transferable t) {
-        return domProvider.tcImportComponentData(this, comp, t);
-    }
+//    public boolean tcImportComponentData(JComponent comp, Transferable t) {
+//        return domProvider.tcImportComponentData(this, comp, t);
+//    }
     
 //    public Point tcGetPastePosition() {
 //        return domProvider.tcGetPastePosition(this);
