@@ -22,14 +22,9 @@ package gui.window;
 import java.awt.Component;
 import java.awt.Container;
 
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.PaletteOperator;
 
 import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -38,43 +33,13 @@ import org.netbeans.jemmy.operators.JListOperator;
  *
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
-public class PaletteComponentOperator extends TopComponentOperator {
+public class PaletteComponentOperator extends PaletteOperator {
     
-    private final static String paletteName = "Palette"; // NOI18N
     /** Creates a new instance of PaletteComponentOperator */
     public PaletteComponentOperator() {
-        //super(waitTopComponent(null,null,0,new PaletteTopComponentChooser()));
-        super(paletteName);
+        super();
     }
     
-    /** invokes default palette
-     * @return PaletteComponentOperator for invoked palette */    
-    public static PaletteComponentOperator invoke() {
-        try {
-            new Action("Window|Palette",null).perform(); // NOI18N
-        } catch (TimeoutExpiredException te) {
-            throw new JemmyException("Cannot perform Window|Palette menu command");
-        }
-        PaletteComponentOperator pal = null;
-        
-        Timeouts times = JemmyProperties.getCurrentTimeouts();
-        long waiter_timeout_old = times.getTimeout("Waiter.WaitingTime");
-        long component_timeout_old = times.getTimeout("ComponentOperator.WaitComponentTimeout");
-        
-        times.setTimeout("Waiter.WaitingTime",90000);
-        times.setTimeout("ComponentOperator.WaitComponentTimeout", 90000);
-        try {
-            pal = new PaletteComponentOperator();
-        } catch (TimeoutExpiredException te) {
-            times.setTimeout("Waiter.WaitingTime",waiter_timeout_old);
-            times.setTimeout("ComponentOperator.WaitComponentTimeout",component_timeout_old);
-            throw new JemmyException("Cannot find Palette");
-        }
-        
-        times.setTimeout("Waiter.WaitingTime",waiter_timeout_old);
-        times.setTimeout("ComponentOperator.WaitComponentTimeout",component_timeout_old);
-        return pal;
-    }
     /**
      * expands selected category node in palette
      * @param categoryName sets the name of category need to be expanded in palette
@@ -85,14 +50,6 @@ public class PaletteComponentOperator extends TopComponentOperator {
         cat.pushNoBlock();
     }
     
-    /**
-     * collapses selected category node in palette
-     * @param categoryName sets the name of category need to be collapsd in palette
-    */    
-    public void collapseCategory(String categoryName) throws Exception {
-        JCheckBoxOperator cat = new JCheckBoxOperator(this,categoryName);
-        cat.pushNoBlock();        
-    }
     public JListOperator getCategoryListOperator(String categoryName) {
         //Find Checkbox operator at first
         JCheckBoxOperator cbo =  new JCheckBoxOperator(this,categoryName);
@@ -115,12 +72,4 @@ public class PaletteComponentOperator extends TopComponentOperator {
         }
     }
     
-    private static class PaletteTopComponentChooser implements ComponentChooser {
-        public boolean checkComponent(Component comp) {
-            return(comp.getClass().getName().equals("org.netbeans.spi.palette.PaletteTopComponent"));
-        }
-        public String getDescription() {
-            return("Any PaletteTopComponent");
-        }
-    }    
 }
