@@ -47,7 +47,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import java.io.IOException;
@@ -362,7 +361,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                         try {
                             folder = sourceGroups[0].getRootFolder().createFolder("META-INF");
                         } catch (IOException ex) {
-                            //
+                            logger.log(Level.SEVERE, null, ex);
                         }
                     }
                 }
@@ -370,8 +369,27 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         }
 
         WebModule wm = WebModule.getWebModule(p.getProjectDirectory());
+        if (wm != null) {
+            if (sources != null) {
+                SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                if ((sourceGroups != null) || (sourceGroups.length > 0)) {
+                    folder = sourceGroups[0].getRootFolder();
+                    if (folder != null) {
+                        folder = folder.getFileObject("META-INF");
+                    }
+                    if ((folder == null) || (!folder.isValid())) {
+                        try {
+                            folder = sourceGroups[0].getRootFolder().createFolder("META-INF");
+                        } catch (IOException ex) {
+                            logger.log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }
+            }
+        }
+
         EjbJar ejb = EjbJar.getEjbJar(p.getProjectDirectory());
-        if ((wm != null) || (ejb != null)) {
+        if (ejb != null) {
             if (sources != null) {
                 SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                 if ((sourceGroups != null) || (sourceGroups.length > 0)) {
