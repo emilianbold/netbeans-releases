@@ -253,8 +253,8 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
         os = mSources.toArray();
         l = new ArrayList<FileObject>();
         if (os != null) 
-        	for (ListItem<FileObject> osa : (ListItem<FileObject>[])os) 
-        		l.add(osa.getObject());
+        	for (Object osa : os) 
+        		l.add(((ListItem<FileObject>)osa).getObject());
         platform.setSourceFolders(l);
     }
     
@@ -263,12 +263,11 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
             return;
         List<URL> l;
         Object[] os;
-        
         os = mJavaDocs.toArray();
         l = new ArrayList<URL>();
         if (os != null) 
-        	for (ListItem<URL> osa : (ListItem<URL>[])os)
-            l.add(osa.getObject());
+            for (Object osa : os)
+                l.add(((ListItem<URL>)osa).getObject());
         platform.setJavadocFolders(l);
     }
     
