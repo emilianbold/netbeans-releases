@@ -34,7 +34,6 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
-import org.openide.windows.TopComponent;
 
 /**
  * Handle editing of forms in IDE. It enables to design components and also

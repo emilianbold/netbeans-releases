@@ -113,7 +113,7 @@ public class PaletteOperator extends TopComponentOperator {
         lstComponents().selectItem(index);
     }
 
-    /** Expands or collapses category.
+    /** Expands collapsed category.
      * @param categoryOper JCheckBoxOperator of components category
      * @param expand true to expand, false to collapse
      */

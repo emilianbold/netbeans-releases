@@ -23,13 +23,13 @@ import org.netbeans.jellytools.Bundle;
 /** Used to call "Window|Palette" main menu item.
  * @see Action
  * @author mmirilovic@netbeans.org */
-public class PaletteViewAction extends Action {
+public class PaletteViewAction extends ActionNoBlock {
     private static final String projectMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
                                            + "|"
                                            + Bundle.getStringTrimmed("org.netbeans.modules.palette.Bundle", "CTL_PaletteAction");
 
     /** creates new PaletteViewAction instance */    
     public PaletteViewAction() {
-        super(projectMenu, null);
+        super(projectMenu, null, "org.netbeans.modules.palette.ShowPaletteAction");
     }
 }

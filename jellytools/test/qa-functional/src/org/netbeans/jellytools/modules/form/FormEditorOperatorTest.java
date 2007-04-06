@@ -20,18 +20,20 @@ package org.netbeans.jellytools.modules.form;
 
 import java.awt.Component;
 import javax.swing.JButton;
+
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.Bundle;
+
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.AttachWindowAction;
+import org.netbeans.jellytools.actions.PaletteViewAction;
 import org.netbeans.jellytools.nodes.FormNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
+
 import org.netbeans.jemmy.operators.JFrameOperator;
 
 /** Test FormDesignerOperator, ComponentPaletteOperator 
@@ -101,9 +103,7 @@ public class FormEditorOperatorTest extends JellyTestCase {
     /** Test design actions. */
     public void testDesign() {
         FormDesignerOperator designer = new FormDesignerOperator(SAMPLE_FRAME);
-        String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
-        String paletteItem = Bundle.getStringTrimmed("org.netbeans.modules.palette.Bundle", "CTL_PaletteAction");
-        new Action(windowItem+"|"+paletteItem, null).perform();
+        new PaletteViewAction().perform();
         ComponentPaletteOperator palette = new ComponentPaletteOperator();
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         // attach Palette to better position because components are not visible
