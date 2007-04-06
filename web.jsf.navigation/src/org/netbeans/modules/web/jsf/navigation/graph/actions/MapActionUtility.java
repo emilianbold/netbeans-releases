@@ -153,26 +153,37 @@ public class MapActionUtility {
                 Scene scene = widget.getScene();
                 if( scene instanceof GraphPinScene ) {
                     GraphPinScene objScene = (GraphPinScene)scene;
-                     
+                    
                     //Workaround: Temporarily Wrapping Collection because of Issue: 100127
                     Set<Object> selectedObjects = new HashSet<Object>(objScene.getSelectedObjects());
-                    //  Set<Object> selectedObjects = (Set<Object>) objScene.getSelectedObjects();                             
-                    for( Object myObject : selectedObjects ){
-                        if( myObject instanceof Node ) {
-                            Node node = (Node)myObject;
-                            if ( node.canDestroy() ){
-                                try                 {
-                                    node.destroy();
-                                } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
+                    if (selectedObjects.size() == 1){
+                        Object myObj = selectedObjects.toArray()[0];
+                        if( myObj instanceof Node ) {
+                            delete((Node)myObj);
                         }
+                    }
+                    
+                    for( Object myObject : selectedObjects ){
+                        
+//                        if( myObject instanceof Node ) {
+//                            delete((Node)myObject);
+//                        }
                     }
                 }
             }
         }
+        
+        private void delete( Node node ){
+            if ( node.canDestroy() ){
+                try                 {
+                    node.destroy();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     };
+    
     
     
     
