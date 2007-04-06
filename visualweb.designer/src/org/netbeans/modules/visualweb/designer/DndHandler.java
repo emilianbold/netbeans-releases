@@ -18,23 +18,17 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.util.Arrays;
-import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.CssBox;
 
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
@@ -324,9 +318,9 @@ public class DndHandler /*extends TransferHandler*/ {
                 }
             });
 
-        // Crap - what about the return value?
         // We don't actually know if the drop succeeded since we have to defer
         // to pick up the grid coordinate...
+        // XXX TODO Provide your own impl of DropTarget to avoid scheduling later this task.
         return true;
     }
 
