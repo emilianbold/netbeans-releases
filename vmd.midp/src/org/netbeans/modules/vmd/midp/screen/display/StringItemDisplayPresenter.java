@@ -19,13 +19,17 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.items.StringItemCD;
+import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
+
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  *
@@ -51,4 +55,12 @@ public class StringItemDisplayPresenter extends ItemDisplayPresenter {
         }
         label.setText(appearanceMode == ItemCD.VALUE_HYPERLINK ? ScreenSupport.wrapLinkWithHtml(text) : ScreenSupport.wrapWithHtml(text));
     }
+
+
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
+        ArrayList<ScreenPropertyDescriptor> list = new ArrayList<ScreenPropertyDescriptor> (super.getPropertyDescriptors ());
+        list.add (new ScreenPropertyDescriptor (getComponent (), label, new ScreenStringPropertyEditor (StringItemCD.PROP_TEXT)));
+        return list;
+    }
+
 }

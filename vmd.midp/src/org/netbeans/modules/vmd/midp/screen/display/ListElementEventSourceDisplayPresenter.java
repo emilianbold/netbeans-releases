@@ -72,7 +72,7 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
 
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
         return Collections.singleton (
-                new ScreenPropertyDescriptor (getComponent (), label, new Rectangle (label.getSize ()), new ScreenStringPropertyEditor (ListElementEventSourceCD.PROP_STRING, JTextField.LEFT))
+                new ScreenPropertyDescriptor (getComponent (), label, new ScreenStringPropertyEditor (ListElementEventSourceCD.PROP_STRING))
         );
     }
 

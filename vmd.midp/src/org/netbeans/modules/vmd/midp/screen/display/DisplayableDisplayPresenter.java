@@ -16,7 +16,6 @@ package org.netbeans.modules.vmd.midp.screen.display;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
-import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
@@ -42,8 +41,6 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     private static final Image SIGNAL = Utilities.loadImage("org/netbeans/modules/vmd/midp/screen/display/resources/signal.png"); // NOI18N
     
     private DisplayableDisplayPanel panel;
-
-    private ScreenPropertyEditor titleEditor;
 
     public DisplayableDisplayPresenter() {
         panel = new DisplayableDisplayPanel(this);
@@ -82,9 +79,9 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     }
 
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
-        if (titleEditor == null)
-            titleEditor = new ScreenStringPropertyEditor (DisplayableCD.PROP_TITLE, JTextField.CENTER);
-        return Collections.singletonList (new ScreenPropertyDescriptor (getComponent (), panel.getTitle (), new Rectangle (panel.getTitle ().getSize ()), titleEditor));
+        return Collections.singletonList (
+                new ScreenPropertyDescriptor (getComponent (), panel.getTitle (), new ScreenStringPropertyEditor (DisplayableCD.PROP_TITLE, JTextField.CENTER))
+        );
     }
 
 }

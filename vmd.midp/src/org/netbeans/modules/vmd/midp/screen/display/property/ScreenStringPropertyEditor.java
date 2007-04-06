@@ -39,6 +39,10 @@ public class ScreenStringPropertyEditor implements ScreenPropertyEditor {
     private String propertyName;
     private int alignment;
 
+    public ScreenStringPropertyEditor (String propertyName) {
+        this (propertyName, JTextField.LEFT);
+    }
+
     public ScreenStringPropertyEditor (String propertyName, int alignment) {
         this.alignment = alignment;
         assert propertyName != null;

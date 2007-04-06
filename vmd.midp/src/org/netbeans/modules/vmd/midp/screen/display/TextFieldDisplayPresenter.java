@@ -19,13 +19,17 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.Color;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.border.Border;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.items.TextFieldCD;
+import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  *
@@ -50,4 +54,11 @@ public class TextFieldDisplayPresenter extends ItemDisplayPresenter {
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(TextFieldCD.PROP_TEXT));
         label.setText(ScreenSupport.wrapWithHtml(text));
     }
+
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
+        ArrayList<ScreenPropertyDescriptor> list = new ArrayList<ScreenPropertyDescriptor> (super.getPropertyDescriptors ());
+        list.add (new ScreenPropertyDescriptor (getComponent (), label, new ScreenStringPropertyEditor (TextFieldCD.PROP_TEXT)));
+        return list;
+    }
+
 }

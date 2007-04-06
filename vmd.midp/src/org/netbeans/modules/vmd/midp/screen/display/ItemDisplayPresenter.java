@@ -21,10 +21,12 @@ package org.netbeans.modules.vmd.midp.screen.display;
 
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
+import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -113,5 +115,11 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
     public Shape getSelectionShape() {
         return new Rectangle(panel.getSize());
     }
-    
+
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
+        return Collections.singleton (
+                new ScreenPropertyDescriptor (getComponent (), label, new ScreenStringPropertyEditor (ItemCD.PROP_LABEL))
+        );
+    }
+
 }

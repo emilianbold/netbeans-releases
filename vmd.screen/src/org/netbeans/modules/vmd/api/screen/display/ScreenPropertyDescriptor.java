@@ -35,6 +35,10 @@ public final class ScreenPropertyDescriptor {
     private Shape selectionShape;
     private ScreenPropertyEditor editor;
 
+    public ScreenPropertyDescriptor (DesignComponent relatedComponent, JComponent relatedView, ScreenPropertyEditor editor) {
+        this (relatedComponent, relatedView, new Rectangle (relatedView.getSize ()), editor);
+    }
+
     public ScreenPropertyDescriptor (DesignComponent relatedComponent, JComponent relatedView, Shape selectionShape, ScreenPropertyEditor editor) {
         this.relatedComponent = relatedComponent;
         this.relatedView = relatedView;
