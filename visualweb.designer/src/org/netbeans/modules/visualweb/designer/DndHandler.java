@@ -149,161 +149,161 @@ public class DndHandler /*extends TransferHandler*/ {
      * @return  true if the data was inserted into the component, false otherwise.
      */
     public boolean importData(final JComponent comp, final Transferable t) {
-        Object transferData = null;
-
-        try {
-//            DataFlavor importFlavor = getImportFlavor(t.getTransferDataFlavors());
-            DataFlavor importFlavor = webform.getImportFlavor(t.getTransferDataFlavors());
-
-            if (importFlavor == null) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                        new IllegalStateException("Unusable transfer flavors " + Arrays.asList(t.getTransferDataFlavors()))); // NOI18N
-
-                return false;
-            }
-
-            // XXX What was before in SelectionTopComp.
-            if (importFlavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
-                // XXX Handling of cut/copied bean. Needs to be improved/moved later.
-//                SelectionTopComp selectionTopComp;
-//                
-//                if (comp instanceof SelectionTopComp) {
-//                    selectionTopComp = (SelectionTopComp)comp;
-//                } else {
-//                    selectionTopComp = (SelectionTopComp)SwingUtilities.getAncestorOfClass(SelectionTopComp.class, comp);
-//                }
-//                
-//                if (selectionTopComp == null) {
-//                    // XXX
-//                    return false;
-//                }
-//                
-////                DesignBean parent = selectionTopComp.getPasteParent();
-//                Element parentComponentRootElement = selectionTopComp.getPasteParentComponent();
-////                MarkupPosition pos = selectionTopComp.getPasteMarkupPosition();
-//                Point location = selectionTopComp.getPastePosition();
-////                DesignBean[] beans = selectionTopComp.pasteBeans(webform, t, parent, pos, location);
-////                Element[] componentRootElements = SelectionTopComp.pasteComponents(webform, t, parentComponentRootElement, location);
-//                
-//                if (location != null) {
-//                    GridHandler gridHandler = webform.getGridHandler();
-//                    location.x = gridHandler.snapX(location.x);
-//                    location.y = gridHandler.snapY(location.y);
-//                }
-//                Element[] componentRootElements = webform.pasteComponents(t, parentComponentRootElement, location);
+//        Object transferData = null;
 //
-////                if ((beans != null) && (beans.length > 0)) {
-////                    selectionTopComp.selectBeans(beans);
+//        try {
+////            DataFlavor importFlavor = getImportFlavor(t.getTransferDataFlavors());
+//            DataFlavor importFlavor = webform.getImportFlavor(t.getTransferDataFlavors());
+//
+//            if (importFlavor == null) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+//                        new IllegalStateException("Unusable transfer flavors " + Arrays.asList(t.getTransferDataFlavors()))); // NOI18N
+//
+//                return false;
+//            }
+//
+//            // XXX What was before in SelectionTopComp.
+//            if (importFlavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
+//                // XXX Handling of cut/copied bean. Needs to be improved/moved later.
+////                SelectionTopComp selectionTopComp;
+////                
+////                if (comp instanceof SelectionTopComp) {
+////                    selectionTopComp = (SelectionTopComp)comp;
+////                } else {
+////                    selectionTopComp = (SelectionTopComp)SwingUtilities.getAncestorOfClass(SelectionTopComp.class, comp);
 ////                }
-//                if (componentRootElements.length > 0) {
-//                    selectionTopComp.selectComponents(componentRootElements);
-//                }
-//                return true;
-                return webform.tcImportComponentData(comp, t);
-            } // TEMP
-            
-            Class rc = importFlavor.getRepresentationClass();
-            
-            transferData = t.getTransferData(importFlavor);
-            
-//            if (rc == DisplayItem.class) {
-//                // Create a new type
-//                transferData = t.getTransferData(importFlavor);
-//
-//                if (!(transferData instanceof DisplayItem)) {
-//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-//                            new IllegalStateException("Invalid transfer data=" + transferData));
-//
-//                    return false;
-//                }
-//            } else if (rc == DesignBean.class) {
-//                transferData = t.getTransferData(importFlavor);
-//
-//                if (!(transferData instanceof DesignBean[])) {
-//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-//                            new IllegalStateException("Invalid transfer data=" + transferData));
-//
-//                    return false;
-//                }
-//            } else if (rc.isAssignableFrom(List.class)) {
-//                transferData = t.getTransferData(importFlavor);
-//
-//                if (!(transferData instanceof List)) {
-//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-//                            new IllegalStateException("Invalid transfer data=" + transferData));
-//
-//                    return false;
-//                }
-//            } else if (rc.isAssignableFrom(org.openide.nodes.Node.class)) {
-//                transferData = t.getTransferData(importFlavor);
-//
-//                if (!(transferData instanceof org.openide.nodes.Node)) {
-//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-//                            new IllegalStateException("Invalid transfer data=" + transferData));
-//
-//                    return false;
-//                }
-//            } else
-                
-            if (rc == String.class) {
-                transferData = t.getTransferData(importFlavor);
-
-                // XXX #6332049 When in inline editing we shouldn't steal the paste
-                // (at least for the JTextComponent's.
-                // This is just a workaround, it shouldn't be done this way.
-                // actions should be created based on context (and inline editing
-                // context is diff from the designer pane one).
-                if(webform.getManager().isInlineEditing()) {
-                    Component focusOwner = FocusManager.getCurrentManager().getFocusOwner();
-                    if(focusOwner instanceof JTextComponent) {
-                        JTextComponent textComp = (JTextComponent)focusOwner;
-                        textComp.paste();
-                        return true;
-                    } 
-                }
-
-                // XXX Flowlayout mode?
-//                if (webform.getPane().getCaret() != null) {
-                if (webform.getPane().hasCaret()) {
-//                    webform.getPane().getCaret().replaceSelection((String)transferData);
-                    webform.getPane().replaceSelection((String)transferData);
-                    return true;
-                }
-                
-//                String s = (String)transferData;
-//
-//                File file = extractFileFromString(s);
-//                if (file != null) {
-//                    transferData = file;
-//                }
-            }
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
-
-            return false;
-        }
-        
-        // XXX
-//        if (dropPoint == null && insertPos == Position.NONE) {
-        if (dropPoint == null && insertPos == DomPosition.NONE) {
-//            DesignerTopComp designerTC;
-//            if (comp instanceof DesignerTopComp) {
-//                designerTC = (DesignerTopComp)comp;
-//            } else {
-//                designerTC = (DesignerTopComp)SwingUtilities.getAncestorOfClass(DesignerTopComp.class, comp);
-//            }
+////                
+////                if (selectionTopComp == null) {
+////                    // XXX
+////                    return false;
+////                }
+////                
+//////                DesignBean parent = selectionTopComp.getPasteParent();
+////                Element parentComponentRootElement = selectionTopComp.getPasteParentComponent();
+//////                MarkupPosition pos = selectionTopComp.getPasteMarkupPosition();
+////                Point location = selectionTopComp.getPastePosition();
+//////                DesignBean[] beans = selectionTopComp.pasteBeans(webform, t, parent, pos, location);
+//////                Element[] componentRootElements = SelectionTopComp.pasteComponents(webform, t, parentComponentRootElement, location);
+////                
+////                if (location != null) {
+////                    GridHandler gridHandler = webform.getGridHandler();
+////                    location.x = gridHandler.snapX(location.x);
+////                    location.y = gridHandler.snapY(location.y);
+////                }
+////                Element[] componentRootElements = webform.pasteComponents(t, parentComponentRootElement, location);
+////
+//////                if ((beans != null) && (beans.length > 0)) {
+//////                    selectionTopComp.selectBeans(beans);
+//////                }
+////                if (componentRootElements.length > 0) {
+////                    selectionTopComp.selectComponents(componentRootElements);
+////                }
+////                return true;
+//                return webform.tcImportComponentData(comp, t);
+//            } // TEMP
 //            
-//            if (designerTC != null) {
-//                dropPoint = designerTC.getPastePosition();
-//                // XXX #6185935 There should be always a point specified.
-//                if (dropPoint == null) {
-//                    // By default, the left upper corner.
-//                    dropPoint = new Point(0,0);
+//            Class rc = importFlavor.getRepresentationClass();
+//            
+//            transferData = t.getTransferData(importFlavor);
+//            
+////            if (rc == DisplayItem.class) {
+////                // Create a new type
+////                transferData = t.getTransferData(importFlavor);
+////
+////                if (!(transferData instanceof DisplayItem)) {
+////                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+////                            new IllegalStateException("Invalid transfer data=" + transferData));
+////
+////                    return false;
+////                }
+////            } else if (rc == DesignBean.class) {
+////                transferData = t.getTransferData(importFlavor);
+////
+////                if (!(transferData instanceof DesignBean[])) {
+////                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+////                            new IllegalStateException("Invalid transfer data=" + transferData));
+////
+////                    return false;
+////                }
+////            } else if (rc.isAssignableFrom(List.class)) {
+////                transferData = t.getTransferData(importFlavor);
+////
+////                if (!(transferData instanceof List)) {
+////                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+////                            new IllegalStateException("Invalid transfer data=" + transferData));
+////
+////                    return false;
+////                }
+////            } else if (rc.isAssignableFrom(org.openide.nodes.Node.class)) {
+////                transferData = t.getTransferData(importFlavor);
+////
+////                if (!(transferData instanceof org.openide.nodes.Node)) {
+////                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+////                            new IllegalStateException("Invalid transfer data=" + transferData));
+////
+////                    return false;
+////                }
+////            } else
+//                
+//            if (rc == String.class) {
+////                transferData = t.getTransferData(importFlavor);
+//
+//                // XXX #6332049 When in inline editing we shouldn't steal the paste
+//                // (at least for the JTextComponent's.
+//                // This is just a workaround, it shouldn't be done this way.
+//                // actions should be created based on context (and inline editing
+//                // context is diff from the designer pane one).
+//                if(webform.getManager().isInlineEditing()) {
+//                    Component focusOwner = FocusManager.getCurrentManager().getFocusOwner();
+//                    if(focusOwner instanceof JTextComponent) {
+//                        JTextComponent textComp = (JTextComponent)focusOwner;
+//                        textComp.paste();
+//                        return true;
+//                    } 
 //                }
+//
+//                // XXX Flowlayout mode?
+////                if (webform.getPane().getCaret() != null) {
+//                if (webform.getPane().hasCaret()) {
+////                    webform.getPane().getCaret().replaceSelection((String)transferData);
+//                    webform.getPane().replaceSelection((String)transferData);
+//                    return true;
+//                }
+//                
+////                String s = (String)transferData;
+////
+////                File file = extractFileFromString(s);
+////                if (file != null) {
+////                    transferData = file;
+////                }
 //            }
-//            dropPoint = webform.tcGetPastePosition();
-            dropPoint = webform.getPastePoint();
-        }
+//        } catch (Exception e) {
+//            ErrorManager.getDefault().notify(e);
+//
+//            return false;
+//        }
+        
+//        // XXX
+////        if (dropPoint == null && insertPos == Position.NONE) {
+//        if (dropPoint == null && insertPos == DomPosition.NONE) {
+////            DesignerTopComp designerTC;
+////            if (comp instanceof DesignerTopComp) {
+////                designerTC = (DesignerTopComp)comp;
+////            } else {
+////                designerTC = (DesignerTopComp)SwingUtilities.getAncestorOfClass(DesignerTopComp.class, comp);
+////            }
+////            
+////            if (designerTC != null) {
+////                dropPoint = designerTC.getPastePosition();
+////                // XXX #6185935 There should be always a point specified.
+////                if (dropPoint == null) {
+////                    // By default, the left upper corner.
+////                    dropPoint = new Point(0,0);
+////                }
+////            }
+////            dropPoint = webform.tcGetPastePosition();
+//            dropPoint = webform.getPastePoint();
+//        }
 
         // Delay this operation so that the other listener, DesignerPane.
         // DesignerDropListener, can provide a pixel position for this drop
@@ -311,14 +311,16 @@ public class DndHandler /*extends TransferHandler*/ {
         // TODO Instead of creating a new runnable each time, at a minumum
         //   keep the runnable around, or alternatively simply make this
         //   object a Runnable and invokeLater on this.
-        final Object transfer = transferData;
+//        final Object transfer = transferData;
         SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    try {
-                        importDataDelayed(comp, t, transfer);
-                    } catch (Exception e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
+//                    try {
+//                        importDataDelayed(comp, t, transfer);
+                        importDataDelayed(comp, t);
+//                    } catch (Exception e) {
+//                        ErrorManager.getDefault().notify(e);
+//                        return;
+//                    }
                 }
             });
 
@@ -343,17 +345,23 @@ public class DndHandler /*extends TransferHandler*/ {
      *   it in a call to computeActions, and computeActions also needs the drop position which
      *   depends the delay...
      */
-    private void importDataDelayed(JComponent comp, Transferable t, Object transferData) {
+    private void importDataDelayed(JComponent comp, Transferable t/*, Object transferData*/) {
         if (comp == null) {
             return;
         }
 
-        assert transferData != null;
+//        assert transferData != null;
 
 //        assert webform.getPane() == comp;
 
+        // XXX
+        if (dropPoint == null && insertPos == DomPosition.NONE) {
+            dropPoint = webform.getPastePoint();
+        }
+        
 //        InteractionManager.clearPalette(webform); // Item already in transferable
         InteractionManager.stopCnCForWebForm(webform); // Item already in transferable
+        
         
         // Disambiguate drop position
 //        if (insertPos != Position.NONE) {
@@ -412,11 +420,61 @@ public class DndHandler /*extends TransferHandler*/ {
         Element defaultParentComponentRootElement = webform.getDefaultParentComponent();
 //        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
         
+        
+        Object transferData = null;
+        try {
+            DataFlavor importFlavor = webform.getImportFlavor(t.getTransferDataFlavors());
+
+            if (importFlavor == null) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+                        new IllegalStateException("Unusable transfer flavors " + Arrays.asList(t.getTransferDataFlavors()))); // NOI18N
+
+                return /*false*/;
+            }
+
+            // XXX What was before in SelectionTopComp.
+            if (importFlavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
+                /*return*/ webform.tcImportComponentData(comp, t);
+            } // TEMP
+
+            Class rc = importFlavor.getRepresentationClass();
+
+            transferData = t.getTransferData(importFlavor);
+
+            if (rc == String.class) {
+                // XXX #6332049 When in inline editing we shouldn't steal the paste
+                // (at least for the JTextComponent's.
+                // This is just a workaround, it shouldn't be done this way.
+                // actions should be created based on context (and inline editing
+                // context is diff from the designer pane one).
+                if(webform.getManager().isInlineEditing()) {
+                    Component focusOwner = FocusManager.getCurrentManager().getFocusOwner();
+                    if(focusOwner instanceof JTextComponent) {
+                        JTextComponent textComp = (JTextComponent)focusOwner;
+                        textComp.paste();
+                        return /*true*/;
+                    } 
+                }
+
+                // XXX Flowlayout mode?
+//                if (webform.getPane().getCaret() != null) {
+                if (webform.getPane().hasCaret()) {
+//                    webform.getPane().getCaret().replaceSelection((String)transferData);
+                    webform.getPane().replaceSelection((String)transferData);
+                    return /*true*/;
+                }
+            }
+        
 //        DomProvider.Location location = WebForm.getDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
 //                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
 //        doImportDataDelayed(comp, t, transferData, location/*, coordinateTranslator*/);
-        webform.importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid,
-                droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement , /*coordinateTranslator,*/ dropAction);
+            webform.importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid,
+                    droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement , /*coordinateTranslator,*/ dropAction);
+
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+//            return /*false*/;
+        }
         
         dropSize = null;
 //        insertPos = Position.NONE;
