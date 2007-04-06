@@ -138,7 +138,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         
         private PageFlowView getTopComponent() {
             if( tc == null ) {
-                tc = new PageFlowView(context);
+                tc = new PageFlowView(this, context);
             }
             return tc;
         }
@@ -192,11 +192,16 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
             
         }
         
-        
-        public void setMultiViewCallback(MultiViewElementCallback callback) {
-            context.setMultiViewTopComponent(callback.getTopComponent());
+        private MultiViewElementCallback callback;
+        public MultiViewElementCallback getMultiViewCallback() {
+            return callback;
         }
         
+        public void setMultiViewCallback(MultiViewElementCallback callback) {
+            this.callback = callback;
+            context.setMultiViewTopComponent(callback.getTopComponent());
+        }
+                
         public CloseOperationState canCloseElement() {
             return CloseOperationState.STATE_OK;
         }

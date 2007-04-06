@@ -43,7 +43,6 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.xml.xam.Model.State;
-import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
@@ -51,7 +50,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
@@ -230,14 +228,24 @@ public class PageFlowController {
         FileObject[] childrenFiles = folder.getChildren();
         for( FileObject file : childrenFiles ){
             if( !file.isFolder() ) {
-                if( file.getMIMEType().equals("text/x-jsp"))
+                if( isKnownFile(file) ) {
                     webFiles.add(file);
+                }
             } else {
                 webFiles.addAll(getProjectJSPFileOjbects(file));
             }
         }
         
         return webFiles;
+    }
+    
+    private boolean isKnownFile(FileObject file) {
+        if( file.getMIMEType().equals("text/x-jsp")) {
+            return true;
+        } else if ( file.getMIMEType().equals("text/html") ){
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -503,12 +511,20 @@ public class PageFlowController {
         public void fileDataCreated(FileEvent fe) {
             try         {
                 FileObject fileObj = fe.getFile();
-                DataObject dataObj = DataObject.find(fileObj);
-                webFiles.add(fileObj);
-                if ( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ){
-                    PageFlowNode node = createPageFlowNode(dataObj.getNodeDelegate());
-                    view.createNode(node, null, null);
-                    view.validateGraph();
+                if( isKnownFile(fileObj)){
+                    webFiles.add(fileObj);
+                    DataObject dataObj = DataObject.find(fileObj);
+                    Node dataNode = dataObj.getNodeDelegate();
+                    PageFlowNode pageNode = pageName2Node.get(dataNode.getDisplayName());
+                    if( pageNode != null  ) {
+                        pageNode.replaceWrappedNode(dataNode);
+                        view.resetNodeWidget(pageNode); 
+                        view.validateGraph();
+                    } else if ( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ){
+                        PageFlowNode node = createPageFlowNode(dataNode);
+                        view.createNode(node, null, null);
+                        view.validateGraph();
+                    }
                 }
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
@@ -531,7 +547,7 @@ public class PageFlowController {
             webFiles.remove(fileObj);
             
             PageFlowNode oldNode = pageName2Node.get(pageDisplayName);
-            if( oldNode != null ) {                
+            if( oldNode != null ) {
                 if( oldNode.isDataNode() ) {
                     Node tmpNode = new AbstractNode(Children.LEAF);
                     tmpNode.setName(pageDisplayName);

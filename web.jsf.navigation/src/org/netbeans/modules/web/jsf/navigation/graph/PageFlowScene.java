@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.web.jsf.navigation.graph;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -51,9 +52,6 @@ import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
-import org.netbeans.api.visual.graph.layout.GraphLayoutListener;
-import org.netbeans.api.visual.graph.layout.GridGraphLayout;
-import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
@@ -142,6 +140,8 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         
         
     }
+    
+    
     
     private WidgetAction createActionMap() {
         return ActionFactory.createActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());
@@ -465,6 +465,13 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
             
             ((LabelWidget)widget).setLabel(newName);
             
+            // XXX HACK XXX - A JToolbar is stealing my  much need focus.
+            EventQueue.invokeLater(new Runnable(){                
+                public void run() {
+                    tc.requestMultiViewActive();
+                }
+            });
+            
         }
     }
     
@@ -504,9 +511,13 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
                 ((LabelWidget) widget).setLabel(newName);
                 validate();
             }
-            tc.requestActive();
             
-            
+            // XXX HACK XXX - A JToolbar is stealing my  much need focus.
+            EventQueue.invokeLater(new Runnable(){                
+                public void run() {
+                    tc.requestMultiViewActive();
+                }
+            });
         }
         
     }

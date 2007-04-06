@@ -38,8 +38,10 @@ import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.navigation.JSFPageFlowMultiviewDescriptor.PageFlowElement;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
@@ -62,14 +64,22 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     private PageFlowScene scene;
     private JSFConfigModel configModel;
     private PageFlowController pfc;
+    private PageFlowElement multiview;
     
     
-    PageFlowView(JSFConfigEditorContext context){
+    PageFlowView(PageFlowElement multiview, JSFConfigEditorContext context){
+        this.multiview = multiview;
         init();
         pfc = new PageFlowController( context,  this );
         setFocusable(true);
         //        this(context, new InstanceContent());
     }
+    
+    public void requestMultiViewActive() {
+        multiview.getMultiViewCallback().requestActive();
+        requestFocus();  //This is a hack because requestActive does not call requestFocus when it is already active (BUT IT SHOULD).        
+    }
+            
     
     
     /**
@@ -324,7 +334,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
                     pfu.setCurrentScope((String)event.getItem());
                     pfc.setupGraph();
                 }                
-                requestActive();
+                requestMultiViewActive();
             }
         });
         
