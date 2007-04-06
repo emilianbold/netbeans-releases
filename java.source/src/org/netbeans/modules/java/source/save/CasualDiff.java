@@ -18,10 +18,10 @@
  */
 package org.netbeans.modules.java.source.save;
 
+import java.util.*;
+
 import com.sun.source.tree.*;
 import static com.sun.source.tree.Tree.*;
-import java.io.IOException;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
@@ -42,14 +42,6 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -76,10 +68,8 @@ public class CasualDiff {
     
     private WorkingCopy workingCopy;
     private TokenSequence<JavaTokenId> tokenSequence;
-    private SourceRewriter output;
     private String origText;
     private VeryPretty printer;
-    private int pointer;
     private Context context;
 
     private Map<Integer, String> diffInfo = new HashMap<Integer, String>();
@@ -95,7 +85,6 @@ public class CasualDiff {
         undo = UndoListService.instance(context);
         this.workingCopy = workingCopy;
         this.tokenSequence = workingCopy.getTokenHierarchy().tokenSequence();
-        this.output = new StringSourceRewriter();
         this.origText = workingCopy.getText();
         this.context = context;
         printer = new VeryPretty(context, JavaFormatOptions.getDefault());
@@ -113,7 +102,7 @@ public class CasualDiff {
         CasualDiff td = new CasualDiff(context, copy);
         try {
             td.diffTree(oldTree, newTree, new int[] { -1, -1});
-            String resultSrc = td.output.toString();
+            String resultSrc = td.printer.toString();
             td.makeListMatch(td.workingCopy.getText(), resultSrc);
             JavaSourceAccessor.INSTANCE.getCommandEnvironment(td.workingCopy).setResult(td.diffInfo, "user-info");
         }
@@ -159,28 +148,16 @@ public class CasualDiff {
     }
 
     protected void diffTopLevel(JCCompilationUnit oldT, JCCompilationUnit newT) {
+        int localPointer = 0;
         oldTopLevel = oldT;
         // todo (#pf): make package annotation diffing correctly
         // diffList(oldT.packageAnnotations, newT.packageAnnotations, LineInsertionType.NONE, 0);
-        int posHint = 0;
-        try {
-            posHint = diffPackageStatement(oldT, newT, pointer);
-            PositionEstimator est = EstimatorFactory.imports(((CompilationUnitTree) oldT).getImports(), ((CompilationUnitTree) newT).getImports(), workingCopy);
-            pointer = diffListImports(oldT.getImports(), newT.getImports(), posHint, est, Measure.DEFAULT, printer);
-            est = EstimatorFactory.toplevel(((CompilationUnitTree) oldT).getTypeDecls(), ((CompilationUnitTree) newT).getTypeDecls(), workingCopy);
-            pointer = diffListImports(oldT.getTypeDecls(), newT.getTypeDecls(), pointer, est, Measure.MEMBER, printer);
-            output.writeTo(printer.toString());
-            output.writeTo(origText.substring(pointer));
-        } catch (Exception e) {
-            // report an exception and do not any change in source to prevent deletion of code!
-            Logger.getLogger("global").log(Level.SEVERE, "Error during generating!", e);
-            this.output = new StringSourceRewriter();
-            try {
-                this.output.writeTo(origText);
-            } catch (BadLocationException ex) {
-            } catch (IOException ex) {
-            }
-        }
+        localPointer = diffPackageStatement(oldT, newT, localPointer);
+        PositionEstimator est = EstimatorFactory.imports(((CompilationUnitTree) oldT).getImports(), ((CompilationUnitTree) newT).getImports(), workingCopy);
+        localPointer = diffListImports(oldT.getImports(), newT.getImports(), localPointer, est, Measure.DEFAULT, printer);
+        est = EstimatorFactory.toplevel(((CompilationUnitTree) oldT).getTypeDecls(), ((CompilationUnitTree) newT).getTypeDecls(), workingCopy);
+        localPointer = diffListImports(oldT.getTypeDecls(), newT.getTypeDecls(), localPointer, est, Measure.MEMBER, printer);
+        printer.print(origText.substring(localPointer));
     }
     
     private static enum ChangeKind {
