@@ -395,6 +395,11 @@ class InPlaceEditLayer extends JPanel
                     editedIns.bottom = 0;
                 }
             }
+            //HACK: a hack to account for the extra space on the right edge of the menu item
+            //we should derive this value instead of hard coding it
+            if (editedComp instanceof JMenuItem) {
+                editedIns.left += 14;
+            }
         } else if (editedComp instanceof JTabbedPane) {
             JTabbedPane tabbedPane = (JTabbedPane)editedComp;
             int index = tabbedPane.getSelectedIndex();

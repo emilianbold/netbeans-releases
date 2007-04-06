@@ -393,6 +393,7 @@ public class MenuEditLayer extends JPanel {
     private class MenuItemMouseHandler extends MouseInputAdapter {
         
         private JComponent c;
+        private boolean isEditing = false;
         
         public MenuItemMouseHandler(JComponent c) {
             super();
@@ -404,11 +405,22 @@ public class MenuEditLayer extends JPanel {
             if (!started && e.isPopupTrigger()) {
                 //globalPopup.show(c, 40, 0);
             }
+            if(e.getClickCount() > 1) {
+                if(c instanceof JMenuItem) {
+                    JMenuItem item = (JMenuItem) c;
+                    RADComponent radcomp = formDesigner.getMetaComponent(item);
+                    isEditing = true;
+                    formDesigner.startInPlaceEditing(radcomp);
+                }
+            }
             start = e.getPoint();
         }
         
         public void mouseReleased(MouseEvent e) {
-            setSelectedComponent(c);
+            if(!isEditing) {
+                setSelectedComponent(c);
+            }
+            isEditing = false;
         }
         
         

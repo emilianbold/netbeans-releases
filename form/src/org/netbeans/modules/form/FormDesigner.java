@@ -1758,7 +1758,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         if(menuEditLayer == null) {
             menuEditLayer = new MenuEditLayer(this);
             menuEditLayer.setVisible(false);
-            layeredPane.add(menuEditLayer, new Integer(2003));
+            layeredPane.add(menuEditLayer, new Integer(2000));
         }
         return menuEditLayer;
     }
