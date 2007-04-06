@@ -27,6 +27,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DeleteAction;
+import org.netbeans.jellytools.actions.PaletteViewAction;
 
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -78,7 +79,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         processDBConnectDialog();
         ProjectsTabOperator.invoke();
         
-        PaletteComponentOperator.invoke();
+        new PaletteViewAction().performAPI();
         openPageAndAddComponent();
     }
     

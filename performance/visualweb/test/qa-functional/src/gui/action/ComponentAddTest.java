@@ -22,6 +22,7 @@ package gui.action;
 import gui.window.PaletteComponentOperator;
 import gui.window.WebFormDesignerOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.PaletteViewAction;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -91,7 +92,7 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
             fail("Cannot find and select project root node");
         }
         
-        PaletteComponentOperator.invoke();
+        new PaletteViewAction().performAPI();
     }
     
     public void prepare() {

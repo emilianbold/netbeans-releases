@@ -19,6 +19,7 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.actions.PaletteViewAction;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -51,7 +52,7 @@ public class JSFComponentOptionsDialog extends org.netbeans.performance.test.uti
     public void initialize() {
         log("::initialize");
         
-        PaletteComponentOperator.invoke();
+        new PaletteViewAction().performAPI();
         openPageAndAddComponent();
     }
     
