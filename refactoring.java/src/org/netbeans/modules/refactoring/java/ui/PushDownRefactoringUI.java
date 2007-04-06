@@ -67,7 +67,7 @@ public class PushDownRefactoringUI implements RefactoringUI {
         Element selected = selectedElements[0].resolveElement(info);
         if (!(selected instanceof TypeElement))
             selected = SourceUtils.getEnclosingTypeElement(selected);
-        TreePath tp = info.getTrees().getPath(selected);
+        TreePath tp = SourceUtils.pathFor(info, selected);
         TreePathHandle sourceType = TreePathHandle.create(tp, info);
         description = UiUtils.getHeader(tp, info, UiUtils.PrintPart.NAME);
         refactoring = new PushDownRefactoring(Lookups.singleton(sourceType));

@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -307,9 +308,22 @@ public class RetoucheUtils {
                 result.add(superClass);
                 l.addLast((TypeElement)superClass);
             }
-            Collection<TypeElement> interfaces = typesToElements(type.getInterfaces(), info);
+            Collection<TypeElement> interfaces = typesToElements(t.getInterfaces(), info);
             result.addAll(interfaces);
             l.addAll(interfaces);
+        }
+        return result;
+    }
+    
+    public static Collection<Element> getSuperTypes(TypeElement type, CompilationInfo info, boolean sourceOnly) {
+        if (!sourceOnly)
+            return getSuperTypes(type, info);
+        Collection<Element> result = new HashSet();
+        for (Element el: getSuperTypes(type, info)) {
+            FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
+            if (isFileInOpenProject(file) && !isFromLibrary(el, info.getClasspathInfo())) {
+                result.add(el);
+            }
         }
         return result;
     }
@@ -326,10 +340,23 @@ public class RetoucheUtils {
         return result;
     }
     
-    public static boolean elementExistsIn(TypeElement target, Element member) {
+    public static Collection<FileObject> elementsToFile(Collection<Element> elements, ClasspathInfo cpInfo ) {
+        Collection <FileObject> result = new HashSet();
+        for (Element handle:elements) {
+            result.add(SourceUtils.getFile(handle, cpInfo));
+        }
+        return result;
+    }
+    
+    public static boolean elementExistsIn(TypeElement target, Element member, CompilationInfo info) {
         for (Element currentMember: target.getEnclosedElements()) {
-            if (ElementHandle.create(currentMember).signatureEquals(member))
+            if (info.getElements().hides(member, currentMember))
                 return true;
+            if (member instanceof ExecutableElement 
+                    && currentMember instanceof ExecutableElement 
+                    && info.getElements().overrides((ExecutableElement)member, (ExecutableElement)currentMember, target)) {
+                return true;
+            }
         }
         return false;
     }

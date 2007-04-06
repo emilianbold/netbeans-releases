@@ -113,7 +113,7 @@ public class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 // increase progress (step 1)
                 fireProgressListenerStep();
                 TypeElement e  = (TypeElement) treePathHandle.resolveElement(cc);
-                if (e.getSuperclass().getKind() == TypeKind.NONE && e.getInterfaces().isEmpty()) {
+                if (RetoucheUtils.getSuperTypes(e, cc, true).isEmpty()) {
                     problem = new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_NoSuperTypes")); // NOI18N
                     return;
                 }
@@ -238,7 +238,7 @@ public class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                         //                        }
                         // #3 - check if the member already exists in the target class
                         
-                        if (RetoucheUtils.elementExistsIn(targetType, member)) {
+                        if (RetoucheUtils.elementExistsIn(targetType, member, cc)) {
                             problem =  createProblem(problems, true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_MemberAlreadyExists", member.getSimpleName())); // NOI18N
                             return;
                         }
@@ -290,8 +290,8 @@ public class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         }
         
         Set<FileObject> a = new HashSet();
+        a.addAll(RetoucheUtils.elementsToFile(RetoucheUtils.getSuperTypes((TypeElement)refactoring.getSourceType().resolveElement(mainInfo), mainInfo, true), cpInfo));
         a.add(SourceUtils.getFile(element, cpInfo));
-        a.add(SourceUtils.getFile(refactoring.getTargetType().resolve(mainInfo), cpInfo));
         fireProgressListenerStart(ProgressEvent.START, a.size());
         if (!a.isEmpty()) {
             final Collection<ModificationResult> results = processFiles(a, new FindTask(refactoringElements, element));

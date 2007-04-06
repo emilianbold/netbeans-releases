@@ -60,6 +60,7 @@ import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 /** UI panel for collecting refactoring parameters.
@@ -118,7 +119,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.RESOLVED);
                     // retrieve supertypes (will be used in the combo)
-                    Collection<Element> supertypes = RetoucheUtils.getSuperTypes((TypeElement)handle.resolveElement(controller), controller);
+                    Collection<Element> supertypes = RetoucheUtils.getSuperTypes((TypeElement)handle.resolveElement(controller), controller, true);
                     MemberInfo[] minfo = new MemberInfo[supertypes.size()];
                     int i=0;
                     for (Element e: supertypes) {
@@ -141,9 +142,9 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                         // name from implements clause)
                         protected String extractText(Object value) {
                             String displayValue = super.extractText(value);
-                            //                if (value instanceof MultipartId) {
-                            //                    displayValue = "implements " + displayValue; // NOI18N
-                            //                }
+                            if (value instanceof MemberInfo && (((MemberInfo)value).getType()==1)) {
+                                displayValue = "implements " + displayValue; // NOI18N
+                            }
                             return displayValue;
                         }
                     });
@@ -158,10 +159,11 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                             // for non-static methods if the target type is an interface
                             MemberInfo object = (MemberInfo) table.getModel().getValueAt(row, 1);
                             if (object.getKind()== ElementKind.METHOD) {
-                                //todo:
-//                                if ((targetType.member.getKind() == ElementKind.INTERFACE && !Modifier.isStatic((object.mgetModifiers())) || Modifier.isAbstract(((Method) object).getModifiers())) {
-//                                    value = Boolean.TRUE;
-//                                }
+                                if (object.getKind()==ElementKind.METHOD) {
+                                    if (targetType.getKind().isInterface() && !((MemberInfo) object).getModifiers().contains(Modifier.STATIC) && !((MemberInfo) object).getModifiers().contains(Modifier.ABSTRACT)) {
+                                        value = Boolean.TRUE;
+                                    }
+                                }
                             }
                             //`the super method automatically makes sure the checkbox is not visible if the
                             // "Make Abstract" value is null (which holds for non-methods)
@@ -218,17 +220,16 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 public void run(CompilationController parameter) throws Exception {
                     
                     // remeber if the target type is an interface (will be used in the loop)
-                    boolean targetIsInterface = targetType.getKind() == ElementKind.INTERFACE;
+                    boolean targetIsInterface = targetType.getKind().isInterface();
                     // go through all rows of a table and collect selected members
                     for (int i = 0; i < members.length; i++) {
                         // if the current row is selected, create MemberInfo for it and
                         // add it to the list of selected members
                         if (members[i][0].equals(Boolean.TRUE)) {
                             MemberInfo element = (MemberInfo) members[i][1];
-                            Object member;
-                            //                                // for methods the makeAbstract is always set to true if the
-                            //                                // target type is an interface
-                            //                                member = new PullUpRefactoring.MemberInfo((Method) element, targetIsInterface || ((Boolean) members[i][2]).booleanValue());
+                            // for methods the makeAbstract is always set to true if the
+                            // target type is an interface
+                            element.setUserData(Lookups.singleton(targetIsInterface || ((Boolean) members[i][2]==null?Boolean.FALSE:(Boolean)members[i][2])));
                             list.add(element);
                         }
                     }
@@ -506,8 +507,10 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                             MemberInfo m = new MemberInfo(e, info);
                             classes.add(m);
                             for (int i = 0; i < supertypes.length; i++) {
+                                TypeMirror targetTM = targetType.getElementHandle().resolve(info).asType();
+                                TypeMirror superTM = supertypes[i].getElementHandle().resolve(info).asType();
                                 // add the other subtypes of the target type
-                                if (info.getTypes().isSubtype(supertypes[i].getElementHandle().resolve(info).asType(), targetType.getElementHandle().resolve(info).asType())) {
+                                if (info.getTypes().isSubtype(superTM, targetTM) && !info.getTypes().isSameType(superTM, targetTM)) {
                                     classes.add(supertypes[i]);
                                 }
                             }

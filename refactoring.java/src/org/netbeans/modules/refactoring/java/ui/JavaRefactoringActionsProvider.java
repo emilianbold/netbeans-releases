@@ -152,8 +152,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    throw new UnsupportedOperationException("Not supported yet!");
-                    //return new ExtractInterfaceRefactoringUI(selectedElements[0],(CompilationInfo) null);
+                    return new PullUpRefactoringUI(new TreePathHandle[]{handles.iterator().next()}, cinfo.get());
                 }
             }.run();
         }
