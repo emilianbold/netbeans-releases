@@ -213,13 +213,13 @@ final class Renamer extends Plugin implements XMLRefactoringPlugin {
       myRequest.getRefactoringSource().lookup(Referenceable.class);
     String oldName = myRequest.getContext().lookup(String.class);
 
-    for (Model model: models) {
-        if (reference instanceof Nameable){
-          rename(getComponents(map.get(model)), model, (Named) reference, oldName);
-        }
-        else if(reference instanceof Model){
-          rename(getComponents(map.get(model)));
-        }
+    for (Model model : models) {
+      if (reference instanceof Nameable) {
+        rename(getComponents(map.get(model)), model, (Named) reference, oldName);
+      }
+      else if (reference instanceof Model) {
+        rename(getComponents(map.get(model)));
+      }
     }       
   }
     
