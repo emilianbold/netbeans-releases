@@ -20,7 +20,7 @@
 package gui.window;
 
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.PaletteViewAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -65,8 +65,7 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
         dlgName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitle"); //Select Page Fragment
         menuCmd = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitleEllipse"); // Select Page Fragment...
         
-        // PaletteComponentOperator.invoke();
-        new ActionNoBlock("Window|Palette",null).perform(); // NOI18N
+        new PaletteViewAction().performAPI();
 
         addPFBComponent();
         prepareCloseBoxDialog();
@@ -100,5 +99,4 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
     public static void main(String[] args) {
         junit.textui.TestRunner.run(new PageFragmentBoxDialog("measureTime","Add Page Fragment Box Dialog open time"));
     }
-    
 }
