@@ -39,6 +39,14 @@ public class MeasureProfiler  {
         // Dialogs
         suite.addTest(new SelectProfilingTaskDialog("measureTime", "Select Profiling Task dialog open"));
         
+        // Windows
+        suite.addTest(new ProfilerWindows("testProfilerControlPanel","Open Profiler Control Panel Window"));
+        suite.addTest(new ProfilerWindows("testProfilerTelemetryOverview","Open Profiler VM Telemetry Overview Window"));
+        suite.addTest(new ProfilerWindows("testProfilerLiveResults","Open Profiler Live Results Window"));
+        suite.addTest(new ProfilerWindows("testProfilerVMTelemetry","Open Profiler Profiler VM Telemetry Window Window"));
+        suite.addTest(new ProfilerWindows("testProfilerThreads","Open Profiler Threads Window"));
+        suite.addTest(new ProfilerWindows("testProfilerProfilingPoints","Open Profiler Profiling Pints Window"));
+        
         return suite;
     }
     
