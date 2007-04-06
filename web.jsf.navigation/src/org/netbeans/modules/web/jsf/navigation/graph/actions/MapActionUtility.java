@@ -156,12 +156,16 @@ public class MapActionUtility {
                     
                     //Workaround: Temporarily Wrapping Collection because of Issue: 100127
                     Set<Object> selectedObjects = new HashSet<Object>(objScene.getSelectedObjects());
+                    
+                    /*.When deleteing only one item. */
                     if (selectedObjects.size() == 1){
                         Object myObj = selectedObjects.toArray()[0];
                         if( myObj instanceof Node ) {
                             delete((Node)myObj);
                         }
                     }
+                    
+                    /* When deleting multiple objects, make sure delete all the links first. */
                     for( Object selectedObj : selectedObjects ){
                         if( objScene.isEdge(selectedObj) ){
                             delete((Node)selectedObj);
