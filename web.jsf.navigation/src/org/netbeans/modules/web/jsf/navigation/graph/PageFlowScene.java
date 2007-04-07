@@ -490,14 +490,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
             }
             
             ((LabelWidget)widget).setLabel(newName);
-            
-            // XXX HACK XXX - A JToolbar is stealing my  much need focus.
-            EventQueue.invokeLater(new Runnable(){
-                public void run() {
-                    tc.requestMultiViewActive();
-                }
-            });
-            
+                        
         }
     }
     
@@ -538,12 +531,6 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
                 validate();
             }
             
-            // XXX HACK XXX - A JToolbar is stealing my  much need focus.
-            EventQueue.invokeLater(new Runnable(){
-                public void run() {
-                    tc.requestMultiViewActive();
-                }
-            });
         }
         
     }
