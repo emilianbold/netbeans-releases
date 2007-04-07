@@ -135,25 +135,12 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         actions.addAction(ActionFactory.createZoomAction());
         actions.addAction(ActionFactory.createPanAction());
         actions.addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
-        actions.addAction(popupGraphAction);
-        
+        actions.addAction(popupGraphAction);        
+        actions.addAction(createActionMap());
         addObjectSceneListener(new MyObjectSceneListener(), ObjectSceneEventType.OBJECT_SELECTION_CHANGED, ObjectSceneEventType.OBJECT_REMOVED);
         //        actions.addAction(dragNdropAction);
         //        actions.addAction(selectAction);
         
-        
-        //        GridGraphLayout<PageFlowNode, NavigationCaseNode> gglayout = new GridGraphLayout<PageFlowNode, NavigationCaseNode> ();
-        //        gglayout.setChecker(true);
-        //        sceneLayout = LayoutFactory.createSceneGraphLayout(this, gglayout);
-        //        sceneLayout.invokeLayout();
-        
-        
-        getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
-            public void edit(Widget widget) {
-                sceneLayout.invokeLayout();
-            }
-        }));
-        getActions().addAction(createActionMap());
         
         
     }
