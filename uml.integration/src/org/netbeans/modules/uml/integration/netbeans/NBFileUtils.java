@@ -512,7 +512,11 @@ public class NBFileUtils
 		JavaSource source = findResource(clazz);
 		if (source != null)
                 {
-		    String fullName = clazz.getPackage() + "." + clazz.getName();
+		    String fullName = clazz.getPackage();
+		    if (fullName != null && fullName.length() > 0) {
+			fullName += ".";
+		    }
+		    fullName += clazz.getName();
 		    retVal = getTypeElement(source, fullName);
 		}		
             }

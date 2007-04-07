@@ -36,6 +36,8 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.uml.core.coreapplication.ICodeGenerator;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.structure.IArtifact;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Classifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
@@ -88,37 +90,26 @@ public class JavaCodegen implements ICodeGenerator {
 	    clinfo.setExportSourceFolderName(targetFolderName);
 	    clinfo.setComment(classifier.getDocumentation());
 
-	    File existingFile = sourceFileExists(targetFolderName, classifier);
-	    if (existingFile != null) {
+	    // TODO sourceFile name determination and thus existence 
+	    //should be moved below to be done based on the templates descs
+	    File sourceFile = sourceFile(targetFolderName, classifier);
+	    if (sourceFile.exists()) {
 
 		if (backup) {
-		    FileObject buFileObj = backupFile(existingFile);		
+		    FileObject buFileObj = backupFile(sourceFile);		
 		    if (buFileObj != null) {
-			FileObject efo = FileUtil.toFileObject(existingFile);
+			FileObject efo = FileUtil.toFileObject(sourceFile);
 			if (efo != null) 
 			    efo.delete();
 		    }
-		}
-		
+		}		
 		try {
-		    clinfo.updateFilename(existingFile.getCanonicalPath());
+		    clinfo.updateFilename(sourceFile.getCanonicalPath());
 		} catch (Exception ex) {
 		    ex.printStackTrace();
 		}
-	    } else {
-		// after generation TBD
-		existingFile = FileUtil.toFile(
-		    clinfo.getExportSourceFolderFileObject());
-	    }
-        
-	    try {
-		classifier.addSourceFileNotDuplicate(
-		    existingFile.getCanonicalPath());
-	    } catch (IOException ex) {
-		ex.printStackTrace();
-	    }
-
-        
+	    } 
+                
 	    // 2 possible places to get templates from - 
 	    // registry and teplates subdir of the project 
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
@@ -150,6 +141,11 @@ public class JavaCodegen implements ICodeGenerator {
 			parameters.put("modelElement", classifier);
 			DataObject n = obj.createFromTemplate(folder, clinfo.getName(), parameters);
 
+			try {
+			    classifier.addSourceFileNotDuplicate(sourceFile.getCanonicalPath());
+			} catch (IOException ex) {
+			    ex.printStackTrace();
+			}
 		    } else {
 			// TBD - couldn't create the package directory for some reason
 			;			
@@ -166,7 +162,7 @@ public class JavaCodegen implements ICodeGenerator {
     
 
 
-    private File sourceFileExists(String sourceFolderName, IClassifier classifier)
+    private File sourceFile(String sourceFolderName, IClassifier classifier)
     {
         File file = null;
         
@@ -177,12 +173,8 @@ public class JavaCodegen implements ICodeGenerator {
         
         if (pathName != null && pathName.length() > 0)
         {
-            file = new File(pathName);
-            
-            if (!file.exists())
-                file = null;
-        }
-        
+            file = new File(pathName);            
+        }        
         return file;
     }
     
