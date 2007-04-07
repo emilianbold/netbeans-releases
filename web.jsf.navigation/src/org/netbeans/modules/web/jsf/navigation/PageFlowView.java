@@ -170,14 +170,19 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * Set the default actived node to faces config node.
      */
     public void setDefaultActivatedNode() {
-        try{
-            Node node = org.openide.loaders.DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
-            setActivatedNodes(new Node[] { node });
-        } catch (Exception e){
-            e.printStackTrace();
-        }
+        Thread t = new Thread( new Runnable() {
+            public void run() {
+                try {
+                    Node node = DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
+                    setActivatedNodes(new Node[] {node });
+                } catch (DataObjectNotFoundException donfe ){
+                   Exceptions.printStackTrace(donfe);
+                }
+            }
+        });
     }
-    
+
+
 //   public DataNode getFacesCongFile() {
 //       DataNode node = null;
 //       try     {
@@ -185,278 +190,278 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
 //        }
 //        catch (DataObjectNotFoundException ex) {
 //            Exceptions.printStackTrace(ex);
-//        }        
-//        if( node == null ){            
+//        }
+//        if( node == null ){
 //            node = new AbstractNode(Children.LEAF);
 //        }
 //        return node;
 //    }
+
+/**
+ *
+ */
+public void warnUserMalFormedFacesConfig() {
+    //        clearGraph();
+    scene.createMalFormedWidget();
+}
+
+public void removeUserMalFormedFacesConfig() {
+    scene.removeMalFormedWidget();
+}
+
+//    private static final Image IMAGE_LIST = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/list_32.png"); // NOI18N
+
+/**
+ *
+ */
+public void clearGraph() {
+    //        scene.removeChildren();
     
-    
-    /**
-     * 
-     */
-    public void warnUserMalFormedFacesConfig() {
-        //        clearGraph();
-        scene.createMalFormedWidget();
-    }
-    
-    public void removeUserMalFormedFacesConfig() {
-        scene.removeMalFormedWidget();
-    }
-    
-    //    private static final Image IMAGE_LIST = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/list_32.png"); // NOI18N
-    
-    /**
-     *
-     */
-    public void clearGraph() {
-        //        scene.removeChildren();
-        
-        //Workaround: Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
-        Collection<PageFlowNode> nodes = new HashSet<PageFlowNode>(scene.getNodes());
-        for( PageFlowNode node : nodes ){
-            scene.removeNodeWithEdges(node);
-        }
-        scene.validate();
-    }
-    
-    /**
-     *
-     */
-    public void validateGraph() {
-        //        scene.layoutScene();
-        scene.validate();
-    }
-    
-    public void layoutSceneImmediately() {
-        //        scene.layoutSceneImmediately();
-    }
-    
-    
-    
-    /**
-     * Creates a PageFlowScene node from a pageNode.  The PageNode will generally be some type of DataObject unless
-     * there is no true file to represent it.  In that case a abstractNode should be passed
-     * @param pageNode the node that represents a dataobject or empty object
-     * @param type
-     * @param glyphs
-     * @return
-     */
-    protected VMDNodeWidget createNode( PageFlowNode pageNode, String type, List<Image> glyphs) {
-        VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
-        //        String pageName = pageNode.getName();
-        //        if( pageNode instanceof DataNode ){
-        //            pageName = ((DataNode)pageNode).getDataObject().getPrimaryFile().getNameExt();
-        //            System.out.println("PageName : " + pageName);
-        //        }
-        String pageName = pageNode.getDisplayName();
-        //        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
-        widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
-        scene.addPin(pageNode, new PinNode(pageNode));
-        
-        return widget;
-    }
-    
-    //    protected boolean resetNode( PageFlowNode oldPageNode, PageFlowNode newPageNode ){
-    //
-    //    }
-    
-    //    /**
-    //     * Creates a PageFlowScene pin from a pageNode and pin name String.
-    //     * In general a pin represents a NavigasbleComponent orginally designed for VWP.
-    //     * @param pageNode
-    //     * @param navComp
-    //     * @return
-    //     */
-    //    protected VMDPinWidget createPin( Node pageNode, NavigationCaseNode navComp) {
-    //        //        Pin pin = new Pin(page, navComp);
-    //        VMDPinWidget widget = (VMDPinWidget) scene.addPin(pageNode, navComp);
-    //        //        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, pin);
-    //        //        if( navComp != null ){
-    //        //            widget.setProperties(navComp, Arrays.asList(navComp.getBufferedIcon()));
-    //        //        }
-    //        return widget;
-    //    }
-    
-    /**
-     * Creates an Edge or Connection in the Graph Scene
-     * @param navCaseNode
-     * @param fromPageNode
-     * @param toPageNode
-     */
-    protected void createEdge( NavigationCaseNode navCaseNode, PageFlowNode fromPageNode, PageFlowNode toPageNode  ) {
-        
-        
-        //
-        //        PageFlowNode fromPageNode = pfc.page2Node.get(fromPage);
-        //        PageFlowNode toPageNode = pfc.page2Node.get(toPage);
-        
-        ConnectionWidget widget = (ConnectionWidget)scene.addEdge(navCaseNode);
-        
-        
-        //I need to remove extension so it matches the DataNode's pins.
-        scene.setEdgeSource(navCaseNode, scene.getDefaultPin( fromPageNode) );
-        scene.setEdgeTarget(navCaseNode, scene.getDefaultPin( toPageNode) );
-        
-        //        Collection<String> pins = graphScene.getPins();
-        //        String targetPin = null;
-        //        String sourcePin = null;
-        //        for (String pin : pins ){
-        //            if (pin.equals(toPage)) {
-        //                sourcePin = pin;
-        //                if( targetPin != null ) {
-        //                    break;
-        //                } else {
-        //                    continue;
-        //                }
-        //            } else if (pin.equals(fromPage)) {
-        //                targetPin = fromPage;
-        //                if( sourcePin != null ) {
-        //                    break;
-        //                } else {
-        //                    continue;
-        //                }
-        //            }
-        //        }
-        //
-        //        graphScene.setEdgeTarget(navCase, targetPin);
-        //        graphScene.setEdgeSource(navCase, sourcePin);
-        
-        
-    }
-    
-    
-    private static final String PATH_TOOLBAR_FOLDER = "PageFlowEditor/Toolbars"; // NOI18N
-    
-    
-    /**
-     *
-     * @return
-     */
-    public JComponent getToolbarRepresentation() {
-        
-        PageFlowUtilities pfu = PageFlowUtilities.getInstance();
-        // TODO -- Look at NbEditorToolBar in the editor - it does stuff
-        // with the UI to get better Aqua and Linux toolbar
-        JToolBar toolbar = new JToolBar();
-        toolbar.setFloatable(false);
-        toolbar.setRollover(true);
-        toolbar.setBorder(new EmptyBorder(0, 0, 0, 0));
-        
-        //            ToolbarListener listener = new ToolbarListener();
-        
-        toolbar.addSeparator();
-        
-        JComboBox comboBox = new JComboBox();
-        comboBox.addItem(PageFlowUtilities.LBL_SCOPE_FACESCONFIG);
-        comboBox.addItem(PageFlowUtilities.LBL_SCOPE_PROJECT);
-        
-        //Set the appropriate size of the combo box so it doesn't take up the whole page.
-        Dimension prefSize = comboBox.getPreferredSize();
-        comboBox.setMinimumSize(prefSize);
-        comboBox.setMaximumSize(prefSize);
-        
-        comboBox.setSelectedItem(pfu.getCurrentScope());
-        
-        comboBox.addItemListener( new ItemListener() {
-            public void itemStateChanged(ItemEvent event)  {
-                PageFlowUtilities pfu = PageFlowUtilities.getInstance();
-                if ( event.getStateChange() == ItemEvent.SELECTED ) {
-                    pfu.setCurrentScope((String)event.getItem());
-                    pfc.setupGraph();
-                }
-                requestMultiViewActive();
-            }
-        });
-        
-        toolbar.add(comboBox);
-        
-        return toolbar;
-        
-    }
-    
-    
-    
-    private static final String PATH_PALETTE_FOLDER = "PageFlowEditor/Palette"; // NOI18N
-    
-    /**
-     * Get's the Palette Controller for the related Palette.
-     * @return the Palette Controller.
-     */
-    public PaletteController getPaletteController() {
-        try {
-            return PaletteFactory.createPalette( PATH_PALETTE_FOLDER, new PaletteActions() {
-                public Action[] getCustomCategoryActions(Lookup lookup) {
-                    return new Action[0];
-                }
-                public Action[] getCustomItemActions(Lookup lookup) {
-                    return new Action[0];
-                }
-                public Action[] getCustomPaletteActions() {
-                    return new Action[0];
-                }
-                public Action[] getImportActions() {
-                    return new Action[0];
-                }
-                public Action getPreferredAction(Lookup lookup) {
-                    return null; //TODO
-                }
-            });
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            
-        }
-        return null;
-    }
-    
-    public ExplorerManager getExplorerManager() {
-        return explorer;
-    }
-    
-    private ExplorerManager explorer;
-    
-    public void addNotify() {
-        super.addNotify();
-        explorer = ExplorerManager.find(this);
-    }
-    
-    public void requestFocus() {
-        super.requestFocus();
-        view.requestFocus();
-    }
-    
-    public boolean requestFocusInWindow() {
-        super.requestFocusInWindow();
-        return view.requestFocusInWindow();
-    }
-    
-    
-    
-    
-    
-    /**
-     * Remove the Edge from the scene.
-     * @param node
-     */
-    public void removeEdge( NavigationCaseNode node ){
-        
-        scene.removeEdge(node);
-        //            Node actNode = DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
-        //            setActivatedNodes(new org.openide.nodes.Node[]{actNode});
-        
-        
-    }
-    
-    public void removeNodeWithEdges( PageFlowNode node ){
-        //        scene.removeNode(node);
+    //Workaround: Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
+    Collection<PageFlowNode> nodes = new HashSet<PageFlowNode>(scene.getNodes());
+    for( PageFlowNode node : nodes ){
         scene.removeNodeWithEdges(node);
     }
+    scene.validate();
+}
+
+/**
+ *
+ */
+public void validateGraph() {
+    //        scene.layoutScene();
+    scene.validate();
+}
+
+public void layoutSceneImmediately() {
+    //        scene.layoutSceneImmediately();
+}
+
+
+
+/**
+ * Creates a PageFlowScene node from a pageNode.  The PageNode will generally be some type of DataObject unless
+ * there is no true file to represent it.  In that case a abstractNode should be passed
+ * @param pageNode the node that represents a dataobject or empty object
+ * @param type
+ * @param glyphs
+ * @return
+ */
+protected VMDNodeWidget createNode( PageFlowNode pageNode, String type, List<Image> glyphs) {
+    VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
+    //        String pageName = pageNode.getName();
+    //        if( pageNode instanceof DataNode ){
+    //            pageName = ((DataNode)pageNode).getDataObject().getPrimaryFile().getNameExt();
+    //            System.out.println("PageName : " + pageName);
+    //        }
+    String pageName = pageNode.getDisplayName();
+    //        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
+    widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
+    scene.addPin(pageNode, new PinNode(pageNode));
     
-    public void resetNodeWidget( PageFlowNode pageNode ){
-        //Reset the Node Name
-        VMDNodeWidget nodeWidget = (VMDNodeWidget)scene.findWidget(pageNode);
-        //        nodeWidget.setNodeName(node.getDisplayName());
-        nodeWidget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageNode.getDisplayName(), null, null );
+    return widget;
+}
+
+//    protected boolean resetNode( PageFlowNode oldPageNode, PageFlowNode newPageNode ){
+//
+//    }
+
+//    /**
+//     * Creates a PageFlowScene pin from a pageNode and pin name String.
+//     * In general a pin represents a NavigasbleComponent orginally designed for VWP.
+//     * @param pageNode
+//     * @param navComp
+//     * @return
+//     */
+//    protected VMDPinWidget createPin( Node pageNode, NavigationCaseNode navComp) {
+//        //        Pin pin = new Pin(page, navComp);
+//        VMDPinWidget widget = (VMDPinWidget) scene.addPin(pageNode, navComp);
+//        //        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, pin);
+//        //        if( navComp != null ){
+//        //            widget.setProperties(navComp, Arrays.asList(navComp.getBufferedIcon()));
+//        //        }
+//        return widget;
+//    }
+
+/**
+ * Creates an Edge or Connection in the Graph Scene
+ * @param navCaseNode
+ * @param fromPageNode
+ * @param toPageNode
+ */
+protected void createEdge( NavigationCaseNode navCaseNode, PageFlowNode fromPageNode, PageFlowNode toPageNode  ) {
+    
+    
+    //
+    //        PageFlowNode fromPageNode = pfc.page2Node.get(fromPage);
+    //        PageFlowNode toPageNode = pfc.page2Node.get(toPage);
+    
+    ConnectionWidget widget = (ConnectionWidget)scene.addEdge(navCaseNode);
+    
+    
+    //I need to remove extension so it matches the DataNode's pins.
+    scene.setEdgeSource(navCaseNode, scene.getDefaultPin( fromPageNode) );
+    scene.setEdgeTarget(navCaseNode, scene.getDefaultPin( toPageNode) );
+    
+    //        Collection<String> pins = graphScene.getPins();
+    //        String targetPin = null;
+    //        String sourcePin = null;
+    //        for (String pin : pins ){
+    //            if (pin.equals(toPage)) {
+    //                sourcePin = pin;
+    //                if( targetPin != null ) {
+    //                    break;
+    //                } else {
+    //                    continue;
+    //                }
+    //            } else if (pin.equals(fromPage)) {
+    //                targetPin = fromPage;
+    //                if( sourcePin != null ) {
+    //                    break;
+    //                } else {
+    //                    continue;
+    //                }
+    //            }
+    //        }
+    //
+    //        graphScene.setEdgeTarget(navCase, targetPin);
+    //        graphScene.setEdgeSource(navCase, sourcePin);
+    
+    
+}
+
+
+private static final String PATH_TOOLBAR_FOLDER = "PageFlowEditor/Toolbars"; // NOI18N
+
+
+/**
+ *
+ * @return
+ */
+public JComponent getToolbarRepresentation() {
+    
+    PageFlowUtilities pfu = PageFlowUtilities.getInstance();
+    // TODO -- Look at NbEditorToolBar in the editor - it does stuff
+    // with the UI to get better Aqua and Linux toolbar
+    JToolBar toolbar = new JToolBar();
+    toolbar.setFloatable(false);
+    toolbar.setRollover(true);
+    toolbar.setBorder(new EmptyBorder(0, 0, 0, 0));
+    
+    //            ToolbarListener listener = new ToolbarListener();
+    
+    toolbar.addSeparator();
+    
+    JComboBox comboBox = new JComboBox();
+    comboBox.addItem(PageFlowUtilities.LBL_SCOPE_FACESCONFIG);
+    comboBox.addItem(PageFlowUtilities.LBL_SCOPE_PROJECT);
+    
+    //Set the appropriate size of the combo box so it doesn't take up the whole page.
+    Dimension prefSize = comboBox.getPreferredSize();
+    comboBox.setMinimumSize(prefSize);
+    comboBox.setMaximumSize(prefSize);
+    
+    comboBox.setSelectedItem(pfu.getCurrentScope());
+    
+    comboBox.addItemListener( new ItemListener() {
+        public void itemStateChanged(ItemEvent event)  {
+            PageFlowUtilities pfu = PageFlowUtilities.getInstance();
+            if ( event.getStateChange() == ItemEvent.SELECTED ) {
+                pfu.setCurrentScope((String)event.getItem());
+                pfc.setupGraph();
+            }
+            requestMultiViewActive();
+        }
+    });
+    
+    toolbar.add(comboBox);
+    
+    return toolbar;
+    
+}
+
+
+
+private static final String PATH_PALETTE_FOLDER = "PageFlowEditor/Palette"; // NOI18N
+
+/**
+ * Get's the Palette Controller for the related Palette.
+ * @return the Palette Controller.
+ */
+public PaletteController getPaletteController() {
+    try {
+        return PaletteFactory.createPalette( PATH_PALETTE_FOLDER, new PaletteActions() {
+            public Action[] getCustomCategoryActions(Lookup lookup) {
+                return new Action[0];
+            }
+            public Action[] getCustomItemActions(Lookup lookup) {
+                return new Action[0];
+            }
+            public Action[] getCustomPaletteActions() {
+                return new Action[0];
+            }
+            public Action[] getImportActions() {
+                return new Action[0];
+            }
+            public Action getPreferredAction(Lookup lookup) {
+                return null; //TODO
+            }
+        });
+    } catch (IOException ex) {
+        ex.printStackTrace();
+        
     }
+    return null;
+}
+
+
+public ExplorerManager getExplorerManager() {
+    return explorer;
+}
+
+private ExplorerManager explorer;
+
+public void addNotify() {
+    super.addNotify();
+    explorer = ExplorerManager.find(this);
+}
+
+public void requestFocus() {
+    super.requestFocus();
+    view.requestFocus();
+}
+
+public boolean requestFocusInWindow() {
+    super.requestFocusInWindow();
+    return view.requestFocusInWindow();
+}
+
+
+
+
+
+/**
+ * Remove the Edge from the scene.
+ * @param node
+ */
+public void removeEdge( NavigationCaseNode node ){
+    
+    scene.removeEdge(node);
+    //            Node actNode = DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
+    //            setActivatedNodes(new org.openide.nodes.Node[]{actNode});
+    
+    
+}
+
+public void removeNodeWithEdges( PageFlowNode node ){
+    //        scene.removeNode(node);
+    scene.removeNodeWithEdges(node);
+}
+
+public void resetNodeWidget( PageFlowNode pageNode ){
+    //Reset the Node Name
+    VMDNodeWidget nodeWidget = (VMDNodeWidget)scene.findWidget(pageNode);
+    //        nodeWidget.setNodeName(node.getDisplayName());
+    nodeWidget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageNode.getDisplayName(), null, null );
+}
 }

@@ -445,12 +445,12 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
                 if (getSelectedObjects().contains(object))
                     return;
                 userSelectionSuggested(Collections.singleton(object), invertSelection);
-                //                tc.setActivatedNodes(new Node[]{(Node)object});
             } else {
                 userSelectionSuggested(Collections.emptySet(), invertSelection);
-                //                ((PageFlowScene)widget.getScene()).getPageFlowView().setDefaultActivatedNode();
             }
         }
+        
+        
     }
     
     
@@ -494,8 +494,6 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         }
         public String getText(Widget widget) {
             Node pageNode = (Node)findObject(nodeWidget);
-            //                return ((LabelWidget) widget).getLabel();
-            //                if( pageNode instanceof DataNode ){
             return pageNode.getName();
         }
         public void setText(Widget widget, String text) {
@@ -519,6 +517,8 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
             }
             
         }
+        
+        
         
     }
     

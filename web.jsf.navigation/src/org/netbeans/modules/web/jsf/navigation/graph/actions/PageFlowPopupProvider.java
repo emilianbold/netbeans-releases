@@ -30,6 +30,9 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.api.visual.action.PopupMenuProvider;
@@ -67,28 +70,24 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
     }
     
     
+    
     // <actions from layers>
     private static final String PATH_PAGEFLOW_ACTIONS = "PageFlowEditor/PopupActions"; // NOI18N
 //        private static final String PATH_PAGEFLOW_ACTIONS = "PageFlowEditor/application/x-pageflow/Popup"; // NOI18N
     private void initialize() {
         InstanceContent ic = new InstanceContent();
         ic.add(graphScene);
-//        Lookup lookup = tc.getLookup();
-        
-//        graphPopup = Utilities.actionsToPopup(
-//                SystemFileSystemSupport.getActions(PATH_PAGEFLOW_ACTIONS), lookup);
-        //        graphPopup = new JPopupMenu("Transition Menu");
-        //
-        //        graphPopup = new JPopupMenu();
-        //        miAddWebPage = new JMenuItem(addPage);
-        //        miAddWebPage.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A,InputEvent.CTRL_MASK));
-        //        miAddWebPage.addActionListener(this);
-        //        graphPopup.add(miAddWebPage);
     }
     
     
     
     public JPopupMenu getPopupMenu(Widget widget, Point point){
+        Object obj = graphScene.getHoveredObject();
+        if( obj != null ) {
+            Set<Object> set = new HashSet<Object>();
+            set.add(obj);
+            graphScene.setSelectedObjects(set);
+        }
         return Utilities.actionsToPopup(
                 SystemFileSystemSupport.getActions(PATH_PAGEFLOW_ACTIONS), tc.getLookup());
     }
