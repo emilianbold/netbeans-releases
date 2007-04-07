@@ -26,6 +26,7 @@ import org.netbeans.modules.identity.server.manager.ui.actions.EditProfileAction
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -51,7 +52,8 @@ public class ProfileNode extends AbstractNode {
         setName("");     //NOI18N
         setDisplayName(secMech.getName());
         setIconBaseWithExtension(PROFILE_NODE_ICON);
-        
+        setShortDescription(NbBundle.getMessage(ProfileNode.class, "DESC_ProfileNode",
+                secMech.getName()));
         this.secMech = secMech;
         this.instance = instance;
     }

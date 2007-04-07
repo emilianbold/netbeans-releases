@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.identity.profile.api.configurator.ConfiguratorException;
 import org.netbeans.modules.identity.profile.api.configurator.SecurityMechanism;
 import org.netbeans.modules.identity.profile.api.configurator.ServerProperties;
 
@@ -47,13 +48,13 @@ public class SecurityMechanismRetriever {
     
     private static final String AM_SECURITY_MECHANISM_CLASS = "com.sun.identity.wss.security.SecurityMechanism";   //NOI18N
     
-    private static final String AM_GET_LIBERTY_SECURITY_MECHANISM_URIS_METHOD = 
+    private static final String AM_GET_LIBERTY_SECURITY_MECHANISM_URIS_METHOD =
             "getLibertySecurityMechanismURIs";  //NOI18N
-   
+    
     private static final String AM_GET_SECURITY_MECHANISM_METHOD = "getSecurityMechanism";  //NOI18N
-   
+    
     private static final String AM_LIBERTY_DS_SECURITY_FIELD = "LIBERTY_DS_SECURITY";   //NOI18N
-    /** 
+    /**
      * Returns all the non-Liberty security mechanisms.
      *
      */
@@ -64,10 +65,8 @@ public class SecurityMechanismRetriever {
             Method method = clazz.getMethod(AM_GET_ALL_SUPPORT_SECURITY_MECH_METHOD);
             return convertToSecurityMechProxies((List) method.invoke(null));
         } catch (Exception ex) {
-           ex.printStackTrace();
+            throw ConfiguratorException.create(ex);
         }
-        
-        return Collections.emptyList();
     }
     
     /**
@@ -82,10 +81,8 @@ public class SecurityMechanismRetriever {
             
             return convertToSecurityMechProxies((List) method.invoke(null));
         } catch (Exception ex) {
-            ex.printStackTrace();
+            throw ConfiguratorException.create(ex);
         }
-        
-        return Collections.emptyList();
     }
     
     /*
@@ -98,10 +95,10 @@ public class SecurityMechanismRetriever {
             Class clazz = loader.loadClass(AM_SECURITY_MECHANISM_CLASS);
             Method method = clazz.getMethod(AM_GET_LIBERTY_SECURITY_MECHANISM_URIS_METHOD);
             List uris = (List) method.invoke(null);
-    
+            
             method = clazz.getMethod(AM_GET_SECURITY_MECHANISM_METHOD, String.class);
             List secMechs = new ArrayList();
-          
+            
             for (int i = 0; i < uris.size(); i++) {
                 String uri = (String) uris.get(i);
                 secMechs.add(method.invoke(null, uri));
@@ -109,11 +106,8 @@ public class SecurityMechanismRetriever {
             
             return convertToSecurityMechProxies(secMechs);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            throw ConfiguratorException.create(ex);
         }
-        
-        return Collections.emptyList();
-        
     }
     
     /**
@@ -131,10 +125,8 @@ public class SecurityMechanismRetriever {
             
             return convertToSecurityMechProxies(secMechs);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            throw ConfiguratorException.create(ex);
         }
-        
-        return Collections.emptyList();
     }
     
     private static Collection<SecurityMechanism> convertToSecurityMechProxies(List secMechs) {

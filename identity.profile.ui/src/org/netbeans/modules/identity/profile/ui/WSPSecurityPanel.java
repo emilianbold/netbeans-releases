@@ -22,6 +22,7 @@ package org.netbeans.modules.identity.profile.ui;
 import javax.swing.JComponent;
 import org.netbeans.modules.identity.profile.api.configurator.ProviderConfigurator;
 import org.netbeans.modules.identity.profile.api.configurator.Configurator.AccessMethod;
+import org.netbeans.modules.identity.profile.api.configurator.ConfiguratorException;
 import org.netbeans.modules.identity.profile.api.configurator.ProviderConfigurator.Configurable;
 import org.netbeans.modules.identity.profile.api.configurator.ProviderConfigurator.Type;
 import org.netbeans.modules.identity.profile.api.configurator.SecurityMechanism;
@@ -45,6 +46,7 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
     
     private ProviderConfigurator configurator;
     private J2eeProjectHelper helper;
+    private boolean disabled = false;
     
     /** Creates new form WSPSecurityPanel */
     public WSPSecurityPanel(SectionNodeView view, J2eeProjectHelper helper) {
@@ -58,26 +60,28 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
         try {
             configurator = ProviderConfigurator.getConfigurator(helper.getServiceDescriptionName(),
                     Type.WSP, AccessMethod.FILE, helper.getConfigPath());
-        } catch (RuntimeException ex) {
-            //errorLabel.setText(ex.getMessage());
-            return;
+        } catch (ConfiguratorException ex) {
+            errorLabel.setText(ex.getMessage());
+            disabled = true;
         }
         
-        if (helper.isSecurityEnabled()) {
-            enableSecurityCB.setSelected(true);
-        } else {
-            enableSecurityCB.setSelected(false);
+        if (!disabled) {
+            if (helper.isSecurityEnabled()) {
+                enableSecurityCB.setSelected(true);
+            } else {
+                enableSecurityCB.setSelected(false);
+            }
+            
+            configurator.addModifier(Configurable.SECURITY_MECH, requestSecMechCB,
+                    SecurityMechanismHelper.getDefault().getAllWSPSecurityMechanisms());
+            //(helper.getVersion() == Version.VERSION_1_4) ?
+            //    SecurityMechanismHelper.getDefault().getAllWSPSecurityMechanisms() :
+            //SecurityMechanismHelper.getDefault().getAllMessageLevelSecurityMechanisms());
+            
+            //configurator.addErrorComponent(errorLabel);
+            configurator.addModifier(Configurable.SERVER_PROPERTIES, serverCB,
+                    ServerManager.getDefault().getAllServerProperties());
         }
-        
-        configurator.addModifier(Configurable.SECURITY_MECH, requestSecMechCB,
-                SecurityMechanismHelper.getDefault().getAllWSPSecurityMechanisms());
-                //(helper.getVersion() == Version.VERSION_1_4) ?
-                //    SecurityMechanismHelper.getDefault().getAllWSPSecurityMechanisms() :
-                //SecurityMechanismHelper.getDefault().getAllMessageLevelSecurityMechanisms());
-        
-        //configurator.addErrorComponent(errorLabel);
-        configurator.addModifier(Configurable.SERVER_PROPERTIES, serverCB,
-                ServerManager.getDefault().getAllServerProperties());
         
         updateVisualState();
     }
@@ -95,10 +99,16 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
     }
     
     private void updateVisualState() {
+        if (disabled) {
+            disableAll();
+            enableSecurityCB.setEnabled(false);
+            return;
+        }
+        
         if (helper.isWsitSecurityEnabled()) {
             //System.out.println("wsit enabled");
             enableSecurityCB.setEnabled(false);
-            errorLabel.setText(NbBundle.getMessage(WSCSecurityPanel.class, 
+            errorLabel.setText(NbBundle.getMessage(WSCSecurityPanel.class,
                     "MSG_WsitEnabled"));
         } else {
             //System.out.println("wsit disabled");
@@ -145,8 +155,24 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
         }
     }
     
+    private void disableAll() {
+        secMechLabel.setEnabled(false);
+        requestLabel.setEnabled(false);
+        requestSecMechCB.setEnabled(false);
+        userNameInfoLabel.setEnabled(false);
+        certSettingsLabel.setEnabled(false);
+        certSettingsInfoLabel.setEnabled(false);
+        
+        certSettingsInfoLabel.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.disabledShadow"));  //NOI18N
+        certSettingsInfoLabel.setForeground(javax.swing.UIManager.getDefaults().getColor("Label.disabledForeground")); //NOI18N
+        
+        serverLabel.setEnabled(false);
+        serverCB.setEnabled(false);   
+        userNameInfoLabel.setVisible(false);
+    }
+    
     public void save() {
-        if (configurator != null) {
+        if (!disabled) {
             if (enableSecurityCB.isSelected()) {
                 configurator.save();
                 
@@ -305,19 +331,19 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
+    
     private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
-// TODO add your handling code here:
+        // TODO add your handling code here:
         updateVisualState();
     }//GEN-LAST:event_formFocusGained
-        
+    
     private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_formAncestorAdded
-// TODO add your handling code here:
+        // TODO add your handling code here:
         requestFocusInWindow();
     }//GEN-LAST:event_formAncestorAdded
     
     private void requestSecMechCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_requestSecMechCBActionPerformed
-// TODO add your handling code here:
+        // TODO add your handling code here:
         updateVisualState();
         
         SecurityMechanism secMech = (SecurityMechanism) requestSecMechCB.getSelectedItem();
@@ -330,7 +356,7 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
     }//GEN-LAST:event_requestSecMechCBActionPerformed
     
     private void enableSecurityCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableSecurityCBActionPerformed
-// TODO add your handling code here:
+        // TODO add your handling code here:
         if (enableSecurityCB.isSelected()) {
             configurator.enable();
             helper.setTransientState(true);

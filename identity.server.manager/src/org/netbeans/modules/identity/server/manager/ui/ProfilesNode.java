@@ -47,7 +47,7 @@ public class ProfilesNode extends AbstractNode {
     
     private static final String PROFILES_NODE_BADGE = "org/netbeans/modules/identity/server/manager/ui/resources/ProfilesNodeBadge.png";//NOI18N
     
-    private static final Image ICON_BADGE = Utilities.loadImage(PROFILES_NODE_BADGE);    //NOI18N
+    private static final Image ICON_BADGE = Utilities.loadImage(PROFILES_NODE_BADGE);  
     
     private static final String HELP_ID = "idmtools_am_config_am_sec_mech";     //NOI18N
   
@@ -62,6 +62,7 @@ public class ProfilesNode extends AbstractNode {
         setName("");     //NOI18N
         setDisplayName(NbBundle.getMessage(ProfilesNode.class, "LBL_ProfilesNode"));
         //setIconBaseWithExtension(PROFILES_NODE_ICON);
+        setShortDescription(NbBundle.getMessage(ProfilesNode.class, "DESC_ProfilesNode"));
     }
     
     public HelpCtx getHelpCtx() {

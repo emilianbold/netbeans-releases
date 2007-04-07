@@ -84,8 +84,15 @@ public class SecurityWSEditor implements WSEditor {
             if (iPanel == null)
                 iPanel = setUpSecurityPanel();
         } else {
-            iPanel = new MessagePanel(NbBundle.getMessage(
-                    SecurityWSEditor.class, "LBL_UnsupportedProject")); //NOI18N
+            String msg = null;
+            
+            if (helper.noServiceRefExists()) {
+                msg = NbBundle.getMessage(SecurityWSEditor.class, "LBL_NoServiceRefs");
+            } else {
+                msg = NbBundle.getMessage(SecurityWSEditor.class, "LBL_UnsupportedProject");
+            }
+            
+            iPanel = new MessagePanel(msg);
         }
         return iPanel;
     }

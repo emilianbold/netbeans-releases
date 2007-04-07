@@ -27,6 +27,7 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.identity.profile.api.configurator.Configurator.AccessMethod;
+import org.netbeans.modules.identity.profile.api.configurator.ConfiguratorException;
 import org.netbeans.modules.identity.profile.api.configurator.ProviderConfigurator;
 import org.netbeans.modules.identity.profile.api.configurator.ProviderConfigurator.Configurable;
 import org.netbeans.modules.identity.profile.api.configurator.ProviderConfigurator.Type;
@@ -53,6 +54,7 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
     
     private Collection<ProviderConfigurator> configurators;
     private J2eeProjectHelper helper;
+    private boolean disabled = false;
     
     /** Creates new form WSPSecurityPanel */
     public WSCSecurityPanel(SectionNodeView view, J2eeProjectHelper helper) {
@@ -71,38 +73,39 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
                         Type.WSC, AccessMethod.FILE, helper.getConfigPath()));
             }
             
-        } catch (RuntimeException ex) {
-//            errorLabel.setText(ex.getMessage());
-            return;
+        } catch (ConfiguratorException ex) {
+            errorLabel.setText(ex.getMessage());
+            disabled = true;
         }
         
         this.helper = helper;
         
-        if (helper.isSecurityEnabled()) {
-            enableSecurityCB.setSelected(true);
-        } else {
-            enableSecurityCB.setSelected(false);
-        }
-        
-        for (ProviderConfigurator configurator : configurators) {
+        if (!disabled ) {
+            if (helper.isSecurityEnabled()) {
+                enableSecurityCB.setSelected(true);
+            } else {
+                enableSecurityCB.setSelected(false);
+            }
             
-            configurator.addModifier(Configurable.SECURITY_MECH, requestSecMechCB,
-                    (helper.getProjectType() == ProjectType.WEB) ?
-                        SecurityMechanismHelper.getDefault().getAllWSCSecurityMechanisms() :
-                        SecurityMechanismHelper.getDefault().getAllMessageLevelSecurityMechanisms());
-            
-            configurator.addModifier(Configurable.SIGN_RESPONSE, signResponseCB);
-            configurator.addModifier(Configurable.USE_DEFAULT_KEYSTORE, useDefaultKeyStoreCB);
-            configurator.addModifier(Configurable.KEYSTORE_LOCATION, keystoreLocationTF);
-            configurator.addModifier(Configurable.KEYSTORE_PASSWORD, keystorePasswordTF);
-            configurator.addModifier(Configurable.KEY_ALIAS, keyAliasTF);
-            configurator.addModifier(Configurable.KEY_PASSWORD, this.keyPasswordTF);
-            configurator.addModifier(Configurable.SERVER_PROPERTIES, serverCB,
-                    ServerManager.getDefault().getAllServerProperties());
-            configurator.addModifier(Configurable.USERNAME, userNameTF);
-            configurator.addModifier(Configurable.PASSWORD, passwordTF);
-            
-            configurator.addErrorComponent(errorLabel);
+            for (ProviderConfigurator configurator : configurators) {                
+                configurator.addModifier(Configurable.SECURITY_MECH, requestSecMechCB,
+                        (helper.getProjectType() == ProjectType.WEB) ?
+                            SecurityMechanismHelper.getDefault().getAllWSCSecurityMechanisms() :
+                            SecurityMechanismHelper.getDefault().getAllMessageLevelSecurityMechanisms());
+                
+                configurator.addModifier(Configurable.SIGN_RESPONSE, signResponseCB);
+                configurator.addModifier(Configurable.USE_DEFAULT_KEYSTORE, useDefaultKeyStoreCB);
+                configurator.addModifier(Configurable.KEYSTORE_LOCATION, keystoreLocationTF);
+                configurator.addModifier(Configurable.KEYSTORE_PASSWORD, keystorePasswordTF);
+                configurator.addModifier(Configurable.KEY_ALIAS, keyAliasTF);
+                configurator.addModifier(Configurable.KEY_PASSWORD, this.keyPasswordTF);
+                configurator.addModifier(Configurable.SERVER_PROPERTIES, serverCB,
+                        ServerManager.getDefault().getAllServerProperties());
+                configurator.addModifier(Configurable.USERNAME, userNameTF);
+                configurator.addModifier(Configurable.PASSWORD, passwordTF);
+                
+                configurator.addErrorComponent(errorLabel);
+            }
         }
         
         updateVisualState();
@@ -121,9 +124,15 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
     }
     
     private void updateVisualState() {
+        if (disabled) {
+            disableAll();
+            enableSecurityCB.setEnabled(false);
+            return;
+        }
+        
         if (helper.isWsitSecurityEnabled()) {
             enableSecurityCB.setEnabled(false);
-            errorLabel.setText(NbBundle.getMessage(WSCSecurityPanel.class, 
+            errorLabel.setText(NbBundle.getMessage(WSCSecurityPanel.class,
                     "MSG_WsitEnabled"));
         } else {
             enableSecurityCB.setEnabled(true);
@@ -168,28 +177,7 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
             serverLabel.setEnabled(true);
             serverCB.setEnabled(true);
         } else {
-            secMechLabel.setEnabled(false);
-            requestLabel.setEnabled(false);
-            requestSecMechCB.setEnabled(false);
-            userNameLabel.setEnabled(false);
-            userNameTF.setEnabled(false);
-            passwordLabel.setEnabled(false);
-            passwordTF.setEnabled(false);
-            responseLabel.setEnabled(false);
-            signResponseCB.setEnabled(false);
-            certSettingsLabel.setEnabled(false);
-            useDefaultKeyStoreCB.setEnabled(false);
-            keystoreLocationLabel.setEnabled(false);
-            keystoreLocationTF.setEnabled(false);
-            keystorePasswordLabel.setEnabled(false);
-            keystorePasswordTF.setEnabled(false);
-            keyAliasLabel.setEnabled(false);
-            keyAliasTF.setEnabled(false);
-            keyAliasPasswordLabel.setEnabled(false);
-            keyPasswordTF.setEnabled(false);
-            serverLabel.setEnabled(false);
-            serverCB.setEnabled(false);
-            browseButton.setEnabled(false);
+            disableAll();
         }
         
         SecurityMechanism secMech = (SecurityMechanism) requestSecMechCB.getSelectedItem();
@@ -208,11 +196,41 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
         }
     }
     
+    private void disableAll() {
+        secMechLabel.setEnabled(false);
+        requestLabel.setEnabled(false);
+        requestSecMechCB.setEnabled(false);
+        userNameLabel.setEnabled(false);
+        userNameTF.setEnabled(false);
+        passwordLabel.setEnabled(false);
+        passwordTF.setEnabled(false);
+        responseLabel.setEnabled(false);
+        signResponseCB.setEnabled(false);
+        certSettingsLabel.setEnabled(false);
+        useDefaultKeyStoreCB.setEnabled(false);
+        keystoreLocationLabel.setEnabled(false);
+        keystoreLocationTF.setEnabled(false);
+        keystorePasswordLabel.setEnabled(false);
+        keystorePasswordTF.setEnabled(false);
+        keyAliasLabel.setEnabled(false);
+        keyAliasTF.setEnabled(false);
+        keyAliasPasswordLabel.setEnabled(false);
+        keyPasswordTF.setEnabled(false);
+        serverLabel.setEnabled(false);
+        serverCB.setEnabled(false);
+        browseButton.setEnabled(false);
+        userNameLabel.setVisible(false);
+        userNameTF.setVisible(false);
+        passwordLabel.setVisible(false);
+        passwordTF.setVisible(false);
+    }
+    
     public void save() {
-        if (enableSecurityCB.isSelected()) {
-            for (ProviderConfigurator configurator : configurators) {
-                configurator.save();
-            }
+        if (!disabled) {
+            if (enableSecurityCB.isSelected()) {
+                for (ProviderConfigurator configurator : configurators) {
+                    configurator.save();
+                }
           /*
             if (isLiberty()) {
                 helper.addAMSecurityConstraint();
@@ -220,11 +238,12 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
                 helper.removeAMSecurityConstraint();
             }
            */
-            helper.enableWSCSecurity(isLiberty());
-            
-        } else {
-            //helper.removeAMSecurityConstraint();
-            helper.disableWSCSecurity();
+                helper.enableWSCSecurity(isLiberty());
+                
+            } else {
+                //helper.removeAMSecurityConstraint();
+                helper.disableWSCSecurity();
+            }
         }
         
         helper.clearTransientState();
@@ -483,22 +502,22 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
-// TODO add your handling code here:
+        // TODO add your handling code here:
         updateVisualState();
     }//GEN-LAST:event_formFocusGained
     
     private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_formAncestorAdded
-// TODO add your handling code here:
+        // TODO add your handling code here:
         requestFocusInWindow();
     }//GEN-LAST:event_formAncestorAdded
     
     private void useDefaultKeyStoreCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useDefaultKeyStoreCBActionPerformed
-// TODO add your handling code here:
+        // TODO add your handling code here:
         updateVisualState();
     }//GEN-LAST:event_useDefaultKeyStoreCBActionPerformed
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-// TODO add your handling code here:
+        // TODO add your handling code here:
         JFileChooser chooser = new JFileChooser();
         
         chooser.setFileFilter(new FileFilter() {
@@ -527,7 +546,7 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
     }//GEN-LAST:event_browseButtonActionPerformed
     
     private void requestSecMechCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_requestSecMechCBActionPerformed
-// TODO add your handling code here:
+        // TODO add your handling code here:
         updateVisualState();
         
         if (isLiberty()) {
@@ -546,7 +565,7 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
     }//GEN-LAST:event_requestSecMechCBActionPerformed
     
     private void enableSecurityCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableSecurityCBActionPerformed
-// TODO add your handling code here:
+        // TODO add your handling code here:
         if (enableSecurityCB.isSelected()) {
             helper.setTransientState(true);
         } else {

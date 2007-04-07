@@ -30,6 +30,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -60,6 +61,9 @@ public class ServerInstanceNode extends AbstractNode {
         setName(instance.getID());
         setDisplayName(instance.getDisplayName());
         setIconBaseWithExtension(SERVER_INSTANCE_ICON);
+        setShortDescription(NbBundle.getMessage(ServerInstanceNode.class,
+                "DESC_ServerInstanceNode", instance.getHost()));
+        
         instance.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 refreshNode();

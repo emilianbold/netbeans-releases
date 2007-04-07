@@ -144,7 +144,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                 ClassLoader loader = ClassLoaderManager.getDefault().getClassLoader(properties);
                 providerConfigClass = loader.loadClass(AM_PROVIDER_CONFIG_CLASS);
             } catch (Exception ex) {
-                throw createConfiguratorException(ex);
+                throw ConfiguratorException.create(ex);
             }
         }
         
@@ -170,7 +170,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                 }
             } catch (Exception ex) {
                 ClassLoaderManager.getDefault().removeClassLoader(properties);
-                throw createConfiguratorException(ex);
+                throw ConfiguratorException.create(ex);
             }
         }
         
@@ -219,7 +219,7 @@ public class ProviderConfigImpl implements ProviderConfig {
             Method method = getProviderConfigClass().getMethod(AM_IS_RESPONSE_SIGN_ENABLED_METHOD);
             return ((Boolean) method.invoke(getProviderConfig())).booleanValue();
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -229,7 +229,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                     Boolean.TYPE);
             method.invoke(getProviderConfig(), flag);
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -238,7 +238,7 @@ public class ProviderConfigImpl implements ProviderConfig {
             Method method = getProviderConfigClass().getMethod(AM_GET_KEY_ALIAS_METHOD);
             return (String) method.invoke(getProviderConfig());
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -248,7 +248,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                     String.class);
             method.invoke(getProviderConfig(), keyAlias);
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -257,7 +257,7 @@ public class ProviderConfigImpl implements ProviderConfig {
             Method method = getProviderConfigClass().getMethod(AM_GET_KEY_PASSWORD_METHOD);
             return (String) method.invoke(getProviderConfig());
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -266,7 +266,7 @@ public class ProviderConfigImpl implements ProviderConfig {
             Method method = getProviderConfigClass().getMethod(AM_GET_KEY_STORE_FILE_METHOD);
             return (String) method.invoke(getProviderConfig());
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -275,7 +275,7 @@ public class ProviderConfigImpl implements ProviderConfig {
             Method method = getProviderConfigClass().getMethod(AM_GET_KEY_STORE_PASSWORD_METHOD);
             return (String) method.invoke(getProviderConfig());
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -286,7 +286,7 @@ public class ProviderConfigImpl implements ProviderConfig {
             method.invoke(getProviderConfig(), location, password, keyPassword);
         } catch (Exception ex) {
             //ex.printStackTrace();
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -296,7 +296,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                     String.class);
             return method.invoke(getProviderConfig(), propName);
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -306,7 +306,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                     String.class, Object.class);
             method.invoke(getProviderConfig(), propName, value);
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -315,7 +315,7 @@ public class ProviderConfigImpl implements ProviderConfig {
             Method method = getProviderConfigClass().getMethod(AM_GET_SECURITY_MECHANISMS_METHOD);
             return (Collection<String>) method.invoke(getProviderConfig());
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -325,7 +325,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                     List.class);
             method.invoke(getProviderConfig(), new ArrayList(securityMechs));
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -335,7 +335,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                     getProviderConfigClass());
             method.invoke(null, getProviderConfig());
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -345,7 +345,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                     String.class);
             method.invoke(null, providerName);
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -354,7 +354,7 @@ public class ProviderConfigImpl implements ProviderConfig {
             Method method = getProviderConfigClass().getMethod(AM_GET_WSP_ENDPOINT_METHOD);
             return (String) method.invoke(getProviderConfig());
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -364,7 +364,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                     String.class);
             method.invoke(getProviderConfig(), endpoint);
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -374,7 +374,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                     String.class, String.class);
             return (Boolean) method.invoke(null, providerName, providerType);
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
         
     }
@@ -409,7 +409,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                     List.class);
             method.invoke(getProviderConfig(), credentials);
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -420,7 +420,7 @@ public class ProviderConfigImpl implements ProviderConfig {
             
             return convertToUserNamePasswordPairs(credentials);
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -430,7 +430,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                 ClassLoader loader = ClassLoaderManager.getDefault().getClassLoader(properties);
                 passwordCredentialClass = loader.loadClass(AM_PASSWORD_CREDENTIAL_CLASS);
             } catch (Exception ex) {
-                throw createConfiguratorException(ex);
+                throw ConfiguratorException.create(ex);
             }
         }
         return passwordCredentialClass;
@@ -464,7 +464,7 @@ public class ProviderConfigImpl implements ProviderConfig {
             
             return constructor.newInstance(userName, pair.get(1));
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -495,7 +495,7 @@ public class ProviderConfigImpl implements ProviderConfig {
             
             return pair;
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -514,7 +514,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                     String.class);
             method.invoke(getProviderConfig(), serviceType);
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -523,7 +523,7 @@ public class ProviderConfigImpl implements ProviderConfig {
             Method method = getProviderConfigClass().getMethod(AM_GET_SERVICE_TYPE_METHOD);
             return (String) method.invoke(getProviderConfig());
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
     
@@ -533,7 +533,7 @@ public class ProviderConfigImpl implements ProviderConfig {
                     Boolean.TYPE);
             method.invoke(getProviderConfig(), flag);
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
         
     }
@@ -543,16 +543,10 @@ public class ProviderConfigImpl implements ProviderConfig {
             Method method = getProviderConfigClass().getMethod(AM_USE_DEFAULT_KEY_STORE_METHOD);
             return ((Boolean) method.invoke(getProviderConfig())).booleanValue();
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
-    
-    private ConfiguratorException createConfiguratorException(Exception ex) {
-        Throwable cause = ex.getCause();
-        
-        return new ConfiguratorException((cause != null) ? cause : ex);
-    }
-
+ 
     public void setTrustAuthorityConfigList(List<TrustAuthorityConfig> trustAuthConfigs) {
         List list = new ArrayList();
         
@@ -565,7 +559,7 @@ public class ProviderConfigImpl implements ProviderConfig {
             Method method = getProviderConfigClass().getMethod(AM_SET_TRUST_AUTHORITY_CONFIG_LIST_METHOD);
             method.invoke(getProviderConfig(), list);
         } catch (Exception ex) {
-            throw createConfiguratorException(ex);
+            throw ConfiguratorException.create(ex);
         }
     }
 }

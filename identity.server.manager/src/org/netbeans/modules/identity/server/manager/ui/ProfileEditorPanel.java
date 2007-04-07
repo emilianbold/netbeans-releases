@@ -153,12 +153,12 @@ public class ProfileEditorPanel extends JPanel
             updateState(State.INITIALIZED);
             configurator.addChangeListener(this);
         } catch (InvocationTargetException ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
         } catch (InterruptedException ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
         } catch (ConfiguratorException ex) {
             cause = ex.getCause();
-            cause.printStackTrace();
+            //cause.printStackTrace();
             updateState(State.INIT_FAILED);
         }
     }
@@ -219,6 +219,11 @@ public class ProfileEditorPanel extends JPanel
     }
     
     private void initVisualState() {
+        if (secMech.isLiberty()) {
+            signResponseCB.setSelected(true);
+            signResponseCB.setEnabled(false);
+        }
+        
         if (!secMech.isPasswordCredentialRequired()) {
             userNameTableScrollPane.setVisible(false);
             addButton.setVisible(false);
@@ -276,7 +281,10 @@ public class ProfileEditorPanel extends JPanel
     }
     
     public void enableAllComponents() {
-        signResponseCB.setEnabled(true);
+        if (!secMech.isLiberty()) {
+            signResponseCB.setEnabled(true);
+        }
+        
         certSettingsLabel.setEnabled(true);
         useDefaultKeyStoreCB.setEnabled(true);
         keystoreLocationTF.setEnabled(true);
@@ -314,9 +322,9 @@ public class ProfileEditorPanel extends JPanel
                 return NbBundle.getMessage(ProfileEditorPanel.class,
                         "MSG_ServerNotRunning");
             case INIT_FAILED:
-                return cause.getMessage();
-                //return NbBundle.getMessage(ProfileEditorPanel.class,
-                //        "MSG_InitFailed", cause.toString());
+                //return "<html>" + cause.getMessage() + "</html>";   //NOI18N
+                return NbBundle.getMessage(ProfileEditorPanel.class,
+                        "MSG_InitFailed", cause.toString());
             case INITIALIZED:
                 return configurator.getError();
         }

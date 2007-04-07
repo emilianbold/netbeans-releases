@@ -40,13 +40,13 @@ import org.openide.util.NbBundle;
 public abstract class EditDialogDescriptor extends DialogDescriptor
         implements ChangeListener {
     public static final String STATUS_PREFIX = "Status:";      //NOI18N
-   
+    
     /** Creates a new instance of EditDialog */
     public EditDialogDescriptor(javax.swing.JPanel panel, String title,
             boolean add, JComponent[] components, HelpCtx helpCtx) {
         this(new InnerPanel(panel), title, add, components, helpCtx);
     }
-   
+    
     private EditDialogDescriptor(InnerPanel innerPanel, String title,
             boolean add, JComponent[] components, HelpCtx helpCtx) {
         super(innerPanel, getTitle(add, title), true,
@@ -94,7 +94,7 @@ public abstract class EditDialogDescriptor extends DialogDescriptor
             }
         }
         
-        errorLabel.setText(errorMessage==null ? " " : errorMessage);    //NOI18N     
+        errorLabel.setText(errorMessage==null ? " " : errorMessage);    //NOI18N
     }
     
     /** Provides validation for panel components */
@@ -113,12 +113,43 @@ public abstract class EditDialogDescriptor extends DialogDescriptor
     private static class InnerPanel extends javax.swing.JPanel {
         javax.swing.JLabel errorLabel;
         InnerPanel(javax.swing.JPanel panel) {
+            /*
             super(new java.awt.BorderLayout());
             errorLabel = new javax.swing.JLabel(" ");        //NOI18N
             errorLabel.setBorder(new javax.swing.border.EmptyBorder(12,12,0,0));
             errorLabel.setForeground(Color.RED);
             add(panel, java.awt.BorderLayout.CENTER);
             add(errorLabel, java.awt.BorderLayout.SOUTH);
+             */
+            
+            javax.swing.JSeparator separator = new javax.swing.JSeparator();
+            errorLabel = new javax.swing.JLabel(" ");        //NOI18N
+            errorLabel.setForeground(Color.RED);
+            
+            org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+            this.setLayout(layout);
+            layout.setHorizontalGroup(
+                    layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                    .addContainerGap())
+                    .add(panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                    .addContainerGap())
+                    );
+            layout.setVerticalGroup(
+                    layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                    .add(panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(errorLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap())
+                    );
         }
         
         void setErrorMessage(String message) {

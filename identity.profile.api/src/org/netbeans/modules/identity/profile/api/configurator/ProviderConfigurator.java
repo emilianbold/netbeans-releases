@@ -89,6 +89,13 @@ public class ProviderConfigurator extends Configurator {
     private ProviderConfigurator(String providerName, Type type) {
         this.providerName = providerName;
         this.type = type;
+        
+        //
+        // Force loading the SecurityMechanisms which will load
+        // the amclientsdk.  If anything goes wrong, the exception
+        // will be thrown from here.
+        //
+        SecurityMechanismHelper.getDefault().getAllSecurityMechanisms();
     }
     
     public static ProviderConfigurator getConfigurator(String providerName, Type type,

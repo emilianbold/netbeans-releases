@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
+import org.openide.util.NbBundle;
 
 /**
  * Custom Properties class for loading and manipulating the AMConfig.properties
@@ -87,7 +88,7 @@ public class ServerProperties extends Properties implements Cloneable {
     private boolean isDefault;
     
     /** Creates a new instance of ServerProperties */
-    public ServerProperties() {
+    public ServerProperties() throws ConfiguratorException {
         super();
         
         String amConfigFile = System.getProperty(AM_CONFIG_FILE);
@@ -106,11 +107,13 @@ public class ServerProperties extends Properties implements Cloneable {
                 setProperty(PROP_CONTEXT_ROOT, getContextRoot());
                 updateURLs();
                 isDefault = true;
-            } catch (FileNotFoundException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
+            } catch (Exception ex) {
+                throw new ConfiguratorException(NbBundle.getMessage(ServerProperties.class,
+                    "TXT_InvalidAMConfigFile"));
             }
+        } else {
+            throw new ConfiguratorException(NbBundle.getMessage(ServerProperties.class,
+                    "TXT_InvalidAMConfigFile"));
         }
     }
     
@@ -266,4 +269,5 @@ public class ServerProperties extends Properties implements Cloneable {
         return getProperty(PROP_ID) + " (" + getProperty(PROP_HOST) + //NOI18N
                 ":" + getProperty(PROP_PORT) + ")";     //NOI18N
     };
+    
 }

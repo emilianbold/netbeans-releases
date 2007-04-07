@@ -27,7 +27,9 @@ import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import org.netbeans.modules.identity.profile.api.configurator.ConfiguratorException;
 import org.netbeans.modules.identity.profile.api.configurator.ServerProperties;
+import org.openide.util.NbBundle;
 
 /**
  * This class manages classloaders for each instance of the AM client 
@@ -142,12 +144,11 @@ class ClassLoaderManager {
                 Method method = systemPropClazz.getMethod(AM_INITIALIZE_PROPERTIES_METHOD,
                         Properties.class);
                 method.invoke(null, properties);
+            } catch (ClassNotFoundException ex) {
+                throw new ConfiguratorException(NbBundle.getMessage(ClassLoaderManager.class,
+                        "TXT_FailedToLoadAMClientSDK"));
             } catch (Exception ex) {
-                if (ex.getCause() != null) {
-                    ex.getCause().printStackTrace();
-                } else {
-                    ex.printStackTrace();
-                }
+                throw ConfiguratorException.create(ex);
             }
         }
         

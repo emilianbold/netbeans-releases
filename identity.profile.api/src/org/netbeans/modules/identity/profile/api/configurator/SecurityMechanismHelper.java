@@ -68,12 +68,12 @@ public class SecurityMechanismHelper {
      */
     public Collection<SecurityMechanism> getAllSecurityMechanisms() {
         if (allSecurityMechs == null) {
-            allSecurityMechs = new ArrayList<SecurityMechanism>();
-            allSecurityMechs.addAll(getAllMessageLevelSecurityMechanisms());
-            allSecurityMechs.addAll(getAllWSPLibertySecurityMechanisms());
-            allSecurityMechs.addAll(getAllWSCLibertySecurityMechanisms());
+            ArrayList<SecurityMechanism> list = new ArrayList<SecurityMechanism>();
+            list.addAll(getAllMessageLevelSecurityMechanisms());
+            list.addAll(getAllWSPLibertySecurityMechanisms());
+            list.addAll(getAllWSCLibertySecurityMechanisms());
             
-            allSecurityMechs = Collections.unmodifiableCollection(allSecurityMechs);
+            allSecurityMechs = Collections.unmodifiableCollection(list);
         }
         
         return allSecurityMechs;
