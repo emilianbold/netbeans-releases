@@ -71,7 +71,8 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
     
     
     public Widget addRegion(N region) {
-        assert region != null  &&  ! regions.contains(region);
+        assert region != null;
+        assert !regions.contains(region);
         Widget widget = attachRegionWidget(region);
         addObject(region, widget);
         regions.add(region);
@@ -80,7 +81,8 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
     }
     
     public final void removeRegion(N region) {
-        assert region != null  &&  regions.contains(region);
+        assert region != null;
+        assert regions.contains(region);
         regions.remove(region);
         Widget widget = findWidget(region);
         removeObject(region);
@@ -96,7 +98,8 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
     }
     
     public Widget addNode(N node) {
-        assert node != null  &&  ! nodes.contains(node);
+        assert node != null;
+        assert !nodes.contains(node);
         Widget widget = attachNodeWidget(node);
         addObject(node, widget);
         nodes.add(node);
@@ -110,7 +113,8 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
      * @param node the node to be removed; the node must not be null and must be already in the model
      */
     public final void removeNode(N node) {
-        assert node != null  &&  nodes.contains(node);
+        assert node != null;
+        assert nodes.contains(node);
         for (P pin : new HashSet<P> (nodePins.get(node)))
             removePin(pin);
         nodes.remove(node);
@@ -135,7 +139,8 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
      * @return the widget that is created by attachEdgeWidget; null if the edge is non-visual
      */
     public final Widget addEdge(E edge) {
-        assert edge != null  &&  ! edges.contains(edge);
+        assert edge != null;
+        assert !edges.contains(edge);
         Widget widget = attachEdgeWidget(edge);
         addObject(edge, widget);
         edges.add(edge);
@@ -143,21 +148,13 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
         return widget;
     }
     
-//    public final Widget addEdges(List<E> edges) {
-//        assert edge != null  &&  ! edges.contains(edge);
-//        Widget widget = attachEdgeWidget(edge);
-//        addObject(edge, widget);
-//        edges.add(edge);
-//        notifyEdgeAdded(edge, widget);
-//        return widget;
-//    }
-
     /**
      * Removes an edge and detaches it from its source and target pins.
      * @param edge the edge to be removed; the edge must not be null and must be already in the model
      */
     public final void removeEdge(E edge) {
-        assert edge != null  &&  edges.contains(edge);
+        assert edge != null;
+        assert edges.contains(edge);
         setEdgeSource(edge, null);
         setEdgeTarget(edge, null);
         edges.remove(edge);
@@ -184,7 +181,9 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
      * @return the widget that is created by attachPinWidget; null if the pin is non-visual
      */
     public final Widget addPin(N node, P pin) {
-        assert node != null  &&  pin != null  &&  ! pins.contains(pin);
+        assert node != null;
+        assert pin != null;
+        assert !pins.contains(pin);
         Widget widget = attachPinWidget(node, pin);
         addObject(pin, widget);
         pins.add(pin);
@@ -201,7 +200,8 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
      * @param pin the pin to be removed; the pin must not be null and must be already in the model
      */
     public final void removePin(P pin) {
-        assert pin != null  &&  pins.contains(pin);
+        assert pin != null;
+        assert pins.contains(pin);
         for (E edge : findPinEdges(pin, true, false))
             setEdgeSource(edge, null);
         for (E edge : findPinEdges(pin, false, true))
@@ -253,7 +253,8 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
      * @param sourcePin the source pin; if null, then the edge source will be detached
      */
     public final void setEdgeSource(E edge, P sourcePin) {
-        assert edge != null  &&  edges.contains(edge);
+        assert edge != null;
+        assert edges.contains(edge);
         if (sourcePin != null)
             assert pins.contains(sourcePin);
         P oldPin = edgeSourcePins.put(edge, sourcePin);
@@ -272,7 +273,8 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
      * @param targetPin the target pin; if null, then the edge target will be detached
      */
     public final void setEdgeTarget(E edge, P targetPin) {
-        assert edge != null  &&  edges.contains(edge);
+        assert edge != null;
+        assert edges.contains(edge);
         if (targetPin != null)
             assert pins.contains(targetPin);
         P oldPin = edgeTargetPins.put(edge, targetPin);

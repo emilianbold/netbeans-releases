@@ -23,6 +23,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
@@ -54,15 +55,7 @@ public class CasaModelGraphUtilities {
     public static void renderModel(final CasaWrapperModel model, final CasaModelGraphScene scene)
     {
         try {
-            if (!SwingUtilities.isEventDispatchThread()) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        safeRenderModel(model, scene);
-                    }
-                });
-            } else {
-                safeRenderModel(model, scene);
-            }
+            safeRenderModel(model, scene);
         } catch (final Throwable t) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -121,11 +114,12 @@ public class CasaModelGraphUtilities {
                         createEdge(connection, consumes, provides, scene, false);
                     }
                 }
-                scene.setRouter(new CasaOrthogonalSearchRouter(new CasaCollisionCollector(
+                scene.setOrthogonalRouter(new CasaOrthogonalSearchRouter(new CasaCollisionCollector(
                         scene.getBindingRegion(),
                         scene.getEngineRegion(),
                         scene.getExternalRegion(),
                         scene.getConnectionLayer())));
+                scene.updateEdgeRouting();
                 scene.validate();
             }
         });
@@ -359,19 +353,21 @@ public class CasaModelGraphUtilities {
     /**
      * Callers to this method must remember to call scene.validate().
      */
-    public static void createEdge (
+    public static ConnectionWidget createEdge (
             CasaConnection connection,
             CasaConsumes source,
             CasaProvides target,
             CasaModelGraphScene scene,
             boolean doUpdate)
     {
-        scene.addEdge (connection);
+        ConnectionWidget widget = (ConnectionWidget) scene.addEdge (connection);
         scene.setEdgeSource (connection, source);
         scene.setEdgeTarget (connection, target);
         if (doUpdate) {
+            scene.updateEdgeRouting();
             scene.validate();
         }
+        return widget;
     }
 
     public static CasaNodeWidget findNodeWidget(CasaPinWidget pinWidget) {

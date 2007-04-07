@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
@@ -63,6 +64,12 @@ public class CasaCollisionCollector {
             List<Rectangle> verticalCollisions, 
             List<Rectangle> horizontalCollisions)
     {
+        CasaModelGraphScene scene = (CasaModelGraphScene) connectionWidget.getScene();
+        CasaComponent component = (CasaComponent) scene.findObject(connectionWidget);
+        if (component == null || !component.isInDocumentModel()) {
+            return;
+        }
+        
         CasaEndpointRef[] connectionEndpoints = getEndpoints(connectionWidget);
         
         for (Widget widget : getWidgets ()) {

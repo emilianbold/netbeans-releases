@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.visual.action.RectangularSelectDecorator;
+import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
 import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
 import org.netbeans.modules.compapp.casaeditor.Constants;
@@ -88,7 +89,8 @@ implements PropertyChangeListener {
     
     private LayerWidget mDragLayer = new LayerWidget(this);
 
-    private Router mRouter;
+    private Router mOrthogonalRouter;
+    private Router mDirectRouter = RouterFactory.createDirectRouter();
 
     private WidgetAction mPopupMenuAction = new CasaPopupMenuAction(new CasaPopupMenuProvider());
     private WidgetAction mMoveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction ();
@@ -223,14 +225,22 @@ implements PropertyChangeListener {
         return mModel;
     }
     
-    public void setRouter(Router router) {
-        mRouter = router;
+    public void updateEdgeRouting() {
         if (getEdges().size() <= CasaCollisionCollector.MAX_ORTHOGONAL_CONNECTIONS) {
             for (CasaComponent component : getEdges()) {
                 ConnectionWidget connectionWidget = (ConnectionWidget) findWidget(component);
-                connectionWidget.setRouter(mRouter);
+                connectionWidget.setRouter(mOrthogonalRouter);
+            }
+        } else {
+            for (CasaComponent component : getEdges()) {
+                ConnectionWidget connectionWidget = (ConnectionWidget) findWidget(component);
+                connectionWidget.setRouter(mDirectRouter);
             }
         }
+    }
+    
+    public void setOrthogonalRouter(Router router) {
+        mOrthogonalRouter = router;
     }
     
     /**
