@@ -46,9 +46,14 @@ import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.explorer.ExplorerManager;
+import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -161,16 +166,36 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
     }
     
+    /**
+     * Set the default actived node to faces config node.
+     */
     public void setDefaultActivatedNode() {
         try{
-            Node node = DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
+            Node node = org.openide.loaders.DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
             setActivatedNodes(new Node[] { node });
         } catch (Exception e){
             e.printStackTrace();
         }
     }
     
+//   public DataNode getFacesCongFile() {
+//       DataNode node = null;
+//       try     {
+//             node = org.openide.loaders.DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
+//        }
+//        catch (DataObjectNotFoundException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }        
+//        if( node == null ){            
+//            node = new AbstractNode(Children.LEAF);
+//        }
+//        return node;
+//    }
     
+    
+    /**
+     * 
+     */
     public void warnUserMalFormedFacesConfig() {
         //        clearGraph();
         scene.createMalFormedWidget();
@@ -419,7 +444,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         scene.removeEdge(node);
         //            Node actNode = DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
         //            setActivatedNodes(new org.openide.nodes.Node[]{actNode});
-        setActivatedNodes(null);
+        
         
     }
     

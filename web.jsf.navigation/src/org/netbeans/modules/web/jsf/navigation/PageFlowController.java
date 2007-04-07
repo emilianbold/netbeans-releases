@@ -66,6 +66,7 @@ public class PageFlowController {
     private JSFConfigModel configModel;
     private FileObject webFolder;
     private Collection<FileObject> webFiles;
+    private DataObject configDataObj;
     
     private HashMap<NavigationCase,NavigationCaseNode> case2Node = new HashMap<NavigationCase,NavigationCaseNode>();
     
@@ -83,6 +84,13 @@ public class PageFlowController {
     public PageFlowController(JSFConfigEditorContext context, PageFlowView view ) {
         this.view = view;
         FileObject configFile = context.getFacesConfigFile();
+       
+        try {
+            configDataObj = (DataObject) DataObject.find(configFile);
+            
+        } catch (DataObjectNotFoundException donfe ){
+            donfe.printStackTrace();
+        }
         configModel = ConfigurationUtils.getConfigModel(configFile,true);
         Project project = FileOwnerQuery.getOwner(configFile);
         webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
@@ -288,7 +296,7 @@ public class PageFlowController {
         for( NavigationRule rule : rules ) {
             List<NavigationCase> navCases = rule.getNavigationCases();
             for( NavigationCase navCase : navCases ){
-                NavigationCaseNode node = new NavigationCaseNode(navCase);
+                NavigationCaseNode node = new NavigationCaseNode(this, navCase);
                 case2Node.put(navCase, node);
                 
                 createEdge(node);
@@ -406,7 +414,7 @@ public class PageFlowController {
                 
                 NavigationCase myNavCase = (NavigationCase)ev.getNewValue();
                 if( myNavCase != null ){
-                    NavigationCaseNode node = new NavigationCaseNode(myNavCase);
+                    NavigationCaseNode node = new NavigationCaseNode(view.getPageFlowController(), myNavCase);
                     case2Node.put(myNavCase, node);
                     createEdge(node);
                 } else {
@@ -602,5 +610,10 @@ public class PageFlowController {
         
         
     }
+    
+    public DataObject getConfigDataObject() {
+        return configDataObj;
+    }
+   
     
 }

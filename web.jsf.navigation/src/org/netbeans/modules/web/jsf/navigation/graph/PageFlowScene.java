@@ -137,7 +137,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         actions.addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
         actions.addAction(popupGraphAction);
         
-        addObjectSceneListener(new MyObjectSceneListener(), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        addObjectSceneListener(new MyObjectSceneListener(), ObjectSceneEventType.OBJECT_SELECTION_CHANGED, ObjectSceneEventType.OBJECT_REMOVED);
         //        actions.addAction(dragNdropAction);
         //        actions.addAction(selectAction);
         
@@ -556,7 +556,12 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         }
         
         public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            
+            /* Workaround for issue: 100275 
+             * selectionChanged should have been sufficient to take care of the case when a selected object is removed */
+            if ( getSelectedObjects().size() == 0 ){
+                tc.setDefaultActivatedNode();
+            }
         }
         
         public void objectStateChanged(ObjectSceneEvent event,
