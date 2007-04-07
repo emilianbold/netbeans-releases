@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Services tab web services compiling script " default="dist" basedir=".">
+<project name="Services tab web services compiling script " default="createWsJars" basedir=".">
     <description>
         A script to wscompile/wsimport WSDL files.
         
@@ -18,6 +18,7 @@
         
     </description>
     
+    <target name="createWsJars" depends="run-wscompile, run-wsimport, copy-wsdl" />
     
     <target name="-init-user">
         <property file="${user.properties.file}"/>
@@ -40,6 +41,7 @@
             base="${websvc.home}/${wsdlName}/jaxrpc/build"
             sourcebase="${websvc.home}/${wsdlName}/jaxrpc/src"
             debug="true"
+            config="${config.file}"
             classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}"/>
         
         <jar jarfile="${websvc.home}/${wsdlName}/jaxrpc/${wsdlName}-src.jar">
@@ -49,11 +51,10 @@
         </jar>
         
         <!-- We need to compile the single Client Class and add it to the build before jaring. wscompile doesn't compile it -->
-        <!--javac srcdir="${websvc.home}/${wsdlName}/src" destdir="${websvc.home}/${wsdlName}/build" classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}" debug="on" source="1.5" /-->
+        <javac srcdir="${websvc.home}/${wsdlName}/jaxrpc/src" destdir="${websvc.home}/${wsdlName}/jaxrpc/build" classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}" debug="on" source="1.5" />
         
         <jar jarfile="${websvc.home}/${wsdlName}/jaxrpc/${wsdlName}.jar" basedir="${websvc.home}/${wsdlName}/jaxrpc/build" />
-        
-        
+  
         <copy file="${wsdlFileName}" tofile="${websvc.home}/${wsdlName}/${wsdlName}.wsdl"/>
         
         
@@ -63,8 +64,8 @@
         <!-- create  wrapper proxy client and the corresponding desgn time jar file -->
         <mkdir dir="${websvc.home}/${wsdlName}/jaxrpc/dt/build"/>
         
-        <!-- We need to compile the design time files. designtime.jar and dataprovider.jar need to be in the classpath -->
-        <!--javac srcdir="${websvc.home}/${wsdlName}/jaxrpc/dt/src" destdir="${websvc.home}/${wsdlName}/jaxrpc/dt/build" classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}" debug="on" source="1.5" /-->
+        <!-- Compile the design time files. designtime.jar and dataprovider.jar need to be in the classpath -->
+        <javac srcdir="${websvc.home}/${wsdlName}/jaxrpc/dt/src" destdir="${websvc.home}/${wsdlName}/jaxrpc/dt/build" classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}" debug="on" source="1.5" />
         
         <copy todir="${websvc.home}/${wsdlName}/jaxrpc/dt/build">
             <fileset dir="${websvc.home}/${wsdlName}/jaxrpc/dt/src">
@@ -125,8 +126,11 @@
         </copy>
         <jar jarfile="${websvc.home}/${wsdlName}/jaxws/${wsdlName}-dt.jar" basedir="${websvc.home}/${wsdlName}/jaxws/dt/build" />
         -->
-        <copy file="${wsdlFileName}" tofile="${websvc.home}/${wsdlName}/${wsdlName}.wsdl"/>
+         
     </target>
     
-     
+    <!-- We should do it in the java source, because we need support to copy from URL -->
+    <target name="copy-wsdl">
+        <copy file="${wsdlFileName}" tofile="${websvc.home}/${wsdlName}/${wsdlName}.wsdl"/>
+    </target> 
 </project>
