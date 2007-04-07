@@ -27,6 +27,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
@@ -336,6 +339,7 @@ public final class ProjectManager {
         for (ProjectFactory factory : factories.allInstances()) {
             Project p = factory.loadProject(dir, state);
             if (p != null) {
+                Logger.getLogger("TIMER").log(Level.FINE, "[M] Project", p);
                 proj2Factory.put(p, factory);
                 state.attach(p);
                 return p;
