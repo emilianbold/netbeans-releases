@@ -71,9 +71,12 @@ public class XMLNavigatorPanel implements NavigatorPanel {
     }
     
     public void panelDeactivated() {
-        selection.removeLookupListener(selectionListener);
-        selection = null;
-        navigator.release(); //hide the UI
+        if(selection != null) {
+            selection.removeLookupListener(selectionListener);
+            selection = null;
+        }
+        if(navigator != null)
+            navigator.release(); //hide the UI
     }
     
     public void navigate(Collection/*<DataObject>*/ selectedFiles) {
