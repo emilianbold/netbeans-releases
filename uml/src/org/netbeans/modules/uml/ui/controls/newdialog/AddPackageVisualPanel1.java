@@ -296,7 +296,7 @@ public final class AddPackageVisualPanel1 extends JPanel implements DocumentList
     {
         valid = true;
         jTextField2.setEnabled(jCheckBox1.isSelected());
-        jComboBox1.setEnabled(jCheckBox1.isSelected());
+        jComboBox2.setEnabled(jCheckBox1.isSelected());
         
         if (jCheckBox1.isSelected())
             validateDiagramName();
