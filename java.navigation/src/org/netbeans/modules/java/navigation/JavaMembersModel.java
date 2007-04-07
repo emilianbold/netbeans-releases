@@ -171,7 +171,8 @@ public final class JavaMembersModel extends DefaultTreeModel {
                         ((PackageElement) element), compilationInfo));
             } else if ((element.getKind() == ElementKind.CLASS) ||
                     (element.getKind() == ElementKind.INTERFACE) ||
-                    (element.getKind() == ElementKind.ENUM)) {
+                    (element.getKind() == ElementKind.ENUM) ||
+                    (element.getKind() == ElementKind.ANNOTATION_TYPE)) {
                 root.add(new TypeTreeNode(fileObject, ((TypeElement) element),
                         compilationInfo));
             } else if (element.getKind() == ElementKind.CONSTRUCTOR) {

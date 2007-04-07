@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.lang.model.element.AnnotationValue;
 
 import javax.lang.model.element.Element;
 import javax.swing.JEditorPane;
@@ -82,6 +83,7 @@ class Utils {
         case CLASS:
         case INTERFACE:
         case ENUM:
+        case ANNOTATION_TYPE:
             if (forSignature) {
                 stringBuilder.append(toString(modifiers));
                 if (modifiers.size() > 0) {
@@ -101,6 +103,9 @@ class Utils {
                         break;
                     case ENUM:
                         stringBuilder.append("enum "); // NOI18N
+                        break;
+                    case ANNOTATION_TYPE:
+                        stringBuilder.append("@interface "); // NOI18N
                         break;
                 }
             }
@@ -180,7 +185,26 @@ class Utils {
                 formatTypeMirrors(thrownTypesMirrorsByMethod, stringBuilder);
             }
 
-            if (!forSignature) {
+            if (forSignature) {
+                AnnotationValue annotationValue = methodElement.getDefaultValue();
+                if (annotationValue != null) {
+                    Object annotationValueValue = annotationValue.getValue();
+                    if (annotationValueValue != null) {
+                        stringBuilder.append(" default "); // NOI18N
+                        if (annotationValueValue instanceof String) {
+                            stringBuilder.append("\"");
+                        } else if (annotationValueValue instanceof Character) {
+                            stringBuilder.append("\'");
+                        } 
+                        stringBuilder.append(String.valueOf(annotationValueValue));
+                        if (annotationValueValue instanceof String) {
+                            stringBuilder.append("\"");
+                        } else if (annotationValueValue instanceof Character) {
+                            stringBuilder.append("\'");
+                        }                    
+                    }
+                }
+            } else {
                 stringBuilder.append(":");
 
                 formatTypeMirror(returnTypeMirror, stringBuilder);
@@ -245,7 +269,23 @@ class Utils {
 
             stringBuilder.append(fieldElement.getSimpleName().toString());
 
-            if (!forSignature) {
+            if (forSignature) {
+                Object fieldValue = fieldElement.getConstantValue();
+                if (fieldValue != null) {
+                    stringBuilder.append(" = ");
+                    if (fieldValue instanceof String) {
+                        stringBuilder.append("\"");
+                    } else if (fieldValue instanceof Character) {
+                        stringBuilder.append("\'");
+                    } 
+                    stringBuilder.append(String.valueOf(fieldValue));
+                    if (fieldValue instanceof String) {
+                        stringBuilder.append("\"");
+                    } else if (fieldValue instanceof Character) {
+                        stringBuilder.append("\'");
+                    }                    
+                }
+            } else {
                 stringBuilder.append(":");
 
                 formatTypeMirror(fieldElement.asType(), stringBuilder);
@@ -256,7 +296,7 @@ class Utils {
                     stringBuilder.append("]");
                 }
             }
-
+            
             break;
 
         case ENUM_CONSTANT:

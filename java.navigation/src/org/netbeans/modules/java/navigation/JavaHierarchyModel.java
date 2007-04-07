@@ -172,7 +172,8 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         for (Element element : elements) {
             if ((element.getKind() == ElementKind.CLASS) ||
                     (element.getKind() == ElementKind.INTERFACE) ||
-                    (element.getKind() == ElementKind.ENUM)) {
+                    (element.getKind() == ElementKind.ENUM) ||
+                    (element.getKind() == ElementKind.ANNOTATION_TYPE)) {
                 if (JavaMembersAndHierarchyOptions.isShowSuperTypeHierarchy()) {
                     root.add(new TypeTreeNode(fileObject,
                             ((TypeElement) element), compilationInfo));
@@ -418,7 +419,8 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                         AbstractHierarchyTreeNode node = null;
                         if ((childElement.getKind() == ElementKind.CLASS) ||
                             (childElement.getKind() == ElementKind.INTERFACE) ||
-                            (childElement.getKind() == ElementKind.ENUM)) {
+                            (childElement.getKind() == ElementKind.ENUM) ||
+                            (childElement.getKind() == ElementKind.ANNOTATION_TYPE)) {
                             node = new TypeTreeNode(fileObject, (TypeElement)childElement, compilationInfo, true);
                             insert(node, index++);
                         }
