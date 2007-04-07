@@ -186,6 +186,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
         try {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     ClassTree tree = getTopLevelClassTree(controller);
                     className[0] = tree.getSimpleName().toString();
                 }
