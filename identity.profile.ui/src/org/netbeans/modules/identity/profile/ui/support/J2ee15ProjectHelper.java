@@ -47,6 +47,8 @@ import org.openide.nodes.Node;
  */
 public class J2ee15ProjectHelper extends J2eeProjectHelper {
     
+    private static final String SERVICE_SUFFIX = "Service";     //NOI18N
+    
     private String portComponentName;
     private String serviceDescriptionName;
     private List<String> serviceRefNames;
@@ -76,9 +78,9 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
             
             if (source != null) {
                 serviceDescriptionName = getServiceName(source);
-                
+
                 if (serviceDescriptionName == null) {
-                    serviceDescriptionName = getPortComponentName();
+                    serviceDescriptionName = getPortComponentName() + SERVICE_SUFFIX;
                 }
             }
         }
