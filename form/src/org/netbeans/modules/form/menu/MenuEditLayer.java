@@ -465,6 +465,10 @@ public class MenuEditLayer extends JPanel {
             FormModelListener fml = new FormModelListener() {
                 public void formChanged(FormModelEvent[] events) {
                     for(FormModelEvent evt : events) {
+                        p("event = " + evt + " " + evt.getComponent().getName());
+                        if(evt.getChangeType() == evt.COMPONENT_PROPERTY_CHANGED) {
+                            rebuildOnScreenMenu(metacomp);
+                        }
                         // if something added to the menu we monitor
                         if(evt.getChangeType() == evt.COMPONENT_ADDED ||
                                 evt.getChangeType() == evt.COMPONENTS_REORDERED ||
