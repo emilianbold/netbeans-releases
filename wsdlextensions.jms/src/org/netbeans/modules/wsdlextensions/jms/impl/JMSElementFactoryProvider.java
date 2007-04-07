@@ -87,6 +87,24 @@ public class JMSElementFactoryProvider {
             return new JMSOptionImpl(context.getModel(), element);
         }
     }
+
+    public static class JNDIEnvFactory extends ElementFactory{
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(JMSQName.JNDIENV.getQName());
+        }
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new JMSJNDIEnvImpl(context.getModel(), element);
+        }
+    }
+
+    public static class JNDIEnvEntryFactory extends ElementFactory{
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(JMSQName.JNDIENVENTRY.getQName());
+        }
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new JMSJNDIEnvEntryImpl(context.getModel(), element);
+        }
+    }
     
     public static class MapMessageFactory extends ElementFactory{
         public Set<QName> getElementQNames() {

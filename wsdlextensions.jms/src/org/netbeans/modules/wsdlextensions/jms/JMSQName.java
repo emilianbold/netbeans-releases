@@ -38,7 +38,10 @@ public enum JMSQName {
     MAPMESSAGE(createJMSQName("mapmessage")),
     MAPPART(createJMSQName("mappart")),
     PROPERTIES(createJMSQName("properties")),
-    PROPERTY(createJMSQName("property"));
+    PROPERTY(createJMSQName("property")),
+    JNDIENV(createJMSQName("jndienv")),
+    JNDIENVENTRY(createJMSQName("jndienventry"));
+    
     
     
     public static final String JMS_NS_URI = "http://schemas.sun.com/jbi/wsdl-extensions/jms/";

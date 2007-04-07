@@ -8,3 +8,5 @@ org.netbeans.modules.wsdlextensions.jms.impl.JMSElementFactoryProvider$MapMessag
 org.netbeans.modules.wsdlextensions.jms.impl.JMSElementFactoryProvider$MapMessagePartFactory
 org.netbeans.modules.wsdlextensions.jms.impl.JMSElementFactoryProvider$PropertiesFactory
 org.netbeans.modules.wsdlextensions.jms.impl.JMSElementFactoryProvider$PropertyFactory
+org.netbeans.modules.wsdlextensions.jms.impl.JMSElementFactoryProvider$JNDIEnvFactory
+org.netbeans.modules.wsdlextensions.jms.impl.JMSElementFactoryProvider$JNDIEnvEntryFactory

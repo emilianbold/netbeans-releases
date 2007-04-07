@@ -21,11 +21,14 @@ package org.netbeans.modules.wsdlextensions.jms.validator;
 import java.net.URI;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.ResourceBundle;
 
@@ -70,6 +73,8 @@ import org.netbeans.modules.wsdlextensions.jms.JMSMapMessage;
 import org.netbeans.modules.wsdlextensions.jms.JMSMapMessagePart;
 import org.netbeans.modules.wsdlextensions.jms.JMSProperties;
 import org.netbeans.modules.wsdlextensions.jms.JMSProperty;
+import org.netbeans.modules.wsdlextensions.jms.JMSJNDIEnv;
+import org.netbeans.modules.wsdlextensions.jms.JMSJNDIEnvEntry;
 
 /**
  * JMSComponentValidator
@@ -128,8 +133,57 @@ public class JMSComponentValidator
             }
             
             Definitions defs = wsdlModel.getDefinitions();
-            Iterator<Binding> bindings = defs.getBindings().iterator();
+
+            Map<String,String> jndiBasedBindingOps = new HashMap<String,String>();
             
+            Iterator<Service> services = defs.getServices().iterator();
+            while (services.hasNext()) {
+                Iterator<Port> ports = services.next().getPorts().iterator();
+                while (ports.hasNext()) {
+                    Port port = ports.next();
+                    if(port.getBinding() != null) {
+                        Binding binding = port.getBinding().get();
+                        if(binding != null) {
+                            int numRelatedJMSBindings = binding.getExtensibilityElements(JMSBinding.class).size();
+                            List <JMSAddress> jmsAddressList = port.getExtensibilityElements(JMSAddress.class);
+                            Iterator<JMSAddress> jmsAddresses = jmsAddressList.iterator();
+                            if((numRelatedJMSBindings > 0) && (jmsAddressList.size()==0)){
+                                results.add(
+                                        new Validator.ResultItem(this,
+                                        Validator.ResultType.ERROR,
+                                        port,
+                                        getMessage("JMSAddressValidation.MISSING_JMS_ADDRESS",
+                                                   new Object[]{port.getName(), 
+                                                                new Integer(numRelatedJMSBindings)})));                                        
+                            }
+                            
+                            if(jmsAddressList.size() > 1){
+                                results.add(
+                                        new Validator.ResultItem(this,
+                                        Validator.ResultType.ERROR,
+                                        port,
+                                        getMessage("JMSAddressValidation.ONLY_ONE_JMS_ADDRESS_ALLOWED",
+                                                   new Object[]{port.getName(), 
+                                                                new Integer(jmsAddressList.size())})));
+                            }
+                            while (jmsAddresses.hasNext()) {
+                                JMSAddress jmsAddr = jmsAddresses.next();
+                                validate(jmsAddr);
+                                if (jmsAddr.getConnectionURL().startsWith(JMSConstants.JMS_GENERIC_JNDI_PROTOCOL)) {
+                                    Iterator<BindingOperation> bindingOps =
+                                            binding.getBindingOperations().iterator();
+                                    while (bindingOps.hasNext()) {
+                                        BindingOperation bindingOp = bindingOps.next();
+                                        jndiBasedBindingOps.put(bindingOp.getName(), port.getName());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }            
+            
+            Iterator<Binding> bindings = defs.getBindings().iterator();            
             while (bindings.hasNext()) {
                 Binding binding = bindings.next();
                 
@@ -163,7 +217,7 @@ public class JMSComponentValidator
                             jmsOpsList.iterator();
                     
                     while (jmsOps.hasNext()) {
-                        validate(bindingOp, jmsOps.next());
+                        validate(bindingOp, jmsOps.next(), jndiBasedBindingOps);
                     }
                     
                     if(jmsOpsList.size() > 0) {
@@ -287,6 +341,7 @@ public class JMSComponentValidator
                 }
             }
 
+            /*
             Iterator<Service> services = defs.getServices().iterator();
             while (services.hasNext()) {
                 Iterator<Port> ports = services.next().getPorts().iterator();
@@ -323,7 +378,7 @@ public class JMSComponentValidator
                         }
                     }
                 }
-            }
+            } */
         }
         // Clear out our state
         mValidation = null;
@@ -429,6 +484,44 @@ public class JMSComponentValidator
                                 isAToken(password, target);
                             }
                         }                    
+                    } else {
+                        // check list of jndienv
+                        List <JMSJNDIEnv> jndienvs = target.getExtensibilityElements(JMSJNDIEnv.class);
+                        if (jndienvs.size() > 1) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.ERROR,
+                                    target,
+                                    getMessage("JMSAddress.ATMOST_ONE_JNDIENV_ELEM_IN_JMS_ADDRESS",
+                                               new Object[] {jndienvs.size()})));
+                        } 
+
+                        if (jndienvs.size()==0) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.ERROR,
+                                    target,
+                                    getMessage("JMSAddress.MISSING_JNDIENV_ELEM_IN_JMS_ADDRESS",
+                                               new Object[] {target.getConnectionURL()})));
+                        } else {
+                            // check if no jndienventry(ies) were found
+                            List <JMSJNDIEnvEntry> jndienventries = jndienvs.get(0).getExtensibilityElements(JMSJNDIEnvEntry.class);
+                            if (jndienventries.size()==0) {
+                                results.add(new Validator.ResultItem(this,
+                                        Validator.ResultType.ERROR,
+                                        jndienvs.get(0),
+                                        getMessage("JMSAddress.MISSING_JNDIENVENTRY_ELEMS_IN_JMS_JNDIENV",
+                                                   new Object[] {target.getConnectionURL()})));        
+                            }
+                        }
+
+                        // ensure that jndienventry elements are child elements of jndienv element
+                        List <JMSJNDIEnvEntry> jndienventries = target.getExtensibilityElements(JMSJNDIEnvEntry.class);
+                        if (jndienventries.size() > 0) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.ERROR,
+                                    target,
+                                    getMessage("JMSAddress.IMPROPER_USAGE_OF_JNDIENVENTRY",
+                                               new Object[] {jndienventries.size()})));        
+                        }
                     }                
                 } catch (Throwable t) {
                     results.add(new Validator.ResultItem(this,
@@ -445,7 +538,7 @@ public class JMSComponentValidator
         // for jms binding tag - nothing to validate at this point
     }
 
-    private void validate(BindingOperation bindingOp, JMSOperation target) {
+    private void validate(BindingOperation bindingOp, JMSOperation target, Map<String,String> jndiBasedBindingOps) {
         Collection<ResultItem> results =
                 mValidationResult.getValidationResult();
         
@@ -470,6 +563,17 @@ public class JMSComponentValidator
                                new Object[] {bindingOp.getName()})));            
         } 
                 
+        String jndiConnectionFactoryName = target.getJndiConnectionFactoryName();
+        if (jndiBasedBindingOps.containsKey(bindingOp.getName()) && 
+            (jndiConnectionFactoryName == null || jndiConnectionFactoryName.length()==0)) {
+            results.add(new Validator.ResultItem(this,
+                    Validator.ResultType.ERROR,
+                    target,
+                    getMessage("JMSOperation.JNDI_CONNECTION_FACTORY_NAME_UNDEFINED",
+                               new Object[] {bindingOp.getName(),
+                                             jndiBasedBindingOps.get(bindingOp.getName())})));            
+        }
+        
         String subscriptionDurability = target.getSubscriptionDurability();
         if (subscriptionDurability != null &&
             subscriptionDurability.equals(JMSConstants.DURABLE)) {

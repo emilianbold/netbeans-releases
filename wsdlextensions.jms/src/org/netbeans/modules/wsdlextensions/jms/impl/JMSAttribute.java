@@ -28,6 +28,7 @@ import org.netbeans.modules.wsdlextensions.jms.JMSOperation;
 import org.netbeans.modules.wsdlextensions.jms.JMSOption;
 import org.netbeans.modules.wsdlextensions.jms.JMSMapMessagePart;
 import org.netbeans.modules.wsdlextensions.jms.JMSProperty;
+import org.netbeans.modules.wsdlextensions.jms.JMSJNDIEnvEntry;
 
 /**
  * 
@@ -41,6 +42,7 @@ public enum JMSAttribute implements Attribute {
     JMS_OPERATION_DESTINATION(JMSOperation.ATTR_DESTINATION),
     JMS_OPERATION_DESTINATION_TYPE(JMSOperation.ATTR_DESTINATION_TYPE),
     JMS_OPERATION_TRANSACTION(JMSOperation.ATTR_TRANSACTION),
+    JMS_OPERATION_JNDI_CONNECTIONFACTORY_NAME(JMSOperation.ATTR_JNDI_CONNECTION_FACTORY_NAME),
     JMS_OPERATION_TIME_TO_LIVE(JMSOperation.ATTR_TIME_TO_LIVE),
     JMS_OPERATION_DELIVERY_MODE(JMSOperation.ATTR_DELIVERY_MODE),
     JMS_OPERATION_PRIORITY(JMSOperation.ATTR_PRIORITY),
@@ -70,6 +72,9 @@ public enum JMSAttribute implements Attribute {
 
     JMS_OPTION_NAME(JMSOption.ATTR_NAME),
     JMS_OPTION_VALUE(JMSOption.ATTR_VALUE),
+
+    JMS_JNDIENVENTRY_NAME(JMSJNDIEnvEntry.ATTR_NAME),
+    JMS_JNDIENVENTRY_VALUE(JMSJNDIEnvEntry.ATTR_VALUE),
     
     JMS_MAPPART_NAME(JMSMapMessagePart.ATTR_NAME),
     JMS_MAPPART_TYPE(JMSMapMessagePart.ATTR_TYPE),

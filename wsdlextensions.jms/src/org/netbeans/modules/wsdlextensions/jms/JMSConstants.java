@@ -84,6 +84,9 @@ public class JMSConstants {
     // Batch size
     public static final int BATCH_SIZE_DEFAULT = 0;
     
+    // JMS provider protocol
+    public static final String JMS_GENERIC_JNDI_PROTOCOL = "jndi://";
+    
     public static boolean stringValueIsTrue (String val) {        
         if (val == null || val.equals(BOOLEAN_FALSE) ) {
             return false;

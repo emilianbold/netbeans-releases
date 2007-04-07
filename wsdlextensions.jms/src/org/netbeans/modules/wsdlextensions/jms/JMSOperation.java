@@ -39,6 +39,7 @@ public interface JMSOperation extends JMSComponent {
     public static final String ATTR_DESTINATION = "destination";
     public static final String ATTR_DESTINATION_TYPE = "destinationType";
     public static final String ATTR_TRANSACTION = "transaction";
+    public static final String ATTR_JNDI_CONNECTION_FACTORY_NAME = "jndiConnectionFactoryName";
     
     // provider (outbound)
     public static final String ATTR_TIME_TO_LIVE = "timeToLive";
@@ -75,6 +76,9 @@ public interface JMSOperation extends JMSComponent {
     
     public String getTransaction();
     public void setTransaction(String val);
+
+    public String getJndiConnectionFactoryName();
+    public void setJndiConnectionFactoryName(String val);
     
     public String getDeliveryMode();
     public void setDeliveryMode(String val);

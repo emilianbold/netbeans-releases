@@ -53,6 +53,9 @@
 	<xs:complexType name="tAddress">
 		<xs:complexContent>
 			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:sequence>
+					<xs:element ref="jms:jndienv" minOccurs="0"/>
+				</xs:sequence>                            
 				<xs:attribute name="connectionURL" type="xs:string" use="required">
 					<xs:annotation>
                         <xs:documentation>The connectivity information to connect to a JMS server. Format is protocol://server:port?key1=value1&amp;key2=value2</xs:documentation>
@@ -90,6 +93,9 @@
                         <prop:SchemaCustomizer/>
                     </prop:Property>
                     <prop:Property attributeName="transaction" groupName="Common" propertyOrder="3">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="jndiConnectionFactoryName" groupName="Common" propertyOrder="4">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
                     <prop:Property attributeName="deliveryMode" groupName="Provider" propertyOrder="1">
@@ -153,6 +159,11 @@
 				<xs:attribute name="destinationType" type="jms:destinationTypes" use="required">
 					<xs:annotation>
 						<xs:documentation>Defines the type (domain) of the destination where message are sent or received</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="jndiConnectionFactoryName" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>When JNDI is used to look up the JMS connection factory, this attribute specifies the JNDI name of the connection factory to look up.</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="transaction" type="jms:transactionSupportTypes" use="optional" default="NoTransaction">
@@ -546,6 +557,46 @@ This causes no delay up to the 5th delivery; a 1000 ms delay is invoked when the
 		</xs:complexContent>
 	</xs:complexType>
 
+	<!-- "address" JNDI environment entries -->
+	<xs:element name="jndienv" type="jms:tJNDIEnv">
+		<xs:annotation>
+			<xs:documentation>
+	      	"jndienv" defines the JNDI environment entries needed to lookup JMS connection factories using JNDI
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tJNDIEnv">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:sequence>
+					<xs:element ref="jms:jndienventry" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="jndienventry" type="jms:tJNDIEnvEntry">
+		<xs:annotation>
+			<xs:documentation>
+	      	"jndiEnvEntry" defines a JNDI environment map entry for the map used to create the initial JNDI context
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tJNDIEnvEntry">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:attribute name="name" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>The name of the JNDI environment entry</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="value" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>The value of the JNDI environment entry</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
 
     <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
     <!-- Start simple type defintions to define type enumerations          -->
