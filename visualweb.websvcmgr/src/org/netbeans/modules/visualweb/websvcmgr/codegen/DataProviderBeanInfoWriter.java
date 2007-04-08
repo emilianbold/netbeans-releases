@@ -25,8 +25,8 @@ import java.util.Date;
 public class DataProviderBeanInfoWriter extends java.io.PrintWriter {
     
     // Hardcode the iconFileName here
-    public static final String DATA_PROVIDER_ICON_FILE_NAME = "../methodicon.png";
-    public static final String DATA_PROVIDER_ICON_FILE_NAME2 = "../table_dp_badge.png";
+    public static final String DATA_PROVIDER_ICON_FILE_NAME = "methodicon.png";
+    public static final String DATA_PROVIDER_ICON_FILE_NAME2 = "table_dp_badge.png";
     
     private DataProviderInfo dataProviderInfo;
     

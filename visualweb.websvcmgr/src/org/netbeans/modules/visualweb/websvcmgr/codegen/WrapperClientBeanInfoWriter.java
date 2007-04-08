@@ -51,7 +51,7 @@ public class WrapperClientBeanInfoWriter extends java.io.PrintWriter {
     
     private Set constructorStatements = new HashSet();
     
-    public static String WEBSERVICE_ICON_FILENAME = "../webservice.png";
+    public static String WEBSERVICE_ICON_FILENAME = "webservice.png";
     
     int indent = 0;
     

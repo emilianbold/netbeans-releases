@@ -81,8 +81,14 @@
         </copy>
         <jar jarfile="${jxrpc.base}/${serviceName}-dt.jar" 
              basedir="${jxrpc.base}/dt/build" />
-             
-         <delete dir="${jxrpc.base}/dt"/>    
+        
+        <jar jarfile="${jxrpc.base}/${serviceName}-dt-src.jar">
+            <fileset dir="${jxrpc.base}/dt/src">
+                <patternset includes="**/*.java"/>
+            </fileset>
+        </jar>
+        
+        <delete dir="${jxrpc.base}/dt"/>    
         
     </target>
     
