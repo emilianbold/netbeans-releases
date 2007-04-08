@@ -9,6 +9,8 @@
 
 package org.netbeans.modules.websvc.rest.codegen;
 
+import javax.lang.model.element.Modifier;
+
 /**
  *
  * @author PeterLiu
@@ -43,13 +45,15 @@ class Constants {
     
     public static final String[] CONVERTER_ANNOTATION_IMPORTS = {
         "javax.xml.bind.annotation.XmlRootElement",             //NOI18N
-        "javax.xml.bind.annotation.XmlElement"                 //NOI18N
+        "javax.xml.bind.annotation.XmlElement",                 //NOI18N
+        "javax.xml.bind.annotation.XmlTransient",                 //NOI18N
     };
     
     public static final String[] REF_CONVERTER_ANNOTATION_IMPORTS = {
         "javax.xml.bind.annotation.XmlRootElement",             //NOI18N
         "javax.xml.bind.annotation.XmlElement",                 //NOI18N
         "javax.xml.bind.annotation.XmlAttribute",                 //NOI18N
+        "javax.xml.bind.annotation.XmlTransient",                 //NOI18N
         Constants.QUERY_TYPE,
         Constants.ENTITY_MANAGER_TYPE,
     };
@@ -65,6 +69,8 @@ class Constants {
     public static final String PRODUCE_MIME_ANNOTATION = "ProduceMime"; //NOI18N
     
     public static final String CONSUME_MIME_ANNOTATION = "ConsumeMime"; //NOI18N
+
+    public static final String XML_TRANSIENT_ANNOTATION = "XmlTransient"; //NOI18N
     
     public static final String XML_MIME_TYPE = "application/xml";       //NOI18N
     
@@ -95,4 +101,17 @@ class Constants {
     public static final String PERSISTENCE = "javax.persistence.Persistence";
     
     public static final String VOID = "void";
+    
+    public static final String COLLECTION_TYPE = "java.util.Collection";
+
+    public static final Modifier[] PUBLIC = new Modifier[] { Modifier.PUBLIC };
+    
+    public static final Modifier[] PRIVATE = new Modifier[] { Modifier.PRIVATE };
+    
+    public static final Modifier[] PRIVATE_STATIC = new Modifier[] { 
+        Modifier.PRIVATE, Modifier.STATIC };
+    
+    public static final Modifier[] PUBLIC_STATIC = new Modifier[] {
+        Modifier.PUBLIC, Modifier.STATIC
+    };
 }

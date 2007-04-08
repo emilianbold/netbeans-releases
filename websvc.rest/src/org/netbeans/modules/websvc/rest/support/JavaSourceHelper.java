@@ -14,10 +14,8 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
@@ -144,11 +142,16 @@ public class JavaSourceHelper {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     ClassTree tree = getTopLevelClassTree(controller);
-                    className[0] = tree.getSimpleName().toString();
+                    if (tree != null) {
+                        className[0] = tree.getSimpleName().toString();
+                    } else {
+                        
+                    }
+                   
                 }
             }, true);
         } catch (IOException ex) {
-            
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         
         return className[0];
@@ -221,20 +224,21 @@ public class JavaSourceHelper {
     public static ClassTree getTopLevelClassTree(CompilationController controller) {
         String className = controller.getFileObject().getName();
         
-        List<? extends Tree> decls = controller.getCompilationUnit().getTypeDecls();
-        
-        for (Tree decl : decls) {
-            if (decl.getKind() != Tree.Kind.CLASS) {
-                continue;
+        CompilationUnitTree cu = controller.getCompilationUnit();
+        if (cu != null) {
+            List<? extends Tree> decls = cu.getTypeDecls();
+            for (Tree decl : decls) {
+                if (decl.getKind() != Tree.Kind.CLASS) {
+                    continue;
+                }
+
+                ClassTree classTree = (ClassTree) decl;
+
+                if (classTree.getSimpleName().contentEquals(className) &&
+                        classTree.getModifiers().getFlags().contains(Modifier.PUBLIC))
+                    return classTree;
             }
-            
-            ClassTree classTree = (ClassTree) decl;
-            
-            if (classTree.getSimpleName().contentEquals(className) &&
-                    classTree.getModifiers().getFlags().contains(Modifier.PUBLIC))
-                return classTree;
-        }
-        
+        } 
         return null;
     }
     
@@ -329,6 +333,12 @@ public class JavaSourceHelper {
     public static ClassTree addField(WorkingCopy copy, ClassTree tree,
             Modifier[] modifiers, String[] annotations, Object[] annotationAttrs,
             String name, Object type) {
+        return addField(copy, tree, modifiers, annotations, annotationAttrs, name, type, null);
+    }
+    
+    public static ClassTree addField(WorkingCopy copy, ClassTree tree,
+            Modifier[] modifiers, String[] annotations, Object[] annotationAttrs,
+            String name, Object type, Object initialValue) {
         
         TreeMaker maker = copy.getTreeMaker();
         ClassTree modifiedTree = tree;
@@ -338,8 +348,10 @@ public class JavaSourceHelper {
         ModifiersTree modifiersTree = createModifiersTree(copy, modifiers,
                 annotations, annotationAttrs);
         
+        ExpressionTree init = initialValue == null ? null : maker.Literal(initialValue);
+        
         VariableTree variableTree = maker.Variable(modifiersTree, name,
-                typeTree, null);
+                typeTree, init);
         
         return maker.insertClassMember(modifiedTree, 0, variableTree);
     }
