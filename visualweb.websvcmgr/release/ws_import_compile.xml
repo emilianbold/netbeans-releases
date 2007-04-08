@@ -57,7 +57,7 @@
         <!-- We need to compile the single Client Class and add it to the build before jaring. wscompile doesn't compile it -->
         <javac srcdir="${jxrpc.base}/src" 
                destdir="${jxrpc.base}/build" 
-               classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}" 
+               classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}:${libs.jsf12-support.classpath}" 
                debug="on" 
                source="1.5" />
         
