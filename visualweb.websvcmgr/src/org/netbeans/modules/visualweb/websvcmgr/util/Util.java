@@ -20,9 +20,12 @@
 package org.netbeans.modules.visualweb.websvcmgr.util;
 
 
+import com.sun.tools.ws.processor.model.java.JavaMethod;
 import java.util.*;
 import java.text.*;
 import java.io.*;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.openide.ErrorManager;
 
 import org.w3c.dom.*;
 
@@ -37,7 +40,7 @@ import com.sun.xml.rpc.util.JavaCompilerHelper;
 import com.sun.xml.rpc.processor.util.ClientProcessorEnvironment;
 import com.sun.xml.rpc.processor.model.Port;
 import com.sun.xml.rpc.processor.model.java.JavaParameter;
-*/
+ */
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -50,7 +53,7 @@ import org.netbeans.modules.visualweb.xml.rpc.util.JavaCompilerHelper;
 import org.netbeans.modules.visualweb.xml.rpc.processor.util.ClientProcessorEnvironment;
 import org.netbeans.modules.visualweb.xml.rpc.processor.model.Port;
 import org.netbeans.modules.visualweb.xml.rpc.processor.model.java.JavaParameter;
-*/
+ */
 import org.netbeans.modules.visualweb.websvcmgr.NotFoundException;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.WebServiceSupportException;
@@ -82,8 +85,7 @@ public class Util {
         return tagName.substring(pos+1);
     }
     
-    public static String decapitalize(String name) 
-    {
+    public static String decapitalize(String name) {
         if( name == null || name.length() == 0 ) {
             return name;
         }
@@ -96,12 +98,12 @@ public class Util {
     
     /**
      * Return the Project that is currently active according to the Designer.
-     * 
+     *
      * @return currently active project or null, if none.
      */
     public static Project getActiveProject() {
         FileObject fileObject = DesignerServiceHack.getDefault()
-                .getCurrentFile();
+        .getCurrentFile();
         if (fileObject == null) {
             return null;
         }
@@ -109,24 +111,24 @@ public class Util {
     }
     
     private void addLibraryDefsAndRefs(String libName)
-            throws IOException {
+    throws IOException {
         
         Project project = getActiveProject();
- 
+        
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
         if (libDef == null) {
             
         }
-
+        
         // If needed, create new compile-time Library Ref
         if (!JsfProjectUtils.hasLibraryReference(project, libDef,
                 ClassPath.COMPILE)) {
             if (!JsfProjectUtils.addLibraryReferences(project,
                     new Library[] { libDef }, ClassPath.COMPILE)) {
-               
+                
             }
         }
-
+        
         // If needed, create new "deploy" Library Ref
         if (!JsfProjectUtils.hasLibraryReference(project, libDef,
                 ClassPath.EXECUTE)) {
@@ -220,7 +222,7 @@ public class Util {
      * @return
      */
     public static String getType(Element el, Map typeMapping,
-    Map elementTypeMapping) {
+            Map elementTypeMapping) {
         if (el == null)
             return null;
         String elementName = el.getAttribute("name");
@@ -229,7 +231,7 @@ public class Util {
             //System.out.println("element name="+elementName);
             String typeAttribute = el.getAttribute("type");
             if (typeAttribute != null && !typeAttribute.equals("") &&
-            !typeAttribute.equals("SOAP-ENC:Array")) {
+                    !typeAttribute.equals("SOAP-ENC:Array")) {
                 type = (String) typeMapping.get(typeAttribute);
             } else {
                 // Recurse in and see what kind of type this thing is.
@@ -250,7 +252,7 @@ public class Util {
             try {
                 annotationNode = findFirstNodeByName(el, xsdNamespace+":annotation");
                 Element appInfoNode = findFirstNodeByName(annotationNode,
-                xsdNamespace+":appinfo");
+                        xsdNamespace+":appinfo");
                 try {
                     Node bindingNode = findFirstNodeByName(appInfoNode, "BINDING_TYPE");
                     type = bindingNode.getFirstChild().getNodeValue();
@@ -360,8 +362,8 @@ public class Util {
         
         
         throw new NotFoundException(MessageFormat.format(NbBundle.getMessage(Util.class,
-        "MSG_UnableToFindNode"),
-        new Object[] {name}), name);
+                "MSG_UnableToFindNode"),
+                new Object[] {name}), name);
     }
     
     public static Element findFirstNodeByNames(Element node, String[] names) throws NotFoundException {
@@ -415,15 +417,15 @@ public class Util {
         else {
             try {
                 cls = cl.loadClass(className);
-            } catch (java.lang.ClassNotFoundException e) {
-                e.printStackTrace();
+            } catch (java.lang.ClassNotFoundException exc) {
+               ErrorManager.getDefault().notify(exc);
                 cls = null;
             }
         }
         // END_NOI18N
         return cls;
     }
-        
+    
     static public boolean isClassArray(String returnClassName) {
         return returnClassName.endsWith("[]");                                  // NOI18N
     }
@@ -474,11 +476,11 @@ public class Util {
      */
     
 //    public static boolean createWSJar(WebServiceData inWSData, OutputStream inOutputStream, String inJarFileName, ArrayList features) {
-//        
+//
 //        String jarFileName = null;
-//        
+//
 //        OutputStream outputStream = null;
-//        
+//
 //        FileOutputStream fileOutputStream = null;
 //        Date date = new Date();
 //        File tmpOutputDir = null;
@@ -491,7 +493,7 @@ public class Util {
 //            if (tmpOutputDir.exists()) tmpOutputDir.mkdirs();
 //            errorFile = File.createTempFile("wscompile","error",tempFile.getParentFile());
 //            errorFile.deleteOnExit();
-//            
+//
 //            /**
 //             * if the outputstream is null, create a temporary directory for the wscompile.
 //             */
@@ -506,7 +508,7 @@ public class Util {
 //            StatusDisplayer_RAVE.getRaveDefault().displayError(NbBundle.getMessage(Util.class, "PROXY_GEN_ERROR"),2);
 //            return false;
 //        }
-//        
+//
 //        /**
 //         * Now create the class to do the WSDL to Java conversion
 //         */
@@ -515,12 +517,12 @@ public class Util {
 //         * Set the output directory to the temp one we just created.
 //         */
 //        wsdl2Java.setOutputDirectory(tmpOutputDir.getAbsolutePath());
-//        
+//
 //        /**
 //         * Set the package.
 //         */
 //        wsdl2Java.setPackageName(inWSData.getPackageName());
-//        
+//
 //        /**
 //         * Set the WSDL to use.
 //         */
@@ -531,37 +533,37 @@ public class Util {
 //            StatusDisplayer_RAVE.getRaveDefault().displayError(NbBundle.getMessage(Util.class, "WS_NOJAR_ERROR"),2);
 //            return false;
 //        }
-//        
+//
 //        /**
 //         * Set the proxy information.
 //         */
 //        System.setProperty("http.proxyHost", WebProxySetter.getInstance().getProxyHost());
 //        System.setProperty("http.proxyPort", WebProxySetter.getInstance().getProxyPort());
-//        
-//        
+//
+//
 //        /**
 //         * Do it!
 //         */
-//        
+//
 //        /**
 //         * Let the user know we'return doing some time consuming process.
 //         */
 //        StatusDisplayer_RAVE.getRaveDefault().setStatusText(NbBundle.getMessage(Util.class, "WS_CREATING_JARFILE"));
-//        
+//
 //        if(!wsdl2Java.execute(inWSData,outputStream,features)) {
 //            ErrorManager.getDefault().log("Util.createWSJar:" + NbBundle.getMessage(Util.class, "WS_WSDL2JAVA_ERROR"));
 //            StatusDisplayer_RAVE.getRaveDefault().displayError(NbBundle.getMessage(Util.class, "WS_WSDL2JAVA_ERROR"),2);
 //            return false;
 //        }
 //        StatusDisplayer_RAVE.getRaveDefault().setStatusText(NbBundle.getMessage(Util.class, "WS_CREATING_JARFILE_FINISHED"));
-//        
+//
 //        /**
 //         * Now we need to compile the wrapper client java files.
 //         *
 //         */
-//        
+//
 //        ArrayList argList = new ArrayList();
-//        
+//
 //        argList.add("-d");
 //        argList.add(tmpOutputDir.getAbsolutePath());
 //        argList.add("-classpath");
@@ -573,12 +575,12 @@ public class Util {
 //         * The following source and target are hardcoded for Thresher EA2 to
 //         * fix CR    defect 6316283
 //         * David Botterill 8/29/2005
-//         */                
+//         */
 //        argList.add("-target");
 //        argList.add("1.4");
 //        argList.add("-source");
-//        argList.add("1.4");        
-//        
+//        argList.add("1.4");
+//
 //        /**
 //         * Now add the files to be compiled
 //         */
@@ -586,18 +588,18 @@ public class Util {
 //        argList.add(wrapperFile.getAbsolutePath());
 //        File wrapperBeanInfoFile = wsdl2Java.getWebserviceClientBeanInfo();
 //        argList.add(wrapperBeanInfoFile.getAbsolutePath());
-//        
+//
 //        // Data provider classes
 //        for( Iterator iter = wsdl2Java.getDataProviders().iterator(); iter.hasNext(); )
 //        {
 //            File dpFile = (File)iter.next();
 //            argList.add( dpFile.getAbsolutePath() );
 //        }
-//        
+//
 //        String [] args = (String [])argList.toArray(new String[0]);
-//        
+//
 //        // ByteArrayOutputStream javacOutput = new ByteArrayOutputStream();
-//        
+//
 //        /**
 //         * Define a temp file for the compile results.
 //         */
@@ -611,22 +613,22 @@ public class Util {
 //            StatusDisplayer_RAVE.getRaveDefault().displayError(NbBundle.getMessage(Util.class, "PROXY_GEN_ERROR"),2);
 //            return false;
 //        }
-//        
+//
 //        FileOutputStream out = null;
-//        
+//
 //        try {
 //            out = new FileOutputStream(tempFile);
 //        } catch(FileNotFoundException fnfe) {
-//            
+//
 //            ErrorManager.getDefault().notify(fnfe);
 //            StatusDisplayer_RAVE.getRaveDefault().displayError(NbBundle.getMessage(Util.class, "PROXY_GEN_ERROR"),2);
 //            return false;
 //        }
-//        
+//
 //        JavaCompilerHelper compilerHelper = new JavaCompilerHelper(out);
-//        
+//
 //        StatusDisplayer_RAVE.getRaveDefault().setStatusText(NbBundle.getMessage(Util.class, "WS_CLIENTWRAPPER_COMPILING"));
-//        
+//
 //        boolean result = compilerHelper.compile(args);
 //        if (!result) {
 //            ErrorManager.getDefault().log("Util.createWSJar: " + NbBundle.getMessage(Util.class, "WS_CLIENTWRAPPER_COMPILE_ERROR") + tempFile == null ? "" : tempFile.getAbsolutePath());
@@ -634,22 +636,22 @@ public class Util {
 //            return false;
 //        } else {
 //            StatusDisplayer_RAVE.getRaveDefault().setStatusText(NbBundle.getMessage(Util.class, "WS_CLIENTWRAPPER_COMPILE_OK"));
-//            
+//
 //            /**
 //             * clean up the output file since the compile was successful
 //             */
-//            
+//
 //            try {
 //                // Have to close it. Otherwise, the tempFile will not be deleteOnExit per JDK bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4171239
-//                out.close(); 
-//                
+//                out.close();
+//
 //                tempFile.deleteOnExit();
 //            } catch( java.io.IOException ie ) {
 //                // That means the tempFile will not be deletedOnExit. No big deal.
 //            }
 //        }
-//        
-//        
+//
+//
 //        /**
 //         * Now copy the web service icon image to the folder that will be jarred up.
 //         */
@@ -658,10 +660,10 @@ public class Util {
 //            URL[] imageUrls = new URL[] { Util.class.getResource("/org/netbeans/modules/visualweb/websvc/resources/webservice.png"),
 //                                          Util.class.getResource("/org/netbeans/modules/visualweb/websvc/resources/methodicon.png"),
 //                                          Util.class.getResource("/org/netbeans/modules/visualweb/websvc/resources/table_dp_badge.png") };
-//            String[] imageFileNames = new String[] { Util.getFileName(WrapperClientBeanInfoWriter.WEBSERVICE_ICON_FILENAME), 
+//            String[] imageFileNames = new String[] { Util.getFileName(WrapperClientBeanInfoWriter.WEBSERVICE_ICON_FILENAME),
 //                                                     Util.getFileName(DataProviderBeanInfoWriter.DATA_PROVIDER_ICON_FILE_NAME),
 //                                                     Util.getFileName(DataProviderBeanInfoWriter.DATA_PROVIDER_ICON_FILE_NAME2)};
-//                                          
+//
 //            for( int i = 0; i < imageUrls.length; i ++ ) {
 //                DataInputStream in = new DataInputStream(imageUrls[i].openStream());
 //                String iconImagePath = tmpOutputDir.getAbsolutePath() + File.separator + inWSData.getPackageName().replace('.', File.separatorChar);
@@ -684,8 +686,8 @@ public class Util {
 //            StatusDisplayer_RAVE.getRaveDefault().displayError(NbBundle.getMessage(Util.class, "IMAGE_COPY_ERROR"),2);
 //            return false;
 //        }
-//        
-//        
+//
+//
 //        /**
 //         * Now create the jar files from the output.
 //         * Two jar files will be created:
@@ -695,13 +697,13 @@ public class Util {
 //        File wsJarFile = new File(inJarFileName);
 //        JarUtil jarUtil = new JarUtil(wsJarFile);
 //        jarUtil.addDirectory(new File(wsdl2Java.getOutputDirectory()), false ); // false means creating a jar for none design time classes
-//        
+//
 //        // Create a jar only containing the DesignInfo classes
 //        // The design time jar file name will the proxy filename append with "DesignTime"
 //        String designTimeJarFileName = inWSData.constructDesignTimeFileName( inJarFileName );
 //        JarUtil designJarUtil = new JarUtil( new File(designTimeJarFileName) );
-//        designJarUtil.addDirectory(new File(wsdl2Java.getOutputDirectory()), true ); 
-//        
+//        designJarUtil.addDirectory(new File(wsdl2Java.getOutputDirectory()), true );
+//
 //        return true;
 //    }
     
@@ -715,6 +717,41 @@ public class Util {
         
         return returnString;
     }
+    
+    /** Create a name based on the Java Method and its parameters 
+     *  Complete signature of the method is returned
+     */
+    public static String getMethodSignatureAsString( JavaMethod method ) {
+        StringBuffer sig = new StringBuffer();
+        sig.append( method.getName() );
+        sig.append( "(" );
+        
+        // Parameters
+        boolean first = true;
+//        Iterator params = method.getParameters();
+        Iterator params = method.getParametersList().iterator();
+        while (params.hasNext()) {
+            JavaParameter param = (JavaParameter)params.next();
+            
+            if( first )
+                first = false;
+            else
+                sig.append( "," );
+            
+            // Only want the class name part
+            String paramTypeName = param.getType().getRealName();
+            int lastDot = paramTypeName.lastIndexOf( '.' ); // NOI18N
+            if( lastDot != -1 )
+                paramTypeName = paramTypeName.substring( lastDot+1 );
+            
+            sig.append( paramTypeName );
+        }
+        
+        sig.append( ")" );
+        
+        return sig.toString();
+    }
+    
     /**
      * This method will take a WSDL port name like "threat.cfc" and change it to
      * "ThreatCfc"
@@ -744,7 +781,7 @@ public class Util {
         return returnString;
         
     }
-       
+    
     /**
      * This method will construct the default classpath to be used for running the "wscompile" tool.
      */
@@ -804,12 +841,12 @@ public class Util {
          * We also need to make sure the first and last characters of the entire package name are not "."
          *
          */
-        if(inPackageName.charAt(0) == '.') { 
+        if(inPackageName.charAt(0) == '.') {
             return false;
         } else if (inPackageName.charAt(inPackageName.length()-1) == '.') {
             return false;
         }
-           
+        
         
         /**
          * If we have more than one qualification ("."), we need to check the start of each
@@ -882,17 +919,19 @@ public class Util {
      * @param inParameter The JavaParameter to determine the type for.
      * @return String representing the class name for the type.  A null will be returned if the correct name cannot be resolved.
      */
-    public static String getParameterType(Port inPort, JavaParameter inParameter) {
+    public static String getParameterType(WsdlPort inPort, JavaParameter inParameter) {
         
         String parameterType = null;
 //        ClientProcessorEnvironment env = new ClientProcessorEnvironment(new ByteArrayOutputStream(), null, null);
         
         if (inParameter.isHolder()) {
-//            if (inParameter.getHolderName() == null) {
+            if (inParameter.getHolderName() == null) {
 //                parameterType = env.getNames().holderClassName(inPort, inParameter.getType());
-//            } else {
+                System.out.println("TODO - Currently commented out. Need fix!");
+                new Throwable().printStackTrace();
+            } else {
                 parameterType = inParameter.getHolderName();
-//            }
+            }
         } else {
             parameterType =inParameter.getType().getName();
         }
@@ -901,8 +940,7 @@ public class Util {
         
     }
     
-    public static String getFileName( String path )
-    {
+    public static String getFileName( String path ) {
         return new File(path).getName();
     }
 }
