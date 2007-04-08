@@ -55,6 +55,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 
 /**
  * A simple writer to write the Java Source.
@@ -69,7 +71,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
     private Set interfaces = new HashSet();
     private String packageName;
     private Set imports = new HashSet();
-    private Port port;
+    private WsdlPort port;
     private String className;
     
     private Set constructorStatements = new HashSet();
@@ -114,7 +116,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         superClassName = superClass;
     }
     
-    public void setPort( Port inPort ) {
+    public void setPort(WsdlPort inPort ) {
         this.port = inPort;
     }
    
@@ -171,8 +173,8 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         // write a variable for the port
 
         // get the Java class name for the port
-        String portImplName = Util.getProperPortName(port.getName().getLocalPart());
-        String portInterfaceName = port.getJavaInterface().getName();
+        String portImplName = Util.getProperPortName(port.getName());
+        String portInterfaceName = port.getJavaName();
         /**
          * Strip off the leading package qualification since we don't need it.
          */
@@ -220,7 +222,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         println("}");
     }
     
-    private void printOperations(Port port) {
+    private void printOperations(WsdlPort port) {
         
         // This is to keep track of the overloadded method names
         Map methodNames = new HashMap();
@@ -228,7 +230,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         /**
          * get the Java class name for the port.
          */
-        String portInterfaceName = port.getJavaInterface().getName();
+        String portInterfaceName = port.getJavaName();
         /**
          * Strip off the leading package qualification since we don't need it.
          */
@@ -244,7 +246,8 @@ public class WrapperClientWriter extends java.io.PrintWriter {
 
         Operation currentOperation = null;
         while(operationsIterator.hasNext()) {
-            currentOperation = (Operation)operationsIterator.next();
+            WsdlOperation oper = (WsdlOperation) operationsIterator.next();
+            currentOperation = (Operation)oper.getInternalJAXWSOperation();
             if(null == currentOperation) {
                 continue;
             }
@@ -265,7 +268,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
                  * type parameters.
                  * - David Botterill 6/8/2004
                  */
-
+ 
                 parameterType = Util.getParameterType(port,param);
                 /**
                  * end of bug fix: 5059732
