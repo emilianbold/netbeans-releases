@@ -26,16 +26,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.languages.support.CompletionSupport;
-import org.netbeans.spi.editor.completion.CompletionItem;
-import org.openide.ErrorManager;
-import org.openide.util.Lookup;
-import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
+
+import org.openide.ErrorManager;
+import org.openide.util.Lookup;
+import org.openide.xml.XMLUtil;
 
 
 /**
@@ -120,55 +119,13 @@ public abstract class LibrarySupport {
                 Iterator<Map<String,String>> it2 = items2.iterator ();
                 while (it2.hasNext()) {
                     Map<String, String> properties =  it2.next();
-
-                    String description = properties.get ("description");
-                    String type = properties.get ("type");
-                    String color = "000000";
-                    String library = properties.get ("library");
-                    String icon = null;
-                    String key = name;
-                    boolean bold = false;
-                    if ("keyword".equals (type)) {
-                        color = "000099";
-                        icon = "/org/netbeans/modules/languages/resources/keyword.jpg";
-                        bold = true;
-                    } else
-                    if ("interface".equals (type)) {
-                        color = "560000";
-                        icon = "/org/netbeans/modules/languages/resources/class.gif";
-                    } else
-                    if ("attribute".equals (type)) {
-                        icon = "/org/netbeans/modules/languages/resources/variable.gif";
-                    } else
-                    if ("function".equals (type)) {
-                        icon = "/org/netbeans/modules/languages/resources/method.gif";
-                        bold = true;
-                        key = key + "()";
-                    }
-
-                    if (description == null)
-                        result.add (CompletionSupport.createCompletionItem (
-                            name,
-                            "<html>" + (bold ? "<b>" : "") + 
-                                "<font color=#" + color + ">" + key + 
-                                "</font>" + (bold ? "</b>" : "") + 
-                                "</html>",
-                            library,
-                            icon,
-                            2
-                        ));
-                    else
-                        result.add (CompletionSupport.createCompletionItem (
-                            name,
-                            "<html>" + (bold ? "<b>" : "") + 
-                                "<font color=#" + color + ">" + key + 
-                                ": </font>" + (bold ? "</b>" : "") + 
-                                "<font color=#000000> " + 
-                                description + "</font></html>",
-                            library,
-                            icon,
-                            2
-                        ));
+                    result.add (CompletionItem.create (
+                        name,
+                        properties.get ("description"),
+                        properties.get ("library"),
+                        properties.get ("type"),
+                        2
+                    ));
                 }
             }
             return result;

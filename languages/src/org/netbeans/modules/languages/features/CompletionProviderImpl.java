@@ -31,7 +31,6 @@ import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.support.CompletionSupport;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -311,23 +310,18 @@ public class CompletionProviderImpl implements CompletionProvider {
             Iterator it = keys.iterator ();
             while (it.hasNext ()) {
                 Object o = it.next ();
-                if (o instanceof CompletionItem) {
-                    CompletionItem item = (CompletionItem) o;
-                    items.add (item);
-                    CharSequence chs = item.getInsertPrefix ();
-                    String s = chs instanceof String ? (String) chs : chs.toString ();
-                    if (ignoreCase)
-                        s = s.toLowerCase ();
-                    if (s.startsWith (start))
-                        resultSet.addItem (item);
-                } else {
-                    String t = (String) o;
-                    if (ignoreCase) t = t.toLowerCase ();
-                    CompletionItem item = CompletionSupport.createCompletionItem (t);
-                    items.add (item);
-                    if (t.startsWith (start))
-                        resultSet.addItem (item);
-                }
+                if (o instanceof org.netbeans.api.languages.CompletionItem)
+                    o = new CompletionSupport (
+                        (org.netbeans.api.languages.CompletionItem) o
+                    );
+                CompletionItem item = (CompletionItem) o;
+                items.add (item);
+                CharSequence chs = item.getInsertPrefix ();
+                String s = chs instanceof String ? (String) chs : chs.toString ();
+                if (ignoreCase)
+                    s = s.toLowerCase ();
+                if (s.startsWith (start))
+                    resultSet.addItem (item);
             }
         }
         
@@ -344,8 +338,8 @@ public class CompletionProviderImpl implements CompletionProvider {
             if (description == null)
                 description = text;
             String icon = (String) feature.getValue ("icon" + j);
-            CompletionItem item = CompletionSupport.createCompletionItem (
-                text, description, icon
+            CompletionItem item = new CompletionSupport (
+                text, description, null, icon, 2
             );
             items.add (item);
             if (!text.startsWith (start))

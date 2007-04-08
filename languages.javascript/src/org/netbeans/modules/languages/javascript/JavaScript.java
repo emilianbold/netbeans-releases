@@ -31,7 +31,6 @@ import org.netbeans.api.languages.LibrarySupport;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.SyntaxContext;
-import org.netbeans.api.languages.support.CompletionSupport;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
