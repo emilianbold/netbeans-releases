@@ -788,7 +788,7 @@ public final class Product extends RegistryNode {
     public Product loadFromDom(final Element element) throws InitializationException {
         super.loadFromDom(element);
         
-        List<Node> nodes;
+        Element child;
         
         try {
             version =
@@ -815,8 +815,10 @@ public final class Product extends RegistryNode {
                     element,
                     "system-requirements/disk-space").getTextContent());
             
-            dependencies.addAll(XMLUtils.parseDependencies(
-                    XMLUtils.getChild(element, "dependencies")));
+            child = XMLUtils.getChild(element, "dependencies");
+            if (child != null) {
+                dependencies.addAll(XMLUtils.parseDependencies(child));
+            }
         } catch (ParseException e) {
             throw new InitializationException("Could not load product", e);
         }

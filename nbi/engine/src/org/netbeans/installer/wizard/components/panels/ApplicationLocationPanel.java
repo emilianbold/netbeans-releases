@@ -28,6 +28,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.ComboBoxEditor;
+import javax.swing.ComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -37,6 +39,7 @@ import javax.swing.ListModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -59,17 +62,26 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
 public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final Class CLS = ApplicationLocationPanel.class;
+    public static final String LOCATION_LABEL_TEXT_PROPERTY = 
+            "location.label.text";
+    public static final String LOCATION_BUTTON_TEXT_PROPERTY = 
+            "location.button.text";
+    public static final String LIST_LABEL_TEXT_PROPERTY = 
+            "list.label.text";
     
-    public static final String LOCATION_LABEL_TEXT_PROPERTY = "location.label.text";
-    public static final String LOCATION_BUTTON_TEXT_PROPERTY = "location.button.text";
-    public static final String LIST_LABEL_TEXT_PROPERTY = "list.label.text";
+    public static final String DEFAULT_LOCATION_LABEL_TEXT = 
+            ResourceUtils.getString(ApplicationLocationPanel.class, 
+            "ALP.location.label.text");
+    public static final String DEFAULT_LOCATION_BUTTON_TEXT = 
+            ResourceUtils.getString(ApplicationLocationPanel.class, 
+            "ALP.location.button.text");
+    public static final String DEFAULT_LIST_LABEL_TEXT = 
+            ResourceUtils.getString(ApplicationLocationPanel.class, 
+            "ALP.list.label.text");
     
-    public static final String DEFAULT_LOCATION_LABEL_TEXT = ResourceUtils.getString(CLS, "ALP.location.label.text");
-    public static final String DEFAULT_LOCATION_BUTTON_TEXT = ResourceUtils.getString(CLS, "ALP.location.button.text");
-    public static final String DEFAULT_LIST_LABEL_TEXT = ResourceUtils.getString(CLS, "ALP.list.label.text");
-    
-    public static final String DEFAULT_LOCATION = ResourceUtils.getString(CLS, "ALP.default.location");
+    public static final String DEFAULT_LOCATION = 
+            ResourceUtils.getString(ApplicationLocationPanel.class, 
+            "ALP.default.location");
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -369,12 +381,12 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     }
     
     public static class LocationsListModel implements ListModel {
-        private List<File>   locations = new LinkedList<File>();
-        private List<String> labels    = new LinkedList<String>();
+        private List<File> locations;
+        private List<String> labels;
         
         public LocationsListModel(final List<File> locations, final List<String> labels) {
             this.locations = locations;
-            this.labels    = labels;
+            this.labels = labels;
         }
         
         public int getSize() {
@@ -400,5 +412,211 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
         public void removeListDataListener(ListDataListener listener) {
             // does nothing
         }
+    }
+    
+    public static class LocationsComboBoxEditor implements ComboBoxEditor {
+        private List<ActionListener> listeners;
+        private NbiTextField textField;
+        private LocationsComboBoxModel model;
+        private LocationValidator validator;
+        
+        public LocationsComboBoxEditor(LocationValidator validator) {
+            this.validator = validator;
+            
+            textField = new NbiTextField();
+            textField.setBorder(new EmptyBorder(1, 1, 1, 1));
+            textField.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    fireAction(e);
+                }
+            });
+            textField.getDocument().addDocumentListener(new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    LocationsComboBoxEditor.this.validator.validate(
+                            textField.getText());
+                }
+                
+                public void removeUpdate(DocumentEvent e) {
+                    LocationsComboBoxEditor.this.validator.validate(
+                            textField.getText());
+                }
+                
+                public void changedUpdate(DocumentEvent e) {
+                    LocationsComboBoxEditor.this.validator.validate(
+                            textField.getText());
+                }
+            });
+            
+            this.listeners = new LinkedList<ActionListener>();
+        }
+        
+        public void setModel(LocationsComboBoxModel model) {
+            this.model = model;
+        }
+        
+        // comboboxeditor ///////////////////////////////////////////////////////////
+        public Component getEditorComponent() {
+            return textField;
+        }
+        
+        public void setItem(Object object) {
+            if (object != null) {
+                final int index = model.getLabels().indexOf(object);
+                
+                if (index != -1) {
+                    textField.setText(model.getLocations().get(index));
+                } else {
+                    textField.setText(object.toString());
+                }
+            } else {
+                textField.setText("");
+            }
+        }
+        
+        public Object getItem() {
+            final String text = textField.getText();
+            final int index = model.getLocations().indexOf(text);
+            
+            if (index != -1) {
+                return model.getLabels().get(index);
+            } else {
+                return text;
+            }
+        }
+        
+        public void selectAll() {
+            textField.selectAll();
+        }
+        
+        public void addActionListener(ActionListener listener) {
+            synchronized (listeners) {
+                listeners.add(listener);
+            }
+        }
+        
+        public void removeActionListener(ActionListener listener) {
+            synchronized (listeners) {
+                listeners.remove(listener);
+            }
+        }
+        
+        // private //////////////////////////////////////////////////////////////////
+        private void fireAction(ActionEvent event) {
+            ActionListener[] clone;
+            synchronized (listeners) {
+                clone = listeners.toArray(new ActionListener[listeners.size()]);
+            }
+            
+            for (ActionListener listener: clone) {
+                listener.actionPerformed(event);
+            }
+        }
+        
+        private void fireAction() {
+            fireAction(new ActionEvent(
+                    textField,
+                    ActionEvent.ACTION_PERFORMED,
+                    ""));
+        }
+    }
+    
+    public static class LocationsComboBoxModel implements ComboBoxModel {
+        private List<ListDataListener> listeners;
+        
+        private List<String> locations;
+        private List<String> labels;
+        
+        private String selectedItem;
+        private boolean selectedItemFromList;
+        
+        public LocationsComboBoxModel(List<File> locations, List<String> labels) {
+            this.locations = new LinkedList<String>();
+            for (File file: locations) {
+                this.locations.add(file.toString());
+            }
+            
+            this.labels = new LinkedList<String>();
+            this.labels.addAll(labels);
+            
+            this.listeners = new LinkedList<ListDataListener>();
+            
+            this.selectedItem = labels.get(0);
+            this.selectedItemFromList = true;
+        }
+        
+        public List<String> getLabels() {
+            return labels;
+        }
+        
+        public List<String> getLocations() {
+            return locations;
+        }
+        
+        public String getLocation() {
+            if (selectedItemFromList) {
+                return locations.get(labels.indexOf(selectedItem));
+            } else {
+                return selectedItem;
+            }
+        }
+        
+        // comboboxmodel ////////////////////////////////////////////////////////////
+        public void setSelectedItem(Object item) {
+            selectedItem = (String) item;
+            
+            if (labels.indexOf(item) != -1) {
+                selectedItemFromList = true;
+            } else {
+                selectedItemFromList = false;
+            }
+            
+            fireContentsChanged(-1);
+        }
+        
+        public Object getSelectedItem() {
+            return selectedItem;
+        }
+        
+        public int getSize() {
+            return labels.size();
+        }
+        
+        public Object getElementAt(int index) {
+            return labels.get(index);
+        }
+        
+        public void addListDataListener(ListDataListener listener) {
+            synchronized (listeners) {
+                listeners.add(listener);
+            }
+        }
+        
+        public void removeListDataListener(ListDataListener listener) {
+            synchronized (listeners) {
+                listeners.remove(listener);
+            }
+        }
+        
+        // private //////////////////////////////////////////////////////////////////
+        private void fireContentsChanged(int index) {
+            final ListDataListener[] clone;
+            synchronized (listeners) {
+                clone = listeners.toArray(new ListDataListener[listeners.size()]);
+            }
+            
+            final ListDataEvent event = new ListDataEvent(
+                    this,
+                    ListDataEvent.CONTENTS_CHANGED,
+                    index,
+                    index);
+            
+            for (ListDataListener listener: clone) {
+                listener.contentsChanged(event);
+            }
+        }
+    }
+    
+    public static interface LocationValidator {
+        void validate(String location);
     }
 }

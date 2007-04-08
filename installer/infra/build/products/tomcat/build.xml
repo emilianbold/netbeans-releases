@@ -44,15 +44,15 @@
     -->
     <target name="-pre-package">
         <move todir="${data.directory}">
-            <fileset dir="${data.directory}/netbeans/enterprise${sources.params.2.value}/${sources.params.3.value}">
+            <fileset dir="${data.directory}/apache-tomcat-6.0.10">
                 <include name="**/*"/>
             </fileset>
         </move>
         
         <delete includeemptydirs="true">
             <fileset dir="${data.directory}">
-                <include name="netbeans"/>
-                <include name="netbeans/**"/>
+                <include name="apache-tomcat-6.0.10"/>
+                <include name="apache-tomcat-6.0.10/**"/>
             </fileset>
         </delete>
     </target>

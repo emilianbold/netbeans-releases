@@ -94,6 +94,8 @@ public class NbiDialog extends JDialog {
         private Image backgroundImage;
         
         public NbiDialogContentPane() {
+            super();
+            
             if (NbiDialog.this.owner != null) {
                 backgroundImage = NbiDialog.this.owner.getBackgroundImage();
             }

@@ -188,7 +188,7 @@ public class ErrorMessagePanel extends WizardPanel {
                 // we have a good reason to catch Exception here, as most of the 
                 // code that is called is not under the engine's control 
                 // (validateInput() is component-specific) and we do not want to 
-                // propagate unexcpected exceptions that could otherwise be handled
+                // propagate unexpected exceptions that could otherwise be handled
                 // normally
                 
                 ErrorManager.notifyDebug("Failed to verify input", e);
@@ -219,7 +219,7 @@ public class ErrorMessagePanel extends WizardPanel {
         
         /////////////////////////////////////////////////////////////////////////////
         // Inner Classes
-        protected static class ValidatingThread extends NbiThread {
+        public static class ValidatingThread extends NbiThread {
             /////////////////////////////////////////////////////////////////////////
             // Constants
             public static final long VALIDATION_DELAY = 10000;
@@ -258,7 +258,7 @@ public class ErrorMessagePanel extends WizardPanel {
             }
         }
         
-        protected static class ValidatingDocumentListener implements DocumentListener {
+        public static class ValidatingDocumentListener implements DocumentListener {
             /////////////////////////////////////////////////////////////////////////
             // Instance
             private ErrorMessagePanelSwingUi swingUi;

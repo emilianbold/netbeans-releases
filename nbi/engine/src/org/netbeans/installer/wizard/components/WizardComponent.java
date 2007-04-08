@@ -71,20 +71,27 @@ public abstract class WizardComponent {
     private Wizard wizard;
     
     private List<WizardComponent> components;
-    private Properties            properties;
+    private Properties properties;
     
     protected WizardComponent() {
         components = new ArrayList<WizardComponent>();
         properties = new Properties();
         
-        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
-        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        setProperty(TITLE_PROPERTY, 
+                DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY, 
+                DEFAULT_DESCRIPTION);
         
-        setProperty(HELP_BUTTON_TEXT_PROPERTY, DEFAULT_HELP_BUTTON_TEXT);
-        setProperty(BACK_BUTTON_TEXT_PROPERTY, DEFAULT_BACK_BUTTON_TEXT);
-        setProperty(NEXT_BUTTON_TEXT_PROPERTY, DEFAULT_NEXT_BUTTON_TEXT);
-        setProperty(CANCEL_BUTTON_TEXT_PROPERTY, DEFAULT_CANCEL_BUTTON_TEXT);
-        setProperty(FINISH_BUTTON_TEXT_PROPERTY, DEFAULT_FINISH_BUTTON_TEXT);
+        setProperty(HELP_BUTTON_TEXT_PROPERTY, 
+                DEFAULT_HELP_BUTTON_TEXT);
+        setProperty(BACK_BUTTON_TEXT_PROPERTY, 
+                DEFAULT_BACK_BUTTON_TEXT);
+        setProperty(NEXT_BUTTON_TEXT_PROPERTY, 
+                DEFAULT_NEXT_BUTTON_TEXT);
+        setProperty(CANCEL_BUTTON_TEXT_PROPERTY, 
+                DEFAULT_CANCEL_BUTTON_TEXT);
+        setProperty(FINISH_BUTTON_TEXT_PROPERTY, 
+                DEFAULT_FINISH_BUTTON_TEXT);
     }
     
     public abstract void executeForward();

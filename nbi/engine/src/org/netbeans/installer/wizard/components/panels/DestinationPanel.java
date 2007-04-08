@@ -39,6 +39,7 @@ import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
@@ -116,9 +117,11 @@ public class DestinationPanel extends ErrorMessagePanel {
     public static class DestinationPanelSwingUi extends ErrorMessagePanelSwingUi {
         protected DestinationPanel component;
         
-        private NbiLabel       destinationLabel;
-        private NbiTextField   destinationField;
-        private NbiButton      destinationButton;
+        private NbiLabel destinationLabel;
+        private NbiTextField destinationField;
+        private NbiButton destinationButton;
+        
+        private NbiPanel spacerPanel;
         
         private JFileChooser fileChooser;
         
@@ -321,6 +324,9 @@ public class DestinationPanel extends ErrorMessagePanel {
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setMultiSelectionEnabled(false);
             
+            // spacerPanel //////////////////////////////////////////////////////////
+            spacerPanel = new NbiPanel();
+            
             // this /////////////////////////////////////////////////////////////////
             add(destinationLabel, new GridBagConstraints(
                     0, 0,                             // x, y
@@ -333,7 +339,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             add(destinationField, new GridBagConstraints(
                     0, 1,                             // x, y
                     1, 1,                             // width, height
-                    1.0, 1.0,                         // weight-x, weight-y
+                    1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(4, 11, 0, 0),          // padding
@@ -341,10 +347,18 @@ public class DestinationPanel extends ErrorMessagePanel {
             add(destinationButton, new GridBagConstraints(
                     1, 1,                             // x, y
                     1, 1,                             // width, height
-                    0.0, 1.0,                         // weight-x, weight-y
+                    0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
                     GridBagConstraints.NONE,          // fill
                     new Insets(4, 4, 0, 11),          // padding
+                    0, 0));                           // padx, pady - ???
+            add(spacerPanel, new GridBagConstraints(
+                    1, 50,                            // x, y
+                    2, 1,                             // width, height
+                    0.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.PAGE_START,    // anchor
+                    GridBagConstraints.NONE,          // fill
+                    new Insets(0, 0, 0, 0),           // padding
                     0, 0));                           // padx, pady - ???
         }
         

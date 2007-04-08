@@ -162,12 +162,10 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     registry.getProducts(INSTALLED_WITH_WARNINGS).size() +
                     registry.getProducts(FAILED_TO_INSTALL).size() > 0) {
                 boolean warningsEncountered =
-                        registry.getProducts(INSTALLED_WITH_WARNINGS).size() > 0 &&
-                        registry.getProducts(UNINSTALLED_WITH_WARNINGS).size() > 0;
+                        registry.getProducts(INSTALLED_WITH_WARNINGS).size() > 0;
                 
                 boolean errorsEncountered =
-                        registry.getProducts(FAILED_TO_INSTALL).size() > 0 &&
-                        registry.getProducts(FAILED_TO_UNINSTALL).size() > 0;
+                        registry.getProducts(FAILED_TO_INSTALL).size() > 0;
                 
                 if (errorsEncountered) {
                     messagePaneInstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_ERRORS_PROPERTY));

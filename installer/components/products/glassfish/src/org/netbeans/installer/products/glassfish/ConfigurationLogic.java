@@ -29,7 +29,6 @@ import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
-import org.netbeans.installer.products.glassfish.wizard.panels.SettingsPanel;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -42,6 +41,7 @@ import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
+import org.netbeans.installer.products.glassfish.wizard.panels.GlassFishPanel;
 
 /**
  *
@@ -63,11 +63,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public void install(Progress progress) throws InstallationException {
         final File directory = getProduct().getInstallationLocation();
         
-        final String username  = getProperty(SettingsPanel.USERNAME_PROPERTY);
-        final String password  = getProperty(SettingsPanel.PASSWORD_PROPERTY);
-        final String httpPort  = getProperty(SettingsPanel.HTTP_PORT_PROPERTY);
-        final String httpsPort = getProperty(SettingsPanel.HTTPS_PORT_PROPERTY);
-        final String adminPort = getProperty(SettingsPanel.ADMIN_PORT_PROPERTY);
+        final String username  = getProperty(GlassFishPanel.USERNAME_PROPERTY);
+        final String password  = getProperty(GlassFishPanel.PASSWORD_PROPERTY);
+        final String httpPort  = getProperty(GlassFishPanel.HTTP_PORT_PROPERTY);
+        final String httpsPort = getProperty(GlassFishPanel.HTTPS_PORT_PROPERTY);
+        final String adminPort = getProperty(GlassFishPanel.ADMIN_PORT_PROPERTY);
         
         final File javaHome =
                 new File(getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY));

@@ -19,7 +19,6 @@
   Rights Reserved.
 -->
 <wizard xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wizard-components.xsd">
-    <!--
     <component class="org.netbeans.installer.wizard.components.panels.DestinationPanel">
         <properties>
             <property name="title">$P{org.netbeans.installer.products.tomcat.Bundle, DP.title}</property>
@@ -27,13 +26,6 @@
             
             <property name="destination.label.text">$P{org.netbeans.installer.products.tomcat.Bundle, DP.destination.label.text}</property>
             <property name="destination.button.text">$P{org.netbeans.installer.products.tomcat.Bundle, DP.destination.button.text}</property>
-        </properties>
-    </component>
-    -->
-    <component class="org.netbeans.installer.wizard.components.actions.SetInstallationLocationAction">
-        <properties>
-            <property name="source.component">nb-ide</property>
-            <property name="relative.location">enterprise{enterprise-cluster-version}/{tomcat-directory}</property>
         </properties>
     </component>
 </wizard>

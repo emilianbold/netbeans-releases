@@ -92,17 +92,22 @@ public class BuildNumberGlassFish extends Task {
             if (matcher.find()) {
                 final String buildType = 
                         matcher.group(1);                                   // NOMAGI
-                final String milestoneNumber = 
+                final String milestoneNumberReal = 
                         matcher.group(2);                                   // NOMAGI
+                final String milestoneNumber = 
+                        matcher.group(3);                                   // NOMAGI
                 final String buildNumber = FORMAT_OUT.format(FORMAT_IN.parse(
-                        matcher.group(3)));                                 // NOMAGI
+                        matcher.group(4)));                                 // NOMAGI
                 
-                getProject().setProperty(
-                        prefix + MILESTONE_NUMBER_SUFFIX, 
-                        milestoneNumber);
                 getProject().setProperty(
                         prefix + BUILD_TYPE_SUFFIX, 
                         buildType.toLowerCase());
+                getProject().setProperty(
+                        prefix + MILESTONE_NUMBER_REAL_SUFFIX, 
+                        milestoneNumberReal);
+                getProject().setProperty(
+                        prefix + MILESTONE_NUMBER_SUFFIX, 
+                        milestoneNumber);
                 getProject().setProperty(
                         prefix + BUILD_NUMBER_SUFFIX, 
                         buildNumber);
@@ -123,8 +128,8 @@ public class BuildNumberGlassFish extends Task {
      * Pattern for which to look in the input file.
      */
     private static final Pattern PATTERN = Pattern.compile(
-            "sjsas-9_1-" +                                                  // NOI18N
-            "([a-z0-9]+)-bin-b([0-9]+)[a-z]?-linux-([A-Za-z0-9_]+)\\.bin"); // NOI18N
+            "sjsas-9_1-([a-z0-9]+)-bin-" + // NOI18N
+            "b(([0-9]+)[a-z]?)-linux-([A-Za-z0-9_]+)\\.bin"); // NOI18N
     
     /**
      * Date format used in the input file.
@@ -143,6 +148,12 @@ public class BuildNumberGlassFish extends Task {
      */
     private static final String MILESTONE_NUMBER_SUFFIX = 
             ".milestone.number";                                            // NOI18N
+    
+    /**
+     * Milestone number property suffix.
+     */
+    private static final String MILESTONE_NUMBER_REAL_SUFFIX = 
+            ".milestone.number.real";                                       // NOI18N
     
     /**
      * Build type property suffix.

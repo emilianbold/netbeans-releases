@@ -19,27 +19,7 @@
   Rights Reserved.
 -->
 <wizard xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wizard-components.xsd">
-    <component class="org.netbeans.installer.wizard.components.panels.DestinationPanel">
-        <properties>
-            <property name="title">$P{org.netbeans.installer.products.glassfish.Bundle, DP.title}</property>
-            <property name="description">$P{org.netbeans.installer.products.glassfish.Bundle, DP.description}</property>
-            
-            <property name="destination.label.text">$P{org.netbeans.installer.products.glassfish.Bundle, DP.destination.label.text}</property>
-            <property name="destination.button.text">$P{org.netbeans.installer.products.glassfish.Bundle, DP.destination.button.text}</property>
-        </properties>
-    </component>
-    
     <component class="org.netbeans.installer.wizard.components.actions.SearchForJavaAction"/>
     
-    <component class="org.netbeans.installer.wizard.components.panels.JdkLocationPanel">
-        <properties>
-            <property name="title">$P{org.netbeans.installer.products.glassfish.Bundle, JLP.title}</property>
-            <property name="description">$P{org.netbeans.installer.products.glassfish.Bundle, JLP.description}</property>
-            
-            <property name="minimum.jdk.version">1.5.0</property>
-            <property name="maximum.jdk.version">2.0.0</property>
-        </properties>
-    </component>
-    
-    <component class="org.netbeans.installer.products.glassfish.wizard.panels.SettingsPanel"/>
+    <component class="org.netbeans.installer.products.glassfish.wizard.panels.GlassFishPanel"/>
 </wizard>
