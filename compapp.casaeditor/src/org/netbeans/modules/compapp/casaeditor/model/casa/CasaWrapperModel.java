@@ -63,6 +63,8 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -499,8 +501,13 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         }
         if (bindingType == null) {
-            // missing the binding type, use the default for now...
-            bindingType = ltg;
+//            // missing the binding type, use the default for now...
+//            bindingType = ltg;            
+            String msg = "Failed to populate binding for " + bType.toUpperCase() + ".";
+            NotifyDescriptor d =
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            throw new RuntimeException(msg);
         }
         
         Binding binding = port.getBinding().get();
@@ -2429,6 +2436,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         
         // 1. Update endpoint interface qname in casa.
         CasaEndpoint endpoint = endpointRef.getEndpoint().get();
+        QName oldInterfaceQName = endpoint.getInterfaceQName();
         startTransaction();
         try {
             endpoint.setInterfaceQName(interfaceQName);
@@ -2441,38 +2449,41 @@ public class CasaWrapperModel extends CasaModelImpl {
         
         // 2. Update casa wsdl and casacade the interface change, if applicable.
         CasaPort casaPort = getCasaPort(endpointRef);
-        if (casaPort != null) {
-            if (interfaceQName == null || interfaceQName.equals(new QName(""))) { // NOI18N
-                // Here we also need to clean up casa wsdl:
-                Port port = getLinkedWSDLPort(casaPort);
-                WSDLModel casaWSDLModel = port.getModel();
-                casaWSDLModel.startTransaction();
-                try {
-                    // (1) remove wsdl port children
-                    for (ExtensibilityElement ex : port.getExtensibilityElements()) {
-                        port.removeExtensibilityElement(ex);
-                    }
-                    // (2) remove binding children
-                    Binding binding = port.getBinding().get();
-                    for (BindingOperation op : binding.getBindingOperations()) {
-                        binding.removeBindingOperation(op);
-                    }
-                    for (ExtensibilityElement ex : binding.getExtensibilityElements()) {
-                        binding.removeExtensibilityElement(ex);
-                    }
-                    // (3) change binding type to dummy porttype
-                    PortType dummyPT = getDummyPortType(casaWSDLModel, true);
-                    binding.setType(binding.createReferenceTo(dummyPT, PortType.class));
-                } finally {
-                    if (casaWSDLModel.isIntransaction()) {
-                        casaWSDLModel.endTransaction();
-                    }
+        if (casaPort == null) {
+            return;
+        }
+        
+        if (interfaceQName == null || interfaceQName.equals(new QName(""))) { // NOI18N
+            // Here we also need to clean up casa wsdl:
+            Port port = getLinkedWSDLPort(casaPort);
+            WSDLModel casaWSDLModel = port.getModel();
+            casaWSDLModel.startTransaction();
+            try {
+                // (1) remove wsdl port children
+                for (ExtensibilityElement ex : port.getExtensibilityElements()) {
+                    port.removeExtensibilityElement(ex);
                 }
-                
-                // Maybe we do, but I don't see any real reason why we have to 
-                // cascade the change in this case.
-                
-            } else {
+                // (2) remove binding children
+                Binding binding = port.getBinding().get();
+                for (BindingOperation op : binding.getBindingOperations()) {
+                    binding.removeBindingOperation(op);
+                }
+                for (ExtensibilityElement ex : binding.getExtensibilityElements()) {
+                    binding.removeExtensibilityElement(ex);
+                }
+                // (3) change binding type to dummy porttype
+                PortType dummyPT = getDummyPortType(casaWSDLModel, true);
+                binding.setType(binding.createReferenceTo(dummyPT, PortType.class));
+            } finally {
+                if (casaWSDLModel.isIntransaction()) {
+                    casaWSDLModel.endTransaction();
+                }
+            }
+            
+            // Maybe we do, but I don't see any real reason why we have to
+            // cascade the change in this case.
+            
+        } else {
 //                startTransaction();
 //                try {
 //                    //todo: 12/22 temp method to add portType name...
@@ -2482,24 +2493,37 @@ public class CasaWrapperModel extends CasaModelImpl {
 //                        endTransaction();
 //                    }
 //                }
-                CasaBindingComponentServiceUnit bcSU = 
-                        (CasaBindingComponentServiceUnit) casaPort.getParent().getParent();
-                String bcName = bcSU.getComponentName();
-                String bindingType = bcName2BindingType.get(bcName);
-                 
-                Port port = getLinkedWSDLPort(casaPort);
+            CasaBindingComponentServiceUnit bcSU =
+                    (CasaBindingComponentServiceUnit) casaPort.getParent().getParent();
+            String bcName = bcSU.getComponentName();
+            String bindingType = bcName2BindingType.get(bcName);
+            
+            Port port = getLinkedWSDLPort(casaPort);
+            try {
                 populateBindingAndPort(casaPort, port, interfaceQName, bindingType);
-                
-                // Cascade the change to connected endpoints.
-                // Since the casaport is user-created, there is no 
-                // marked-as-"deleted" connections. Therefore, the following 
-                // "includeDeleted" flag doesn't really matter.
-                for (CasaConnection connection : getConnections(casaPort, false)) {
-                    CasaEndpointRef casaConsumes = getCasaEndpointRef(connection, true);
-                    setEndpointInterfaceQName(casaConsumes, interfaceQName);
-                    CasaEndpointRef casaProvides = getCasaEndpointRef(connection, false);
-                    setEndpointInterfaceQName(casaProvides, interfaceQName);
+            } catch (RuntimeException e) { 
+                // TODO: we need better transaction rollback handling.
+                startTransaction();
+                try {
+                    endpoint.setInterfaceQName(oldInterfaceQName);
+                } finally {
+                    if (isIntransaction()) {
+                        fireCasaEndpointInterfaceQNameChanged(endpointRef);
+                        endTransaction();
+                    }
                 }
+                throw e;
+            }
+            
+            // Cascade the change to connected endpoints.
+            // Since the casaport is user-created, there is no
+            // marked-as-"deleted" connections. Therefore, the following
+            // "includeDeleted" flag doesn't really matter.
+            for (CasaConnection connection : getConnections(casaPort, false)) {
+                CasaEndpointRef casaConsumes = getCasaEndpointRef(connection, true);
+                setEndpointInterfaceQName(casaConsumes, interfaceQName);
+                CasaEndpointRef casaProvides = getCasaEndpointRef(connection, false);
+                setEndpointInterfaceQName(casaProvides, interfaceQName);
             }
         }
     }
