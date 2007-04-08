@@ -22,7 +22,7 @@
         
     </description>
     
-    <target name="createWsJars" depends="run-wscompile, run-wsimport, copy-wsdl" />
+    <target name="createWsJars" depends="run-wscompile, run-wsimport" />
     
     <target name="-init-user">
         <property file="${user.properties.file}"/>
@@ -32,10 +32,6 @@
         <property name="jxrpc.base" value="${websvc.home}/${serviceName}/jaxrpc"/>
         <mkdir dir="${jxrpc.base}/build"/>
         <mkdir dir="${jxrpc.base}/src"/>
-        <echo level="info">Created  '${jxrpc.base}'.</echo>
-        <echo level="info">user.properties.file =  '${user.properties.file}'.</echo>
-        <echo level="info">libs.jaxrpc16.classpath =  '${libs.jaxrpc16.classpath}'.</echo>
-        <echo level="info"></echo>
     </target>
     
     <target name="run-wscompile" depends="-init-wscompile">
@@ -70,10 +66,12 @@
         <!-- create  wrapper proxy client and the corresponding desgn time jar file -->
         <mkdir dir="${jxrpc.base}/dt/build"/>
         
+        <echo level="info">Degintime Classpath - ${designtime.classpath}.</echo>
+        
         <!-- Compile the design time files. designtime.jar and dataprovider.jar need to be in the classpath -->
         <javac srcdir="${jxrpc.base}/dt/src" 
                destdir="${jxrpc.base}/dt/build" 
-               classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}:${jxrpc.base}/${serviceName}.jar" 
+               classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}:${jxrpc.base}/${serviceName}.jar:${designtime.classpath}" 
                debug="on" source="1.5" />
         
         <copy todir="${jxrpc.base}/dt/build">
@@ -83,6 +81,8 @@
         </copy>
         <jar jarfile="${jxrpc.base}/${serviceName}-dt.jar" 
              basedir="${jxrpc.base}/dt/build" />
+             
+         <delete dir="${jxrpc.base}/dt"/>    
         
     </target>
     
@@ -94,9 +94,6 @@
         <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
             <classpath path="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}"/>
         </taskdef>
-        
-        <echo level="info">Created  '${websvc.home}/${serviceName}'.</echo>
-        <echo level="info"></echo>
     </target>
     
     <!-- Currently only JAXRC wrapper proxy client and the corresponding desgn time is created
@@ -128,8 +125,6 @@
         <delete dir="${jaxws.base}/build"/>
         <delete dir="${jaxws.base}/src"/>
         
-        <echo level="info">Copying  '${wsdlFileName}' into directory '${jaxws.base}'.</echo>
-        
         <!-- Create the wrapper proxy client and the corresponding desgn time --> 
  
         <mkdir dir="${jaxws.base}/dt/build"/>
@@ -150,10 +145,4 @@
              basedir="${jaxws.base}/dt/build" />
         
     </target>
-    
-    <!-- We should do it in the java source, because we need support to copy from URL -->
-    <target name="copy-wsdl">
-        <copy file="${wsdlFileName}" 
-              tofile="${websvc.home}/${serviceName}/${serviceName}.wsdl"/>
-    </target> 
 </project>

@@ -51,6 +51,7 @@ public class DataProviderDesignInfoWriter extends java.io.PrintWriter {
         // Import
         println( "import com.sun.rave.designtime.*;" );
         println( "import com.sun.rave.designtime.impl.*;" );
+        println( "import com.sun.rave.designtime.faces.*;" );
         println( "import java.util.ArrayList;" );
         println();
 
