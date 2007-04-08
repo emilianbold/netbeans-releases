@@ -124,7 +124,7 @@ public class BuildNumberGlassFish extends Task {
      */
     private static final Pattern PATTERN = Pattern.compile(
             "sjsas-9_1-" +                                                  // NOI18N
-            "([a-z0-9]+)-bin-b([0-9]+)-linux-([A-Za-z0-9_]+)\\.bin");       // NOI18N
+            "([a-z0-9]+)-bin-b([0-9]+)[a-z]?-linux-([A-Za-z0-9_]+)\\.bin"); // NOI18N
     
     /**
      * Date format used in the input file.
