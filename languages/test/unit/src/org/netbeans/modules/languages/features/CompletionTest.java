@@ -30,16 +30,17 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import junit.framework.TestCase;
+
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.SyntaxContext;
-import org.netbeans.api.languages.support.CompletionSupport;
-import org.netbeans.modules.languages.*;
-import junit.framework.TestCase;
 import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.Selector;
 import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.Rule;
@@ -265,9 +266,9 @@ public class CompletionTest extends TestCase {
             contextPath = null;
         
         List result = new ArrayList ();
-        result.add (CompletionSupport.createCompletionItem ("while"));
-        result.add (CompletionSupport.createCompletionItem ("who"));
-        result.add (CompletionSupport.createCompletionItem ("if"));
+        result.add (org.netbeans.api.languages.CompletionItem.create ("while"));
+        result.add (org.netbeans.api.languages.CompletionItem.create ("who"));
+        result.add (org.netbeans.api.languages.CompletionItem.create ("if"));
         return result;
     }
     
@@ -278,9 +279,9 @@ public class CompletionTest extends TestCase {
         contextPath = ((SyntaxContext) context).getASTPath ();
         
         List result = new ArrayList ();
-        result.add (CompletionSupport.createCompletionItem ("www"));
-        result.add (CompletionSupport.createCompletionItem ("wma"));
-        result.add (CompletionSupport.createCompletionItem ("iff"));
+        result.add (org.netbeans.api.languages.CompletionItem.create ("www"));
+        result.add (org.netbeans.api.languages.CompletionItem.create ("wma"));
+        result.add (org.netbeans.api.languages.CompletionItem.create ("iff"));
         return result;
     }
     

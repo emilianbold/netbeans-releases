@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.languages;
 
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.IOException;
@@ -50,7 +51,7 @@ import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.Utils;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.Rule;
-import org.netbeans.modules.languages.parser.LanguageDefinitionNotFoundException;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.modules.languages.parser.Petra;
@@ -64,7 +65,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-public class Language {
+public class Language extends org.netbeans.api.languages.Language {
 
     
     public static final String ACTION = "ACTION";

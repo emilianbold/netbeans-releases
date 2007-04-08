@@ -22,10 +22,7 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.text.Document;
-import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
-import org.netbeans.modules.languages.parser.LanguageDefinitionNotFoundException;
-import org.openide.ErrorManager;
 
 
 /**

@@ -19,10 +19,11 @@
 
 package org.netbeans.modules.languages;
 
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.Utils;
 import org.netbeans.modules.languages.features.ActionCreator;
-import org.netbeans.modules.languages.parser.LanguageDefinitionNotFoundException;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.languages.features.ColorsManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -50,7 +51,7 @@ import java.util.HashSet;
  *
  * @author Jan Jancura
  */
-public class LanguagesManager {
+public class LanguagesManager extends org.netbeans.api.languages.LanguagesManager {
     
     private static LanguagesManager languagesManager;
     

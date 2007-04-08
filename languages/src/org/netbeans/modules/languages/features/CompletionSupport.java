@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.languages.features;
 
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -39,11 +40,18 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.modules.languages.parser.LanguageDefinitionNotFoundException;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.ErrorManager;
 import org.openide.util.Utilities;
+
+
+/*
+ * CompletionSupport.
+ * 
+ * @author Jan Jancura
+ */
 
 
 /*
