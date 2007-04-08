@@ -27,6 +27,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -241,7 +242,31 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             Doc doc = compilationInfo.getElementUtilities().javaDocFor(element);
             if (doc != null) {
                 StringBuilder stringBuilder = new StringBuilder();
-                setJavaDoc(doc.getRawCommentText());
+                
+                List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
+                if (annotationMirrors != null && annotationMirrors.size() > 0) {
+                    stringBuilder.append("<b>" + // NOI18N
+                            NbBundle.getMessage(JavaHierarchyModel.class, "LBL_Annotations") +  // NOI18N
+                            "</b>"); // NOI18N
+                    stringBuilder.append("<br>"); // NOI18N
+                    for (AnnotationMirror annotationMirror : annotationMirrors) {
+                        stringBuilder.append(annotationMirror.toString());
+                        stringBuilder.append("<br>"); // NOI18N
+                    }
+                    stringBuilder.append("<hr>"); // NOI18N
+                }
+                String javadocText = doc.getRawCommentText();
+                if (javadocText != null && javadocText.length() > 0) {
+                    if (stringBuilder.length() > 0) {
+                        stringBuilder.append("<b>" + // NOI18N
+                                NbBundle.getMessage(JavaHierarchyModel.class, "LBL_Javadoc") +  // NOI18N
+                                "</b>"); // NOI18N
+                        stringBuilder.append("<br>"); // NOI18N
+                    }
+                    stringBuilder.append(Utils.formatJavaDoc(javadocText));
+                }
+                
+                setJavaDoc(stringBuilder.toString());
             }
 
             if (!lazyLoadChildren) {

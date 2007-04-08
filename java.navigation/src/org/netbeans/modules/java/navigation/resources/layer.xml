@@ -29,7 +29,31 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-
+    
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Actions">
+                    <attr name="Separator4.instance/org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow" boolvalue="true"/>
+                    <attr name="RefactoringAll.instance/org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow" boolvalue="true"/>
+                    <attr name="SaveAsTemplateAction.instance/org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow/SeparatorJavaTools.instance" boolvalue="true"/>
+                    <file name="SeparatorJavaTools.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr boolvalue="true" name="SeparatorJavaTools.instance/ToolsAction.instance" />
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">

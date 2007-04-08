@@ -715,8 +715,26 @@ class Utils {
         javaDocPane.setText("");
         String javaDoc = ((JavaElement) node).getJavaDoc();
         if (javaDoc != null) {
-            // TODO Replacements should be (may be) I18Ned.
-            javaDoc = javaDoc
+            javaDocPane.setText(
+                    "<html>" // NOI18N
+                    + "<head>" // NOI18N
+                    + "</head>" // NOI18N
+                    + "<body>" // NOI18N
+                    + javaDoc
+                    + "</body>" // NOI18N
+                    + "</html>" // NOI18N
+                    );
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                javaDocPane.scrollRectToVisible(new Rectangle(0,0,1,1));
+            }});
+    }
+    
+    // Javadoc Pane
+    static String formatJavaDoc(String javaDoc) {
+        if (javaDoc != null) {
+            return javaDoc
                     .replaceAll("@author ",     "<b>Author:</b> ") // NOI18N
                     .replaceAll("@deprecated ", "<b>Deprecated:</b> ")  // NOI18N
                     .replaceAll("@exception ",  "<b>Exception:</b> ") // NOI18N
@@ -726,20 +744,9 @@ class Utils {
                     .replaceAll("@since ",      "<b>Since:</b> ") // NOI18N
                     .replaceAll("@throws ",     "<b>Throws:</b> ") // NOI18N
                     .replaceAll("@version ",    "<b>Version:</b> ") // NOI18N
-                    ;
-            javaDocPane.setText(
-                    "<html>" // NOI18N
-                    + "<head>" // NOI18N
-                    + "</head>" // NOI18N
-                    + "<body>" // NOI18N
-                    + javaDoc.replaceAll("\n", "<br>") // NOI18N
-                    + "</body>" // NOI18N
-                    + "</html>" // NOI18N
-                    );
+                    .replaceAll("\n", "<br>") // NOI18N
+                    ;            
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                javaDocPane.scrollRectToVisible(new Rectangle(0,0,1,1));
-            }});
+        return null;
     }
 }
