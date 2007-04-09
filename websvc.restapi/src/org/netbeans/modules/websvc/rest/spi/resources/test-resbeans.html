@@ -3,7 +3,7 @@
 
 <html>
     <head>
-        <title>Page Title</title>
+        <title>Testing Resource Beans</title>
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
         <link rel="stylesheet" href="test-resbeans.css" type="text/css"/>
         <script type="text/javascript">
@@ -11,34 +11,37 @@
             //whose resource beans needs to be tested For eg:- http://localhost:8080/SimpleServlet/
             var baseURL = "___BASE_URL___restbean";
         </script>
-        <script type="text/javascript" src="test-resbeans.js"></script>      
+        <script type="text/javascript" src="test-resbeans.js"></script>
     </head>
-    <body>       
-        <div class="outerBorder">            
+    <body>
+        <div class="outerBorder">
             <div class="header">
                 <div class="banner">Testing Resource Beans</div>
                 <div id="subheader" class="subheader"></div> <!-- sub-header -->
             </div> <!-- header -->
             <div id="main" class="main" style="visibility: hidden;">
-                        <div id="leftSidebar" class="leftSidebar"></div> <!-- leftSidebar -->
-                        <div id="content" class="content">
-                            <div id="test3" class="details"></div>
-                            <hr>
-                            <div id="details" class="details">
-                                <b>Test Details:</b><br><br>
-                                <b>Request:</b> <div id="request"></div><br>                               
-                                <b>Result:</b> <div id="result"></div><br>
-                                <b>Accept MimeType:</b> <div id="amimetype"></div><br>
-                                <b>Result Headers:</b> <div id="resultheaders"></div>
-                            </div>
-                            <hr>
-                            <b class="details">Debug Log:</b><div id="log" class="details"></div>
-                        </div> <!-- content -->      
+                <table>
+                    <tr>
+                        <td id="leftSidebar" class="leftSidebar" valign="top"></td>
+                        <td id="content" class="content" valign="top">
+                                <div id="testres" class="details"></div>
+                                <table class="details">
+                                    <tr><td><b>Test Details:</b></td></tr><tr><td height="10">&nbsp;</td></tr>
+                                    <tr><td><b>Request:</b> <div id="request"></div></td></tr><tr><td height="10">&nbsp;</td></tr>
+                                    <tr><td><b>MimeType:</b> <div id="amimetype"></div></td></tr><tr><td height="10">&nbsp;</td></tr>
+                                    <tr><td><b>Result:</b> <div id="result" class="details" style="margin-left:20px;"></div></td></tr><tr><td height="10">&nbsp;</td></tr>                                    
+                                    <tr><td><b>Result Headers:</b> <div id="resultheaders"></div></td></tr><tr><td height="10">&nbsp;</td></tr>
+                                    <tr><td><b>Debug Log:</b><div id="log"></div></td></tr>
+                                </table>
+                        </td>
+                    </tr>
+                </table>
             </div> <!-- main -->
         </div> <!-- outerborder -->
         <script language="Javascript">
             init();
-        </script>    
+        </script>
     </body>
 <div id='customer' style="visibility: hidden;"></div>
+<div id='cellnum' style="visibility: hidden;"></div>
 </html>

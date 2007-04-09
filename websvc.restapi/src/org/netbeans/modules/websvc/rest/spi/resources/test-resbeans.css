@@ -9,11 +9,11 @@ body{
 .item{
     display: none;
     margin-left: 16px;
-    color: #FFFFFF;
+    color: #000000;
 }
 a{
     text-decoration: none;
-    color: #FFFFFF;
+    color: #000000;
 }
 a:hover{
     text-decoration: underline;
@@ -35,7 +35,7 @@ a:visited{
 .subheader {
     clear:both;
     height: 50px;
-    background-color: #006699;
+    background-color: #54809D;
     color: #FFFFFF;
     font-size:11px;
 }
@@ -47,14 +47,13 @@ a:visited{
 .main {
     position: relative;
     width: 100%;
-    margin-top: -10px;
 }
 
 .content {
     margin: 0 0 0 0px;
-    height: 700px;
-    background-color: #9999FF;
+    background-color: #D7DEE5;
     color: #000000;
+    width: 700px;
 }
 
 .details {
@@ -63,23 +62,23 @@ a:visited{
 
 .leftSidebar {
     float: left; 
-    height: 700px;
     width: 200px;
+    height: 700px;
     font-size: 10px;
-    background-color: #6699CC;
-    color: #FFFFFF;
+    background-color: #D7DEE5;
+    color: #000000;
 }
 
 .banner {
     vertical-align:middle;
     font-size:25px;
-    background-color: #006699;
+    background-color: #54809D;
     color: #FFFFFF;  
     width: 100%;
 }        
 
 .tableheader {
-    background-color: #006699;
+    background-color: #54809D;
     color: #FFFFFF;
 }
 .results
@@ -103,5 +102,5 @@ a:visited{
 {
     margin-left: 0%;
     border: 1px solid #e0e7ec;
-    font: bold 90% verdana, arial;
+    font: verdana, arial;
 }

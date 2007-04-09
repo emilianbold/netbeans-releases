@@ -4,21 +4,23 @@
 var doc;            
 var app;
 var wadlURL = baseURL+"/application.wadl";  
-var wadlErr = 'Cannot access WADL: Please restart your REST application or specify correct base URL, and refresh this page.';
+var wadlErr = 'Cannot access WADL: Please restart your REST application, and refresh this page.';
+var currentUrl;
+var currentValidUrl;
 
-function xmlhttpGet(strURL, mimeType, type) {
-    var xmlHttpReq;// = getXmlHttpRequest();
+function getHttpRequest() {
+    var xmlHttpReq;
     try
-    {    // Firefox, Opera 8.0+, Safari
+    {    // Firefox, Opera 8.0+, Safari, IE7.0+
         xmlHttpReq=new XMLHttpRequest();
         try {
-            netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+            netscape.security.PrivilegeManager.enablePrivilege ("UniversalBrowserRead");
         } catch (e) {
             //alert("Permission UniversalBrowserRead denied.");
         }
     }
     catch (e)
-    {    // Internet Explorer
+    {    // Internet Explorer 6.0+, 5.0+
         try
         {
             xmlHttpReq=new ActiveXObject("Msxml2.XMLHTTP");
@@ -32,25 +34,44 @@ function xmlhttpGet(strURL, mimeType, type) {
             catch (e)
             {
                 alert("Your browser does not support AJAX!");
-                return false;
             }
         }
     }
+    return xmlHttpReq;
+ } 
+ function open(method, url, mimeType, paramLen) {
+    currentUrl = url;
+    var xmlHttpReq = getHttpRequest();
+    if(xmlHttpReq == null) {
+    	alert('Error: Cannot create XMLHttpRequest');
+        return null;
+    }
     try {
-        xmlHttpReq.open('GET', strURL, true);
+        netscape.security.PrivilegeManager.enablePrivilege ("UniversalBrowserRead");
+    } catch (e) {
+        //alert("Permission UniversalBrowserRead denied.");
+    }
+    try {
+        xmlHttpReq.open(method, url, true);
     } catch( e ) {
-        alert('Error: Permission denied to call method XMLHttpRequest.open: ' + strURL+'. Click OK and see instructions on this page.');
-        return false;
+        //alert('Error: XMLHttpRequest.open failed for: '+strURL+' Error name: '+e.name+' Error message: '+e.message);
+        return null;
     }
     log("mimeType: "+mimeType);
-    if (mimeType != null)
-        xmlHttpReq.setRequestHeader('Accept', mimeType);
-    if(type == 'menu')
-        xmlHttpReq.onreadystatechange = function() { updateMenu(xmlHttpReq); };
-    else
-        xmlHttpReq.onreadystatechange = function() { updateContent(xmlHttpReq); };
-    xmlHttpReq.send(null);
-    return true;
+    if (mimeType != null) {
+        if(method == 'GET') {
+            //alert("setting accept: "+mimeType);
+            xmlHttpReq.setRequestHeader('Accept', mimeType);
+        } else if(method == 'POST' || method == 'PUT'){
+            //alert("setting content-type: "+mimeType);
+            //Send the proper header information along with the request
+            xmlHttpReq.setRequestHeader("Content-Type", mimeType);
+            xmlHttpReq.setRequestHeader("Content-Length", paramLen);
+            xmlHttpReq.setRequestHeader("Connection", "close");
+        }
+    }
+    currentValidUrl = url;
+    return xmlHttpReq;
 }
 function updateMenu(xmlHttpReq) {                
     try {
@@ -86,10 +107,14 @@ function updateMenu(xmlHttpReq) {
                         var r = rarr[i];   
                         var path = r.attributes.getNamedItem('path');
                         var start = new category(path.nodeValue,path.nodeValue);                                        
-                        var methods = r.getElementsByTagName('method');                                        
+                        var methods = r.getElementsByTagName('method');
                         for(j=0;j<methods.length;j++) {
-                            var m = methods[j];
+                            var m = methods[j];                            
                             var mName = m.attributes.getNamedItem("name").nodeValue;
+                            var response = m.getElementsByTagName('response');
+                            var mediaType = getMediaType(response);
+                            if(mediaType != null)
+                                mName = mName + '(' + mediaType + ')';
                             var methodst = new item(mName,'showRightSideBar(\''+app.nodeName+'/'+rs.nodeName+'/'+r.nodeName+'\', '+i+', '+j+')');
                             start.add(methodst);
                         }
@@ -103,43 +128,11 @@ function updateMenu(xmlHttpReq) {
             log("state: "+xmlHttpReq.readyState);
         }
     } catch( e ) {
-        alert('Caught Exception1: ' + e.description);
+        alert('Caught Exception; name: ' + e.name + ' message: ' + e.message);
     }
 }
-function setvisibility(id, state) {
-    try {
-        document.getElementById(id).style.visibility = state;
-    } catch(e) {}
-}
-function showRightSideBar(path, ri, mi) {
-    updatepage('result', '');
-    var app1 = doc.documentElement;
-    var rs = app1.getElementsByTagName('resources')[0];
-    var r = rs.getElementsByTagName('resource')[ri];
-    var m = r.getElementsByTagName('method')[mi];
-    var req = m.getElementsByTagName('request');
-    var response = m.getElementsByTagName('response');
-    var str = "Resource: "+r.attributes.getNamedItem('path').nodeValue+"&nbsp;&nbsp;&nbsp;Method: "+
-        m.attributes.getNamedItem("name").nodeValue;
-    str += "<br/><br/>";
-    if(req != null && req.length > 0) 
-        str += "<b>Resource Inputs:</b><br><br>";
-    str += "<form action='' method=GET name='form1'>";              
-    if(req != null) {                    
-        for(i=0;i<req.length;i++) {
-            var params = req[i].getElementsByTagName('param');
-            if(params != null) {
-                for(j=0;j<params.length;j++) {
-                    var pname = params[j].attributes.getNamedItem('name').nodeValue;
-                    var num = j+1;
-                    str += "<b>Param"+num+":</b><input id='params' name='"+pname+"' type='text' value='"+pname+"'><br><br>";
-                }
-            }
-        }
-    }
-    var path = r.attributes.getNamedItem('path').nodeValue;
-    str += "<input name='path' value='"+path+"' type='hidden'>";
-    var mediaType = 'text/html';                
+function getMediaType(response) {
+    var mediaType = null;                
     if(response != null && response.length > 0) {
         var rep = response[0].getElementsByTagName('representation');
         if(rep != null && rep.length > 0) {                        
@@ -149,16 +142,121 @@ function showRightSideBar(path, ri, mi) {
                     mediaType = att.nodeValue
             }
         }
-        str += "<b>MimeType(readonly):</b><input id='mimeType' name='mimeType' value='"+mediaType+"' type='text' readonly><br/>";
+    }
+    return mediaType;
+}
+function setvisibility(id, state) {
+    try {
+        document.getElementById(id).style.visibility = state;
+    } catch(e) {}
+}
+function changeMethod()
+{
+   var methodNode = document.getElementById("methodSel");
+   var method = methodNode.options[carrierTypeNode.selectedIndex].value;
+   document.form1.method = method;
+   document.getElementById("method").value = method;
+};
+function showRightSideBar2(uri) {
+    updatepage('result', 'Loading...');
+    var mName = 'POST';
+    var qmName = '';
+    var mediaType = null;
+    if(mediaType != null)
+        qmName = qmName + "("+mediaType+")";
+    else
+        mediaType = "text/xml";
+    var str = "<b>Resource:</b> "+uri+"&nbsp;&nbsp;&nbsp;<b>Method: </b>";
+    str += "<select id='methodSel' name='methodSel' onchange='javascript:changeMethod();'>";
+    str += "  <option value='GET'>GET</option>";
+    str += "  <option selected value='POST'>POST</option>";
+    str += "  <option value='PUT'>PUT</option>";
+    str += "  <option value='DELETE'>DELETE</option>";
+    str += "</select>";
+    str += "<br/><br/>";
+    str += "<form action='' method="+mName+" name='form1'>";
+    str += getParamRep(null, mName, mediaType);
+    str += "<input name='path' value='"+uri+"' type='hidden'>";
+    if(mName != null) {
+        str += "<input id='method' name='method' value='"+mName+"' type='hidden'>";
+    }
+    if(mediaType != null) {
+        str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
+        str += "<b>MimeType(readonly):</b> "+mediaType+"<br/>";
     }
     str += "<br/><input value='Test Resource' type='button' onclick='testResource()'>";
     str += "</form>";
-    document.getElementById('test3').innerHTML = str;
+    str += "<hr>";
+    document.getElementById('testres').innerHTML = str;
+    //alert(str);
     try {
         testResource();
-    } catch(e) {}                
+    } catch(e) { alert(e.name+e.message);}       
+}
+function showRightSideBar(path, ri, mi) {
+    updatepage('result', 'Loading...');
+    var app1 = doc.documentElement;
+    var rs = app1.getElementsByTagName('resources')[0];
+    var r = rs.getElementsByTagName('resource')[ri];
+    var m = r.getElementsByTagName('method')[mi];
+    var mName = m.attributes.getNamedItem("name").nodeValue;
+    var qmName = mName;
+    var req = m.getElementsByTagName('request');
+    var response = m.getElementsByTagName('response');
+    var mediaType = getMediaType(response);
+    if(mediaType != null)
+        qmName = qmName + "("+mediaType+")";
+    else
+        mediaType = "text/xml";
+    var str = "<b>Resource:</b> "+r.attributes.getNamedItem('path').nodeValue+"&nbsp;&nbsp;<b>Method: </b>"+qmName;
+    str += "<br/><br/>";
+    str += "<form action='' method="+mName+" name='form1'>";
+    str += getParamRep(req, mName, mediaType);
+    var path = r.attributes.getNamedItem('path').nodeValue;
+    str += "<input name='path' value='"+path+"' type='hidden'>";
+    if(mName != null) {
+        str += "<input id='method' name='method' value='"+mName+"' type='hidden'>";
+    }
+    if(mediaType != null) {
+        str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
+        str += "<b>MimeType(readonly):</b> "+mediaType+"<br/>";
+    }
+    str += "<br/><input value='Test Resource' type='button' onclick='testResource()'>";
+    str += "</form>";
+    str += "<hr>";
+    document.getElementById('testres').innerHTML = str;
+    try {
+        testResource();
+    } catch(e) { alert(e.name+e.message);}       
+}
+function getParamRep(req, mName, mediaType) {
+    //alert(mName+", "+mediaType+", "+pname);
+    var str = "";
+    if(req == null || mName == 'PUT' || mName == 'POST')
+        str = "<textarea id='params' name='params' rows='8' cols='70'></textarea><br/>";
+    else if(mName == 'GET') {
+        if(req != null) {                    
+            for(i=0;i<req.length;i++) {
+                var params = req[i].getElementsByTagName('param');
+                if(params != null) {
+                    for(j=0;j<params.length;j++) {
+                        var pname = params[j].attributes.getNamedItem('name').nodeValue;
+                        var num = j+1;
+                        str += "<b>Param"+num+":</b>"+"<input id='params' name='"+pname+"' type='text' value='"+pname+"'>"+"<br><br>";
+                    }
+                }
+            }
+        }
+    }
+    else if(mName == 'DELETE')
+        str = "";
+    if(str != "")
+        str = "<b>Resource Inputs:</b><br><br><div style='margin-left:20px'>"+str+"</div><br/>";
+    return str;
 }
 function testResource() {
+    updatepage('result', '');
+    var params = '';
     var path = document.forms[0].path.value;
     var found = path.indexOf( "{" );
     if (found != -1){
@@ -166,54 +264,84 @@ function testResource() {
             var len = document.forms[0].params.length;
             for(j=0;j<len;j++) {
                 var param = document.forms[0].params[j]
-                var pname = param.value;
-                path = path.replace("{"+param.name+"}", pname);
+                path = path.replace("{"+param.name+"}", param.value);
+            }
+        }
+    } else {
+        if(document.forms[0].params != null) {
+            var len = document.forms[0].params.length;
+            for(j=0;j<len;j++) {
+                var param = document.forms[0].params[j]
+                if(len == 1 || len-j>1)
+                    params += param.name+"="+param.value;
+                else
+                    params += param.name+"="+param.value+"&";
             }
         }
     }
-    var req = baseURL+path;
+    var req;
+    if(path.indexOf('http:') != -1)
+        req = path;
+    else
+        req = baseURL+path
+    if(method == 'GET' && params.length > 0)
+        req+= "?"+params;
     var mimetype = getRep();
-    updatepage('request', req);
-    updatepage('amimetype', mimetype);
+    var method = getMethod();   
+    updatepage('request', '<a href="'+req+'" target="_blank">'+req+'</a');    
     //alert("mimetype "+mimetype);
     if (mimetype == 'image/jpg') {//image
         alert('The image/jpg MimeType currently does not work with the MimeType selection method.\nInstead of seeing the image, you will see the image data');
-        //xmlhttpGet(req, mimetype);
-    } else 
-        xmlhttpGet(req, mimetype, '');                
-}
-function testResource2(i) {
-    var path2 = document.getElementById('path2_'+i);
-    document.getElementById('customer').innerHTML = i;
-    xmlhttpGet(baseURL+path2.value, 'application/xml', '');
+    } else {
+        var xmlHttpReq = open(method, req, mimetype, params.length);
+        var p = null;
+        if(method == 'POST' || method == 'PUT' ) {
+            p = params;
+            updatepage('amimetype', 'Content-Type: '+mimetype);
+        } else if(method == 'GET') {
+            updatepage('amimetype', 'Accept: '+mimetype);
+        } else if(method == 'DELETE') {
+            updatepage('amimetype', 'N/A');
+        }
+        xmlHttpReq.onreadystatechange = function() { updateContent(xmlHttpReq); };
+        //alert('req: '+req+" method: "+method+" mimetype: "+mimetype+" params: "+p);
+        xmlHttpReq.send(p);
+    }
 }
 function updateContent(xmlHttpReq) {
     try {
         if (xmlHttpReq.readyState == 4) {
             var content = xmlHttpReq.responseText;
-            if(content.indexOf("customer-ref") != -1) {
-                content = getCustomersTable(content);
-                updatepage('result', content);
-            } else if(content.indexOf("address-ref") != -1) {
-                var custSel = document.getElementById('customer');
-                if(custSel != null) {
-                    var i = custSel.innerHTML;                                
-                    content = content.replace(/~lt~/g, "<");
-                    var cell = document.getElementById('cell'+i);
-                    if(cell != null)
-                        cell.innerHTML = content;
-                    else
-                        updatepage('result', content);
-                }
-            } else {
-                updatepage('result', content);
-            }                        
+            if(content != null && content != undefined) {
+                try {
+                    content = getContainerTable(content);
+                    updatepage('result', content);
+                    var containerTable = document.getElementById('containerTable');
+                    //alert(containerTable.innerHTML);
+                    var cellnum = document.getElementById('cellnum');
+                    var rows = containerTable.childNodes;
+                    for(i=0;i<rows.length;i++) {
+                        var row = rows[i];
+                        var tds = row.childNodes;
+                        var id = tds[0].innerHTML;
+                        var tdChilds = tds[1].childNodes;
+                        var link = tdChilds[0];
+                        var uri = link.id;
+                        link.onclick = function() {showRightSideBar2(uri)}
+                    }
+                } catch( e ) {
+                    var c = '<iframe  class="details" src="'+currentValidUrl+'" width="600" height="300" align="left">'+
+                                '<p>See <a href="'+currentValidUrl+'">"'+currentValidUrl+'"</a>.</p>'+
+                            '</iframe>';
+                    updatepage('result', c);
+                }  
+            }                 
             updatepage('resultheaders', xmlHttpReq.getAllResponseHeaders());
         } else {
             log("state: "+xmlHttpReq.readyState);
         }
     } catch( e ) {
-        alert('Caught Exception1: ' + e.description);
+        alert('Caught Exception; name: ' + e.name + ' message: ' + e.message);
     }
 } 
 function loadXml(xmlStr) {
@@ -233,42 +361,54 @@ function loadXml(xmlStr) {
     }
     return doc2;
 }
-function getCustomersTable(xmlStr) {
+function getContainerTable(xmlStr) {
     var ret = xmlStr.replace(/~lt~/g, "<");
-    var doc2 = loadXml(ret);
-    if(doc2 != null) {
-        var customers=doc2.documentElement;
-        var str = "<h4>"+customers.nodeName+"</h4>";
+    var doc2 = null;
+    try {
+        doc2 = loadXml(ret);
+    } catch(e) {}
+    if(doc2 != null && doc2.documentElement.nodeName != 'parsererror') {
+        var container=doc2.documentElement;
+        var str = "<h4>"+container.nodeName+"</h4>";
         str += "<form action='' method=GET name='form2'>";
         str += "<table class='results' border='1'>";
         str += "<thead class='resultHeader'>";
         var colNames = new Array()
-        colNames[0] = "Customer ID"
-        colNames[1] = "Customer URI"
-        colNames[2] = "Description"
+        colNames[0] = "ID"
+        colNames[1] = "URI"
         var colSizes = new Array()
         colSizes[0] = "80"
-        colSizes[1] = "250"
-        colSizes[2] = "350"
+        colSizes[1] = "350"
         for (i=0;i<colNames.length;i++) {
             str += "<th width='"+colSizes[i]+"' align='left'><font color='#FFFFFF'><b>"+colNames[i]+"</b></font></th>";
         }
         str += "</thead>";
-        str += "<tbody>";
-        var custrefs = customers.getElementsByTagName('customer-ref');
-        for(i=0;i<custrefs.length;i++) {
-            str += "<tr style='font-size: 9px;'>";
-            var custref = custrefs[i];                       
-            var custid = custref.getElementsByTagName('customer_id')[0];
-            var uri = custref.attributes.getNamedItem('uri').nodeValue;
-            str += "<td>"+custid.childNodes[0].nodeValue+"</td>";
-            str += "<td>";                        
-            str += "<input id='path2_"+i+"' name='path' value='"+uri+"' type='hidden'>";
-            str += uri+"<input value=Go type=button onclick='testResource2("+i+")'>";
-            str += "</td>";
-            str += "<td id='cell"+i+"'>&nbsp;</td>";
-            str += "</tr>";
+        str += "<tbody id='containerTable'>";
+        var refs = container.childNodes;
+        var count = 0;
+        for(i=0;i<refs.length;i++) {
+            var refsChild = refs[i];
+            if(refsChild.nodeValue == null) {//DOM Elements only
+                var ref = refsChild;
+                str += "<tr style='font-size: 9px;'>";                
+                var refChilds = ref.childNodes;                
+                for(j=0;j<refChilds.length;j++) {
+                    var refChild = refChilds[j];
+                    if(refChild.nodeValue == null) {//DOM Elements only
+                        var id = refChild;
+                        var uri = ref.attributes.getNamedItem('uri').nodeValue;
+                        str += "<td>"+id.childNodes[0].nodeValue+"</td>";
+                        str += "<td>";
+                        str += "<a id='"+uri+"' href='#' onClick='showRightSideBar2()'>"+uri+"</a>";
+                        str += "</td>";
+                        str += "</tr>";
+                    }
+                }
+                count++;
+            }
         }
+        var cellnum = document.getElementById('cellnum');
+        cellnum.innerHTML = count;
         str += "</tbody></table></form>";
         ret = str;
     }
@@ -284,31 +424,25 @@ function getRep() {
     var resource = document.getElementById('mimeType');
     return resource.value;
 }
-function getSelMethod() {
-    for (counter = 0; counter < form1.selMethod.length; counter++) {
-        // If a radio button has been selected it will return true
-        // (If not it will return false)
-        if (form1.selMethod[counter].checked)
-            return form1.selMethod[counter].value;
-    }
-    return null;
-}
-function getSelectorValue(selectorId) {
-    var resource = document.getElementById(selectorId);
-    log("selector "+resource.name);
-    var myIndex = resource.selectedIndex;
-    log("index: " +myIndex);
-    log(resource.options);
-    log(resource.options[myIndex].value);
-    return resource.options[myIndex].value 
+function getMethod() {
+    var resource = document.getElementById('method');
+    return resource.value;
 }
 function init() {
-    var status = xmlhttpGet(wadlURL, null, 'menu');
-    if(status) {
+    var params = new Array();
+    var method = 'GET';
+    var xmlHttpReq = open(method, wadlURL, null, 0);
+    if(xmlHttpReq != null) {
+        xmlHttpReq.onreadystatechange = function() { updateMenu(xmlHttpReq); };
+        xmlHttpReq.send(null);
         showCategory('resources');
     } else {
         setvisibility('main', 'inherit');
-        var str = '<b>Help Page</b><br/><br/>'+wadlErr;
+        var str = '<b>Help Page</b><br/><br/>'+
+            '<p>Cannot access WADL: Please restart your REST application, and refresh this page.</p>' +
+            '<p>If you still see this error and if you are accessing this page using Firefox with Firebug plugin, then'+
+            '<br/>you need to disable firebug for local files. That is from Firefox menubar, check '+
+            '<br/>Tools > Firebug > Disable Firebug for Local Files</p>';
         document.getElementById('content').innerHTML = str;
     }            
 }
