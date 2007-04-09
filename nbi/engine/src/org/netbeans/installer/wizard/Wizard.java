@@ -1,22 +1,21 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
- * $Id$
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance
+ * with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+ * http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file and
+ * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+ * the following below the CDDL Header, with the fields enclosed by brackets []
+ * replaced by your own identifying information:
+ * 
+ *     "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original Software
+ * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+ * Rights Reserved.
  */
 package org.netbeans.installer.wizard;
 
@@ -27,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
@@ -37,6 +35,7 @@ import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
@@ -56,49 +55,38 @@ import org.xml.sax.SAXException;
  */
 public class Wizard {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String COMPONENTS_INSTANCE_URI_PROPERTY =
-            "nbi.wizard.components.instance.uri";
-    
-    public static final String DEFAULT_COMPONENTS_INSTANCE_URI =
-            FileProxy.RESOURCE_SCHEME_PREFIX +
-            "org/netbeans/installer/wizard/wizard-components.xml";
-    
-    public static final String COMPONENTS_SCHEMA_URI_PROPERTY =
-            "nbi.wizard.components.schema.uri";
-    
-    public static final String DEFAULT_COMPONENTS_SCHEMA_URI =
-            FileProxy.RESOURCE_SCHEME_PREFIX +
-            "org/netbeans/installer/wizard/wizard-components.xsd";
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static Wizard instance;
     
-    private static String componentsInstanceURI = DEFAULT_COMPONENTS_INSTANCE_URI;
-    private static String componentsSchemaURI = DEFAULT_COMPONENTS_SCHEMA_URI;
+    private static String componentsInstanceUri;
+    private static String componentsSchemaUri;
     
     public static synchronized Wizard getInstance() {
         if (instance == null) {
             // initialize uri for root wizard's components list
             if (System.getProperty(COMPONENTS_INSTANCE_URI_PROPERTY) != null) {
-                componentsInstanceURI =
+                componentsInstanceUri =
                         System.getProperty(COMPONENTS_INSTANCE_URI_PROPERTY);
+            } else {
+                componentsInstanceUri = DEFAULT_COMPONENTS_INSTANCE_URI;
             }
             
             // initialize uri for components list xml schema
             if (System.getProperty(COMPONENTS_SCHEMA_URI_PROPERTY) != null) {
-                componentsInstanceURI =
+                componentsInstanceUri =
                         System.getProperty(COMPONENTS_SCHEMA_URI_PROPERTY);
+            } else {
+                componentsSchemaUri = DEFAULT_COMPONENTS_SCHEMA_URI;
             }
             
             // create the root wizard and load its components
             instance = new Wizard();
             try {
-                instance.components = loadWizardComponents(componentsInstanceURI);
+                instance.components = loadWizardComponents(componentsInstanceUri);
             } catch (InitializationException e) {
-                ErrorManager.notifyCritical(
-                        "Failed to load wizard components", e);
+                ErrorManager.notifyCritical(ResourceUtils.getString(
+                        Wizard.class,
+                        FAILED_TO_CREATE_INSTANCE_PROPERTY), e);
             }
         }
         
@@ -106,58 +94,69 @@ public class Wizard {
     }
     
     public static List<WizardComponent> loadWizardComponents(
-            final String componentsURI) throws InitializationException {
-        return loadWizardComponents(componentsURI, Wizard.class.getClassLoader());
+            final String componentsUri) throws InitializationException {
+        return loadWizardComponents(componentsUri, Wizard.class.getClassLoader());
     }
     
     public static List<WizardComponent> loadWizardComponents(
-            final String componentsURI,
-            final ClassLoader loader) throws InitializationException {
+            final String componentsUri,
+            final ClassLoader classLoader) throws InitializationException {
         try {
-            File schemaFile =
-                    FileProxy.getInstance().getFile(componentsSchemaURI, loader);
-            File componentsFile =
-                    FileProxy.getInstance().getFile(componentsURI, loader);
+            final File schemaFile = FileProxy.getInstance().getFile(
+                    componentsSchemaUri, 
+                    classLoader);
+            final File componentsFile = FileProxy.getInstance().getFile(
+                    componentsUri, 
+                    classLoader);
             
-            SchemaFactory schemaFactory =
-                    SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            final Schema schema = SchemaFactory.
+                    newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).
+                    newSchema(schemaFile);
             
-            Schema schema = schemaFactory.newSchema(schemaFile);
-            
-            DocumentBuilderFactory documentBuilderFactory =
+            final DocumentBuilderFactory documentBuilderFactory =
                     DocumentBuilderFactory.newInstance();
             documentBuilderFactory.setSchema(schema);
             documentBuilderFactory.setNamespaceAware(true);
             
-            DocumentBuilder documentBuilder =
-                    documentBuilderFactory.newDocumentBuilder();
+            final Document document = documentBuilderFactory.newDocumentBuilder().
+                    parse(componentsFile);
             
-            Document document = documentBuilder.parse(componentsFile);
-            
-            return loadWizardComponents(document.getDocumentElement(), loader);
+            return loadWizardComponents(document.getDocumentElement(), classLoader);
         } catch (DownloadException e) {
-            throw new InitializationException(
-                    "Could not load components", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Wizard.class,
+                    FAILED_TO_LOAD_COMPONENTS_PROPERTY, 
+                    componentsUri, 
+                    classLoader), e);
         } catch (ParserConfigurationException e) {
-            throw new InitializationException(
-                    "Could not load components", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Wizard.class,
+                    FAILED_TO_LOAD_COMPONENTS_PROPERTY, 
+                    componentsUri, 
+                    classLoader), e);
         } catch (SAXException e) {
-            throw new InitializationException(
-                    "Could not load components", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Wizard.class,
+                    FAILED_TO_LOAD_COMPONENTS_PROPERTY, 
+                    componentsUri, 
+                    classLoader), e);
         } catch (IOException e) {
-            throw new InitializationException(
-                    "Could not load components", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Wizard.class,
+                    FAILED_TO_LOAD_COMPONENTS_PROPERTY, 
+                    componentsUri, 
+                    classLoader), e);
         }
     }
     
     // private //////////////////////////////////////////////////////////////////////
     private static List<WizardComponent> loadWizardComponents(
             final Element element,
-            final ClassLoader loader) throws InitializationException {
-        List<WizardComponent> components = new ArrayList<WizardComponent>();
+            final ClassLoader classLoader) throws InitializationException {
+        final List<WizardComponent> components = new ArrayList<WizardComponent>();
         
-        for (Element child: XMLUtils.getChildren(element, "component")) {
-            components.add(loadWizardComponent(child, loader));
+        for (Element child: XMLUtils.getChildren(element, COMPONENT_TAG_NAME)) {
+            components.add(loadWizardComponent(child, classLoader));
         }
         
         return components;
@@ -165,32 +164,46 @@ public class Wizard {
     
     private static WizardComponent loadWizardComponent(
             final Element element,
-            final ClassLoader loader) throws InitializationException {
-        WizardComponent component = null;
-        Element child = null;
+            final ClassLoader classLoader) throws InitializationException {
+        final WizardComponent component;
         
         try {
-            String classname = element.getAttribute("class");
+            component = (WizardComponent) classLoader.loadClass(
+                    element.getAttribute(CLASS_ATRIBUTE_NAME)).newInstance();
             
-            component = (WizardComponent) loader.loadClass(classname).newInstance();
-            
-            child = XMLUtils.getChild(element, "components");
+            Element child = XMLUtils.getChild(element, COMPONENTS_TAG_NAME);
             if (child != null) {
-                component.addChildren(loadWizardComponents(child, loader));
+                component.addChildren(loadWizardComponents(child, classLoader));
             }
             
-            child = XMLUtils.getChild(element, "properties");
+            child = XMLUtils.getChild(element, PROPERTIES_TAG_NAME);
             if (child != null) {
                 component.getProperties().putAll(XMLUtils.parseProperties(child));
             }
         } catch (ParseException e) {
-            throw new InitializationException("Could not load component", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Wizard.class,
+                    FAILED_TO_LOAD_COMPONENT_PROPERTY,
+                    element,
+                    classLoader), e);
         } catch (ClassNotFoundException e) {
-            throw new InitializationException("Could not load component", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Wizard.class,
+                    FAILED_TO_LOAD_COMPONENT_PROPERTY,
+                    element,
+                    classLoader), e);
         } catch (IllegalAccessException e) {
-            throw new InitializationException("Could not load component", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Wizard.class,
+                    FAILED_TO_LOAD_COMPONENT_PROPERTY,
+                    element,
+                    classLoader), e);
         } catch (InstantiationException e) {
-            throw new InitializationException("Could not load component", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Wizard.class,
+                    FAILED_TO_LOAD_COMPONENT_PROPERTY,
+                    element,
+                    classLoader), e);
         }
         
         return component;
@@ -198,50 +211,59 @@ public class Wizard {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    protected List<WizardComponent> components;
-    protected WizardContainer       container;
+    private List<WizardComponent> components;
+    private WizardContainer container;
     
-    private   PropertyContainer     product;
-    private   Context               context;
-    private   ClassLoader           loader;
+    private PropertyContainer propertyContainer;
+    private Context context;
+    private ClassLoader classLoader;
     
-    private   int                   index;
-    private   Wizard                parent;
+    private int index;
+    private Wizard parent;
     
-    private   FinishHandler         finishHandler;
+    private FinishHandler finishHandler;
     
     // constructors /////////////////////////////////////////////////////////////////
     private Wizard() {
-        this.index   = -1;
+        this.index = -1;
         this.context = new Context();
-        this.loader  = getClass().getClassLoader();
+        this.classLoader = getClass().getClassLoader();
     }
     
-    private Wizard(final Wizard parent) {
+    private Wizard(
+            final Wizard parent) {
         this();
         
-        this.parent        = parent;
-        this.container     = parent.container;
+        this.parent = parent;
+        this.container = parent.container;
         
-        this.product       = parent.product;
-        this.context       = new Context(parent.context);
-        this.loader        = parent.loader;
+        this.propertyContainer = parent.propertyContainer;
+        this.context = new Context(parent.context);
+        this.classLoader = parent.classLoader;
         
         this.finishHandler = parent.finishHandler;
     }
     
-    private Wizard(final List<WizardComponent> components, final Wizard parent, int index) {
+    private Wizard(
+            final List<WizardComponent> components,
+            final Wizard parent,
+            int index) {
         this(parent);
         
         this.components = components;
-        this.index      = index;
+        this.index = index;
     }
     
-    private Wizard(final PropertyContainer product, final ClassLoader loader, final List<WizardComponent> components, final Wizard parent, int index) {
+    private Wizard(
+            final PropertyContainer product,
+            final ClassLoader loader,
+            final List<WizardComponent> components,
+            final Wizard parent,
+            final int index) {
         this(components, parent, index);
         
-        this.product = product;
-        this.loader  = loader;
+        this.propertyContainer = product;
+        this.classLoader = loader;
     }
     
     // wizard lifecycle control methods /////////////////////////////////////////////
@@ -264,13 +286,13 @@ public class Wizard {
                     }
                 });
             } catch (InvocationTargetException e) {
-                ErrorManager.notifyDebug(
-                        "Could not attach error handler to the EDT.",
-                        e);
+                ErrorManager.notifyDebug(ResourceUtils.getString(
+                        Wizard.class,
+                        FAILED_TO_ATTACH_ERROR_HANDLER_PROPERTY), e);
             } catch (InterruptedException e) {
-                ErrorManager.notifyDebug(
-                        "Could not attach error handler to the EDT.",
-                        e);
+                ErrorManager.notifyDebug(ResourceUtils.getString(
+                        Wizard.class,
+                        FAILED_TO_ATTACH_ERROR_HANDLER_PROPERTY), e);
             }
             
             SwingUtilities.invokeLater(new Runnable(){
@@ -283,9 +305,10 @@ public class Wizard {
             // we don't have to initialize anything for silent mode
             break;
         default:
-            ErrorManager.notifyCritical("Something terrible has " +
-                    "happened - we have an execution mode which is not " +
-                    "in its enum");
+            ErrorManager.notifyCritical(ResourceUtils.getString(
+                    Wizard.class,
+                    UNKNOWN_UI_MODE_PROPERTY,
+                    UiMode.getCurrentUiMode()));
         }
         
         next();
@@ -306,19 +329,20 @@ public class Wizard {
             // we don't have to initialize anything for silent mode
             break;
         default:
-            ErrorManager.notifyCritical("Something terrible has " +
-                    "happened - we have an execution mode which is not " +
-                    "in its enum");
+            ErrorManager.notifyCritical(ResourceUtils.getString(
+                    Wizard.class,
+                    UNKNOWN_UI_MODE_PROPERTY,
+                    UiMode.getCurrentUiMode()));
         }
     }
     
     // component flow control methods ///////////////////////////////////////////////
     public void next() {
-        WizardComponent component = getNext();
+        final WizardComponent component = getNext();
         
         // if there is no next component in the current wizard, try to delegate
-        // the call to the parent wizard, and if there is no parent wizard... we
-        // should be here in the first place
+        // the call to the parent wizard, and if there is no parent wizard... finish
+        // the sequence, and call the finish handler
         if (component != null) {
             index = components.indexOf(component);
             
@@ -335,9 +359,10 @@ public class Wizard {
                 // nothing special should be done for silent mode
                 break;
             default:
-                ErrorManager.notifyCritical("Something terrible has " +
-                        "happened - we have an execution mode which is not " +
-                        "in its enum");
+                ErrorManager.notifyCritical(ResourceUtils.getString(
+                        Wizard.class,
+                        UNKNOWN_UI_MODE_PROPERTY,
+                        UiMode.getCurrentUiMode()));
             }
             
             component.executeForward();
@@ -349,7 +374,7 @@ public class Wizard {
     }
     
     public void previous() {
-        WizardComponent component = getPrevious();
+        final WizardComponent component = getPrevious();
         
         // if there is no previous component in the current wizard, try to delegate
         // the call to the parent wizard, and if there is no parent wizard... we
@@ -367,21 +392,24 @@ public class Wizard {
                 }
                 break;
             case SILENT:
-                ErrorManager.notifyCritical("Moving backward is " +
-                        "not possible in silent mode");
+                ErrorManager.notifyCritical(ResourceUtils.getString(
+                        Wizard.class,
+                        CANNOT_MOVE_BACKWARD_SILENT_PROPERTY));
                 break;
             default:
-                ErrorManager.notifyCritical("Something terrible has " +
-                        "happened - we have an execution mode which is not " +
-                        "in its enum");
+                ErrorManager.notifyCritical(ResourceUtils.getString(
+                        Wizard.class,
+                        UNKNOWN_UI_MODE_PROPERTY,
+                        UiMode.getCurrentUiMode()));
             }
             
             component.executeBackward();
         } else if (parent != null) {
             parent.previous();
         } else {
-            ErrorManager.notifyError("Cannot move to the previous " +
-                    "component - the wizard is at the first component");
+            ErrorManager.notifyCritical(ResourceUtils.getString(
+                    Wizard.class,
+                    CANNOT_MOVE_BACKWARD_AT_FIRST_PROPERTY));
         }
     }
     
@@ -394,7 +422,7 @@ public class Wizard {
         }
         
         for (int i = index - 1; i > -1; i--) {
-            WizardComponent component = components.get(i);
+            final WizardComponent component = components.get(i);
             
             // if the component can be executed backward it is the previous one
             if (component.canExecuteBackward()) {
@@ -430,12 +458,12 @@ public class Wizard {
         return container;
     }
     
-    public String getProperty(String name) {
-        return product.getProperty(name);
+    public String getProperty(final String name) {
+        return propertyContainer.getProperty(name);
     }
     
-    public void setProperty(String name, String value) {
-        product.setProperty(name, value);
+    public void setProperty(final String name, final String value) {
+        propertyContainer.setProperty(name, value);
     }
     
     public Context getContext() {
@@ -443,7 +471,7 @@ public class Wizard {
     }
     
     public ClassLoader getClassLoader() {
-        return loader;
+        return classLoader;
     }
     
     public FinishHandler getFinishHandler() {
@@ -455,11 +483,17 @@ public class Wizard {
     }
     
     // factory methods for children /////////////////////////////////////////////////
-    public Wizard createSubWizard(PropertyContainer product, ClassLoader loader, List<WizardComponent> components, int index) {
-        return new Wizard(product, loader, components, this, index);
+    public Wizard createSubWizard(
+            final PropertyContainer propertyContainer,
+            final ClassLoader classLoader,
+            final List<WizardComponent> components,
+            final int index) {
+        return new Wizard(propertyContainer, classLoader, components, this, index);
     }
     
-    public Wizard createSubWizard(List<WizardComponent> components, int index) {
+    public Wizard createSubWizard(
+            final List<WizardComponent> components,
+            final int index) {
         return new Wizard(components, this, index);
     }
     
@@ -480,7 +514,7 @@ public class Wizard {
         }
         
         for (int i = index - 1; i > -1; i--) {
-            WizardComponent component = components.get(i);
+            final WizardComponent component = components.get(i);
             
             // if the component can be executed backward it is the previous one
             if (component.canExecuteBackward()) {
@@ -502,7 +536,7 @@ public class Wizard {
     
     private WizardComponent getNext() {
         for (int i = index + 1; i < components.size(); i++) {
-            WizardComponent component = components.get(i);
+            final WizardComponent component = components.get(i);
             
             // if the component can be executed forward it is the next one
             if (component.canExecuteForward()) {
@@ -514,4 +548,53 @@ public class Wizard {
         // component, then there is no next component
         return null;
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String COMPONENTS_INSTANCE_URI_PROPERTY =
+            "nbi.wizard.components.instance.uri"; // NOI18N
+    
+    public static final String DEFAULT_COMPONENTS_INSTANCE_URI =
+            FileProxy.RESOURCE_SCHEME_PREFIX +
+            "org/netbeans/installer/wizard/wizard-components.xml"; // NOI18N
+    
+    public static final String COMPONENTS_SCHEMA_URI_PROPERTY =
+            "nbi.wizard.components.schema.uri"; // NOI18N
+    
+    public static final String DEFAULT_COMPONENTS_SCHEMA_URI =
+            FileProxy.RESOURCE_SCHEME_PREFIX +
+            "org/netbeans/installer/wizard/wizard-components.xsd"; // NOI18N
+    
+    public static final String COMPONENT_TAG_NAME =
+            "component";
+    
+    public static final String CLASS_ATRIBUTE_NAME =
+            "class";
+    
+    public static final String COMPONENTS_TAG_NAME =
+            "components";
+    
+    public static final String PROPERTIES_TAG_NAME =
+            "properties";
+    
+    public static final String FAILED_TO_CREATE_INSTANCE_PROPERTY = 
+            "W.error.failed.to.create.instance";
+    
+    public static final String FAILED_TO_LOAD_COMPONENTS_PROPERTY = 
+            "W.error.failed.to.load.components";
+    
+    public static final String FAILED_TO_LOAD_COMPONENT_PROPERTY = 
+            "W.error.failed.to.load.component";
+    
+    public static final String FAILED_TO_ATTACH_ERROR_HANDLER_PROPERTY = 
+            "W.error.failed.to.attach.error.handler";
+    
+    public static final String UNKNOWN_UI_MODE_PROPERTY = 
+            "W.error.unknown.ui.mode";
+    
+    public static final String CANNOT_MOVE_BACKWARD_SILENT_PROPERTY = 
+            "W.error.cannot.move.backward.silent";
+    
+    public static final String CANNOT_MOVE_BACKWARD_AT_FIRST_PROPERTY = 
+            "W.error.cannot.move.backward.at.first";
 }

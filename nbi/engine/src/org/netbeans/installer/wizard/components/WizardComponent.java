@@ -1,22 +1,21 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
- * $Id$
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance
+ * with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+ * http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file and
+ * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+ * the following below the CDDL Header, with the fields enclosed by brackets []
+ * replaced by your own identifying information:
+ * 
+ *     "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original Software
+ * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+ * Rights Reserved.
  */
 package org.netbeans.installer.wizard.components;
 
@@ -41,31 +40,6 @@ import org.netbeans.installer.wizard.ui.WizardUi;
  * @author Kirill Sorokin
  */
 public abstract class WizardComponent {
-    /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String TITLE_PROPERTY              = "title";
-    public static final String DESCRIPTION_PROPERTY        = "description";
-    public static final String HELP_BUTTON_TEXT_PROPERTY   = "help.button.text";
-    public static final String BACK_BUTTON_TEXT_PROPERTY   = "back.button.text";
-    public static final String NEXT_BUTTON_TEXT_PROPERTY   = "next.button.text";
-    public static final String CANCEL_BUTTON_TEXT_PROPERTY = "cancel.button.text";
-    public static final String FINISH_BUTTON_TEXT_PROPERTY = "finish.button.text";
-    
-    public static final String DEFAULT_TITLE =
-            ResourceUtils.getString(WizardComponent.class, "WC.title");
-    public static final String DEFAULT_DESCRIPTION =
-            ResourceUtils.getString(WizardComponent.class, "WC.description");
-    public static final String DEFAULT_HELP_BUTTON_TEXT =
-            ResourceUtils.getString(WizardComponent.class, "WC.help.button.text");
-    public static final String DEFAULT_BACK_BUTTON_TEXT =
-            ResourceUtils.getString(WizardComponent.class, "WC.back.button.text");
-    public static final String DEFAULT_NEXT_BUTTON_TEXT =
-            ResourceUtils.getString(WizardComponent.class, "WC.next.button.text");
-    public static final String DEFAULT_CANCEL_BUTTON_TEXT =
-            ResourceUtils.getString(WizardComponent.class, "WC.cancel.button.text");
-    public static final String DEFAULT_FINISH_BUTTON_TEXT =
-            ResourceUtils.getString(WizardComponent.class, "WC.finish.button.text");
-    
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private Wizard wizard;
@@ -335,4 +309,36 @@ public abstract class WizardComponent {
             return null; // null means that everything is OK
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String TITLE_PROPERTY = 
+            "title"; // NOI18N
+    public static final String DESCRIPTION_PROPERTY = 
+            "description"; // NOI18N
+    public static final String HELP_BUTTON_TEXT_PROPERTY = 
+            "help.button.text"; // NOI18N
+    public static final String BACK_BUTTON_TEXT_PROPERTY = 
+            "back.button.text"; // NOI18N
+    public static final String NEXT_BUTTON_TEXT_PROPERTY = 
+            "next.button.text"; // NOI18N
+    public static final String CANCEL_BUTTON_TEXT_PROPERTY = 
+            "cancel.button.text"; // NOI18N
+    public static final String FINISH_BUTTON_TEXT_PROPERTY = 
+            "finish.button.text"; // NOI18N
+    
+    public static final String DEFAULT_TITLE =
+            ResourceUtils.getString(WizardComponent.class, "WC.title");
+    public static final String DEFAULT_DESCRIPTION =
+            ResourceUtils.getString(WizardComponent.class, "WC.description");
+    public static final String DEFAULT_HELP_BUTTON_TEXT =
+            ResourceUtils.getString(WizardComponent.class, "WC.help.button.text");
+    public static final String DEFAULT_BACK_BUTTON_TEXT =
+            ResourceUtils.getString(WizardComponent.class, "WC.back.button.text");
+    public static final String DEFAULT_NEXT_BUTTON_TEXT =
+            ResourceUtils.getString(WizardComponent.class, "WC.next.button.text");
+    public static final String DEFAULT_CANCEL_BUTTON_TEXT =
+            ResourceUtils.getString(WizardComponent.class, "WC.cancel.button.text");
+    public static final String DEFAULT_FINISH_BUTTON_TEXT =
+            ResourceUtils.getString(WizardComponent.class, "WC.finish.button.text");
 }
