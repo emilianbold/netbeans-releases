@@ -603,7 +603,8 @@ public class PageFlowController {
             String newDisplayName = fileObj.getNameExt();
             String oldDisplayName = fe.getName() + "." + fe.getExt(); // Original Name;
             
-            PageFlowNode oldNode = pageName2Node.get(oldDisplayName);
+            PageFlowNode oldNode = pageName2Node.get(oldDisplayName);            
+            PageFlowNode abstractNode = pageName2Node.get(newDisplayName);
             
             Node newNodeDelegate = null;
             try {
@@ -624,7 +625,6 @@ public class PageFlowController {
                 // False:
                 //             * if( oldNode in facesConfig ) -> make abstract node and create new datanode
                 //             * else -> reset node.
-                PageFlowNode abstractNode = pageName2Node.get(newDisplayName);
                 if( abstractNode != null ){
                     assert !abstractNode.isDataNode();  //Never should this have already been a file node.
                     //Figure out what to do with old node.
@@ -644,97 +644,61 @@ public class PageFlowController {
                         view.resetNodeWidget(oldNode);
                     }
                 }
-                //                if ( isPageInFacesConfig( oldDisplayName )){
-                //
-                //                    //1. Make old node an abstract node
-                //                    Node tmpNode = new AbstractNode(Children.LEAF);
-                //                    tmpNode.setName(oldDisplayName);
-                //                    oldNode.replaceWrappedNode(tmpNode);  //Does this take care of pageName2Node?
-                //                    view.resetNodeWidget(oldNode);
-                //
-                //                    //2. Add a New Node
-                //                    PageFlowNode abstractNode = pageName2Node.get(newDisplayName);
-                //                    Node nodeDelegate = null;
-                //                    try {
-                //                        nodeDelegate= (DataObject.find(fileObj)).getNodeDelegate();
-                //                    } catch ( DataObjectNotFoundException donfe ){
-                //                        Exceptions.printStackTrace(donfe);
-                //                    }
-                //
-                //                    if( abstractNode != null ){
-                //                        assert !abstractNode.isDataNode();
-                //                        abstractNode.replaceWrappedNode(nodeDelegate);
-                //                        view.resetNodeWidget(abstractNode);
-                //
-                //                    } else {
-                //                        PageFlowNode node = createPageFlowNode(nodeDelegate); //What do I do?  the node delegate caries the old name.
-                //                        view.createNode(node, null, null);
-                //                    }
-                //
-                //                } else {
-                //                    //Replace Node with new file.  I could just rename, but this takes care of the hash table and update the view.
-                //                    //                    try {
-                //                    //                        oldNode.replaceWrappedNode((DataObject.find(fileObj)).getNodeDelegate());;
-                //                    if( !oldNode.isDataNode() ) {
-                //                        view.removeNodeWithEdges(oldNode);
-                //                    } else {
-                //                        view.resetNodeWidget(oldNode);
-                //                    }
-                //                    //                    } catch ( DataObjectNotFoundException donfe ){
-                //                    //                        Exceptions.printStackTrace(donfe);
-                //                    //                    }
-                //                }
-                
-                
-                
                 
                 view.validateGraph();
                 
             } else {
-                //Check if there is already a node by this name.
-                PageFlowNode abstractNode = pageName2Node.get(newDisplayName);
                 if( abstractNode != null ){
-                    Node nodeDelegate = null;
-                    try {
-                        nodeDelegate= (DataObject.find(fileObj)).getNodeDelegate();
-                    } catch ( DataObjectNotFoundException donfe ){
-                        Exceptions.printStackTrace(donfe);
+                    assert !abstractNode.isDataNode();  //Never should this have already been a file node.
+                    //Figure out what to do with old node.
+                    if (isPageInFacesConfig(oldDisplayName)){   //Technically in faces config mode this is the same as asking if oldnode == null
+                        changeToAbstractNode(oldNode, oldDisplayName);
+                    } else {
+                        if( oldNode != null ) {
+                            view.removeNodeWithEdges(oldNode);
+                        }
                     }
-                    assert !abstractNode.isDataNode();
-                    abstractNode.replaceWrappedNode(nodeDelegate);
+                    abstractNode.replaceWrappedNode(newNodeDelegate);
                     view.resetNodeWidget(abstractNode);
-                }
-                if( oldNode == null ){
-                    // Do nothing to the old node since it is not in view.
                 } else {
-                    //1. Make Old Node an abstract node
-                    changeToAbstractNode(oldNode, oldDisplayName);
-                    //                    Node tmpNode = new AbstractNode(Children.LEAF);
-                    //                    tmpNode.setName(oldDisplayName);
-                    //                    oldNode.replaceWrappedNode(tmpNode);  //Does this take care of pageName2Node?
-                    //                    view.resetNodeWidget(oldNode);
-                    
-                    // Do not add the node because you are in FacesConfigModel.
-                    view.validateGraph();
+                    if( isPageInFacesConfig(oldDisplayName) ){  //Same as asking if old node is null
+                        changeToAbstractNode(oldNode, oldDisplayName);
+                        /* You don't do this in FacesConfig Mode */
+//                        PageFlowNode newNode = createPageFlowNode(newNodeDelegate);
+//                        view.createNode(newNode, null, null);
+                    } else {
+                        if( oldNode != null ) {
+                            view.resetNodeWidget(oldNode);
+                        }
+                    }
                 }
+                
+                view.validateGraph();
+//                //Check if there is already a node by this name.
+//                PageFlowNode abstractNode = pageName2Node.get(newDisplayName);
+//                if( abstractNode != null ){
+//                    Node nodeDelegate = null;
+//                    try {
+//                        nodeDelegate= (DataObject.find(fileObj)).getNodeDelegate();
+//                    } catch ( DataObjectNotFoundException donfe ){
+//                        Exceptions.printStackTrace(donfe);
+//                    }
+//                    assert !abstractNode.isDataNode();
+//                    abstractNode.replaceWrappedNode(nodeDelegate);
+//                    view.resetNodeWidget(abstractNode);
+//                }
+//                if( oldNode == null ){
+//                    // Do nothing to the old node since it is not in view.
+//                } else {
+//                    //1. Make Old Node an abstract node
+//                    changeToAbstractNode(oldNode, oldDisplayName);
+//                    
+//                    // Do not add the node because you are in FacesConfigModel.
+//                    view.validateGraph();
+//                }
             }
             
-            
-            
-            //            //In this case we don't need to update webfiles since no files is being added or removed.
-            //            PageFlowNode node = pageName2Node.get(newDisplayName);
-            //
-            //            if ( node != null ){
-            //                if( node.isDataNode()){
-            //                    //If the node is already a file I should do nothing because that means the file was renamed by us.
-            //                    return;
-            //                }
-            //            }
-            
-            //            if( node != null ) {
-            //                setupGraph();
-            //                view.layoutSceneImmediately();
-            //            }
+     
             
         }
         
