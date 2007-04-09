@@ -28,7 +28,6 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.ResourceData;
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
-import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.spi.designer.cssengine.CssUserAgentInfo;
 import java.io.StringReader;
 import java.net.MalformedURLException;
@@ -39,7 +38,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import org.apache.batik.css.engine.CSSEngine;
 import org.apache.batik.css.engine.CSSStylableElement;
 import org.apache.batik.css.engine.CSSStyleSheetNode;
@@ -69,6 +67,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.UserDataHandler;
 
 
 /**
@@ -83,8 +82,9 @@ public final class CssEngineServiceImpl implements CssEngineService {
 
     private static final CssEngineServiceImpl instance = new CssEngineServiceImpl();
 
-    /** Maps <code>Document</code> to XHTML CSS engine. */
-    private final Map<Document, XhtmlCssEngine> document2engine = new WeakHashMap<Document, XhtmlCssEngine>();
+//    /** Maps <code>Document</code> to XHTML CSS engine. */
+//    private final Map<Document, XhtmlCssEngine> document2engine = new WeakHashMap<Document, XhtmlCssEngine>();
+    private static final String KEY_CSS_ENGINE = "xhtmlCssEngine"; // NOI18N
 
 
     /** Creates a new instance of CssServiceImpl */
@@ -101,9 +101,11 @@ public final class CssEngineServiceImpl implements CssEngineService {
 
 
     private XhtmlCssEngine getCssEngine(Document document) {
-        synchronized (document2engine) {
-            return document2engine.get(document);
-        }
+//        XhtmlCssEngine ret;
+//        synchronized (document2engine) {
+//            ret = document2engine.get(document);
+//        }
+        return (XhtmlCssEngine)document.getUserData(KEY_CSS_ENGINE);
     }
 
 //    public void setCssEngine(Document document, XhtmlCssEngine engine) {
@@ -115,10 +117,22 @@ public final class CssEngineServiceImpl implements CssEngineService {
     public void createCssEngineForDocument(Document document, URL url) {
         CssUserAgentInfo userAgentInfo = getUserAgentInfo();
         XhtmlCssEngine engine = XhtmlCssEngine.create(document, url, userAgentInfo);
-        synchronized (document2engine) {
-            document2engine.put(document, engine);
-        }
+//        synchronized (document2engine) {
+//            document2engine.put(document, engine);
+//        }
+        document.setUserData(KEY_CSS_ENGINE, engine, new EngineDataHandler());
     }
+    
+    // TEMP>>
+    private static class EngineDataHandler implements UserDataHandler {
+
+        public void handle(short operation, String key, Object data, Node src,
+                           Node dst) {
+            System.err.println("\nEndineDataHandler: operation=" + operation); // TEMP
+        }
+        
+    }
+    // TEMP<<
 
     /*private*/ static CssUserAgentInfo getUserAgentInfo() {
         // XXX FIXME The userAgentInfo might not be correct as singleton, but it should be
@@ -173,9 +187,10 @@ public final class CssEngineServiceImpl implements CssEngineService {
     
     public void removeCssEngineForDocument(Document document) {
         XhtmlCssEngine engine;
-        synchronized (document2engine) {
-            engine = document2engine.remove(document);
-        }
+//        synchronized (document2engine) {
+//            engine = document2engine.remove(document);
+//        }
+        engine = (XhtmlCssEngine) document.getUserData(KEY_CSS_ENGINE);
         
         if (engine != null) {
             engine.dispose();
@@ -183,10 +198,12 @@ public final class CssEngineServiceImpl implements CssEngineService {
     }
     
     public void reuseCssEngineForDocument(Document document, Document originalDocument) {
-        synchronized (document2engine) {
-            XhtmlCssEngine engine = document2engine.get(originalDocument);
-            document2engine.put(document, engine);
-        }
+//        synchronized (document2engine) {
+//            XhtmlCssEngine engine = document2engine.get(originalDocument);
+//            document2engine.put(document, engine);
+//        }
+        XhtmlCssEngine engine = (XhtmlCssEngine)originalDocument.getUserData(KEY_CSS_ENGINE);
+        document.setUserData(KEY_CSS_ENGINE, engine, new EngineDataHandler());
     }
 
     public Collection<String> getCssStyleClassesForDocument(Document document) {
