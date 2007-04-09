@@ -195,6 +195,7 @@
     <target name=".build-native" if="do.build.native">
         <antcall target=".build-jni"/>
         <antcall target=".build-launcher"/>
+	<antcall target=".build-cleaner"/>
     </target>
     
     <!--
@@ -216,6 +217,27 @@
     <target name=".build-launcher" if="do.build.native">
         <!-- does nothing at the moment -->
     </target>
+
+    <!--
+      Builds the native cleaner for locked files for the given platform.
+      
+      This target is antcall'ed as part of the call to the '.build-native' 
+      target, and expects the ${platform} property to contain the code name of
+      the platform for which the launcher should be built.
+      
+      It connects to the registered satellite machine for the current platform
+      using the 'ssh' utility, checks out the launcher's sources and builds it.
+      The built binary is then copied back to the host machine using 'scp'.
+      
+      This target is only executed if the the ${build.native} property was set 
+      to 'true'.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name=".build-cleaner" if="do.build.native">
+        <!-- does nothing at the moment -->
+    </target>
+
     
     <!-- ============================================================================
       Release

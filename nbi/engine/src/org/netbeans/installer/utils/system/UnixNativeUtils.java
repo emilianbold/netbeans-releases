@@ -38,7 +38,7 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 import org.netbeans.installer.utils.helper.Platform;
-import org.netbeans.installer.utils.helper.launchers.Launcher;
+import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.unix.shell.BourneShell;
 import org.netbeans.installer.utils.system.unix.shell.CShell;
@@ -51,6 +51,7 @@ import org.netbeans.installer.utils.system.unix.shell.TCShell;
  * @author Dmitry Lipin
  */
 public abstract class UnixNativeUtils extends NativeUtils {
+    
     private boolean isUserAdminSet;
     private boolean isUserAdmin;
     private static final String [] FORBIDDEN_DELETING_FILES_UNIX = {
@@ -76,7 +77,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
         "/var" };
     
     protected void scheduleCleanup(String libraryPath) {
-        FileUtils.deleteOnExit(new File(libraryPath));
+        addDeleteOnExitFile(new File(libraryPath));
     }
     
     public boolean isCurrentUserAdmin() {

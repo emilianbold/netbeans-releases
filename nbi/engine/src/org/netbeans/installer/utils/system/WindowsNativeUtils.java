@@ -42,7 +42,7 @@ import org.netbeans.installer.utils.system.windows.WindowsRegistry;
 import static org.netbeans.installer.utils.StringUtils.*;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.FilesList;
-import org.netbeans.installer.utils.helper.launchers.Launcher;
+import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.progress.Progress;
 import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 
@@ -54,7 +54,10 @@ import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 public class WindowsNativeUtils extends NativeUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String LIBRARY_PATH = "native/windows.dll";
+    public static final String LIBRARY_PATH = 
+            NATIVE_JNILIB_RESOURCE_SUFFIX +
+            "windows/" + //NOI18N
+            "windows.dll"; //NOI18N
     
     public static final String UNINSTALL_KEY = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
     
@@ -71,13 +74,18 @@ public class WindowsNativeUtils extends NativeUtils {
     private static final int MIN_UID_INDEX = 1;
     private static final int MAX_UID_INDEX = 100;
     
-    private static final String SHELL_FOLDERS_KEY = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders";
+    private static final String SHELL_FOLDERS_KEY = 
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders";
     
-    public static final String CURRENT_USER_ENVIRONMENT_KEY = "Environment";
-    public static final String ALL_USERS_ENVIRONMENT_KEY    = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
+    public static final String CURRENT_USER_ENVIRONMENT_KEY =
+            "Environment";
+    public static final String ALL_USERS_ENVIRONMENT_KEY    = 
+            "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
     
-    private static final String RUNONCE_KEY = "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce";
-    private static final String RUNONCE_DELETE_VALUE_NAME = "NBI Temporary Files Delete";
+    private static final String RUNONCE_KEY = 
+            "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce";
+    private static final String RUNONCE_DELETE_VALUE_NAME = 
+            "NBI Temporary Files Delete";
     
     private static final String EXT_PREFIX = "NBI.";
     private static final String EXT_SUFFIX = "";

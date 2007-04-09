@@ -39,10 +39,10 @@ import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.FilesList;
-import org.netbeans.installer.utils.helper.NativeLauncher;
-import org.netbeans.installer.utils.helper.launchers.Launcher;
-import org.netbeans.installer.utils.helper.launchers.LauncherResource;
+import org.netbeans.installer.utils.system.launchers.Launcher;
+import org.netbeans.installer.utils.system.launchers.LauncherResource;
 import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.utils.system.launchers.LauncherProperties;
 
 /**
  *
@@ -54,6 +54,16 @@ public abstract class NativeUtils {
     private static NativeUtils instance;
     private static HashSet<File> forbiddenDeletingFiles = new HashSet<File>();
     private static List <File> deleteOnExitFiles = new ArrayList <File> ();
+    public final static String NATIVE_RESOURCE_SUFFIX = "native/"; // NOI18N
+    public final static String NATIVE_JNILIB_RESOURCE_SUFFIX = 
+            NATIVE_RESOURCE_SUFFIX + 
+            "jnilib/"; // NOI18N
+    public final static String NATIVE_LAUNCHER_RESOURCE_SUFFIX = 
+            NATIVE_RESOURCE_SUFFIX + 
+            "launcher/"; // NOI18N
+    public final static String NATIVE_CLEANER_RESOURCE_SUFFIX = 
+            NATIVE_RESOURCE_SUFFIX + 
+            "cleaner/"; // NOI18N
     
     public static synchronized NativeUtils getInstance() {
         switch (SystemUtils.getCurrentPlatform()) {
@@ -103,22 +113,22 @@ public abstract class NativeUtils {
     
     protected Launcher createUninstaller(ApplicationDescriptor descriptor, boolean useUninstallCommand, Progress progress) throws IOException {
         LogManager.log(ErrorLevel.DEBUG, "Creating uninstaller...");
-        NativeLauncher nl = new NativeLauncher();
-        nl.addJVM(new LauncherResource(false, SystemUtils.getCurrentJavaHome()));
+        LauncherProperties props = new LauncherProperties();
+        props.addJVM(new LauncherResource(false, SystemUtils.getCurrentJavaHome()));
         File engine = new File(System.getProperty(EngineResources.LOCAL_ENGINE_PATH_PROPERTY));
-        nl.addJar(new LauncherResource(false, engine));
-        nl.setJvmArguments(new String [] { "-Xmx256m", "-Xms64m" });
-        nl.setAppArguments(
+        props.addJar(new LauncherResource(false, engine));
+        props.setJvmArguments(new String [] { "-Xmx256m", "-Xms64m" });
+        props.setAppArguments(
                 (useUninstallCommand) ?
                     descriptor.getUninstallCommand() :
                     descriptor.getModifyCommand());
         
-        nl.setOutput(
+        props.setOutput(
                 new File(descriptor.getInstallPath(),
                 "uninstall"),
                 true);
-        nl.setMainClass(Installer.class.getName());
-        return nl.create(SystemUtils.getCurrentPlatform(), progress);
+        props.setMainClass(Installer.class.getName());
+        return SystemUtils.createLauncher(props, progress);
     }
     
     public abstract FilesList addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException;

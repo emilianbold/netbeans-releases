@@ -27,11 +27,11 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.helper.NativeLauncher;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.Platform;
-import org.netbeans.installer.utils.helper.launchers.LauncherResource;
-import org.netbeans.installer.utils.helper.launchers.JavaCompatibleProperties;
+import org.netbeans.installer.utils.system.launchers.LauncherResource;
 import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.utils.system.launchers.LauncherProperties;
 import org.netbeans.installer.wizard.components.WizardAction;
 
 /**
@@ -48,7 +48,7 @@ public class CreateNativeLauncherAction extends WizardAction {
     public static final String DEFAULT_DESCRIPTION = ResourceUtils.getString(
             CreateNativeLauncherAction.class,
             "CNLA.description"); // NOI18N
-     
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public CreateNativeLauncherAction() {
@@ -66,12 +66,12 @@ public class CreateNativeLauncherAction extends WizardAction {
         getWizardUi().setProgress(progress);
         try {
             
-            Platform platform = Registry.getInstance().getTargetPlatform();            
-            NativeLauncher nl = new NativeLauncher();           
-            nl.addJar(new LauncherResource(new File(targetPath)));
-            nl.setJvmArguments(new String [] {"-Xmx256m", "-Xms64m"});
+            Platform platform = Registry.getInstance().getTargetPlatform();
+            LauncherProperties props = new LauncherProperties();
+            props.addJar(new LauncherResource(new File(targetPath)));
+            props.setJvmArguments(new String [] {"-Xmx256m", "-Xms64m"});
             
-            File f = nl.create(platform, progress).getOutputFile();
+            File f = SystemUtils.createLauncher(props, platform, progress).getOutputFile();
             
             if ( !targetFile.equals(f)) {
                 FileUtils.deleteFile(targetFile);

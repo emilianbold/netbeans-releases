@@ -54,9 +54,6 @@ import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.FileEntry;
-import org.netbeans.installer.utils.helper.NativeLauncher;
-import org.netbeans.installer.utils.helper.Platform;
-import org.netbeans.installer.utils.helper.launchers.Launcher;
 import org.netbeans.installer.utils.progress.Progress;
 
 /**
@@ -352,7 +349,7 @@ public final class FileUtils {
                 SystemUtils.getNativeUtils().removeDeleteOnExitFile(file);
             } else {
                 if (!file.delete()) {
-                    deleteOnExit(file);                    
+                    deleteOnExit(file);
                 }
             }
         }
@@ -828,12 +825,6 @@ public final class FileUtils {
         }
         
         return parent;
-    }
-    
-    public static Launcher createLauncher(NativeLauncher nl, Platform platform, Progress progress) throws IOException {
-        Progress prg = (progress==null) ? new Progress() : progress;
-        return nl.create(platform, progress);
-        
     }
     
     public static boolean exists(File file) {

@@ -44,7 +44,11 @@ import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
+import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.NativeUtils;
+import org.netbeans.installer.utils.system.launchers.Launcher;
+import org.netbeans.installer.utils.system.launchers.LauncherFactory;
+import org.netbeans.installer.utils.system.launchers.LauncherProperties;
 
 /**
  *
@@ -515,6 +519,31 @@ public final class SystemUtils {
         for (File file: parents) {
             correctFilesPermissions(file);
         }
+    }
+    
+    public static Launcher createLauncher(LauncherProperties props, Progress progress) throws IOException {
+        return createLauncher(props, getCurrentPlatform(), progress);    
+    }
+    public static Launcher createLauncher(LauncherProperties props, Platform platform, Progress progress) throws IOException {
+        Progress prg = (progress==null) ? new Progress() : progress;
+        LogManager.log("Create native launcher for " + platform.toString());
+        Launcher launcher  =null;
+        try {
+            LogManager.indent();
+            launcher = LauncherFactory.newLauncher(props, platform);
+            long start = System.currentTimeMillis();
+            launcher.initialize();
+            launcher.create(progress);
+            long seconds = System.currentTimeMillis() - start ;
+            LogManager.unindent();
+            LogManager.log("[launcher] Time : " + (seconds/1000) + "."+ (seconds%1000)+ " seconds");                        
+        } catch (IOException ex) {
+            LogManager.unindent();
+            LogManager.log("[launcher] Build failed with the following exception :");
+            LogManager.log(ex);
+            throw ex;
+        }         
+        return launcher;
     }
     
     public static void sleep(long millis) {

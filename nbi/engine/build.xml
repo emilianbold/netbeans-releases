@@ -20,90 +20,20 @@
 -->
 <project name="NetBeans_Installer_Engine" default="default" basedir=".">
     <property file="build.properties"/>
-    
+    <property file="${native.dirname}/build.properties"/>
+
     <import file="nbproject/build-impl.xml"/>
+    <import file="${native.dirname}/build.xml"/>
     
     <!-- =======================================================================
         Target overrides
     ======================================================================== -->
     <target name="-post-clean" depends="native-clean"/>
-    <target name="-post-compile" depends="native-build,copy-launchers,create-jar-contents-list"/>
+    <target name="-post-compile" depends="native-build,copy-native,create-jar-contents-list"/>
     
     <!-- =======================================================================
         NetBeans Installer engine specific targets
     ======================================================================== -->
-    <target name="native-init" depends="define-platform,init-platform">
-        <property file="nbproject/project.properties"/>
-    </target>
-    
-    <target name="native-clean" depends="native-init" unless="ignore.native">
-        <exec executable="make" dir="${native.dir}">
-            <arg value="clean"/>
-        </exec>    
-    </target>    
-    
-    <target name="native-compile" depends="native-init,native-clean" unless="ignore.native">
-        <exec executable="make" dir="${native.dir}">
-            <arg value="build"/>
-        </exec>
-    </target>
-    
-    <target name="native-build" depends="native-init,native-compile">
-        <copy file="${native.dir.windows}/${native.dist.dir}/${native.file.windows}" 
-              todir="${build.classes.dir}/${native.dirname}"/>
-        <copy file="${native.dir.linux}/${native.dist.dir}/${native.file.linux}" 
-              todir="${build.classes.dir}/${native.dirname}"/>
-        <copy file="${native.dir.solaris-x86}/${native.dist.dir}/${native.file.solaris-x86}" 
-              todir="${build.classes.dir}/${native.dirname}"/>
-        <copy file="${native.dir.solaris-sparc}/${native.dist.dir}/${native.file.solaris-sparc}" 
-              todir="${build.classes.dir}/${native.dirname}"/>
-        <copy file="${native.dir.macosx}/${native.dist.dir}/${native.file.macosx}" 
-              todir="${build.classes.dir}/${native.dirname}"/>
-    </target>
-    
-    <target name="define-platform">
-        <condition property="is.windows">
-            <os family="windows"/>
-        </condition>
-        <condition property="is.linux">
-            <os name="Linux"/>
-        </condition>
-        <condition property="is.solaris-x86">
-            <os name="SunOS" arch="x86"/>
-        </condition>
-        <condition property="is.solaris-sparc">
-            <os name="SunOS" arch="sparc"/>
-        </condition>
-        <condition property="is.macosx">
-            <and>
-                <os family="mac"/>
-                <os family="unix"/>
-            </and>
-        </condition>
-    </target>
-    
-    <target name="init-platform" depends="init-windows,init-linux,init-solaris-x86,init-solaris-sparc,init-macosx"/>
-    
-    <target name="init-windows" if="is.windows">
-        <property name="native.dir" value="${native.dir.windows}"/>
-        <property name="native.file" value="${native.file.windows}"/>
-    </target>
-    <target name="init-linux" if="is.linux">
-        <property name="native.dir" value="${native.dir.linux}"/>
-        <property name="native.file" value="${native.file.linux}"/>
-    </target>
-    <target name="init-solaris-x86" if="is.solaris-x86">
-        <property name="native.dir" value="${native.dir.solaris-x86}"/>
-        <property name="native.file" value="${native.file.solaris-x86}"/>
-    </target>
-    <target name="init-solaris-sparc" if="is.solaris-sparc">
-        <property name="native.dir" value="${native.dir.solaris-sparc}"/>
-        <property name="native.file" value="${native.file.solaris-sparc}"/>
-    </target>
-    <target name="init-macosx" if="is.macosx">
-        <property name="native.dir" value="${native.dir.macosx}"/>
-        <property name="native.file" value="${native.file.macosx}"/>
-    </target>
     
     <target name="init-custom-tasks" depends="build-custom-tasks">
         <taskdef 
@@ -128,42 +58,79 @@
         <write-jar-content-list 
             dir="${basedir}/${build.classes.dir}" 
             output="${basedir}/${build.classes.dir}/${jar.contents.list}"
-            mask="(^launcher/.*|^native/.*|^org/.*|^data/|^data/engine\.properties)"/>
+            mask="(^native/.*|^org/.*|^data/|^data/engine\.properties)"/>
     </target>
     
     <target name="copy-unix-launcher">
-        <mkdir dir="${build.classes.dir}/${native.launcher.unix.stub.dst.dir}"/>
+        <mkdir dir="${build.classes.dir}/${native.dirname}/${native.launcher.unix.stub.dst.dir}"/>
         
         <!-- copy windows launcher stub -->
-        <copy file="${native.launcher.unix.stub.src}" 
-              todir="${build.classes.dir}/${native.launcher.unix.stub.dst.dir}"/>
+        <copy file="${native.dirname}/${native.launcher.unix.stub.src}" 
+              todir="${build.classes.dir}/${native.dirname}/${native.launcher.unix.stub.dst.dir}"/>
         
         <!-- copy windows launcher i18n messages -->
-        <copy todir="${build.classes.dir}/${native.launcher.unix.i18n.dir}">
-            <fileset dir="${native.launcher.unix.i18n.dir}">
+        <copy todir="${build.classes.dir}/${native.dirname}/${native.launcher.unix.i18n.dir}">
+            <fileset dir="${native.dirname}/${native.launcher.unix.i18n.dir}">
                 <include name="*"/>
             </fileset>
         </copy>
     </target>
 
-   <target name="copy-windows-launcher">
-        <mkdir dir="${build.classes.dir}/${native.launcher.windows.stub.dst.dir}"/>
+   <target name="copy-windows-launcher">	
+        <mkdir dir="${build.classes.dir}/${native.dirname}/${native.launcher.windows.stub.dst.dir}"/>
         
         <!-- copy windows launcher stub -->
-        <copy file="${native.launcher.windows.stub.src}" 
-              todir="${build.classes.dir}/${native.launcher.windows.stub.dst.dir}"/>
+        <copy file="${native.dirname}/${native.launcher.windows.stub.src}" 
+              todir="${build.classes.dir}/${native.dirname}/${native.launcher.windows.stub.dst.dir}"/>
         
         <!-- copy windows launcher i18n messages -->
-        <copy todir="${build.classes.dir}/${native.launcher.windows.i18n.dir}">
-            <fileset dir="${native.launcher.windows.i18n.dir}">
+        <copy todir="${build.classes.dir}/${native.dirname}/${native.launcher.windows.i18n.dir}">
+            <fileset dir="${native.dirname}/${native.launcher.windows.i18n.dir}">
                 <include name="*"/>
             </fileset>
         </copy>
     </target>
 
-    <target name="copy-launchers" >
-	<antcall target="copy-windows-launcher"/>
+    <target name="copy-native">
+	
+	<antcall target="copy-jnilibs"/>
+	
+	<antcall target="copy-launchers"/>
+        <antcall target="copy-cleaners"/>
+	
+    </target>
+
+    <target name="copy-jnilibs">
+	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir}"/>
+	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.windows}"/>
+	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.linux}"/>
+	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.solaris-sparc}"/>
+	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.solaris-x86}"/>
+	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.macosx}"/>
+
+        <copy file="${native.dirname}/${native.jnilib.dir.windows}/${native.dist.dir}/${native.jnilib.file.windows}" 
+              todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.windows}"/>
+        <copy file="${native.dirname}/${native.jnilib.dir.linux}/${native.dist.dir}/${native.jnilib.file.linux}" 
+              todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.linux}"/>
+        <copy file="${native.dirname}/${native.jnilib.dir.solaris-x86}/${native.dist.dir}/${native.jnilib.file.solaris-x86}" 
+              todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.solaris-x86}"/>
+        <copy file="${native.dirname}/${native.jnilib.dir.solaris-sparc}/${native.dist.dir}/${native.jnilib.file.solaris-sparc}" 
+              todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.solaris-sparc}"/>
+        <copy file="${native.dirname}/${native.jnilib.dir.macosx}/${native.dist.dir}/${native.jnilib.file.macosx}" 
+              todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.macosx}"/>
+    </target>
+
+    <target name="copy-launchers">
+	
+	<antcall target="copy-windows-launcher"/>	
         <antcall target="copy-unix-launcher"/>
+	
     </target>
-    
+
+    <target name="copy-cleaners">
+	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.cleaner.dir}"/>
+	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.cleaner.dir.windows}"/>
+	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.cleaner.dir.unix}"/>
+    </target>
+
 </project>

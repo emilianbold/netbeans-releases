@@ -54,7 +54,10 @@ import org.xml.sax.SAXException;
 public class MacOsNativeUtils extends UnixNativeUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String    LIBRARY_PATH_MACOSX     = "native/macosx.dylib";
+    public static final String    LIBRARY_PATH_MACOSX     = 
+            NATIVE_JNILIB_RESOURCE_SUFFIX + 
+            "macosx/" + //NOI18N
+            "macosx.dylib"; // NO18N
     
     public static final String    APP_SUFFIX              = ".app";
     

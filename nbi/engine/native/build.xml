@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ - The contents of this file are subject to the terms of the Common Development and
+ - Distribution License (the License). You may not use this file except in compliance
+ - with the License.
+ - 
+ - You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+ - http://www.netbeans.org/cddl.txt.
+ - 
+ - When distributing Covered Code, include this CDDL Header Notice in each file and
+ - include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+ - the following below the CDDL Header, with the fields enclosed by brackets []
+ - replaced by your own identifying information:
+ - 
+ -     "Portions Copyrighted [year] [name of copyright owner]"
+ - 
+ - The Original Software is NetBeans. The Initial Developer of the Original Software
+ - is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+ - Rights Reserved.
+-->
+<project name="native" default="default" basedir=".">
+    <property file="build.properties"/>
+    
+    <!-- =======================================================================
+        NetBeans Installer engine specific targets
+    ======================================================================== -->
+
+    <!-- =======================================================================
+        Build native library
+    ======================================================================== -->
+    <target name="jnilib-init" depends="define-platform,init-platform"/>
+    <target name="jnilib-clean" depends="jnilib-init" unless="ignore.native">
+        <exec executable="make" dir="${jnilib.dir}">
+            <arg value="clean"/>
+        </exec>    
+    </target>    
+    
+    <target name="jnilib-compile" depends="jnilib-init,jnilib-clean" unless="ignore.native">
+        <exec executable="make" dir="${jnilib.dir}">
+            <arg value="build"/>
+        </exec>
+    </target>    
+    <target name="jnilib-build"   depends="jnilib-init,jnilib-compile"/>
+
+    <!-- =======================================================================
+        Build launcher
+    ======================================================================== -->
+    <target name="launcher-init" depends="define-platform,init-platform"/>
+    <target name="launcher-clean" depends="launcher-init" unless="ignore.native">
+        <exec executable="make" dir="${launcher.dir}">
+            <arg value="clean"/>
+        </exec>    
+    </target>    
+    
+    <target name="launcher-compile" depends="launcher-init,launcher-clean" if="is.windows" unless="ignore.native">
+        <exec executable="make" dir="${launcher.dir}">
+            <arg value="build"/>
+        </exec>
+    </target>
+    <target name="launcher-build" depends="launcher-init,launcher-compile"/>
+
+
+
+
+    <!--<target name="cleaner-build"  depends="cleaner-init,cleaner-compile"/>-->
+    <target name="native-clean" depends="jnilib-clean,launcher-clean"/>
+    <target name="native-compile" depends="native-clean,jnilib-compile,launcher-compile"/>
+    <target name="native-build" depends="native-clean,native-compile"/>
+
+    <target name="define-platform">
+        <condition property="is.windows">
+            <os family="windows"/>
+        </condition>
+        <condition property="is.linux">
+            <os name="Linux"/>
+        </condition>
+        <condition property="is.solaris-x86">
+            <os name="SunOS" arch="x86"/>
+        </condition>
+        <condition property="is.solaris-sparc">
+            <os name="SunOS" arch="sparc"/>
+        </condition>
+        <condition property="is.macosx">
+            <and>
+                <os family="mac"/>
+                <os family="unix"/>
+            </and>
+        </condition>
+    </target>
+    
+    <target name="init-platform" depends="init-windows,init-linux,init-solaris-x86,init-solaris-sparc,init-macosx"/>
+    
+    <target name="init-windows" if="is.windows">
+        <property name="jnilib.dir" value="${native.jnilib.dir.windows}"/>
+        <property name="jnilib.file" value="${native.jnilib.file.windows}"/>
+	<property name="launcher.dir" value="${native.launcher.windows.dir}"/>
+    </target>
+    <target name="init-linux" if="is.linux">
+        <property name="jnilib.dir" value="${native.jnilib.dir.linux}"/>
+        <property name="jnilib.file" value="${native.jnilib.file.linux}"/>
+	<property name="launcher.dir" value="${native.launcher.unix.dir}"/>
+    </target>
+    <target name="init-solaris-x86" if="is.solaris-x86">
+        <property name="jnilib.dir" value="${native.jnilib.dir.solaris-x86}"/>
+        <property name="jnilib.file" value="${native.jnilib.file.solaris-x86}"/>
+	<property name="launcher.dir" value="${native.launcher.unix.dir}"/>
+    </target>
+    <target name="init-solaris-sparc" if="is.solaris-sparc">
+        <property name="jnilib.dir" value="${native.jnilib.dir.solaris-sparc}"/>
+        <property name="jnilib.file" value="${native.jnilib.file.solaris-sparc}"/>
+	<property name="launcher.dir" value="${native.launcher.unix.dir}"/>
+    </target>
+    <target name="init-macosx" if="is.macosx">
+        <property name="jnilib.dir" value="${native.jnilib.dir.macosx}"/>
+        <property name="jnilib.file" value="${native.jnilib.file.macosx}"/>
+	<property name="launcher.dir" value="${native.launcher.unix.dir}"/>
+    </target>
+    
+</project>
