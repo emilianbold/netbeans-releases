@@ -115,8 +115,10 @@ public class VeryPretty extends JCTree.Visitor {
 	out.leftMargin = old;
     }
 
-    public void setPrec(int prec) {
+    public int setPrec(int prec) {
+        int old = this.prec;
         this.prec = prec;
+        return old;
     }
     
     public void setSelection(JCTree tree) {

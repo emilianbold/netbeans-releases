@@ -45,8 +45,6 @@ import com.sun.tools.javac.util.Position;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.modules.java.source.engine.SourceRewriter;
-import org.netbeans.modules.java.source.engine.StringSourceRewriter;
 import org.netbeans.modules.java.source.engine.JavaFormatOptions;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
@@ -339,17 +337,15 @@ public class CasualDiff {
             insertHint = tokenSequence.offset();
         }
         int old = printer.indent();
-        VeryPretty inPrint = new VeryPretty(context, JavaFormatOptions.getDefault());
-        inPrint.reset(old);
-        inPrint.indent();
-        inPrint.enclClassName = newT.getSimpleName();
+        Name origName = printer.enclClassName;
+        printer.enclClassName = newT.getSimpleName();
         PositionEstimator est = EstimatorFactory.members(filterHidden(oldT.defs), filterHidden(newT.defs), workingCopy);
         if (localPointer < insertHint)
             copyTo(localPointer, insertHint);
-        localPointer = diffListImports(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, est, Measure.MEMBER, inPrint);
-        printer.print(inPrint.toString());
+        localPointer = diffListImports(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, est, Measure.MEMBER, printer);
         if (localPointer != -1)
             copyTo(localPointer, bounds[1]);
+        printer.enclClassName = origName;
         oldParent = opar;
         newParent = npar;
         // the reference is no longer needed.
@@ -396,14 +392,12 @@ public class CasualDiff {
             else
                 if (hasModifiers(oldT.mods))
                     copyTo(localPointer, endPos(oldT.mods));
-            VeryPretty locBuf = new VeryPretty(context);
             localPointer = diffParameterList(oldT.typarams,
                     newT.typarams,
                     oldT.typarams.isEmpty() || newT.typarams.isEmpty(),
                     pos,
-                    locBuf
+                    printer
             );
-            printer.print(locBuf.toString());
         }
         if (oldT.restype != null) { // means constructor, skip return type gen.
             int[] restypeBounds = getBounds(oldT.restype);
@@ -448,10 +442,9 @@ public class CasualDiff {
         }
         if (!listsMatch(oldT.params, newT.params)) {
             copyTo(localPointer, posHint);
-            VeryPretty locBuf = new VeryPretty(context);
-            locBuf.setPrec(TreeInfo.noPrec);
-            localPointer = diffParameterList(oldT.params, newT.params, false, posHint, locBuf);
-            printer.print(locBuf.toString());
+            int old = printer.setPrec(TreeInfo.noPrec);
+            localPointer = diffParameterList(oldT.params, newT.params, false, posHint, printer);
+            printer.setPrec(old);
         }
         // temporary
         tokenSequence.moveNext();
@@ -860,9 +853,7 @@ public class CasualDiff {
                 int rParen = TokenUtilities.moveFwdToToken(tokenSequence, getOldPos(oldT.meth), JavaTokenId.RPAREN);
                 copyTo(localPointer, localPointer = rParen);
             }
-            VeryPretty buf = new VeryPretty(context, JavaFormatOptions.getDefault());
-            localPointer = diffParameterList(oldT.args, newT.args, false, localPointer, buf);
-            printer.print(buf.toString());
+            localPointer = diffParameterList(oldT.args, newT.args, false, localPointer, printer);
         }
         copyTo(localPointer, bounds[1]);
         
@@ -1122,15 +1113,13 @@ public class CasualDiff {
             int pos = oldT.arguments.nonEmpty() ? getOldPos(oldT.arguments.head) : endPos(oldT.clazz);
             if (newT.arguments.nonEmpty()) 
                 copyTo(localPointer, pos);
-            VeryPretty locBuf = new VeryPretty(context);
             localPointer = diffParameterList(
                     oldT.arguments,
                     newT.arguments,
                     oldT.arguments.isEmpty() || newT.arguments.isEmpty(),
                     pos,
-                    locBuf
+                    printer
             );
-            printer.print(locBuf.toString());
         }
         copyTo(localPointer, bounds[1]);
         return bounds[1];
@@ -1811,19 +1800,8 @@ public class CasualDiff {
                             posHint = estimator.getPositions(0)[0];
                         }
                         printer.print(head);
-                        int old = printer.indent();
-                        VeryPretty inPrint = new VeryPretty(context, JavaFormatOptions.getDefault());
-                        inPrint.reset(old);
-                        inPrint.enclClassName = printer.enclClassName;
-//                        inPrint.indent();
-                        inPrint.print(item.element);
-                            inPrint.newline();
-                        printer.print(inPrint.toString());
-                        printer.undent(old);
-                        //printer.print(tail);
-//                        if (j+1 != result.length) {
-//                            printer.toColExactly(currentIndentLevel);
-//                        }
+                        printer.print(item.element);
+                        printer.newline();
                     }
                     break;
                 }
@@ -2665,7 +2643,7 @@ public class CasualDiff {
     }
 
     private boolean isCommaSeparated(JCVariableDecl oldT) {
-        if (getOldPos(oldT) <= 0) {
+        if (getOldPos(oldT) <= 0 || oldT.pos <= 0) {
             return false;
         }
         tokenSequence.move(oldT.pos);

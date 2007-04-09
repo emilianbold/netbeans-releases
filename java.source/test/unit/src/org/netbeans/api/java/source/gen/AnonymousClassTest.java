@@ -81,8 +81,9 @@ public class AnonymousClassTest extends GeneratorTestMDRCompat {
             "class Test {\n" +
             "    void method(Runnable r) {\n" +
             "        method(new Runnable() {\n" +
-            "    public void run() {\n" +
-            "    }\n" +
+            "\n" +
+            "            public void run() {\n" +
+            "            }\n" +
             "});\n" +
             "    }}\n";
 
