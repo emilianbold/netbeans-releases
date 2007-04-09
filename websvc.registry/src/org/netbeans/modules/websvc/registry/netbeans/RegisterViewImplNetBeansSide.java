@@ -21,16 +21,8 @@ package org.netbeans.modules.websvc.registry.netbeans;
 import java.net.URL;
 import java.beans.PropertyChangeListener;
 
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
-import org.openide.loaders.DataObjectNotFoundException;
 
 import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
 /**
