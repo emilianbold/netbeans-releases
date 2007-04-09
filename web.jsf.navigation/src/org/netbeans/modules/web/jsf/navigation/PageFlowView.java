@@ -461,6 +461,9 @@ public void removeNodeWithEdges( PageFlowNode node ){
 public void resetNodeWidget( PageFlowNode pageNode ){
     //Reset the Node Name
     VMDNodeWidget nodeWidget = (VMDNodeWidget)scene.findWidget(pageNode);
+    
+    //Do this because sometimes the node display name is the object display name.
+    pageNode.updateNode_HACK();
     //        nodeWidget.setNodeName(node.getDisplayName());
     nodeWidget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageNode.getDisplayName(), null, null );
 }
