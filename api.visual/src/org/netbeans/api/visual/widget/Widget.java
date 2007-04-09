@@ -665,6 +665,9 @@ public class Widget {
      * Returns a preferred bounds relatively to the location of the widget. If no preferred bounds are set, then it returns a preferred bounds
      * that are calculated from the calculateClientArea method of this widget and location and bounds of the children widgets.
      * This calculated bounds are processed by the minimum and maximum bounds too.
+     * <p>
+     * This method can be called after child widgets are layed out which is assured in method calls of the <code>Layout</code> interface implementation.
+     * If preferred bounds are set (check it using <code>isPreferredBoundsSet</code> method), you can call this method at any time.
      * @return the preferred bounds
      */
     public final Rectangle getPreferredBounds () {
@@ -899,6 +902,11 @@ public class Widget {
 
     /**
      * Returns the resolved location of the widget. The location is specified relatively to the location of the parent widget.
+     * <p>
+     * The location is resolved/set by calling <code>resolveBounds</code> method which should be called from <code>Layout</code> interface implementation only.
+     * Therefore the corrent value is available only after the scene is validated (<code>SceneListener.sceneValidated</code> method).
+     * Before validation a previous/obsolete or <code>[0,0]</code> value could be returned.
+     * See <strong>Layout</strong> section in documentation.
      * @return the location in the local coordination system of the parent widget
      */
     public final Point getLocation () {
@@ -907,6 +915,11 @@ public class Widget {
 
     /**
      * Returns the resolved bounds of the widget. The bounds are specified relatively to the location of the widget.
+     * <p>
+     * The location is resolved/set by calling <code>resolveBounds</code> method which should be called from <code>Layout</code> interface implementation only.
+     * Therefore the corrent value is available only after the scene is validated (<code>SceneListener.sceneValidated</code> method).
+     * Before validation a previous/obsolete or <code>null</code> value could be returned.
+     * See <strong>Layout</strong> section in documentation.
      * @return the bounds in local coordination system
      */
     public final Rectangle getBounds () {
@@ -915,7 +928,7 @@ public class Widget {
 
     /**
      * Sets resolved location and bounds of the widget
-     * This method is usually called from implementations of Layout interface.
+     * This method is usually called from implementations of <code>Layout</code> interface.
      * @param location the resolved location; if null then [0,0] point is used instead
      * @param bounds the resolved bounds; if null then the preferred bounds are used instead
      */
