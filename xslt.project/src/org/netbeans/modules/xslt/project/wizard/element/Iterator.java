@@ -151,6 +151,7 @@ public final class Iterator implements TemplateWizard.Iterator {
     return DataObject.find(file);
   }
 
+  // TODO m
   private void configureTMapModel(TMapModel tMapModel, TemplateWizard wizard) {
       assert tMapModel != null && wizard != null;
       if (! TMapModel.State.VALID.equals(tMapModel.getState())) {
