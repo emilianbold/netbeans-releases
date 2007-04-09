@@ -536,7 +536,6 @@ is divided into following sections:
             
             <target name="do-clean">
                 <xsl:attribute name="depends">init</xsl:attribute>
-                <delete dir="${{build.dir}}"/>
                 <delete dir="${{dist.dir}}"/>
             </target>
             
