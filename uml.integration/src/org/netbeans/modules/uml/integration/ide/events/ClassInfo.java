@@ -2563,22 +2563,21 @@ public class ClassInfo extends ElementInfo
 	    } 
 	}
 
+
 	// referred by itself - extends/imports
-	ArrayList<String[]> refs = new ArrayList<String[]>();
-	String[] superClass = GenCodeUtil.getFullyQualifiedCodeGenType(mSuperClass);
-	if ( superClass != null && superClass.length == 2 ) {	    
-	    refs.add(superClass);
+	ArrayList<String[]> refs = GenCodeUtil.getReferredCodeGenTypes(mSuperClass);
+	if (refs != null) {
+	    GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
 	}
 	if (superInterfaces != null) {
 	    Iterator<IClassifier> sis =  superInterfaces.iterator();
 	    while(sis.hasNext()) {
-		String[] impl = GenCodeUtil.getFullyQualifiedCodeGenType(sis.next());		
-		if ( impl != null && impl.length == 2 ) {	    
-		    refs.add(impl);
-		}		
+		refs = GenCodeUtil.getReferredCodeGenTypes(sis.next());
+		if (refs != null) {
+		    GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
+		}
 	    } 
 	}
-	GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
 	
 	return res;
     }
