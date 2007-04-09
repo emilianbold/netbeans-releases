@@ -424,7 +424,7 @@ is divided into following sections:
                     </fileset>
 
                     <fileset dir="${{src.dir}}/">
-                        <include name="xsltmap.xml"/>
+                        <include name="transformmap.xml"/>
                     </fileset>
                 </jar>
             </target>

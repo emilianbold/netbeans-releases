@@ -294,8 +294,8 @@ public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task {
             throw new BuildException("source directory shouldn't be null or empty");
         }
         
-        File xsltMapFile = new File(srcDir+"/"+XsltproConstants.XSLTMAP_XML);
-        return xsltMapFile;
+        File transformmapFile = new File(srcDir+"/"+XsltproConstants.TRANSFORMMAP_XML);
+        return transformmapFile;
     }
     
     private File getJbiFile() {

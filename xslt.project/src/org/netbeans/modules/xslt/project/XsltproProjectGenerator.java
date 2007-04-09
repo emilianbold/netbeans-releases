@@ -80,7 +80,7 @@ public class XsltproProjectGenerator {
         
 // TODO m
         FileObject bpelasaRoot = srcRoot;
-        FileObject xsltmapFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/xsltmap.xml"), bpelasaRoot, "xsltmap"); //NOI18N
+        FileObject transformmapFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/transformmap.xml"), bpelasaRoot, "transformmap"); //NOI18N
 
 // TODO a
         FileObject nbProjectRoot = FileUtil.toFileObject(new File(dir, DEFAULT_NBPROJECT_DIR)); // NOI18N

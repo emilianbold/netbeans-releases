@@ -48,7 +48,7 @@
     </folder>
 
     <folder name="org-netbeans-xsltpro">
-        <file name="xsltmap.xml" url="xsltmap.xml"/>
+        <file name="transformmap.xml" url="transformmap.xml"/>
         <file name="genPortmap.xsl" url="genPortmap.xsl"/>
     </folder>
 

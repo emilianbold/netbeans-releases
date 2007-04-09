@@ -132,13 +132,14 @@ public class IcanproViews {
  */
 // TODO r
 //            l.add(XSLT_TRANSFORM_NODE_KEY);
-            
-            FileObject xsltMapFo = getXsltmapFO();
-//            Lookup projectLookup = project.getLookup();
-//            System.out.println("projectLookup: "+projectLookup);
-            if (xsltMapFo != null) {
-                l.add(XSLT_TRANSFORM_NODE_KEY);
-            }
+
+// TODO r            
+//////            FileObject xsltMapFo = getXsltmapFO();
+////////            Lookup projectLookup = project.getLookup();
+////////            System.out.println("projectLookup: "+projectLookup);
+//////            if (xsltMapFo != null) {
+//////                l.add(XSLT_TRANSFORM_NODE_KEY);
+//////            }
             
             if (l.size() > 0) {
                 setKeys(l);
@@ -175,13 +176,13 @@ public class IcanproViews {
                             Children children = ((DataFolder) dobj)
                                         .createNodeChildren(NO_FOLDERS_FILTER);
 // todo m
-                            FileObject xsltmapFile = srcRoot.getFileObject(XsltproConstants.XSLTMAP_XML);
-//                            n = new RootNode(dobj.getNodeDelegate(), (DataFolder) dobj);
-                            Node xsltTransformationsNode = NodeFactory.createXsltTransformationsNode(xsltmapFile);
-                            if (xsltTransformationsNode != null) {
-                                children.add(new Node[] {xsltTransformationsNode});
-                            }
-                            
+//////                            FileObject xsltmapFile = srcRoot.getFileObject(XsltproConstants.XSLTMAP_XML);
+////////                            n = new RootNode(dobj.getNodeDelegate(), (DataFolder) dobj);
+//////                            Node xsltTransformationsNode = NodeFactory.createXsltTransformationsNode(xsltmapFile);
+//////                            if (xsltTransformationsNode != null) {
+//////                                children.add(new Node[] {xsltTransformationsNode});
+//////                            }
+//////                            
                             n = new RootNode(srcRoot, dobj.getNodeDelegate(), children);
                         } catch (DataObjectNotFoundException ex) {
                         }
@@ -216,7 +217,7 @@ public class IcanproViews {
             return nodes.toArray(new Node[nodes.size()]);
         }
         
-        private FileObject getXsltmapFO() {
+        private FileObject getTransformmapFO() {
             DataFolder srcDir = getFolder(SRC_DIR);
             if (srcDir != null) {
                 FileObject srcFO = srcDir.getPrimaryFile();
@@ -225,7 +226,7 @@ public class IcanproViews {
                 }
                 
                 // TODO m
-                return srcFO.getFileObject(XsltproConstants.XSLTMAP_XML);
+                return srcFO.getFileObject(XsltproConstants.TRANSFORMMAP_XML);
             }
             return null;
         }
@@ -346,7 +347,7 @@ public class IcanproViews {
             return false;
         }
         
-        void addXsltMapNode(XsltTransformationsNode node) {
+        void addTransformmapNode(XsltTransformationsNode node) {
             assert node != null;
             org.openide.nodes.Children children = getChildren();
             if (children == null || isExistChildNode(children, node)) {
@@ -356,7 +357,7 @@ public class IcanproViews {
             children.add(new Node[] {node});
         }
         
-        void removeXsltMapNode(String foName) {
+        void removeTransformmapNode(String foName) {
             org.openide.nodes.Children children = getChildren();
             if (children == null) {
                 return;
@@ -382,11 +383,11 @@ public class IcanproViews {
 
         public void fileDataCreated(FileEvent fe) {
             FileObject fo = fe.getFile();
-            if (isXsltMapFile(fo)) {
+            if (isTransformmapFile(fo)) {
                 XsltTransformationsNode xsltMapNode 
                         = NodeFactory.createXsltTransformationsNode(fo);
                 if (xsltMapNode != null) {
-                    addXsltMapNode(xsltMapNode);
+                    addTransformmapNode(xsltMapNode);
                 }
             }
         }
@@ -396,8 +397,8 @@ public class IcanproViews {
 
         public void fileDeleted(FileEvent fe) {
             FileObject fo = fe.getFile();
-            if (isXsltMapFile(fo)) {
-                removeXsltMapNode(fo.getNameExt());
+            if (isTransformmapFile(fo)) {
+                removeTransformmapNode(fo.getNameExt());
             }
         }
 
@@ -419,10 +420,10 @@ public class IcanproViews {
         public boolean acceptDataObject(DataObject obj) {
             FileObject fo = obj.getPrimaryFile();
             
-            // TODO r
-            if (isXsltMapFile(fo)) {
-                return false;
-            }
+            // TODO r | m
+//////            if (isTransformmapFile(fo)) {
+//////                return false;
+//////            }
             
             return  VisibilityQuery.getDefault().isVisible( fo );
         }
@@ -452,7 +453,7 @@ public class IcanproViews {
     
     // TODO m
     // doesn't show xsltmap file
-    public static boolean isXsltMapFile(FileObject fo) {
+    public static boolean isTransformmapFile(FileObject fo) {
         if (fo == null) {
             return false;
         }
@@ -463,7 +464,7 @@ public class IcanproViews {
         }
         
         // TODO m
-        return XsltproConstants.XSLTMAP_XML.equals(fo.getNameExt())
+        return XsltproConstants.TRANSFORMMAP_XML.equals(fo.getNameExt())
         && srcFolder != null
                 && srcFolder.equals(fo.getParent());
     }

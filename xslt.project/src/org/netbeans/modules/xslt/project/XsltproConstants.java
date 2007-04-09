@@ -25,7 +25,7 @@ package org.netbeans.modules.xslt.project;
  */
 public interface XsltproConstants {
     String WHITESPACE=" "; // NOI18N
-    String XSLTMAP_XML = "xsltmap.xml"; // NOI18N
+    String TRANSFORMMAP_XML = "transformmap.xml"; // NOI18N
     String XSLT_PROJECT_ICON = "org/netbeans/modules/xslt/project/resources/xsltProjectIcon.png"; // NOI18N"
     
     
