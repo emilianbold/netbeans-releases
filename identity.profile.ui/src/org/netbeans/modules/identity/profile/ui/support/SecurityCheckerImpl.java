@@ -20,14 +20,14 @@ package org.netbeans.modules.identity.profile.ui.support;
 
 import org.openide.nodes.Node;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.wsitconf.spi.SecurityChecker;
+//import org.netbeans.modules.websvc.wsitconf.spi.SecurityChecker;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author PeterLiu
  */
-public class SecurityCheckerImpl extends SecurityChecker {
+public class SecurityCheckerImpl { //extends SecurityChecker {
     
     private boolean isTransientStateSet = false;
     

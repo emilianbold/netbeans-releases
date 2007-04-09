@@ -69,8 +69,8 @@ import org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint;
 import org.netbeans.modules.j2ee.dd.api.web.WebResourceCollection;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.websvc.wsitconf.api.WSITConfigProvider;
-import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
+//import org.netbeans.modules.websvc.wsitconf.api.WSITConfigProvider;
+//import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataNode;
 import org.openide.windows.TopComponent;
@@ -128,7 +128,7 @@ public class J2eeProjectHelper {
     static {
         securityChecker = new SecurityCheckerImpl();
      
-        SecurityCheckerRegistry.getDefault().register(securityChecker);
+        //SecurityCheckerRegistry.getDefault().register(securityChecker);
     }
     
     public enum ProjectType {
@@ -733,7 +733,8 @@ public class J2eeProjectHelper {
     }
     
     public boolean isWsitSecurityEnabled() {
-        return WSITConfigProvider.getDefault().isWsitSecurityEnabled(node, model);
+        //return WSITConfigProvider.getDefault().isWsitSecurityEnabled(node, model);
+        return false;
     }
     
     public void setTransientState(boolean isEnabled) {
