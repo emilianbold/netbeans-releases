@@ -299,7 +299,11 @@ public final class AddPackageVisualPanel1 extends JPanel implements DocumentList
         jComboBox2.setEnabled(jCheckBox1.isSelected());
         
         if (jCheckBox1.isSelected())
+        {
+            jTextField2.selectAll();
+            jTextField2.requestFocus();
             validateDiagramName();
+        }
         if (valid)
             validatePackageName();
         panel.fireChangeEvent();
