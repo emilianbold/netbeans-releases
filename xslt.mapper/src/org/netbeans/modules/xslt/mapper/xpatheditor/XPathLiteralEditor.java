@@ -32,6 +32,7 @@ import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IMethoidNode;
 import org.netbeans.modules.soa.ui.form.valid.DefaultDialogDescriptor;
 import org.netbeans.modules.soa.ui.form.valid.SoaDialogDisplayer;
 import org.openide.DialogDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -82,6 +83,8 @@ public class XPathLiteralEditor implements ILiteralEditor {
                 ExpressionEditor.class, "TITLE_ExpressionBuilder");
         DefaultDialogDescriptor descriptor = 
                 new DefaultDialogDescriptor(exprEditor, title);
+        descriptor.setHelpCtx(new HelpCtx("xslt_editor_xpath")); // NOI18N
+
         Dialog dialog = SoaDialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
         //
