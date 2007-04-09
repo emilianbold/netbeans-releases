@@ -23,11 +23,16 @@ package org.netbeans.modules.uml.integration.ide.events;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IDerivation;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IUMLBinding;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.integration.ide.JavaClassUtils;
@@ -220,17 +225,26 @@ public final class GenCodeUtil
         IMultiplicity mult)
     {
 	ArrayList<String[]> res = new ArrayList<String[]>();
+	boolean isPrimitive = false;
 
-	String[] fqType = GenCodeUtil.getFullyQualifiedCodeGenType(classType);
-	if ( ! ( fqType != null && fqType.length == 2 && fqType[1] != null) ) {	
-	    return null;
+	ArrayList<String[]> refs;
+	if (classType instanceof IDerivationClassifier) {
+	    refs = getReferredCodeGenTypes(classType);
+	} else {
+	    String[] fqType = GenCodeUtil.getFullyQualifiedCodeGenType(classType);
+	    if ( ! ( fqType != null && fqType.length == 2 && fqType[1] != null) ) {	
+		return null;
+	    }
+	    refs = new ArrayList<String[]>();
+	    refs.add(fqType);
+	    String fullClassName = fqType[1];
+	    isPrimitive = JavaClassUtils.isPrimitive(fullClassName);
 	}
 
-	String fullClassName = fqType[1];
 	boolean reffersTheType = true;
         if (mult != null && isMultiDim(mult))
         {
-            if (!JavaClassUtils.isPrimitive(fullClassName) && 
+            if (! isPrimitive && 
                 collectionType != null && collectionType.length() > 0)
 	    {
 		res.add(new String[]{JavaClassUtils.getPackageName(collectionType), 
@@ -240,7 +254,43 @@ public final class GenCodeUtil
 	}
 	
 	if (reffersTheType) {
-	    res.add(fqType);	    
+	    if (refs != null) {
+		res.addAll(refs);	
+	    }    
+	}
+
+	return res;
+    }
+
+
+    public static ArrayList<String[]> getReferredCodeGenTypes(IClassifier classType)
+    {
+	ArrayList<String[]> res = new ArrayList<String[]>();
+
+	IClassifier clazz; 
+
+	if (classType instanceof IDerivationClassifier) {
+	    IDerivation drv = classType.getDerivation();
+	    clazz = drv.getTemplate();
+	    List<IUMLBinding> bindings =  drv.getBindings();
+	    if (bindings != null) {
+		for (IUMLBinding b : bindings) {
+		    if (b.getActual() instanceof IClassifier) {
+			ArrayList<String[]> refs 
+			    = getReferredCodeGenTypes((IClassifier)b.getActual());
+			if (refs != null) {
+			    res.addAll(refs);
+			}
+		    }
+		}
+	    }
+	} else {
+	    clazz = classType;
+	}
+
+	String[] fqType = GenCodeUtil.getFullyQualifiedCodeGenType(clazz);
+	if (( fqType != null && fqType.length == 2) ) {	
+	    res.add(fqType);	
 	}
 
 	return res;
