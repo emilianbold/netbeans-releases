@@ -711,6 +711,16 @@ public class Language implements ILanguage
     }
     
     /**
+     * Gets the languages collection types.
+     *
+     * @return types the list of collection types.
+     */
+    public List < CollectionType > getCollectionTypes()
+    {
+        return collectionTypes;
+    }
+    
+    /**
      * Checks if a type is a collection type.
      *
      * @param typeName the type to check.

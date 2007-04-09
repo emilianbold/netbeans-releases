@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.uml.core.support.umlutils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -26,7 +28,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
-
 import org.netbeans.modules.uml.core.configstringframework.ConfigStringHelper;
 import org.netbeans.modules.uml.core.configstringframework.ConfigStringTranslator;
 import org.netbeans.modules.uml.core.configstringframework.IConfigStringTranslator;
@@ -39,6 +40,8 @@ import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.Strings;
 import org.netbeans.modules.uml.core.typemanagement.IPickListManager;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
+import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 //import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 //import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
 /**
@@ -568,8 +571,102 @@ public IStrings getValidValue(IPropertyElement elem){
         }
       }
     }
+    else if (str != null && str.startsWith("#Call") == true)
+    {
+        try
+        {
+            int end = str.lastIndexOf(')');
+            String call = str.substring(6, end);
+
+            // When in a property editor that is creating a new model element
+            // element my be null.  So, in this situation the call has to be 
+            // made on the parent.
+            Object element = getModelElement(elem);
+
+            Method m = element.getClass().getMethod(call);
+            if(m != null)
+            {
+                Object returnValue = m.invoke(element);
+                if(returnValue instanceof String)
+                {
+                    String strValue = (String)returnValue;
+                    StringTokenizer tokenizer = new StringTokenizer(strValue, "|");
+                    while (tokenizer.hasMoreTokens())
+                    {
+                        String token = tokenizer.nextToken();
+                        
+                        //should translate this value if needed
+                        IConfigStringTranslator trans = ConfigStringHelper.instance().getTranslator();
+                        token = trans.translate(elem.getPropertyDefinition(), token);
+                        if (retVal == null)
+                        {
+                            retVal = new Strings();
+                        }
+                        retVal.add(token);
+                    }
+                }
+                else if(returnValue instanceof Collection)
+                {
+                    for(Object curValue : (Collection)returnValue)
+                    {
+                        if(retVal == null)
+                        {
+                            retVal = new Strings();
+                        }
+                        
+                        retVal.add(curValue.toString());
+                    }
+                }
+            }
+        }
+        catch (IllegalAccessException ex)
+        {
+            ErrorManager.getDefault().notify(ex);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            ErrorManager.getDefault().notify(ex);
+        }
+        catch (InvocationTargetException ex)
+        {
+            ErrorManager.getDefault().notify(ex);
+        }
+        catch (NoSuchMethodException ex)
+        {
+            ErrorManager.getDefault().notify(ex);
+        }
+        catch (SecurityException ex)
+        {
+            ErrorManager.getDefault().notify(ex);
+        }
+
+    }
+    
     return retVal;
   }
+
+  /**
+    * Method to navigate up the property element chain to retrieve the first model element in the chain
+    *
+    * @param[in] pEle       The property element in which to get the model element
+    * @param[out] pModEle   The model element
+    *
+    * @return HRESULT
+    *
+    */
+   private Object getModelElement(IPropertyElement pEle)
+   {
+      Object obj = pEle.getElement();
+      if (obj == null)
+      {
+         IPropertyElement elem = pEle.getParent();
+         if (elem != null)
+         {
+            obj = getModelElement(elem);
+         }
+      }
+      return obj;
+   }
 
   /**
    *

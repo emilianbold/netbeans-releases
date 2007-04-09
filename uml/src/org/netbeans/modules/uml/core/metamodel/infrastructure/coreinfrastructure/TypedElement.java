@@ -22,24 +22,19 @@ package org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructur
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.dom4j.Document;
 import org.dom4j.Node;
-
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
-import org.netbeans.modules.uml.core.eventframework.EventDispatcher;
 import org.netbeans.modules.uml.core.eventframework.EventState;
 import org.netbeans.modules.uml.core.eventframework.IEventContext;
 import org.netbeans.modules.uml.core.eventframework.IEventDispatcher;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.BaseElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.Element;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementCollector;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.EventContextManager;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ITransitionElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.TransitionElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
@@ -284,7 +279,7 @@ public class TypedElement extends Element implements ITypedElement
 		}
 		return dupEle;
 	}
-	
+        
 	public String processProposedType(String newType)
 	{
 		String type = newType;
@@ -315,7 +310,7 @@ public class TypedElement extends Element implements ITypedElement
 	{
 		return super.getBooleanAttributeValue("isSet",false);
 	}
-	
+        
 	public String getTypeID()
 	{
 		org.dom4j.Element node = getElementNode();

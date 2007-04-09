@@ -241,6 +241,13 @@ public interface ILanguage {
   public void setCollectionTypes(List < CollectionType > types);
   
   /**
+   * Gets the languages collection types.
+   * 
+   * @return types the list of collection types.
+   */
+  public List < CollectionType > getCollectionTypes();
+  
+  /**
    * Checks if a type is a collection type.
    * 
    * @param typeName the type to check.

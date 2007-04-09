@@ -333,4 +333,8 @@ public interface IElement extends IBaseElement, Node.Cookie {
 	public String toString();
 
   public String getConstraintsAsString();
+  
+  public ETList < String > getPossibleCollectionTypes();
+  
+  public String getPossibleCollectionTypesAsString();
 }

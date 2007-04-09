@@ -235,17 +235,23 @@ public class DefinitionPropertyEditor extends PropertyEditorSupport // implement
     */
    public String[] getTags()
    {
-      mValidValues = DefinitionPropertyBuilder.instance().retrieveValidValues(mDefinition, mElement);    
       String[] retVal = null;
-      if(mValidValues != null)
+      
+      if(mDefinition.getControlType().equals("custom") == false)
       {
-         retVal = mValidValues.getValidValues();
-         
-         for(int index = 0; index < retVal.length; index++)
-         {
-             retVal[index] = translateFullyQualifiedName(retVal[index]);
-         }
+          mValidValues = DefinitionPropertyBuilder.instance().retrieveValidValues(mDefinition, mElement);    
+
+          if(mValidValues != null)
+          {
+             retVal = mValidValues.getValidValues();
+
+             for(int index = 0; index < retVal.length; index++)
+             {
+                 retVal[index] = translateFullyQualifiedName(retVal[index]);
+             }
+          }
       }
+      
       return retVal;
    }
 

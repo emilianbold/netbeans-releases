@@ -358,7 +358,7 @@ public class Parameter extends NamedElement implements IParameter,
 	private IExpression establishDefault()
 	{
 		TypedFactoryRetriever<IExpression> ret = 
-										new TypedFactoryRetriever<IExpression>();
+                        new TypedFactoryRetriever<IExpression>();
 		return ret.createType("Expression");		
 	}
 	/**

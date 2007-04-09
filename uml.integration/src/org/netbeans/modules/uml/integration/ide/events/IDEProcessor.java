@@ -757,9 +757,10 @@ public class IDEProcessor implements EventProcessor {
         IStructuralFeature attr = state.getAttribute();
 
         MemberInfo modelInfo = new MemberInfo(attr);
-        String collectionType = UMLSupport.getUMLSupport()
-                                            .getCollectionOverride();
-        if (modelInfo.isCollectionType() && collectionType != null
+//        String collectionType = UMLSupport.getUMLSupport()
+//                                            .getCollectionOverride();
+        String collectionType = modelInfo.getCollectionOverrideDataType();
+        if (modelInfo.isUseCollectionOverride() && collectionType != null
                && (collectionType.equals(sourceName) ||
                    collectionType.equals(fullName)))
             return ;

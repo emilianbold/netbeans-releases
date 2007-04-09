@@ -71,9 +71,9 @@ public interface ITypedElement extends IElement, IMultiplicityListener
 	*/
 	public void setIsSet( boolean value );
 
-    /**
-     * Clones this ITypedElement.
-     * @return The cloned object.
-     */	
+        /**
+         * Clones this ITypedElement.
+         * @return The cloned object.
+         */	
 	public IVersionableElement performDuplication();
 }

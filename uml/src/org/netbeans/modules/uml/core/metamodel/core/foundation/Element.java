@@ -23,11 +23,9 @@ package org.netbeans.modules.uml.core.metamodel.core.foundation;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import java.util.Iterator;
 import java.util.List;
-
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Node;
-
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
@@ -43,6 +41,7 @@ import org.netbeans.modules.uml.core.metamodel.structure.IArtifact;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
 import org.netbeans.modules.uml.core.metamodel.structure.SourceFileArtifact;
+import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.CollectionType;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageManager;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
@@ -52,6 +51,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.typemanagement.IPickListManager;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
+import org.openide.util.NbBundle;
 
 
 public class Element extends BaseElement implements IElement
@@ -2278,7 +2278,41 @@ public class Element extends BaseElement implements IElement
       return str;
    }
    
-   
+    public ETList < String > getPossibleCollectionTypes()
+    {
+        ETList < String > retVal = new ETArrayList();
+
+        ILanguage lang = getLanguages().get(0);
+        List < CollectionType > types = lang.getCollectionTypes();
+
+        for(CollectionType type : types)
+        {
+            retVal.add(type.getName());
+        }
+
+        return retVal;
+    }
+    
+    public String getPossibleCollectionTypesAsString()
+    {
+        StringBuffer retVal = new StringBuffer();
+
+        ILanguage lang = getLanguages().get(0);
+        List < CollectionType > types = lang.getCollectionTypes();
+
+        retVal.append(NbBundle.getMessage(Element.class, "LBL_AS_ARRAY"));
+        for(CollectionType type : types)
+        {
+            if(retVal.length() > 0)
+            {
+                retVal.append("|");
+            }
+            retVal.append(type.getName());
+        }
+
+        return retVal.toString();
+    }
+
    
    /**
     *

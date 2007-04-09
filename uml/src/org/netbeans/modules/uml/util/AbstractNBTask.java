@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Vector;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
 
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;

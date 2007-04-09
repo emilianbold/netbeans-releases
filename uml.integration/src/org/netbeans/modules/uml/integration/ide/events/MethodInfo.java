@@ -283,7 +283,7 @@ public class MethodInfo extends ConstructorInfo
     }
 
     public boolean isCollectionType() {
-        return attribute != null && attribute.isCollectionType();
+        return attribute != null && attribute.isUseCollectionOverride();
     }
 
     public String getFilename() {
@@ -405,16 +405,13 @@ public class MethodInfo extends ConstructorInfo
         if (getReturnParameter() == null)
             return ""; // NOI18N
         
-        return GenCodeUtil.getCodeGenType(
-            getReturnParameter().getParameterElement().getType(), 
-            JavaClassUtils.getShortClassName(
-                getReturnParameter().getCollectionOverrideDataType()),
-            getReturnParameter().isUseGenerics(),
-//            getReturnParameter().getParameterElement()
-//                .getMultiplicity().getRangeCount());
-//            GenCodeUtil.getMultiplicityMaxUpperRange(getReturnParameter()
-//                .getParameterElement().getMultiplicity().getRanges()));
-            getReturnParameter().getParameterElement().getMultiplicity());
+        MethodParameterInfo param = getReturnParameter();
+        IParameter element = param.getParameterElement();
+        String shortName = JavaClassUtils.getShortClassName(param.getCollectionOverrideDataType());
+        return GenCodeUtil.getCodeGenType(element.getType(), 
+                                          shortName,
+                                          param.isUseCollectionOverride(),
+                                          element.getMultiplicity());
     }
 
     /**
