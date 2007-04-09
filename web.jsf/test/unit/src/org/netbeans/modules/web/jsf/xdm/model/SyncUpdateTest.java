@@ -7,8 +7,11 @@ import java.util.List;
 import javax.swing.text.Document;
 import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.openide.util.Exceptions;
 
 public class SyncUpdateTest extends NbTestCase {
     
@@ -117,6 +120,45 @@ public class SyncUpdateTest extends NbTestCase {
             assertTrue(false);
         }
         
+        assertTrue(propertyChangeCalled);
+    }
+    
+    public void testSynceRenamePageInMode_l100321() throws Exception {
+        
+        propertyChangeCalled = false;
+        
+        /* Load a file that has a simple rule*/
+        JSFConfigModel configModel = Util.loadRegistryModel("faces-config-100321.xml");
+        
+         configModel.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent arg0) {
+                propertyChangeCalled = true;
+                System.out.println("event prisla : " + arg0);
+            }
+        });       
+        String oldDisplayName = "OLDFILENMAME.jsp";
+        String newDisplayName = "NEWFILENAME.jsp";
+        configModel.startTransaction();
+        FacesConfig facesConfig = configModel.getRootComponent();
+        List<NavigationRule> navRules = facesConfig.getNavigationRules();
+        for( NavigationRule navRule : navRules ){
+            if ( navRule.getFromViewId().equals(oldDisplayName) ){
+                navRule.setFromViewId(newDisplayName);
+            }
+            List<NavigationCase> navCases = navRule.getNavigationCases();
+            for( NavigationCase navCase : navCases ) {
+                if ( navCase.getToViewId().equals(oldDisplayName) ) {
+                    navCase.setToViewId(newDisplayName);
+                }
+            }
+        }
+        
+        configModel.endTransaction();
+        try {
+            configModel.sync();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }        
         assertTrue(propertyChangeCalled);
     }
     
