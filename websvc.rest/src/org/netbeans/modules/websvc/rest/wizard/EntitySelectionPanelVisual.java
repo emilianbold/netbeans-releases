@@ -96,15 +96,11 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
         listAvailable = new javax.swing.JList();
         jScrollPane2 = new javax.swing.JScrollPane();
         listSelected = new javax.swing.JList();
-        cbAddRelated = new javax.swing.JCheckBox();
         labelAvailableEntities = new javax.swing.JLabel();
         panelButtons = new javax.swing.JPanel();
-        buttonRemove = new javax.swing.JButton();
-        buttonAdd = new javax.swing.JButton();
         buttonAddAll = new javax.swing.JButton();
         buttonRemoveAll = new javax.swing.JButton();
         labelSelectedEntities = new javax.swing.JLabel();
-        createPUButton = new javax.swing.JButton();
 
         listAvailable.setCellRenderer(ENTITY_LIST_RENDERER);
         jScrollPane1.setViewportView(listAvailable);
@@ -116,39 +112,10 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
         listSelected.getAccessibleContext().setAccessibleName(null);
         listSelected.getAccessibleContext().setAccessibleDescription(null);
 
-        cbAddRelated.setMnemonic(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "MNE_InludeRelated").charAt(0));
-        cbAddRelated.setSelected(true);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wizard/Bundle"); // NOI18N
-        cbAddRelated.setText(bundle.getString("LBL_IncludeReferenced")); // NOI18N
-        cbAddRelated.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbAddRelated.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        cbAddRelated.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbAddRelatedActionPerformed(evt);
-            }
-        });
-
         labelAvailableEntities.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wizard/Bundle").getString("MNE_AvailableEntityClasses").charAt(0));
         labelAvailableEntities.setLabelFor(listAvailable);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wizard/Bundle"); // NOI18N
         labelAvailableEntities.setText(bundle.getString("LBL_AvailableEntities")); // NOI18N
-
-        buttonRemove.setMnemonic(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "MNE_Remove").charAt(0));
-        buttonRemove.setText(bundle.getString("LBL_Remove")); // NOI18N
-        buttonRemove.setActionCommand("< &Remove");
-        buttonRemove.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonRemoveActionPerformed(evt);
-            }
-        });
-
-        buttonAdd.setMnemonic(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "MNE_Add").charAt(0));
-        buttonAdd.setText(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_Add")); // NOI18N
-        buttonAdd.setActionCommand("&Add >");
-        buttonAdd.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonAddActionPerformed(evt);
-            }
-        });
 
         buttonAddAll.setMnemonic(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "MNE_AddAll").charAt(0));
         buttonAddAll.setText(bundle.getString("LBL_AddAll")); // NOI18N
@@ -175,37 +142,23 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
             .add(panelButtonsLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(panelButtonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonAdd, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonRemove, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonRemoveAll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonAddAll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE))
+                    .add(buttonRemoveAll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
+                    .add(buttonAddAll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE))
                 .addContainerGap())
         );
         panelButtonsLayout.setVerticalGroup(
             panelButtonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelButtonsLayout.createSequentialGroup()
-                .add(67, 67, 67)
-                .add(buttonAdd)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(buttonRemove)
-                .add(20, 20, 20)
+                .add(116, 116, 116)
                 .add(buttonAddAll)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(18, 18, 18)
                 .add(buttonRemoveAll)
-                .addContainerGap(111, Short.MAX_VALUE))
+                .addContainerGap(122, Short.MAX_VALUE))
         );
 
         labelSelectedEntities.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wizard/Bundle").getString("MNE_SelectedEntityClasses").charAt(0));
         labelSelectedEntities.setLabelFor(listSelected);
         labelSelectedEntities.setText(bundle.getString("LBL_SelectedEntities")); // NOI18N
-
-        createPUButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wizard/Bundle").getString("MNE_CreatePersistenceUnit").charAt(0));
-        createPUButton.setText(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_CreatePersistenceUnit")); // NOI18N
-        createPUButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createPUButtonActionPerformed(evt);
-            }
-        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -213,18 +166,12 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(labelAvailableEntities)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(panelButtons, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(0, 0, 0))
-                    .add(layout.createSequentialGroup()
-                        .add(createPUButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                    .add(labelAvailableEntities)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(panelButtons, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, 0)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbAddRelated)
                     .add(labelSelectedEntities)
                     .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE))
                 .addContainerGap())
@@ -241,40 +188,10 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
                     .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
                     .add(panelButtons, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .add(cbAddRelated)
-                        .add(31, 31, 31))
-                    .add(layout.createSequentialGroup()
-                        .add(createPUButton)
-                        .addContainerGap())))
+                .add(52, 52, 52))
         );
-
-        cbAddRelated.getAccessibleContext().setAccessibleName(null);
-        cbAddRelated.getAccessibleContext().setAccessibleDescription(null);
-        createPUButton.getAccessibleContext().setAccessibleName(null);
-        createPUButton.getAccessibleContext().setAccessibleDescription(null);
     }// </editor-fold>//GEN-END:initComponents
-    
-    private void cbAddRelatedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAddRelatedActionPerformed
-        listSelected.clearSelection();
-        listAvailable.clearSelection();
-        //        entityClosure.setClosureEnabled(cbAddRelated.isSelected());
-        
-    }//GEN-LAST:event_cbAddRelatedActionPerformed
-    
-    private void createPUButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPUButtonActionPerformed
-        /*persistenceUnit = Util.buildPersistenceUnitUsingWizard(project, null, TableGeneration.CREATE);
-        if (persistenceUnit != null){
-            updatePersistenceUnitButton();
-            // TODO: RETOUCHE
-            //waitForMappings.add(PersistenceUtils.getAnnotationEntityMappings(project));
-            changeSupport.fireChange();
-        }
-         */
-    }//GEN-LAST:event_createPUButtonActionPerformed
-    
+            
     private void buttonRemoveAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveAllActionPerformed
         //        entityClosure.removeAllEntities();
         availableEntities.addAll(selectedEntities);
@@ -292,43 +209,11 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
         updateButtons();
         fireChange();
     }//GEN-LAST:event_buttonAddAllActionPerformed
-    
-    private void buttonRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveActionPerformed
-        /*Object selected[] = listSelected.getSelectedValues();
-        Set<Entity> sel = new HashSet<Entity>();
-        for (int i = 0; i < selected.length; i++) {
-            sel.add((Entity) selected[i]);
-        }
-        //        entityClosure.removeEntities(sel);
-        listSelected.clearSelection();
-        updateButtons();
-         
-        changeSupport.fireChange();
-         */
-    }//GEN-LAST:event_buttonRemoveActionPerformed
-    
-    private void buttonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddActionPerformed
-        /*Object selected[] = listAvailable.getSelectedValues();
-        Set<Entity> sel = new HashSet<Entity>();
-        for (int i = 0; i < selected.length; i++) {
-            sel.add((Entity) selected[i]);
-        }
-               entityClosure.addEntities(sel);
-        listAvailable.clearSelection();
-        updateButtons();
-         
-        changeSupport.fireChange();
-         */
-    }//GEN-LAST:event_buttonAddActionPerformed
-    
+            
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton buttonAdd;
     private javax.swing.JButton buttonAddAll;
-    private javax.swing.JButton buttonRemove;
     private javax.swing.JButton buttonRemoveAll;
-    private javax.swing.JCheckBox cbAddRelated;
-    private javax.swing.JButton createPUButton;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel labelAvailableEntities;
@@ -351,7 +236,9 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
     }
     
     boolean valid(WizardDescriptor wizard) {
-        return true;
+        Project project = Templates.getProject(wizard);
+        List availableEntities = JavaSourceHelper.getEntityClasses(project);
+        return availableEntities != null && availableEntities.size() > 0;
     }
     
     void read(WizardDescriptor settings) {
@@ -379,9 +266,9 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
     }
     
     private void updateButtons() {
-        buttonAdd.setEnabled(listAvailable.getSelectedValues().length > 0);
+        //buttonAdd.setEnabled(listAvailable.getSelectedValues().length > 0);
         //        buttonAddAll.setEnabled(entityClosure.getAvailableEntities().size() > 0);
-        buttonRemove.setEnabled(listSelected.getSelectedValues().length > 0);
+        //buttonRemove.setEnabled(listSelected.getSelectedValues().length > 0);
         //        buttonRemoveAll.setEnabled(entityClosure.getSelectedEntities().size() > 0);
     }
     

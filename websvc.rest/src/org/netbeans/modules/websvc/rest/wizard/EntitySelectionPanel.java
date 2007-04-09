@@ -20,15 +20,20 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * @author Pavel Buzek
@@ -65,8 +70,43 @@ public final class EntitySelectionPanel implements WizardDescriptor.Panel, Wizar
     }
     
     public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
+        boolean status = true;
+        Project project = Templates.getProject(wizardDescriptor);
+        RestSupport support = project.getLookup().lookup(RestSupport.class);
+        if(support == null) {
+            setErrorMessage("MSG_EntitySelectionPanel_NotWebProject");
+            status = false;
+        } else {
+//            if(!support.isReady()) {
+//                setErrorMessage("MSG_EntitySelectionPanel_NotReady");
+//                status = false;
+//            }
+            //For now always enable REST if this panel is REST webservices is invoked
+            try {
+                support.ensureRestDevelopmentReady();
+            } catch(IOException ex) {
+                setErrorMessage("MSG_EntitySelectionPanel_EnableRESTFailed");
+                status = false;
+            }          
+            if(!component.valid(wizardDescriptor)){
+                setErrorMessage("MSG_EntitySelectionPanel_NoEntities");
+                status = false;
+            }
+        }
+        return status;
+    }
+    
+    private void setErrorMessage(String key) {
+        if ( key == null ) {
+            setLocalizedErrorMessage(""); // NOI18N
+        } else {
+            setLocalizedErrorMessage(
+                    NbBundle.getMessage(EntitySelectionPanel.class, key)); // NOI18N
+        }
+    }
+    
+    private void setLocalizedErrorMessage(String message) {
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
     }
     
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
