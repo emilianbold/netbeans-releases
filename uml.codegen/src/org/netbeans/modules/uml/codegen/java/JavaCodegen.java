@@ -80,7 +80,7 @@ public class JavaCodegen implements ICodeGenerator {
 	    
 	    
 	    ClassInfo clinfo = new ClassInfo(classifier);
-        
+
 	    // skip inner class/interface/enumeration elements
 	    // as they are taken care of by their outer class code gen
 	    if (clinfo.getOuterClass() != null)
@@ -114,10 +114,10 @@ public class JavaCodegen implements ICodeGenerator {
 	    // registry and teplates subdir of the project 
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
 	    FileObject root = fs.getRoot().getFileObject("Templates/UML/CodeGeneration/Java");
+	    String projTemplPath = clinfo.getOwningProject().getBaseDirectory()+File.separator+"templates"+File.separator+"java";
 
 	    List<TemplateDesc> templateDescs = templatesToUse(clinfo);
 	    Iterator<TemplateDesc> iterDescs = templateDescs.iterator();
-	    System.out.println("templateDescs.size() = "+templateDescs.size());
 	    while(iterDescs.hasNext()) {
 		TemplateDesc templDesc = iterDescs.next();	    		
 		try {
