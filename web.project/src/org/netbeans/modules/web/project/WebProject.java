@@ -922,7 +922,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             String[] retVal = null;
             checkEnvironment();
             if (isArchive) {
-                retVal = PRIVILEGED_NAMES_ARCHIVE;                        
+                retVal = PRIVILEGED_NAMES_ARCHIVE;
             } else if (isEE5) {
                 retVal = PRIVILEGED_NAMES_EE5;
             } else {

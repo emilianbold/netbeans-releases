@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.math.BigInteger;
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
@@ -68,6 +69,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     public Set extend(WebModule webModule) {
         FileObject fileObject = webModule.getDocumentBase();
         Project project = FileOwnerQuery.getOwner(fileObject);
+        Set result = new HashSet();
         
         try {
             FileObject dd = webModule.getDeploymentDescriptor();
@@ -99,12 +101,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             boolean isMyFaces = cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") != null; //NOI18N
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
+            result.add(webModule.getDocumentBase().getFileObject("welcomeJSF", "jsp"));
         } catch (FileNotFoundException exc) {
             ErrorManager.getDefault().notify(exc);
         } catch (IOException exc) {
             ErrorManager.getDefault().notify(exc);
         }
-        return null;
+        return result;
     }
     
     public static String readResource(InputStream is, String encoding) throws IOException {
@@ -244,6 +247,15 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         Listener facesListener = (Listener) ddRoot.createBean("Listener");
                         facesListener.setListenerClass("org.apache.myfaces.webapp.StartupServletContextListener");
                         ddRoot.addListener(facesListener);
+                    }
+                    WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
+                    if (welcomeFiles == null) {
+                        welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList");
+                        ddRoot.setWelcomeFileList(welcomeFiles);
+                    }
+                    if (welcomeFiles.sizeWelcomeFile() == 0) {
+                        String welcomePage = ConfigurationUtils.getWelcomeFile(panel == null ? "faces/*" : panel.getURLPattern(), "welcomeJSF.jsp"); //NOI18N
+                        welcomeFiles.addWelcomeFile(welcomePage); //NOI18N
                     }
                     ddRoot.write(dd);
                     

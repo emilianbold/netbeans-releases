@@ -138,6 +138,30 @@ public class ConfigurationUtils {
     }
     
     /**
+     * Get the welcome file based on the URL Pattern and the Page Name.
+     * @param URLPattern the URL Pattern
+     * @param pageName the Page Name
+     * @return If successful, returns the welcome file, "faces/" + pageName if unsuccessful.
+     */
+    public static String getWelcomeFile(String URLPattern, String pageName) {
+        int indWild = URLPattern.indexOf("*"); // NOI18N
+        if (indWild >= 0) {
+            String pPrefix = URLPattern.substring(0, indWild);
+            String pSuffix = URLPattern.substring(indWild + 1);
+
+            if (pPrefix.length() > 0) {
+                while (pPrefix.startsWith("/")) { // NOI18N
+                    pPrefix = pPrefix.substring(1);
+                }
+            }
+
+            return pPrefix + pageName + pSuffix;
+        }
+
+        return "faces/" + pageName;
+    }
+    
+    /**
      * Translates an URI to be executed with faces serlvet with the given mapping.
      * For example, the servlet has mapping <i>*.jsf</i> then uri <i>/hello.jps</i> will be
      * translated to <i>/hello.jsf</i>. In the case where the mapping is <i>/faces/*</i>

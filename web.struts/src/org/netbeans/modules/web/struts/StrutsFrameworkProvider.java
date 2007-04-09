@@ -29,6 +29,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -56,6 +57,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -89,6 +91,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
     public Set extend (WebModule wm) {
         FileObject fo = wm.getDocumentBase();
         Project project = FileOwnerQuery.getOwner(fo);
+        Set result = new HashSet();
         
         Library lib = LibraryManager.getDefault().getLibrary("struts");                         //NOI18N
         if (lib != null) {
@@ -107,17 +110,14 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             try {
                 FileSystem fs = wm.getWebInf().getFileSystem();
                 fs.runAtomicAction(new CreateStrutsConfig(wm));
-              
+                result.add(wm.getDocumentBase().getFileObject("welcomeStruts", "jsp"));
             } catch (FileNotFoundException exc) {
                 ErrorManager.getDefault().notify(exc);
-                return null;
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
-                return null;
             }
         }
-        FileObject welcomePage = wm.getDocumentBase().getFileObject("welcome.jsp");
-        return null;
+        return result;
     }
     
     private static String readResource(InputStream is, String encoding) throws IOException {
@@ -363,6 +363,14 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                             ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
                         }
                     }
+                    WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
+                    if (welcomeFiles == null) {
+                        welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList");
+                        ddRoot.setWelcomeFileList(welcomeFiles);
+                    }
+                    if (welcomeFiles.sizeWelcomeFile() == 0) {
+                        welcomeFiles.addWelcomeFile("index.jsp"); //NOI18N
+                    }
                     ddRoot.write(dd);
                     
                     
@@ -377,11 +385,19 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                 content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/welcome.jsp").getInputStream (), "UTF-8"); //NOI18N
                 target = FileUtil.createData(wm.getDocumentBase(), "welcomeStruts.jsp");//NOI18N
                 createFile(target, content, "UTF-8"); //NOI18N
-                // changing index.jsp
-                FileObject documentBase = wm.getDocumentBase();
-                FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
-                if (indexjsp != null){
-                    changeIndexJSP(indexjsp);
+                File indexJsp = new File(FileUtil.toFile(wm.getDocumentBase()), "index.jsp");  //NOI18N
+                if (indexJsp.exists()) {
+                    // changing index.jsp
+                    FileObject documentBase = wm.getDocumentBase();
+                    FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
+                    if (indexjsp != null){
+                        changeIndexJSP(indexjsp);
+                    }
+                } else {
+                    //create welcome file with forward
+                    content = "<jsp:forward page=\"" + StrutsConfigUtilities.getWelcomeFile(panel.getURLPattern(), "Welcome") + "\"/>"; //NOI18N
+                    target = FileUtil.createData(wm.getDocumentBase(), "index.jsp");//NOI18N
+                    createFile(target, content, "UTF-8"); //NOI18N
                 }
             }
         }

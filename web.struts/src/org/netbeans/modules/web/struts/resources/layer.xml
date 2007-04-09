@@ -123,6 +123,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="org-netbeans-modules-web-struts">
         <file name="struts-config.xml" url="struts-config.xml"/>
         <file name="welcome.jsp" url="welcome.jsp"/>
+        <file name="index.jsp" url="index.jsp"/>
         <file name="MessageResources.properties" url="MessageResources.properties"/>
         <file name="tiles-defs.xml" url="tiles-defs.xml"/>
         <file name="validation.xml" url="validation.xml"/>

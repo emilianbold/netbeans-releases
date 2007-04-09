@@ -250,9 +250,6 @@ public class WebProjectUtilities {
         
         ProjectManager.getDefault().saveProject(p);
 
-        //create default index.jsp
-        createIndexJSP(webFO);
-        
         ProjectWebModule pwm = (ProjectWebModule) p.getLookup ().lookup (ProjectWebModule.class);
         if (pwm != null) //should not be null
             pwm.setContextPath(contextPath);
@@ -657,17 +654,6 @@ public class WebProjectUtilities {
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         
         return h;
-    }
-
-    private static void createIndexJSP(FileObject webFolder) throws IOException {
-        FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
-
-        if (jspTemplate == null)
-            return; // Don't know the template
-                
-        DataObject mt = DataObject.find(jspTemplate);        
-        DataFolder webDf = DataFolder.findFolder(webFolder);        
-        mt.createFromTemplate(webDf, "index"); // NOI18N
     }
 
     private static String readResource(InputStream is) throws IOException {

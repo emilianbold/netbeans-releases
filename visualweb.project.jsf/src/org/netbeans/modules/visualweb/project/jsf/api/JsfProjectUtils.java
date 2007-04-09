@@ -90,6 +90,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.openide.util.Mutex;
 
 
@@ -355,7 +356,7 @@ public class JsfProjectUtils {
                 WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
                 if (ddRoot != null) {
                     String pattern = getFacesURLPattern(ddRoot);
-                    String welcomeFile = (pattern == null) ? newStartPage : getWelcomeFile(pattern, newStartPage);
+                    String welcomeFile = (pattern == null) ? newStartPage : ConfigurationUtils.getWelcomeFile(pattern, newStartPage);
                     WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
                     wfl.setWelcomeFile(new String[] { welcomeFile });
                     ddRoot.write(dd);
@@ -392,30 +393,6 @@ public class JsfProjectUtils {
         }
 
         return null;
-    }
-
-    /**
-     * Get the welcome file based on the URL Pattern and the Page Name.
-     * @param URLPattern the URL Pattern
-     * @param pageName the Page Name
-     * @return If successful, returns the welcome file, "faces/" + pageName if unsuccessful.
-     */
-    public static String getWelcomeFile(String URLPattern, String pageName) {
-        int indWild = URLPattern.indexOf("*"); // NOI18N
-        if (indWild >= 0) {
-            String pPrefix = URLPattern.substring(0, indWild);
-            String pSuffix = URLPattern.substring(indWild + 1);
-
-            if (pPrefix.length() > 0) {
-                while (pPrefix.startsWith("/")) { // NOI18N
-                    pPrefix = pPrefix.substring(1);
-                }
-            }
-
-            return pPrefix + pageName + pSuffix;
-        }
-
-        return "faces/" + pageName;
     }
 
     /**

@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -43,12 +45,19 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.api.progress.ProgressHandle;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 
 /**
  * Wizard to create a new Web project.
@@ -57,6 +66,7 @@ import org.netbeans.modules.web.project.ui.FoldersListSettings;
 public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(NewWebProjectWizardIterator.class.getName());
     
     static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
 
@@ -97,18 +107,15 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         createData.setName((String) wiz.getProperty(WizardProperties.NAME));
         createData.setServerInstanceID(servInstID);
         createData.setSourceStructure((String)wiz.getProperty(WizardProperties.SOURCE_STRUCTURE));
+        if (createData.getSourceStructure() == null) {
+            createData.setSourceStructure(WebProjectUtilities.SRC_STRUCT_BLUEPRINTS);
+        }
         createData.setJavaEEVersion((String) wiz.getProperty(WizardProperties.J2EE_LEVEL));
         createData.setContextPath((String) wiz.getProperty(WizardProperties.CONTEXT_PATH));
         createData.setJavaPlatformName((String) wiz.getProperty(WizardProperties.JAVA_PLATFORM));
         createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));
         AntProjectHelper h = WebProjectUtilities.createProject(createData);
         handle.progress(2);
-        
-        FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
-        FileObject indexJSPFo = getIndexJSPFO(webRoot, "index"); //NOI18N
-        assert indexJSPFo != null : "webRoot: " + webRoot + ", defaultJSP: index";//NOI18N
-        // Returning FileObject of main class, will be called its preferred action
-        resultSet.add (indexJSPFo);
         
         FileObject dir = FileUtil.toFileObject(dirF);
 
@@ -139,17 +146,40 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         resultSet.add(dir);
 
+        WebModule apiWebModule = createdWebProject.getAPIWebModule();
         //add framework extensions
         List selectedFrameworks = (List) wiz.getProperty(WizardProperties.FRAMEWORKS);
         if (selectedFrameworks != null){
             handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_AddingFrameworks"), 3);
             for(int i = 0; i < selectedFrameworks.size(); i++) {
-                Object o = ((WebFrameworkProvider) selectedFrameworks.get(i)).extend(createdWebProject.getAPIWebModule());
+                Object o = ((WebFrameworkProvider) selectedFrameworks.get(i)).extend(apiWebModule);
                 if (o != null && o instanceof Set)
                     resultSet.addAll((Set)o);
             }
         }
-        
+
+        try {
+            WebApp ddRoot = DDProvider.getDefault().getDDRoot(apiWebModule.getDeploymentDescriptor());
+            WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
+            if (welcomeFiles == null) {
+                LOGGER.log(Level.INFO, "no welcome file list");
+                welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList");
+                ddRoot.setWelcomeFileList(welcomeFiles);
+            }
+            if (welcomeFiles.sizeWelcomeFile() == 0) {
+                LOGGER.log(Level.INFO, "welcome file list empty");
+                FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
+                //create default index.jsp
+                FileObject indexJSPFo = createIndexJSP(webRoot);
+                assert indexJSPFo != null : "webRoot: " + webRoot + ", defaultJSP: index";//NOI18N
+                // Returning FileObject of main class, will be called its preferred action
+                resultSet.add (indexJSPFo);
+                welcomeFiles.addWelcomeFile("index.jsp"); //NOI18N
+                ddRoot.write(apiWebModule.getDeploymentDescriptor());
+            }
+        } catch (ClassNotFoundException cnfe) {
+            LOGGER.log(Level.SEVERE, cnfe.getLocalizedMessage(), cnfe);
+        }
         handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
 
         // Returning set of FileObject of project diretory. 
@@ -240,5 +270,16 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         // ignore unvalid mainClass ???
         
         return webRoot.getFileObject (indexJSP, "jsp"); // NOI18N
+}
+    private static FileObject createIndexJSP(FileObject webFolder) throws IOException {
+        FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
+
+        if (jspTemplate == null)
+            return null; // Don't know the template
+                
+        DataObject mt = DataObject.find(jspTemplate);        
+        DataFolder webDf = DataFolder.findFolder(webFolder);        
+        return mt.createFromTemplate(webDf, "index").getPrimaryFile(); // NOI18N
     }
+
 }

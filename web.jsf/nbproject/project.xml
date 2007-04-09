@@ -401,6 +401,7 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
+                <friend>org.netbeans.modules.visualweb.project.jsf</friend>
                 <package>org.netbeans.modules.web.jsf.api</package>
                 <package>org.netbeans.modules.web.jsf.api.editor</package>
                 <package>org.netbeans.modules.web.jsf.api.facesmodel</package>
