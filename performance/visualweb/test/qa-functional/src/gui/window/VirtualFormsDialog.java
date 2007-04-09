@@ -20,6 +20,7 @@
 package gui.window;
 
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -30,6 +31,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 public class VirtualFormsDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private WebFormDesignerOperator surface;
+    private NbDialogOperator forms;
     
     /** Creates a new instance of VirtualFormsDialog */
     public VirtualFormsDialog(String testName) {
@@ -56,10 +58,13 @@ public class VirtualFormsDialog extends org.netbeans.performance.test.utilities.
         
         //Invoking popup menu on component
         surface.pushPopupMenu("Virtual Forms...", 70, 70); // NO I18N
-        
-        return new NbDialogOperator("Virtual Forms"); // NO I18N
+        forms = new NbDialogOperator("Virtual Forms"); // NO I18N
+        return null;
     }
-
+    public void close() {
+        log(":: close");
+        forms.close();
+    }
     protected void shutdown() {
         log(":: shutdown");
         surface.closeDiscard();
