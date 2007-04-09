@@ -59,6 +59,9 @@ import java.io.File;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.sql.Connection;
+
+import javax.swing.JOptionPane;
+import javax.swing.JFrame;
 import javax.wsdl.extensions.soap.SOAPAddress;
 import javax.wsdl.extensions.soap.SOAPBinding;
 
@@ -118,6 +121,7 @@ public class WSDLGenerator {
     private boolean wsdlFileExsits = false;
     private Connection conn;
     private DatabaseConnection dbConn;
+    private JFrame frame;
     private static final String SELECT_STATEMENT = "SELECT";
     private static final String INSERT_STATEMENT = "INSERT";
     private static final String UPDATE_STATEMENT = "UPDATE";
@@ -479,6 +483,10 @@ public class WSDLGenerator {
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+            JOptionPane.showMessageDialog(frame,
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE);
             throw e;
         }
 
@@ -645,7 +653,7 @@ public class WSDLGenerator {
     }
 
 
-    private void generateDeleteSchemaElements(Element requestElement, Element responseElement) {
+    private void generateDeleteSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
             if (requestElement != null) {
@@ -676,12 +684,14 @@ public class WSDLGenerator {
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage());
+            throw e;
         }
     }
     
-    private void generateCreateSchemaElements(Element requestElement, Element responseElement) {
+    private void generateCreateSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
+        	conn.setAutoCommit(false);
             if (requestElement != null) {
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
                 if (sequenceElement != null) {
@@ -710,10 +720,11 @@ public class WSDLGenerator {
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage());
+            throw e;
         }
     }
     
-    private void generateAlterSchemaElements(Element requestElement, Element responseElement) {
+    private void generateAlterSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
             if (requestElement != null) {
@@ -744,10 +755,11 @@ public class WSDLGenerator {
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage());
+            throw e;
         }
     }
 
-    private void generateDropSchemaElements(Element requestElement, Element responseElement) {
+    private void generateDropSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
             if (requestElement != null) {
@@ -778,10 +790,11 @@ public class WSDLGenerator {
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage());
+            throw e;
         }
     }
     
-    private void generateTruncateSchemaElements(Element requestElement, Element responseElement) {
+    private void generateTruncateSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
             if (requestElement != null) {
@@ -812,6 +825,7 @@ public class WSDLGenerator {
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage());
+            throw e;
         }
     }
     
@@ -854,8 +868,9 @@ public class WSDLGenerator {
      * Adds a whereClause to the request element and resultset to the result element.
      * @param requestElement
      * @param responseElement
+     * @throws Exception 
      */
-    private void generateSelectSchemaElements(Element requestElement, Element responseElement) {
+    private void generateSelectSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
             PrepStmt prep = dbmeta.getPrepStmtMetaData();
             if (requestElement != null) {
@@ -886,6 +901,7 @@ public class WSDLGenerator {
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage());
+            throw e;
         }
     }
     
@@ -893,8 +909,9 @@ public class WSDLGenerator {
      * Adds Input parameters to the request element and resultset to the result element.
      * @param requestElement
      * @param responseElement
+     * @throws Exception 
      */
-    private void generateProcSchemaElements(Element requestElement, Element responseElement) {
+    private void generateProcSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
             String catalog = conn.getCatalog();
             schema= dbConn.getSchema();
@@ -934,6 +951,7 @@ public class WSDLGenerator {
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage());
+            throw e;
         }
     }
     

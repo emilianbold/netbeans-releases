@@ -35,6 +35,7 @@ package org.netbeans.modules.sql.project.ui;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Method;
 import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
@@ -57,6 +58,8 @@ import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
+import org.netbeans.modules.sql.project.wsdl.GenFiles;
+import org.netbeans.modules.sql.project.wsdl.ActionImpl;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.openide.loaders.DataFolder;
 import org.openide.util.lookup.Lookups;
@@ -166,6 +169,8 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
                 CommonProjectActions.copyProjectAction(),
                 CommonProjectActions.deleteProjectAction(),
                 null,
+                generateWSDL(),
+                null,
                 SystemAction.get( org.openide.actions.FindAction.class ),
                 null,
                 SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
@@ -174,7 +179,26 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
                 CommonProjectActions.customizeProjectAction(),
             };
         }
-
+        
+        private Action generateWSDL() {
+        	Object genFiles = SystemAction.findObject(GenFiles.class, true);
+        	try {
+	        	Object[] params =  new Object[1];
+	        	params[0]= project;
+	        	Class[] cls =  new Class[1];
+	        	cls[0] = Project.class;
+	        	params[0]= project;
+	        	Method meth=GenFiles.class.getMethod("setProject", cls);
+	        	meth.invoke(genFiles, params);
+				} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+        	
+        	//genFiles.setProject(project);
+            return (Action)genFiles;
+        }
+        
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */
