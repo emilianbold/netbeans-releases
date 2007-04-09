@@ -21,11 +21,10 @@
                        "http://java.sun.com/products/javahelp/index_2_0.dtd">
 
 <index version="2.0">
-    <indexitem text="JDBC Wizard">
-        <indexitem text="about" target="orch_wizard_about" />
-        <indexitem text="WSDL Name and Directory Selection" target="orch_wsdl_props" />
-        <indexitem text="Table Objects Selection" target="orch_tableobjs_sel" />
-        <indexitem text="Operation Specific Selection" target="orch_operspec_sel" />
-        <indexitem text="JNDI name" target="orch_jndi_input" />
+    <indexitem text="JDBC Database wizard">
+        <indexitem text="Enter WSDL Name page" target="orch_wsdl_props" />
+        <indexitem text="Select DataSource and Table Objects page" target="orch_tableobjs_sel" />
+        <indexitem text="Select Operation Specific Attributes page" target="orch_operspec_sel" />
+        <indexitem text="Enter JNDI Name page" target="orch_jndi_input" />
     </indexitem>
 </index>
