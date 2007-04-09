@@ -161,7 +161,7 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
   }
 
   public HelpCtx getHelp() {
-    return HelpCtx.DEFAULT_HELP;
+    return new HelpCtx("xslt_project_addxsl"); // NOI18N
   }
 
   public void storeSettings(Object object) {}
