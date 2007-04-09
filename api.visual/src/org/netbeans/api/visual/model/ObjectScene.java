@@ -104,19 +104,27 @@ public class ObjectScene extends Scene {
      */
     public final void removeObject (Object object) {
         assert object != null  &&   objects.containsKey (object);
-        selectedObjects.remove (object);
-        highlightedObjects.remove (object);
-        if (object.equals (hoveredObject))
-            hoveredObject = null;
-        if (object.equals (focusedObject))
-            focusedObject = null;
+        if (selectedObjects.contains (object)) {
+            HashSet<Object> temp = new HashSet<Object> (selectedObjects);
+            temp.remove (object);
+            setSelectedObjects (temp);
+        }
+        if (highlightedObjects.contains (object)) {
+            HashSet<Object> temp = new HashSet<Object> (highlightedObjects);
+            temp.remove (object);
+            setHighlightedObjects (temp);
+        }
+        if (object.equals (hoveredObject)) {
+            setHoveredObject (null);
+        }
+        if (object.equals (focusedObject)) {
+            setFocusedObject (null);
+        }
         objectStates.remove (object);
         object2widget.remove (object);
         List<Widget> widgets = object2widgets.remove (object);
-        for (Widget widget : widgets) {
-            widget.setState (ObjectState.createNormal ());
+        for (Widget widget : widgets)
             widget2object.remove (widget);
-        }
         objects.remove (object);
         for (ObjectSceneListener listener : getListeners (ObjectSceneEventType.OBJECT_REMOVED))
             listener.objectRemoved (event, object);
