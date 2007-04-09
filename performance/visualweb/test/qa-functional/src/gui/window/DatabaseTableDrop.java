@@ -79,7 +79,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         processDBConnectDialog();
         ProjectsTabOperator.invoke();
         
-        new PaletteViewAction().performAPI();
+        new PaletteViewAction().perform();
         openPageAndAddComponent();
     }
     

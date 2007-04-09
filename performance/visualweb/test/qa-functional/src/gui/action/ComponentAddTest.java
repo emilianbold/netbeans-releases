@@ -92,7 +92,7 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
             fail("Cannot find and select project root node");
         }
         
-        new PaletteViewAction().performAPI();
+        new PaletteViewAction().perform();
     }
     
     public void prepare() {

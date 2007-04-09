@@ -52,7 +52,7 @@ public class JSFComponentOptionsDialog extends org.netbeans.performance.test.uti
     public void initialize() {
         log("::initialize");
         
-        new PaletteViewAction().performAPI();
+        new PaletteViewAction().perform();
         openPageAndAddComponent();
     }
     

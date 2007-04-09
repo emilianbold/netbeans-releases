@@ -65,7 +65,7 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
         dlgName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitle"); //Select Page Fragment
         menuCmd = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitleEllipse"); // Select Page Fragment...
         
-        new PaletteViewAction().performAPI();
+        new PaletteViewAction().perform();
 
         addPFBComponent();
         prepareCloseBoxDialog();
