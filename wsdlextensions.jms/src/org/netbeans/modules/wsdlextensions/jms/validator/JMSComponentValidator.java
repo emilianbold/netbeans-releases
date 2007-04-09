@@ -482,6 +482,16 @@ public class JMSComponentValidator
                             }
                         }             
                         
+
+                        // warn if jndiConnectionFactoryName is used
+                        if (target.getJndiConnectionFactoryName() != null) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.WARNING,
+                                    target,
+                                    getMessage("JMSAddress.JNDI_CF_NAME_IN_JMS_ADDRESS_IGNORED",
+                                               new Object[] {aurl, target.getJndiConnectionFactoryName()})));
+                        }
+                        
                         // warn if jndienv is used
                         List <JMSJNDIEnv> jndienvs = target.getExtensibilityElements(JMSJNDIEnv.class);
                         if (jndienvs.size() > 0) {
