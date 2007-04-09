@@ -78,6 +78,23 @@ ${classInfo.getModifierText(classInfo.getModifiers())}
 
 
 <#macro TypeDeclarationTypeParameters classInfo >
+<@compress single_line=true>
+<@singleline>
+<#if classInfo.getClassElement()?? >
+<#assign classifier=classInfo.getClassElement() />
+<#if classifier.getTemplateParameters()?? && (classifier.getTemplateParameters()?size > 0) >
+<
+<#list classifier.getTemplateParameters() as typeParam >
+ ${typeParam.getName()}
+<#if typeParam_has_next >
+,
+</#if>
+</#list>
+ >
+</#if>
+</#if>
+</@singleline>
+</@compress>
 </#macro>
 
 
