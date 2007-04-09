@@ -114,10 +114,10 @@ public class JavaCodegen implements ICodeGenerator {
 	    // registry and teplates subdir of the project 
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
 	    FileObject root = fs.getRoot().getFileObject("Templates/UML/CodeGeneration/Java");
-	    String projTemplPath = clinfo.getOwningProject().getBaseDirectory()+File.separator+"templates"+File.separator+"java";
 
 	    List<TemplateDesc> templateDescs = templatesToUse(clinfo);
 	    Iterator<TemplateDesc> iterDescs = templateDescs.iterator();
+	    System.out.println("templateDescs.size() = "+templateDescs.size());
 	    while(iterDescs.hasNext()) {
 		TemplateDesc templDesc = iterDescs.next();	    		
 		try {
@@ -132,8 +132,8 @@ public class JavaCodegen implements ICodeGenerator {
 		    tfo.setAttribute("javax.script.ScriptEngine", "freemarker");
 		    DataObject obj = DataObject.find(tfo);
 	    		    
-		    if (clinfo.getExportPackageFileObject() != null) {
-			
+		    if (clinfo.getExportSourceFolderFileObject() != null) {
+		
 			DataFolder folder = DataFolder.findFolder(FileUtil.toFileObject(new File(clinfo.getExportSourcePackage())));
 			//Map parameters = Collections.singletonMap("classInfo", clinfo);
 			HashMap parameters = new HashMap();
