@@ -54,6 +54,7 @@ public final class AddPackageVisualPanel1 extends JPanel implements DocumentList
         
         jTextField1.getDocument().addDocumentListener(this);
         jTextField2.getDocument().addDocumentListener(this);
+        jComboBox1.addItemListener(this);
         jCheckBox1.addItemListener(this);
         SwingUtilities.invokeLater(new Runnable()
         {
@@ -227,7 +228,7 @@ public final class AddPackageVisualPanel1 extends JPanel implements DocumentList
                 .addContainerGap(21, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-        
+    
     
     
     private void populateNamespaceCombobox()
@@ -295,17 +296,24 @@ public final class AddPackageVisualPanel1 extends JPanel implements DocumentList
     public void itemStateChanged(ItemEvent event)
     {
         valid = true;
-        jTextField2.setEnabled(jCheckBox1.isSelected());
-        jComboBox2.setEnabled(jCheckBox1.isSelected());
-        
-        if (jCheckBox1.isSelected())
+        if (event.getSource() == jCheckBox1)
         {
-            jTextField2.selectAll();
-            jTextField2.requestFocus();
-            validateDiagramName();
+            jTextField2.setEnabled(jCheckBox1.isSelected());
+            jComboBox2.setEnabled(jCheckBox1.isSelected());
+            
+            if (jCheckBox1.isSelected())
+            {
+                jTextField2.selectAll();
+                jTextField2.requestFocus();
+                validateDiagramName();
+            }
+            if (valid)
+                validatePackageName();
         }
-        if (valid)
+        else if (event.getSource() == jComboBox1)
+        {
             validatePackageName();
+        }
         panel.fireChangeEvent();
     }
     
@@ -404,18 +412,18 @@ public final class AddPackageVisualPanel1 extends JPanel implements DocumentList
         
         switch(errorType)
         {
-            case INVALID_PACKAGE_NAME:
-                errorMsg = NbBundle.getMessage(AddPackageVisualPanel1.class,
-                        "MSG_Invalid_Package_Name");
-                break;
-            case PACKAGE_NAME_CONFLICT:
-                errorMsg = NbBundle.getMessage(
-                        DiagramEngine.class, "IDS_NAMESPACECOLLISION");
-                break;
-            case AddPackageVisualPanel1.INVALID_DIAGRAME_NAME:
-                errorMsg = NbBundle.getMessage(AddPackageVisualPanel1.class,
-                        "MSG_Invalid_Diagram_Name", jTextField2.getText());
-                break;
+        case INVALID_PACKAGE_NAME:
+            errorMsg = NbBundle.getMessage(AddPackageVisualPanel1.class,
+                    "MSG_Invalid_Package_Name");
+            break;
+        case PACKAGE_NAME_CONFLICT:
+            errorMsg = NbBundle.getMessage(
+                    DiagramEngine.class, "IDS_NAMESPACECOLLISION");
+            break;
+        case AddPackageVisualPanel1.INVALID_DIAGRAME_NAME:
+            errorMsg = NbBundle.getMessage(AddPackageVisualPanel1.class,
+                    "MSG_Invalid_Diagram_Name", jTextField2.getText());
+            break;
         }
         descriptor.putProperty("WizardPanel_errorMessage", errorMsg);
         return false;
