@@ -79,16 +79,6 @@ public class JMSOperationImpl extends JMSComponentImpl implements JMSOperation {
                      JMSAttribute.JMS_OPERATION_TRANSACTION,
                      val);                
     }
-
-    public String getJndiConnectionFactoryName() {
-        return getAttribute(JMSAttribute.JMS_OPERATION_JNDI_CONNECTIONFACTORY_NAME);         
-    }
-
-    public void setJndiConnectionFactoryName(String val) {
-        setAttribute(JMSOperation.ATTR_JNDI_CONNECTION_FACTORY_NAME, 
-                     JMSAttribute.JMS_OPERATION_JNDI_CONNECTIONFACTORY_NAME,
-                     val);                
-    }
     
     public String getDeliveryMode() {
         return getAttribute(JMSAttribute.JMS_OPERATION_DELIVERY_MODE);        

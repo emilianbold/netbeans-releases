@@ -69,5 +69,14 @@ public class JMSAddressImpl extends JMSComponentImpl implements JMSAddress {
                      JMSAttribute.JMS_ADDRESS_PASSWORD,
                      val);        
     }
-    
+
+    public String getJndiConnectionFactoryName() {
+        return getAttribute(JMSAttribute.JMS_ADDRESS_JNDI_CONNECTIONFACTORY_NAME);         
+    }
+
+    public void setJndiConnectionFactoryName(String val) {
+        setAttribute(JMSAddress.ATTR_JNDI_CONNECTION_FACTORY_NAME, 
+                     JMSAttribute.JMS_ADDRESS_JNDI_CONNECTIONFACTORY_NAME,
+                     val);                
+    }    
 }

@@ -133,8 +133,6 @@ public class JMSComponentValidator
             }
             
             Definitions defs = wsdlModel.getDefinitions();
-
-            Map<String,String> jndiBasedBindingOps = new HashMap<String,String>();
             
             Iterator<Service> services = defs.getServices().iterator();
             while (services.hasNext()) {
@@ -174,7 +172,6 @@ public class JMSComponentValidator
                                             binding.getBindingOperations().iterator();
                                     while (bindingOps.hasNext()) {
                                         BindingOperation bindingOp = bindingOps.next();
-                                        jndiBasedBindingOps.put(bindingOp.getName(), port.getName());
                                     }
                                 }
                             }
@@ -217,7 +214,7 @@ public class JMSComponentValidator
                             jmsOpsList.iterator();
                     
                     while (jmsOps.hasNext()) {
-                        validate(bindingOp, jmsOps.next(), jndiBasedBindingOps);
+                        validate(bindingOp, jmsOps.next());
                     }
                     
                     if(jmsOpsList.size() > 0) {
@@ -483,8 +480,28 @@ public class JMSComponentValidator
                             } else {
                                 isAToken(password, target);
                             }
-                        }                    
+                        }             
+                        
+                        // warn if jndienv is used
+                        List <JMSJNDIEnv> jndienvs = target.getExtensibilityElements(JMSJNDIEnv.class);
+                        if (jndienvs.size() > 0) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.WARNING,
+                                    target,
+                                    getMessage("JMSAddress.JNDIENV_ELEM_IN_JMS_ADDRESS_IGNORED",
+                                               new Object[] {aurl})));
+                        }
                     } else {
+                        // check for jndiconnectionfactory name
+                        if (target.getJndiConnectionFactoryName() == null) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.ERROR,
+                                    target,
+                                    getMessage("JMSAddress.JNDI_CONNECTION_FACTORY_NAME_UNDEFINED",
+                                               new Object[] {aurl})));
+                            
+                        }
+                        
                         // check list of jndienv
                         List <JMSJNDIEnv> jndienvs = target.getExtensibilityElements(JMSJNDIEnv.class);
                         if (jndienvs.size() > 1) {
@@ -538,7 +555,8 @@ public class JMSComponentValidator
         // for jms binding tag - nothing to validate at this point
     }
 
-    private void validate(BindingOperation bindingOp, JMSOperation target, Map<String,String> jndiBasedBindingOps) {
+    private void validate(BindingOperation bindingOp, 
+                          JMSOperation target) {
         Collection<ResultItem> results =
                 mValidationResult.getValidationResult();
         
@@ -562,18 +580,7 @@ public class JMSComponentValidator
                     getMessage("JMSOperation.EMPTY_DESTINATION_EMPTY",
                                new Object[] {bindingOp.getName()})));            
         } 
-                
-        String jndiConnectionFactoryName = target.getJndiConnectionFactoryName();
-        if (jndiBasedBindingOps.containsKey(bindingOp.getName()) && 
-            (jndiConnectionFactoryName == null || jndiConnectionFactoryName.length()==0)) {
-            results.add(new Validator.ResultItem(this,
-                    Validator.ResultType.ERROR,
-                    target,
-                    getMessage("JMSOperation.JNDI_CONNECTION_FACTORY_NAME_UNDEFINED",
-                               new Object[] {bindingOp.getName(),
-                                             jndiBasedBindingOps.get(bindingOp.getName())})));            
-        }
-        
+                        
         String subscriptionDurability = target.getSubscriptionDurability();
         if (subscriptionDurability != null &&
             subscriptionDurability.equals(JMSConstants.DURABLE)) {

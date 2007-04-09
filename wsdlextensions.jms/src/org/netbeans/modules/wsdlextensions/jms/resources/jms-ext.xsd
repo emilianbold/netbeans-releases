@@ -71,6 +71,11 @@
 						<xs:documentation>The password to use to connect to the JMS server</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
+				<xs:attribute name="jndiConnectionFactoryName" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>When JNDI is used to look up the JMS connection factory, this attribute specifies the JNDI name of the connection factory to look up.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>        
@@ -93,9 +98,6 @@
                         <prop:SchemaCustomizer/>
                     </prop:Property>
                     <prop:Property attributeName="transaction" groupName="Common" propertyOrder="3">
-                        <prop:SchemaCustomizer/>
-                    </prop:Property>
-                    <prop:Property attributeName="jndiConnectionFactoryName" groupName="Common" propertyOrder="4">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
                     <prop:Property attributeName="deliveryMode" groupName="Provider" propertyOrder="1">
@@ -159,11 +161,6 @@
 				<xs:attribute name="destinationType" type="jms:destinationTypes" use="required">
 					<xs:annotation>
 						<xs:documentation>Defines the type (domain) of the destination where message are sent or received</xs:documentation>
-					</xs:annotation>
-				</xs:attribute>
-				<xs:attribute name="jndiConnectionFactoryName" type="xs:string" use="optional">
-					<xs:annotation>
-						<xs:documentation>When JNDI is used to look up the JMS connection factory, this attribute specifies the JNDI name of the connection factory to look up.</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="transaction" type="jms:transactionSupportTypes" use="optional" default="NoTransaction">
