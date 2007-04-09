@@ -132,9 +132,10 @@ public class JavaCodegen implements ICodeGenerator {
 		    tfo.setAttribute("javax.script.ScriptEngine", "freemarker");
 		    DataObject obj = DataObject.find(tfo);
 	    		    
-		    if (clinfo.getExportSourceFolderFileObject() != null) {
+		    FileObject dfo = clinfo.getExportPackageFileObject();
+		    if (dfo != null) {
 		
-			DataFolder folder = DataFolder.findFolder(FileUtil.toFileObject(new File(clinfo.getExportSourcePackage())));
+			DataFolder folder = DataFolder.findFolder(dfo);
 			//Map parameters = Collections.singletonMap("classInfo", clinfo);
 			HashMap parameters = new HashMap();
 			parameters.put("classInfo", clinfo);

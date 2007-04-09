@@ -356,6 +356,8 @@ public class ClassInfo extends ElementInfo
             while ((owner = owner.getOwner()) != null &&
                 !(owner instanceof IPackage));
             
+
+	    
             if (owner == null)
             {
                 // What manner of demonic IClassifier is this anyway?
@@ -364,15 +366,14 @@ public class ClassInfo extends ElementInfo
                 return null;
             }
             
-            String packName;
-	    if (owner instanceof IProject) 
-	    {	    
-		packName = "";
-	    }
-	    else 
+            String packName = "";
+	    if ( ! (owner instanceof IProject) ) 
 	    {
 		IPackage pack = (IPackage)owner;
-		packName = pack.getName();
+		String fqn = pack.getFullyQualifiedName(false);
+		if (fqn != null) {
+		    packName = fqn.replace("::", File.separator);
+		}		
 	    }
             return createPath(getExportSourceFolderName(), packName);
         }
@@ -2283,7 +2284,7 @@ public class ClassInfo extends ElementInfo
             if (!file.mkdirs())
                 return null;
         }
-        
+       
         return FileUtil.toFileObject(file);
     }
     
@@ -2293,7 +2294,7 @@ public class ClassInfo extends ElementInfo
 
         if (!file.exists())
         {
-            if (!file.mkdir())
+            if (!file.mkdirs())
                 return null;
         }
         
