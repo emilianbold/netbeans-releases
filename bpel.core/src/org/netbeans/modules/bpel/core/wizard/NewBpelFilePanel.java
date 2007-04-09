@@ -22,7 +22,6 @@
 package org.netbeans.modules.bpel.core.wizard;
 
 import java.awt.Component;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,19 +30,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  *
  * from nb webservice module
  */
-final class NewBpelFilePanel implements WizardDescriptor.Panel {
+final class NewBpelFilePanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
     NewBpelFilePanel(Project project, SourceGroup[] folders) {
         this.folders = folders;
@@ -94,23 +89,19 @@ final class NewBpelFilePanel implements WizardDescriptor.Panel {
         }
     }
 
-    public void readSettings( Object settings ) {
+    public void readSettings( WizardDescriptor settings ) {
         templateWizard = (TemplateWizard)settings;
     }
 
-    public void storeSettings(Object settings) {
-        if ( WizardDescriptor.PREVIOUS_OPTION.equals( 
-                ((WizardDescriptor)settings).getValue() ) ) 
-        {
+    public void storeSettings(WizardDescriptor settings) {
+        if ( WizardDescriptor.PREVIOUS_OPTION.equals( settings.getValue() ) ) {
             return;
         }
-        if ( WizardDescriptor.CANCEL_OPTION.equals( 
-                ((WizardDescriptor)settings).getValue() ) ) 
-        {
+        if ( WizardDescriptor.CANCEL_OPTION.equals( settings.getValue() ) ) {
             return;
         }
         
-        ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
+        settings.putProperty ("NewFileWizard_Title", null); // NOI18N
     }
     
     String getNS() {
@@ -119,6 +110,10 @@ final class NewBpelFilePanel implements WizardDescriptor.Panel {
     
     String getWsName() {
         return gui.getWsName();
+    }
+    
+    Project getProject() {
+        return project;
     }
 
     private final List/*<ChangeListener>*/ listeners = new ArrayList();

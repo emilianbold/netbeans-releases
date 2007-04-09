@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -26,12 +26,15 @@
 package org.netbeans.modules.bpel.core.wizard;
 
 
+import java.text.MessageFormat;
 import javax.swing.JTextField;
 
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 
 /**
  *
@@ -44,6 +47,9 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
     private static final String DEFAULT_SERVICE_NAME =
             NbBundle.getMessage(BpelOptionsPanel.class,
             "TXT_defaultServiceName");                                      //NOI18N
+    private static final String DEFAULT_PROJECT_NAME =
+            NbBundle.getMessage(BpelOptionsPanel.class,
+            "TXT_defaultProjectName");                                      //NOI18N
     private static final String TARGET_URL_PREFIX =
             NbBundle.getMessage(BpelOptionsPanel.class,"TXT_defaultTNS");   //NOI18N
     
@@ -63,35 +69,37 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         buttonGroup1 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(BpelOptionsPanel.class, "LBL_Namespace"));
         namespaceTextField = new javax.swing.JTextField();
 
         jLabel1.setLabelFor(namespaceTextField);
-        jLabel1.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/bpel/core/wizard/Bundle").getString("ACS_NamespaceLabel"));
-
-        namespaceTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/bpel/core/wizard/Bundle").getString("ACS_NamespaceTextField"));
-        namespaceTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/bpel/core/wizard/Bundle").getString("ACS_NamespaceTextFieldDescription"));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 94, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(namespaceTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE))
+                .add(namespaceTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 460, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(4, 4, 4)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(namespaceTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(namespaceTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(198, 198, 198))
         );
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/bpel/core/wizard/Bundle"); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NamespaceLabel")); // NOI18N
+        namespaceTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NamespaceTextField")); // NOI18N
+        namespaceTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NamespaceTextFieldDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     boolean valid(WizardDescriptor wizardDescriptor) {
@@ -125,16 +133,47 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
         
         this.fileNameTF=fileNameTF;
         if (fileNameTF!=null) {
-            namespaceTextField.setText(getPrefix()  +fileNameTF.getText());
             DocListener listener = new DocListener();
             javax.swing.text.Document doc = fileNameTF.getDocument();
             doc.addDocumentListener(listener);
-        } else {
-            namespaceTextField.setText(getPrefix() + DEFAULT_SERVICE_NAME);
         }
         
+        String newNamespace = generateNamespace();
+        namespaceTextField.setText(newNamespace);
+        
         // initialise.
-        prevNamespace = namespaceTextField.getText();
+        prevNamespace = newNamespace;
+        
+    }
+    
+    /**
+     * Generates a namespace by the template. 
+     * Names of the project and the process are used here.
+     */ 
+    private String generateNamespace() {
+        String projectName = null;
+        Project proj = newBpelFilePanel.getProject();
+        if (proj != null) {
+            ProjectInformation projInfo = ProjectUtils.getInformation(proj);
+            if (projInfo != null) {
+                projectName = projInfo.getName();
+            }
+        }
+        if (projectName == null || projectName.length() == 0) {
+            projectName = DEFAULT_PROJECT_NAME;
+        }
+        //
+        String serviceName = null;
+        if (fileNameTF != null) {
+            serviceName = fileNameTF.getText();
+        }
+        if (serviceName == null || serviceName.length() == 0) {
+            serviceName = DEFAULT_SERVICE_NAME;
+        }
+        //
+        String result = MessageFormat.format(
+                TARGET_URL_PREFIX, projectName, serviceName);
+        return result;
         
     }
     
@@ -147,7 +186,7 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
     NewBpelFilePanel newBpelFilePanel;
     private JTextField fileNameTF;
     private String prevNamespace;
-        private boolean nameSpaceModifiedFlag = false;
+    private boolean nameSpaceModifiedFlag = false;
     
     private void doUpdate() {
         if(namespaceTextField.getText()!=null && prevNamespace != null)
@@ -155,8 +194,9 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
                 nameSpaceModifiedFlag = true;
         
         if(!nameSpaceModifiedFlag) {
-            namespaceTextField.setText(getPrefix() +fileNameTF.getText());
-            prevNamespace = namespaceTextField.getText();
+            String newNamespace = generateNamespace();
+            namespaceTextField.setText(newNamespace);
+            prevNamespace = newNamespace;
         }
     }
     
@@ -190,25 +230,21 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
             newBpelFilePanel.fireChange();
         }
     };
-  
+    
     
     private void checkValidNamespace() {
         if(newBpelFilePanel.getTemplateWizard() == null)
             return;
         
         if(namespaceTextField.getText().contains(" ")) {
-           newBpelFilePanel.getTemplateWizard().
-               putProperty("WizardPanel_errorMessage",                  // NOI18N
-                   NbBundle.getMessage(BpelOptionsPanel.class, 
-                           "MSG_Namespace_Contains_Space"));            // NOI18N
-        }
-        else {
-           newBpelFilePanel.getTemplateWizard().
-           putProperty("WizardPanel_errorMessage", null);               //NOI18N
+            newBpelFilePanel.getTemplateWizard().
+                    putProperty("WizardPanel_errorMessage",                  // NOI18N
+                    NbBundle.getMessage(BpelOptionsPanel.class,
+                    "MSG_Namespace_Contains_Space"));            // NOI18N
+        } else {
+            newBpelFilePanel.getTemplateWizard().
+                    putProperty("WizardPanel_errorMessage", null);               //NOI18N
         }
     }
     
-    private String getPrefix() {
-        return TARGET_URL_PREFIX;
-    }
 }
