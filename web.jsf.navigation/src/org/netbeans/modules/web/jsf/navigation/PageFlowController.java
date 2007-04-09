@@ -603,7 +603,7 @@ public class PageFlowController {
             String newDisplayName = fileObj.getNameExt();
             String oldDisplayName = fe.getName() + "." + fe.getExt(); // Original Name;
             
-            PageFlowNode oldNode = pageName2Node.get(oldDisplayName);            
+            PageFlowNode oldNode = pageName2Node.get(oldDisplayName);
             PageFlowNode abstractNode = pageName2Node.get(newDisplayName);
             
             Node newNodeDelegate = null;
@@ -616,89 +616,92 @@ public class PageFlowController {
             //If we are in project view scope
             if( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ){
                 assert oldNode != null;
-                
-                //If new node has an abstract node representation already.
-                //  True:  Replace the abstract node with the new data node file.
-                //             * if( oldNode in facesConfig ) -> turn old node into abstract
-                //             * else -> remove old node altogether.
-                //             * make abstract node represent file node.
-                // False:
-                //             * if( oldNode in facesConfig ) -> make abstract node and create new datanode
-                //             * else -> reset node.
-                if( abstractNode != null ){
-                    assert !abstractNode.isDataNode();  //Never should this have already been a file node.
-                    //Figure out what to do with old node.
-                    if (isPageInFacesConfig(oldDisplayName)){
-                        changeToAbstractNode(oldNode, oldDisplayName);
-                    } else {
-                        view.removeNodeWithEdges(oldNode);
-                    }
-                    abstractNode.replaceWrappedNode(newNodeDelegate);
-                    view.resetNodeWidget(abstractNode);
-                } else {
-                    if( isPageInFacesConfig(oldDisplayName) ){
-                        changeToAbstractNode(oldNode, oldDisplayName);
-                        PageFlowNode newNode = createPageFlowNode(newNodeDelegate);
-                        view.createNode(newNode, null, null);
-                    } else {
-                        view.resetNodeWidget(oldNode);
-                    }
-                }
-                
-                view.validateGraph();
-                
-            } else {
-                if( abstractNode != null ){
-                    assert !abstractNode.isDataNode();  //Never should this have already been a file node.
-                    //Figure out what to do with old node.
-                    if (isPageInFacesConfig(oldDisplayName)){   //Technically in faces config mode this is the same as asking if oldnode == null
-                        changeToAbstractNode(oldNode, oldDisplayName);
-                    } else {
-                        if( oldNode != null ) {
-                            view.removeNodeWithEdges(oldNode);
-                        }
-                    }
-                    abstractNode.replaceWrappedNode(newNodeDelegate);
-                    view.resetNodeWidget(abstractNode);
-                } else {
-                    if( isPageInFacesConfig(oldDisplayName) ){  //Same as asking if old node is null
-                        changeToAbstractNode(oldNode, oldDisplayName);
-                        /* You don't do this in FacesConfig Mode */
-//                        PageFlowNode newNode = createPageFlowNode(newNodeDelegate);
-//                        view.createNode(newNode, null, null);
-                    } else {
-                        if( oldNode != null ) {
-                            view.resetNodeWidget(oldNode);
-                        }
-                    }
-                }
-                
-                view.validateGraph();
-//                //Check if there is already a node by this name.
-//                PageFlowNode abstractNode = pageName2Node.get(newDisplayName);
-//                if( abstractNode != null ){
-//                    Node nodeDelegate = null;
-//                    try {
-//                        nodeDelegate= (DataObject.find(fileObj)).getNodeDelegate();
-//                    } catch ( DataObjectNotFoundException donfe ){
-//                        Exceptions.printStackTrace(donfe);
-//                    }
-//                    assert !abstractNode.isDataNode();
-//                    abstractNode.replaceWrappedNode(nodeDelegate);
-//                    view.resetNodeWidget(abstractNode);
-//                }
-//                if( oldNode == null ){
-//                    // Do nothing to the old node since it is not in view.
-//                } else {
-//                    //1. Make Old Node an abstract node
-//                    changeToAbstractNode(oldNode, oldDisplayName);
-//                    
-//                    // Do not add the node because you are in FacesConfigModel.
-//                    view.validateGraph();
-//                }
             }
             
-     
+            //If new node has an abstract node representation already.
+            //  True:  Replace the abstract node with the new data node file.
+            //             * if( oldNode in facesConfig ) -> turn old node into abstract
+            //             * else -> remove old node altogether.
+            //             * make abstract node represent file node.
+            // False:
+            //             * if( oldNode in facesConfig ) -> make abstract node and create new datanode
+            //             * else -> reset node.
+            if( abstractNode != null ){
+                assert !abstractNode.isDataNode();  //Never should this have already been a file node.
+                //Figure out what to do with old node.
+                if (isPageInFacesConfig(oldDisplayName)){
+                    changeToAbstractNode(oldNode, oldDisplayName);
+                } else if ( oldNode != null ){
+                    view.removeNodeWithEdges(oldNode);
+                }
+                abstractNode.replaceWrappedNode(newNodeDelegate);
+                view.resetNodeWidget(abstractNode);
+            } else if ( oldNode != null ){
+                if( isPageInFacesConfig(oldDisplayName) ){
+                    changeToAbstractNode(oldNode, oldDisplayName);
+                    if( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT ) {
+                        PageFlowNode newNode = createPageFlowNode(newNodeDelegate);
+                        view.createNode(newNode, null, null);
+                    }
+                } else {
+                    view.resetNodeWidget(oldNode);
+                }
+            }
+            
+            view.validateGraph();
+            
+            //            } else {
+            //                if( abstractNode != null ){
+            //                    assert !abstractNode.isDataNode();  //Never should this have already been a file node.
+            //                    //Figure out what to do with old node.
+            //                    if (isPageInFacesConfig(oldDisplayName)){   //Technically in faces config mode this is the same as asking if oldnode == null
+            //                        changeToAbstractNode(oldNode, oldDisplayName);
+            //                    } else {
+            //                        if( oldNode != null ) {
+            //                            view.removeNodeWithEdges(oldNode);
+            //                        }
+            //                    }
+            //                    abstractNode.replaceWrappedNode(newNodeDelegate);
+            //                    view.resetNodeWidget(abstractNode);
+            //                } else {
+            //                    if( isPageInFacesConfig(oldDisplayName) ){  //Same as asking if old node is null
+            //                        changeToAbstractNode(oldNode, oldDisplayName);
+            //                        /* You don't do this in FacesConfig Mode */
+            ////                        PageFlowNode newNode = createPageFlowNode(newNodeDelegate);
+            ////                        view.createNode(newNode, null, null);
+            //                    } else {
+            //                        if( oldNode != null ) {
+            //                            view.resetNodeWidget(oldNode);
+            //                        }
+            //                    }
+            //                }
+            
+            //            view.validateGraph();
+            //                //Check if there is already a node by this name.
+            //                PageFlowNode abstractNode = pageName2Node.get(newDisplayName);
+            //                if( abstractNode != null ){
+            //                    Node nodeDelegate = null;
+            //                    try {
+            //                        nodeDelegate= (DataObject.find(fileObj)).getNodeDelegate();
+            //                    } catch ( DataObjectNotFoundException donfe ){
+            //                        Exceptions.printStackTrace(donfe);
+            //                    }
+            //                    assert !abstractNode.isDataNode();
+            //                    abstractNode.replaceWrappedNode(nodeDelegate);
+            //                    view.resetNodeWidget(abstractNode);
+            //                }
+            //                if( oldNode == null ){
+            //                    // Do nothing to the old node since it is not in view.
+            //                } else {
+            //                    //1. Make Old Node an abstract node
+            //                    changeToAbstractNode(oldNode, oldDisplayName);
+            //
+            //                    // Do not add the node because you are in FacesConfigModel.
+            //                    view.validateGraph();
+            //                }
+            //        }
+            
+            
             
         }
         
