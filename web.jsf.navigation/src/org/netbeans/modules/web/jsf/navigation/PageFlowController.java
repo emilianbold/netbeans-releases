@@ -650,59 +650,6 @@ public class PageFlowController {
             
             view.validateGraph();
             
-            //            } else {
-            //                if( abstractNode != null ){
-            //                    assert !abstractNode.isDataNode();  //Never should this have already been a file node.
-            //                    //Figure out what to do with old node.
-            //                    if (isPageInFacesConfig(oldDisplayName)){   //Technically in faces config mode this is the same as asking if oldnode == null
-            //                        changeToAbstractNode(oldNode, oldDisplayName);
-            //                    } else {
-            //                        if( oldNode != null ) {
-            //                            view.removeNodeWithEdges(oldNode);
-            //                        }
-            //                    }
-            //                    abstractNode.replaceWrappedNode(newNodeDelegate);
-            //                    view.resetNodeWidget(abstractNode);
-            //                } else {
-            //                    if( isPageInFacesConfig(oldDisplayName) ){  //Same as asking if old node is null
-            //                        changeToAbstractNode(oldNode, oldDisplayName);
-            //                        /* You don't do this in FacesConfig Mode */
-            ////                        PageFlowNode newNode = createPageFlowNode(newNodeDelegate);
-            ////                        view.createNode(newNode, null, null);
-            //                    } else {
-            //                        if( oldNode != null ) {
-            //                            view.resetNodeWidget(oldNode);
-            //                        }
-            //                    }
-            //                }
-            
-            //            view.validateGraph();
-            //                //Check if there is already a node by this name.
-            //                PageFlowNode abstractNode = pageName2Node.get(newDisplayName);
-            //                if( abstractNode != null ){
-            //                    Node nodeDelegate = null;
-            //                    try {
-            //                        nodeDelegate= (DataObject.find(fileObj)).getNodeDelegate();
-            //                    } catch ( DataObjectNotFoundException donfe ){
-            //                        Exceptions.printStackTrace(donfe);
-            //                    }
-            //                    assert !abstractNode.isDataNode();
-            //                    abstractNode.replaceWrappedNode(nodeDelegate);
-            //                    view.resetNodeWidget(abstractNode);
-            //                }
-            //                if( oldNode == null ){
-            //                    // Do nothing to the old node since it is not in view.
-            //                } else {
-            //                    //1. Make Old Node an abstract node
-            //                    changeToAbstractNode(oldNode, oldDisplayName);
-            //
-            //                    // Do not add the node because you are in FacesConfigModel.
-            //                    view.validateGraph();
-            //                }
-            //        }
-            
-            
-            
         }
         
         public void changeToAbstractNode(PageFlowNode oldNode, String displayName ) {
