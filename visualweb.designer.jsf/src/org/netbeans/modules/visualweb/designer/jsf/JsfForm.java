@@ -351,12 +351,12 @@ public class JsfForm {
         if (facesModel == null) {
             return null;
         }
-        return getJsfForm(facesModel);
+        return findJsfForm(facesModel);
     }
     
-    static JsfForm findJsfForm(FacesModel facesModel) {
-        return getJsfForm(facesModel);
-    }
+//    static JsfForm findJsfForm(FacesModel facesModel) {
+//        return findJsfForm(facesModel);
+//    }
 
     /*private*/ static JsfForm findJsfForm(FileObject fileObject) {
         if (fileObject == null) {
@@ -367,7 +367,7 @@ public class JsfForm {
         if (facesModel == null) {
             return null;
         }
-        return getJsfForm(facesModel);
+        return findJsfForm(facesModel);
     }
     
     /*private*/ static JsfForm findJsfForm(DesignContext designContext) {
@@ -379,7 +379,7 @@ public class JsfForm {
         if (facesModel == null) {
             return null;
         }
-        return getJsfForm(facesModel);
+        return findJsfForm(facesModel);
     }
     
     private static JsfForm findJsfForm(Element element) {
@@ -391,7 +391,7 @@ public class JsfForm {
         return findJsfForm(designContext);
     }
     
-    private static JsfForm getJsfForm(FacesModel facesModel) {
+    /*private*/ static JsfForm findJsfForm(FacesModel facesModel) {
         synchronized (facesModel2jsfForm) {
             return facesModel2jsfForm.get(facesModel);
         }
