@@ -236,6 +236,13 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
             if(FileUtil.isParentOf(sourceGroup.getRootFolder(),source))
                 return sourceGroup.getRootFolder();
         }
+        
+        FileObject metaInf = project.getProjectDirectory().getFileObject("src/conf"); //NOI18N
+        if (metaInf != null) {
+            if (FileUtil.isParentOf(metaInf, source)) {
+                return metaInf;
+            }
+        }
         return null;
     }
     
