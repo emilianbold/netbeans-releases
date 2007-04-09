@@ -96,8 +96,7 @@ public class PageFlowController {
         webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
         webFiles = getAllProjectRelevantFilesObjects();
         
-        setupGraph();
-        view.layoutSceneImmediately();
+//        setupGraph();
     }
     
     
@@ -146,7 +145,7 @@ public class PageFlowController {
      * @param comp
      * @return
      */
-    public NavigationCase createLink(Node source, Node target, String comp) {
+    public NavigationCase createLink(PageFlowNode source, PageFlowNode target, String comp) {
         
         String sourceName = source.getDisplayName();
         int caseNum = 1;
@@ -266,6 +265,7 @@ public class PageFlowController {
         assert configModel !=null;
         assert webFolder != null;
         assert webFiles != null;
+
         
         view.clearGraph();
         pageName2Node.clear();
@@ -535,7 +535,9 @@ public class PageFlowController {
                     webFiles.add(fileObj);
                     DataObject dataObj = DataObject.find(fileObj);
                     Node dataNode = dataObj.getNodeDelegate();
-                    PageFlowNode pageNode = pageName2Node.get(dataNode.getDisplayName());
+//                    PageFlowNode pageNode = pageName2Node.get(dataNode.getDisplayName());
+                    //DISPLAYNAME: 
+                    PageFlowNode pageNode = pageName2Node.get(PageFlowNode.getFolderDisplayName(getWebFolder(), fileObj));
                     if( pageNode != null  ) {
                         pageNode.replaceWrappedNode(dataNode);
                         view.resetNodeWidget(pageNode);
@@ -563,12 +565,14 @@ public class PageFlowController {
                 return;
             }
             
-            String pageDisplayName = fileObj.getNameExt();
+            //DISPLAYNAME:
+            String pageDisplayName = PageFlowNode.getFolderDisplayName(getWebFolder(), fileObj);
+//            String pageDisplayName = fileObj.getNameExt();
             webFiles.remove(fileObj);
             
             PageFlowNode oldNode = pageName2Node.get(pageDisplayName);
             if( oldNode != null ) {
-                if( oldNode.isDataNode() ) {
+                if( oldNode.isDataNode() && isPageInFacesConfig(oldNode.getDisplayName())) {
                     Node tmpNode = new AbstractNode(Children.LEAF);
                     tmpNode.setName(pageDisplayName);
                     oldNode.replaceWrappedNode(tmpNode);
@@ -579,19 +583,6 @@ public class PageFlowController {
                 view.validateGraph();   //Either action validate graph
             }
             
-            //            PageFlowNode node = pageName2Node.get(pageDisplayName);
-            //            if (node != null ) {
-            //                Node tmpNode = new AbstractNode(Children.LEAF);
-            //                tmpNode.setName(pageDisplayName);
-            //                node = new PageFlowNode(tmpNode);
-            //            }
-            //This is tricky because we don't just want the NameExt, we want the display name.
-            //                String displayName = fe.getFile().getNameExt();
-            ////                DataObject dataObj = DataObject.find(fe.getFile());
-            //                PageFlowNode node = pageName2Node.remove(displayName);
-            //                view.removeNode(node);
-            //                PageFlowNode pfn = new PageFlowNode
-            //                view.validateGraph();
             
         }
         
@@ -613,8 +604,12 @@ public class PageFlowController {
                 //I may still need to modify display names.
                 return;
             }
-            String newDisplayName = fileObj.getNameExt();
-            String oldDisplayName = fe.getName() + "." + fe.getExt(); // Original Name;
+            //DISPLAYNAME:
+            String newDisplayName  = PageFlowNode.getFolderDisplayName(getWebFolder(), fileObj);
+            String path = fileObj.getPath().replace(fileObj.getNameExt(), "");
+            String oldDisplayName = PageFlowNode.getFolderDisplayName(getWebFolder(), path, fe.getName() + "." + fe.getExt());
+//            String newDisplayName = fileObj.getNameExt();
+//            String oldDisplayName = fe.getName() + "." + fe.getExt(); // Original Name;
             
             PageFlowNode oldNode = pageName2Node.get(oldDisplayName);
             PageFlowNode abstractNode = pageName2Node.get(newDisplayName);

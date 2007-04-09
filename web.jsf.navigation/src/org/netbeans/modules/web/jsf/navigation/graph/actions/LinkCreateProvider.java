@@ -33,6 +33,7 @@ import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.web.jsf.navigation.PageFlowController;
+import org.netbeans.modules.web.jsf.navigation.PageFlowNode;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.nodes.Node;
 
@@ -43,8 +44,8 @@ import org.openide.nodes.Node;
 public class LinkCreateProvider implements ConnectProvider {
     
     private PageFlowScene graphScene;
-    Node source = null;
-    Node target = null;
+    PageFlowNode source = null;
+    PageFlowNode target = null;
     String navComp = null;
     
     /**
@@ -69,7 +70,7 @@ public class LinkCreateProvider implements ConnectProvider {
 //            source = (Page)object;
 //        }
         if( graphScene.isNode(object)){
-            source = (Node)object;
+            source = (PageFlowNode)object;
         }
         
         return source != null;
@@ -79,7 +80,7 @@ public class LinkCreateProvider implements ConnectProvider {
     public ConnectorState isTargetWidget(Widget sourceWidget, Widget targetWidget) {
         target = null;
         Object object = graphScene.findObject(targetWidget);
-        target = graphScene.isNode(object) ? (Node) object : null;
+        target = graphScene.isNode(object) ? (PageFlowNode) object : null;
         if (target != null)
             return ConnectorState.ACCEPT;
         return object != null ? ConnectorState.REJECT_AND_STOP : ConnectorState.REJECT;

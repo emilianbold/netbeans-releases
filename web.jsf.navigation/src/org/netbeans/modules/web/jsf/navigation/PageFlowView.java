@@ -76,6 +76,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         this.context = context;
         init();
         pfc = new PageFlowController( context,  this );
+        pfc.setupGraph();
         setFocusable(true);
         
         //        this(context, new InstanceContent());
