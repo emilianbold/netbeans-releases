@@ -30,7 +30,9 @@ import org.netbeans.modules.xml.axi.AbstractElement;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
+import org.netbeans.modules.xslt.mapper.view.XsltMapper;
 import org.netbeans.modules.xslt.model.AttributeValueTemplate;
+import org.netbeans.modules.xslt.model.Template;
 import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslVisitorAdapter;
 
@@ -124,7 +126,24 @@ public class AXIUtils {
         }
         
     }
+
     
+    public static List<AXIComponent> getChildTypes(AXIComponent axic)  {
+        
+        final List<AXIComponent> result = new ArrayList<AXIComponent>();
+        
+        if (axic != null) {
+            new AXIUtils.ElementVisitor(){
+                public void visit(AXIComponent c){
+                    result.add(c);
+                }
+            }.visitSubelements((org.netbeans.modules.xml.axi.Element) axic);
+        }
+        
+        return result;
+        
+    }
+
     /**
      * Prepares XPath for the specified Schema node.
      */
@@ -160,6 +179,36 @@ public class AXIUtils {
         //
         return path;
     }
-    
+
+    public static AXIComponent getType(XslComponent xslc, XsltMapper mapper){
+        if (xslc == null){
+            return null;
+        }
+        XslComponent xsl_parent = xslc.getParent();
+        if (xsl_parent instanceof Template){ //no declaration nodes fond downtree
+            AXIComponent axi_root =
+                    mapper.getContext().getTargetType();
+            if( axi_root == null){
+                return null;
+            }
+            
+            if (AXIUtils.isSameSchemaType(xslc, axi_root)) {
+                return axi_root;
+            }
+            
+        } else if (xsl_parent != null) {
+            AXIComponent axi_parent = getType(xsl_parent, mapper);
+            if (axi_parent != null){
+                for (AXIComponent type: axi_parent.getChildElements()){
+                    if (AXIUtils.isSameSchemaType(xslc, type)){
+                        return type;
+                    }
+                }
+            }
+        }
+        return null;
+        
+    }
+
     
 }

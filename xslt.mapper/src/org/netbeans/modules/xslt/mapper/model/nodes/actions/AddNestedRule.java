@@ -23,7 +23,7 @@ import java.awt.event.ActionEvent;
 import java.lang.reflect.Method;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.xslt.mapper.model.ModelBridge.XslBranchConstructor;
+import org.netbeans.modules.xslt.mapper.model.BranchConstructor;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.SchemaNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.StylesheetNode;
@@ -75,8 +75,8 @@ public class AddNestedRule extends XsltNodeAction {
         try {
             XslComponent parentComp = null;
             if (myTreeNode instanceof SchemaNode) {
-                XslBranchConstructor xbc = 
-                        new XslBranchConstructor((SchemaNode)myTreeNode, model);
+                BranchConstructor xbc = 
+                        new BranchConstructor((SchemaNode)myTreeNode, getMapper());
                 xbc.exitTranactionOnFinish(false);
                 parentComp = xbc.construct();
             } else if (myTreeNode instanceof StylesheetNode) {

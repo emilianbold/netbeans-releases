@@ -2,26 +2,25 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xslt.mapper.model.targettree;
 
-import java.awt.ComponentOrientation;
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -52,7 +51,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexey
  */
-public class ElementDeclarationNode extends DeclarationNode 
+public class ElementDeclarationNode extends DeclarationNode
         implements TooltipTextProvider {
     
     
@@ -62,10 +61,10 @@ public class ElementDeclarationNode extends DeclarationNode
     protected List<TreeNode> loadChildren() {
         XslComponent myself = (XslComponent) getDataObject();
         
-        final Collection<AXIComponent> declaredTypes
-                = new ArrayList<AXIComponent>();
         
-        final List<TreeNode> result = new ArrayList<TreeNode>();
+        List<AXIComponent> childTypes = AXIUtils.getChildTypes(getType());
+        List<AXIComponent> usedTypes = new ArrayList<AXIComponent>();
+        List<TreeNode> xslNodes = new ArrayList<TreeNode>();
         
         //dont show child XSL components if the only child of current eleemnt is "value-of" element
         if (GetExpressionVisitor.isValueOfContainer(myself) == null) {
@@ -74,58 +73,48 @@ public class ElementDeclarationNode extends DeclarationNode
             for(XslComponent c: children){
                 TreeNode newNode = (TreeNode) NodeFactory.createNode(c, getMapper());
                 
-                if (newNode != null){
-                    newNode.setParent(this);
-                    result.add(newNode);
-                    declaredTypes.add(newNode.getType());
+                if (newNode == null){
+                    continue;
                 }
+                
+                newNode.setParent(this);
+                xslNodes.add(newNode);
+                usedTypes.add(newNode.getType());
             }
         }
-        AXIComponent axic = getType();
+        TreeNode current = null;
+        int lastPos = 0;
+        List<TreeNode> results = new ArrayList<TreeNode>();
         
-        if (axic != null) {
-            new AXIUtils.ElementVisitor(){
-                public void visit(AXIComponent c){
-                    if (!declaredTypes.contains(c)){
-                        TreeNode newNode = (TreeNode) NodeFactory.createNode(c, getMapper());
-                        if (newNode != null){
-                            newNode.setParent(ElementDeclarationNode.this);
-                            result.add(newNode);
-                        }
-                        
+        for(TreeNode xsl_tn: xslNodes){
+            AXIComponent type = xsl_tn.getType();
+            int pos0 = childTypes.indexOf(type);
+            if (pos0 > 0){
+                for(int n = lastPos; n < pos0; n++){
+                    AXIComponent t = childTypes.get(n);
+                    if(!usedTypes.contains(t)){
+                        results.add(createSchemaNode(t));
                     }
+                    
                 }
-            }.visitSubelements((org.netbeans.modules.xml.axi.Element) axic);
-            
-            
+                lastPos = pos0 + 1;
+            }
+            results.add(xsl_tn);
         }
-        return result;
+        
+        //add the remaining schema nodes
+        for(int n = lastPos; n < childTypes.size(); n++){
+            AXIComponent t = childTypes.get(n);
+            
+            if(!usedTypes.contains(t)){
+                results.add(createSchemaNode(t));
+            }
+        }
+        return results;
     }
     
     public AXIComponent getType() {
-        AXIComponent parent_type = getParent().getType();
-        XslComponent component = getComponent();
-        
-        if (parent_type == null){ //no declaration nodes fond downtree
-            AXIComponent axi_root =
-                    getMapper().getContext().getTargetType();
-            if( axi_root == null){
-                return null;
-            }
-            
-            if (AXIUtils.isSameSchemaType(component, axi_root)) {
-                return axi_root;
-            }
-            
-        } else {
-            
-            for (AXIComponent c: parent_type.getChildElements()){
-                if (AXIUtils.isSameSchemaType(component, c)){
-                    return c;
-                }
-            }
-        }
-        return null;
+        return AXIUtils.getType(getComponent(), getMapper());
     }
     
     public void accept(NodeVisitor visitor) {
@@ -224,4 +213,14 @@ public class ElementDeclarationNode extends DeclarationNode
         return rootMenu;
     }
     
+    private TreeNode createSchemaNode(AXIComponent c){
+        TreeNode newNode = (TreeNode) NodeFactory.createNode(c, getMapper());
+        if (newNode != null){
+            newNode.setParent(ElementDeclarationNode.this);
+        }
+        return newNode;
+    }
+    
+    
+   
 }

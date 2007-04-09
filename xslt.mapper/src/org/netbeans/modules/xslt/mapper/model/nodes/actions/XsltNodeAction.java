@@ -52,4 +52,7 @@ public abstract class XsltNodeAction extends AbstractAction {
     public Icon getIcon() {
         return null;
     }
+    public XsltMapper getMapper(){
+        return myXsltMapper;
+    }
 }

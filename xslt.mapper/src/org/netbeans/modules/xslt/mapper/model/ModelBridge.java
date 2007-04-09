@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.xslt.mapper.model;
 
+import com.sun.org.apache.xerces.internal.dom.ParentNode;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -51,6 +52,7 @@ import org.netbeans.modules.xml.xpath.XPathExpression;
 import org.netbeans.modules.xslt.mapper.methoid.Constants;
 import org.netbeans.modules.xslt.mapper.model.nodes.Node;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
+import org.netbeans.modules.xslt.mapper.model.targettree.AXIUtils;
 import org.netbeans.modules.xslt.mapper.model.targettree.SchemaNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.StylesheetNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.TargetTreeModel;
@@ -154,7 +156,7 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
                 visitor_ge.getResult().getExpressionString() != null &&
                 visitor_ge.getResult().getExpressionString().length() > 0) {
             XslModel model = mapper.getContext().getXSLModel();
-            xslc = new XslBranchConstructor((SchemaNode) owner, model).construct();
+            xslc = new BranchConstructor((SchemaNode) owner, mapper).construct();
         } else {
             xslc = (XslComponent) owner.getDataObject();
         }
@@ -197,7 +199,7 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
             expr = AbstractXPathModelHelper.getInstance().newXPathNumericLiteral(new Long(0));
         } else if (methodName.equals(Constants.DURATION_LITERAL)) {
             expr = AbstractXPathModelHelper.getInstance()
-                    .newXPathStringLiteral("P0Y0M0DT0H0M0S");
+            .newXPathStringLiteral("P0Y0M0DT0H0M0S");
         } else if (methodName.equals(Constants.STRING_LITERAL) || methodName.equals(Constants.XPATH_LITERAL)) {
             expr = AbstractXPathModelHelper.getInstance().newXPathStringLiteral("");
         } else {
@@ -308,8 +310,8 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
         if (mapper.getContext() != null){
             XslModel xslModel = mapper.getContext().getXSLModel();
             if (xslModel == null || xslModel.getState() != XslModel.State.VALID){
-                errorMessages += NbBundle.getMessage(
-                        ModelBridge.class, "MSG_Error_BadXSL");// NOI18N
+                errorMessages +=
+                        NbBundle.getMessage(ModelBridge.class, "MSG_Error_BadXSL");// NOI18N
             }
             
             Stylesheet stylesheet = xslModel.getStylesheet();
@@ -371,7 +373,7 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
         JTree destTree = mapper.getMapperViewManager().getDestView().getTree();
         
         TreeNode treeRoot = (TreeNode) destTree.getModel().getRoot();
-
+        
         TreePath startFrom_tp = TreeNode.getTreePath(treeRoot);
         
         //save the expanded state
@@ -435,122 +437,7 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
         return n;
     }
     
-    public static XslComponent createXslElementOrAttribute(XslComponent parent, AXIComponent type){
-        assert (parent instanceof SequenceConstructor);
-        XslModel model = parent.getModel();
-        XslComponent nameHolder = null;
-        if (type instanceof AbstractAttribute) {
-            nameHolder = model.getFactory().createAttribute();
-        } else if (type instanceof AbstractElement){
-            nameHolder = model.getFactory().createElement();
-        } else {
-            assert false : "Cant recognize element type for new XSL element";
-        }
-        //
-        if (nameHolder != null){
-            AttributeValueTemplate nameAVT;
-            AttributeValueTemplate namespaceAVT = null;
-            //
-            String name = ((AXIType) type).getName();
-            if (AxiomUtils.isUnqualified(type)) {
-                nameAVT = ((AttrValueTamplateHolder)nameHolder).
-                        createTemplate(name);
-                namespaceAVT = ((AttrValueTamplateHolder)nameHolder).
-                        createTemplate("");
-            } else {
-                String namespace = type.getTargetNamespace();
-                QName elementQName = new QName(namespace, name);
-                nameAVT = ((AttrValueTamplateHolder)nameHolder).
-                        createTemplate(elementQName);
-            }
-            //
-            if (model.isIntransaction()) {
-                //
-                ((AttrValueTamplateHolder)nameHolder).setName(nameAVT);
-                if (namespaceAVT != null) {
-                    ((NamespaceSpec)nameHolder).setNamespace(namespaceAVT);
-                }
-                //
-                ((SequenceConstructor)parent).appendSequenceChild(
-                        (SequenceElement)nameHolder);
-            } else {
-                model.startTransaction();
-                try {
-                    //
-                    ((AttrValueTamplateHolder)nameHolder).setName(nameAVT);
-                    if (namespaceAVT != null) {
-                        ((NamespaceSpec)nameHolder).setNamespace(namespaceAVT);
-                    }
-                    //
-                    ((SequenceConstructor)parent).appendSequenceChild(
-                            (SequenceElement)nameHolder);
-                } finally {
-                    model.endTransaction();
-                }
-            }
-        }
-        return nameHolder;
-    }
     
-    /**
-     * Constructs missing XSLT components which are required to
-     * the specified SchemaNode be presented in the XSLT document.
-     *
-     * The XSL model transaction is started and ended automatically if recessary.
-     */
-    public static class XslBranchConstructor {
-        private boolean transactionStarted = false;
-        private boolean exitTranactionOnFinish = true;
-        private SchemaNode startFromNode;
-        private XslModel myModel;
-        
-        public XslBranchConstructor(SchemaNode node, XslModel model) {
-            startFromNode = node;
-            myModel = model;
-        }
-        
-        /**
-         * Allows preventing end transaction on finish.
-         * This method should be used carefully.
-         */
-        public void exitTranactionOnFinish(boolean newValue) {
-            exitTranactionOnFinish = newValue;
-        }
-        
-        public XslComponent construct() {
-            XslComponent result = null;
-            try {
-                result = createXslComponent(startFromNode);
-            } finally {
-                if (exitTranactionOnFinish && myModel != null && transactionStarted) {
-                    myModel.endTransaction();
-                }
-            }
-            return result;
-        }
-        
-        private XslComponent createXslComponent(TreeNode node) {
-            XslComponent result = null;
-            //
-            if (node instanceof StylesheetNode){
-                result = (XslComponent) node.getDataObject();
-            } else if (node instanceof SchemaNode){
-                TreeNode parent = node.getParent();
-                XslComponent parent_xsl = createXslComponent(node.getParent());
-                if (parent_xsl != null) {
-                    //
-                    // Start transaction if necessary
-                    if (!transactionStarted && myModel != null) {
-                        if (!myModel.isIntransaction()) {
-                            transactionStarted = myModel.startTransaction();
-                        }
-                    }
-                    //
-                    result = createXslElementOrAttribute(parent_xsl, node.getType());
-                }
-            }
-            //
-            return result;
-        }
-    }
+    
+
 }

@@ -25,7 +25,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.soa.ui.axinodes.NodeType;
 import org.netbeans.modules.soa.ui.axinodes.NodeType.BadgeModificator;
 import org.netbeans.modules.xml.axi.Element;
-import org.netbeans.modules.xslt.mapper.model.ModelBridge;
+import org.netbeans.modules.xslt.mapper.model.BranchConstructor;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
 import org.netbeans.modules.xslt.model.XslComponent;
@@ -60,7 +60,7 @@ public class AddNestedAxiElement extends XsltNodeAction {
         Object dataObject = myTreeNode.getDataObject();
         if (dataObject != null && dataObject instanceof XslComponent) {
             XslComponent parentComp = (XslComponent)dataObject;
-            ModelBridge.createXslElementOrAttribute(parentComp, myNewAxiElement);
+            BranchConstructor.createXslElementOrAttribute(parentComp, myNewAxiElement, getMapper());
         }
     }
 
