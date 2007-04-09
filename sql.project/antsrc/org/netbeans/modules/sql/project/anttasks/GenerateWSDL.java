@@ -140,6 +140,10 @@ public class GenerateWSDL extends Task {
     }
 
     public void execute() throws BuildException {
+    	
+    }
+    
+    public void execute1() throws BuildException {
         Map wsdlMap = new HashMap();
         File srcDir = new File(mSrcDirectoryLocation);
         if (!srcDir.exists()) {
