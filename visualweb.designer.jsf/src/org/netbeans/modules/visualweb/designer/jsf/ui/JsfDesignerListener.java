@@ -126,7 +126,7 @@ class JsfDesignerListener implements DesignerListener {
             // jsp include, treat this as an attempt to open the page
             // fragment child.
 //            ((ExternalDocumentBox)box.getBox(0)).open();
-                openExternalBox((ExternalBox)box);
+                openExternalBox((ExternalBox)children[0]);
             }
 
             return false;
