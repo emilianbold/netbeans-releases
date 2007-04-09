@@ -25,9 +25,9 @@ import org.netbeans.modules.xslt.model.XslModel;
  *
  * @author Alexey
  */
-public interface MapperContext<T> {
+public interface MapperContext {
     
-    T getTransformDesc();
+//    T getTransformDesc();
     
     XslModel getXSLModel();
     

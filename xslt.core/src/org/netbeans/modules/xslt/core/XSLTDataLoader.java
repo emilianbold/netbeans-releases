@@ -19,8 +19,6 @@
 package org.netbeans.modules.xslt.core;
 
 import java.io.IOException;
-import org.netbeans.modules.xslt.core.xsltmap.XsltMapAccessor;
-import org.netbeans.modules.xslt.core.xsltmap.XsltMapModel;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -47,7 +45,7 @@ public class XSLTDataLoader extends UniFileLoader {
     static final String PRIMARY_EXTENSION2 = "xslt";              // NOI18N
   
     // TODO m
-    static final String XSLT_MAP_FILE = "xsltmap.xml";              // NOI18N
+    static final String TRANSFORM_MAP_FILE = "transformmap.xml";              // NOI18N
 
     // TODO r | m
 //    static final String SECONDARY_EXTENSION = "N/A"; // NOI18N
@@ -111,14 +109,14 @@ public class XSLTDataLoader extends UniFileLoader {
                 if (extension.equals(PRIMARY_EXTENSION)
                     || extension.equals(PRIMARY_EXTENSION2)) 
                 {
-                    isContext = fo.getParent().getFileObject(XSLT_MAP_FILE) != null;
+                    isContext = fo.getParent().getFileObject(TRANSFORM_MAP_FILE) != null;
                 } 
             }
             
 // TODO r
 //            if (isContext) {
 //                XsltMapModel xsltMapModel = XsltMapAccessor.
-//                                            getXsltMapModel(getXsltMapFo(fo));
+//                                            getXsltMapModel(getTransformMapFo(fo));
 //                isContext = xsltMapModel != null && xsltMapModel.getFirstTransformationDesc(fo) != null;
 //            }
         } catch (FileStateInvalidException ex) {
@@ -134,8 +132,8 @@ public class XSLTDataLoader extends UniFileLoader {
                 && inputFile.equals(xmlFile.getNameExt());
     }
     
-    private FileObject getXsltMapFo(FileObject xsltFo) {
-        return xsltFo.getParent().getFileObject(XSLT_MAP_FILE);
+    private FileObject getTransformMapFo(FileObject xsltFo) {
+        return xsltFo.getParent().getFileObject(TRANSFORM_MAP_FILE);
     }
     
     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, 

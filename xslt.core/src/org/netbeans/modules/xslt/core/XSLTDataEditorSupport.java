@@ -48,11 +48,19 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.xslt.core.multiview.source.XSLTSourceMultiViewElementDesc;
 import org.netbeans.modules.xslt.core.multiview.XsltMultiViewSupport;
-import org.netbeans.modules.xslt.core.xsltmap.MapperContextImpl;
+//import org.netbeans.modules.xslt.core.xsltmap.MapperContextImpl;
+import org.netbeans.modules.xslt.core.transformmap.api.Operation;
+import org.netbeans.modules.xslt.core.transformmap.api.Service;
+import org.netbeans.modules.xslt.core.transformmap.api.TMapComponent;
+import org.netbeans.modules.xslt.core.transformmap.api.TMapModel;
+import org.netbeans.modules.xslt.core.transformmap.api.TransformMap;
+import org.netbeans.modules.xslt.core.transformmap.impl.MapperContextFactory;
+import org.netbeans.modules.xslt.core.transformmap.impl.MapperContextImpl;
+import org.netbeans.modules.xslt.core.xsltmap.XmlUtil;
 import org.netbeans.modules.xslt.core.xsltmap.util.Util;
-import org.netbeans.modules.xslt.core.xsltmap.TransformationDesc;
-import org.netbeans.modules.xslt.core.xsltmap.XsltMapAccessor;
-import org.netbeans.modules.xslt.core.xsltmap.XsltMapModel;
+//import org.netbeans.modules.xslt.core.xsltmap.TransformationDesc;
+//import org.netbeans.modules.xslt.core.xsltmap.XsltMapAccessor;
+//import org.netbeans.modules.xslt.core.xsltmap.XsltMapModel;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.modules.xslt.model.spi.XslModelFactory;
@@ -413,52 +421,76 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
 
         public MapperContext getMapperContext() {
             FileObject xsltFo = getFile();
-            FileObject xsltMapFo = Util.getXsltMapFo(xsltFo);
-            FileObject projectRoot = Util.getProjectRoot(xsltFo);
             Project project = Util.getProject(xsltFo);
-            XslModel xslModel = Util.getXslModel(xsltFo);
+
+            MapperContext context = null;
             
-            if (xsltMapFo == null || projectRoot == null) {
-                // TODO m
-                try {
-                    return new MapperContextImpl(xslModel, XsltMapModel.getDefault(project));
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    return null;
-                }
-            }
+            context = MapperContextFactory.getInstance().
+                                    createMapperContext(xsltFo, project);
             
-            XsltMapModel xsltMapModel = XsltMapAccessor.getXsltMapModel(xsltMapFo);
-            if (xsltMapModel == null) {
-                // TODO m
-                try {
-                    return new MapperContextImpl(xslModel, XsltMapModel.getDefault(project));
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    return null;
-                }
-            }
+// TODO m | r            
+////            FileObject xsltFo = getFile();
+////            Project project = Util.getProject(xsltFo);
+////            FileObject tMapFo = Util.getTMapFo(project);
+////            FileObject projectRoot = Util.getProjectRoot(xsltFo);
+////            XslModel xslModel = Util.getXslModel(xsltFo);
+////            FileObject projectSource = Util.getProjectSource(project);
+////            
+////            if (tMapFo == null || projectRoot == null) {
+////                // TODO m 
+////                try {
+////                    if (tMapFo == null) {
+////                        XmlUtil.createNewXmlFo(
+////                                projectSource.getPath(),
+////                                "transformmap", 
+////                                TMapComponent.TRANSFORM_MAP_NS_URI);
+////                    }
+////                    return new MapperContextImpl(xslModel, Util.getTMapModel(tMapFo));
+////                } catch (IOException ex) {
+////                    ErrorManager.getDefault().notify(ex);
+////                    return null;
+////                }
+////            }
+////            
+////            TMapModel tMapModel = Util.getTMapModel(tMapFo);
+////            if (tMapModel == null) {
+////                // TODO m
+////                return new MapperContextImpl(xslModel, Util.getTMapModel(tMapFo));
+////            }
+////            
+////            MapperContext mapperContext = null;
+////            TransformMap root = tMapModel.getTransformMap();
+////            List<Service> services = root.getServices();
+////            Operation operation = null;
+////            if (services != null) {
+////                for (Service service : services) {
+////                    List<Operation> operations = service.getOperations();
+////                    for (Operation elem : operations) {
+////                        String file = elem.getFile();
+////                        if (file != null && file.equals(xsltFo.getPath().substring(projectSource.getPath().length())) ) {
+////                            operation = elem;
+////                            break;
+////                        } 
+////                    }
+////                    if (operation != null) {
+////                        break;
+////                    }
+////                }
+////            }
+////            
+////            if (operation == null) {
+////                // TODO m
+////                return new MapperContextImpl(xslModel, Util.getTMapModel(tMapFo));
+////            }
+////            
+////
+////            // TODO m
+////            AXIComponent sourceComponent = null;//tDesc.getSourceAXIType(projectRoot);
+////            AXIComponent targetComponent = null;//tDesc.getTargetAXIType(projectRoot);
+////            // TODO m
+////            mapperContext = new MapperContextImpl( operation, xslModel, sourceComponent, targetComponent);
             
-            MapperContext mapperContext = null;
-            TransformationDesc tDesc = xsltMapModel.getFirstTransformationDesc(xsltFo);
-            if (tDesc == null) {
-                // TODO m
-                try {
-                    return new MapperContextImpl(xslModel, XsltMapModel.getDefault(project));
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    return null;
-                }
-            }
-            
-//            AXIModel sourceAxiModel = tDesc.getSourceAxiModel(projectRoot);
-//            AXIModel targetAxiModel = tDesc.getTargetAxiModel(projectRoot);
-            AXIComponent sourceComponent = tDesc.getSourceAXIType(projectRoot);
-            AXIComponent targetComponent = tDesc.getTargetAXIType(projectRoot);
-            // TODO m
-            mapperContext = new MapperContextImpl( tDesc, xslModel, sourceComponent, targetComponent);
-            
-            return mapperContext;
+            return context;
         }
     }
 
