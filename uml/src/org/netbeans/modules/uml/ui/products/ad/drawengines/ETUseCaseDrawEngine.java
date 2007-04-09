@@ -22,7 +22,6 @@
 package org.netbeans.modules.uml.ui.products.ad.drawengines;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Point;
 import java.awt.Shape;
@@ -32,23 +31,15 @@ import java.util.Collection;
 import java.util.Iterator;
 import com.tomsawyer.editor.graphics.TSEGraphics;
 import com.tomsawyer.editor.TSESolidObject;
-import com.tomsawyer.editor.TSEFont;
-//import com.tomsawyer.util.TSConstRect;
 import com.tomsawyer.drawing.geometry.TSConstRect;
-//import com.tomsawyer.util.TSConstPoint;
-import com.tomsawyer.drawing.geometry.TSConstPoint;
-//import com.tomsawyer.util.TSTransform;
 import com.tomsawyer.editor.TSTransform;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IExtensionPoint;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.ITaggedValue;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.IETSize;
 import org.netbeans.modules.uml.core.support.umlsupport.ETSize;
@@ -56,30 +47,20 @@ import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchive;
 import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchiveElement;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawInfo;
 import org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI;
-import org.netbeans.modules.uml.ui.products.ad.viewfactory.IETGraphObjectUI;
 import org.netbeans.modules.uml.ui.products.ad.ADDrawEngines.ADNodeDrawEngine;
 import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
 import org.netbeans.modules.uml.ui.products.ad.application.action.ContextMenuActionClass;
-import org.netbeans.modules.uml.ui.products.ad.compartments.ETNameListCompartment;
-import org.netbeans.modules.uml.ui.products.ad.compartments.ETPackageImportCompartment;
-import org.netbeans.modules.uml.ui.products.ad.compartments.ETTaggedValuesCompartment;
-import org.netbeans.modules.uml.ui.products.ad.compartments.ETStereoTypeCompartment;
-import org.netbeans.modules.uml.ui.products.ad.compartments.ETStaticTextCompartment;
-import org.netbeans.modules.uml.ui.products.ad.compartments.ETClassNameCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.ETClassNameListCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.ETExtensionPointListCompartment;
-import org.netbeans.modules.uml.ui.products.ad.compartments.ETExtensionPointCompartment;
-import org.netbeans.modules.uml.ui.products.ad.compartments.IADClassNameCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.IADExtensionPointListCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.IADNameCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.INameListCompartment;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.GDISupport;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETNodeUI;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IListCompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.INotificationTargets;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.uml.common.ETException;
+import org.netbeans.modules.uml.core.support.umlsupport.ETDeviceRect;
 
 /**
  * @author jingmingm
@@ -87,8 +68,8 @@ import org.netbeans.modules.uml.common.ETException;
  */
 public class ETUseCaseDrawEngine extends ADNodeDrawEngine
 {
-//	protected static int MIN_WIDTH = 160;
-//	protected static int MIN_HEIGHT = 80;
+	protected static int MIN_NODE_WIDTH = 90;
+	protected static int MIN_NODE_HEIGHT = 60;
 	
 	public String getElementType()
 	{
@@ -122,246 +103,189 @@ public class ETUseCaseDrawEngine extends ADNodeDrawEngine
 	 * @see org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine#doDraw(org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawInfo)
 	 */
 	public void drawContents(IDrawInfo pDrawInfo)
-	{
-//		TSEGraphics graphics = pDrawInfo.getTSEGraphics();
-//		ETGenericNodeUI parentUI = (ETGenericNodeUI)this.getParent();
-//		
-//		Color borderColor = getBorderBoundsColor();
-//		Color fillColor = getBkColor();
-//		
-//		IETRect boundingRect = pDrawInfo.getDeviceBounds();
-//		// draw the background of the node if necessary		
-//		if (!parentUI.isTransparent())
-//		{				
-//			graphics.setColor(fillColor);
-//			GDISupport.fillEllipse(graphics, boundingRect.getRectangle());
-//		}
-//
-//		// draw the border of the node if necessary
-//		if (parentUI.isBorderDrawn())
-//		{
-//			graphics.setColor(borderColor);
-//			GDISupport.frameEllipse(graphics, boundingRect.getRectangle());
-//		}
-//		
-//		// Draw the compartments
-//		IListCompartment pExtensionListCompartment = (IListCompartment)getCompartmentByKind(ETExtensionPointListCompartment.class);
-//		if (pExtensionListCompartment != null)
-//		{
-//			int num = pExtensionListCompartment.getNumCompartments();
-//
-//			// Collapse the compartment if there aren't any extension points.  Make sure to
-//			// do it in a way that doesn't set the diagram to readonly
-//			pExtensionListCompartment.setCollapsed(num>0?false:true);
-//
-//			// Draw each compartment
-//			handleNameListCompartmentDraw(pDrawInfo, boundingRect, 0, 0, false, 0);
-//
-//			//if (num > 0)
-//			{
-//				// Now draw the line under the name compartment
-//				drawLineUnderNameCompartmentClippedToEllipse(pDrawInfo, boundingRect, borderColor);
-//			}
-//		}
+        {
+           ETGenericNodeUI parentUI = (ETGenericNodeUI)this.getParent();
+           
+           // draw yourself only if you have an owner
+           if (parentUI != null && parentUI.getOwner() != null)
+           {
+              TSEGraphics graphics = pDrawInfo.getTSEGraphics();
+              TSTransform transform = graphics.getTSTransform();
+              TSESolidObject owner = parentUI.getOwnerNode();
+              TSConstRect localBounds = owner.getLocalBounds();   // node bound
+              Shape oldClip = graphics.getClip();
+              Rectangle newClip = transform.boundsToDevice(localBounds);
+              graphics.clipRect(newClip.x, newClip.y, newClip.width, newClip.height);
+              
+              Color borderColor = getBorderBoundsColor();
+              Color fillColor = getBkColor();
+              IETRect deviceRect = pDrawInfo.getDeviceBounds();
+              
+              // draw the background of the node if necessary,
+              // i.e. fill the ellipse shape of the node with the bkground color
+              if (!parentUI.isTransparent())
+              {
+                 float centerX = (float) deviceRect.getCenterX();
+                 GradientPaint paint = new GradientPaint(centerX,
+                       deviceRect.getBottom(),
+                       fillColor,
+                       centerX,
+                       deviceRect.getTop(),
+                       getLightGradientFillColor());
+                 
+                 graphics.setPaint(paint);
+                 GDISupport.fillEllipse(graphics, deviceRect.getRectangle());
+              }
+              
+              // draw the border of the node if necessary,
+              // i.e. draw the frame of the ellipse with border color
+              if (parentUI.isBorderDrawn())
+              {
+                 graphics.setColor(borderColor);
+                 GDISupport.frameEllipse(graphics, deviceRect.getRectangle());
+              }
+              
+              // draw the layout constraint badge if necessary
+              ((ETGenericNodeUI)parentUI).drawConstraintBadge(graphics);
+              
+              // draw the compartments
+              IListCompartment pExtensionPointListCompartment = (IListCompartment)getCompartmentByKind(ETExtensionPointListCompartment.class);
+              IListCompartment pNameListCompartment = (IListCompartment)getCompartmentByKind(ETClassNameListCompartment.class);
+              drawListCompartment(pDrawInfo,borderColor,pNameListCompartment,pExtensionPointListCompartment);
 
-
-
-		TSEGraphics graphics = pDrawInfo.getTSEGraphics();
-		ETGenericNodeUI parentUI = (ETGenericNodeUI)this.getParent();
-		
-		TSTransform transform = graphics.getTSTransform();
-		TSESolidObject owner = parentUI.getOwnerNode();
-		TSConstRect localBounds = owner.getLocalBounds();
-		Shape oldClip = graphics.getClip();
-		Rectangle newClip = transform.boundsToDevice(localBounds);
-		graphics.clipRect(newClip.x, newClip.y, newClip.width, newClip.height);
-		
-		Color borderColor = getBorderBoundsColor();
-		Color fillColor = getBkColor();
-		
-		// draw yourself only if you have an owner
-		if (parentUI.getOwner() != null)
-		{
-			IETRect deviceRect = pDrawInfo.getDeviceBounds();
-			// draw the background of the node if necessary		
-			if (!parentUI.isTransparent())
-			{				
-                float centerX = (float) deviceRect.getCenterX();
-                GradientPaint paint = new GradientPaint(centerX,
-                                                 deviceRect.getBottom(),
-                                                 fillColor,
-                                                 centerX,
-                                                 deviceRect.getTop(),
-                                                 getLightGradientFillColor());
-        
-				graphics.setPaint(paint);
-				GDISupport.fillEllipse(graphics, deviceRect.getRectangle());
-			}
-
-			// draw the border of the node if necessary
-
-			if (parentUI.isBorderDrawn())
-			{
-				graphics.setColor(borderColor);
-				GDISupport.frameEllipse(graphics, deviceRect.getRectangle());
-			}
-			
-			// draw the layout constraint badge if necessary
-			
-			((ETGenericNodeUI)parentUI).drawConstraintBadge(graphics);
-			
-			// Draw the compartments
-			int x = deviceRect.getLeft();
-			int w = deviceRect.getIntWidth();
-			int y = deviceRect.getTop();
-			int h = deviceRect.getIntHeight();	
-			
-			IListCompartment pExtensionPointListCompartment = (IListCompartment)getCompartmentByKind(ETExtensionPointListCompartment.class);
-			IListCompartment pNameListCompartment = (IListCompartment)getCompartmentByKind(ETClassNameListCompartment.class);
-			int nameHeight = 0, extensionHeight = 0;
-			if (pExtensionPointListCompartment != null && pExtensionPointListCompartment.getNumCompartments() > 0)
-			{
-				extensionHeight = pExtensionPointListCompartment.calculateOptimumSize(pDrawInfo, false).getHeight() + 22;
-			}
-			
-			if (pNameListCompartment != null)
-			{
-				int staticHeight = 0;
-				nameHeight = h - extensionHeight;
-				Iterator < ICompartment > ETClassNameListCompartmentIterator = pNameListCompartment.getCompartments().iterator();
-				while (ETClassNameListCompartmentIterator.hasNext())
-				{
-					// Draw the compartment
-					ICompartment compartment = ETClassNameListCompartmentIterator.next();
-					IETSize compartmentSize = compartment.calculateOptimumSize(pDrawInfo, false);
-
-					if (compartment instanceof ETClassNameCompartment)
-					{
-						this.setLastDrawPointY((int)(y/* + nameHeight/2 - compartmentSize.getHeight()/2*/));
-						compartmentSize.setHeight(nameHeight);
-					}
-					else if (compartment instanceof ETPackageImportCompartment)
-					{
-						this.setLastDrawPointY(y + nameHeight - compartmentSize.getHeight());
-					}
-					else if (compartment instanceof ETTaggedValuesCompartment)
-					{
-						if (((ETNameListCompartment)pNameListCompartment).getCompartmentByKind(ETPackageImportCompartment.class) == null)
-						{
-							this.setLastDrawPointY(y + nameHeight - compartmentSize.getHeight());
-						}
-						else
-						{
-							this.setLastDrawPointY(y + nameHeight - 2*compartmentSize.getHeight());
-						}
-					}
-					else if (compartment instanceof ETStereoTypeCompartment)
-					{
-						this.setLastDrawPointY(y + staticHeight);
-					}
-					else if (compartment instanceof ETStaticTextCompartment)
-					{
-						this.setLastDrawPointY(y);
-						staticHeight = compartment.calculateOptimumSize(pDrawInfo, false).getHeight();
-					}
-							
-					compartment.draw(pDrawInfo, new ETRect(x, this.getLastDrawPointY(), w, compartmentSize.getHeight()));
-				}
-			}
-			
-			if (pExtensionPointListCompartment != null)
-			{
-				pExtensionPointListCompartment.draw(pDrawInfo, new ETRect(x, y + nameHeight, w, extensionHeight));
-				
-				// Draw the line
-				double x0 = deviceRect.getCenterX();
-				double y0 = deviceRect.getCenterY();
-				double a = deviceRect.getWidth()/2;
-				double b = deviceRect.getHeight()/2;
-				double yLine = y + nameHeight;
-				//if (yLine > y0 - b)
-				{
-					double xLine = a*Math.sqrt(1.0 - ((yLine - y0)*(yLine - y0))/(b*b));
-					//GDISupport.drawLine(pDrawInfo.getTSEGraphics(), new Point((int)(x0 + xLine), (int)yLine), new Point((int)(x0 - xLine), (int)yLine));
-                                        Color prevColor = graphics.getColor(); // save the current color
-                                        graphics.setColor(borderColor);        // set the color to the borderColor
-                                        GDISupport.drawLine(graphics, new Point((int)(x0 + xLine), (int)yLine), new Point((int)(x0 - xLine), (int)yLine));
-                                        graphics.setColor(prevColor);          // restore the color to the saved one
-				}
-			}
-		}
-		
-		// now restore the old clipping
-		graphics.setClip(oldClip);
-	}
+              // now restore the old clipping
+              graphics.setClip(oldClip);
+           }
+        }
 	
+        private void drawListCompartment(IDrawInfo pDrawInfo, Color borderColor,
+              IListCompartment pNameListCompartment,
+              IListCompartment pExtensionPointListCompartment)
+        {
+           if (pDrawInfo == null)
+           {
+              return;
+           }
+           IETRect boundingRect = pDrawInfo.getDeviceBounds();
+           int nameBottom = 0;
+           ETDeviceRect thisCompartmentBoundingRect = null;
+           //clearVisibleCompartments();
+           boolean hasExtensionPoints = (pExtensionPointListCompartment != null && 
+                 pExtensionPointListCompartment.getNumCompartments() > 0);
+           
+           // draw name compartment
+           if (pNameListCompartment != null)
+           {
+              IETSize nameSize = pNameListCompartment.calculateOptimumSize(pDrawInfo, false);
+              thisCompartmentBoundingRect = ETDeviceRect.ensureDeviceRect((IETRect)boundingRect.clone());
+              
+               nameBottom = hasExtensionPoints ?
+                 (boundingRect.getTop() + nameSize.getHeight()) :
+                 boundingRect.getBottom();
+               
+              thisCompartmentBoundingRect.setBottom(nameBottom);
+              addVisibleCompartment(pNameListCompartment);
+              pNameListCompartment.draw(pDrawInfo, thisCompartmentBoundingRect);
+           }
+           
+           // draw extensionPointList compartment if there's some extension points
+           if (hasExtensionPoints)
+           {
+              thisCompartmentBoundingRect = ETDeviceRect.ensureDeviceRect((IETRect)boundingRect.clone());
+              thisCompartmentBoundingRect.setTop(nameBottom);
+              addVisibleCompartment(pExtensionPointListCompartment);
+              pExtensionPointListCompartment.draw(pDrawInfo, thisCompartmentBoundingRect);
+              
+              // Draw the line
+              double x0 = boundingRect.getCenterX();
+              double y0 = boundingRect.getCenterY();
+              double a = boundingRect.getWidth()/2;
+              double b = boundingRect.getHeight()/2;
+              int y = boundingRect.getTop();
+              
+              double yLine = nameBottom;
+              double xLine = a*Math.sqrt(1.0 - ((yLine - y0)*(yLine - y0))/(b*b));
+              
+              TSEGraphics graphics = pDrawInfo.getTSEGraphics();
+              // save the current color
+              Color prevColor = graphics.getColor(); 
+              // set the color to the borderColor
+              graphics.setColor(borderColor != null ? borderColor : getBorderBoundsColor()); 
+              // draw a line between nameList compartment and extensionPointList compartment
+              GDISupport.drawLine(graphics,
+                    new Point((int)(x0 + xLine), (int)yLine),
+                    new Point((int)(x0 - xLine), (int)yLine));
+              graphics.setColor(prevColor);          // restore the color to the saved one
+           }
+        }
+        
 	public void initCompartments(IPresentationElement pElement)
-	{
-		//	We may get here with no compartments.  This happens if we've been created
-		// by the user.  If we read from a file then the compartments have been pre-created and
-		// we just need to initialize them.
-		int numCompartments = getNumCompartments();
-		if (numCompartments == 0)
-		{
-			try
-			{
-				createCompartments();
-			}
-			catch(Exception e)
-			{
-			}
-		}
-
-		IElement pModelElement = pElement.getFirstSubject();
-		if (pModelElement != null)
-		{
-			// Get the metatype of the element, we use it later to turn off the package import compartment
-			// if necessary.
-			String sElementType = pModelElement.getElementType();
-
-			INameListCompartment pNameListCompartment = getCompartmentByKind(ETClassNameListCompartment.class);
-			IListCompartment pExtensionPointsCompartment = getCompartmentByKind(ETExtensionPointListCompartment.class);
-
-			if (pNameListCompartment != null && pExtensionPointsCompartment != null)
-			{
-				if (sElementType != null && sElementType.equals("PartFacade"))
-				{
-					// Disable the package import compartment if we have a part facade
-					pNameListCompartment.setPackageImportCompartmentEnabled(false);
-				}
-
-				pNameListCompartment.attach(pModelElement);
-				
-				// Make sure this node resizes to fit its compartments
-				pNameListCompartment.setResizeToFitCompartments(true);
-
-				// Make sure the name compartment wraps
-				IADNameCompartment pNameCompartment = pNameListCompartment.getNameCompartment();
-				if (pNameCompartment != null)
-				{
-					pNameCompartment.setTextWrapping(true);
-					pNameCompartment.setCenterText(true);
-					pNameCompartment.setVerticallyCenterText(true);
-				}
-
-				// Set the static text
-				setName(pNameListCompartment);
-
-				// Init the extension points compartment
-				if (pModelElement instanceof IUseCase)
-				{
-					IUseCase pUseCase = (IUseCase)pModelElement;
-					ETList<IExtensionPoint> pExtensionPoints = pUseCase.getExtensionPoints();
-					ETList<IElement> pElements = new ETArrayList<IElement>((Collection)pExtensionPoints);
-					if(pElements != null)
-					{
-						pExtensionPointsCompartment.attachElements(pElements, true, true);
-						pExtensionPointsCompartment.setName("values");
-					}
-				}
-			}
-		}
-	}
+        {
+           //	We may get here with no compartments.  This happens if we've been created
+           // by the user.  If we read from a file then the compartments have been pre-created and
+           // we just need to initialize them.
+           int numCompartments = getNumCompartments();
+           if (numCompartments == 0)
+           {
+              try
+              {
+                 createCompartments();
+              }
+              catch(Exception e)
+              {
+              }
+           }
+           
+           IElement pModelElement = pElement.getFirstSubject();
+           if (pModelElement != null)
+           {
+              // Get the metatype of the element, we use it later to turn off the package import compartment
+              // if necessary.
+              String sElementType = pModelElement.getElementType();
+              
+              INameListCompartment pNameListCompartment = getCompartmentByKind(ETClassNameListCompartment.class);
+              IListCompartment pExtensionPointsCompartment = getCompartmentByKind(ETExtensionPointListCompartment.class);
+              
+              if (pNameListCompartment != null && pExtensionPointsCompartment != null)
+              {
+                 if (sElementType != null && sElementType.equals("PartFacade"))
+                 {
+                    // Disable the package import compartment if we have a part facade
+                    pNameListCompartment.setPackageImportCompartmentEnabled(false);
+                 }
+                 
+                 pNameListCompartment.attach(pModelElement);
+                 
+                 // Make sure this node resizes to fit its compartments
+                 pNameListCompartment.setResizeToFitCompartments(true);
+                 
+                 // Make sure the name compartment wraps
+                 IADNameCompartment pNameCompartment = pNameListCompartment.getNameCompartment();
+                 if (pNameCompartment != null)
+                 {
+                    pNameCompartment.setTextWrapping(true);
+                    pNameCompartment.setCenterText(true);
+                    pNameCompartment.setVerticallyCenterText(true);
+                 }
+                 
+                 // Set the static text
+                 setName(pNameListCompartment);
+                 
+                 // Init the extension points compartment
+                 if (pModelElement instanceof IUseCase)
+                 {
+                    IUseCase pUseCase = (IUseCase)pModelElement;
+                    ETList<IExtensionPoint> pExtensionPoints = pUseCase.getExtensionPoints();
+                    ETList<IElement> pElements = new ETArrayList<IElement>((Collection)pExtensionPoints);
+                    if(pElements != null )
+                    {
+                       pExtensionPointsCompartment.attachElements(pElements, true, true);
+                       pExtensionPointsCompartment.setName("values");
+                    }
+                 }
+              }
+           }
+        }
 	
 	/*
 	 *  (non-Javadoc)
@@ -379,18 +303,31 @@ public class ETUseCaseDrawEngine extends ADNodeDrawEngine
 	 * @see org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine#calculateOptimumSize(org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawInfo, boolean)
 	 */
 	public IETSize calculateOptimumSize(IDrawInfo pDrawInfo, boolean bAt100Pct)
-	{
-		// call parent to get the size of our text
-		IETSize retVal = super.calculateOptimumSize(pDrawInfo, true);
-		// 6390542, remove the min size setting to fit the short name element
-		// minimum size is the text size, now compute the minimum ellipse that will cover the text
-//		val.setWidth(val.getWidth() + val.getHeight());
-//		val.setHeight((int)(val.getHeight() * 1.5));
-//		
-		// Check min
-//		IETSize retVal = new ETSize(Math.max(val.getWidth(), MIN_WIDTH), Math.max(val.getHeight(), MIN_HEIGHT));
-		return bAt100Pct || retVal == null ? retVal : scaleSize(retVal,  pDrawInfo != null ? pDrawInfo.getTSTransform() : getTransform());
-	}
+        {
+           // 6390542, remove the min size setting to fit the short name element
+           // minimum size is the text size, now compute the minimum ellipse that will cover the text
+           //		val.setWidth(val.getWidth() + val.getHeight());
+           //		val.setHeight((int)(val.getHeight() * 1.5));
+           //
+           int optimumSizeX = 0, optimumSizeY = 0;
+           
+           Iterator iterator = this.getCompartments().iterator();
+           while (iterator.hasNext())
+           {
+              ICompartment compartment = (ICompartment) iterator.next();
+              
+              IETSize curSize = compartment.calculateOptimumSize(pDrawInfo, true);
+              optimumSizeX = Math.max(optimumSizeX, curSize.getWidth());
+              optimumSizeY += curSize.getHeight();
+           }
+           
+           optimumSizeX = Math.max(optimumSizeX, MIN_NODE_WIDTH);
+           optimumSizeY = Math.max(optimumSizeY, MIN_NODE_HEIGHT);
+           
+           IETSize retVal = new ETSize(optimumSizeX, optimumSizeY);
+           
+           return bAt100Pct || retVal == null ? retVal : scaleSize(retVal,  pDrawInfo != null ? pDrawInfo.getTSTransform() : getTransform());
+        }
 
 	/*
 	 *  (non-Javadoc)
