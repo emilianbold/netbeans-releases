@@ -22,14 +22,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
@@ -43,6 +38,7 @@ import com.sun.rave.web.ui.util.ClassLoaderFinder;
 import com.sun.rave.web.ui.util.ClientSniffer;
 import com.sun.rave.web.ui.util.ClientType;
 import com.sun.rave.web.ui.util.MessageUtil;
+import java.beans.Beans;
 
 
 /**
@@ -456,6 +452,11 @@ public class Theme  {
         ClassLoader loader =
                 ClassLoaderFinder.getCurrentLoader(Theme.class);
        
+        if(Beans.isDesignTime()) {
+            // NB6 gives warnings if the path has a leading "/". So, strip it off if it has one
+            uri = uri.startsWith("/") ? uri.substring(1) : uri;
+        }
+        
         URL url = loader.getResource(uri);
         if(DEBUG) log("URL is " + url);
         return url.toString();
