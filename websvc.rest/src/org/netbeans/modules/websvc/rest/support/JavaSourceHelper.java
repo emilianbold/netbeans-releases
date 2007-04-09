@@ -363,10 +363,12 @@ public class JavaSourceHelper {
         ModifiersTree modifiersTree = createModifiersTree(copy, modifiers, null, null);
         ModifiersTree paramModTree = maker.Modifiers(Collections.<Modifier>emptySet());
         List<VariableTree> paramTrees = new ArrayList<VariableTree>();
-        
-        for (int i = 0; i < parameters.length; i++) {
-            paramTrees.add(maker.Variable(paramModTree,
-                    parameters[i], createTypeTree(copy, paramTypes[i]), null));
+
+        if (parameters != null) {
+            for (int i = 0; i < parameters.length; i++) {
+                paramTrees.add(maker.Variable(paramModTree,
+                        parameters[i], createTypeTree(copy, paramTypes[i]), null));
+            }
         }
         
         MethodTree methodTree = maker.Constructor(modifiersTree,
@@ -374,7 +376,6 @@ public class JavaSourceHelper {
                 paramTrees,
                 Collections.<ExpressionTree>emptyList(),
                 bodyText);
-        
         return maker.addClassMember(tree, methodTree);
     }
     
