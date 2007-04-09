@@ -19,10 +19,13 @@
 
 package org.netbeans.modules.compapp.casaeditor.palette;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBindingInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
+import org.netbeans.modules.xml.wsdl.ui.view.wizard.ExtensibilityElementTemplateFactory;
+import org.netbeans.modules.xml.wsdl.ui.view.wizard.TemplateGroup;
+import org.netbeans.modules.xml.wsdl.ui.view.wizard.localized.LocalizedTemplateGroup;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -57,20 +60,39 @@ public class CasaPaletteItems extends Index.ArrayChildren {
         }
         return childrenNodes;
     }
+
+    private HashMap getWsdlTemplates() {
+        ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
+        Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
+        Vector<LocalizedTemplateGroup> protocols = new Vector<LocalizedTemplateGroup>();
+        LocalizedTemplateGroup ltg = null;
+        HashMap temps = new HashMap();
+        for (TemplateGroup group : groups) {
+            ltg = factory.getLocalizedTemplateGroup(group);
+            protocols.add(ltg);
+            temps.put(ltg.getName(), ltg);
+        }
+
+        return temps;
+    }
     
     private void addExternalWsdlPoints(ArrayList childrenNodes) {
+        HashMap bcTemplates = getWsdlTemplates();
         JbiDefaultComponentInfo bcinfo = JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
         if (bcinfo != null) {
             List<JbiBindingInfo> bclist = bcinfo.getBindingInfoList();
             for (JbiBindingInfo bi : bclist) {
-                CasaPaletteItem item = new CasaPaletteItem();
-                item.setCategoryType(CasaPalette.CASA_CATEGORY_TYPE.WSDL_BINDINGS);
-                item.setTitle(bi.getBindingName());
-                item.setComponentName(bi.getBcName());
-                childrenNodes.add( new CasaPaletteItemNode( 
-                        item, 
-                        bi.getIcon().getFile(),
-                        mLookup) );
+                String biName = bi.getBindingName().toUpperCase();
+                if (bcTemplates.get(biName) != null) {
+                    CasaPaletteItem item = new CasaPaletteItem();
+                    item.setCategoryType(CasaPalette.CASA_CATEGORY_TYPE.WSDL_BINDINGS);
+                    item.setTitle(bi.getBindingName());
+                    item.setComponentName(bi.getBcName());
+                    childrenNodes.add( new CasaPaletteItemNode(
+                            item,
+                            bi.getIcon().getFile(),
+                            mLookup) );
+                }
             }
         }
     }

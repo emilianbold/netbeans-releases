@@ -495,7 +495,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         for (TemplateGroup group : groups) {
             ltg = factory.getLocalizedTemplateGroup(group);
             protocols.add(ltg);
-            System.out.println(bType+" Add Potocol: "+ltg.getName());
+            // System.out.println(bType+" Add Potocol: "+ltg.getName());
             if (ltg.getName().equalsIgnoreCase(bType)) {
                 bindingType = ltg;
             }
@@ -577,8 +577,8 @@ public class CasaWrapperModel extends CasaModelImpl {
                 List<ValidationInfo> vBindingInfos = 
                         bindingSubType.getMProvider().validate(binding);
                 invalidBinding = vBindingInfos.size() > 0;
-                System.out.println(invalidBinding + " subType: " + // NOI18N
-                        bindingSubType.getName()); 
+                //System.out.println(invalidBinding + " subType: " + // NOI18N
+                //        bindingSubType.getName()); 
             }
             
         } finally {
