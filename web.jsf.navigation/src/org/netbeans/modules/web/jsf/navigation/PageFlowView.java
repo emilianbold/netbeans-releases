@@ -168,16 +168,18 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * Set the default actived node to faces config node.
      */
     public void setDefaultActivatedNode() {
-        Thread t = new Thread( new Runnable() {
-            public void run() {
+//        Thread t = new Thread( new Runnable() {
+//            public void run() {
                 try {
                     Node node = DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
                     setActivatedNodes(new Node[] {node });
                 } catch (DataObjectNotFoundException donfe ){
                     Exceptions.printStackTrace(donfe);
                 }
-            }
-        });
+//            }
+//        });
+//        t.setDaemon(false);
+//        t.start();
     }
     
     
