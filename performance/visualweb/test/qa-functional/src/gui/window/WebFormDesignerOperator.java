@@ -142,12 +142,12 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     
     public void pushPopupMenu(String menuPath){
         JPopupMenuOperator popup = clickPopup();
-        popup.pushMenu(menuPath);
+        popup.pushMenuNoBlock(menuPath);
     }
     
     public void pushPopupMenu(String menuPath, int x, int y){
         JPopupMenuOperator popup = clickPopup(x,y);
-        popup.pushMenu(menuPath);
+        popup.pushMenuNoBlock(menuPath);
     }
     
     public ComponentOperator getDesignerPaneComponentOperator() {
