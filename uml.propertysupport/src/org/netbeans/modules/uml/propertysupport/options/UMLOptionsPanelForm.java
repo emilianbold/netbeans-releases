@@ -31,11 +31,13 @@ import org.openide.util.NbBundle;
  *
  * @author  krichard
  */
-public class UMLOptionsPanelForm extends javax.swing.JPanel {
-
+public class UMLOptionsPanelForm extends javax.swing.JPanel 
+{
     /** Creates new form UMLOptionsPanelForm */
-    public UMLOptionsPanelForm() {
+    public UMLOptionsPanelForm() 
+    {
         initComponents();
+        
     }
 
     /** This method is called from within the constructor to
@@ -45,50 +47,82 @@ public class UMLOptionsPanelForm extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        codeGenPropsPanel = new javax.swing.JPanel();
+        codeGenTemplateManagerPanel1 = new org.netbeans.modules.uml.propertysupport.options.CodeGenTemplateManagerPanel();
+        advancedPropsPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+
+        org.jdesktop.layout.GroupLayout codeGenPropsPanelLayout = new org.jdesktop.layout.GroupLayout(codeGenPropsPanel);
+        codeGenPropsPanel.setLayout(codeGenPropsPanelLayout);
+        codeGenPropsPanelLayout.setHorizontalGroup(
+            codeGenPropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(codeGenTemplateManagerPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
+        );
+        codeGenPropsPanelLayout.setVerticalGroup(
+            codeGenPropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(codeGenTemplateManagerPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
+        );
+        jTabbedPane1.addTab("Code Generation", codeGenPropsPanel);
 
         jLabel1.setText(NbBundle.getMessage(UMLOptionsPanelForm.class, "All_UML_options_are_accessible_via_the_Classical_View"));
+
+        jLabel3.setText(NbBundle.getMessage(UMLOptionsPanelForm.class, "For_more_information_see_the_UML"));
 
         jLabel2.setForeground(new java.awt.Color(0, 0, 204));
         jLabel2.setText(NbBundle.getMessage(UMLOptionsPanelForm.class, "help"));
 
-        jLabel3.setText(NbBundle.getMessage(UMLOptionsPanelForm.class, "For_more_information_see_the_UML"));
+        org.jdesktop.layout.GroupLayout advancedPropsPanelLayout = new org.jdesktop.layout.GroupLayout(advancedPropsPanel);
+        advancedPropsPanel.setLayout(advancedPropsPanelLayout);
+        advancedPropsPanelLayout.setHorizontalGroup(
+            advancedPropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(advancedPropsPanelLayout.createSequentialGroup()
+                .add(22, 22, 22)
+                .add(advancedPropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel1)
+                    .add(advancedPropsPanelLayout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel3)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel2)))
+                .addContainerGap(258, Short.MAX_VALUE))
+        );
+        advancedPropsPanelLayout.setVerticalGroup(
+            advancedPropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(advancedPropsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(advancedPropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3)
+                    .add(jLabel2))
+                .addContainerGap(284, Short.MAX_VALUE))
+        );
+        jTabbedPane1.addTab("Advanced", advancedPropsPanel);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(jLabel3)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel2))
-                    .add(jLabel1))
-                .addContainerGap(92, Short.MAX_VALUE))
+            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                .add(123, 123, 123)
-                .add(jLabel1)
-                .add(25, 25, 25)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
-                    .add(jLabel2))
-                .addContainerGap(120, Short.MAX_VALUE))
+            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
         );
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    public javax.swing.JPanel advancedPropsPanel;
+    public javax.swing.JPanel codeGenPropsPanel;
+    public org.netbeans.modules.uml.propertysupport.options.CodeGenTemplateManagerPanel codeGenTemplateManagerPanel1;
     public javax.swing.JLabel jLabel1;
     public javax.swing.JLabel jLabel2;
     public javax.swing.JLabel jLabel3;
+    public javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
     
 }
