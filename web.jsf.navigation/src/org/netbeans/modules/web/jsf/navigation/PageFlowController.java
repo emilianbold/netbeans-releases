@@ -409,29 +409,42 @@ public class PageFlowController {
         public void propertyChange(PropertyChangeEvent ev) {
             if( ev.getOldValue() == State.NOT_WELL_FORMED ){
                 view.removeUserMalFormedFacesConfig();
+                setupGraph();
             }
             
             if ( ev.getPropertyName() == "navigation-case"){
                 
-                NavigationCase myNavCase = (NavigationCase)ev.getNewValue();
-                if( myNavCase != null ){
-                    NavigationCaseNode node = new NavigationCaseNode(view.getPageFlowController(), myNavCase);
-                    case2Node.put(myNavCase, node);
+                NavigationCase myNewCase = (NavigationCase)ev.getNewValue();  //Should also check if the old one is null.
+                NavigationCase myOldCase = (NavigationCase)ev.getOldValue();
+                if( myNewCase != null ){
+                    NavigationCaseNode node = new NavigationCaseNode(view.getPageFlowController(), myNewCase);
+                    case2Node.put(myNewCase, node);
                     createEdge(node);
-                } else {
-                    NavigationCaseNode node = case2Node.remove((NavigationCase)ev.getOldValue());
-                    view.removeEdge(node);
-                }
+                } 
+                if ( myOldCase != null ){
+                    NavigationCaseNode caseNode = case2Node.remove(myOldCase);
+                    view.removeEdge(caseNode);
+                } 
                 view.validateGraph();
-            } else if (ev.getPropertyName() == "navigation-rule" ) {
-                NavigationRule myNavRule = (NavigationRule)ev.getNewValue();
-                //You can actually do nothing.
+            } else if (ev.getPropertyName() == "navigation-rule" ) {                
+                //You can actually do nothing.  
+                NavigationRule navRule = (NavigationRule) ev.getNewValue();
+                NavigationRule myOldRule = (NavigationRule) ev.getOldValue();
+                if( myOldRule != null ){
+                    if( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG ){
+                        String fromPage = myOldRule.getFromViewId();
+                        PageFlowNode node = pageName2Node.get(fromPage);
+                        if( node != null ) {
+                            view.removeNodeWithEdges(node);
+                        }
+                    }
+                }
             } else if ( ev.getNewValue() == State.NOT_SYNCED ) {
                 // Do nothing.
             }else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
                 view.warnUserMalFormedFacesConfig();
-            } else {
                 setupGraph();
+            } else {
                 view.validateGraph();
             }
             
