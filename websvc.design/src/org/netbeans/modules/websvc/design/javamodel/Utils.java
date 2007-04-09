@@ -51,7 +51,7 @@ import org.openide.filesystems.FileObject;
  * @author mkuchtiak
  */
 public class Utils {
-
+    
     public static boolean isEqualTo(String str1, String str2) {
         if (str1==null) return str2==null;
         else return str1.equals(str2);
@@ -88,7 +88,7 @@ public class Utils {
                         Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = webServiceAn.getElementValues();
                         boolean nameFound=false;
                         boolean serviceNameFound=false;
-                        boolean portNameFound=false;                
+                        boolean portNameFound=false;
                         for(ExecutableElement ex:expressions.keySet()) {
                             if (ex.getSimpleName().contentEquals("serviceName")) { //NOI18N
                                 serviceModel.serviceName = (String)expressions.get(ex).getValue();
@@ -110,7 +110,9 @@ public class Utils {
                         // set default names
                         if (!nameFound) serviceModel.name=implClass.getName();
                         if (!portNameFound) serviceModel.portName = serviceModel.getName()+"Port"; //NOI18N
-                        if (!serviceNameFound) serviceModel.serviceName=implClass.getName()+"Service"; //NOI18N                
+                        if (!serviceNameFound) serviceModel.serviceName=implClass.getName()+"Service"; //NOI18N
+                        
+                        //TODO: Also have to apply JAXWS/JAXB rules regarding collision of names
                     }
                     
                     boolean foundWebMethodAnnotation=false;
@@ -118,7 +120,7 @@ public class Utils {
                     List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
                     for (Element member : classEl.getEnclosedElements()) {
                         if (member.getKind() == ElementKind.METHOD/* && member.getSimpleName().contentEquals("min")*/) {
-                            ExecutableElement methodEl = (ExecutableElement) member;                            
+                            ExecutableElement methodEl = (ExecutableElement) member;
                             if (methodEl.getModifiers().contains(Modifier.PUBLIC)) {
                                 List<? extends AnnotationMirror> methodAnnotations = methodEl.getAnnotationMirrors();
                                 if (foundWebMethodAnnotation) {
@@ -158,6 +160,7 @@ public class Utils {
                     
                     for (int i=0;i<methods.size();i++) {
                         MethodModel operation = new MethodModel();
+                        operation.setImplementationClass(implClass);
                         Utils.populateOperation(controller, methods.get(i), operation);
                         operations.add(operation);
                     }
@@ -186,7 +189,7 @@ public class Utils {
         boolean resultNameFound=false;
         for (AnnotationMirror anMirror : methodAnnotations) {
             if (controller.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
-                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();                              
+                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
                 for(ExecutableElement ex:expressions.keySet()) {
                     if (ex.getSimpleName().contentEquals("operationName")) { //NOI18N
                         methodModel.setOperationName((String)expressions.get(ex).getValue());
@@ -197,7 +200,7 @@ public class Utils {
                 }
                 
             } else if (controller.getTypes().isSameType(resultAnotationEl.asType(), anMirror.getAnnotationType())) {
-                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();                              
+                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
                 for(ExecutableElement ex:expressions.keySet()) {
                     if (ex.getSimpleName().contentEquals("name")) { //NOI18N
                         resultModel.setName((String)expressions.get(ex).getValue());
@@ -291,7 +294,7 @@ public class Utils {
             for (Tag throwsTag:throwsTags) {
                 throwsJavadoc.add(throwsTag.text());
             }
-            javadocModel.setThrowsJavadoc(throwsJavadoc); 
+            javadocModel.setThrowsJavadoc(throwsJavadoc);
             
             // rest part
             Tag[] inlineTags = javadoc.inlineTags(); //NOI18N
@@ -303,7 +306,7 @@ public class Utils {
             methodModel.setJavadoc(javadocModel);
         }
         
-
+        
         // populate params
         List<? extends VariableElement> paramElements = methodEl.getParameters();
         List<ParamModel> params = new ArrayList<ParamModel>();
@@ -328,7 +331,7 @@ public class Utils {
         List<? extends AnnotationMirror> methodAnnotations = paramEl.getAnnotationMirrors();
         for (AnnotationMirror anMirror : methodAnnotations) {
             if (controller.getTypes().isSameType(paramAnotationEl.asType(), anMirror.getAnnotationType())) {
-                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();             
+                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
                 for(ExecutableElement ex:expressions.keySet()) {
                     if (ex.getSimpleName().contentEquals("name")) { //NOI18N
                         paramModel.setName((String)expressions.get(ex).getValue());

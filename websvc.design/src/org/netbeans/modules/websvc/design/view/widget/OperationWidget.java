@@ -34,8 +34,10 @@ import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
+import org.netbeans.modules.websvc.design.view.actions.RemoveOperationAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -55,6 +57,7 @@ public class OperationWidget extends AbstractTitledWidget {
     private static final Image IMAGE_NOTIFICATION  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/notification_operation.png"); // NOI18N   
 
+    private Service service;
     private MethodModel operation;
     
     private transient Widget contentWidget;
@@ -64,6 +67,8 @@ public class OperationWidget extends AbstractTitledWidget {
     private transient TabbedPaneWidget tabbedWidget;
     private transient Widget listWidget;
     private transient ButtonWidget viewButton;
+    
+    private transient Action removeAction;
 
     private ParametersWidget inputWidget;
     private OutputWidget outputWidget;
@@ -76,11 +81,15 @@ public class OperationWidget extends AbstractTitledWidget {
      * @param scene
      * @param operation
      */
-    public OperationWidget(Scene scene, MethodModel operation) {
+    public OperationWidget(Scene scene, Service service, MethodModel operation) {
         super(scene,GAP,BORDER_COLOR);
+        this.service = service;
         this.operation=operation;
+        
+        removeAction = new RemoveOperationAction(service, operation);
         getActions().addAction(ActionFactory.createPopupMenuAction(
                 new DesignViewPopupProvider(new Action [] {
+            removeAction
         })));
         createContent();
     }

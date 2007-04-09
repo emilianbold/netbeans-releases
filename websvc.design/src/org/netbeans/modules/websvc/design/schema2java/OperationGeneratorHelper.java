@@ -45,6 +45,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
+import org.netbeans.modules.websvc.design.javamodel.Utils;
 import org.netbeans.modules.websvc.design.util.SourceUtils;
 import org.netbeans.modules.websvc.design.view.actions.ParamModel;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
@@ -108,7 +109,7 @@ public class OperationGeneratorHelper {
         WSDLComponentFactory factory = wsdlModel.getFactory();
         Definitions definitions = wsdlModel.getDefinitions();
         Types types = definitions.getTypes();
-
+        
         String messageName = operationName+"Message"; //NOI18N
         String partName = operationName+"Part"; //NOI18N
         String paramTypeName = operationName+"Type"; //NOI18N
@@ -123,7 +124,7 @@ public class OperationGeneratorHelper {
             
             //If the user does not specify a return type, assume to be one-way
             if(returnType != null){
-               operation = factory.createRequestResponseOperation();
+                operation = factory.createRequestResponseOperation();
             }else{
                 operation = factory.createOneWayOperation();
             }
@@ -162,13 +163,13 @@ public class OperationGeneratorHelper {
                     schema.addComplexType(responseComplexType);
                     
                     if (returnType instanceof GlobalType) {
-                        LocalElement el = schemaModel.getFactory().createLocalElement();                     
+                        LocalElement el = schemaModel.getFactory().createLocalElement();
                         NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)returnType, GlobalType.class);
                         el.setName("result"); //NOI18N
                         el.setType(typeRef);
                         seq1.appendContent(el);
                     } else if (returnType instanceof GlobalElement) {
-                        ElementReference el = schemaModel.getFactory().createElementReference();                  
+                        ElementReference el = schemaModel.getFactory().createElementReference();
                         NamedComponentReference<GlobalElement> typeRef = schema.createReferenceTo((GlobalElement)returnType, GlobalElement.class);
                         el.setRef(typeRef);
                         seq1.appendContent(el);
@@ -193,7 +194,7 @@ public class OperationGeneratorHelper {
                 NamedComponentReference<GlobalElement> ref = part.createSchemaReference(paramElement, GlobalElement.class);
                 part.setElement(ref);
                 inputMessage.addPart(part);
-            }            
+            }
             
             if (inputMessage!=null) {
                 Input input = factory.createInput();
@@ -244,13 +245,7 @@ public class OperationGeneratorHelper {
             Binding binding = null;
             if(portType != null && bindings.size() > 0){
                 //find binding for portType
-                for(Binding b : bindings){
-                    NamedComponentReference<PortType> portTypeRef = b.getType();
-                    if(portTypeRef.references(portType)){
-                        binding = b;
-                        break;
-                    }
-                }
+                binding = findBindingForPortType(bindings, portType);
                 if(binding != null){
                     //determine if it is soap binding
                     List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
@@ -325,12 +320,88 @@ public class OperationGeneratorHelper {
         }
     }
     
+    private Binding findBindingForPortType(Collection<Binding> bindings, PortType portType){
+        for(Binding b : bindings){
+            NamedComponentReference<PortType> portTypeRef = b.getType();
+            if(portTypeRef.references(portType)){
+                return b;
+            }
+        }
+        return null;
+    }
+    
+    public void removeWSOperation(WSDLModel wsdlModel,
+            String portTypeName,
+            String operationName){
+        
+        PortType portType = null;
+        Operation operation = null;
+        try{
+            wsdlModel.startTransaction();
+            Definitions definitions = wsdlModel.getDefinitions();
+            Collection<PortType> portTypes = definitions.getPortTypes();
+            for(PortType pt : portTypes){
+                if(pt.getName().equals(portTypeName)){
+                    portType = pt;
+                    break;
+                }
+            }
+            if(portType != null){
+                Collection<Operation> operations = portType.getOperations();
+                for(Operation op : operations){
+                    String opName = convertOperationName(op.getName());
+                    if(opName.equals(operationName)){
+                        operation = op;
+                        break;
+                    }
+                }
+                if(operation != null){
+                    portType.removeOperation(operation);
+                    
+                    Collection<Binding> bindings = definitions.getBindings();
+                    Binding binding = null;
+                    if(bindings.size() > 0){
+                        //find binding for portType
+                        binding = findBindingForPortType(bindings, portType);
+                        if(binding != null){
+                            Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
+                            BindingOperation bindingOperation = null;
+                            for(BindingOperation bindingOp : bindingOperations){
+                                //TODO: Is this enough??
+                                //TODO: should we resolve the binding operation reference??
+                                if(operationName.equals(bindingOp.getName())){
+                                    bindingOperation = bindingOp;
+                                    break;
+                                }
+                            }
+                            if(bindingOperation != null){
+                                binding.removeBindingOperation(bindingOperation);
+                            }
+                        }
+                    }
+                }
+            }
+        }finally{
+            wsdlModel.endTransaction();
+        }
+        
+    }
+    
+    //converts the wsdlOperation name to Java name according to JAXWS rules
+    private String convertOperationName(final String wsdlOperation){
+        String name = wsdlOperation;
+        String firstChar = name.substring(0,1);
+        firstChar = firstChar.toLowerCase();
+        name= firstChar.concat(name.substring(1));
+        return name;
+    }
+    
     /** call wsimport to generate java artifacts
      * generate WsdlModel to find information about the new operation
      * add new menthod to implementation class
      */
     public void generateJavaArtifacts(String serviceName,
-            final FileObject implementationClass, final String operationName) {
+            final FileObject implementationClass, final String operationName, final boolean remove) {
         Project project = FileOwnerQuery.getOwner(implementationClass);
         invokeWsImport(project,serviceName);
         try {
@@ -338,7 +409,11 @@ public class OperationGeneratorHelper {
             modeler.generateWsdlModel(new WsdlModelListener() {
                 public void modelCreated(WsdlModel wsdlModel) {
                     MethodGenerator generator = new MethodGenerator(wsdlModel,implementationClass);
-                    generator.generateMethod(operationName);
+                    if(!remove){
+                        generator.generateMethod(operationName);
+                    }else{
+                        generator.removeMethod(operationName);
+                    }
                 }
             },true);
         } catch (MalformedURLException ex) {
@@ -442,7 +517,7 @@ public class OperationGeneratorHelper {
         for(GlobalElement element : elements){
             if(element.getName().equals(bName)){
                 bName = baseName + "_" + ++suffix;
-            }    
+            }
         }
         return bName;
     }

@@ -20,6 +20,7 @@
 package org.netbeans.modules.websvc.design.javamodel;
 
 import java.util.List;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -27,6 +28,7 @@ import java.util.List;
  */
 public class MethodModel {
     
+    private FileObject implementationClass;
     private String operationName;
     private String action;
     private ResultModel result;
@@ -36,13 +38,21 @@ public class MethodModel {
     private List<FaultModel> faults;
     
     /** Creates a new instance of MethodModel */
-    MethodModel(String operationName) {
+    MethodModel(FileObject implementationClass, String operationName) {
+        this.implementationClass = implementationClass;
         this.operationName=operationName;
     }
     /** Creates a new instance of MethodModel */
     MethodModel() {
     }
     
+    public FileObject getImplementationClass(){
+        return implementationClass;
+    }
+    
+    void setImplementationClass(FileObject impl){
+        implementationClass = impl;
+    }
     public String getOperationName() {
         return operationName;
     }

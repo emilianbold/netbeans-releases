@@ -35,7 +35,6 @@ import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
 import org.netbeans.modules.websvc.design.view.actions.AddOperationAction;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -65,7 +64,7 @@ public class OperationsWidget extends AbstractTitledWidget {
      * @param service 
      * @param serviceModel 
      */
-    public OperationsWidget(Scene scene, Service service, ServiceModel serviceModel) {
+    public OperationsWidget(Scene scene, final Service service, ServiceModel serviceModel) {
         super(scene,GAP,BORDER_COLOR);
         this.serviceModel = serviceModel;
         serviceModel.addServiceChangeListener(new ServiceChangeListener() {
@@ -76,7 +75,7 @@ public class OperationsWidget extends AbstractTitledWidget {
             }
             
             public void operationAdded(MethodModel method) {
-                contentWidget.addChild(new OperationWidget(getScene(),method));
+                contentWidget.addChild(new OperationWidget(getScene(),service, method));
                 updateHeaderLabel();
                 getScene().validate();
             }
@@ -96,10 +95,10 @@ public class OperationsWidget extends AbstractTitledWidget {
                 new DesignViewPopupProvider(new Action [] {
             addAction,
         })));
-        createContent();
+        createContent(service);
     }
     
-    private void createContent() {
+    private void createContent(Service service) {
         if (serviceModel==null) return;
         
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
@@ -125,7 +124,7 @@ public class OperationsWidget extends AbstractTitledWidget {
 
         if(serviceModel.getOperations()!=null) {
             for(MethodModel operation:serviceModel.getOperations()) {
-                contentWidget.addChild(new OperationWidget(getScene(),operation));
+                contentWidget.addChild(new OperationWidget(getScene(),service, operation));
             }
         }
         if(isExpanded()) {

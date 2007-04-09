@@ -94,8 +94,7 @@ public class AddOperationAction extends AbstractAction {
             desc.setButtonListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     if (evt.getSource() == DialogDescriptor.OK_OPTION) {
-                        OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
-                        
+                        OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);                        
                         WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
                         String operationName = panel.getOperationName();
                         List<ParamModel> parameterTypes = panel.getParameterTypes();
@@ -103,7 +102,7 @@ public class AddOperationAction extends AbstractAction {
                         List<ReferenceableSchemaComponent> faultTypes = panel.getFaultTypes();
                         Operation operation = generatorHelper.addWsOperation(wsdlModel, generatorHelper.getPortTypeName(implementationClass),
                                 operationName, parameterTypes, returnType, faultTypes);
-                        generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, operationName);
+                        generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, operationName, false);
                         
                         //TODO:this will go away when the recopying of the changed wsdls and schemas
                         //from the src/conf to the WEB-INF/wsdl directory is done in the build script.
@@ -141,6 +140,7 @@ public class AddOperationAction extends AbstractAction {
                 if(cookie!=null) cookie.save();
             }
         } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
         }
         
     }

@@ -49,4 +49,15 @@ public class MethodGenerator {
         }
     }
     
+    public void removeMethod(String operationName) {   
+       
+        org.netbeans.modules.websvc.core.MethodGenerator delegatedGenerator = 
+                new org.netbeans.modules.websvc.core.MethodGenerator(wsdlModel, implClassFo);
+        try {
+            delegatedGenerator.removeMethod(implClassFo, operationName);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    }
+    
 }

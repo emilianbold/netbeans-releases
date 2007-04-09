@@ -20,10 +20,12 @@
 package org.netbeans.modules.websvc.core;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
@@ -31,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CancellableTask;
@@ -59,21 +63,23 @@ public class MethodGenerator {
         this.wsdlModel=wsdlModel;
     }
     
-    public void generateMethod(final String operationName) throws IOException {   
+    
+    
+    public void generateMethod(final String operationName) throws IOException {
         
         // Use Progress API to display generator messages.
         //ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(MethodGenerator.class, "TXT_AddingMethod")); //NOI18N
         //handle.start(100);
-
+        
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
-
+            
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                 if (genUtils!=null) {
                     
-                    // get proper wsdlOparation;
+                    // get proper wsdlOperation;
                     WsdlOperation wsdlOperation = getWsdlOperation(wsdlModel, operationName);
                     
                     TreeMaker make = workingCopy.getTreeMaker();
@@ -81,7 +87,7 @@ public class MethodGenerator {
                     
                     // return type
                     String returnType = wsdlOperation.getReturnTypeName();
-
+                    
                     // create parameters
                     List<WsdlParameter> parameters = wsdlOperation.getParameters();
                     List<VariableTree> params = new ArrayList<VariableTree>();
@@ -89,15 +95,15 @@ public class MethodGenerator {
                         // create parameter:
                         params.add(make.Variable(
                                 make.Modifiers(
-                                    Collections.<Modifier>emptySet(),
-                                    Collections.<AnnotationTree>emptyList()
+                                Collections.<Modifier>emptySet(),
+                                Collections.<AnnotationTree>emptyList()
                                 ),
                                 parameter.getName(), // name
                                 make.Identifier(parameter.getTypeName()), // parameter type
                                 null // initializer - does not make sense in parameters.
-                        ));
+                                ));
                     }
-
+                    
                     // create exceptions
                     Iterator<String> exceptions = wsdlOperation.getExceptions();
                     List<ExpressionTree> exc = new ArrayList<ExpressionTree>();
@@ -106,25 +112,25 @@ public class MethodGenerator {
                         TypeElement excEl = workingCopy.getElements().getTypeElement(exception);
                         exc.add(make.QualIdent(excEl));
                     }
-
+                    
                     // create method
                     ModifiersTree methodModifiers = make.Modifiers(
-                        Collections.<Modifier>singleton(Modifier.PUBLIC),
-                        Collections.<AnnotationTree>emptyList()
-                    );
+                            Collections.<Modifier>singleton(Modifier.PUBLIC),
+                            Collections.<AnnotationTree>emptyList()
+                            );
                     MethodTree method = make.Method(
                             methodModifiers, // public
                             wsdlOperation.getJavaName(), // operation name
-                            make.Identifier(returnType), // return type 
+                            make.Identifier(returnType), // return type
                             Collections.<TypeParameterTree>emptyList(), // type parameters - none
                             params,
-                            exc, // throws 
+                            exc, // throws
                             "{ //TODO implement this method\nthrow new UnsupportedOperationException(\"Not implemented yet.\") }", // body text
                             null // default value - not applicable here, used by annotations
-                    );
-
-                    ClassTree modifiedClass =  make.addClassMember(javaClass, method); 
-
+                            );
+                    
+                    ClassTree modifiedClass =  make.addClassMember(javaClass, method);
+                    
                     workingCopy.rewrite(javaClass, modifiedClass);
                 }
             }
@@ -135,7 +141,109 @@ public class MethodGenerator {
         targetSource.runModificationTask(task).commit();
     }
     
-    private WsdlOperation getWsdlOperation (WsdlModel model, String operationName) {
+    public static void removeMethod(final FileObject implClass, final String operationName) throws IOException {
+        JavaSource targetSource = JavaSource.forFileObject(implClass);
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                if (genUtils!=null) {
+                    ClassTree javaClass = genUtils.getClassTree();
+                    
+                    //first find out if @WebService annotation is present in the class
+                    boolean foundWebServiceAnnotation = false;
+                    TypeElement wsElement = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                    if (wsElement!=null) {
+                        TypeElement classEl = genUtils.getTypeElement();
+                        List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
+                        for (AnnotationMirror anMirror : annotations) {
+                            if (workingCopy.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                                foundWebServiceAnnotation = true;
+                                break;
+                            }
+                        }
+                    }
+                    ExecutableElement method = new MethodVisitor(workingCopy).getMethod( operationName);
+                    if(method != null){
+                        TreeMaker make = workingCopy.getTreeMaker();
+                        MethodTree methodTree = workingCopy.getTrees().getTree(method);
+                        if(methodTree != null){
+                            if(foundWebServiceAnnotation){
+                                //find out if method has @WebMethod annotation
+                                AnnotationMirror webMethodAnMirror =  getWebMethodAnnotation(workingCopy, method);
+                                if(webMethodAnMirror != null){
+                                    //@WebMethod annotation found add exclude attribute
+                                    AssignmentTree assignment = make.Assignment(make.Identifier("exclude"), make.Literal("true")); //NOI18N
+                                    AnnotationTree anotTree = (AnnotationTree)workingCopy.getTrees().getTree(genUtils.getTypeElement(),webMethodAnMirror);
+                                    AnnotationTree modifiedAnotTree = make.addAnnotationAttrValue(anotTree, assignment);
+                                    workingCopy.rewrite(anotTree, modifiedAnotTree);
+                                    
+                                } else{ //no @WebMethod annotation found, add @WebMethod with "exclude" element
+                                    TypeElement webMethodAnn = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+                                    List<ExpressionTree> attrs = new ArrayList<ExpressionTree>(); 
+                                    //attrs.add(make.Binary(Tree.Kind.BOOLEAN_LITERAL, make.Identifier("exclude"), make.Literal("true")));
+                                    attrs.add(make.Assignment(make.Identifier("exclude"), make.Literal(Boolean.TRUE))); //NOI18N
+                                    AnnotationTree webMethodAnnotation = make.Annotation(make.QualIdent(webMethodAnn),attrs);
+                                    ModifiersTree modifiersTree = methodTree.getModifiers();
+                                    ModifiersTree newModifiersTree = make.addModifiersAnnotation(modifiersTree, webMethodAnnotation);
+                                    workingCopy.rewrite(modifiersTree, newModifiersTree);
+                                }
+                            }else{ //no @WebService annotation, there must have been a @WebMethod annotation, add exclude element
+                                AnnotationMirror webMethodAnMirror =  getWebMethodAnnotation(workingCopy, method);
+                                if(webMethodAnMirror != null){
+                                    //@WebMethod annotation found
+                                    AssignmentTree assignment = make.Assignment(make.Identifier("exclude"), make.Literal(Boolean.TRUE)); //NOI18N
+                                    AnnotationTree anotTree = (AnnotationTree)workingCopy.getTrees().getTree(genUtils.getTypeElement(),webMethodAnMirror);
+                                    AnnotationTree modifiedAnotTree = make.addAnnotationAttrValue(anotTree, assignment);
+                                    workingCopy.rewrite(anotTree, modifiedAnotTree);
+                                }
+                            }
+                        }
+                        boolean removeImplementsClause = false;
+                        //find out if there are no more exposed operations, if so remove the implements clause
+                        if(foundWebServiceAnnotation){
+                            //if there is a WebService annotation find out if there are no more public methods
+                           if(! new MethodVisitor(workingCopy).hasPublicMethod()){
+                               removeImplementsClause = true;
+                           }
+                        }
+                        else{
+                            if(! new MethodVisitor(workingCopy).hasWebMethod()){
+                                removeImplementsClause = true;
+                            }
+                        }
+                        if(removeImplementsClause){
+                            //TODO: need to remove implements clause on the SEI
+                            //for now all implements are being removed
+                            List<? extends Tree> implementeds = javaClass.getImplementsClause();
+                            ClassTree modifiedJavaClass = javaClass;
+                            for(Tree implemented : implementeds) {
+                                modifiedJavaClass = make.removeClassImplementsClause(modifiedJavaClass, implemented);
+                            }
+                            workingCopy.rewrite(javaClass, modifiedJavaClass);
+                        }
+                    }
+                }
+            }
+            
+            public void cancel() {
+            }
+        };
+        targetSource.runModificationTask(task).commit();
+    }
+    
+    private static AnnotationMirror getWebMethodAnnotation(WorkingCopy workingCopy, ExecutableElement method){
+        TypeElement methodAnnotationEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+        List<? extends AnnotationMirror> methodAnnotations = method.getAnnotationMirrors();
+        for (AnnotationMirror anMirror : methodAnnotations) {
+            if (workingCopy.getTypes().isSameType(methodAnnotationEl.asType(), anMirror.getAnnotationType())) {
+                return anMirror;
+            }
+        }
+        return null;
+    }
+    
+    private WsdlOperation getWsdlOperation(WsdlModel model, String operationName) {
         // TODO: exclude non DOCUMENT/LITERAL ports
         List<WsdlService> services = model.getServices();
         for (WsdlService service:services) {
