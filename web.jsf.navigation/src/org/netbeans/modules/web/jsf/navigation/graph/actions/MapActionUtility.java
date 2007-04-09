@@ -234,6 +234,7 @@ public class MapActionUtility {
                     Object myObj = selectedObjects.toArray()[0];
                     if( myObj instanceof Node ) {
                         delete((Node)myObj);
+                        return;
                     }
                 }
                 

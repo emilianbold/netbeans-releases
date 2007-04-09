@@ -61,7 +61,7 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
     /**
      * Creates a Popup for any right click on Page Flow Editor
      * @param graphScene The related PageFlow Scene.
-     * @param tc 
+     * @param tc
      */
     public PageFlowPopupProvider(PageFlowScene graphScene, TopComponent tc ) {
         this.tc = tc;
@@ -72,8 +72,8 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
     
     
     // <actions from layers>
-    private static final String PATH_PAGEFLOW_ACTIONS = "PageFlowEditor/PopupActions"; // NOI18N
-//        private static final String PATH_PAGEFLOW_ACTIONS = "PageFlowEditor/application/x-pageflow/Popup"; // NOI18N
+    private static final String PATH_PAGEFLOW_NODE_ACTIONS = "PageFlowEditor/PopupActions/Node"; // NOI18N
+    private static final String PATH_PAGEFLOW_SCENE_ACTIONS = "PageFlowEditor/PopupActions/Scene"; // NOI18N
     private void initialize() {
         InstanceContent ic = new InstanceContent();
         ic.add(graphScene);
@@ -87,9 +87,11 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
             Set<Object> set = new HashSet<Object>();
             set.add(obj);
             graphScene.setSelectedObjects(set);
+            return Utilities.actionsToPopup(
+                    SystemFileSystemSupport.getActions(PATH_PAGEFLOW_NODE_ACTIONS), tc.getLookup());
         }
         return Utilities.actionsToPopup(
-                SystemFileSystemSupport.getActions(PATH_PAGEFLOW_ACTIONS), tc.getLookup());
+                SystemFileSystemSupport.getActions(PATH_PAGEFLOW_SCENE_ACTIONS), tc.getLookup());
     }
     
     

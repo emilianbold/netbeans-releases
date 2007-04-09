@@ -216,8 +216,10 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         header.getActions().addAction(createWidgetHoverAction());
         
         LabelWidget lblWidget = nodeWidget.getNodeNameWidget();
-        lblWidget.getActions().addAction(
-                ActionFactory.createInplaceEditorAction( new PageNodeTextFieldInplaceEditor(nodeWidget) ));
+        
+        // RENAME: Until rename is complete comment out.
+//        lblWidget.getActions().addAction(
+//                ActionFactory.createInplaceEditorAction( new PageNodeTextFieldInplaceEditor(nodeWidget) ));
         
         
         
