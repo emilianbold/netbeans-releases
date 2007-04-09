@@ -691,8 +691,7 @@ public class WSDLGenerator {
     private void generateCreateSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
-        	conn.setAutoCommit(false);
-            if (requestElement != null) {
+        	if (requestElement != null) {
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
                 if (sequenceElement != null) {
                     if (prep.getNumParameters() > 0) {
