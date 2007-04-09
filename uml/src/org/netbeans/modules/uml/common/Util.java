@@ -33,6 +33,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
+import org.netbeans.modules.uml.ui.support.ProductHelper;
 
 /**
  * Contains commonly used functions.
@@ -1025,10 +1026,18 @@ public class Util
     public static boolean hasNameCollision(
         INamespace space, String name, String newType, INamedElement self)
     {
-        IElementLocator pElementLocator = new ElementLocator();
         if (space==null)
             return false;
         
+        String defaultName = ProductHelper.getPreferenceManager()
+            .getPreferenceValue("NewProject", "DefaultElementName"); // NOI18N
+        
+        // skip validation for the newly created unnamed element
+        if (defaultName != null && defaultName.equals(name))
+            return false;
+        
+        IElementLocator pElementLocator = new ElementLocator();
+    
         ETList<INamedElement> pFoundElements = pElementLocator.findByName(space, name);
         
         if (pFoundElements != null)
