@@ -99,7 +99,7 @@ public class SyncUpdateTest extends NbTestCase {
         assertTrue(propertyChangeCalled);
     }
     
-    public void testSyncRemoveCase() throws Exception {
+    public void testSyncRemoveCase_99325() throws Exception {
         
         propertyChangeCalled = false;
         
