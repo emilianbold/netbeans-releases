@@ -128,6 +128,8 @@ public final class AttributesUtilities {
 
             if (all.size() == 0) {
                 return SimpleAttributeSet.EMPTY;
+            } if (all.size() == 1) {
+                return all.get(0);
             } else {
                 return new Composite(all.toArray(new AttributeSet[all.size()]));
             }
