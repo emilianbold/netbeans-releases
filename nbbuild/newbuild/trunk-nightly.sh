@@ -155,7 +155,7 @@ cd $NB_ALL/nbbuild/netbeans
 pack_component $DIST $BASENAME uml "uml*"
 rm -rf uml*
 
-pack_component $DIST $BASENAME visualweb "visulalweb*"
+pack_component $DIST $BASENAME visualweb "visualweb*"
 rm -rf visualweb*
 
 pack_component $DIST $BASENAME ruby "ruby*"
