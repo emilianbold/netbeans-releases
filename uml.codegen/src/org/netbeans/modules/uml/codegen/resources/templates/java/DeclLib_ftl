@@ -78,23 +78,18 @@ ${classInfo.getModifierText(classInfo.getModifiers())}
 
 
 <#macro TypeDeclarationTypeParameters classInfo >
-<@compress single_line=true>
-<@singleline>
 <#if classInfo.getClassElement()?? >
 <#assign classifier=classInfo.getClassElement() />
 <#if classifier.getTemplateParameters()?? && (classifier.getTemplateParameters()?size > 0) >
-<
-<#list classifier.getTemplateParameters() as typeParam >
- ${typeParam.getName()}
-<#if typeParam_has_next >
-,
+<#assign templatesList >
+<@commaSpaceSeparatedList classifier.getTemplateParameters() />
+</#assign> 	
+<#-- -->
+<#if ((templatesList?trim)?length > 0 ) >
+< ${generatedList} >
 </#if>
-</#list>
- >
-</#if>
-</#if>
-</@singleline>
-</@compress>
+</#if> 	
+</#if> 
 </#macro>
 
 
@@ -282,13 +277,12 @@ ${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getCodeGenR
 <#macro MethodDeclarationThrows methodInfo >
 <@singleline>
 <#if methodInfo.getExceptions()?? && (methodInfo.getExceptions()?size > 0) >
-throws 
-<#list methodInfo.getExceptions() as exception >
- ${exception}
-<#if exception_has_next>
-,
+<#assign exceptionsList >
+<@commaSpaceSeparatedList methodInfo.getExceptions() />
+</#assign> 	
+<#if ((exceptionsList?trim)?length > 0 ) >
+throws ${exceptionsList}
 </#if>
-</#list>
 </#if>
 </@singleline>
 </#macro>
@@ -334,6 +328,36 @@ ${literal.getName()}
 </#list>
 </@singleline>
 </#if>
+</#macro>
+
+
+<#--
+ #  common utilities
+ -->
+
+
+<#macro commaSpaceSeparatedList list >
+<@compress single_line=true>
+<@singleline>
+<#if list?? && (list?size > 0) >
+<#assign comma=false />
+<#list list as item >
+<@compress single_line=true>
+<@singleline>
+<#assign listItem=item?trim /> 
+<#if (listItem?length > 0)  >
+<#if comma >
+,
+</#if>
+ ${listItem}
+<#assign comma=true />
+</#if>		<#-- listItem?length > 0 -->
+</@singleline>
+</@compress>
+</#list>	<#-- list as item -->
+</#if>		<#-- list?? && (list?size > 0) -->
+</@singleline>	
+</@compress>
 </#macro>
 
 
