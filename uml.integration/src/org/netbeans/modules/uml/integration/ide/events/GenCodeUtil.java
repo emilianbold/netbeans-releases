@@ -187,6 +187,9 @@ public final class GenCodeUtil
 	    return null;
 	}
         IPackage owningPkg = classType.getOwningPackage();
+	if (owningPkg == null) {
+	    return null;
+	}
         String fullPkgName = owningPkg.getFullyQualifiedName(false);
 
         // default package elements have the project as the owning package
@@ -267,30 +270,50 @@ public final class GenCodeUtil
     {
 	ArrayList<String[]> res = new ArrayList<String[]>();
 
-	IClassifier clazz; 
+	IClassifier clazz = null;
 
 	if (classType instanceof IDerivationClassifier) {
 	    IDerivation drv = classType.getDerivation();
-	    clazz = drv.getTemplate();
-	    List<IUMLBinding> bindings =  drv.getBindings();
-	    if (bindings != null) {
-		for (IUMLBinding b : bindings) {
-		    if (b.getActual() instanceof IClassifier) {
-			ArrayList<String[]> refs 
-			    = getReferredCodeGenTypes((IClassifier)b.getActual());
-			if (refs != null) {
-			    res.addAll(refs);
+	    if (drv != null) {
+		clazz = drv.getTemplate();
+		List<IUMLBinding> bindings =  drv.getBindings();
+		if (bindings != null) {
+		    for (IUMLBinding b : bindings) {
+			if (b.getActual() instanceof IClassifier) {
+			    ArrayList<String[]> refs 
+				= getReferredCodeGenTypes((IClassifier)b.getActual());
+			    if (refs != null) {
+				res.addAll(refs);
+			    }
 			}
 		    }
+		}
+	    } else {
+		// it is something like orphaned pack.clazz<type argument>, 
+		// ie. there isn't derivation connecting it to pack.clazz;
+		// will try to extract "pack.clazz", though without the bindings 
+		// there isn't enough info for "type argument" 
+		String[] fqType = GenCodeUtil.getFullyQualifiedCodeGenType(classType);
+		if (( fqType != null && fqType.length == 2) ) {	
+		    String name = fqType[1];
+		    if (name != null) {
+			int ind = name.indexOf('<');
+			if (ind > 1) {
+			    name = name.substring(0, ind);
+			}
+		    }
+		    res.add(new String[] {fqType[0], name});
 		}
 	    }
 	} else {
 	    clazz = classType;
 	}
-
-	String[] fqType = GenCodeUtil.getFullyQualifiedCodeGenType(clazz);
-	if (( fqType != null && fqType.length == 2) ) {	
-	    res.add(fqType);	
+	
+	if (clazz != null) {
+	    String[] fqType = GenCodeUtil.getFullyQualifiedCodeGenType(clazz);
+	    if (( fqType != null && fqType.length == 2) ) {	
+		res.add(fqType);	
+	    }
 	}
 
 	return res;
