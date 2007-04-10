@@ -629,7 +629,7 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugSingle.instance"/>
                     </file>
                     <attr name="org-netbeans-modules-project-ui-DebugSingle.shadow/SeparatorBeforeCut.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-project-ui-DebugSingle.shadow/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-project-ui-DebugSingle.shadow/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow" boolvalue="true"/>
                 </folder>
             </folder>
         </folder>
