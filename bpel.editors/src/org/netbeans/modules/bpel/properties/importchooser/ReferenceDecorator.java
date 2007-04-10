@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -26,6 +26,7 @@ import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceCreator;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceDataNode;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceDecorator;
@@ -65,10 +66,10 @@ public class ReferenceDecorator implements ExternalReferenceDecorator {
         if (node.hasModel()) {
             // get model of the node selected in the tree view
             Model selectedModel = node.getModel();
-            if (selectedModel == null) {
+            if (selectedModel == null || selectedModel.getState() != State.VALID) {
                 // If it is supposed to have a selectedModel, it must not be null.
                 return NbBundle.getMessage(ReferenceDecorator.class,
-                        "LBL_ReferenceDecorator_NoModel");
+                        "LBL_ReferenceDecorator_InvalidModel");
             }
             //
             // Component selectedModel always has to be the BPEL selectedModel
@@ -80,25 +81,30 @@ public class ReferenceDecorator implements ExternalReferenceDecorator {
                             "LBL_ReferenceDecorator_AlreadyRefd");
                 }
             }
-        }
-        //
-        String ns = node.getNamespace();
-        String namespace = myRefCreator.getTargetNamespace();
-        if (myRefCreator.mustNamespaceDiffer()) {
-            // This is an import, which must have no namespace, or a
-            // different one than the customized component.
-            if (ns != null && !Utilities.NO_NAME_SPACE.equals(ns) &&
-                    namespace.equals(ns)) {
+            //
+            String ns = node.getNamespace();
+            if (ns == null || ns.length() == 0) {
                 return NbBundle.getMessage(ReferenceDecorator.class,
-                        "LBL_ReferenceDecorator_SameNamespace");
+                        "LBL_ReferenceDecorator_NoNamespace");
             }
-        } else {
-            // This is an include or redefine, which must have no namespace,
-            // or the same one as the customized component.
-            if (ns != null && !Utilities.NO_NAME_SPACE.equals(ns) &&
-                    !namespace.equals(ns)) {
-                return NbBundle.getMessage(ReferenceDecorator.class,
-                        "LBL_ReferenceDecorator_DifferentNamespace");
+            //
+            String namespace = myRefCreator.getTargetNamespace();
+            if (myRefCreator.mustNamespaceDiffer()) {
+                // This is an import, which must have no namespace, or a
+                // different one than the customized component.
+                if (!Utilities.NO_NAME_SPACE.equals(ns) &&
+                        namespace.equals(ns)) {
+                    return NbBundle.getMessage(ReferenceDecorator.class,
+                            "LBL_ReferenceDecorator_SameNamespace");
+                }
+            } else {
+                // This is an include or redefine, which must have no namespace,
+                // or the same one as the customized component.
+                if (!Utilities.NO_NAME_SPACE.equals(ns) &&
+                        !namespace.equals(ns)) {
+                    return NbBundle.getMessage(ReferenceDecorator.class,
+                            "LBL_ReferenceDecorator_DifferentNamespace");
+                }
             }
         }
         //

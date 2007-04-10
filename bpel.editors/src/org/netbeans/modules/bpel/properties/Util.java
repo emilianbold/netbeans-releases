@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -76,9 +76,9 @@ public class Util {
     public static final String FORWARD_SLASH = "/";
     public static final String UP_REL_FOLDER = "../";
     public static final String CUR_REL_FOLDER = "./";
-// too light - very difficult to see
-//    private static String GRAY_COLOR = "!controlShadow";
-
+    // too light - very difficult to see
+    //    private static String GRAY_COLOR = "!controlShadow";
+    
     private Util() {
     }
     
@@ -118,9 +118,9 @@ public class Util {
         }
         
         StringTokenizer fromPath = new StringTokenizer(fromFo.getPath()
-        , FORWARD_SLASH);
+                , FORWARD_SLASH);
         StringTokenizer toPath = new StringTokenizer(toFo.getPath()
-        , FORWARD_SLASH);
+                , FORWARD_SLASH);
         String tmpFromFolder = null;
         String tmpToFolder = null;
         while (fromPath.hasMoreTokens()) {
@@ -229,12 +229,12 @@ public class Util {
             return true;
         }
         switch(ch) {
-            case '.':
-            case '-':
-            case '_':
-                return true;
-            default:
-                return false;
+        case '.':
+        case '-':
+        case '_':
+            return true;
+        default:
+            return false;
         }
     } //-- isNCNameChar
     
@@ -250,19 +250,19 @@ public class Util {
         if ((ch >= 0x30FC) && (ch <= 0x30FE)) return true;
         
         switch(ch) {
-            case 0x00B7:
-            case 0x02D0:
-            case 0x02D1:
-            case 0x0387:
-            case 0x0640:
-            case 0x0E46:
-            case 0x0EC6:
-            case 0x3005:
-            case 0x309D:
-            case 0x309E:
-                return true;
-            default:
-                break;
+        case 0x00B7:
+        case 0x02D0:
+        case 0x02D1:
+        case 0x0387:
+        case 0x0640:
+        case 0x0E46:
+        case 0x0EC6:
+        case 0x3005:
+        case 0x309D:
+        case 0x309E:
+            return true;
+        default:
+            break;
         }
         return false;
     } //-- isExtender
@@ -302,25 +302,25 @@ public class Util {
         }
         switch (importType) {
             // TODO
-            case IMPORT_SCHEMA: {
-                SchemaModel model = SchemaModelFactory.getDefault()
-                .getModel(modelSource);
-                if (model == null) break;
-                if (model.getState() != Model.State.NOT_WELL_FORMED) {
-                    return model.getSchema().getTargetNamespace();
-                }
+        case IMPORT_SCHEMA: {
+            SchemaModel model = SchemaModelFactory.getDefault()
+                    .getModel(modelSource);
+            if (model == null) break;
+            if (model.getState() != Model.State.NOT_WELL_FORMED) {
+                return model.getSchema().getTargetNamespace();
             }
-            break;
-            
-            case IMPORT_WSDL: {
-                WSDLModel model = WSDLModelFactory.getDefault()
-                .getModel(modelSource);
-                if (model == null) break;
-                if (model.getState() != Model.State.NOT_WELL_FORMED) {
-                    return model.getDefinitions().getTargetNamespace();
-                }
+        }
+        break;
+        
+        case IMPORT_WSDL: {
+            WSDLModel model = WSDLModelFactory.getDefault()
+                    .getModel(modelSource);
+            if (model == null) break;
+            if (model.getState() != Model.State.NOT_WELL_FORMED) {
+                return model.getDefinitions().getTargetNamespace();
             }
-            break;
+        }
+        break;
         }
         return null;
     }
@@ -328,7 +328,7 @@ public class Util {
     public static boolean isUniquePropertyName(WSDLModel wsdlModel, String propName) {
         assert wsdlModel != null && propName != null;
         List<CorrelationProperty> corrPropList =  wsdlModel.getDefinitions()
-        .getExtensibilityElements(CorrelationProperty.class);
+                .getExtensibilityElements(CorrelationProperty.class);
         if (corrPropList == null || corrPropList.size() < 1) {
             return true;
         }
@@ -380,12 +380,12 @@ public class Util {
             }
             
             Query query = (Query) model.getFactory()
-            .create(propAlias, BPELQName.QUERY.getQName());
+                    .create(propAlias, BPELQName.QUERY.getQName());
             propAlias.addExtensibilityElement(query);
         }
         propAliasQuery = propAlias.getQuery();
         if (propAliasQuery != null) {
-//            System.out.println("propAliasQuery.setContent(queryValue) ");
+            //            System.out.println("propAliasQuery.setContent(queryValue) ");
             propAliasQuery.setContent(queryValue);
         }
     }
@@ -395,15 +395,15 @@ public class Util {
         if (treeView != null) {
             treeView.setDefaultActionAllowed(false);
         }
-//        if (comp instanceof BeanTreeView) {
-//            ((BeanTreeView)comp).setDefaultActionAllowed(false);
-//            return;
-//        }
-//        if (comp instanceof Container) {
-//            for (Component child : ((Container)comp).getComponents()) {
-//                disableDefaultActionsInBeenTreeViews(child);
-//            }
-//        }
+        //        if (comp instanceof BeanTreeView) {
+        //            ((BeanTreeView)comp).setDefaultActionAllowed(false);
+        //            return;
+        //        }
+        //        if (comp instanceof Container) {
+        //            for (Component child : ((Container)comp).getComponents()) {
+        //                disableDefaultActionsInBeenTreeViews(child);
+        //            }
+        //        }
     }
     
     /**
@@ -581,13 +581,17 @@ public class Util {
     }
     
     public static String getTargetNamespace(Model model) {
-        if (model instanceof SchemaModel) {
-            return ((SchemaModel) model).getSchema().getTargetNamespace();
-        } else if (model instanceof BpelModel) {
-            return ((BpelModel) model).getProcess().getTargetNamespace();
-        } else if (model instanceof WSDLModel) {
-            return ((WSDLModel) model).getDefinitions().getTargetNamespace();
-        } else {
+        try {
+            if (model instanceof SchemaModel) {
+                return ((SchemaModel) model).getSchema().getTargetNamespace();
+            } else if (model instanceof BpelModel) {
+                return ((BpelModel) model).getProcess().getTargetNamespace();
+            } else if (model instanceof WSDLModel) {
+                return ((WSDLModel) model).getDefinitions().getTargetNamespace();
+            } else {
+                return null;
+            }
+        } catch (Exception ex) {
             return null;
         }
     }
