@@ -80,7 +80,7 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
                 
         SoaSampleUtils.setProjectName(compApptargetProjectDir, 
                 SoaSampleProjectProperties.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE,
-                name);                
+                name, "TravelReservationServiceApplication");                
         
         // add JbiModule
         Project compAppProject = ProjectManager.getDefault().findProject(compApptargetProjectDir);

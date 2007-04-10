@@ -36,14 +36,19 @@ public abstract class BluePrintSampleWizardIterator extends SampleWizardIterator
     
     public static final String BLUE_PRINT1 = "BluePrint1";
     public static final String BLUE_PRINT1_COMP_APP = "BluePrint1Application.zip";
+    public static final String BLUE_PRINT1_APP = "BluePrint1Application";
     public static final String BLUE_PRINT2 = "BluePrint2";
     public static final String BLUE_PRINT2_COMP_APP = "BluePrint2Application.zip";
+    public static final String BLUE_PRINT2_APP = "BluePrint2Application";
     public static final String BLUE_PRINT3 = "BluePrint3";
     public static final String BLUE_PRINT3_COMP_APP = "BluePrint3Application.zip";
+    public static final String BLUE_PRINT3_APP = "BluePrint3Application";
     public static final String BLUE_PRINT4 = "BluePrint4";
     public static final String BLUE_PRINT4_COMP_APP = "BluePrint4Application.zip";
+    public static final String BLUE_PRINT4_APP = "BluePrint4Application";
     public static final String BLUE_PRINT5 = "BluePrint5";
     public static final String BLUE_PRINT5_COMP_APP = "BluePrint5Application.zip";    
+    public static final String BLUE_PRINT5_APP = "BluePrint5Application";
     
     public BluePrintSampleWizardIterator() {}
     
@@ -85,7 +90,7 @@ public abstract class BluePrintSampleWizardIterator extends SampleWizardIterator
         
         SoaSampleUtils.setProjectName(compApptargetProjectDir, 
                 SoaSampleProjectProperties.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE,
-                name);             
+                name, getCompositeApplicationName());             
         // add JbiModule
         Project compAppProject = ProjectManager.getDefault().findProject(compApptargetProjectDir);
         SoaSampleUtils.addJbiModule(compAppProject, getProject());
@@ -95,5 +100,6 @@ public abstract class BluePrintSampleWizardIterator extends SampleWizardIterator
         return resultSet;
     }
     
+    public abstract String getCompositeApplicationName();
     public abstract String getCompositeApplicationArchiveName();
 }

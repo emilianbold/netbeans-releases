@@ -94,9 +94,9 @@ public class ReservationCallbackProviderBean implements MessageDrivenBean, Messa
             
             
             // Initialise to defaults.
-            String airlineCallbackURL = "http://localhost:18181/TravelReservation/airlineReserved";
-            String vehicleCallbackURL = "http://localhost:18181/TravelReservation/vehicleReserved";
-            String hotelCallbackURL = "http://localhost:18181/TravelReservation/hotelReserved";
+            String airlineCallbackURL = "http://localhost:18181/TravelReservationService/airlineReserved";
+            String vehicleCallbackURL = "http://localhost:18181/TravelReservationService/vehicleReserved";
+            String hotelCallbackURL = "http://localhost:18181/TravelReservationService/hotelReserved";
             
             // Lookup URL's defined in the deployment descriptor.
             try {

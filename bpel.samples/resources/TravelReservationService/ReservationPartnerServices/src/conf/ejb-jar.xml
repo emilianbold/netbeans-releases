@@ -100,17 +100,17 @@
             <env-entry>
                 <env-entry-name>AirlineCallbackURL</env-entry-name>
                 <env-entry-type>java.lang.String</env-entry-type>
-                <env-entry-value>http://localhost:18181/TravelReservation/airlineReserved</env-entry-value>
+                <env-entry-value>http://localhost:18181/TravelReservationService/airlineReserved</env-entry-value>
                 </env-entry>
             <env-entry>
                 <env-entry-name>VehicleCallbackURL</env-entry-name>
                 <env-entry-type>java.lang.String</env-entry-type>
-                <env-entry-value>http://localhost:18181/TravelReservation/vehicleReserved</env-entry-value>
+                <env-entry-value>http://localhost:18181/TravelReservationService/vehicleReserved</env-entry-value>
                 </env-entry>
             <env-entry>
                 <env-entry-name>HotelCallbackURL</env-entry-name>
                 <env-entry-type>java.lang.String</env-entry-type>
-                <env-entry-value>http://localhost:18181/TravelReservation/hotelReserved</env-entry-value>
+                <env-entry-value>http://localhost:18181/TravelReservationService/hotelReserved</env-entry-value>
                 </env-entry>
                        
         </message-driven>

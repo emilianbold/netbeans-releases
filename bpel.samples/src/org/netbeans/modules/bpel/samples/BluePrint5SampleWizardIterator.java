@@ -45,4 +45,8 @@ public class BluePrint5SampleWizardIterator extends BluePrintSampleWizardIterato
      public String getCompositeApplicationArchiveName() {
          return BluePrintSampleWizardIterator.BLUE_PRINT5_COMP_APP;
      }
+
+     public String getCompositeApplicationName() {
+         return BluePrintSampleWizardIterator.BLUE_PRINT5_APP;
+     }
 }

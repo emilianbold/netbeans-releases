@@ -56,19 +56,21 @@ public class SynchronousSampleWizardIterator extends SampleWizardIterator {
     
     public Set<FileObject> instantiate() throws IOException {
         Set<FileObject> resultSet = super.instantiate();
-        
         FileObject dirParent = getProject().getProjectDirectory().getParent();
+
         try {
             String name = (String) wiz.getProperty(NAME) + "Application";
-
             Set<FileObject> set = createSynchronousCompositeApplicationProject(dirParent, name);
             resultSet.addAll(set);
-        } catch(FileNotFoundException fnfe) {
+        }
+        catch(FileNotFoundException fnfe) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,fnfe);
-        } catch(IOException ioe) {
+        }
+        catch(IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,ioe);
         }
         ProjectChooser.setProjectsFolder(FileUtil.toFile(dirParent.getParent()));
+
         return resultSet;
     }
 
@@ -85,7 +87,7 @@ public class SynchronousSampleWizardIterator extends SampleWizardIterator {
         
         SoaSampleUtils.setProjectName(compApptargetProjectDir, 
                 SoaSampleProjectProperties.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE,
-                name);       
+                name, "SynchronousSampleApplication");       
 
         // add JbiModule
         Project compAppProject = ProjectManager.getDefault().findProject(compApptargetProjectDir);

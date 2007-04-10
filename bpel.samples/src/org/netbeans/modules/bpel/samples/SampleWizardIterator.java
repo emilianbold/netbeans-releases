@@ -38,7 +38,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIterator {
+public class SampleWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
 
@@ -89,7 +89,8 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         SoaSampleUtils.unZipFile(template.getInputStream(), dir);
         
         SoaSampleUtils.setProjectName(dir, 
-                SoaSampleProjectProperties.BPEL_PROJECT_CONFIGURATION_NAMESPACE, name);
+                SoaSampleProjectProperties.BPEL_PROJECT_CONFIGURATION_NAMESPACE, name,
+                template.getName());
         
         Project p = ProjectManager.getDefault().findProject(dir);
         myProject = p;
