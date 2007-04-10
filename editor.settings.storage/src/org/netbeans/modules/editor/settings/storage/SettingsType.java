@@ -145,12 +145,16 @@ public enum SettingsType {
             boolean scanUsers,
             Map<String, List<Object []>> results
         ) {
-            assert baseFolder != null : "The parameter baseFolder can't be null"; //NOI18N
             assert results != null : "The parameter results can't be null"; //NOI18N
 
-            FileObject mimeFolder = getMimeFolder(baseFolder, mimeType);
-            FileObject legacyMimeFolder = getLegacyMimeFolder(baseFolder, mimeType);
+            FileObject mimeFolder = null;
+            FileObject legacyMimeFolder = null;
 
+            if (baseFolder != null) {
+                mimeFolder = getMimeFolder(baseFolder, mimeType);
+                legacyMimeFolder = getLegacyMimeFolder(baseFolder, mimeType);
+            }
+            
             if (scanModules) {
                 if (legacyMimeFolder != null && legacyMimeFolder.isFolder()) {
                     addModulesLegacyFiles(legacyMimeFolder, profileId, fullScan, results);
