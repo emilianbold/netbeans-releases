@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.identity.profile.ui.support;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -36,6 +38,7 @@ import org.netbeans.modules.identity.profile.ui.support.J2eeProjectHelper.Projec
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
@@ -663,7 +666,7 @@ public class SunDDHelper {
         
         //RequestProcessor.getDefault().post(new Runnable() {
         //   public void run() {
-        FileLock lock = null;
+        //FileLock lock = null;
         OutputStream os = null;
         
         try {
@@ -673,8 +676,10 @@ public class SunDDHelper {
             Transformer transformer = factory.newTransformer();
             DOMSource source = new DOMSource(document);
             
-            lock = sunDD.lock();
-            os = sunDD.getOutputStream(lock);
+            //lock = sunDD.lock();
+            //os = sunDD.getOutputStream(lock);
+            os = new FileOutputStream(FileUtil.toFile(sunDD));
+            
             StreamResult result = new StreamResult(os);
             
             transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, docType.getPublicId());
@@ -695,9 +700,11 @@ public class SunDDHelper {
                 }
             }
             
+            /*
             if (lock != null) {
                 lock.releaseLock();
             }
+             */
         }
         //}
         //}, TIME_TO_WAIT);
@@ -709,12 +716,13 @@ public class SunDDHelper {
             if (builder == null)
                 return null;
             
-            FileLock lock = null;
+            //FileLock lock = null;
             InputStream is = null;
             
             try {
-                lock = sunDD.lock();
-                is = sunDD.getInputStream();
+                //lock = sunDD.lock();
+                //is = sunDD.getInputStream();
+                is = new FileInputStream(FileUtil.toFile(sunDD));
                 document = builder.parse(is);
             } catch (SAXException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -728,10 +736,11 @@ public class SunDDHelper {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
                 }
-                
+                /*
                 if (lock != null) {
                     lock.releaseLock();
                 }
+                 */
             }
         }
    
