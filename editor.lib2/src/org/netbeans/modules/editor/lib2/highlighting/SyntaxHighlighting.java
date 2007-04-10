@@ -54,6 +54,7 @@ import org.openide.util.WeakListeners;
  */
 public final class SyntaxHighlighting extends AbstractHighlightsContainer implements TokenHierarchyListener {
     
+    // -J-Dorg.netbeans.modules.editor.lib2.highlighting.SyntaxHighlighting.level=FINEST
     private static final Logger LOG = Logger.getLogger(SyntaxHighlighting.class.getName());
     
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.SyntaxHighlighting"; //NOI18N
