@@ -4,5 +4,6 @@
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="org.netbeans.modules.hudson" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.hudson.</description>
+    <property file="../update.properties" />
     <import file="nbproject/build-impl.xml"/>
 </project>
