@@ -24,7 +24,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
@@ -58,7 +57,6 @@ public abstract class Index {
     private static Properties segments;
     private static Map<String, String> invertedSegments;
     private static File cacheFolder;
-    private static boolean test;
     private static File segmentsFile;
     private static int index = 0;
     
@@ -190,15 +188,16 @@ public abstract class Index {
      *  before using the returned value.
      *  @return netbeans user dir.
      */
-    static File getNbUserDir () {
-        final String nbUserProp = System.getProperty(NB_USER_DIR);        
-        assert nbUserProp != null;
-        return new File (nbUserProp);
+    static String getNbUserDir () {
+        final String nbUserProp = System.getProperty(NB_USER_DIR);
+        return nbUserProp;
     }
     
     private static synchronized File getCacheFolder () {
         if (cacheFolder == null) {
-            final File nbUserDir = getNbUserDir();
+            final String nbUserDirProp = getNbUserDir();
+            assert nbUserDirProp != null;
+            final File nbUserDir = new File (nbUserDirProp);
             cacheFolder = FileUtil.normalizeFile(new File (nbUserDir, INDEX_DIR));
             if (!cacheFolder.exists()) {
                 boolean created = cacheFolder.mkdirs();                
@@ -212,7 +211,7 @@ public abstract class Index {
     }
     
     public static boolean isTest () {
-        return test;
+        return getNbUserDir() == null;
     }
     
     /**
@@ -221,7 +220,6 @@ public abstract class Index {
      */
     static synchronized void setCacheFolder (final File folder) {
         assert folder != null && folder.exists() && folder.canRead() && folder.canWrite();
-        test = true;
         cacheFolder = folder;
     }
     
