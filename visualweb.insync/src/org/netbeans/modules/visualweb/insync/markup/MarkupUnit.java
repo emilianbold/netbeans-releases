@@ -1274,7 +1274,7 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
     
 //    /** Map <code>Element</code> to <code>MarkupDesignBean</code>. */
 //    private static final Map element2markupDesignBean = new WeakHashMap(200);
-    private static final String KEY_MARKUP_DESIGN_BEAN = "markupDesignBean"; // NOI18N
+    private static final String KEY_MARKUP_DESIGN_BEAN = "vwpMarkupDesignBean"; // NOI18N
     
     public static void setMarkupDesignBeanForElement(Element element, MarkupDesignBean markupDesignBean) {
 //        synchronized (element2markupDesignBean) {
@@ -1284,7 +1284,7 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
             // XXX Log problem?
             return;
         }
-        element.setUserData(KEY_MARKUP_DESIGN_BEAN, markupDesignBean, new MarkupDesignBeanDataHandler());
+        element.setUserData(KEY_MARKUP_DESIGN_BEAN, markupDesignBean, MarkupDesignBeanDataHandler.getDefault());
     }
     
     public static MarkupDesignBean getMarkupDesignBeanForElement(Element element) {
@@ -1299,6 +1299,10 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
     }
     
     private static class MarkupDesignBeanDataHandler implements UserDataHandler {
+        private static final MarkupDesignBeanDataHandler INSTANCE = new MarkupDesignBeanDataHandler();
+        public static MarkupDesignBeanDataHandler getDefault() {
+            return INSTANCE;
+        }
         public void handle(short operation, String key, Object data, Node src, Node dst) {
             // No op.
             // TODO Provide the copying (after remove the copying in the AbstractRaveElement).
@@ -1499,23 +1503,44 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
     }    
     
     
-    // <markup_separation> Maintain the map between doc and unit, 
-    // and css engine and unit.
-    // Do not pass it directly into the doc or engine, it is not needed there.
-    /** Map between <code>org.w3c.dom.Document</code> and <code>MarkupUnit</code> */
-    private final static Map doc2markupUnit = new WeakHashMap();
+//    // <markup_separation> Maintain the map between doc and unit, 
+//    // and css engine and unit.
+//    // Do not pass it directly into the doc or engine, it is not needed there.
+//    /** Map between <code>org.w3c.dom.Document</code> and <code>MarkupUnit</code> */
+//    private final static Map doc2markupUnit = new WeakHashMap();
+    private static final String KEY_MARKUP_UNIT = "vwpMarkupUnit"; // NOI18N
     
     private static void setMarkupUnitForDocument(Document doc, MarkupUnit markupUnit) {
-        synchronized (doc2markupUnit) {
-            doc2markupUnit.put(doc, markupUnit);
+//        synchronized (doc2markupUnit) {
+//            doc2markupUnit.put(doc, markupUnit);
+//        }
+        if (doc == null) {
+            return;
         }
+        doc.setUserData(KEY_MARKUP_UNIT, markupUnit, MarkupUnitDataHandler.getDefault());
     }
     
     public static MarkupUnit getMarkupUnitForDocument(Document doc) {
-        synchronized (doc2markupUnit) {
-            return (MarkupUnit)doc2markupUnit.get(doc);
+//        synchronized (doc2markupUnit) {
+//            return (MarkupUnit)doc2markupUnit.get(doc);
+//        }
+        if (doc == null) {
+            return null;
         }
+        return (MarkupUnit)doc.getUserData(KEY_MARKUP_UNIT);
     }
+    
+    private static class MarkupUnitDataHandler implements UserDataHandler {
+        private static final MarkupUnitDataHandler INSTANCE = new MarkupUnitDataHandler();
+        
+        public static MarkupUnitDataHandler getDefault() {
+            return INSTANCE;
+        }
+        
+        public void handle(short operation, String key, Object data, Node src, Node dst) {
+            // No op.
+        }
+    } // End of MarkupUnitDataHandler.
     
 //    /** Map between <code>XhtmlCssEngine</code> and <code>MarkupUnit</code>. */
 //    private final static Map cssEngine2markupUnit = new WeakHashMap();
