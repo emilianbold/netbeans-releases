@@ -37,7 +37,7 @@ import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.uml.core.coreapplication.ICodeGenerator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.structure.IArtifact;
+import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Classifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
@@ -143,6 +143,17 @@ public class JavaCodegen implements ICodeGenerator {
 			DataObject n = obj.createFromTemplate(folder, clinfo.getName(), parameters);
 
 			try {
+			    // TBD codegen inteface returning associative map 
+			    // (classifier, generated files) that makes sense in that type 
+			    // of codegen; 
+			    // the codegen client to decide what type of sources / of what codegen, 
+			    // to associate, if any, with the element
+			    List<IElement> sourceFiles =  classifier.getSourceFiles();
+			    for(IElement src : sourceFiles) {
+				if (src instanceof ISourceFileArtifact) {
+				    classifier.removeSourceFile(((ISourceFileArtifact)src).getSourceFile());
+				}
+			    }
 			    classifier.addSourceFileNotDuplicate(sourceFile.getCanonicalPath());
 			} catch (IOException ex) {
 			    ex.printStackTrace();
