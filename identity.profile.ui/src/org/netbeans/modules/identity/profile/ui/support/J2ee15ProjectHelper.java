@@ -68,6 +68,16 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
     
     private static final String XML_EXT = "xml";        //NOI18N
     
+    private static final String WEB_FOLDER = "web";     //NOI18N
+      
+    private static final String JAVA_EXT = "java";       //NOI18N
+    
+    private static final String WEB_INF_FOLDER = "WEB-INF";     //NOI18N
+    
+    private static final String CONF_FOLDER = "conf";       //NOI18N
+ 
+    private static final String TEST_FOLDER = "test";       //NOI18N
+    
     private String portComponentName;
     private String serviceDescriptionName;
     private List<String> serviceRefNames;
@@ -252,11 +262,11 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
             String name = root.getName();
             
             if (getProjectType() == ProjectType.WEB) {
-                if (name.equals("web")) {       //NOI18N
-                    return root.getFileObject("WEB-INF");       //NOI18N
+                if (name.equals(WEB_FOLDER)) {      
+                    return root.getFileObject(WEB_INF_FOLDER);
                 }
             } else {
-                if (name.equals("conf")) {      //NOI18N
+                if (name.equals(CONF_FOLDER)) {      //NOI18N
                     return root;
                 }
             }
@@ -272,8 +282,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
         FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
         FileObject templateFO = defaultFS.findResource(template);
         DataObject templateDO = DataObject.find(templateFO);
-        DataFolder dataFolder = DataFolder.findFolder(folder);
-        
+        DataFolder dataFolder = DataFolder.findFolder(folder);    
         DataObject dataObj = templateDO.createFromTemplate(dataFolder, sunDDName);
         
         return dataObj.getPrimaryFile();
@@ -346,7 +355,9 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
         for (FileObject root : sourceRoots) {
             String name = root.getName();
             
-            if (name.equals("conf") || name.equals("web") || name.equals("test")) {      //NOI18N
+            if (name.equals(CONF_FOLDER) || 
+                    name.equals(WEB_FOLDER) || 
+                    name.equals(TEST_FOLDER)) {  
                 continue;
             }
             
@@ -355,7 +366,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
             while (dataFiles.hasMoreElements()) {
                 FileObject fobj = dataFiles.nextElement();
                 
-                if (fobj.getExt().equals("java")) {     //NOI18N
+                if (fobj.getExt().equals(JAVA_EXT)) {    
                     //System.out.println("source fobj = " + fobj);
                     JavaSource source = JavaSource.forFileObject(fobj);
                     
