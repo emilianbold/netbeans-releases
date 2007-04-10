@@ -77,17 +77,10 @@ public final class EntitySelectionPanel implements WizardDescriptor.Panel, Wizar
             setErrorMessage("MSG_EntitySelectionPanel_NotWebProject");
             status = false;
         } else {
-//            if(!support.isReady()) {
-//                setErrorMessage("MSG_EntitySelectionPanel_NotReady");
-//                status = false;
-//            }
-            //For now always enable REST if this panel is REST webservices is invoked
-            try {
-                support.ensureRestDevelopmentReady();
-            } catch(IOException ex) {
-                setErrorMessage("MSG_EntitySelectionPanel_EnableRESTFailed");
+            if(!support.hasSwdpLibrary()) {
+                setErrorMessage("MSG_EntitySelectionPanel_NoSWDP");
                 status = false;
-            }          
+            }
             if(!component.valid(wizardDescriptor)){
                 setErrorMessage("MSG_EntitySelectionPanel_NoEntities");
                 status = false;
