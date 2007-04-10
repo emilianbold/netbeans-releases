@@ -120,19 +120,8 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //        synchronized (document2engine) {
 //            document2engine.put(document, engine);
 //        }
-        document.setUserData(KEY_CSS_ENGINE, engine, new EngineDataHandler());
+        document.setUserData(KEY_CSS_ENGINE, engine, new CssEngineDataHandler());
     }
-    
-    // TEMP>>
-    private static class EngineDataHandler implements UserDataHandler {
-
-        public void handle(short operation, String key, Object data, Node src,
-                           Node dst) {
-            System.err.println("\nEndineDataHandler: operation=" + operation); // TEMP
-        }
-        
-    }
-    // TEMP<<
 
     /*private*/ static CssUserAgentInfo getUserAgentInfo() {
         // XXX FIXME The userAgentInfo might not be correct as singleton, but it should be
@@ -203,7 +192,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //            document2engine.put(document, engine);
 //        }
         XhtmlCssEngine engine = (XhtmlCssEngine)originalDocument.getUserData(KEY_CSS_ENGINE);
-        document.setUserData(KEY_CSS_ENGINE, engine, new EngineDataHandler());
+        document.setUserData(KEY_CSS_ENGINE, engine, new CssEngineDataHandler());
     }
 
     public Collection<String> getCssStyleClassesForDocument(Document document) {
@@ -1083,4 +1072,12 @@ public final class CssEngineServiceImpl implements CssEngineService {
             return localizedMessage;
         }
     } // End of DefaultCssSyntaxErrorInfo.
+    
+    
+    private static class CssEngineDataHandler implements UserDataHandler {
+        public void handle(short operation, String key, Object data, Node src, Node dst) {
+            // No op.
+        }
+    } // End of CssEngineDataHandler.
+    
 }

@@ -49,8 +49,6 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
@@ -67,6 +65,7 @@ import org.openide.util.WeakListeners;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.UserDataHandler;
 
 
 /**
@@ -142,8 +141,9 @@ public class WebForm implements Designer {
 //    private boolean renderFailureShown;
 //    private MarkupDesignBean renderFailureComponent;
     
-    /** Maps elements to css boxes. */
-    private final Map<Element, CssBox> element2cssBox = new WeakHashMap<Element, CssBox>();
+//    /** Maps elements to css boxes. */
+//    private final Map<Element, CssBox> element2cssBox = new WeakHashMap<Element, CssBox>();
+    private static final String KEY_CSS_BOX = "userDataVwpCssBox"; // NOI18N
     
     // XXX Suspicious listener, it should be removed.
     private JspDataObjectListener jspDataObjectListener;
@@ -563,15 +563,20 @@ public class WebForm implements Designer {
             return; // Don't duplicate a bean reference on all the children!
         }
         
-        synchronized (element2cssBox) {
-            element2cssBox.put(element, box);
-        }
+//        synchronized (element2cssBox) {
+//            element2cssBox.put(element, box);
+//        }
+        element.setUserData(KEY_CSS_BOX, box, new CssDataHandler());
     }
     
     public CssBox getCssBoxForElement(Element element) {
-        synchronized (element2cssBox) {
-            return element2cssBox.get(element);
+//        synchronized (element2cssBox) {
+//            return element2cssBox.get(element);
+//        }
+        if (element == null) {
+            return null;
         }
+        return (CssBox)element.getUserData(KEY_CSS_BOX);
     }
     
     // XXX Temporary, see DesignerService.copyBoxForElement.
@@ -3103,4 +3108,11 @@ public class WebForm implements Designer {
             l.userActionPerformed(evt);
         }
     }
+    
+    
+    private static class CssDataHandler implements UserDataHandler {
+        public void handle(short operation, String key, Object data, Node src, Node dst) {
+            // No op.
+        }
+    } // End of CssDataHandler.
 }
