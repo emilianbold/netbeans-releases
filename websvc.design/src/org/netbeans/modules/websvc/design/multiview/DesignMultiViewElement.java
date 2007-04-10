@@ -34,6 +34,7 @@ import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
+import org.netbeans.modules.websvc.design.navigator.WSDesignNavigatorHint;
 import org.netbeans.modules.websvc.design.view.DesignView;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -69,7 +70,7 @@ public class DesignMultiViewElement extends TopComponent
     }
     
     private void initialize(MultiViewSupport mvSupport) {
-        associateLookup(Lookups.fixed(mvSupport));
+        associateLookup(Lookups.fixed(mvSupport , new WSDesignNavigatorHint()));
         service = mvSupport.getService();
         implementationClass = mvSupport.getDataObject().getPrimaryFile();
         populateConfigurationProviders();
