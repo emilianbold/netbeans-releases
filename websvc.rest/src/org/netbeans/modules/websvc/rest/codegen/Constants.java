@@ -99,6 +99,8 @@ class Constants {
     public static final String ENTITY_TRANSACTION = "javax.persistence.EntityTransaction";
 
     public static final String PERSISTENCE = "javax.persistence.Persistence";
+
+    public static final String ENTITY_TYPE = "com.sun.ws.rest.api.Entity";
     
     public static final String VOID = "void";
     
