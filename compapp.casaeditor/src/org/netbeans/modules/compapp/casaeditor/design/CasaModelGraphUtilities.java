@@ -22,7 +22,6 @@ package org.netbeans.modules.compapp.casaeditor.design;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Constants;
@@ -57,22 +56,18 @@ public class CasaModelGraphUtilities {
         try {
             safeRenderModel(model, scene);
         } catch (final Throwable t) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    scene.autoLayout(false);
-                    ErrorManager.getDefault().notify(t);
-                }
-            });
+            scene.autoLayout(false);
+            ErrorManager.getDefault().notify(t);
         }
     }
     
-    private static void safeRenderModel(final CasaWrapperModel model, final CasaModelGraphScene scene)
+    private static void safeRenderModel(CasaWrapperModel model, CasaModelGraphScene scene)
     {
         if (model == null || scene == null) {
             return;
         }
         
-        final boolean wasModified = scene.isModified();
+        boolean wasModified = scene.isModified();
         
         // clean up any pre-existing model widgets
         
@@ -107,35 +102,27 @@ public class CasaModelGraphUtilities {
         
         
         // add connections last
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                for (CasaConnection connection : model.getCasaConnectionList(false)) {
-                    CasaConsumes consumes = (CasaConsumes) model.getCasaEndpointRef(connection, true);
-                    CasaProvides provides = (CasaProvides) model.getCasaEndpointRef(connection, false);
-                    if (consumes != null && provides != null) {
-                        createEdge(connection, consumes, provides, scene, false);
-                    }
-                }
-                scene.setOrthogonalRouter(new CasaOrthogonalSearchRouter(new CasaCollisionCollector(
-                        scene.getBindingRegion(),
-                        scene.getEngineRegion(),
-                        scene.getExternalRegion(),
-                        scene.getConnectionLayer())));
-                scene.updateEdgeRouting();
-                scene.validate();
+        for (CasaConnection connection : model.getCasaConnectionList(false)) {
+            CasaConsumes consumes = (CasaConsumes) model.getCasaEndpointRef(connection, true);
+            CasaProvides provides = (CasaProvides) model.getCasaEndpointRef(connection, false);
+            if (consumes != null && provides != null) {
+                createEdge(connection, consumes, provides, scene, false);
             }
-        });
+        }
+        scene.setOrthogonalRouter(new CasaOrthogonalSearchRouter(new CasaCollisionCollector(
+                scene.getBindingRegion(),
+                scene.getEngineRegion(),
+                scene.getExternalRegion(),
+                scene.getConnectionLayer())));
+        scene.updateEdgeRouting();
+        scene.validate();
         
         
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (!wasModified && scene.isModified()) {
-                    // Auto-layouts may cause widget positions to fix themselves.
-                    // In this case, the modified flag will be true - we need to save.
-                    scene.save();
-                }
-            }
-        });
+        if (!wasModified && scene.isModified()) {
+            // Auto-layouts may cause widget positions to fix themselves.
+            // In this case, the modified flag will be true - we need to save.
+            scene.save();
+        }
     }
 
     private static void renderLayout(final CasaModelGraphScene scene) {
@@ -168,12 +155,8 @@ public class CasaModelGraphUtilities {
         }
         
         if (isPartial && !isFull) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    scene.progressiveLayout(true);
-                    RegionUtilities.stretchScene(scene);
-                }
-            });
+            scene.progressiveLayout(true);
+            RegionUtilities.stretchScene(scene);
         } else if (isFull) {
             scene.autoLayout(false);
         }
