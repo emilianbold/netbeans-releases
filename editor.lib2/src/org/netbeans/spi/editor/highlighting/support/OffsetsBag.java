@@ -441,7 +441,8 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             marks.add(startIdx, new Mark(startOffset, attributes));
         } else {
             Mark mark = marks.get(startIdx);
-            AttributeSet newAttribs = AttributesUtilities.createComposite(attributes, mark.getAttributes());
+            AttributeSet markAttribs = mark.getAttributes();
+            AttributeSet newAttribs = markAttribs == null ? attributes : AttributesUtilities.createComposite(attributes, markAttribs);
             lastKnownAttributes = mark.getAttributes();
 
             if (mark.getOffset() == startOffset) {
@@ -458,7 +459,9 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
 
                 if (mark.getOffset() < endOffset) {
                     lastKnownAttributes = mark.getAttributes();
-                    mark.setAttributes(AttributesUtilities.createComposite(attributes, lastKnownAttributes));
+                    mark.setAttributes(lastKnownAttributes == null ? 
+                        attributes : 
+                        AttributesUtilities.createComposite(attributes, lastKnownAttributes));
                 } else {
                     if (mark.getOffset() > endOffset) {
                         marks.add(idx, new Mark(endOffset, lastKnownAttributes));

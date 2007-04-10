@@ -451,7 +451,8 @@ public final class PositionsBag extends AbstractHighlightsContainer {
             attributes.add(startIdx, attrSet);
         } else {
             Position mark = marks.get(startIdx);
-            AttributeSet newAttribs = AttributesUtilities.createComposite(attrSet, attributes.get(startIdx));
+            AttributeSet markAttribs = attributes.get(startIdx);
+            AttributeSet newAttribs = markAttribs == null ? attrSet : AttributesUtilities.createComposite(attrSet, markAttribs);
             lastKnownAttributes = attributes.get(startIdx);
 
             if (mark.getOffset() == startPosition.getOffset()) {
@@ -469,7 +470,9 @@ public final class PositionsBag extends AbstractHighlightsContainer {
 
                 if (mark.getOffset() < endPosition.getOffset()) {
                     lastKnownAttributes = attributes.get(idx);
-                    attributes.set(idx, AttributesUtilities.createComposite(attrSet, lastKnownAttributes));
+                    attributes.set(idx, lastKnownAttributes == null ? 
+                        attrSet : 
+                        AttributesUtilities.createComposite(attrSet, lastKnownAttributes));
                 } else {
                     if (mark.getOffset() > endPosition.getOffset()) {
                         marks.add(idx, endPosition);
