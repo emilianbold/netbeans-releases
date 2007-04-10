@@ -150,6 +150,8 @@ public class CollaborationsWidget extends Widget
                             PartnerLinkType plt = (PartnerLinkType) factory.create(
                                     definitions, qname);
                             String name = pt.getName();
+                            //IZ 100518 if portype name is null, reference cannot be created.
+                            if (name == null) continue; 
                             int idx = name.toLowerCase().indexOf("porttype");
                             if (idx > 0) {
                                 name = name.substring(0, idx);
@@ -385,7 +387,12 @@ public class CollaborationsWidget extends Widget
         Definitions defs = mModel.getDefinitions();
         Collection<PortType> ports = defs.getPortTypes();
         if (ports != null) {
-            allPorts.addAll(ports);
+            //IZ 100518
+            for (PortType portType : ports) {
+                if (portType.getName() != null) {
+                    allPorts.add(portType);
+                }
+            }
         }
         Collection<Import> imports = defs.getImports();
         for (Import imp : imports) {
@@ -393,8 +400,11 @@ public class CollaborationsWidget extends Widget
                 WSDLModel importedModel = imp.getImportedWSDLModel();
                 Definitions importedDefs = importedModel.getDefinitions();
                 ports = importedDefs.getPortTypes();
-                if (ports != null) {
-                    allPorts.addAll(ports);
+                //IZ 100518
+                for (PortType portType : ports) {
+                    if (portType.getName() != null) {
+                        allPorts.add(portType);
+                    }
                 }
             } catch (CatalogModelException cme) {
                 //ignore the error. validation would find it.
