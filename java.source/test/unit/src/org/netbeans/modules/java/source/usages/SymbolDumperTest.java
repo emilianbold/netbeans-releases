@@ -56,6 +56,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.SimpleAnnotationValueVisitor6;
+import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -89,7 +90,7 @@ public class SymbolDumperTest extends NbTestCase {
 //        
 //        return result;
 //    }
-       
+        
     private FileObject sourceRoot;
     
     protected void setUp() throws Exception {
@@ -1300,6 +1301,78 @@ public class SymbolDumperTest extends NbTestCase {
             }
         },true);
     }
+    
+//    public void testNarážečka8() throws Exception {
+//        String what = "package test; public class test {public static class One<T, E> extends Two <T> {public One(Class<T> t, Class<E> e) {super(t);}} public static class Two<T> {public Two(Class<T> t) {}}}\n";
+//        final String innerclassName = "test.test$One";
+//        FileSystem fs = FileUtil.createMemoryFileSystem();
+//        FileObject file = fs.getRoot().createData("test.java");
+//        
+//        writeIntoFile(file, what);
+//        
+//        JavaSource js = JavaSource.forFileObject(file);
+//        CompilationInfo info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
+//        CompilationUnitTree unit = info.getCompilationUnit();
+//        assertTrue(info.getDiagnostics().toString(), info.getDiagnostics().isEmpty());
+//        
+//        Tree main = unit.getTypeDecls().iterator().next();
+//        TypeElement type = (TypeElement) info.getTrees().getElement(new TreePath(new TreePath(unit), main));
+//        
+//        final Map<String, String> signatures = dumpIncludingInnerClasses(info, type);
+//        
+//        System.err.println("sig=" + signatures);
+//        
+//        FileObject file2 = fs.getRoot().createData("test2.java");
+//        
+//        writeIntoFile(file2, "package test; public class test2<T, E> extends test.One<T, E> {public test2(Class<T> t, Class<E> e) {super(t, e);}}");
+//        
+//        JavaSource js2 = JavaSource.create(ClasspathInfo.create(file), file2, file);
+//        
+//        js2.runUserActionTask(new CancellableTask<CompilationController>() {
+//            private TypeElement firstClass;
+//            private TypeElement innerClass;
+//            public void cancel() {
+//            }
+//            public void run(CompilationController parameter) throws Exception {
+//                CouplingAbort.wasCouplingError = false;
+//                try {
+//                    JavacTaskImpl task = (JavacTaskImpl) SourceUtilsTestUtil.getJavacTaskFor(parameter);
+//                    Context context = task.getContext();
+//                    Table table = Table.instance(context);
+//                    SymbolClassReader reader = (SymbolClassReader) ClassReader.instance(context);
+//                    Name className = Name.Table.instance(context).fromString("test");
+//                    
+//                    PackageSymbol pack = reader.enterPackage(Name.Table.instance(context).fromString("test"));
+//                    
+//                    assertNotNull(pack);
+//                    
+//                    pack.complete();
+//                    
+//                    for (Map.Entry<String, String> entry : signatures.entrySet()) {
+//                        reader.includeClassFile(pack, FileObjects.memoryFileObject(entry.getValue(), entry.getKey() + ".sig"));
+//                    }
+//                    
+//                    parameter.toPhase(Phase.RESOLVED);
+//                    
+//                    List<Diagnostic> errors = parameter.getDiagnostics();
+//                    
+//                    assertTrue(errors.toString(), errors.isEmpty());
+//                    
+//                    if (firstClass == null) {
+//                        JavacElements jels = (JavacElements) parameter.getElements();
+//                        
+//                        firstClass = jels.getTypeElementByBinaryName("test.test");
+//                        innerClass = jels.getTypeElementByBinaryName(innerclassName);
+//                        return;
+//                    }
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//                
+//                assertFalse(CouplingAbort.wasCouplingError);
+//            }
+//        },true);
+//    }
     
 //    public void testCompileAgainstSignature1() throws Exception {
 //        performCompileAgainstSingature("package test; public class test2 {\npublic void testMethod2() {try {org.openide.nodes.Node.Property p = null; Long.parseLong(p.toString());} catch (Exception e) {}}\n}",
