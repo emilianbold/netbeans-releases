@@ -7,6 +7,7 @@ var wadlURL = baseURL+"/application.wadl";
 var wadlErr = 'Cannot access WADL: Please restart your REST application, and refresh this page.';
 var currentUrl;
 var currentValidUrl;
+var breadCrumbs = new Array();
 
 function getHttpRequest() {
     var xmlHttpReq;
@@ -168,16 +169,17 @@ function changeMethod()
 };
 function showRightSideBar2(uri) {
     updatepage('result', 'Loading...');
-    var mName = 'POST';
+    var mName = 'GET';
     var qmName = '';
     var mediaType = null;
     if(mediaType != null)
         qmName = qmName + "("+mediaType+")";
     else
         mediaType = "application/x-www-form-urlencoded";
-    var str = "<b>Resource:</b> <a href='"+uri+"' target='_blank'>"+uri+"</a><br/><br/><b>Method: </b>";
+    showBreadCrumbs(uri);
+    var str = "<b>Resource:</b> <a href='"+uri+"' target='_blank'>"+getDisplayUri(uri)+"</a><br/><br/><b>Method: </b>";
     str += "<select id='methodSel' name='methodSel' onchange='javascript:changeMethod();'>";
-    str += "  <option value='GET'>GET</option>";
+    str += "  <option selected value='GET'>GET</option>";
     str += "  <option value='PUT'>PUT</option>";
     str += "  <option value='DELETE'>DELETE</option>";
     str += "</select>";
@@ -190,7 +192,7 @@ function showRightSideBar2(uri) {
     }
     if(mediaType != null) {
         str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
-        str += "<b>MimeType(readonly):</b> "+mediaType+"<br/>";
+        str += "<b>MimeType:</b> "+mediaType+"<br/>";
     }
     str += "<br/><input value='Test...' type='button' onclick='testResource()'>";
     str += "</form>";
@@ -200,6 +202,24 @@ function showRightSideBar2(uri) {
     try {
         testResource();
     } catch(e) { alert(e.name+e.message);}       
+}
+function showBreadCrumbs(uri) {
+    var nav = document.getElementById('navigation');
+    var disp = getDisplayUri(uri);
+    var count = 0;
+    for(i=0;i<breadCrumbs.length;i++) {
+        if(breadCrumbs[i] == disp) {
+            count++;
+        }
+    }
+    if(count == 0) {
+        breadCrumbs[breadCrumbs.length+1] = disp;
+        var uriLink = "<a id='"+uri+"' href=javascript:showRightSideBar2('"+uri+"') >"+disp+"</a>";
+        if(nav.innerHTML != '')
+            nav.innerHTML = nav.innerHTML + " , " + "<b>"+uriLink+"</b>";
+        else
+            nav.innerHTML = "<b>"+uriLink+"</b>";
+    }
 }
 function showRightSideBar(path, ri, mi) {
     updatepage('result', 'Loading...');
@@ -217,10 +237,11 @@ function showRightSideBar(path, ri, mi) {
     else
         mediaType = "application/x-www-form-urlencoded";
     var uri = r.attributes.getNamedItem('path').nodeValue;
+    showBreadCrumbs(uri);
     var str = "<b>Resource:</b> <a href='"+uri+"' target='_blank'>"+uri+"</a>&nbsp;&nbsp;&nbsp;<b>Method: </b>";
     str += "<select id='methodSel' name='methodSel' onchange='javascript:changeMethod();'>";
-    str += "  <option value='GET'>GET</option>";
-    str += "  <option selected value='POST'>POST</option>";
+    str += "  <option selected value='GET'>GET</option>";
+    str += "  <option value='POST'>POST</option>";
     str += "</select>";
     str += "<br/><br/><div id='formSubmittal'>";
     str += "<form action='' method="+mName+" name='form1'>";
@@ -232,7 +253,7 @@ function showRightSideBar(path, ri, mi) {
     }
     if(mediaType != null) {
         str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
-        str += "<b>MimeType(readonly):</b> "+mediaType+"<br/>";
+        str += "<b>MimeType:</b> "+mediaType+"<br/>";
     }
     str += "<br/><input value='Test...' type='button' onclick='testResource()'>";
     str += "</form>";
@@ -303,7 +324,7 @@ function testResource() {
         req+= "?"+params;
     var mimetype = getRep();
     var method = getMethod();   
-    updatepage('request', '<a href="'+req+'" target="_blank">'+req+'</a>');    
+    updatepage('request', '<a href="'+req+'" target="_blank">'+getDisplayUri(req)+'</a>');    
     //alert("mimetype "+mimetype);
     if (mimetype == 'image/jpg') {//image
         alert('The image/jpg MimeType currently does not work with the MimeType selection method.\nInstead of seeing the image, you will see the image data');
@@ -322,35 +343,28 @@ function testResource() {
         xmlHttpReq4.send(p);
     }
 }
+function createIFrame(currentValidUrl) {
+    var c = '<iframe  class="details" src="'+currentValidUrl+'" width="600" height="300" align="left">'+
+            '<p>See <a href="'+currentValidUrl+'">"'+currentValidUrl+'"</a>.</p>'+
+        '</iframe>';
+    return c;
+}
 function updateContent(xmlHttpReq) {
     try {
         if (xmlHttpReq.readyState == 4) {
             var content = xmlHttpReq.responseText;
             if(content != null && content != undefined) {
                 try {
-                    content = getContainerTable(content);
-                    updatepage('result', content);
-                    var containerTable = document.getElementById('containerTable');
-                    var cellnum = document.getElementById('cellnum');                    
-                    if(containerTable != null && containerTable.childNodes != null) {
-                        var rows = containerTable.childNodes;
-                        for(i=0;i<rows.length;i++) {
-                            var row = rows[i];
-                            var tds = row.childNodes;
-                            if(tds != null && tds.length > 1) {
-                                var id = tds[0].innerHTML;
-                                var tdChilds = tds[1].childNodes;
-                                var link = tdChilds[0];
-                                var uri = link.id;
-                                link.onclick = function() {showRightSideBar2(uri)}
-                            }
-                        }
+                    if(content.indexOf("<?xml ") != -1) {
+                        content = getContainerTable(content);
+                        updatepage('result', content);
+                    } else {
+                        var c = createIFrame(currentValidUrl);
+                        updatepage('result', c);
                     }
                 } catch( e ) {
                     //alert('upd err '+e.name+e.mesage);
-                    var c = '<iframe  class="details" src="'+currentValidUrl+'" width="600" height="300" align="left">'+
-                                '<p>See <a href="'+currentValidUrl+'">"'+currentValidUrl+'"</a>.</p>'+
-                            '</iframe>';
+                    var c = createIFrame(currentValidUrl);
                     updatepage('result', c);
                 }  
             }                 
@@ -402,7 +416,7 @@ function getContainerTable(xmlStr) {
             colNames[1] = "URI"
             var colSizes = new Array()
             colSizes[0] = "80"
-            colSizes[1] = "350"
+            colSizes[1] = "250"
             for (i=0;i<colNames.length;i++) {
                 str += "<th width='"+colSizes[i]+"' align='left'><font color='#FFFFFF'><b>"+colNames[i]+"</b></font></th>";
             }
@@ -425,7 +439,8 @@ function getContainerTable(xmlStr) {
                                 var uri = ref.attributes.getNamedItem('uri').nodeValue;
                                 str += "<td>"+id.childNodes[0].nodeValue+"</td>";
                                 str += "<td>";
-                                str += "<a id='"+uri+"' href=javascript:showRightSideBar2('"+uri+"') >"+uri+"</a>";
+                                var disp = getDisplayUri(uri);
+                                str += "<a id='"+uri+"' href=javascript:showRightSideBar2('"+uri+"') >"+disp+"</a>";
                                 str += "</td>";
                                 str += "</tr>";
                             }
@@ -443,6 +458,12 @@ function getContainerTable(xmlStr) {
         }
     }
     return ret;
+}
+function getDisplayUri(uri) {
+    var disp = uri;
+    if(disp.length > baseURL.length)
+        disp = disp.substring(baseURL.length);
+    return disp;
 }
 function updatepage(id, str){
     document.getElementById(id).innerHTML = str;

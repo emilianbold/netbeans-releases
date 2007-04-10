@@ -51,7 +51,7 @@ a:visited{
 
 .content {
     margin: 0 0 0 0px;
-    background-color: #D7DEE5;
+    background-color: #E4EAF1;
     color: #000000;
     width: 700px;
 }
@@ -65,7 +65,8 @@ a:visited{
     width: 200px;
     height: 700px;
     font-size: 10px;
-    background-color: #D7DEE5;
+    //background-color: #D7DEE5;
+    background-color: #E4EAF1;
     color: #000000;
 }
 
@@ -83,7 +84,7 @@ a:visited{
 }
 .results
 {
-    width: 600px;
+    width: 400px;
 }
 .results .col
 {
