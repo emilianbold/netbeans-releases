@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -36,7 +36,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
  *
- * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
+ * @author mkhramov@netbeans.org
  */
 public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     private RuntimeTabOperator rto;
@@ -50,10 +50,8 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
     private static final String DBRootName = "jdbc:derby://localhost:1527/travel [travel on TRAVEL]";
     private static final String DBTableName = "Tables"+"|"+"TRIP";
     
-    /** Creates a new instance of DatabaseTableDrop 
-     * 
-     * @param testName 
-     * 
+    /** Creates a new instance of DatabaseTableDrop
+     * @param testName
      */
     public DatabaseTableDrop(String testName) {
         super(testName);
@@ -63,15 +61,14 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         componentName = "Table"; // NOI18N
         addPoint = new java.awt.Point(50,50);
     }
-    /** Creates a new instance of DatabaseTableDrop 
-     * 
-     * @param testName 
+    
+    /** Creates a new instance of DatabaseTableDrop
+     * @param testName
      * @param performanceDataName
-     * 
-     */    
+     */
     public DatabaseTableDrop(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = 10000; // 20 seconds ?        
+        expectedTime = 10000; // 20 seconds ?
         WAIT_AFTER_OPEN=5000;
         categoryName = "Basic";  // NOI18N
         componentName = "Table"; // NOI18N
@@ -90,14 +87,14 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         
         PaletteOperator.invoke();
         openPage();
-
     }
     
     private void openPage() {
         surface = gui.VWPUtilities.openedWebDesignerForJspFile("VisualWebProject", "Page1");
-        palette = new PaletteComponentOperator();        
+        palette = new PaletteComponentOperator();
     }
-    private void addComponent() throws Error {        
+    
+    private void addComponent() throws Error {
         //Select component in palette
         palette.getCategoryListOperator(categoryName).selectItem(componentName);
         
@@ -121,16 +118,16 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         addComponent();
         selectDBTableNode();
     }
-
+    
     public ComponentOperator open() {
         log(":: open");
         surface.clickOnSurface(70,70);
         return null;
     }
-
+    
     public void close() {
         log(":: close");
-        clearBindingArtefacts(); 
+        clearBindingArtefacts();
     }
     
     private void processDBConnectDialog() {
@@ -147,9 +144,10 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         TableNode.select();
         
     }
+    
     private void clearBindingArtefacts() {
         String title = Bundle.getStringTrimmed("org.openide.explorer.Bundle","MSG_ConfirmDeleteObjectTitle"); //Confirm Object Deletion
-
+        
         TopComponentOperator navigator = new TopComponentOperator("Navigator"); // NOI18N
         JTreeOperator tree =  new JTreeOperator(navigator);
         
@@ -166,13 +164,15 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         new DeleteAction().perform(table);
         new NbDialogOperator(title).yes();
     }
+    
     protected void shutdown() {
         super.shutdown();
         rto = RuntimeTabOperator.invoke();
         Node travelBaseNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName); // NOI18N
-        travelBaseNode.performPopupActionNoBlock("Disconnect"); // NOI18N        
-    }   
+        travelBaseNode.performPopupActionNoBlock("Disconnect"); // NOI18N
+    }
+    
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(new DatabaseTableDrop("measureTime", "Time to Drop Database table on table"));        
-    } 
+        junit.textui.TestRunner.run(new DatabaseTableDrop("measureTime", "Time to Drop Database table on table"));
+    }
 }
