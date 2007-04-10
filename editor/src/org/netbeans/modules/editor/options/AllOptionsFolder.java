@@ -64,7 +64,6 @@ public class AllOptionsFolder{
     
     private static boolean baseInitialized = false;
     
-    private static DataFolder folder;
     private static MIMEOptionFolder mimeFolder;
     
     // List of already initialized options
@@ -75,8 +74,7 @@ public class AllOptionsFolder{
 
     
     /** Creates new AllOptionsFolder */
-    private AllOptionsFolder(DataFolder fld) {
-        folder = fld;
+    private AllOptionsFolder() {
     }
     
     /** Gets the singleton of global options MIME folder */
@@ -216,37 +214,26 @@ public class AllOptionsFolder{
     /** Creates the only instance of AllOptionsFolder. */
     public static AllOptionsFolder getDefault(){
         synchronized (Settings.class) {
-            // try to find the itutor XML settings
-            if (settingsFolder!=null) return settingsFolder;
-            org.openide.filesystems.FileObject f = Repository.getDefault().getDefaultFileSystem().
-            findResource(FOLDER);
-            if (f==null) return null;
+            if (settingsFolder == null) {
+                settingsFolder = new AllOptionsFolder();
 
-            DataFolder df = DataFolder.findFolder(f);
-            if (df == null) {
-            } else {
-                if (settingsFolder == null){
-                    settingsFolder = new AllOptionsFolder(df);
-
-                    // attach listeners for module registry for listening on addition or removal of modules in IDE
-                    if(moduleRegListener == null) {
-                        moduleRegListener = new FileChangeAdapter() {
-                            public void fileChanged(FileEvent fe){
-                                updateOptions();
-                            }
-                        };
-
-                        FileObject moduleRegistry = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); //NOI18N
-
-                        if (moduleRegistry !=null){ //NOI18N
-                            moduleRegistry.addFileChangeListener(moduleRegListener);
+                // attach listeners for module registry for listening on addition or removal of modules in IDE
+                if(moduleRegListener == null) {
+                    moduleRegListener = new FileChangeAdapter() {
+                        public void fileChanged(FileEvent fe){
+                            updateOptions();
                         }
-                    }
+                    };
 
-                    return settingsFolder;
+                    FileObject moduleRegistry = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); //NOI18N
+
+                    if (moduleRegistry !=null){ //NOI18N
+                        moduleRegistry.addFileChangeListener(moduleRegListener);
+                    }
                 }
             }
-            return null;
+            
+            return settingsFolder;
         }
     }
     
