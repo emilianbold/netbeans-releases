@@ -16,18 +16,14 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.util;
 
-import java.awt.event.FocusListener;
+package org.openide.util;
 
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
-
 import java.util.EventListener;
-
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
-
 
 /** A generic weak listener factory.
  * Creates a weak implementation of a listener of type <CODE>lType</CODE>.
