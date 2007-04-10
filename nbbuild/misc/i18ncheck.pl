@@ -195,6 +195,7 @@ sub checkline {
             && ! m,new HelpCtx\s*\(,
             && ! m,new PropertyDescriptor\s*\(,
             && ! m,setIconBase\s*\(,
+            && ! m,setIconBaseWithExtension\s*\(,
             && ! m,loadImage\s*\(,
             && ! m,getResource(AsStream)?\s*\(,
             && ! m,findResource ?\s*\(,
