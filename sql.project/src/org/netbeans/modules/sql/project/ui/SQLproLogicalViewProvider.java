@@ -150,7 +150,7 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
 
         private Action[] getAdditionalActions() {
 
-            ResourceBundle bundle = NbBundle.getBundle(IcanproLogicalViewProvider.class);
+            ResourceBundle bundle = NbBundle.getBundle(SQLproLogicalViewProvider.class);
 
             return new Action[] {
                 // disable new action at the top...
