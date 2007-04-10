@@ -9,7 +9,7 @@
         <script type="text/javascript">
             //___ BASE_URL ___ will get replaced by the base url of application
             //whose resource beans needs to be tested For eg:- http://localhost:8080/SimpleServlet/
-            var baseURL = "___BASE_URL___restbean";
+            var baseURL = "http://localhost:8084/NewRESTApp/restbean";
         </script>
         <script type="text/javascript" src="test-resbeans.js"></script>
     </head>
@@ -24,13 +24,14 @@
                     <tr>
                         <td id="leftSidebar" class="leftSidebar" valign="top"></td>
                         <td id="content" class="content" valign="top">
-                                <div id="testres" class="details"></div>
+                                <h4>Test Input:</h4>
+                                <div id="testres" class="details"></div><hr>
+                                <h4>Test Output</h4>
                                 <table class="details">
-                                    <tr><td><b>Test Details:</b></td></tr><tr><td height="10">&nbsp;</td></tr>
                                     <tr><td><b>Request:</b> <div id="request"></div></td></tr><tr><td height="10">&nbsp;</td></tr>
                                     <tr><td><b>MimeType:</b> <div id="amimetype"></div></td></tr><tr><td height="10">&nbsp;</td></tr>
-                                    <tr><td><b>Result:</b> <div id="result" class="details" style="margin-left:20px;"></div></td></tr><tr><td height="10">&nbsp;</td></tr>                                    
-                                    <tr><td><b>Result Headers:</b> <div id="resultheaders"></div></td></tr><tr><td height="10">&nbsp;</td></tr>
+                                    <tr><td><b>Content:</b> <div id="result" class="details" style="margin-left:20px;"></div></td></tr><tr><td height="10">&nbsp;</td></tr>
+                                    <tr><td><b>Response Headers:</b> <div id="resultheaders"></div></td></tr><tr><td height="10">&nbsp;</td></tr>
                                     <tr><td><b>Debug Log:</b><div id="log"></div></td></tr>
                                 </table>
                         </td>
