@@ -1089,7 +1089,7 @@ executeMainClass() {
 	classpathEscaped=`escapeString "$LAUNCHER_CLASSPATH"`
 	mainClassEscaped=`escapeString "$MAIN_CLASS"`
 	launcherJavaExeEscaped=`escapeString "$LAUNCHER_JAVA_EXE"`
-	tmpdirEscaped=`escapeString "$LAUNCHER_TEMP_RUNNING"`
+	tmpdirEscaped=`escapeString "$LAUNCHER_TEMP"`
 	
 	command="$launcherJavaExeEscaped $LAUNCHER_JVM_ARGUMENTS -Djava.io.tmpdir=$tmpdirEscaped -classpath $classpathEscaped $mainClassEscaped $LAUNCHER_APP_ARGUMENTS"
 

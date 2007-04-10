@@ -492,7 +492,9 @@ void setLauncherCommand(DWORD * status, LauncherProperties *props) {
     WCHAR * command = NULL;
     appendCommandLineArgument(&command, props->java->javaExe);
     command = appendStringW(command, L"-Djava.io.tmpdir=");
-    appendCommandLineArgument(&command, props->tmpDir);
+    WCHAR * javaIOTmpdir = getParentDirectory(props->tmpDir);
+    appendCommandLineArgument(&command, javaIOTmpdir);
+    FREE(javaIOTmpdir);
     
     DWORD i=0;
     for(i=0;i<props->jvmArguments->size;i++) {
