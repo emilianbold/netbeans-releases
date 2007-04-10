@@ -57,7 +57,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
      */
     public DatabaseTableDrop(String testName) {
         super(testName);
-        expectedTime = 20000; // 20 seconds ?
+        expectedTime = 10000; // 20 seconds ?
         WAIT_AFTER_OPEN=5000;
         categoryName = "Basic";  // NOI18N
         componentName = "Table"; // NOI18N
@@ -71,7 +71,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
      */    
     public DatabaseTableDrop(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = 20000; // 20 seconds ?        
+        expectedTime = 10000; // 20 seconds ?        
         WAIT_AFTER_OPEN=5000;
         categoryName = "Basic";  // NOI18N
         componentName = "Table"; // NOI18N
