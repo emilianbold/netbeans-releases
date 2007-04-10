@@ -280,12 +280,17 @@ ${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getCodeGenR
 
 
 <#macro MethodDeclarationThrows methodInfo >
-<#if methodInfo.getExceptions()?? >
+<@singleline>
+<#if methodInfo.getExceptions()?? && (methodInfo.getExceptions()?size > 0) >
 throws 
 <#list methodInfo.getExceptions() as exception >
-${exception}
+ ${exception}
+<#if exception_has_next>
+,
+</#if>
 </#list>
 </#if>
+</@singleline>
 </#macro>
 
 
