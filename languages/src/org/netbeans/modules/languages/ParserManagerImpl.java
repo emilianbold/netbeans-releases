@@ -260,10 +260,12 @@ public class ParserManagerImpl extends ParserManager {
                 getLanguage (mimeType);
             Feature astProperties = l.getFeature ("AST");
             if (astProperties != null && ast != null) {
-                return (ASTNode) astProperties.getValue (
+                ASTNode nn = (ASTNode) astProperties.getValue (
                     "process", 
                     SyntaxContext.create (doc, ASTPath.create (root))
                 );
+                if (nn != null)
+                    root = nn;
             }
             return root;
         } catch (Exception ex) {

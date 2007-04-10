@@ -187,7 +187,9 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             if (root.getFileObject ("SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance") == null
                 //l.supportsCodeFolding ()  does not work if you first open language without folding than no languages will have foding.
             ) {
-                FileUtil.createData (root, "FoldManager/org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance");
+                if(l.getFeatures(Language.FOLD).size () > 0) {
+                    FileUtil.createData (root, "FoldManager/org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance");
+                }
                 FileUtil.createData (root, "SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance");
                 FileObject fo = root.getFileObject ("SideBar");
                 fo.setAttribute ("org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance", Boolean.TRUE);

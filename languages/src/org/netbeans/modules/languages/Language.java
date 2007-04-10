@@ -585,10 +585,12 @@ public class Language extends org.netbeans.api.languages.Language {
         ASTNode root = getAnalyser ().read (ti, true);
         Feature astProperties = getFeature ("AST");
         if (astProperties != null && root != null) {
-            return (ASTNode) astProperties.getValue (
+            ASTNode root1 = (ASTNode) astProperties.getValue (
                 "process", 
                 SyntaxContext.create (null, ASTPath.create (root))
             );
+            if (root1 != null)
+                root = root1;
         }
         return root;
     }
