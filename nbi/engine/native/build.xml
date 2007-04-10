@@ -61,10 +61,30 @@
 
 
 
+<!-- =======================================================================
+        Build cleaner
+    ======================================================================== -->
+    <target name="cleaner-init" depends="define-platform,init-platform"/>
+    <target name="cleaner-clean" depends="cleaner-init" unless="ignore.native">
+        <exec executable="make" dir="${cleaner.dir}">
+            <arg value="clean"/>
+        </exec>    
+    </target>    
+    
+    <target name="cleaner-compile" depends="cleaner-init,cleaner-clean" if="is.windows" unless="ignore.native">
+        <exec executable="make" dir="${cleaner.dir}">
+            <arg value="build"/>
+        </exec>
+    </target>
+    <target name="cleaner-build" depends="cleaner-init,cleaner-compile"/>
 
-    <!--<target name="cleaner-build"  depends="cleaner-init,cleaner-compile"/>-->
-    <target name="native-clean" depends="jnilib-clean,launcher-clean"/>
-    <target name="native-compile" depends="native-clean,jnilib-compile,launcher-compile"/>
+
+<!-- =======================================================================
+        Build all native resources
+    ======================================================================== -->
+
+    <target name="native-clean" depends="jnilib-clean,launcher-clean,cleaner-clean"/>
+    <target name="native-compile" depends="native-clean,jnilib-compile,launcher-compile,cleaner-compile"/>
     <target name="native-build" depends="native-clean,native-compile"/>
 
     <target name="define-platform">
@@ -91,29 +111,34 @@
     <target name="init-platform" depends="init-windows,init-linux,init-solaris-x86,init-solaris-sparc,init-macosx"/>
     
     <target name="init-windows" if="is.windows">
-        <property name="jnilib.dir" value="${native.jnilib.dir.windows}"/>
-        <property name="jnilib.file" value="${native.jnilib.file.windows}"/>
+        <property name="jnilib.dir"   value="${native.jnilib.dir.windows}"/>
+        <property name="jnilib.file"  value="${native.jnilib.file.windows}"/>
 	<property name="launcher.dir" value="${native.launcher.windows.dir}"/>
+	<property name="cleaner.dir"  value="${native.cleaner.windows.dir}"/>
     </target>
     <target name="init-linux" if="is.linux">
-        <property name="jnilib.dir" value="${native.jnilib.dir.linux}"/>
-        <property name="jnilib.file" value="${native.jnilib.file.linux}"/>
+        <property name="jnilib.dir"   value="${native.jnilib.dir.linux}"/>
+        <property name="jnilib.file"  value="${native.jnilib.file.linux}"/>
 	<property name="launcher.dir" value="${native.launcher.unix.dir}"/>
+	<property name="cleaner.dir"  value="${native.cleaner.unix.dir}"/>
     </target>
     <target name="init-solaris-x86" if="is.solaris-x86">
-        <property name="jnilib.dir" value="${native.jnilib.dir.solaris-x86}"/>
-        <property name="jnilib.file" value="${native.jnilib.file.solaris-x86}"/>
+        <property name="jnilib.dir"   value="${native.jnilib.dir.solaris-x86}"/>
+        <property name="jnilib.file"  value="${native.jnilib.file.solaris-x86}"/>
 	<property name="launcher.dir" value="${native.launcher.unix.dir}"/>
+	<property name="cleaner.dir"  value="${native.cleaner.unix.dir}"/>
     </target>
     <target name="init-solaris-sparc" if="is.solaris-sparc">
-        <property name="jnilib.dir" value="${native.jnilib.dir.solaris-sparc}"/>
-        <property name="jnilib.file" value="${native.jnilib.file.solaris-sparc}"/>
+        <property name="jnilib.dir"   value="${native.jnilib.dir.solaris-sparc}"/>
+        <property name="jnilib.file"  value="${native.jnilib.file.solaris-sparc}"/>
 	<property name="launcher.dir" value="${native.launcher.unix.dir}"/>
+	<property name="cleaner.dir"  value="${native.cleaner.unix.dir}"/>
     </target>
     <target name="init-macosx" if="is.macosx">
-        <property name="jnilib.dir" value="${native.jnilib.dir.macosx}"/>
-        <property name="jnilib.file" value="${native.jnilib.file.macosx}"/>
+        <property name="jnilib.dir"   value="${native.jnilib.dir.macosx}"/>
+        <property name="jnilib.file"  value="${native.jnilib.file.macosx}"/>
 	<property name="launcher.dir" value="${native.launcher.unix.dir}"/>
+	<property name="cleaner.dir"  value="${native.cleaner.unix.dir}"/>
     </target>
     
 </project>

@@ -129,8 +129,14 @@
 
     <target name="copy-cleaners">
 	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.cleaner.dir}"/>
-	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.cleaner.dir.windows}"/>
-	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.cleaner.dir.unix}"/>
+	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.cleaner.windows.dir}"/>
+	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.cleaner.unix.dir}"/>
+
+	<copy file="${native.dirname}/${native.cleaner.windows.srcdir}/${native.cleaner.windows.file}" 
+              todir="${build.classes.dir}/${native.dirname}/${native.cleaner.windows.dir}"/>
+	<copy file="${native.dirname}/${native.cleaner.unix.srcdir}/${native.cleaner.unix.file}" 
+              todir="${build.classes.dir}/${native.dirname}/${native.cleaner.unix.dir}"/>
+        
     </target>
 
 </project>
