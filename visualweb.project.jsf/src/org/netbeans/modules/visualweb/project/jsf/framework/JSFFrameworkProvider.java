@@ -452,6 +452,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     // Adjust the path to the startpage based on JSF parameters
                     String welcomeFile = JsfProjectUtils.getWelcomeFile(panel.getURLPattern(), pageName);
                     WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
+                    if (wfl == null) {
+                        wfl = (WelcomeFileList) ddRoot.createBean("WelcomeFileList");
+                        ddRoot.setWelcomeFileList(wfl);
+                    }
                     wfl.setWelcomeFile(new String[] { welcomeFile });
 
                     // Catch ServletException
