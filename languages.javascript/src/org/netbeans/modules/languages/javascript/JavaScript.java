@@ -118,15 +118,22 @@ public class JavaScript {
             input.read ();
         }
         int end = input.getIndex ();
+        char car = input.eof() ? 0 : input.next();
+        boolean newLineDetected = false;
         while (
             !input.eof () && (
-                input.next () == ' ' ||
-                input.next () == '\t' ||
-                input.next () == '\n' ||
-                input.next () == '\r'
+                car == ' ' ||
+                car == '\t' ||
+                car == '\n' ||
+                car == '\r'
             )
-        )
+        ) {
+            newLineDetected = newLineDetected || car == '\n';
             input.read ();
+            if (!input.eof()) {
+                car = input.next();
+            }
+        }
         if (
             !input.eof () && 
             input.next () == '.'
@@ -150,7 +157,7 @@ public class JavaScript {
             }
         }
         if (
-            !input.eof () && regExp.contains (new Integer (input.next ()))
+            newLineDetected || (!input.eof () && regExp.contains (new Integer (input.next ())))
         ) {
             input.setIndex (end);
             return new Object[] {
