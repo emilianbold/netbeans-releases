@@ -117,9 +117,23 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-usecases">
-  <p>
-   XXX
-  </p>
+     <p>
+       Main and Popup Menu usecases come from the UI spec available here:         
+       <a href="http://ui.netbeans.org/docs/ui/VersioningSpecification/">Versioning UI spec</a>
+        <usecase id="1" name="Main Menu Itegration">
+        All installed SCM systems must cooperate while constructing popup and main menus, see UI spec.
+        </usecase>
+        <usecase id="2" name="Popup Menu Itegration">
+         All installed SCM systems must cooperate while constructing popup and main menus, see UI spec.
+        </usecase>
+        <usecase id="3" name="Coloring and Badging (annotations)">
+         An SCM system needs a way to annotate labels and icons in the IDE.
+        </usecase>
+        <usecase id="4" name="Automated Versioning">
+         To enable automated versioning (adds, removes, moves, delets), a SCM system needs to integrate at the lowest level
+         into the IDE's filesystem layer. Refactoring is the most critical filesystem client here.  
+        </usecase>
+     </p>
  </answer>
 
 
@@ -510,8 +524,8 @@ Microsystems, Inc. All Rights Reserved.
     by VersioningManager class.
     Other than that, the module does not depend on any non-public/friend properties with one exception:
     Diff sidebar's Diff window reads UndoRedo.class property from the JComponent that DiffView provides to enable Undo functionality in Diff windows it opens.
-    <pre>UndoRedo undoredo = (UndoRedo) diffView.getClientProperty(UndoRedo.class);</pre>
-
+      
+    UndoRedo undoredo = (UndoRedo) diffView.getClientProperty(UndoRedo.class);
   </p>
  </answer>
 
@@ -531,7 +545,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-introspection">
   <p>
-    Yes.
+    Yes, instanceof operator is used on several places.
+    Class.* methods are not used.
   </p>
  </answer>
 
@@ -646,7 +661,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="exec-threading">
   <p>
     The SPI defines entry points from the IDE to VersioningSystem implementors. There is no guarantee about threading,
-    SPI methods can be called by any thread in any order, the SPI implementors must synchronize as needed if they need to.
+    SPI methods can be called by any thread in any order, the SPI implementors must synchronize access to their structures as needed.
     All callbacks back to SPI are threadsafe.
   </p>
  </answer>
@@ -666,7 +681,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-clipboard">
   <p>
-    No clipbard interaction.
+    No clipboard interaction.
   </p>
  </answer>
 
@@ -748,7 +763,9 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="lookup-lookup">
   <p>
     The SPI module uses default Lookup to find registered SCM modules.
-    Searching for all "org.netbeans.modules.versioning.spi.VersioningSystem" implementations, order does not matter.
+    Searching for all "org.netbeans.modules.versioning.spi.VersioningSystem" implementations, order does not matter with
+    one exception: the first module that defines VersioningSystem.PROP_LOCALHISTORY_VCS property becomes the LocalHistory
+    module for the current IDE session.
   </p>
  </answer>
 
@@ -873,7 +890,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-menus">
   <p>
-    No. XXX
+    VersioningManager dynamically constructs main and popup menus based on the current selection. However, it does not 
+    provide any menu items itself, it asks SCM implementors for them.
   </p>
  </answer>
 
@@ -897,7 +915,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-progress">
   <p>
-    Yes, diff sidebar need to get the original version of a file which may use the network.
+    Yes, diff sidebar need to get the original version of a file which may use the network. This is done using RequestProcessor.
   </p>
  </answer>
 
@@ -916,7 +934,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-scale">
   <p>
-   XXX no answer for perf-scale
+    Diff sidebar's performance depends on size of open documents and scales as well as diff algorithm scales (HuntDiff in case of internal diff).
   </p>
  </answer>
 
@@ -947,7 +965,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-startup">
   <p>
-   XXX no answer for perf-startup
+    Versioning manager looks up all registered SCM systems.      
   </p>
  </answer>
 
@@ -1005,7 +1023,13 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-layer">
   <p>
-    Yes. XXX
+    Yes, for the following things:
+      - registers Diff sidebar into editor
+      - registers Diff sidebar's marks into errorstripe
+      - registers Show Diff Sidebar menu item in the View main menu
+      - registers ProjectMenuItem popup menu item into projects
+      - registers Versioning top level main menu
+      - registers Window/Versioning menu
   </p>
  </answer>
 
