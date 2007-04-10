@@ -39,6 +39,7 @@ public class SyncUpdateTest extends NbTestCase {
     }
     
     public boolean propertyChangeCalled = false;
+    public int eventCounter = 0;
     public void testSyncNotWellFormedElement() throws Exception {
         propertyChangeCalled = false;
         List<NavigationRule> navRules;
@@ -126,6 +127,7 @@ public class SyncUpdateTest extends NbTestCase {
     public void testSynceRenamePageInMode_l100321() throws Exception {
         
         propertyChangeCalled = false;
+        eventCounter = 0;
         
         /* Load a file that has a simple rule*/
         JSFConfigModel configModel = Util.loadRegistryModel("faces-config-100321.xml");
@@ -133,10 +135,11 @@ public class SyncUpdateTest extends NbTestCase {
          configModel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent arg0) {
                 propertyChangeCalled = true;
-                System.out.println("event prisla : " + arg0);
+                eventCounter ++;
+                System.out.format("eventa:  property name: %s, old value: %s, new value %s%n", arg0.getPropertyName(), arg0.getOldValue(), arg0.getNewValue());
             }
         });       
-        String oldDisplayName = "OLDFILENMAME.jsp";
+        String oldDisplayName = "OLDFILENAME.jsp";
         String newDisplayName = "NEWFILENAME.jsp";
         configModel.startTransaction();
         FacesConfig facesConfig = configModel.getRootComponent();
@@ -160,6 +163,7 @@ public class SyncUpdateTest extends NbTestCase {
             Exceptions.printStackTrace(ex);
         }        
         assertTrue(propertyChangeCalled);
+        assertEquals(3, eventCounter);
     }
     
 }
