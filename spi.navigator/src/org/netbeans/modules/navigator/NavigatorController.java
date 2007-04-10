@@ -38,6 +38,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
+import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
@@ -361,6 +363,17 @@ public final class NavigatorController implements LookupListener, ActionListener
             return Lookup.EMPTY;
         }
         return curNode.getLookup();
+    }
+    
+    /** Retrieves and returns UndoRedo support from selected panel if panel 
+     * offers UndoRedo (implements NavigatorPanelWithUndo).
+     */
+    UndoRedo getUndoRedo () {
+        NavigatorPanel panel = navigatorTC.getSelectedPanel();
+        if (panel == null || !(panel instanceof NavigatorPanelWithUndo)) {
+            return UndoRedo.NONE;
+        }
+        return ((NavigatorPanelWithUndo)panel).getUndoRedo();
     }
 
     /** Installs user actions handling for NavigatorTC top component */

@@ -21,11 +21,16 @@ Microsystems, Inc. All Rights Reserved.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-
             <code-name-base>org.netbeans.spi.navigator</code-name-base>
-
             <module-dependencies>
-
+                <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.10</specification-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
@@ -34,16 +39,12 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
-                
                 <dependency>
-                    <code-name-base>org.openide.util</code-name-base>
+                    <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
+                    <run-dependency/>
                 </dependency>
-
                 <dependency>
                     <code-name-base>org.openide.nodes</code-name-base>
                     <build-prerequisite/>
@@ -52,7 +53,14 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
-
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.openide.windows</code-name-base>
                     <build-prerequisite/>
@@ -61,45 +69,35 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
-
-                <dependency>
-                    <code-name-base>org.openide.loaders</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                
             </module-dependencies>
-          <test-dependencies>
-              <test-type>
-                  <name>unit</name>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.spi.navigator</code-name-base>
-                      <recursive/>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.core</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.core.startup</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.modules</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.modules.masterfs</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.bootstrap</code-name-base>
-                  </test-dependency>
-              </test-type>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.spi.navigator</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.core</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.core.startup</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.modules</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.bootstrap</code-name-base>
+                    </test-dependency>
+                </test-type>
             </test-dependencies>
-            
             <public-packages>
                 <package>org.netbeans.spi.navigator</package>
             </public-packages>
-
         </data>
     </configuration>
 </project>

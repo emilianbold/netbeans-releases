@@ -40,6 +40,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.ErrorManager;
+import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -253,6 +254,11 @@ public final class NavigatorTC extends TopComponent {
         return navTCLookup;
     }
 
+    @Override
+    public UndoRedo getUndoRedo() {
+        return getController().getUndoRedo();
+    }
+    
     /** Accessor for controller which controls UI behaviour */
     public NavigatorController getController () {
         if (controller == null) {

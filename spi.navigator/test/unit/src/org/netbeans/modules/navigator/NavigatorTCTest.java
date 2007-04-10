@@ -19,19 +19,18 @@
 
 package org.netbeans.modules.navigator;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.Timer;
 import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.navigator.NavigatorHandler;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
+import org.openide.awt.UndoRedo;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -177,6 +176,7 @@ public class NavigatorTCTest extends NbTestCase {
 
         List<NavigatorPanel> panels = navTC.getPanels();
         
+        assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
         assertTrue("Expected 2 provider panels, but got " + panels.size(), panels.size() == 2);
         
         NavigatorHandler.activatePanel(panels.get(1));
@@ -231,7 +231,8 @@ public class NavigatorTCTest extends NbTestCase {
         navTC.componentOpened();
 
         List<NavigatorPanel> panels = navTC.getPanels();
-        assertTrue("Expected 1 provider panel, but got " + panels.size(), panels.size() == 1);
+        assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
+        assertTrue("Expected 1 provider panel, but got " + panels.size(), panels != null && panels.size() == 1);
         assertTrue("Panel class not expected", panels.get(0) instanceof ActNodeLookupProvider);
         ActNodeLookupProvider provider = (ActNodeLookupProvider)panels.get(0);
         
@@ -246,8 +247,6 @@ public class NavigatorTCTest extends NbTestCase {
         
         assertNotNull("Activated nodes musn't be null", actNodes);
         assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
-System.out.println("realContent: " + realContent);        
-System.out.println("act node: " + actNodes[0]);
         assertTrue("Incorrect instance of activated node " + actNodes[0].getName(), actNodes[0] == realContent);
         
         // change provider's lookup content and check again, to test infrastructure
@@ -258,14 +257,44 @@ System.out.println("act node: " + actNodes[0]);
         
         assertNotNull("Activated nodes musn't be null", actNodes);
         assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
-System.out.println("realContent: " + realContent);        
-System.out.println("act node: " + actNodes[0]);
         assertTrue("Incorrect instance of activated node " + actNodes[0].getName(), actNodes[0] == realContent);
         
         // cleanup
         ic.remove(actNodesHint);
         navTC.componentClosed();
     }
+    
+    /** Test for IZ feature #98125. It tests ability of NavigatorPanelWithUndo
+     * implementors to provide UndoRedo support for their view through
+     * navigator TopComponent.
+     */
+    public void testFeature98125_UndoRedo () throws Exception {
+        System.out.println("Testing feature #98125, providing UndoRedo...");
+
+        InstanceContent ic = getInstanceContent();
+        
+        TestLookupHint undoHint = new TestLookupHint("undoRedo/tester");
+        ic.add(undoHint);
+            
+        NavigatorTC navTC = NavigatorTC.getInstance();
+        navTC.componentOpened();
+
+        NavigatorPanel selPanel = navTC.getSelectedPanel();
+        assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
+        assertTrue("Panel class not expected", selPanel instanceof UndoRedoProvider);
+        UndoRedoProvider provider = (UndoRedoProvider)selPanel;
+        
+        UndoRedo panelUndo = provider.getUndoRedo();
+        UndoRedo tcUndo = navTC.getUndoRedo();
+        
+        assertTrue("Expected undo manager " + panelUndo + ", but got " + tcUndo, panelUndo == tcUndo);
+        
+        // cleanup
+        ic.remove(undoHint);
+        navTC.componentClosed();
+        
+    }
+    
     
     /** Singleton global lookup. Lookup change notification won't come
      * if setting global lookup (UnitTestUtils.prepareTest) is called
@@ -455,6 +484,46 @@ System.out.println("act node: " + actNodes[0]);
         public void panelDeactivated() {
             // no operation
         }
+    }
+
+    /**
+     * Test implementation of NavigatorPanelWithUndo which enables undo/redo support.
+     */
+    public static final class UndoRedoProvider implements NavigatorPanelWithUndo {
+
+        private UndoRedo undo;
+        
+        public UndoRedo getUndoRedo() {
+            if (undo == null) {
+                undo = new UndoRedo.Manager();
+            } 
+            return undo;
+        }
+
+        public String getDisplayName() {
+            return "UndoRedo provider";
+        }
+
+        public String getDisplayHint() {
+            return null;
+        }
+
+        public JComponent getComponent() {
+            return new JLabel("test");
+        }
+
+        public void panelActivated(Lookup context) {
+            // no operation
+        }
+
+        public void panelDeactivated() {
+            // no operation
+        }
+
+        public Lookup getLookup() {
+            return null;
+        }
+        
     }
 
     /** Envelope for textual (mime-type like) content type to be used in 

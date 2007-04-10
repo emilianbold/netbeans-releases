@@ -361,6 +361,51 @@ Microsystems, Inc. All Rights Reserved.
         </ul>
            
    </usecase>
+
+   <usecase id="undoRedo" name="Adding UndoRedo support to the navigation view" >
+        <p>Some complex navigation views need support for undoing and redoing 
+            edit changes done either directly in the view or in document which 
+            the view is representing.
+        </p>
+         
+        <b>Steps to support undo and redo in navigation view:</b>
+         
+        <ul>
+            <li>Implement your navigation view as <a href="@TOP@/org/netbeans/spi/navigator/NavigatorPanelWithUndo.html">NavigatorPanelWithUndo</a>,
+                which is <code>NavigatorPanel</code> interface with extra method 
+                <a href="@TOP@/org/netbeans/spi/navigator/NavigatorPanelWithUndo.html#getUndoRedo()">getUndoRedo()</a>.
+                <p></p>
+            </li>
+            
+            <li>All other things remain the same as with basic <code>NavigatorPanel</code> usage.
+                <code>UndoRedo</code> support returned from <code>NavigatorPanelWithUndo.getUndoRedo()</code>
+                is propagated to the Navigator TopComponent and returned as its
+                <code>UndoRedo</code> support. For details see 
+                <a href="@org-openide-windows@/org/openide/windows/TopComponent.html#getUndoRedo()">TopComponent.getUndoRedo()</a>
+                and <a href="@org-openide-awt@/org/openide/awt/UndoRedo.html">UndoRedo interface</a>.
+                <p></p>
+            </li>
+
+            <li>Example of <code>NavigatorPanelWithUndo</code> implementation:
+             <pre>
+        class MyNavigatorPanelWithUndo implements NavigatorPanelWithUndo {
+        
+            /** UndoRedo support, substitute with your impl */
+            private final UndoRedo undo = new UndoRedo.Manager();
+        
+            public UndoRedo getUndoRedo () {
+                return undo;
+            }
+            
+            ... rest of the NavigatorPanelWithUndo impl ...
+
+        }
+             </pre>
+            </li>
+             
+        </ul>
+           
+   </usecase>
             
  </answer>
 

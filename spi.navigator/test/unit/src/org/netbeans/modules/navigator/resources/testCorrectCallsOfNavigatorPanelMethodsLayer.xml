@@ -53,6 +53,17 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+
+    <!-- provider for testing UndoRedo support -->
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="undoRedo">
+                <folder name="tester">
+                    <file name="org-netbeans-modules-navigator-NavigatorTCTest$UndoRedoProvider.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
     
 </filesystem>
 
