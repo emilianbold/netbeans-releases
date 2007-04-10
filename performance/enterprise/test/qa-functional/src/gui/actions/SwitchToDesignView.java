@@ -35,7 +35,7 @@ public class SwitchToDesignView  extends org.netbeans.performance.test.utilities
     
     XMLSchemaComponentOperator schemaComponentOperator;
             
-    private static String testSchemaName = "fields";
+    private static String testSchemaFileName = "fields.xsd";
     
     /** Creates a new instance of SwitchSchemaView */
     public SwitchToDesignView(String testName) {
@@ -51,23 +51,23 @@ public class SwitchToDesignView  extends org.netbeans.performance.test.utilities
     
     protected void initialize() {
         log(":: initialize");
-        Node doc = new Node(EPUtilities.getProcessFilesNode("SOATestProject"), testSchemaName + ".xsd");
+        Node doc = new Node(EPUtilities.getProcessFilesNode("SOATestProject"), testSchemaFileName);
         doc.select();
         new OpenAction().perform(doc);
     }
         
     public void prepare() {
         log(":: prepare");
-        schemaComponentOperator = new XMLSchemaComponentOperator(testSchemaName+".xsd");
+        schemaComponentOperator = new XMLSchemaComponentOperator(testSchemaFileName);
         schemaComponentOperator.getSchemaButton().pushNoBlock();
     }
     
     public ComponentOperator open() {
         log(":: open");
-        schemaComponentOperator = new XMLSchemaComponentOperator(testSchemaName+".xsd");
+        schemaComponentOperator = new XMLSchemaComponentOperator(testSchemaFileName);
         schemaComponentOperator.getDesignButton().push();
         
-        return new XMLSchemaComponentOperator(testSchemaName+".xsd");
+        return new XMLSchemaComponentOperator(testSchemaFileName);
     }
     
     public void close() {

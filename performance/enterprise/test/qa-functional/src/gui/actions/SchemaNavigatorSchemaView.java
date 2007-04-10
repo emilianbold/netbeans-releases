@@ -35,8 +35,6 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
  */
 public class SchemaNavigatorSchemaView  extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    private static String testSchemaName = "fields";
-    
     private Node processNode, schemaNode;
     
     /** Creates a new instance of SchemaNavigatorDesignView */
@@ -56,7 +54,7 @@ public class SchemaNavigatorSchemaView  extends org.netbeans.performance.test.ut
         processNode = EPUtilities.getProcessFilesNode("SOATestProject");
         processNode.select();
         
-        schemaNode = new Node(processNode, testSchemaName+".xsd");
+        schemaNode = new Node(processNode, "fields.xsd");
     }
     
     public void prepare() {
