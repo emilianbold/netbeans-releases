@@ -32,6 +32,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTextAreaOperator;
@@ -113,7 +114,8 @@ public class FunctionalTest extends NbTestCase {
         assertTrue(text.contains("<key>UI_ENABLED_MODULES</key>"));
         assertTrue(text.contains("<key>UI_DISABLED_MODULES</key>"));
         assertTrue(text.contains("<key>UI_USER_CONFIGURATION</key>"));
-        
+        assertTrue(text.contains("<param>GUEST</param>\n</record>"));
+
         viewData.hideData().pushNoBlock();
         welcome = new WelcomeDialogOperator();
         welcome.cancel();
@@ -185,8 +187,8 @@ public class FunctionalTest extends NbTestCase {
         public String paneRawContent(){
             listView();
             pane().selectPage("Raw");
-            JTextAreaOperator textArea;
-            textArea = new JTextAreaOperator(pane(), 0);
+            JEditorPaneOperator textArea;
+            textArea = new JEditorPaneOperator(pane(), 0);
             assertNotNull("THERE SHOULD BE A TEXT AREA", textArea);
             return textArea.getText();
         }
@@ -282,7 +284,7 @@ public class FunctionalTest extends NbTestCase {
     
     public static Test suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new FunctionalTest("textExceptionThrown"));
+        //suite.addTest(new FunctionalTest("textExceptionThrown"));
         suite.addTest(new FunctionalTest("testUIGestures"));
         return suite;
     }
