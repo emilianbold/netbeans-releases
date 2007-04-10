@@ -134,7 +134,14 @@ public class SecurityMechanismRetriever {
         Iterator iter = secMechs.iterator();
         
         while (iter.hasNext()) {
-            secMechProxies.add(new SecurityMechanismImpl(iter.next()));
+            SecurityMechanism proxy = new SecurityMechanismImpl(iter.next());
+     
+            // filter out the Anonymous security mechanism for NB6 preview release.
+            if (proxy.getName().equals("Anonymous")) {  //NOI18N
+                continue;
+            }
+            
+            secMechProxies.add(proxy);
         }
         
         return Collections.unmodifiableCollection(secMechProxies);
