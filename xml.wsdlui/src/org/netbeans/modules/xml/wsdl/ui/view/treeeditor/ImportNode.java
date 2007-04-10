@@ -56,7 +56,6 @@ import org.openide.util.actions.SystemAction;
 public class ImportNode extends WSDLElementContainerNode {
     
     private static final String NAMESPACE_PROP = "namespace";//NOI18N
-    private Import mWSDLConstruct;
             
     Image ICON  = Utilities.loadImage
      ("org/netbeans/modules/xml/wsdl/ui/view/resources/import-include-redefine.png");
@@ -82,7 +81,6 @@ public class ImportNode extends WSDLElementContainerNode {
     public ImportNode(Children children,
                       Import wsdlConstruct) {
         super(children, wsdlConstruct);
-        mWSDLConstruct = wsdlConstruct;
         this.mPropertyAdapter = new ImportPropertyAdapter();
     }
     
@@ -102,10 +100,6 @@ public class ImportNode extends WSDLElementContainerNode {
         return ACTIONS;
     }
 
-    public Object getWSDLConstruct() {
-        return mWSDLConstruct;
-    }
-    
     @Override
     protected void refreshAttributesSheetSet()  {
         Sheet.Set ss = createPropertiesSheetSet();
@@ -131,33 +125,34 @@ public class ImportNode extends WSDLElementContainerNode {
 
             
         } catch(Exception ex) {
-            mLogger.log(Level.SEVERE, "failed to create property sheet for "+ mWSDLConstruct, ex);
+            mLogger.log(Level.SEVERE, "failed to create property sheet for "+ getWSDLComponent(), ex);
         }
     }
 
     @Override
     protected void updateDisplayName() {
-        setDisplayName(mWSDLConstruct.getNamespace());
+        setDisplayName(((Import) getWSDLComponent()).getNamespace());
     }
     
     public class ImportPropertyAdapter extends PropertyAdapter {
-        
+        Import wsdlConstruct;
         public ImportPropertyAdapter() {
             super(getWSDLComponent());
+            wsdlConstruct = (Import) getWSDLComponent();
         }
         
         public void setLocation(String location) {
-            getWSDLComponent().getModel().startTransaction();
-            ((Import) getWSDLComponent()).setLocation(location);
-                getWSDLComponent().getModel().endTransaction();
+            wsdlConstruct.getModel().startTransaction();
+            wsdlConstruct.setLocation(location);
+            wsdlConstruct.getModel().endTransaction();
          }
          
          public String getLocation() {
-             if(mWSDLConstruct.getLocation() == null) {
+             if(wsdlConstruct.getLocation() == null) {
                  return "";
              }
              
-             return mWSDLConstruct.getLocation();
+             return wsdlConstruct.getLocation();
          }
          
          public void setNamespace(String namespace) {
@@ -167,11 +162,11 @@ public class ImportNode extends WSDLElementContainerNode {
          }
          
          public String getNamespace() {
-             if(mWSDLConstruct.getNamespace() == null) {
+             if(wsdlConstruct.getNamespace() == null) {
                  return "";
              }
              
-             return mWSDLConstruct.getNamespace();
+             return wsdlConstruct.getNamespace();
          } 
          
     }
@@ -186,7 +181,7 @@ public class ImportNode extends WSDLElementContainerNode {
 
         @Override
         public PropertyEditor getPropertyEditor() {
-            return new ImportLocationPropertyEditor(mWSDLConstruct);
+            return new ImportLocationPropertyEditor((Import) getWSDLComponent());
         }
     }
 
