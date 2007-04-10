@@ -18,7 +18,7 @@
  - is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  - Rights Reserved.
 -->
-<project name="NetBeans_Installer_Engine" default="default" basedir=".">
+<project name="NBI_Engine" default="default" basedir=".">
     <property file="build.properties"/>
     <property file="${native.dirname}/build.properties"/>
 

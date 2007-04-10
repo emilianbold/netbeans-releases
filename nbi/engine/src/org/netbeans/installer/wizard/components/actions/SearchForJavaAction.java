@@ -109,7 +109,7 @@ public class SearchForJavaAction extends WizardAction {
             
             progress.setDetail(StringUtils.format(CHECKING,javaHome));
             
-            if (canceled) return; // check for cancel status
+            if (isCanceled()) return; // check for cancel status
             
             // check whether it is a java installation - the result will be null if
             // it is not

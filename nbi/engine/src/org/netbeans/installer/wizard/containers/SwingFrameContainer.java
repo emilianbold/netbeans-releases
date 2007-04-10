@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -24,25 +24,21 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiFrame;
@@ -60,12 +56,14 @@ import org.netbeans.installer.wizard.ui.WizardUi;
 public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private SwingUi           currentUi;
-    private WizardContentPane contentPane;
+    private SwingUi currentUi;
+    private WizardFrameContentPane contentPane;
     
     private int frameWidth;
     private int frameHeight;
     private File frameIcon;
+    private String frameTitlePrefix;
+    private String frameTitlePattern;
     
     public SwingFrameContainer() {
         super();
@@ -75,8 +73,11 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                 frameWidth = Integer.parseInt(
                         System.getProperty(WIZARD_FRAME_WIDTH_PROPERTY));
             } catch (NumberFormatException e) {
-                ErrorManager.notifyWarning(
-                        "Could not load the defined property", e);
+                ErrorManager.notifyWarning(ResourceUtils.getString(
+                        SwingFrameContainer.class,
+                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
+                        WIZARD_FRAME_WIDTH_PROPERTY,
+                        System.getProperty(WIZARD_FRAME_WIDTH_PROPERTY)), e);
             }
         } else {
             frameWidth = DEFAULT_WIZARD_FRAME_WIDTH;
@@ -87,29 +88,43 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                 frameHeight = Integer.parseInt(
                         System.getProperty(WIZARD_FRAME_HEIGHT_PROPERTY));
             } catch (NumberFormatException e) {
-                ErrorManager.notifyWarning(
-                        "Could not load the defined property", e);
+                ErrorManager.notifyWarning(ResourceUtils.getString(
+                        SwingFrameContainer.class,
+                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
+                        WIZARD_FRAME_HEIGHT_PROPERTY,
+                        System.getProperty(WIZARD_FRAME_HEIGHT_PROPERTY)), e);
             }
         } else {
             frameHeight = DEFAULT_WIZARD_FRAME_HEIGHT;
         }
         
+        final String frameIconUri;
         if (System.getProperty(WIZARD_FRAME_ICON_URI_PROPERTY) != null) {
-            try {
-                frameIcon = FileProxy.getInstance().getFile(
-                        System.getProperty(WIZARD_FRAME_ICON_URI_PROPERTY));
-            } catch (DownloadException e) {
-                ErrorManager.notifyWarning(
-                        "Could not download wizard icon", e);
-            }
+            frameIconUri = System.getProperty(WIZARD_FRAME_ICON_URI_PROPERTY);
         } else {
-            try {
-                frameIcon = FileProxy.getInstance().getFile(
-                        DEFAULT_WIZARD_FRAME_ICON_URI);
-            } catch (DownloadException e) {
-                ErrorManager.notifyWarning(
-                        "Could not download wizard icon", e);
-            }
+            frameIconUri = DEFAULT_WIZARD_FRAME_ICON_URI;
+        }
+        try {
+            frameIcon = FileProxy.getInstance().getFile(frameIconUri);
+        } catch (DownloadException e) {
+            ErrorManager.notifyWarning(ResourceUtils.getString(
+                    SwingFrameContainer.class,
+                    RESOURCE_FAILED_TO_DOWNLOAD_WIZARD_ICON,
+                    frameIconUri), e);
+        }
+        
+        if (System.getProperty(WIZARD_FRAME_TITLE_PREFIX_PROPERTY) != null) {
+            frameTitlePrefix =
+                    System.getProperty(WIZARD_FRAME_TITLE_PREFIX_PROPERTY);
+        } else {
+            frameTitlePrefix = DEFAULT_WIZARD_FRAME_TITLE_PREFIX;
+        }
+        
+        if (System.getProperty(WIZARD_FRAME_TITLE_PATTERN_PROPERTY) != null) {
+            frameTitlePattern =
+                    System.getProperty(WIZARD_FRAME_TITLE_PATTERN_PROPERTY);
+        } else {
+            frameTitlePattern = DEFAULT_WIZARD_FRAME_TITLE_PATTERN;
         }
         
         initComponents();
@@ -138,22 +153,26 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         currentUi = wizardUi.getSwingUi(this);
         
         // update the frame title
-        String title = "NetBeans IDE Setup";
         if (currentUi.hasTitle()) {
-            title += " - " + currentUi.getTitle();
+            setTitle(StringUtils.format(
+                    frameTitlePattern,
+                    frameTitlePrefix,
+                    currentUi.getTitle()));
+        } else {
+            setTitle(frameTitlePrefix);
         }
-        setTitle(title);
         
         // display the panel
         contentPane.updatePanel(currentUi);
         
-        // handle the default buttons
+        // handle the default buttons - Enter
         getRootPane().setDefaultButton(currentUi.getDefaultEnterButton());
         
+        // handle the default buttons - Escape
         getRootPane().getInputMap().put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
-                "evaluate.cancel");
-        getRootPane().getActionMap().put("evaluate.cancel", new AbstractAction() {
+                CANCEL_ACTION_NAME);
+        getRootPane().getActionMap().put(CANCEL_ACTION_NAME, new AbstractAction() {
             public void actionPerformed(ActionEvent event) {
                 final NbiButton button = currentUi.getDefaultEscapeButton();
                 if (button != null) {
@@ -173,11 +192,12 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             }
         });
         
+        // set the default focus for the current page
         if (currentUi.getDefaultFocusOwner() != null) {
             currentUi.getDefaultFocusOwner().requestFocusInWindow();
         }
         
-        // a11y - fwiw
+        // a11y
         getAccessibleContext().setAccessibleName(currentUi.getTitle());
         getAccessibleContext().setAccessibleDescription(currentUi.getDescription());
     }
@@ -215,12 +235,12 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         try {
             setIconImage(new ImageIcon(frameIcon.toURI().toURL()).getImage());
         } catch (MalformedURLException e) {
-            ErrorManager.notifyWarning(
-                    "Could not set wizard icon", e);
+            ErrorManager.notifyWarning(ResourceUtils.getString(
+                    SwingFrameContainer.class,
+                    RESOURCE_FAILED_TO_SET_WIZARD_ICON), e);
         }
         
-        contentPane = new WizardContentPane();
-        
+        contentPane = new WizardFrameContentPane();
         setContentPane(contentPane);
         
         contentPane.getHelpButton().addActionListener(new ActionListener() {
@@ -250,7 +270,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
-    public static class WizardContentPane extends NbiFrameContentPane {
+    public static class WizardFrameContentPane extends NbiFrameContentPane {
         private NbiLabel titleLabel;
         private NbiTextPane descriptionPane;
         private NbiPanel titlePanel;
@@ -267,7 +287,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         
         private NbiPanel currentPanel;
         
-        public WizardContentPane() {
+        public WizardFrameContentPane() {
             initComponents();
         }
         
@@ -474,16 +494,36 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String WIZARD_FRAME_WIDTH_PROPERTY =
-            "nbi.wizard.ui.swing.frame.width";
+            "nbi.wizard.ui.swing.frame.width"; // NOI18N
     public static final String WIZARD_FRAME_HEIGHT_PROPERTY =
-            "nbi.wizard.ui.swing.frame.height";
+            "nbi.wizard.ui.swing.frame.height"; // NOI18N
     public static final String WIZARD_FRAME_ICON_URI_PROPERTY =
-            "nbi.wizard.ui.swing.frame.icon";
+            "nbi.wizard.ui.swing.frame.icon"; // NOI18N
+    public static final String WIZARD_FRAME_TITLE_PREFIX_PROPERTY =
+            "nbi.wizard.ui.swing.frame.title.prefix"; // NOI18N
+    public static final String WIZARD_FRAME_TITLE_PATTERN_PROPERTY =
+            "nbi.wizard.ui.swing.frame.title.pattern"; // NOI18N
     
     public static final int DEFAULT_WIZARD_FRAME_WIDTH =
-            DEFAULT_FRAME_WIDTH;
+            NbiFrame.DEFAULT_FRAME_WIDTH;
     public static final int DEFAULT_WIZARD_FRAME_HEIGHT =
-            DEFAULT_FRAME_HEIGHT;
+            NbiFrame.DEFAULT_FRAME_HEIGHT;
     public static final String DEFAULT_WIZARD_FRAME_ICON_URI =
-            DEFAULT_FRAME_ICON_URI;
+            NbiFrame.DEFAULT_FRAME_ICON_URI;
+    public static final String DEFAULT_WIZARD_FRAME_TITLE_PREFIX =
+            ResourceUtils.getString(SwingFrameContainer.class,
+            "SFC.frame.title.prefix"); // NOI18N
+    public static final String DEFAULT_WIZARD_FRAME_TITLE_PATTERN =
+            ResourceUtils.getString(SwingFrameContainer.class,
+            "SFC.frame.title.pattern"); // NOI18N
+    
+    public static final String RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY =
+            "SFC.error.failed.to.parse.property"; // NOI18N
+    public static final String RESOURCE_FAILED_TO_DOWNLOAD_WIZARD_ICON =
+            "SFC.error.failed.to.download.icon"; // NOI18N
+    public static final String RESOURCE_FAILED_TO_SET_WIZARD_ICON =
+            "SFC.error.failed.to.set.wizard.icon"; // NOI18N
+    
+    public static final String CANCEL_ACTION_NAME =
+            "evaluate.cancel"; // NOI18N
 }

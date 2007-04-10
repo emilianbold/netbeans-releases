@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -22,8 +22,8 @@ package org.netbeans.installer.wizard.components;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.UiUtils;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -41,13 +41,14 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
 public abstract class WizardAction extends WizardComponent {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    protected WizardUi wizardUi;
+    private WizardUi wizardUi;
     
-    protected boolean finished = false;
-    protected boolean canceled = false;
+    private boolean finished;
+    private boolean canceled;
     
     protected WizardAction() {
-        // does nothing
+        finished = false;
+        canceled = false;
     }
     
     public final void executeForward() {
@@ -92,6 +93,14 @@ public abstract class WizardAction extends WizardComponent {
         return true;
     }
     
+    public boolean isCanceled() {
+        return canceled;
+    }
+    
+    public boolean isFinished() {
+        return finished;
+    }
+    
     public void cancel() {
         canceled = true;
         
@@ -99,29 +108,29 @@ public abstract class WizardAction extends WizardComponent {
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, e);
+                ErrorManager.notifyDebug(RESOURCE_INTERRUPTED_EXCEPTION, e);
             }
         }
     }
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
-    public static class WizardActionUi
-            extends WizardComponentUi
+    public static class WizardActionUi extends WizardComponentUi
             implements ProgressListener {
-        protected WizardAction component;
-        protected Progress     progress;
+        protected WizardAction action;
+        protected Progress progress;
         
         public WizardActionUi(final WizardAction component) {
             super(component);
             
-            this.component = component;
+            
+            this.action = component;
         }
         
         @Override
-        public SwingUi getSwingUi(SwingContainer container) {
+        public SwingUi getSwingUi(final SwingContainer container) {
             if (swingUi == null) {
-                swingUi = new WizardActionSwingUi(component, container);
+                swingUi = new WizardActionSwingUi(action, container);
             }
             
             return super.getSwingUi(container);
@@ -136,19 +145,18 @@ public abstract class WizardAction extends WizardComponent {
             this.progress.addProgressListener(this);
         }
         
-        public void progressUpdated(Progress progress) {
+        public void progressUpdated(final Progress progress) {
             if (swingUi != null) {
                 ((WizardActionSwingUi) swingUi).progressUpdated(progress);
             }
         }
     }
     
-    public static class WizardActionSwingUi
-            extends WizardComponentSwingUi {
-        private WizardAction component;
+    public static class WizardActionSwingUi extends WizardComponentSwingUi {
+        private WizardAction action;
         
-        private NbiLabel       titleLabel;
-        private NbiLabel       detailLabel;
+        private NbiLabel titleLabel;
+        private NbiLabel detailLabel;
         private NbiProgressBar progressBar;
         
         public WizardActionSwingUi(
@@ -156,7 +164,7 @@ public abstract class WizardAction extends WizardComponent {
                 final SwingContainer container) {
             super(component, container);
             
-            this.component = component;
+            this.action = component;
             
             initComponents();
         }
@@ -179,25 +187,32 @@ public abstract class WizardAction extends WizardComponent {
             
             // set up the cancel button
             container.getCancelButton().setVisible(true);
-            container.getCancelButton().setEnabled(component.isCancellable());
+            container.getCancelButton().setEnabled(action.isCancellable());
         }
         
         @Override
         public void evaluateCancelButtonClick() {
-            if (component.isCancellable()) {
-                if (!UiUtils.showYesNoDialog(
-                        "Cancel",
-                        "Are you sure you want to cancel?")) {
+            if (action.isCancellable()) {
+                final String cancelDialogTitle = ResourceUtils.getString(
+                        WizardAction.class,
+                        RESOURCE_CANCEL_DIALOG_TITLE);
+                final String canceldialogText = ResourceUtils.getString(
+                        WizardAction.class,
+                        RESOURCE_CANCEL_DIALOG_TEXT);
+                
+                if (!UiUtils.showYesNoDialog(cancelDialogTitle, canceldialogText)) {
                     return;
                 }
                 
                 container.getCancelButton().setEnabled(false);
-                titleLabel.setText("Canceling, finishing current operation...");
+                titleLabel.setText(ResourceUtils.getString(
+                        WizardAction.class,
+                        RESOURCE_CANCELING_PROGRESS_TITLE));
                 
-                new Thread() {
+                new NbiThread() {
                     public void run() {
-                        ((WizardAction) component).cancel();
-                        component.getWizard().getFinishHandler().cancel();
+                        ((WizardAction) action).cancel();
+                        action.getWizard().getFinishHandler().cancel();
                     }
                 }.start();
             }
@@ -209,16 +224,18 @@ public abstract class WizardAction extends WizardComponent {
         }
         
         public void progressUpdated(final Progress progress) {
-            if (titleLabel != null) {
-                titleLabel.setText(progress.getTitle());
-            }
-            
-            if (detailLabel != null) {
-                detailLabel.setText(progress.getDetail());
-            }
-            
-            if (progressBar != null) {
-                progressBar.setValue(progress.getPercentage());
+            if (progress != null) {
+                if (titleLabel != null) {
+                    titleLabel.setText(progress.getTitle());
+                }
+                
+                if (detailLabel != null) {
+                    detailLabel.setText(progress.getDetail());
+                }
+                
+                if (progressBar != null) {
+                    progressBar.setValue(progress.getPercentage());
+                }
             }
         }
         
@@ -262,4 +279,15 @@ public abstract class WizardAction extends WizardComponent {
                     0, 0));                           // ??? (padx, pady)
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    private static final String RESOURCE_CANCEL_DIALOG_TITLE = 
+            "WAC.cancel.dialog.title";
+    private static final String RESOURCE_CANCEL_DIALOG_TEXT = 
+            "WA.cancel.dialog.text";
+    private static final String RESOURCE_INTERRUPTED_EXCEPTION = 
+            "WA.error.interrupted.exception"; // NOI18N
+    private static final String RESOURCE_CANCELING_PROGRESS_TITLE =
+            "WA.canceling.progress.title"; // NOI18N
 }

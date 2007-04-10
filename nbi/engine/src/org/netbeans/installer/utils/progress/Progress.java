@@ -182,7 +182,7 @@ public class Progress {
      * if the supplied detail is different from the current. Also the progress
      * listeners are notified only if the update actually took place.
      *
-     * @param title The new value for the <code>detail</code> property.
+     * @param detail The new value for the <code>detail</code> property.
      */
     public void setDetail(final String detail) {
         if (!this.detail.equals(detail)) {
@@ -206,9 +206,10 @@ public class Progress {
      * only if the supplied percentage is different from the current. Also the 
      * progress listeners are notified only if the update actually took place.
      *
-     * @param title The new value for the <code>percentage</code> property.
+     * @param percentage The new value for the <code>percentage</code> property.
      * 
-     * @throws {@IllegalArgumentException} if the supplied percentage cannot be set.
+     * @throws {@link IllegalArgumentException} if the supplied percentage cannot be 
+     *      set.
      */
     public void setPercentage(final int percentage) {
         if (this.percentage != percentage) {
@@ -235,7 +236,7 @@ public class Progress {
      *
      * @param addition The amount to add to the <code>percentage</code> property.
      * 
-     * @throws {@IllegalArgumentException} if the supplied percentage cannot be 
+     * @throws {@link IllegalArgumentException} if the supplied percentage cannot be 
      *      added.
      */
     public void addPercentage(final int addition) {
@@ -274,7 +275,7 @@ public class Progress {
      * If the progress is in being synchronized from another progress. The cancelled
      * status will be propagated to the synchronization source.
      *
-     * @param title The new value for the <code>canceled</code> property.
+     * @param canceled The new value for the <code>canceled</code> property.
      */
     public void setCanceled(final boolean canceled) {
         if (this.canceled != canceled) {

@@ -36,6 +36,8 @@ public abstract class WizardPanel extends WizardComponent {
     }
     
     public final void executeForward() {
+        // since silent mode does not assume any user interaction we just move 
+        // forward
         if (UiMode.getCurrentUiMode() == UiMode.SILENT) {
             getWizard().next();
         }
@@ -60,17 +62,17 @@ public abstract class WizardPanel extends WizardComponent {
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     public static class WizardPanelUi extends WizardComponentUi {
-        protected WizardPanel        component;
+        protected WizardPanel panel;
         
-        public WizardPanelUi(WizardPanel component) {
+        public WizardPanelUi(final WizardPanel component) {
             super(component);
             
-            this.component = component;
+            this.panel = component;
         }
         
-        public SwingUi getSwingUi(SwingContainer container) {
+        public SwingUi getSwingUi(final SwingContainer container) {
             if (swingUi == null) {
-                swingUi = new WizardPanelSwingUi(component, container);
+                swingUi = new WizardPanelSwingUi(panel, container);
             }
             
             return super.getSwingUi(container);
@@ -78,14 +80,14 @@ public abstract class WizardPanel extends WizardComponent {
     }
     
     public static class WizardPanelSwingUi extends WizardComponentSwingUi {
-        protected WizardPanel component;
+        protected WizardPanel panel;
         
         public WizardPanelSwingUi(
                 final WizardPanel component,
                 final SwingContainer container) {
             super(component, container);
             
-            this.component = component;
+            this.panel = component;
         }
     }
 }

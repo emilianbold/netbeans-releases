@@ -60,8 +60,8 @@ import org.netbeans.installer.wizard.Wizard;
 import static org.netbeans.installer.utils.StringUtils.LF;
 
 /**
- * The main class of the NBI framework. It represents the installer and
- * provides methods to start the installation/maintenance process as well as to
+ * The main class of the NBI engine. It represents the installer and provides 
+ * methods to start the installation/maintenance process as well as to 
  * finish/cancel/break the installation.
  *
  * @author Kirill Sorokin
@@ -70,26 +70,14 @@ public class Installer implements FinishHandler {
     /////////////////////////////////////////////////////////////////////////////////
     // Main
     /**
-     * The main method. It gets an instance of <code>Installer</code> and calls the
-     * <code>start</code> method, passing in the command line arguments.
+     * The main method. It creates an instance of {@link Installer} and calls 
+     * the {@link #start()} method, passing in the command line arguments.
      *
      * @param arguments The command line arguments
-     * @see #start(String[])
      */
     public static void main(String[] arguments) {
         new Installer(arguments).start();
     }
-    
-    /** Errorcode to be used at normal exit */
-    public static final int NORMAL_ERRORCODE = 0;
-    
-    /** Errorcode to be used when the installer is canceled */
-    public static final int CANCEL_ERRORCODE = 1;
-    
-    /** Errorcode to be used when the installer exits because of a critical error */
-    public static final int CRITICAL_ERRORCODE = Integer.MAX_VALUE;
-    
-    public static final String TARGET_ARG = "--target";
     
     /////////////////////////////////////////////////////////////////////////////////
     // Static
@@ -178,10 +166,7 @@ public class Installer implements FinishHandler {
     
     // Life cycle control methods ///////////////////////////////////////////////////
     /**
-     * Starts the installer. This method parses the passed-in command line arguments,
-     * initializes the wizard and the components registry.
-     *
-     * @param arguments The command line arguments
+     * Starts the installer.
      */
     public void start() {
         Wizard.getInstance().open();
@@ -815,6 +800,17 @@ public class Installer implements FinishHandler {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
+    /** Errorcode to be used at normal exit */
+    public static final int NORMAL_ERRORCODE = 0;
+    
+    /** Errorcode to be used when the installer is canceled */
+    public static final int CANCEL_ERRORCODE = 1;
+    
+    /** Errorcode to be used when the installer exits because of a critical error */
+    public static final int CRITICAL_ERRORCODE = Integer.MAX_VALUE;
+    
+    public static final String TARGET_ARG = "--target";
+    
     public static final String DEFAULT_LOCAL_DIRECTORY_PATH =
             System.getProperty("user.home") + File.separator + ".nbi";
     

@@ -19,15 +19,6 @@
  */
 package org.netbeans.installer.wizard.components;
 
-import java.io.File;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.ui.WizardUi;
 
@@ -39,14 +30,14 @@ public class WizardSequence extends WizardComponent {
     protected Wizard childWizard;
     
     public void executeForward() {
-        this.childWizard = getWizard().createSubWizard(
+        childWizard = getWizard().createSubWizard(
                 getChildren(), -1);
         
         childWizard.next();
     }
     
     public void executeBackward() {
-        this.childWizard = getWizard().createSubWizard(
+        childWizard = getWizard().createSubWizard(
                 getChildren(), getChildren().size());
         
         childWizard.previous();
@@ -56,11 +47,12 @@ public class WizardSequence extends WizardComponent {
         // does nothing
     }
     
+    @Override
     public boolean canExecuteForward() {
         // whether a sequence can be executed completely depends on whether its 
         // children can be executed, thus we should run through them and check
         for (int i = 0; i < getChildren().size(); i++) {
-            WizardComponent component = getChildren().get(i);
+            final WizardComponent component = getChildren().get(i);
             
             // if the component can be executed forward the whole sequence can be 
             // executed as well
@@ -74,11 +66,12 @@ public class WizardSequence extends WizardComponent {
         return false;
     }
     
+    @Override
     public boolean canExecuteBackward() {
         // whether a sequence can be executed completely depends on whether its 
         // children can be executed, thus we should run through them and check
         for (int i = getChildren().size() - 1; i > -1; i--) {
-            WizardComponent component = getChildren().get(i);
+            final WizardComponent component = getChildren().get(i);
             
             // if the component can be executed backward the whole sequence can be 
             // executed as well
@@ -99,6 +92,7 @@ public class WizardSequence extends WizardComponent {
         return false;
     }
     
+    @Override
     public boolean isPointOfNoReturn() {
         // if there is a point-of-no-return child and it has already been passed,
         // then the sequence of a point of no return, otherwise it's not

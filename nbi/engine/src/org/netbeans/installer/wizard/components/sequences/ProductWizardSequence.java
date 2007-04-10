@@ -34,10 +34,10 @@ public class ProductWizardSequence extends WizardSequence {
     
     public void executeForward() {
         childWizard = getWizard().createSubWizard(
-                product, 
-                product.getClassLoader(), 
                 product.getWizardComponents(), 
-                -1);
+                -1, 
+                product, 
+                product.getClassLoader());
         
         childWizard.getContext().put(product);
         childWizard.next();
@@ -45,10 +45,10 @@ public class ProductWizardSequence extends WizardSequence {
     
     public void executeBackward() {
         childWizard = getWizard().createSubWizard(
-                product, 
-                product.getClassLoader(), 
                 product.getWizardComponents(), 
-                product.getWizardComponents().size());
+                product.getWizardComponents().size(), 
+                product, 
+                product.getClassLoader());
         
         childWizard.getContext().put(product);
         childWizard.previous();

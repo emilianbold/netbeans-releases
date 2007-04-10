@@ -130,9 +130,10 @@ public final class CompositeProgress extends Progress implements ProgressListene
      * supplied percentage is different from the current. Also the progress
      * listeners are notified only if the update actually took place.
      *
-     * @param title The new value for the core composite's percentage.
+     * @param percentage The new value for the core composite's percentage.
      *
-     * @throws {@IllegalArgumentException} if the supplied percentage cannot be set.
+     * @throws {@link IllegalArgumentException} if the supplied percentage cannot be 
+     *      set.
      */
     @Override
     public void setPercentage(final int percentage) {
@@ -195,7 +196,7 @@ public final class CompositeProgress extends Progress implements ProgressListene
      * Additionally this method propagates the <code>canceled</code> value to the
      * child progresses.
      *
-     * @param title The new value for the <code>canceled</code> property.
+     * @param canceled The new value for the <code>canceled</code> property.
      */
     @Override
     public void setCanceled(final boolean canceled) {
