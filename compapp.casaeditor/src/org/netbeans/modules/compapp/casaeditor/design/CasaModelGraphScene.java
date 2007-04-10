@@ -35,6 +35,7 @@ import org.netbeans.api.visual.widget.Widget;
 
 import javax.swing.*;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -69,6 +70,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
 import org.netbeans.modules.compapp.casaeditor.multiview.CasaGraphMultiViewElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
+import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.Mode;
@@ -77,7 +79,7 @@ import org.openide.windows.WindowManager;
 
 /**
  * 
- * @author Josh Sandusky (modified version of David Kaspar's VMDGraphScene)
+ * @author Josh Sandusky
  */
 public class CasaModelGraphScene 
 extends CasaGraphAbstractScene<CasaComponent, CasaComponent, CasaComponent>
@@ -112,7 +114,7 @@ implements PropertyChangeListener {
     
     private CasaDataObject mDataObject;
     private CasaWrapperModel mModel;
-    private CasaDesignController mController;
+    private CasaDesignModelListener mModelListener;
     private CasaNodeFactory mNodeFactory;
     private boolean mIsInternalNodeChange;
     
@@ -197,8 +199,8 @@ implements PropertyChangeListener {
         addSceneListener(new BannerSceneListener(this));
     }
     
-    public void registerController(CasaDesignController controller) {
-        mController = controller;
+    public void registerModelListener(CasaDesignModelListener listener) {
+        mModelListener = listener;
     }
     
     public CasaNodeFactory getNodeFactory() {
@@ -512,7 +514,7 @@ implements PropertyChangeListener {
     }
     
     protected void fireSelectionChanged() {
-        if (getView() == null || mController == null) {
+        if (getView() == null || mModelListener == null) {
             return;
         }
         final TopComponent tc = findTopComponent();
@@ -664,11 +666,15 @@ implements PropertyChangeListener {
         return mExternalRegion;
     }
     
-    public void setCasaLocation(CasaServiceEngineServiceUnit su, int x, int y) {
-        mModel.setServiceEngineServiceUnitLocation(su, x, y);
+    public boolean isModified() {
+        return mDataObject.isModified();
     }
     
-    public void setCasaLocation(CasaPort port, int x, int y) {
-        mModel.setCasaPortLocation(port, x, y);
+    public void save() {
+        try {
+            mDataObject.getEditorSupport().saveDocument();
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+        }
     }
 }

@@ -64,12 +64,12 @@ public abstract class CasaNodeWidget extends Widget {
                     if (component instanceof CasaServiceEngineServiceUnit) {
                         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) component;
                         if (su.getX() != location.x || su.getY() != location.y) {
-                            scene.setCasaLocation(su, location.x, location.y);
+                            scene.getModel().setServiceEngineServiceUnitLocation(su, location.x, location.y);
                         }
                     } else if (component instanceof CasaPort) {
                         CasaPort port = (CasaPort) component;
                         if (port.getX() != location.x || port.getY() != location.y) {
-                            scene.setCasaLocation(port, location.x, location.y);
+                            scene.getModel().setCasaPortLocation(port, location.x, location.y);
                         }
                     }
                 }

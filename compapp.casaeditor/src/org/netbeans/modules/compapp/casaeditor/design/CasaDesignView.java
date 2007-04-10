@@ -42,7 +42,7 @@ public class CasaDesignView {
 
     private CasaDataObject mDataObject;
     private CasaModelGraphScene mScene;
-    private CasaDesignController mController;
+    private CasaDesignModelListener mController;
     private JScrollPane mScroller;
 
     private JToolBar mToolBar;
@@ -79,8 +79,14 @@ public class CasaDesignView {
             CasaModelGraphUtilities.renderModel(model, mScene);
 
             // Tie in the controller
-            mController = new CasaDesignController(mDataObject, mScene);
-            mScene.registerController(mController);
+            
+            // Tie in the controller
+            
+            // Tie in the controller
+            
+            // Tie in the controller
+            mController = new CasaDesignModelListener(mDataObject, mScene);
+            mScene.registerModelListener(mController);
         }
     }
    
