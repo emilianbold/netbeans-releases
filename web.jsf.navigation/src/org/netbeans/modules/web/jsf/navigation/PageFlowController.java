@@ -264,8 +264,8 @@ public class PageFlowController {
     }
     
     private boolean isKnownFolder( FileObject folder ){
-        String nameName = folder.getName();
-        if( !nameName.equals("WEB-INF") && !nameName.equals("META-INF")) {
+        
+        if( !folder.getPath().contains("WEB-INF") && !folder.getPath().contains("META-INF") ) {
             return true;
         }
         return false;
