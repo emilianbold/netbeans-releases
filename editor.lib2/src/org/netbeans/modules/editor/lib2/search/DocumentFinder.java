@@ -334,11 +334,12 @@ public class DocumentFinder
         private boolean closed;
 
         public void reset() {
+            super.reset();
             blocksInd = 0;
             closed = false;
         }
 
-        public int[] getBlocks() {
+        public final int[] getBlocks() {
             if (!closed) { // not closed yet
                 closeBlocks();
                 closed = true;
@@ -346,27 +347,31 @@ public class DocumentFinder
             return blocks;
         }
 
-        public void setBlocks(int[] blocks) {
+        public final void setBlocks(int[] blocks) {
             this.blocks = blocks;
+            blocksInd = 0;
             closed = false;
         }
 
-        protected void addBlock(int blkStartPos, int blkEndPos) {
-            if (blocksInd == blocks.length) {
-                int[] dbl = new int[blocks.length * 2];
+        protected final void addBlock(int blkStartPos, int blkEndPos) {
+            if (blocksInd + 2 > blocks.length) {
+                int[] dbl = new int[Math.max(10, (blocksInd + 1) * 2)];
                 System.arraycopy(blocks, 0, dbl, 0, blocks.length);
                 blocks = dbl;
             }
-            blocks[blocksInd++] = blkStartPos;
-            blocks[blocksInd++] = blkEndPos;
+            
+            blocks[blocksInd] = blkStartPos;
+            blocks[blocksInd + 1] = blkEndPos;
+            
+            blocksInd += 2;
         }
 
         /** Insert closing sequence [-1, -1] */
-        protected void closeBlocks() {
+        protected final void closeBlocks() {
             addBlock(-1, -1);
         }
 
-        public String debugBlocks() {
+        public final String debugBlocks() {
             StringBuffer buf = new StringBuffer();
             int ind = 0;
             while (blocks[ind] != -1) {
