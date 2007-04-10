@@ -24,10 +24,10 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.PaletteOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DeleteAction;
-import org.netbeans.jellytools.actions.PaletteViewAction;
 
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -50,7 +50,11 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
     private static final String DBRootName = "jdbc:derby://localhost:1527/travel [travel on TRAVEL]";
     private static final String DBTableName = "Tables"+"|"+"TRIP";
     
-    /** Creates a new instance of DatabaseTableDrop */
+    /** Creates a new instance of DatabaseTableDrop 
+     * 
+     * @param testName 
+     * 
+     */
     public DatabaseTableDrop(String testName) {
         super(testName);
         expectedTime = 20000; // 20 seconds ?
@@ -59,7 +63,12 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         componentName = "Table"; // NOI18N
         addPoint = new java.awt.Point(50,50);
     }
-    
+    /** Creates a new instance of DatabaseTableDrop 
+     * 
+     * @param testName 
+     * @param performanceDataName
+     * 
+     */    
     public DatabaseTableDrop(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = 20000; // 20 seconds ?        
@@ -71,22 +80,24 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
     
     protected void initialize() {
         log(":: initialize");
-        new Action("Window|Outline",null).perform();
+        new Action("Window|Navigator",null).perform(); //NOI18N
         
         rto = RuntimeTabOperator.invoke();
         Node travelBaseNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName); // NOI18N
-        travelBaseNode.performPopupAction("Connect"); // NOI18N
+        travelBaseNode.performPopupActionNoBlock("Connect"); // NOI18N
         processDBConnectDialog();
         ProjectsTabOperator.invoke();
         
-        new PaletteViewAction().perform();
-        openPageAndAddComponent();
+        PaletteOperator.invoke();
+        openPage();
+
     }
     
-    private void openPageAndAddComponent() throws Error {
+    private void openPage() {
         surface = gui.VWPUtilities.openedWebDesignerForJspFile("VisualWebProject", "Page1");
-        palette = new PaletteComponentOperator();
-        
+        palette = new PaletteComponentOperator();        
+    }
+    private void addComponent() throws Error {        
         //Select component in palette
         palette.getCategoryListOperator(categoryName).selectItem(componentName);
         
@@ -107,6 +118,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
     
     public void prepare() {
         log(":: prepare");
+        addComponent();
         selectDBTableNode();
     }
 
@@ -138,15 +150,15 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
     private void clearBindingArtefacts() {
         String title = Bundle.getStringTrimmed("org.openide.explorer.Bundle","MSG_ConfirmDeleteObjectTitle"); //Confirm Object Deletion
 
-        TopComponentOperator outliner = new TopComponentOperator("Outline"); // NOI18N
-        JTreeOperator tree =  new JTreeOperator(outliner);
+        TopComponentOperator navigator = new TopComponentOperator("Navigator"); // NOI18N
+        JTreeOperator tree =  new JTreeOperator(navigator);
         
         
         Node table = new Node(tree,"Page1|page1|html1|body1|form1|table1");
         new DeleteAction().perform(table);
         new NbDialogOperator(title).yes();
         
-        table = new Node(tree,"page1|page1|tripDataProvider");
+        table = new Node(tree,"Page1|tripDataProvider");
         new DeleteAction().perform(table);
         new NbDialogOperator(title).yes();
         
@@ -154,7 +166,12 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         new DeleteAction().perform(table);
         new NbDialogOperator(title).yes();
     }
-   
+    protected void shutdown() {
+        super.shutdown();
+        rto = RuntimeTabOperator.invoke();
+        Node travelBaseNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName); // NOI18N
+        travelBaseNode.performPopupActionNoBlock("Disconnect"); // NOI18N        
+    }   
     public static void main(String[] args) {
         junit.textui.TestRunner.run(new DatabaseTableDrop("measureTime", "Time to Drop Database table on table"));        
     } 
