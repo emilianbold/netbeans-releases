@@ -96,8 +96,9 @@ import org.w3c.dom.Node;
  */
 public class JsfForm {
 
-    /** Weak <code>Map</code> between <code>FacesModel</code> and <code>JsfForm</code>. */
-    private static final Map<FacesModel, JsfForm> facesModel2jsfForm = new WeakHashMap<FacesModel, JsfForm>();
+//    /** Weak <code>Map</code> between <code>FacesModel</code> and <code>JsfForm</code>. */
+//    private static final Map<FacesModel, JsfForm> facesModel2jsfForm = new WeakHashMap<FacesModel, JsfForm>();
+    private static final Set<JsfForm> jsfForms = new WeakSet<JsfForm>();
 
     /** Weak <code>Map</code> between <code>JsfForm</code> and <code>Designer</code>. */
     private static final Map<JsfForm, Set<Designer>> jsfForm2designerSet = new WeakHashMap<JsfForm, Set<Designer>>();
@@ -154,7 +155,8 @@ public class JsfForm {
         }
 
 //        associateFacesModel(dataObject.getPrimaryFile());
-        synchronized (facesModel2jsfForm) {
+//        synchronized (facesModel2jsfForm) {
+        synchronized (jsfForms) {
             this.facesModel = facesModel;
         }
         
@@ -206,12 +208,15 @@ public class JsfForm {
         }
         
         JsfForm jsfForm;
-        synchronized (facesModel2jsfForm) {
-            jsfForm = facesModel2jsfForm.get(facesModel);
+//        synchronized (facesModel2jsfForm) {
+        synchronized (jsfForms) {
+//            jsfForm = facesModel2jsfForm.get(facesModel);
+            jsfForm = findJsfForm(facesModel);
             
             if (jsfForm == null) {
                 jsfForm = new JsfForm(facesModel, dataObject);
-                facesModel2jsfForm.put(facesModel, jsfForm);
+//                facesModel2jsfForm.put(facesModel, jsfForm);
+                jsfForms.add(jsfForm);
             }
         }
         return jsfForm;
@@ -392,9 +397,22 @@ public class JsfForm {
     }
     
     /*private*/ static JsfForm findJsfForm(FacesModel facesModel) {
-        synchronized (facesModel2jsfForm) {
-            return facesModel2jsfForm.get(facesModel);
+        if (facesModel == null) {
+            return null;
         }
+//        synchronized (facesModel2jsfForm) {
+//            return facesModel2jsfForm.get(facesModel);
+//        }
+        Set<JsfForm> forms;
+        synchronized (jsfForms) {
+            forms = new HashSet<JsfForm>(jsfForms);
+        }
+        for (JsfForm jsfForm : forms) {
+            if (jsfForm != null && jsfForm.getFacesModel() == facesModel) {
+                return jsfForm;
+            }
+        }
+        return null;
     }
 
     
@@ -499,10 +517,11 @@ public class JsfForm {
             if (newModel == null) {
                 throw new IllegalArgumentException("Null FacesModel for FileObject, fo=" + newFo); // NOI18N
             }
-            synchronized (facesModel2jsfForm) {
-                facesModel2jsfForm.remove(this.facesModel);
+//            synchronized (facesModel2jsfForm) {
+            synchronized (jsfForms) {
+//                facesModel2jsfForm.remove(this.facesModel);
                 this.facesModel = newModel;
-                facesModel2jsfForm.put(this.facesModel, this);
+//                facesModel2jsfForm.put(this.facesModel, this);
             }
             updateDnDListening();
             
@@ -511,7 +530,8 @@ public class JsfForm {
     }
     
     public FacesModel getFacesModel() {
-        synchronized (facesModel2jsfForm) {
+//        synchronized (facesModel2jsfForm) {
+        synchronized (jsfForms) {
             return facesModel;
         }
     }
