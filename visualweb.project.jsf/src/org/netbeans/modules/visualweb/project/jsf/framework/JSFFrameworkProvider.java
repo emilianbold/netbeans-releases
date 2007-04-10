@@ -60,7 +60,6 @@ import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
@@ -154,17 +153,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces, pageName));
 
-            /* NOTE: getFileObject("Page1.jsp") never found any page.
-              After the fix of getFileObject call the page is actually found, 
-              but returning it causes an IllegalStateException because 
-              InSync is not ready until the project creation is completed.
-              The following code should be removed or can be uncommented when 
-              insync gets fixed.              
-             */
-//            FileObject pagejsp = fileObject.getFileObject("Page", "jsp");
-//            if (pagejsp != null) {
-//                result.add(pagejsp);
-//            } else {
+            FileObject pagejsp = fileObject.getFileObject(pageName);
+            if (pagejsp != null) {
+                result.add(pagejsp);
+            } else {
                 // Page is not created yet, open later.
                 ProjectManager.mutex().postReadRequest(new Runnable() {
                     public void run() {
@@ -182,7 +174,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         }
                     }
                 }); 
-//            }
+            }
         } catch (FileNotFoundException exc) {
             ErrorManager.getDefault().notify(exc);
         } catch (IOException exc) {
@@ -458,13 +450,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     ddRoot.addServletMapping(mapping);
 
                     // Adjust the path to the startpage based on JSF parameters
-                    String welcomeFile = ConfigurationUtils.getWelcomeFile(panel.getURLPattern(), pageName);
+                    String welcomeFile = JsfProjectUtils.getWelcomeFile(panel.getURLPattern(), pageName);
                     WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
-                    if (wfl == null) {
-                        wfl = (WelcomeFileList) ddRoot.createBean("WelcomeFileList");
-                        ddRoot.setWelcomeFileList(wfl);
-                    }
-                    //PENDING: replaces existing welcome files if any!
                     wfl.setWelcomeFile(new String[] { welcomeFile });
 
                     // Catch ServletException
