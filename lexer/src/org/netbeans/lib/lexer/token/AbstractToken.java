@@ -231,7 +231,7 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
      *  that the live token hierarchy will be used.
      * @return dump of the thorough token information.
      */
-    public String dumpInfo(TokenHierarchy tokenHierarchy) {
+    public String dumpInfo(TokenHierarchy<?> tokenHierarchy) {
         StringBuilder sb = new StringBuilder();
         sb.append(dumpInfoTokenType());
         sb.append('(').append(id()).append(", "); // NOI18N
@@ -249,9 +249,10 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
             }
             sb.append('"');
         } else {
-            sb.append("<null>"); // NOI18N
+            sb.append("<null-text>"); // NOI18N
         }
-        sb.append(", ").append(offset(tokenHierarchy)).append(')'); // NOI18N
+        sb.append(", ").append(offset(tokenHierarchy));
+        sb.append(", ").append(length()).append(')'); // NOI18N
         return sb.toString();
     }
     

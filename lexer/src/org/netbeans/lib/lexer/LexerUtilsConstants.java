@@ -213,6 +213,11 @@ public final class LexerUtilsConstants {
 
     public static <T extends TokenId> StringBuilder appendTokenList(StringBuilder sb,
     TokenList<T> tokenList, int currentIndex) {
+        return appendTokenList(sb, tokenList, currentIndex, 0, Integer.MAX_VALUE);
+    }
+
+    public static <T extends TokenId> StringBuilder appendTokenList(StringBuilder sb,
+    TokenList<T> tokenList, int currentIndex, int startIndex, int endIndex) {
         if (sb == null) {
             sb = new StringBuilder();
         }
@@ -224,29 +229,13 @@ public final class LexerUtilsConstants {
                 tokenHierarchy = null;
         }
 
-        int tokenCount = tokenList.tokenCountCurrent();
+        int tokenCount = Math.min(tokenList.tokenCountCurrent(), endIndex);
         int digitCount = ArrayUtilities.digitCount(tokenCount);
-        for (int i = 0; i < tokenCount; i++) {
+        for (int i = Math.max(startIndex, 0); i < tokenCount; i++) {
             sb.append((i == currentIndex) ? '*' : ' ');
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
-            Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(i);
-            if (tokenOrEmbeddingContainer == null) {
-                System.err.println("tokenList=" + tokenList + ", i=" + i);
-            }
-            sb.append((tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) ? '<' : ' ');
-            sb.append(": ");
-            AbstractToken token = token(tokenOrEmbeddingContainer);
-            sb.append(token.dumpInfo(tokenHierarchy));
-            int la = tokenList.lookahead(i);
-            if (la != 0) {
-                sb.append(", la=");
-                sb.append(la);
-            }
-            Object state= tokenList.state(i);
-            if (state != null) {
-                sb.append(", s=");
-                sb.append(state);
-            }
+            appendTokenInfo(sb, tokenList.tokenOrEmbeddingContainer(i), tokenHierarchy);
+            appendLAState(sb, tokenList, i);
             sb.append('\n');
         }
         return sb;
@@ -261,9 +250,10 @@ public final class LexerUtilsConstants {
         return id.name() + '[' + id.ordinal() + ']'; // NOI18N;
     }
     
-    public static void appendTokenInfo(StringBuilder sb, Object tokenOrEmbeddingContainer) {
+    public static void appendTokenInfo(StringBuilder sb, Object tokenOrEmbeddingContainer,
+    TokenHierarchy<?> tokenHierarchy) {
         if (tokenOrEmbeddingContainer == null) {
-            sb.append("<null>");
+            sb.append("<NULL-TOKEN>");
         } else if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
             EmbeddingContainer<? extends TokenId> ec
                     = (EmbeddingContainer<? extends TokenId>)tokenOrEmbeddingContainer;
@@ -271,9 +261,7 @@ public final class LexerUtilsConstants {
             EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
             boolean first = true;
             while (etl != null) {
-                sb.append('"');
-                sb.append(etl.languagePath().mimePath());
-                sb.append('"');
+                sb.append('"').append(etl.languagePath().mimePath()).append('"');
                 if (first)
                     first = false;
                 else
@@ -283,19 +271,11 @@ public final class LexerUtilsConstants {
             sb.append("] ");
             appendIdentityHashCode(sb, ec);
             sb.append(": ");
-            appendTokenInfo(sb, ec.token());
+            appendTokenInfo(sb, ec.token(), tokenHierarchy);
 
         } else { // regular token
             Token<? extends TokenId> token = (Token<? extends TokenId>)tokenOrEmbeddingContainer;
-            sb.append(idToString(token.id()));
-            sb.append(' ');
-            CharSequence text = token.text();
-            if (text != null) {
-                sb.append("  \"");
-                sb.append(TokenUtilities.debugText(token.text()));
-                sb.append('"');
-            } else
-                sb.append("<null-text>");
+            sb.append(((AbstractToken<? extends TokenId>)token).dumpInfo(tokenHierarchy));
             sb.append(' ');
             appendIdentityHashCode(sb, token);
         }

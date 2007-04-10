@@ -320,10 +320,11 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         change.setRemovedEndOffset(offset);
 
         // Move and fix the gap according to the performed modification.
+        int startOffset = startOffset();
         int diffLength = eventInfo.insertedLength() - eventInfo.removedLength();
-        if (offsetGapStart() != change.offset()) {
+        if (offsetGapStart() != change.offset() - startOffset) {
             // Minimum of the index of the first removed index and original computed index
-            moveOffsetGap(change.offset(), Math.min(index, change.offsetGapIndex()));
+            moveOffsetGap(change.offset() - startOffset, Math.min(index, change.offsetGapIndex()));
         }
         updateOffsetGapLength(-diffLength);
 

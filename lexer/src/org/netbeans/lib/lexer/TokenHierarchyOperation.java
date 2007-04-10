@@ -559,17 +559,24 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
     
     private String dumpContext(String msg, TokenList<?> tokenList, int index, int[] parentIndexes) {
-        return  msg + " at index=" + index // NOI18N
-                + " of tokens of language " + tokenList.languagePath().innerLanguage().mimeType() // NOI18N
-                + "\nParents:\n" // NOI18N
-                + tracePath(parentIndexes, tokenList.languagePath());
+        StringBuilder sb = new StringBuilder();
+        sb.append(msg);
+        sb.append(" at index="); // NOI18N
+        sb.append(index);
+        sb.append(" of tokens of language "); // NOI18N
+        sb.append(tokenList.languagePath().innerLanguage().mimeType());
+        sb.append('\n');
+        LexerUtilsConstants.appendTokenList(sb, tokenList, index, index - 2, index + 3);
+        sb.append("\nParents:\n"); // NOI18N
+        sb.append(tracePath(parentIndexes, tokenList.languagePath()));
+        return sb.toString();
     }
     
     private String tracePath(int[] indexes, LanguagePath languagePath) {
         StringBuilder sb  = new StringBuilder();
         TokenList<?> tokenList = checkedTokenList();
         for (int i = 0; i < indexes.length; i++) {
-            LexerUtilsConstants.appendTokenInfo(sb, tokenList.tokenOrEmbeddingContainer(i));
+            LexerUtilsConstants.appendTokenInfo(sb, tokenList.tokenOrEmbeddingContainer(i), tokenHierarchy());
             tokenList = EmbeddingContainer.getEmbedding(tokenList, indexes[i], languagePath.language(i));
         }
         return sb.toString();
