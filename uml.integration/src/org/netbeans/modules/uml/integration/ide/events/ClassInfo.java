@@ -2466,8 +2466,6 @@ public class ClassInfo extends ElementInfo
 	}
     }
 
-
-    //public int stringToModifier(String mod)  
     
     public ArrayList<String> getImportedTypes() 
     {
@@ -2553,14 +2551,11 @@ public class ClassInfo extends ElementInfo
 	}	    
 
 	// referred by the inner types
-	if (mInnerClasses != null) {
-	    Iterator nestedTypes =  mInnerClasses.iterator();
-	    while(nestedTypes.hasNext()) {
-		Object inner = nestedTypes.next();
-		if (inner instanceof ClassInfo) {
-		    ArrayList<String[]> refs = ((ClassInfo)inner).getReferredCodeGenTypes();
-		    GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
-		}
+	ArrayList<ClassInfo> memberTypes = getMemberTypes();
+ 	if (memberTypes != null) {
+	    for(ClassInfo inner : memberTypes) {
+		ArrayList<String[]> refs = inner.getReferredCodeGenTypes();
+		GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);		
 	    } 
 	}
 
@@ -2573,7 +2568,9 @@ public class ClassInfo extends ElementInfo
 	if (superInterfaces != null) {
 	    Iterator<IClassifier> sis =  superInterfaces.iterator();
 	    while(sis.hasNext()) {
-		refs = GenCodeUtil.getReferredCodeGenTypes(sis.next());
+		IClassifier si = sis.next();
+		refs = GenCodeUtil.getReferredCodeGenTypes(si);
+		//refs = GenCodeUtil.getReferredCodeGenTypes(sis.next());
 		if (refs != null) {
 		    GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
 		}
@@ -2582,6 +2579,7 @@ public class ClassInfo extends ElementInfo
 	
 	return res;
     }
+
 
 
 }
