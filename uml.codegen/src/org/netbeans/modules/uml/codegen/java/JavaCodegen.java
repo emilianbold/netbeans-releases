@@ -149,9 +149,11 @@ public class JavaCodegen implements ICodeGenerator {
 			    // the codegen client to decide what type of sources / of what codegen, 
 			    // to associate, if any, with the element
 			    List<IElement> sourceFiles =  classifier.getSourceFiles();
-			    for(IElement src : sourceFiles) {
-				if (src instanceof ISourceFileArtifact) {
-				    classifier.removeSourceFile(((ISourceFileArtifact)src).getSourceFile());
+			    if (sourceFiles != null) {
+				for(IElement src : sourceFiles) {
+				    if (src instanceof ISourceFileArtifact) {
+					classifier.removeSourceFile(((ISourceFileArtifact)src).getSourceFile());
+				    }
 				}
 			    }
 			    classifier.addSourceFileNotDuplicate(sourceFile.getCanonicalPath());
