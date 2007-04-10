@@ -1558,18 +1558,39 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
 //    }
     // </markup_separation>
     
-    /** Map between <code>org.w3c.dom.Document</code> and <code>URL</code> */
-    private final static Map doc2url = new WeakHashMap();
+//    /** Map between <code>org.w3c.dom.Document</code> and <code>URL</code> */
+//    private final static Map doc2url = new WeakHashMap();
+    private static final String KEY_URL = "vwpUrl"; // NOI18N
     
     public /*private*/ static void setUrlForDocument(Document doc, URL url) {
-        synchronized (doc2url) {
-            doc2url.put(doc, url);
+//        synchronized (doc2url) {
+//            doc2url.put(doc, url);
+//        }
+        if (doc == null) {
+            return;
         }
+        doc.setUserData(KEY_URL, url, UrlDataHandler.getDefault());
     }
     
     public static URL getUrlForDocument(Document doc) {
-        synchronized (doc2url) {
-            return (URL)doc2url.get(doc);
+//        synchronized (doc2url) {
+//            return (URL)doc2url.get(doc);
+//        }
+        if (doc == null) {
+            return null;
         }
+        return (URL)doc.getUserData(KEY_URL);
     }
+    
+    private static class UrlDataHandler implements UserDataHandler {
+        private static final UrlDataHandler INSTANCE = new UrlDataHandler();
+        
+        public static UrlDataHandler getDefault() {
+            return INSTANCE;
+        }
+        
+        public void handle(short operation, String key, Object data, Node src, Node dst) {
+            // No op.
+        }
+    } // End of UrlDataHandler.
 }
