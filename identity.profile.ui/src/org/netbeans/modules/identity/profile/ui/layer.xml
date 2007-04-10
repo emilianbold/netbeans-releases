@@ -25,5 +25,15 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <attr name="org-netbeans-modules-usersguide-below-regular.txt/org-netbeans-modules-identity-profile-ui-resources-helpset.xml" boolvalue="true"/>
         </folder>
     </folder>
+    
+    <folder name="Templates">
+        <folder name="Identity">
+            <folder name="SunDD">
+                <file name="sun-web.xml" url="nbres:/org/netbeans/modules/identity/profile/ui/support/resources/sun-web.template"/>
+                <file name="sun-ejb-jar.xml" url="nbres:/org/netbeans/modules/identity/profile/ui/support/resources/sun-ejb-jar.template"/>
+                <file name="sun-application-client.xml" url="nbres:/org/netbeans/modules/identity/profile/ui/support/resources/sun-application-client.template"/>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
 

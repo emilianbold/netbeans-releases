@@ -143,7 +143,7 @@ public class SunDDHelper {
     private static final String SUN_APPCLIENT_DTD_5_0 = "resources/sun-application-client_5_0-0.dtd";  //NOI18N
     
     private static final String IDENT = "    ";     //NOI18N
-    
+   
     private static int TIME_TO_WAIT = 300;
     
     private FileObject sunDD;
