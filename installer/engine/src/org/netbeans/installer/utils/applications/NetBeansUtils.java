@@ -40,37 +40,6 @@ import org.netbeans.installer.utils.helper.FilesList;
  */
 public class NetBeansUtils {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String NETBEANS_CLUSTERS = "etc/netbeans.clusters";
-    public static final String NETBEANS_CONF     = "etc/netbeans.conf";
-    public static final String PRODUCT_ID        = "config/productid";
-    public static final String LICENSE_ACCEPTED  = "var/license_accepted";
-    
-    public static final String DIGITS_PATTERN = "[0-9]+";
-    public static final String CLUSTER_NUMBER_PATTERN = 
-            DIGITS_PATTERN + "(\\." + DIGITS_PATTERN + ")?";
-    
-    public static final String NB_CLUSTER_PATTERN = "nb" + CLUSTER_NUMBER_PATTERN;
-    public static final String NEW_LINE_PATTERN = "[\r\n|\n|\r]";
-    public static final String SPACES_PATTERN = "\\ *";
-    
-    public static final String NETBEANS_USERDIR = "netbeans_default_userdir=";
-    public static final String NETBEANS_JDKHOME = "netbeans_jdkhome=";
-    public static final String NETBEANS_OPTIONS = "netbeans_default_options=";
-    
-    public static final String NB_IDE_ID = "NB";
-    public static final String PACK_ID_SEPARATOR = "_";
-    public static final String MEMORY_XMX = "-Xmx";
-    public static final String MEMORY_XMS = "-Xms";
-    public static final String MEMORY_XSS = "-Xss";
-    public static final String USER_HOME_TOKEN = "${HOME}";
-    public static final long K = 1024;
-    public static final long M = K * K;
-    public static final long G = M * K;
-    public static final long T = G * K;
-    
-    private static final String MEMORY_SUFFIX_PATTERN = "[kKmMgGtT]?";
-    /////////////////////////////////////////////////////////////////////////////////
     // Static
     public static void addCluster(File nbLocation, String clusterName) throws IOException {
         File netbeansclusters = new File(nbLocation, NETBEANS_CLUSTERS);
@@ -261,7 +230,7 @@ public class NetBeansUtils {
         
         if (!matcher.find()) {
             contents = contents.replace(
-                    NETBEANS_OPTIONS + "\"", 
+                    NETBEANS_OPTIONS + "\"",
                     NETBEANS_OPTIONS + "\"" + newOption + " ");
             contents = contents.replace(newOption + " \"", newOption + "\"");
         }
@@ -294,7 +263,7 @@ public class NetBeansUtils {
                     NETBEANS_OPTIONS + "\"$1$2" + StringUtils.escapeRegExp(newOption) + "$4$5\"");
         } else {
             contents = contents.replace(
-                    NETBEANS_OPTIONS + "\"", 
+                    NETBEANS_OPTIONS + "\"",
                     NETBEANS_OPTIONS + "\"" + newOption + " ");
             contents = contents.replace(newOption + " \"", newOption + "\"");
         }
@@ -350,7 +319,6 @@ public class NetBeansUtils {
         return (memoryMatcher.find()) ? getJavaMemorySize(memoryMatcher.group(2)) : 0;
     }
     
-    
     /**
      * Get JVM memory value. <br>
      * If value is <i>zero</i> then remove the jvm option from netbeans options<br><br>
@@ -403,52 +371,6 @@ public class NetBeansUtils {
         
     }
     
-    private static long getJavaMemorySize(String sizeString) {
-        String suffix = sizeString.substring(sizeString.length()-1);
-        
-        if(!suffix.matches(DIGITS_PATTERN)) {
-            long value = new Long(sizeString.substring(0, sizeString.length()-1)).longValue();
-            if(suffix.equalsIgnoreCase("k")) {
-                value*=K;
-            } else if(suffix.equalsIgnoreCase("m")) {
-                value*=M;
-            } else if(suffix.equalsIgnoreCase("g")) {
-                value*=G;
-            } else if(suffix.equalsIgnoreCase("t")) {
-                value*=T;
-            }
-            return value;
-        } else {
-            return new Long(sizeString).longValue() * M; // default - megabytes
-        }
-    }
-    private static String formatJavaMemoryString(String type, long size) {
-        return (size>0) ?
-            "-J" + type + formatJavaMemoryString(size) :
-            StringUtils.EMPTY_STRING;
-    }
-    
-    private static String formatJavaMemoryString(long size) {
-        if(size > T && size % T == 0) {
-            return StringUtils.EMPTY_STRING + (size/T) + "t";
-        } else if(size > G && size % G == 0) {
-            return StringUtils.EMPTY_STRING + (size/G) + "g";
-        } else if(size > M && size % M == 0) {
-            return StringUtils.EMPTY_STRING + (size/M) + "m";
-        }  else if(size > K && size % K == 0) {
-            return StringUtils.EMPTY_STRING + (size/K) + "k";
-        } else {
-            
-            if(size > (10 * M)) {
-                // round up to the nearest M value
-                return StringUtils.EMPTY_STRING + (size/M + 1) + "m";
-            } else {
-                // round up to the nearest K value
-                return StringUtils.EMPTY_STRING + (size/K + 1) + "k";
-            }
-        }
-    }
-    
     public static File getNbCluster(File nbLocation) {
         for (File child: nbLocation.listFiles()) {
             if (child.isDirectory() && child.getName().matches(NB_CLUSTER_PATTERN)) {
@@ -458,6 +380,7 @@ public class NetBeansUtils {
         
         return null;
     }
+    
     /**
      * Get resolved netbeans user directory
      * @param nbLocation NetBeans home directory
@@ -478,7 +401,7 @@ public class NetBeansUtils {
         File netbeansconf = new File(nbLocation, NETBEANS_CONF);
         String contents = FileUtils.readFile(netbeansconf);
         Matcher matcher = Pattern.compile(
-                NEW_LINE_PATTERN + SPACES_PATTERN + 
+                NEW_LINE_PATTERN + SPACES_PATTERN +
                 NETBEANS_USERDIR +
                 "\"(.*?)\"").matcher(contents);
         if(matcher.find() && matcher.groupCount() == 1) {
@@ -499,7 +422,7 @@ public class NetBeansUtils {
         String contents = FileUtils.readFile(netbeansconf);
         
         Matcher matcher = Pattern.compile(
-                NEW_LINE_PATTERN + SPACES_PATTERN + 
+                NEW_LINE_PATTERN + SPACES_PATTERN +
                 NETBEANS_JDKHOME +
                 "\"(.*?)\"").matcher(contents);
         
@@ -509,6 +432,7 @@ public class NetBeansUtils {
             throw new IOException("Can`t get netbeans javahome from " + netbeansconf);
         }
     }
+    
     /**
      * Check if NetBeans is running
      * @param nbLocation NetBeans home directory
@@ -521,11 +445,122 @@ public class NetBeansUtils {
     
     public static File getLockFile(File nbLocation) throws IOException {
         return new File(getNetBeansUserDirFile(nbLocation), "lock");
-    }    
+    }
+    
+    public static void updateNetBeansHome(final File nbLocation) throws IOException {
+        FileUtils.modifyFile(
+                new File(nbLocation, NETBEANS_CONF), 
+                NETBEANS_HOME_TOKEN, 
+                nbLocation.getAbsolutePath());
+    }
+    
+    // private //////////////////////////////////////////////////////////////////////
+    private static long getJavaMemorySize(String sizeString) {
+        String suffix = sizeString.substring(sizeString.length()-1);
         
+        if(!suffix.matches(DIGITS_PATTERN)) {
+            long value = new Long(sizeString.substring(0, sizeString.length()-1)).longValue();
+            if(suffix.equalsIgnoreCase("k")) {
+                value*=K;
+            } else if(suffix.equalsIgnoreCase("m")) {
+                value*=M;
+            } else if(suffix.equalsIgnoreCase("g")) {
+                value*=G;
+            } else if(suffix.equalsIgnoreCase("t")) {
+                value*=T;
+            }
+            return value;
+        } else {
+            return new Long(sizeString).longValue() * M; // default - megabytes
+        }
+    }
+    
+    private static String formatJavaMemoryString(String type, long size) {
+        return (size > 0) ?
+            "-J" + type + formatJavaMemoryString(size) :
+            StringUtils.EMPTY_STRING;
+    }
+    
+    private static String formatJavaMemoryString(long size) {
+        if((size > T) && (size % T == 0)) {
+            return StringUtils.EMPTY_STRING + (size/T) + "t";
+        } else if((size > G) && (size % G == 0)) {
+            return StringUtils.EMPTY_STRING + (size/G) + "g";
+        } else if((size > M) && (size % M == 0)) {
+            return StringUtils.EMPTY_STRING + (size/M) + "m";
+        }  else if((size > K) && (size % K == 0)) {
+            return StringUtils.EMPTY_STRING + (size/K) + "k";
+        } else {
+            if(size > (10 * M)) {
+                // round up to the nearest M value
+                return StringUtils.EMPTY_STRING + (size/M + 1) + "m";
+            } else {
+                // round up to the nearest K value
+                return StringUtils.EMPTY_STRING + (size/K + 1) + "k";
+            }
+        }
+    }
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private NetBeansUtils() {
         // does nothing
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String NETBEANS_CLUSTERS =
+            "etc/netbeans.clusters"; // NOI18N
+    public static final String NETBEANS_CONF =
+            "etc/netbeans.conf"; // NOI18N
+    public static final String PRODUCT_ID =
+            "config/productid"; // NOI18N
+    public static final String LICENSE_ACCEPTED =
+            "var/license_accepted"; // NOI18N
+    
+    public static final String DIGITS_PATTERN =
+            "[0-9]+"; // NOI18N
+    public static final String CLUSTER_NUMBER_PATTERN =
+            DIGITS_PATTERN + "(\\." + DIGITS_PATTERN + ")?"; // NOI18N
+    
+    public static final String NB_CLUSTER_PATTERN =
+            "nb" + CLUSTER_NUMBER_PATTERN; // NOI18N
+    public static final String NEW_LINE_PATTERN =
+            "[\r\n|\n|\r]"; // NOI18N
+    public static final String SPACES_PATTERN =
+            "\\ *"; // NOI18N
+    
+    public static final String NETBEANS_USERDIR =
+            "netbeans_default_userdir="; // NOI18N
+    public static final String NETBEANS_JDKHOME =
+            "netbeans_jdkhome="; // NOI18N
+    public static final String NETBEANS_OPTIONS =
+            "netbeans_default_options="; // NOI18N
+    
+    public static final String NB_IDE_ID =
+            "NB"; // NOI18N
+    public static final String PACK_ID_SEPARATOR =
+            "_"; // NOI18N
+    public static final String MEMORY_XMX =
+            "-Xmx"; // NOI18N
+    public static final String MEMORY_XMS =
+            "-Xms"; // NOI18N
+    public static final String MEMORY_XSS =
+            "-Xss"; // NOI18N
+    public static final String USER_HOME_TOKEN =
+            "${HOME}"; // NOI18N
+    public static final String NETBEANS_HOME_TOKEN =
+            "${NETBEANS_HOME}"; // NOI18N
+    
+    public static final long K =
+            1024; // NOMAGI
+    public static final long M =
+            K * K;
+    public static final long G =
+            M * K;
+    public static final long T =
+            G * K;
+    
+    private static final String MEMORY_SUFFIX_PATTERN =
+            "[kKmMgGtT]?"; // NOI18N
 }
