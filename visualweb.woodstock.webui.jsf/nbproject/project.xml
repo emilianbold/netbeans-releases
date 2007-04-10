@@ -31,6 +31,26 @@ Microsystems, Inc. All Rights Reserved.
                 <runtime-relative-path>ext/webui-jsf.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/webui-jsf.jar</binary-origin>
             </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/json2.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/json2.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/prototype-1.5.0.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/prototype-1.5.0.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jsf-extensions-common-0.1-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jsf-extensions-common-0.1-SNAPSHOT.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dojo-0.4.1-ajax.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/dojo-0.4.1-ajax.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jsf-extensions-dynamic-faces-0.1-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jsf-extensions-dynamic-faces-0.1-SNAPSHOT.jar</binary-origin>
+            </class-path-extension>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.libs.commons_logging</code-name-base>
@@ -194,6 +214,15 @@ Microsystems, Inc. All Rights Reserved.
                 <package>com.sun.webui.jsf.util</package>
                 <package>com.sun.webui.jsf.validator</package>
                 <package>com.sun.webui.theme</package>
+                <package>com.sun.faces.extensions.common.util</package>
+                <package>com.sun.faces.extensions.avatar.application</package>
+                <package>com.sun.faces.extensions.avatar.components</package>
+                <package>com.sun.faces.extensions.avatar.event</package>
+                <package>com.sun.faces.extensions.avatar.lifecycle</package>
+                <package>com.sun.faces.extensions.avatar.renderkit</package>
+                <package>com.sun.faces.extensions.avatar.taglib</package>
+                <package>org.json</package>
+                <!--package>javax.faces.component</package-->
             </friend-packages>
         </data>
     </configuration>
