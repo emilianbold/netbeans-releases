@@ -57,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <!-- this includes all tests testing layers -->
-                <include name="org/netbeans/perftest/BytecodeTest.class"/> 
+                <include name="org/netbeans/perftest/*Test.class"/> 
             </patternset>
         </testset>
     </testbag>
