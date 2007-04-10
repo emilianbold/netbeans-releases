@@ -21,12 +21,6 @@ public class LabelOrientationTest extends VisualTestCase {
         super (testName);
     }
 
-    public static Test suite() {
-        TestSuite suite = new TestSuite("LabelOrientationTestSuite");
-        suite.addTestSuite(LabelOrientationTest.class);
-        return suite;
-    }
-
     public void testLabelOrientations () {
         Scene scene = new Scene ();
         LayerWidget layer = new LayerWidget (scene);

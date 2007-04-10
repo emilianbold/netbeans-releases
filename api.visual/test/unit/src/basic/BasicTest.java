@@ -42,12 +42,6 @@ public class BasicTest extends VisualTestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite("FirstTimeTestSuite");
-        suite.addTestSuite(BasicTest.class);
-        return suite;
-    }
-
     protected void setUp() throws Exception {
         super.setUp();
     }

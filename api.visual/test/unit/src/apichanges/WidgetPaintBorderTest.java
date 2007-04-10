@@ -16,12 +16,6 @@ public class WidgetPaintBorderTest extends VisualTestCase {
         super (s);
     }
 
-    public static Test suite() {
-        TestSuite suite = new TestSuite("WidgetPaintBorderTestSuite");
-        suite.addTestSuite(WidgetPaintBorderTest.class);
-        return suite;
-    }
-
     public void testPaintWidgetBorder () {
         Scene scene = new Scene ();
         MyWidget widget = new MyWidget (scene);
