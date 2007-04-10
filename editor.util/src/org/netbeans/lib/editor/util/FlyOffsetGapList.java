@@ -104,7 +104,7 @@ public abstract class FlyOffsetGapList<E> extends GapList<E> {
      * is used as a base.
      *
      * @param index of the element in the list.
-     * @return offset of the element.
+     * @return offset of the element. It will include {@link #startOffset()}.
      * @throws IndexOutOfBoundsException if index >= size() or lower than zero
      */
     protected final int elementOffset(int index) {
@@ -136,7 +136,7 @@ public abstract class FlyOffsetGapList<E> extends GapList<E> {
      * @param indexOrSize index of the element in the list.
      *  Index equal to <code>size()</code> can be used to get end offset
      *  of the last element.
-     * @return offset of the element.
+     * @return offset of the element. It will include {@link #startOffset()}.
      * @throws IndexOutOfBoundsException if index > size() or lower than zero
      */
     protected final int elementOrEndOffset(int indexOrSize) {
@@ -170,7 +170,7 @@ public abstract class FlyOffsetGapList<E> extends GapList<E> {
      * Subclasses can build their own way of updating
      * and they are not required to use this method.
      *
-     * @param offset offset at which the insertion occurred.
+     * @param offset offset at which the insertion occurred. It should not include {@link #startOffset()}.
      * @param length length of the inserted area.
      */
     public void defaultInsertUpdate(int offset, int length) {
@@ -197,7 +197,7 @@ public abstract class FlyOffsetGapList<E> extends GapList<E> {
      * Subclasses can build their own way of updating
      * and they are not required to use this method.
      *
-     * @param offset offset at which the removal occurred.
+     * @param offset offset at which the removal occurred. It should not include {@link #startOffset()}.
      * @param length length of the removed area.
      */
     public void defaultRemoveUpdate(int offset, int length) {
@@ -235,7 +235,7 @@ public abstract class FlyOffsetGapList<E> extends GapList<E> {
      * offsets of the elements contained in the list.
      *
      * @param offset offset to which the <code>offsetGapStart</code>
-     *  should be assigned.
+     *  should be assigned. It should not include {@link #startOffset()}.
      * @param index index of the first element at the given offset in the list.
      *  <br>
      *  It may be computed by {@link #findElementIndex(int)}.
@@ -312,7 +312,7 @@ public abstract class FlyOffsetGapList<E> extends GapList<E> {
      * Find an index of the first element at the given offset in the list
      * by using binary search.
      *
-     * @param offset offset of the element
+     * @param offset offset of the element to be found. It should not include {@link #startOffset()}.
      * @return index of the element. If there is no element with that
      *  index then the index of the next element (with the greater offset)
      *  (or size of the list) will be returned.
@@ -398,7 +398,7 @@ public abstract class FlyOffsetGapList<E> extends GapList<E> {
     /**
      * Convert the given offset into raw form suitable for storing in this list.
      *
-     * @param offset >=0 absolute offset.
+     * @param offset >=0 absolute offset that includes {@link #startOffset()}.
      * @return corresponding raw offset.
      */
     protected final int offset2Raw(int offset) {
