@@ -24,7 +24,6 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -119,11 +118,19 @@ public class IOManager {
                                         listener = null;
                                     }
                                     if (t.important) {
-                                        debuggerErr.println (t.text, listener, t.important);
+                                        if (listener != null) {
+                                            debuggerErr.println(t.text, listener, t.important);
+                                        } else {
+                                            debuggerErr.println(t.text);
+                                        }
                                         debuggerIO.select();
                                         debuggerErr.flush();
                                     } else {
-                                        debuggerOut.println (t.text, listener, t.important);
+                                        if (listener != null) {
+                                            debuggerOut.println(t.text, listener, t.important);
+                                        } else {
+                                            debuggerOut.println(t.text);
+                                        }
                                         debuggerOut.flush();
                                     }
                                     if (closed) {
