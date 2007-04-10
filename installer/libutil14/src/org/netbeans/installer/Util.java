@@ -43,6 +43,9 @@ public class Util {
     public static boolean isWindowsOS() {
         return System.getProperty("os.name").startsWith("Windows");
     }
+    public static boolean isWindowsVista() {
+        return System.getProperty("os.name").startsWith("Windows Vista");
+    }
     public static boolean isWindowsXP() {
         return System.getProperty("os.name").startsWith("Windows XP");
     }

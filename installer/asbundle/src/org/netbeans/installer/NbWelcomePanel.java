@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,34 +38,49 @@ public class NbWelcomePanel extends TextDisplayPanel {
     
     public boolean queryEnter(WizardBeanEvent evt) {
         boolean okay = super.queryEnter(evt);
-        if (isJDKVersionSupported()) {
-            setText(resolveString(BUNDLE + "InstallWelcomePanel.text,"
-            + BUNDLE + "Product.displayName),"
-            + BUNDLE + "AS.name))"));
+        if (Util.isWindowsVista()) {
+            setText(resolveString(BUNDLE + "InstallWelcomePanel.errorWindowsVista,"
+            + BUNDLE + "AS.shortName))"));
         } else {
-            if (Util.isMacOSX()) {
-                setText(resolveString(BUNDLE + "InstallWelcomePanel.error,"
-                + System.getProperty("java.version") + ","
-                + BUNDLE + "InstallWelcomePanel.jdkURLMacOSX))"));
+            if (isJDKVersionSupported()) {
+                setText(resolveString(BUNDLE + "InstallWelcomePanel.text,"
+                + BUNDLE + "Product.displayName),"
+                + BUNDLE + "AS.name))"));
             } else {
-                setText(resolveString(BUNDLE + "InstallWelcomePanel.error,"
-                + System.getProperty("java.version") + ","
-                + BUNDLE + "InstallWelcomePanel.jdkURL))"));
+                if (Util.isMacOSX()) {
+                    setText(resolveString(BUNDLE + "InstallWelcomePanel.error,"
+                    + System.getProperty("java.version") + ","
+                    + BUNDLE + "InstallWelcomePanel.jdkURLMacOSX))"));
+                } else {
+                    setText(resolveString(BUNDLE + "InstallWelcomePanel.error,"
+                    + System.getProperty("java.version") + ","
+                    + BUNDLE + "InstallWelcomePanel.jdkURL))"));
+                }
             }
         }
         return okay;
     }
     
-    public boolean entered(WizardBeanEvent event) {
-        if (!isJDKVersionSupported()) {
+    public boolean entered (WizardBeanEvent event) {
+        if (Util.isWindowsVista()) {
             if (event.getUserInterface() instanceof SwingWizardUI) {
                 SwingWizardUI ui = (SwingWizardUI) event.getUserInterface();
                 Component nextButton = ui.getNavigationController().next();
                 nextButton.setEnabled(false);
                 ui.getNavigationController().setCancelType(SwingWizardUI.NavigationController.CLOSE);
             }
+            return true;
+        } else if (!isJDKVersionSupported()) {
+            if (event.getUserInterface() instanceof SwingWizardUI) {
+                SwingWizardUI ui = (SwingWizardUI) event.getUserInterface();
+                Component nextButton = ui.getNavigationController().next();
+                nextButton.setEnabled(false);
+                ui.getNavigationController().setCancelType(SwingWizardUI.NavigationController.CLOSE);
+            }
+            return true;
+        } else {
+            return true;
         }
-        return true;
     }
     
     private boolean isJDKVersionSupported () {
