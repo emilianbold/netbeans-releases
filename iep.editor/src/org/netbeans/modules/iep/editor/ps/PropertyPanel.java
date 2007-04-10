@@ -607,7 +607,9 @@ public class PropertyPanel {
         JTextField tf = new JTextField();
         tf.setPreferredSize(new Dimension(140, 20));
         tf.setMinimumSize(new Dimension(50, 20));
-        tf.setDocument(JTextFieldFilter.newFloat());
+        //tf.setDocument(JTextFieldFilter.newFloat());
+        tf.setDocument(JTextFieldFilter.newFloatExp());
+        
         tf.setText(size.getStringValue());
         String[] values = new String[] {
             SharedConstants.TIME_UNIT_SECOND,

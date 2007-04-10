@@ -80,6 +80,13 @@ public class JTextFieldFilter extends PlainDocument {
         return new JTextFieldFilter(FLOAT_CHARS);
     }
     
+    public static final String FLOAT_CHARS_EXP = FLOAT_CHARS + "E" ;
+    //public static final JTextFieldFilter FLOAT = new JTextFieldFilter(FLOAT_CHARS);
+
+    public static JTextFieldFilter newFloatExp() {
+        return new JTextFieldFilter(FLOAT_CHARS_EXP);
+    }
+    
     /**
      *  The alphanumeric combination
      */
