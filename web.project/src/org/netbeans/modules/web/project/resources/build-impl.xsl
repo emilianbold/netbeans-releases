@@ -1564,7 +1564,7 @@ introduced by support for multiple source roots. -jglick
                 <webproject1:java classname="${{run.class}}"/>
             </target>
             
-            <target name="test-restbeans" if="do.rest" depends="run-deploy,-init-display-browser">
+            <target name="test-restbeans" depends="run-deploy,-init-display-browser">
                 <replace file="${{restbeans.test.file}}" token="${{base.url.token}}" value="${{client.url}}"/>
                 <nbbrowse url="${{restbeans.test.url}}"/>
             </target>
