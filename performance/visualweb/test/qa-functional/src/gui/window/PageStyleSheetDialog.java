@@ -22,6 +22,7 @@ package gui.window;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 
@@ -70,7 +71,7 @@ public class PageStyleSheetDialog extends org.netbeans.performance.test.utilitie
         log(":: open");
         property.openEditor();
         styleDialog = new JDialogOperator("Page1");
-        return styleDialog;
+        return null;
     }
     public void close() {
         log(":: close");
@@ -80,7 +81,11 @@ public class PageStyleSheetDialog extends org.netbeans.performance.test.utilitie
     protected void shutdown() {
         log(":: shutdown");
         pto.close();
-        new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();
+        try {
+            new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();
+        } catch (TimeoutExpiredException timeoutExpiredException) {
+            // do nothing 
+        }
         super.shutdown();
     }
 
