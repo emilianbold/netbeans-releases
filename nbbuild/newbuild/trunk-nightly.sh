@@ -121,7 +121,7 @@ ant -Dnb_all=$NB_ALL -f visualweb/ravebuild/build.xml > $VISUALWEB_BUILD_LOG 2>&
 ant -f mobility/build.xml build > $MOBILITY_BUILD_LOG 2>&1
 
 #UML component
-ant -f uml/build.xml build > $ULM_BUILD_LOG 2>&1
+ant -f uml/build.xml build > $UML_BUILD_LOG 2>&1
 
 #Ruby scripting
 ant -f scripting/ruby/build.xml build > $RUBY_BUILD_LOG 2>&1
