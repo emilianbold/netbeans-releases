@@ -124,7 +124,7 @@ public class PageFlowController {
                     FileObject folderObj = e.nextElement();
                     //                    String nameName = folderObj.getName();
                     if( isKnownFolder(folderObj) ) {
-//                        folderObj.addFileChangeListener(WeakListeners.create(FileChangeListener.class, fcl, folderObj));
+                        //                        folderObj.addFileChangeListener(WeakListeners.create(FileChangeListener.class, fcl, folderObj));
                         folderObj.addFileChangeListener(fcl);
                     }
                 }
@@ -467,17 +467,12 @@ public class PageFlowController {
                     PageFlowNode node = pageName2Node.get(fromPage);
                     assert node != null;
                     
-                    if( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG ){
-                        view.removeNodeWithEdges(node);
+                    if( node != null && !isPageInFacesConfig(fromPage)){
+                        if( !node.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
+                            view.removeNodeWithEdges(node);
+                            //                                node.destroy(); //only okay because it is an abstract node.
+                        }
                     }
-                    
-                    //                    The edges should have already been deleted.
-                    //                    else {
-                    //                        Collection<NavigationCaseNode> navCaseNodes = view.getNodeEdges(view);
-                    //                        for( NavigationCaseNode navCaseNode : navCaseNodes){
-                    //                            view.removeEdge(navCaseNode);
-                    //                        }
-                    //                    }
                 }
                 if( myNewRule != null ){
                     navRule2String.put(myNewRule, myNewRule.getFromViewId());
