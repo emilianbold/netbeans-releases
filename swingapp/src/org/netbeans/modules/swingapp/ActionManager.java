@@ -102,7 +102,13 @@ public class ActionManager {
         }
         return am;
     }
-
+    
+    private static void removeProject(Project p) {
+        ActionManager am = ams.get(p);
+        ams.remove(p);
+        reverseams.remove(am);
+    }
+    
     public static synchronized ActionManager getActionManager(Project project) {
         return getActionManager(project.getProjectDirectory());
     }
@@ -113,6 +119,28 @@ public class ActionManager {
     
     public static Set<Project> getKnownProjects() {
         return Collections.unmodifiableSet(ams.keySet());
+    }
+    
+    
+    /**
+     * Removes all closed projects by looking through the list of open projects
+     * and removing any extras. Returns true of there were any projects to be removed
+     * @param openProjects an array of currently open projects
+     * @return true if any projects were removed, else false
+     */
+    public static boolean clearClosedProjects(Project[] openProjects) {
+        Set<Project> known = getKnownProjects();
+        known = new HashSet(known);
+        for(Project p : openProjects) {
+            known.remove(p);
+        }
+        if(known.size() > 0) {
+            for(Project p : known) {
+                removeProject(p);
+            }
+            return true;
+        }
+        return false;
     }
     
     
@@ -183,11 +211,11 @@ public class ActionManager {
     public List<ProxyAction> getAllActions() {
         return actionList;
     }
-
+    
     public Collection<String> getAllClasses() {
         return actions.keySet();
     }
-
+    
     public List<ProxyAction> getActions(String defClass, boolean rescan) {
         if (rescan) {
             getActionsFromFile(getFileForClass(defClass), actions);
@@ -195,7 +223,7 @@ public class ActionManager {
         List<ProxyAction> list = actions.get(defClass);
         return list != null ? list : Collections.<ProxyAction>emptyList();
     }
-
+    
     public static List<ProxyAction> getActions(FileObject sourceFile, boolean rescan) {
         ActionManager am = getActionManager(sourceFile);
         if (rescan) {
@@ -289,7 +317,7 @@ public class ActionManager {
                 pos = docRoot.getElement(docRoot.getElementIndex(result.intValue()))
                         .getStartOffset();
             }
-
+            
             StringBuilder buf = new StringBuilder();
             String indent = "    "; // NOI18N
             buf.append(indent);
@@ -591,7 +619,7 @@ public class ActionManager {
         }
         return buf.toString();
     }
-
+    
     public void deleteAction(ProxyAction action) {
         String defClass = action.getClassname();
         FileObject file = getFileForClass(defClass);
@@ -618,7 +646,7 @@ public class ActionManager {
                 break;
             }
         }
-
+        
         // delete actions from the form
         // only works if the action is stored in the form it's used.
         // must search all forms in the future
@@ -643,7 +671,7 @@ public class ActionManager {
         //AppFrameworkSupport.deleteMethod(classDef,action);
         
     }
-
+    
     private static void deleteActionAnnotation(ProxyAction action, FileObject sourceFile) {
         try {
             int[] positions = getAnnotationPositions(action, sourceFile);
@@ -709,7 +737,7 @@ public class ActionManager {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
-
+    
     /** attach a RAD component to the specified action. This will
      * trigger an update to any listeners. */
     public void addRADComponent(ProxyAction act, RADComponent comp) {
@@ -721,7 +749,7 @@ public class ActionManager {
     }
     
     /** un-attach a RAD component from the specified action. This will trigger
- * an update to any listeners. */
+     * an update to any listeners. */
     void removeRADComponent(ProxyAction act, RADComponent radComponent) {
         if(boundComponents.containsKey(getKey(act))) {
             boundComponents.get(getKey(act)).remove(radComponent);
@@ -733,14 +761,14 @@ public class ActionManager {
     
     
     
-
+    
     private static Project getProject(final FileObject fileInProject) {
         Project project = FileOwnerQuery.getOwner(fileInProject);
         return project;
     }
     
     private static void scanFolderForActions(FileObject folder,
-                            Map<String, List<ProxyAction>> classNameToActions) {
+            Map<String, List<ProxyAction>> classNameToActions) {
         for (FileObject fo : folder.getChildren()) {
             if (fo.isFolder()) { // dive into subfolders after scanning files
                 scanFolderForActions(fo, classNameToActions);
@@ -749,9 +777,9 @@ public class ActionManager {
             }
         }
     }
-
+    
     private static void getActionsFromFile(FileObject fo,
-                            Map<String, List<ProxyAction>> classNameToActions) {
+            Map<String, List<ProxyAction>> classNameToActions) {
         try {
             List<ProxyAction> result = (List<ProxyAction>) new ClassTask(fo) {
                 Object run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
@@ -761,7 +789,7 @@ public class ActionManager {
                             application.Action ann = el.getAnnotation(application.Action.class);
                             if (ann != null) {
                                 ProxyAction action = new ProxyAction(classElement.getQualifiedName().toString(),
-                                                                     el.getSimpleName().toString());
+                                        el.getSimpleName().toString());
                                 initActionFromSource(action, el, ann);
                                 action.setResourceMap(ResourceUtils.getDesignResourceMap(sourceFile));
                                 action.loadFromResourceMap();
@@ -775,7 +803,7 @@ public class ActionManager {
                     return list;
                 }
             }.execute();
-
+            
             if (result != null && !result.isEmpty()) {
                 String className = result.get(0).getClassname();
                 classNameToActions.put(className, result);
@@ -784,7 +812,7 @@ public class ActionManager {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
-
+    
     static void initActionFromSource(final ProxyAction action, FileObject sourceFile) {
         try {
             new ActionMethodTask(sourceFile, action.getId()) {
@@ -800,26 +828,26 @@ public class ActionManager {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
-
+    
     static void initActionFromSource(ProxyAction action, ExecutableElement methodElement, application.Action annotation) {
         TypeMirror retType = methodElement.getReturnType();
         boolean returnsTask = (retType.getKind() != TypeKind.VOID);
         // [TODO we need a precise way to determine that a Task or its subclass is returned]
-//        boolean returnsTask = false;
-//        if (retType.getKind() == TypeKind.DECLARED) {
-//            Element retEl = ((DeclaredType)retType).asElement();
-//            if (retEl.getKind() == ElementKind.CLASS
-//                    && "application.Task".equals(((TypeElement)retEl).getQualifiedName())) { // NOI18N
-//                returnsTask = true; // [does not cover if Task implementation is used as return type]
-//            }
-//        }
+        //        boolean returnsTask = false;
+        //        if (retType.getKind() == TypeKind.DECLARED) {
+        //            Element retEl = ((DeclaredType)retType).asElement();
+        //            if (retEl.getKind() == ElementKind.CLASS
+        //                    && "application.Task".equals(((TypeElement)retEl).getQualifiedName())) { // NOI18N
+        //                returnsTask = true; // [does not cover if Task implementation is used as return type]
+        //            }
+        //        }
         action.setTaskEnabled(returnsTask);
         action.setEnabledName(annotation.enabledProperty());
         action.setSelectedName(annotation.selectedProperty());
         action.setBlockingType(ProxyAction.BlockingType.valueOf(annotation.block().toString()));
         // TBD 'name' attr
     }
-
+    
     private void deleteAction(final ProxyAction action, final FormModel mod) throws InvocationTargetException, IllegalArgumentException, IllegalAccessException {
         // remove the entry from the form file
         List<RADComponent> comps = mod.getComponentList();
@@ -833,12 +861,12 @@ public class ActionManager {
             }
         }
     }
-
+    
     FileObject getFileForClass(String className) {
         ClassPath cp = ClassPath.getClassPath(getRoot(), ClassPath.SOURCE);
         return cp.findResource(className.replace('.', '/') + ".java"); // NOI18N
     }
-
+    
     private FormModel getFormModel(final FileObject formfile) throws DataObjectNotFoundException {
         FormDataObject obj = (FormDataObject) FormDataObject.find(formfile);
         if(!obj.getFormEditor().isOpened()) {
@@ -909,33 +937,33 @@ public class ActionManager {
             System.out.println("action = " + a + " " + a.hashCode());//log
         }
     }
-
+    
     // -----
     // helper classes for java source analysis tasks
-
+    
     /**
      * Task for analysing structure of class of give source file.
      */
     abstract static class ClassTask implements CancellableTask<CompilationController> {
         FileObject sourceFile;
-
+        
         private Object result;
-
+        
         ClassTask(FileObject sourceFile) {
             this.sourceFile = sourceFile;
         }
-
+        
         Object execute() throws IOException {
             JavaSource.forFileObject(sourceFile).runUserActionTask(this, true);
             return result;
         }
-
+        
         abstract Object run(CompilationController controller, ClassTree classTree, TypeElement classElement);
-
+        
         // CancellableTask
         public void cancel() {
         }
-
+        
         // CancellableTask
         public void run(CompilationController controller) throws Exception {
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
@@ -952,18 +980,18 @@ public class ActionManager {
             }
         }
     }
-
+    
     /**
      * Task for analysing an action method of given source file and method name.
      */
     abstract static class ActionMethodTask extends ClassTask {
         String methodName;
-
+        
         ActionMethodTask(FileObject sourceFile, String methodName) {
             super(sourceFile);
             this.methodName = methodName;
         }
-
+        
         Object run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
             for (ExecutableElement el : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
                 if (el.getSimpleName().toString().equals(methodName)
@@ -974,7 +1002,7 @@ public class ActionManager {
             }
             return null;
         }
-
+        
         abstract Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement);
     }
 }

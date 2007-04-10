@@ -49,6 +49,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormEditorSupport;
@@ -121,6 +122,8 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 return comp;
             }
         });
+        
+        projectCombo.setModel(new DefaultComboBoxModel());
         
         classCombo.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -245,8 +248,10 @@ public class GlobalActionPanel extends javax.swing.JPanel {
     
     private void reloadProjectsCombo() {
         Set<Project> projects = ActionManager.getKnownProjects();
-        projectCombo.setModel(new DefaultComboBoxModel(projects.toArray()));
-        projectCombo.setSelectedItem(actionManager.getProject());
+        if(projects.size() > 0) {
+            projectCombo.setModel(new DefaultComboBoxModel(projects.toArray()));
+            projectCombo.setSelectedItem(actionManager.getProject());
+        }
     }
     
     
@@ -415,7 +420,9 @@ public class GlobalActionPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     private void projectComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectComboActionPerformed
-        setSelectedProject((Project)projectCombo.getSelectedItem());
+        if(projectCombo.getSelectedItem() != null) {
+            setSelectedProject((Project)projectCombo.getSelectedItem());
+        }
         // TODO add your handling code here:
     }//GEN-LAST:event_projectComboActionPerformed
     
@@ -729,6 +736,17 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         };
         
         TopComponent.getRegistry().addPropertyChangeListener(topcompsListener);
+        
+        // listen for when projects close
+        OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                Project[] open = OpenProjects.getDefault().getOpenProjects();
+                if(ActionManager.clearClosedProjects(open)) {
+                    reloadProjectsCombo();
+                }
+            }
+        });
+        
     }
     
     private void detachTopComponentsListener() {
