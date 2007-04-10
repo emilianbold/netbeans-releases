@@ -84,7 +84,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
 
 //    /** Maps <code>Document</code> to XHTML CSS engine. */
 //    private final Map<Document, XhtmlCssEngine> document2engine = new WeakHashMap<Document, XhtmlCssEngine>();
-    private static final String KEY_CSS_ENGINE = "xhtmlCssEngine"; // NOI18N
+    private static final String KEY_CSS_ENGINE = "vwpXhtmlCssEngine"; // NOI18N
 
 
     /** Creates a new instance of CssServiceImpl */
@@ -120,7 +120,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //        synchronized (document2engine) {
 //            document2engine.put(document, engine);
 //        }
-        document.setUserData(KEY_CSS_ENGINE, engine, new CssEngineDataHandler());
+        document.setUserData(KEY_CSS_ENGINE, engine, CssEngineDataHandler.getDefault());
     }
 
     /*private*/ static CssUserAgentInfo getUserAgentInfo() {
@@ -192,7 +192,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //            document2engine.put(document, engine);
 //        }
         XhtmlCssEngine engine = (XhtmlCssEngine)originalDocument.getUserData(KEY_CSS_ENGINE);
-        document.setUserData(KEY_CSS_ENGINE, engine, new CssEngineDataHandler());
+        document.setUserData(KEY_CSS_ENGINE, engine, CssEngineDataHandler.getDefault());
     }
 
     public Collection<String> getCssStyleClassesForDocument(Document document) {
@@ -1075,6 +1075,12 @@ public final class CssEngineServiceImpl implements CssEngineService {
     
     
     private static class CssEngineDataHandler implements UserDataHandler {
+        private static final CssEngineDataHandler INSTANCE = new CssEngineDataHandler();
+        
+        public static CssEngineDataHandler getDefault() {
+            return INSTANCE;
+        }
+        
         public void handle(short operation, String key, Object data, Node src, Node dst) {
             // No op.
         }

@@ -143,7 +143,7 @@ public class WebForm implements Designer {
     
 //    /** Maps elements to css boxes. */
 //    private final Map<Element, CssBox> element2cssBox = new WeakHashMap<Element, CssBox>();
-    private static final String KEY_CSS_BOX = "userDataVwpCssBox"; // NOI18N
+    private static final String KEY_CSS_BOX = "vwpCssBox"; // NOI18N
     
     // XXX Suspicious listener, it should be removed.
     private JspDataObjectListener jspDataObjectListener;
@@ -566,7 +566,7 @@ public class WebForm implements Designer {
 //        synchronized (element2cssBox) {
 //            element2cssBox.put(element, box);
 //        }
-        element.setUserData(KEY_CSS_BOX, box, new CssDataHandler());
+        element.setUserData(KEY_CSS_BOX, box, CssBoxDataHandler.getDefault());
     }
     
     public CssBox getCssBoxForElement(Element element) {
@@ -3110,9 +3110,15 @@ public class WebForm implements Designer {
     }
     
     
-    private static class CssDataHandler implements UserDataHandler {
+    private static class CssBoxDataHandler implements UserDataHandler {
+        private static final CssBoxDataHandler INSTANCE = new CssBoxDataHandler();
+        
+        public static CssBoxDataHandler getDefault() {
+            return INSTANCE;
+        }
+        
         public void handle(short operation, String key, Object data, Node src, Node dst) {
             // No op.
         }
-    } // End of CssDataHandler.
+    } // End of CssBoxDataHandler.
 }
