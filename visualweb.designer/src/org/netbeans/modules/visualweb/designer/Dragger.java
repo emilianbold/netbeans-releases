@@ -361,7 +361,7 @@ public class Dragger extends Interaction implements KeyListener {
 //                                pos, prevX, prevY, action == DRAG_FREE);
                         webform.getDomDocument().moveComponents(
                                 webform,  boxes.toArray(new CssBox[boxes.size()]), points.toArray(new Point[points.size()]),
-                                pos, prevX, prevY, action == DRAG_FREE);
+                                pos, prevX, prevY, !(action == DRAG_FREE));
                     } // else: didn't really move ...
                 }
 
