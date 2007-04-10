@@ -174,13 +174,13 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		else {
 			gameDesign.getMainView().addEditorManagerListener(gameEditorView);
 			view = gameDesign.getMainView().getRootComponent();
-			designDocument.getTransactionManager().writeAccess(new Runnable() {
+			designDocument.getTransactionManager().readAccess(new Runnable() {
 				public void run() {
 					if (true) {
 						//add all components in the document
 						DesignComponent root = designDocument.getRootComponent();
 						GameController.this.modelComponent(root);
-
+						GameController.this.registerAllListeners();
 						gameDesign.addGlobalRepositoryListener(GameController.this);
 						gameDesign.getMainView().requestEditing(new Editable() {
                             public JComponent getEditor() {
@@ -205,7 +205,6 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		this.panel.add(view);
 		this.panel.validate();
 	}
-	
 	
 	private void removeAllListeners() {
 		for (Object o : designIdMap.keySet()) {
@@ -242,6 +241,40 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 
 	}
 	
+	private void registerAllListeners() {
+		for (Object o : designIdMap.keySet()) {
+			if (o instanceof Scene) {
+				Scene s = (Scene) o;
+				s.addSceneListener(this);
+				s.addPropertyChangeListener(this);
+			}
+			else if (o instanceof TiledLayer) {
+				TiledLayer tl = (TiledLayer) o;
+				tl.addTiledLayerListener(this);
+				tl.addPropertyChangeListener(this);
+			}
+			else if (o instanceof Sprite) {
+				Sprite s = (Sprite) o;
+				s.addSequenceContainerListener(this);
+				s.addPropertyChangeListener(this);
+			}
+			else if (o instanceof Sequence) {
+				Sequence s = (Sequence) o;
+				s.addSequenceListener(this);
+				s.addPropertyChangeListener(this);
+			}
+			else if (o instanceof AnimatedTile) {
+				AnimatedTile a = (AnimatedTile) o;
+				a.addSequenceContainerListener(this);
+				a.addPropertyChangeListener(this);
+			}
+			else if (o instanceof ImageResource) {
+				ImageResource i = (ImageResource) o;
+				i.addImageResourceListener(this);
+			}
+		}
+	}
+	
 	
 	private void modelComponent(DesignComponent designComponent) {
 		//this is sometimes null when i close and open the same project :(
@@ -259,37 +292,26 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		
 		if (typeId.equals(SceneCD.TYPEID)) {
 			Scene scene = this.constructScene(designComponent);
-			scene.addSceneListener(this);
-			scene.addPropertyChangeListener(this);
 			designIdMap.put(scene, designComponent);
 		}
 		else if (typeId.equals(TiledLayerCD.TYPEID)) {
 			TiledLayer layer = this.constructTiledLayer(designComponent);
-			layer.addTiledLayerListener(this);
-			layer.addPropertyChangeListener(this);
 			designIdMap.put(layer, designComponent);
 		}
 		else if (typeId.equals(SpriteCD.TYPEID)) {
 			Sprite sprite = this.constructSprite(designComponent);
-			sprite.addSequenceContainerListener(this);
-			sprite.addPropertyChangeListener(this);
 			designIdMap.put(sprite, designComponent);
 		}
 		else if (typeId.equals(SequenceCD.TYPEID)) {
 			Sequence sequence = this.constructSequence(designComponent);
-			sequence.addSequenceListener(this);
-			sequence.addPropertyChangeListener(this);
 			designIdMap.put(sequence, designComponent);
 		}
 		else if (typeId.equals(ImageResourceCD.TYPEID)) {
 			ImageResource imageResource = this.constructImageResource(designComponent);
-			imageResource.addImageResourceListener(this);
 			designIdMap.put(imageResource, designComponent);
 		}
 		else if (typeId.equals(AnimatedTileCD.TYPEID)) {
 			AnimatedTile animatedTile = this.constructAnimatedTile(designComponent);
-			animatedTile.addSequenceContainerListener(this);
-			animatedTile.addPropertyChangeListener(this);
 			designIdMap.put(animatedTile, designComponent);
 		}
 	}
@@ -374,7 +396,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		String name = (String) sequenceDC.readProperty(SequenceCD.PROPERTY_NAME).getPrimitiveValue();
 		DesignComponent imgResDC = sequenceDC.readProperty(SequenceCD.PROPERTY_IMAGE_RESOURCE).getComponent();
 		ImageResource imgRes = this.constructImageResource(imgResDC);
-		
+				
 		//if GlobalRepository already has a sequence of that name it must have been already constructed
 		Sequence sequence = imgRes.getSequenceByName(name);
 		if (sequence != null) {
@@ -393,6 +415,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		for (int i = 0; i < frames.length; i++) {
 			sequence.setFrame((StaticTile) imgRes.getTile(frames[i], frameWidth, frameHeight, zeroBasedIndex), i);
 		}
+		
 		return sequence;
 	}
 	
