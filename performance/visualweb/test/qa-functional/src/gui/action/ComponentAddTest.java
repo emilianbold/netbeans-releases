@@ -21,9 +21,12 @@ package gui.action;
 
 import gui.window.PaletteComponentOperator;
 import gui.window.WebFormDesignerOperator;
+import org.netbeans.jellytools.PaletteOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.PaletteViewAction;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -41,13 +44,22 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
     
     /**
      * Creates a new instance of ComponentAddTest
+     * 
+     * @param testName 
+     * 
      */
     public ComponentAddTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=4000;
-    }
-    
+    }     
+    /**
+     * Creates a new instance of ComponentAddTest
+     * 
+     * @param testName 
+     * @param performanceDataName
+     * 
+     */    
     public ComponentAddTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
@@ -92,7 +104,7 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
             fail("Cannot find and select project root node");
         }
         
-        new PaletteViewAction().perform();
+        PaletteOperator.invoke();
     }
     
     public void prepare() {
@@ -120,7 +132,13 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
     }
     
     protected void shutdown() {
-        log("::shutdown");
+        log("::shutdown");        
+        try {
+            new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();            
+            new PropertySheetOperator("Page1").close();            
+        } catch (TimeoutExpiredException timeoutExpiredException) {
+            //do nothing...can be not opened properties and help tabs
+        }
     }
     
     public static void main(java.lang.String[] args) {
