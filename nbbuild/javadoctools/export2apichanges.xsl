@@ -40,6 +40,7 @@ Microsystems, Inc. All Rights Reserved.
 
               <link REL="icon" href="http://www.netbeans.org/favicon.ico" type="image/ico" />
               <link REL="shortcut icon" href="http://www.netbeans.org/favicon.ico" />
+              <link type="application/atom+xml" rel="alternate" href="apichanges.atom"/>
 
             </head>
 

@@ -382,6 +382,17 @@ Microsystems, Inc. All Rights Reserved.
         <param name="changes-since-month" expression="${previous.release.month}"/>
         <param name="include-introduction" expression="true" />
       </style>
+
+      <tstamp>
+        <format property="atom-date" pattern="yyyy-MM-dd'T'HH:mm:ss'Z'" timezone="UTC"/>
+      </tstamp>
+      <style 
+        in="${netbeans.javadoc.dir}/apichanges.xml" 
+        out="${netbeans.javadoc.dir}/apichanges.atom" 
+        style="javadoctools/export2apichanges-atom.xsl"
+      >
+        <param name="date" expression="${atom-date}"/>
+      </style>
       
     <copy file="javadoctools/netbeans.css" tofile="${netbeans.javadoc.dir}/netbeans.css" />
     <condition property="javadoc.style.sheet.exists" >
