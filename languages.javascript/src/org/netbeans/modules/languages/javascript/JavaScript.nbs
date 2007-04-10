@@ -291,7 +291,7 @@ RegularExpression = <js_regularExpression>;
 
 AST {
     removeSimple:"!FunctionBody,Statement";
-    process:org.netbeans.modules.languages.javascript.Semantic.process;
+    #process:org.netbeans.modules.languages.javascript.Semantic.process;
 }
 
 ########### colors #############################################################
