@@ -73,6 +73,7 @@ import org.netbeans.modules.visualweb.insync.ParserAnnotation;
 import org.netbeans.modules.visualweb.insync.SourceUnit;
 import org.netbeans.modules.visualweb.insync.UndoManager;
 import org.netbeans.modules.visualweb.insync.markup.JspxSerializer;
+import org.w3c.dom.UserDataHandler;
 
 /**
  *
@@ -1271,20 +1272,38 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
     }
     
     
-    /** Map <code>Element</code> to <code>MarkupDesignBean</code>. */
-    private static final Map element2markupDesignBean = new WeakHashMap(200);
+//    /** Map <code>Element</code> to <code>MarkupDesignBean</code>. */
+//    private static final Map element2markupDesignBean = new WeakHashMap(200);
+    private static final String KEY_MARKUP_DESIGN_BEAN = "markupDesignBean"; // NOI18N
     
     public static void setMarkupDesignBeanForElement(Element element, MarkupDesignBean markupDesignBean) {
-        synchronized (element2markupDesignBean) {
-            element2markupDesignBean.put(element, markupDesignBean);
+//        synchronized (element2markupDesignBean) {
+//            element2markupDesignBean.put(element, markupDesignBean);
+//        }
+        if (element == null) {
+            // XXX Log problem?
+            return;
         }
+        element.setUserData(KEY_MARKUP_DESIGN_BEAN, markupDesignBean, new MarkupDesignBeanDataHandler());
     }
     
     public static MarkupDesignBean getMarkupDesignBeanForElement(Element element) {
-        synchronized (element2markupDesignBean) {
-            return (MarkupDesignBean)element2markupDesignBean.get(element);
+//        synchronized (element2markupDesignBean) {
+//            return (MarkupDesignBean)element2markupDesignBean.get(element);
+//        }
+        if (element == null) {
+            // XXX Log problem?
+            return null;
         }
+        return (MarkupDesignBean)element.getUserData(KEY_MARKUP_DESIGN_BEAN);
     }
+    
+    private static class MarkupDesignBeanDataHandler implements UserDataHandler {
+        public void handle(short operation, String key, Object data, Node src, Node dst) {
+            // No op.
+            // TODO Provide the copying (after remove the copying in the AbstractRaveElement).
+        }
+    } // End of MarkupDesignBeanUserData.
 
     //------------------------------------------------------------------------ Change Event Handling
 
