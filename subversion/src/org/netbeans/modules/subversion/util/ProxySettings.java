@@ -117,7 +117,7 @@ public class ProxySettings {
             return false;
         } 
         ProxySettings ps = (ProxySettings) obj;        
-        return httpHost.equals(httpHost) &&
+        return ps.httpHost.equals(httpHost) &&
                ps.httpPort.equals(httpPort) &&
                ps.httpsHost.equals(httpsHost) &&
                ps.httpsPort.equals(httpsPort) &&
