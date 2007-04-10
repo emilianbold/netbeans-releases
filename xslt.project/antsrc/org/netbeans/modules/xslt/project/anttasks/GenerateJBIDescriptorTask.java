@@ -53,6 +53,19 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.xslt.project.anttasks.PackageCatalogArtifacts;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xslt.core.transformmap.api.Invokes;
+import org.netbeans.modules.xslt.core.transformmap.api.Operation;
+import org.netbeans.modules.xslt.core.transformmap.api.PartnerLinkTypeReference;
+import org.netbeans.modules.xslt.core.transformmap.api.Service;
+import org.netbeans.modules.xslt.core.transformmap.api.TMapModel;
+import org.netbeans.modules.xslt.core.transformmap.api.WSDLReference;
+import org.netbeans.modules.xslt.core.transformmap.impl.TMapComponents;
+import org.netbeans.modules.xslt.project.CommandlineXsltProjectXmlCatalogProvider;
 
 /**
  * Ant task wrapper which invokes the JBI Generation task
@@ -204,36 +217,181 @@ public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task {
      * Invoke the task that generates the JBI.xml
      */
     public void execute() throws BuildException { 
-        File xsltMapFile = getXsltMapFile();
-        
-        Document document = null;
-        if (xsltMapFile != null) {
-            document = XmlUtil.getDocument(xsltMapFile);
-        }
-        
-        if (document != null) {
-            NodeList inputNodeList = document.getElementsByTagName(TransformationDescType.INPUT.getTagName());
-            if (inputNodeList != null && inputNodeList.getLength() > 0) {
-                populateProviderServices(xsltMapFile.getParentFile(), inputNodeList);
-            }
-            NodeList outputNodeList = document.getElementsByTagName(TransformationDescType.OUTPUT.getTagName());
-            if (outputNodeList != null && outputNodeList.getLength() > 0) {
-                populateConsumerServices(xsltMapFile.getParentFile(), outputNodeList);
-            }
-        }
-        
+
+        process();
+//        readAndPackageFromProjectCatalog(new File(getSourceDirectory()));
         try {
             generateJBIDescriptor();
         } catch (IOException ex) {
             throw new BuildException(ex);
         }
     }
+    // TODO m | r
+    private void readAndPackageFromProjectCatalog(File sourceDir) {
+        String projectCatalogLocation = new File(CommandlineXsltProjectXmlCatalogProvider.getInstance().getProjectWideCatalogForWizard()).getAbsolutePath();
+//        CommandlineXsltProjectXmlCatalogProvider.getInstance().setSourceDirectory(sourceDir.getPath());
+        PackageCatalogArtifacts pa = new PackageCatalogArtifacts();
+        pa.doCopy(projectCatalogLocation, new File(this.mBuildDirectory) );
+        
+    }
+    
+    private void process() {
+        File transformmapFile = getTransformmapFile();
+
+        TMapModel tMapModel = null;
+        try {
+            tMapModel = TransformmapCatalogModel.getDefault().getTMapModel(transformmapFile);
+        }catch (Exception ex) {
+            this.logger.log(java.util.logging.Level.SEVERE, "Error while creating Tramsformap Model ", ex);
+            throw new RuntimeException("Error while creating Transformmap Model ",ex);
+        }
+        try {
+            populateProviderConsumer(tMapModel);
+        }catch (Exception ex) {
+            logger.log(Level.SEVERE, "Error encountered while processing transformmap file - "+transformmapFile.getAbsolutePath());
+            throw new RuntimeException(ex);
+        }
+////
+////        
+////        
+////        
+////        Document document = null;
+////        if (transformmapFile != null) {
+////            document = XmlUtil.getDocument(transformmapFile);
+////        }
+////        
+////        if (document != null) {
+////            NodeList operationNodeList = document.getElementsByTagName(TMapComponents.OPERATION.getTagName());
+////            System.out.println("operationNodeList: "+operationNodeList);
+////            
+////            if (operationNodeList != null && operationNodeList.getLength() > 0) {
+////                System.out.println("inside operationNodeList");
+////                populateProviderServices(transformmapFile.getParentFile(), operationNodeList);
+////            }
+////            
+////            NodeList invokesNodeList = document.getElementsByTagName(TMapComponents.INVOKES.getTagName());
+////            if (invokesNodeList != null && invokesNodeList.getLength() > 0) {
+////                populateConsumerServices(transformmapFile.getParentFile(), invokesNodeList);
+////            }
+////        }
+    }
+    
+    private ServiceEntry createServiceEntry(PartnerLinkTypeReference pltRefComponent) 
+    {
+        if (pltRefComponent == null) {
+            return null;
+        }
+        
+        WSDLReference<PartnerLinkType> pltRef = pltRefComponent.getPartnerLinkType();
+        WSDLReference<Role> roleRef = pltRefComponent.getRole();
+
+        if (pltRef == null || roleRef == null) {
+            return null;
+        }
+        
+        ServiceEntry entry = null;
+        
+        // TODO m
+        QName pltQname = pltRef.getQName();
+        if (pltQname == null) {
+            return null;
+        }
+        
+        String pltNS = pltQname.getNamespaceURI();
+        String pltName = pltQname.getLocalPart();
+        String pltNSPrefix = populateNamespace(pltNS);
+        PartnerLinkType plt = pltRef.get();
+        if (plt == null) {
+            logger.log(Level.SEVERE, "Problem encountered while processing partnerLinkType of   \""+pltName+"\"");
+            throw new RuntimeException("PartnerLink Type is Null!");
+        }
+        
+        String portName = null;
+        String portNameNS = null;
+        String portNameNSPrefix = null;
+        QName portNameQname = null;
+        
+        String roleName = null;
+        
+        Role role = roleRef == null ? null : roleRef.get();
+        if (role == null) {
+            return null;
+        }
+        
+        roleName = role.getName();
+        NamedComponentReference<PortType> portTypeRef = role.getPortType();
+        
+        if (portTypeRef != null ) {
+            PortType pt = portTypeRef.get();
+            if (pt != null) {
+                portName = pt.getName();
+                portNameNS = pt.getModel().getDefinitions().getTargetNamespace();
+                portNameNSPrefix = populateNamespace(portNameNS);
+                portNameQname = portTypeRef.getQName();
+            }
+        }
+        
+        if (portName == null) {
+            logger.log(Level.SEVERE, "Problem encountered while processing portType   PartnerLink =  \""+pltName+"\"");
+            throw new RuntimeException("Problem encountered while processing portType !");
+        }
+        
+        entry = new ServiceEntry(
+                pltName,
+                portName,
+                pltNS,
+                portNameNS,
+                roleName,
+                pltNSPrefix,
+                portNameNSPrefix,
+                pltQname,
+                portNameQname
+                );
+        
+        
+        return entry;
+    }
+    
+    /**
+     * Populate providers/consumers from transformmap model
+     */
+    private void populateProviderConsumer(TMapModel tMapModel)  {
+
+        ServiceEntry provider = null;
+        ServiceEntry consumer = null;
+        
+        List<Service> services = tMapModel.getTransformMap().getServices();
+        if (services == null) {
+            return;
+        }
+        
+        for (Service service : services) {
+
+            provider = createServiceEntry(service);
+            if (provider != null && !mProviders.contains(provider)) {
+                mProviders.add(provider);
+            }
+
+            List<Operation> operations = service.getOperations();
+            for (Operation operation : operations) {
+                Invokes invokes = operation.getInvokes();
+                if (invokes != null) {
+                    consumer = createServiceEntry(invokes);
+                    if (consumer != null && !mConsumers.contains(consumer)) {
+                        mConsumers.add(consumer);
+                    }                    
+                }
+            }
+        }
+    }
     
     private void generateJBIDescriptor() throws IOException {
+
         FileOutputStream fos = null;
         try
         {
             StringBuffer sb = new StringBuffer();
+            sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n");
             sb.append("<jbi version=\"1.0\"\n");
             sb.append("        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
             sb.append("        xmlns=\"http://java.sun.com/xml/ns/jbi\"\n");
@@ -264,7 +422,7 @@ public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task {
 
                 }
             }
-            
+
             if (mConsumers != null) {
                 for (int j = 0; j < mConsumers.size(); j++) {
                     ServiceEntry tmpService = mConsumers.get(j); 
@@ -287,8 +445,7 @@ public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task {
         }
     }
     
-    
-    private File getXsltMapFile() {
+    private File getTransformmapFile() {
         String srcDir = getSourceDirectory();
         if (srcDir == null || "".equals(srcDir)) {
             throw new BuildException("source directory shouldn't be null or empty");
@@ -328,61 +485,6 @@ public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task {
         return namespacePrefix;
     }
     
-    private void populateServices(File projectSourceRoot, NodeList nodeList, List<ServiceEntry> services) {
-
-        if (services == null) {
-            return;
-        }
-        
-        ServiceEntry service = null;
-        
-        assert nodeList != null;
-        for (int i =0; i< nodeList.getLength(); i++ ) {
-            Node tmpNode = nodeList.item(i);
-            NamedNodeMap namedNodeMap = tmpNode.getAttributes();
-
-            String partnerLink = XmlUtil.getAttrValue(namedNodeMap, XsltMapConst.PARTNER_LINK);
-            QName partnerLinkQname = getQName(partnerLink);
-            String partnerLinkNsURI = partnerLinkQname.getNamespaceURI();
-            String partnerLinkNSPrefix = populateNamespace(partnerLinkNsURI);
-
-            
-            String portType = XmlUtil.getAttrValue(namedNodeMap, XsltMapConst.PORT_TYPE);
-            QName portTypeQname = getQName(portType);
-            String portTypeNsURI = portTypeQname.getNamespaceURI();
-            String portTypeNSPrefix = populateNamespace(portTypeNsURI);
-
-            String roleName = XmlUtil.getAttrValue(namedNodeMap, XsltMapConst.ROLE_NAME);
-            
-            services.add(new ServiceEntry(
-                    partnerLink, 
-                    portType, 
-                    partnerLinkNsURI, 
-                    portTypeNsURI, 
-                    roleName, 
-                    partnerLinkNSPrefix, 
-                    portTypeNSPrefix, 
-                    partnerLinkQname, 
-                    portTypeQname
-                    
-                    ));
-        }
-    }
-
-    private void populateProviderServices(File projectSourceRoot, NodeList nodeList) {
-        if (mProviders == null) {
-            mProviders = new ArrayList<ServiceEntry>();
-        }
-        populateServices(projectSourceRoot, nodeList, mProviders);
-    }
-    
-    private void populateConsumerServices(File projectSourceRoot, NodeList nodeList) {
-        if (mConsumers == null) {
-            mConsumers = new ArrayList<ServiceEntry>();
-        }
-        populateServices(projectSourceRoot, nodeList, mConsumers);
-    }
-
     private static String getColonedQName(QName qn, Map nsTable)
     {
         String ns = qn.getNamespaceURI();

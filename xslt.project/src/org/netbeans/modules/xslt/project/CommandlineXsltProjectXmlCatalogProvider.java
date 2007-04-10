@@ -60,13 +60,16 @@ public class CommandlineXsltProjectXmlCatalogProvider {
      * @param sourceDir Source directory
      */
     public void setSourceDirectory(String sourceDir) {
+        System.out.println("commanddline: sourceDir: "+sourceDir);
         mSourceDir = sourceDir;
         String projectDir=  mSourceDir +File.separator+ ".."+File.separator;
         String catalogXMLDir= projectDir+org.netbeans.modules.xml.retriever.XMLCatalogProvider.TYPE_RETRIEVED;
         mCatalogXMLPath =(catalogXMLDir+File.separator+"catalog.xml").replace('\\','/');;
         mRetreiverPath =(catalogXMLDir+File.separator+"src").replace('\\','/');
+        System.out.println("CommandLIne#projectDir: "+projectDir);
         
         mCatlogXMLLocationForWizardURI = new File((projectDir + File.separator+"catalog.xml").replace('\\','/')).toURI();
+        System.out.println("commanddline: mCatlogXMLLocationForWizardURI: "+mCatlogXMLLocationForWizardURI);
         mCatalogXMLURI = new File(mCatalogXMLPath).toURI();
     }
     
@@ -95,6 +98,7 @@ public class CommandlineXsltProjectXmlCatalogProvider {
     }   
     
     public URI getProjectWideCatalogForWizard(){
+        System.out.println("getProjectWideCatalogForWizard: "+mCatlogXMLLocationForWizardURI);
         return mCatlogXMLLocationForWizardURI;
     }        
 
