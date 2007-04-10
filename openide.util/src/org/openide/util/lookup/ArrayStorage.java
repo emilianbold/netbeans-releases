@@ -121,6 +121,9 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
     */
     public void remove(AbstractLookup.Pair item, Transaction changed) {
         Object[] arr = changed.current;
+        if (arr == null) {
+            return;
+        }
 
         int found = -1;
 
@@ -291,7 +294,7 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
         }
 
         this.results = it.first();
-        this.content = changed.newContent();
+        this.content = changed.newContent(this.content);
     }
 
     private static int findMatching(Lookup.Template t, Object[] arr, int from) {
@@ -345,7 +348,7 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
 
             if (ensure == -1) {
                 // remove => it is ok
-                this.current = (Object[]) currentContent;
+                this.current = currentContent instanceof Integer ? null : (Object[]) currentContent;
                 this.arr = null;
 
                 return;
@@ -415,8 +418,16 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
             return p.getIndex();
         }
 
-        public Object newContent() {
-            return (arr == null) ? current : arr;
+        public Object newContent(Object prev) {
+            if (arr == null) {
+                if (current == null) {
+                    return prev;
+                } else {
+                    return current;
+                }
+            } else {
+                return arr;
+            }
         }
     }
      // end of Transaction

@@ -1478,6 +1478,10 @@ public class AbstractLookupBaseHid extends NbTestCase {
         
     }
 
+    public void testTasklistsCase() throws Exception {
+        ic.remove(new Object());
+    }
+    
     
 
     public void testMultipleListeners() {

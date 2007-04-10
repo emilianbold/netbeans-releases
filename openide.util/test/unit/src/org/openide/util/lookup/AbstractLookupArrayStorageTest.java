@@ -21,11 +21,9 @@ package org.openide.util.lookup;
 
 import org.openide.util.*;
 
-import java.lang.ref.WeakReference;
 import java.util.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
-import java.io.Serializable;
 
 public class AbstractLookupArrayStorageTest extends AbstractLookupBaseHid {
     public AbstractLookupArrayStorageTest(java.lang.String testName) {
