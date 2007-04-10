@@ -351,7 +351,7 @@ Microsystems, Inc. All Rights Reserved.
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/beansbinding-0.5.jar</runtime-relative-path>
-                <binary-origin>lib/beansbinding-0.5.jar</binary-origin>
+                <binary-origin>external/beansbinding-0.5.jar</binary-origin>
             </class-path-extension>
             <extra-compilation-unit>
                 <package-root>release/sources</package-root>

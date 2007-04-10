@@ -8,13 +8,13 @@
     <target name="release" depends="init">
         <mkdir dir="${cluster}/modules/ext"/>
         <copy todir="${cluster}/modules/ext">
-            <fileset dir="lib">
+            <fileset dir="external">
                 <include name="*.jar"/>
             </fileset>
         </copy>
         <mkdir dir="${cluster}/docs"/>
         <copy todir="${cluster}/docs">
-            <fileset dir="lib">
+            <fileset dir="external">
                 <include name="*doc.zip"/>
             </fileset>
         </copy>
