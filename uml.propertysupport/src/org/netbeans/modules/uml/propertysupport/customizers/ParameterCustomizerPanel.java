@@ -24,8 +24,10 @@
  */
 
 package org.netbeans.modules.uml.propertysupport.customizers;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Dialog;
+import java.util.EventObject;
 import javax.swing.JButton;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -35,6 +37,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.DefaultTableModel;
 
@@ -44,6 +47,15 @@ import org.netbeans.modules.uml.core.support.umlutils.IPropertyDefinition;
 import org.netbeans.modules.uml.propertysupport.DefinitionPropertyBuilder;
 import org.netbeans.modules.uml.propertysupport.DefinitionPropertyBuilder.ValidValues;
 import java.awt.Color;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import org.netbeans.modules.uml.core.configstringframework.ConfigStringHelper;
+import org.netbeans.modules.uml.core.configstringframework.ConfigStringTranslator;
+import org.netbeans.modules.uml.core.configstringframework.IConfigStringTranslator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -103,6 +115,10 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         Vector tableHeaders = new Vector(2);
         tableHeaders.add(bundle.getString("LOWER"));
         tableHeaders.add(bundle.getString("UPPER"));
+        
+        IConfigStringTranslator translator = ConfigStringHelper.instance().getTranslator();
+        String colName = translator.translateWord("PSK_COLLECTION_OVERRIDE_DATA_TYPE");
+        tableHeaders.add(colName);
         TableModel tableModel = new  MultiplicityTableModel(tableHeaders);
         multiplicityTable = new JTable(tableModel);
         tableScrollPane.setViewportView(multiplicityTable);
@@ -712,7 +728,12 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
             multiRanges = paramProp.getMultiRanges();
             if (multiRanges != null) {
                 tableModel.setDataVector(multiRanges);
-                //multiplicityTable.setModel(tableModel);
+                
+                // The collection type column needs a custom column render and
+                // editor.
+                TableColumn column = multiplicityTable.getColumnModel().getColumn(2);
+                column.setCellEditor(new CollectionTypeEditor());
+                column.setCellRenderer(new CollectionTypeRender());
             }
         }
     }
@@ -970,9 +991,10 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
             Vector aRow = null;
             if (rowsData != null ) {
                 for (ElementData elem : rowsData) {
-                    aRow = new Vector(2);
+                    aRow = new Vector(3);
                     aRow.add(elem.getLower());
                     aRow.add(elem.getUpper());
+                    aRow.add(elem);
                     rows.add(aRow);
                 }
                 super.setDataVector(rows, colNames);
@@ -1016,7 +1038,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
             if (newElement != null) {
                 if (rowsData != null) {
                     rowsData.add(newElement);
-                    super.addRow(new Vector());
+                    super.addRow(new Object[] {"", "", newElement});
                 }
             }
         }
@@ -1050,6 +1072,61 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
                     }
                 }
             }
+        }
+    }
+    
+    /**
+     * The table cell editor used to render the collection type property.
+     */
+    public class CollectionTypeEditor extends DefaultCellEditor
+    {
+        public CollectionTypeEditor()
+        {
+            super(new JComboBox());
+        }
+        
+        public Component getTableCellEditorComponent(JTable table,
+                                                     Object value,
+                                                     boolean isSelected,
+                                                     int row,
+                                                     int column)
+        {
+            JComboBox retVal = (JComboBox) super.getTableCellEditorComponent(table, 
+                                                                             value,
+                                                                             isSelected, 
+                                                                             row,
+                                                                             column);
+            
+            if(value instanceof ElementData)
+            {
+                ElementData data = (ElementData)value;
+                for(String curType : data.getValidCollectionTypes())
+                {
+                    retVal.addItem(curType);
+                }
+                retVal.setSelectedItem(data.getCollectionType());
+            }
+            
+            return retVal;
+        }
+    }
+    
+    /**
+     * The cell render used to correctly render the collection type information.
+     */
+    public class CollectionTypeRender extends DefaultTableCellRenderer
+    {
+        protected void setValue(Object value)
+        {
+            Object realValue = value;
+            
+            if(value instanceof ElementData)
+            {
+                ElementData data = (ElementData)value;
+                realValue = data.getCollectionType();
+            }
+            
+            super.setValue(realValue);
         }
     }
     

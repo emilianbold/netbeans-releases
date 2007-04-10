@@ -4011,6 +4011,8 @@ public class UMLParsingIntegrator
                                       boolean createUnknownType)
     {
         INamedElement foundType = null;
+        boolean innerClass = false;
+        
         try
         {
             if (typeName != null)
@@ -4028,14 +4030,23 @@ public class UMLParsingIntegrator
                 }
                 else
                 {
-                    boolean fullyQualified = typeName.indexOf("::") >= 0;
-                    if (fullyQualified == true)
+                    
+                    foundType = findInnerClass(clazz, typeName);
+                    if(foundType == null)
                     {
-                        foundType = findQualifiedType(space, typeName, clazz);
+                        boolean fullyQualified = typeName.indexOf("::") >= 0;
+                        if (fullyQualified == true)
+                        {
+                            foundType = findQualifiedType(space, typeName, clazz);
+                        }
+                        else
+                        {
+                            foundType = fillElementIfFound(typeName, clazz, space);
+                        }
                     }
                     else
                     {
-                        foundType = fillElementIfFound(typeName, clazz, space);
+                        innerClass = true;
                     }
                     
                     if (foundType == null)
@@ -4070,7 +4081,7 @@ public class UMLParsingIntegrator
                     
                 }
                 
-                if (foundType != null)
+                if ((foundType != null) && (innerClass = false))
                 {
                     // Now that the type is found, be sure to place it on our
                     // list of known types so that we don't have to create
@@ -4105,6 +4116,33 @@ public class UMLParsingIntegrator
         }
         
         return foundType;
+    }
+    
+    protected INamedElement findInnerClass(Node clazz, String typeName)
+    {
+        INamedElement retVal = null;
+        
+        // Before adding the type as a unresolved type.  Check 
+        // the type is an inner class.
+
+        List < Node > nestedClasses = clazz.selectNodes("UML:Element.ownedElement/*[ name() = 'UML:Class' or name() = 'UML:Interface'  or name() = 'UML:Enumeration']");
+        for(Node innerClassifier : nestedClasses)
+        {
+            String name = XMLManip.getAttributeValue(innerClassifier, "name");
+            if(typeName.equals(name) == true)
+            {
+                String xmiid = XMLManip.getAttributeValue(innerClassifier, "xmi.id");
+                
+                String elementType = XMLManip.retrieveSimpleName(clazz);
+                
+                TypedFactoryRetriever<IClassifier> retreiver = 
+                    new TypedFactoryRetriever<IClassifier>();
+                retVal = retreiver.createTypeAndFill(elementType, clazz);
+                break;
+            }
+        }
+        
+        return retVal;
     }
     
     public void establishAssociation(Node attr, IClassifier from, IClassifier to)
@@ -4305,7 +4343,7 @@ public class UMLParsingIntegrator
     /**
      * Converts an attribute of a collection type, to have a type that is 
      * contained by the collection.  There are two type the simple type
-     * where the contained type simply a type.  The muli-diminsional type, wher
+     * where the contained type simply a type.  The muli-diminsional type, where
      * the contained type is another collection.
      * 
      * @param type The attributes type.
@@ -4350,6 +4388,8 @@ public class UMLParsingIntegrator
             List params = type.selectNodes("./DerivationParameter");
             if(params.size() == 1)
             {
+                setDefaultRange(attr, fullName);
+                
                 // Currently the Data is setup so that if one of the parameters
                 // has derivation, then it is under the parent derivation not 
                 // the parameter.  It should be under the parameter.  However,
@@ -4360,8 +4400,6 @@ public class UMLParsingIntegrator
                 if(derivation != null)
                 {
                     retVal = convertCollection(derivation, attr, lang);
-//                    type.detach();
-//                    setDefaultRange(attr);
                     
                     if(retVal == false)
                     {
@@ -4380,7 +4418,7 @@ public class UMLParsingIntegrator
                     XMLManip.setAttributeValue(attr, "type", typeName);
                 }
                 
-                setDefaultRange(attr);
+//                setDefaultRange(attr, fullName);
 
                 // since we have moved the type directly into the attribute, we
                 // need to remove the derivation declaration.
@@ -4393,7 +4431,7 @@ public class UMLParsingIntegrator
         return retVal;
     }
     
-    protected void setDefaultRange(Node owner)
+    protected void setDefaultRange(Node owner, String collectionType)
     {
 
         if(owner != null)
@@ -4422,6 +4460,7 @@ public class UMLParsingIntegrator
                         {
                             XMLManip.setAttributeValue(dataNode, "lower", "0");
                             XMLManip.setAttributeValue(dataNode, "upper", "*");
+                            XMLManip.setAttributeValue(dataNode, "collectionType", collectionType);
                         }
                     }
                 }

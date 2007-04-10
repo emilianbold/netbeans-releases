@@ -32,9 +32,9 @@ package org.netbeans.modules.uml.propertysupport.customizers;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyDefinition;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
 import org.netbeans.modules.uml.propertysupport.DefinitionPropertyBuilder;
-import java.util.ArrayList;
 import java.util.Vector;
 import java.util.HashMap;
+import org.netbeans.modules.uml.propertysupport.DefinitionPropertyBuilder.ValidValues;
 /**
  *
  * @author thuy
@@ -46,6 +46,7 @@ public class ElementData {
     public static String PARAM_KIND = "Kind";  //NO I18N
     public static String RANGE_LOWER = "Lower";  //NO I18N
     public static String RANGE_UPPER = "Upper";  //NO I18N
+    public static String COLLECTION_TYPE = "collectionType";
     public static String MULTI_RANGES = "MultiplicityRanges"; //NO I18N
     public static String MULTI_RANGE = "MultiplicityRange";   //NO I18N
     public  static String SEPARATOR = " ";
@@ -183,6 +184,38 @@ public class ElementData {
         if (propElem != null) {
             propElem.setValue(value);
         }
+    }
+    
+    public String getCollectionType()
+    {   
+        String value = null;
+        IPropertyElement propElem = paramDataMap.get(COLLECTION_TYPE);
+        if (propElem != null) {
+            value = propElem.getValue();
+        }
+        return (value != null ? value : EMPTY_STR);
+    }
+    
+    public void setCollectionType(String value) {
+        IPropertyElement propElem = paramDataMap.get(COLLECTION_TYPE);
+        if (propElem != null) {
+            propElem.setValue(value);
+        }
+    }
+    
+    public String[] getValidCollectionTypes()
+    {
+        String[] retVal = new String[0];
+        
+        IPropertyElement propElem = paramDataMap.get(COLLECTION_TYPE);
+        if (propElem != null) {
+            DefinitionPropertyBuilder builder = DefinitionPropertyBuilder.instance();
+            ValidValues values = builder.retrieveValidValues(propElem.getPropertyDefinition(),
+                                                             propElem);
+            retVal = values.getValidValues();
+        }
+        
+        return retVal;
     }
     
     public  IPropertyElement getMultiRangesProp() {
