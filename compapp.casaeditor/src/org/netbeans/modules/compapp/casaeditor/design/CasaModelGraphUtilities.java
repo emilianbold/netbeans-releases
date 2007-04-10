@@ -233,9 +233,6 @@ public class CasaModelGraphUtilities {
             int y)
     {
         CasaNodeWidget widget = (CasaNodeWidget) scene.addNode(casaPort);
-        if (!updateNodeProperties(model, casaPort, widget)) {
-            return null;
-        }
 
         CasaConsumes consumes = casaPort.getConsumes();
         if (consumes != null) {
@@ -263,7 +260,7 @@ public class CasaModelGraphUtilities {
             int y)
     {
         CasaNodeWidget widget = (CasaNodeWidget) scene.addNode(su);
-        updateNodeProperties(model, su, widget);
+        
         for (CasaProvides provides : su.getProvides()) {
             createPin(su, provides, provides.getEndpointName(), scene, false);
         }

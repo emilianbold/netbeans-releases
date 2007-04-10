@@ -73,6 +73,11 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
     }
     
     
+    public void addNotify() {
+        super.addNotify();
+        mDesignView.render();
+    }
+
     private CasaDataObject getCasaDataObject() {
         return mDataObject;
     }

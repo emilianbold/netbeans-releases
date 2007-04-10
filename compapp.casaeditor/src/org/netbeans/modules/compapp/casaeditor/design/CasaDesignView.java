@@ -42,7 +42,7 @@ public class CasaDesignView {
 
     private CasaDataObject mDataObject;
     private CasaModelGraphScene mScene;
-    private CasaDesignModelListener mController;
+    private CasaDesignModelListener mModelListener;
     private JScrollPane mScroller;
 
     private JToolBar mToolBar;
@@ -73,23 +73,22 @@ public class CasaDesignView {
         
         setupActions();
         setupToolBar();
-
-        // Render the model
+        
         if (model != null) {
-            CasaModelGraphUtilities.renderModel(model, mScene);
-
-            // Tie in the controller
-            
-            // Tie in the controller
-            
-            // Tie in the controller
-            
-            // Tie in the controller
-            mController = new CasaDesignModelListener(mDataObject, mScene);
-            mScene.registerModelListener(mController);
+            mModelListener = new CasaDesignModelListener(mDataObject, mScene);
+            mScene.registerModelListener(mModelListener);
         }
     }
    
+    
+    public void render() {
+        // Render the model
+        CasaWrapperModel model = mDataObject.getEditorSupport().getModel();
+        if (model != null) {
+            CasaModelGraphUtilities.renderModel(model, mScene);
+        }
+    }
+    
      /**
      * Return the view content, suitable for printing (i.e. without a
      * scroll pane, which would result in the scroll bars being printed).
@@ -209,8 +208,8 @@ public class CasaDesignView {
             mScene.cleanup();
             mScene = null;
         }
-        if (mController != null) {
-            mController.cleanup();
+        if (mModelListener != null) {
+            mModelListener.cleanup();
         }
     }
     

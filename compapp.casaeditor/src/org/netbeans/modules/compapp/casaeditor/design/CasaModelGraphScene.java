@@ -336,6 +336,8 @@ implements PropertyChangeListener {
         if (node instanceof CasaPort) {
             CasaPort port = (CasaPort) node;
             widget = new CasaNodeWidgetBinding(this);
+            CasaModelGraphUtilities.updateNodeProperties(mModel, port, widget);
+            
             widget.setEditable(mModel.isEditable(port));
 //            widget.setWSPolicyAttached(true);
             widget.initializeGlassLayer(mGlassLayer);
@@ -347,16 +349,20 @@ implements PropertyChangeListener {
 
         } else if (node instanceof CasaServiceEngineServiceUnit) {
             CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) node;
+            CasaRegionWidget region = null;
             
             if (!su.isInternal()) {
                 widget = new CasaNodeWidgetEngineExternal(this);
-                mExternalRegion.addChild(widget);
+                region = mExternalRegion;
                 moveAction = mMoveActionExternalRegion;
             } else {
                 widget = new CasaNodeWidgetEngineInternal(this);
-                mEngineRegion.addChild(widget);
+                region = mEngineRegion;
                 moveAction = mMoveActionEngineRegion;
             }
+            CasaModelGraphUtilities.updateNodeProperties(mModel, su, widget);
+            
+            region.addChild(widget);
             widget.setEditable(mModel.isEditable(su));
             ((CasaNodeWidgetEngine) widget).setConfigurationStatus(su.isDefined());
             widget.initializeGlassLayer(mGlassLayer);
