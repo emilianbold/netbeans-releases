@@ -241,12 +241,12 @@ public class AbstractLookup extends Lookup implements Serializable {
 
         try {
             Enumeration<Pair<Object>> en = t.lookup(Object.class);
-            LinkedHashSet<Pair<?>> arr = new LinkedHashSet<Pair<?>>();
+            TreeSet<Pair<?>> arr = new TreeSet<Pair<?>>(ALPairComparator.DEFAULT);
             while (en.hasMoreElements()) {
                 Pair<Object> item = en.nextElement();
                 arr.add(item);
             }
-            return arr;
+            return new LinkedHashSet<Pair<?>>(arr);
         } finally {
             exitStorage();
         }

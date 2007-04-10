@@ -19,6 +19,7 @@
 
 package org.openide.util.lookup;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,8 +28,11 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Set;
@@ -39,6 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.bar.Comparator2;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -292,5 +297,34 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         assertNotNull("Listener notified", listener.toInterrupt);
 
         assertEquals("Now two", 2, res.allInstances().size());
+    }
+    
+    public void testWrongOrderAsInIssue100320() throws Exception {
+        ClassLoader app = getClass().getClassLoader().getParent();
+        ClassLoader c0 = app;
+        ClassLoader c1 = new URLClassLoader(new URL[] {
+            findJar("problem100320.jar"),
+        }, c0);
+        Lookup lookup = Lookups.metaInfServices(c1);
+
+        Collection<?> colAWT = lookup.lookupAll(Component.class);
+        assertEquals("There is enough objects to switch to InheritanceTree", 12, colAWT.size());
+        
+        
+        List<?> col1 = new ArrayList<Object>(lookup.lookupAll(Comparator.class));
+        assertEquals("Two", 2, col1.size());
+        Collection<?> col2 = lookup.lookupAll(c1.loadClass(Comparator2.class.getName()));
+        assertEquals("One", 1, col2.size());
+        List<?> col3 = new ArrayList<Object>(lookup.lookupAll(Comparator.class));
+        assertEquals("Two2", 2, col3.size());
+        
+        Iterator<?> it1 = col1.iterator();
+        Iterator<?> it3 = col3.iterator();
+        if (
+            it1.next() != it3.next() || 
+            it1.next() != it3.next() 
+        ) {
+            fail("Collections are different:\nFirst: " + col1 + "\nLast:  " + col3);
+        }
     }
 }
