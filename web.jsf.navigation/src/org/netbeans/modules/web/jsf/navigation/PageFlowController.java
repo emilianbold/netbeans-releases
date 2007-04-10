@@ -56,6 +56,7 @@ import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -123,6 +124,7 @@ public class PageFlowController {
                     FileObject folderObj = e.nextElement();
                     //                    String nameName = folderObj.getName();
                     if( isKnownFolder(folderObj) ) {
+//                        folderObj.addFileChangeListener(WeakListeners.create(FileChangeListener.class, fcl, folderObj));
                         folderObj.addFileChangeListener(fcl);
                     }
                 }
@@ -135,13 +137,16 @@ public class PageFlowController {
      * Unregister any listeners.
      */
     public void unregisterListeners() {
-        if ( pcl != null && configModel != null )
+        if ( pcl != null && configModel != null ){
             configModel.removePropertyChangeListener(pcl);
+            pcl = null;
+        }
         if (fcl != null && webFolder != null ) {
             webFolder.removeFileChangeListener(fcl);
             for (Enumeration<FileObject> e = (Enumeration<FileObject>) webFolder.getFolders(true); e.hasMoreElements() ;) {
                 e.nextElement().removeFileChangeListener(fcl);
             }
+            fcl = null;
         }
     }
     
@@ -654,7 +659,8 @@ public class PageFlowController {
             
         }
         
-        
+        String oldFolderName;
+        String newFolderName;
         public void fileRenamed(FileRenameEvent fe) {
             /* fileRenamed should not modify the faces-config because it should
              * be up to refactoring to do this. If that is the case, FacesModelPropertyChangeListener
@@ -664,18 +670,34 @@ public class PageFlowController {
             
             if( fileObj.isFolder() ){
                 //I may still need to modify display names.
-                return;
+                
+                FileObject[] fileObjs = fileObj.getChildren();
+                if( fe.getName().equals(oldFolderName) && fileObj.getName().equals(newFolderName) ){
+                    System.out.println("SOMETHING IS WRONG!  SAME EXACT LISTENER CALLED TWICE.");
+                    return;
+                }
+                oldFolderName = fe.getName();
+                newFolderName = fileObj.getName();
+                for( FileObject file : fileObjs) {
+                    String newDisplayName = PageFlowNode.getFolderDisplayName(getWebFolder(), file);
+                    String oldDisplayName = newDisplayName.replaceFirst(newFolderName, oldFolderName);
+                    fileRename(file, oldDisplayName, newDisplayName);
+                }
+            } else {
+                //DISPLAYNAME:
+                String newDisplayName  = PageFlowNode.getFolderDisplayName(getWebFolder(), fileObj);
+                String path = fileObj.getPath().replace(fileObj.getNameExt(), "");
+                String oldDisplayName = PageFlowNode.getFolderDisplayName(getWebFolder(), path, fe.getName() + "." + fe.getExt());
+                
+                fileRename(fileObj, oldDisplayName, newDisplayName);
             }
-            //DISPLAYNAME:
-            String newDisplayName  = PageFlowNode.getFolderDisplayName(getWebFolder(), fileObj);
-            String path = fileObj.getPath().replace(fileObj.getNameExt(), "");
-            String oldDisplayName = PageFlowNode.getFolderDisplayName(getWebFolder(), path, fe.getName() + "." + fe.getExt());
-            //            String newDisplayName = fileObj.getNameExt();
-            //            String oldDisplayName = fe.getName() + "." + fe.getExt(); // Original Name;
+            view.validateGraph();
             
+        }
+        
+        private void fileRename(FileObject fileObj, String oldDisplayName, String newDisplayName ){
             PageFlowNode oldNode = pageName2Node.get(oldDisplayName);
             PageFlowNode abstractNode = pageName2Node.get(newDisplayName);
-            
             Node newNodeDelegate = null;
             try {
                 newNodeDelegate = (DataObject.find(fileObj)).getNodeDelegate();
@@ -718,13 +740,11 @@ public class PageFlowController {
                 }
             }
             
-            view.validateGraph();
-            
         }
         
         
         public void fileFolderCreated(FileEvent fe) {
-            fe.getFile().addFileChangeListener(fcl);
+            fe.getFile().addFileChangeListener( fcl);
         }
         
         
