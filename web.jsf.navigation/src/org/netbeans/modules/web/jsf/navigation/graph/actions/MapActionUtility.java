@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -133,10 +134,10 @@ public class MapActionUtility {
         //
         
         //Add File
-//        inputMap.put(KeyStroke.getKeyStroke( KeyEvent.VK_A, 0, false), "handleNewWebForm");
+        //        inputMap.put(KeyStroke.getKeyStroke( KeyEvent.VK_A, 0, false), "handleNewWebForm");
         
         // DELETE
-//        inputMap.put(KeyStroke.getKeyStroke( KeyEvent.VK_DELETE , 0), "handleDeleteKey");
+        //        inputMap.put(KeyStroke.getKeyStroke( KeyEvent.VK_DELETE , 0), "handleDeleteKey");
         return inputMap;
     }
     
@@ -206,12 +207,12 @@ public class MapActionUtility {
         }
         
         @Override
-        public boolean isEnabled() { 
+        public boolean isEnabled() {
             //Workaround: Temporarily Wrapping Collection because of Issue: 100127
             Set<Object> selectedObjs = (Set<Object>) scene.getSelectedObjects();
             if (selectedObjs.size() == 0 ){
                 return false;
-            } 
+            }
             
             for( Object selectedObj : selectedObjs ){
                 if(!( selectedObj instanceof Node )){
@@ -219,48 +220,55 @@ public class MapActionUtility {
                 }
             }
             
-            return super.isEnabled();           
+            return super.isEnabled();
         }
         
         
         
         public void actionPerformed(ActionEvent event) {
-                
-                //Workaround: Temporarily Wrapping Collection because of Issue: 100127
-                Set<Object> selectedObjects = new HashSet<Object>(scene.getSelectedObjects());
-                
-                /*.When deleteing only one item. */
-                if (selectedObjects.size() == 1){
-                    Object myObj = selectedObjects.toArray()[0];
-                    if( myObj instanceof Node ) {
-                        delete((Node)myObj);
-                        return;
-                    }
+            
+            //Workaround: Temporarily Wrapping Collection because of Issue: 100127
+            Set<Object> selectedObjects = new HashSet<Object>(scene.getSelectedObjects());
+            
+            /*.When deleteing only one item. */
+            if (selectedObjects.size() == 1){
+                Object myObj = selectedObjects.toArray()[0];
+                if( myObj instanceof Node ) {
+                    delete((Node)myObj);
+                    return;
                 }
-                
-                /* When deleting multiple objects, make sure delete all the links first. */
-                for( Object selectedObj : selectedObjects ){
-                    if( scene.isEdge(selectedObj) ){
-                        delete((Node)selectedObj);
-                    }
+            }
+            
+            /* When deleting multiple objects, make sure delete all the links first. */
+            for( Object selectedObj : selectedObjects ){
+                if( scene.isEdge(selectedObj) ){
+                    delete((Node)selectedObj);
                 }
-                /* The deleted links should not be selected anymore */
-                selectedObjects = new HashSet<Object>(scene.getSelectedObjects());
-                for( Object selectedObj : selectedObjects ){
-                    if( selectedObj instanceof Node ) {
-                        delete((Node)selectedObj);
-                    }
+            }
+            /* The deleted links should not be selected anymore */
+            selectedObjects = new HashSet<Object>(scene.getSelectedObjects());
+            for( Object selectedObj : selectedObjects ){
+                if( selectedObj instanceof Node ) {
+                    delete((Node)selectedObj);
                 }
+            }
             
         }
         
+        public Node myNode;
         private void delete( Node node ){
-            if ( node.canDestroy() ){
-                try                 {
-                    node.destroy();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+            myNode = node;
+            if ( node.canDestroy() ){                
+                EventQueue.invokeLater(new Runnable() {     
+                    public void run() {
+                        try {
+                            myNode.destroy();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+                
             }
         }
     };

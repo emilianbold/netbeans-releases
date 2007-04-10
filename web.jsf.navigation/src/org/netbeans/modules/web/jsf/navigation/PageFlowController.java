@@ -668,7 +668,7 @@ public class PageFlowController {
                 
                 FileObject[] fileObjs = fileObj.getChildren();
                 if( fe.getName().equals(oldFolderName) && fileObj.getName().equals(newFolderName) ){
-                    System.out.println("SOMETHING IS WRONG!  SAME EXACT LISTENER CALLED TWICE.");
+                    //Folder rename triggers two listeners.  Only pay attention to the first one.
                     return;
                 }
                 oldFolderName = fe.getName();
