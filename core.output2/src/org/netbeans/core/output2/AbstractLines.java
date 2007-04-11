@@ -16,6 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.core.output2;
 
 import java.io.File;
@@ -24,9 +25,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -508,7 +509,7 @@ abstract class AbstractLines implements Lines, Runnable {
     public void addListener (int line, OutputListener l, boolean important) {
         if (l == null) {
             //#56826 - debug messaging
-            Logger.getAnonymousLogger().warning("Issue #56826 - Adding a null OutputListener for line:" + line);
+            Logger.getLogger(AbstractLines.class.getName()).log(Level.WARNING, "Issue #56826 - Adding a null OutputListener for line: " + line, new NullPointerException());
         } else {
             linesToListeners.put(line, l);
             if (important) {
