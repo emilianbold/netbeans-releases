@@ -95,7 +95,7 @@ public class DesignView extends JPanel  {
         panel.setBorder(null);
         add(panel, BorderLayout.CENTER);
         
-        addConfigurationPanel();
+        //addConfigurationPanel();
     }
     
     /**
