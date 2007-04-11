@@ -215,22 +215,26 @@ public class ModuleDDSupport implements PropertyChangeListener {
     public void createConfigs(ConfigurationStorage storage) throws ConfigurationException {
         String[] ddLocs = (String[]) moduleDDlocationMap.get(getModuleType());
         DDRoot root = (DDRoot) rootMap.get(ddLocs[0]);
-        DConfigBeanRoot cbroot = config.getDConfigBeanRoot(root);
-        ConfigBeanStorage cbs = new ConfigBeanStorage(cbroot, null, storage);
-        configMap.put(root,cbs);
+        if(root != null) {
+            DConfigBeanRoot cbroot = config.getDConfigBeanRoot(root);
+            ConfigBeanStorage cbs = new ConfigBeanStorage(cbroot, null, storage);
+            configMap.put(root,cbs);
 
-        for(Iterator it = rootMap.keySet().iterator(); it.hasNext() ;) {
-            String ddLoc = (String) it.next();
-            if (isPrimaryDD(ddLoc, getModuleType())) {
-                continue;
+            for(Iterator it = rootMap.keySet().iterator(); it.hasNext() ;) {
+                String ddLoc = (String) it.next();
+                if (isPrimaryDD(ddLoc, getModuleType())) {
+                    continue;
+                }
+                root = (DDRoot) rootMap.get(ddLoc);
+                if(root != null) {
+                    DConfigBean cb = cbroot.getDConfigBean(root);
+                    if(cb == null) {
+                        continue;
+                    }
+                    ConfigBeanStorage cbStorage = new ConfigBeanStorage(cb, null, storage);
+                    configMap.put(root,cbStorage);
+                }
             }
-            root = (DDRoot) rootMap.get(ddLoc);
-            DConfigBean cb = cbroot.getDConfigBean(root);
-            if(cb == null) {
-                continue;
-            }
-            ConfigBeanStorage cbStorage = new ConfigBeanStorage(cb, null, storage);
-            configMap.put(root,cbStorage);
         }
     }
 
