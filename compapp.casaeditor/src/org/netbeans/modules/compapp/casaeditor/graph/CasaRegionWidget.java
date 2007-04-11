@@ -49,8 +49,8 @@ public class CasaRegionWidget extends LayerWidget {
     private static final Font   TITLE_FONT    = new Font("Dialog", Font.BOLD, 18);  // NOI18N
     private static final int    TITLE_Y_POS   = 20;
     
-    private static final Color  BANNER_COLOR  = new Color(160, 135, 230);
-    private static final Font   BANNER_FONT   = new Font("Dialog", Font.BOLD, 18);  // NOI18N
+    private static final Color  BANNER_COLOR  = Color.GRAY;
+    private static final Font   BANNER_FONT   = new Font("SansSerif", Font.BOLD, 14);  // NOI18N
     
     private static final String LABEL_TRUNCATED = NbBundle.getMessage(CasaRegionWidget.class, "LBL_Truncated"); // NOI18N
     

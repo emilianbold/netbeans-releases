@@ -43,6 +43,9 @@ import org.netbeans.api.visual.widget.Widget;
  */
 public class LineBreakingLabelWidget extends Widget {
     
+    private static final int MINIMUM_WIDTH = 100;
+    private static final String[] ELLIPSES = { "..." };
+    
     private String mLabel;
     private Color mTextColor;
     private Font mFont;
@@ -154,6 +157,8 @@ public class LineBreakingLabelWidget extends Widget {
         float formatWidth = (float) getPreferredBounds().width * 0.75f;
         if (formatWidth <= 0) {
             return null;
+        } else if (formatWidth < MINIMUM_WIDTH) {
+            return ELLIPSES;
         }
         
         mLineMeasurer.setPosition(mParagraphStart);
