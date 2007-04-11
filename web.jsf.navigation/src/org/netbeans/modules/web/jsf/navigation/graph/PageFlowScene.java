@@ -165,7 +165,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     }
     
     
-    private final LabelWidget malFormedLabel = new LabelWidget(this, "Mal Formed Event Received. - http://www.netbeans.org/issues/show_bug.cgi?id=98570");
+    private final LabelWidget malFormedLabel = new LabelWidget(this, "Your XML is Malformed.");
     /**
      * To show a mal formed page.
      */
