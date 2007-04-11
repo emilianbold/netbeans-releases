@@ -180,12 +180,12 @@ public class LongHashMap<K>
 	 */
     public LongHashMap(int initialCapacity, float loadFactor) {
         if (initialCapacity < 0)
-            throw new IllegalArgumentException("Illegal initial capacity: " +
+            throw new IllegalArgumentException("Illegal initial capacity: " + // NOI18N
                                                initialCapacity);
         if (initialCapacity > MAXIMUM_CAPACITY)
             initialCapacity = MAXIMUM_CAPACITY;
         if (loadFactor <= 0 || Float.isNaN(loadFactor))
-            throw new IllegalArgumentException("Illegal load factor: " +
+            throw new IllegalArgumentException("Illegal load factor: " + // NOI18N
                                                loadFactor);
 
         // Find a power of 2 >= initialCapacity
@@ -690,7 +690,7 @@ public class LongHashMap<K>
         }
     
         public String toString() {
-            return getKey() + "=" + getValue();
+            return getKey() + "=" + getValue(); // NOI18N
         }
 
         /**

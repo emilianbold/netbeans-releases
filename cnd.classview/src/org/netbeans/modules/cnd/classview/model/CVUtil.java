@@ -23,6 +23,7 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.NameCache;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.nodes.*;
 
 /**
@@ -33,40 +34,7 @@ public class CVUtil {
     private static final boolean showParamNames = getBoolean("cnd.classview.show-param-names", true); // NOI18N
     
     public static String getSignature(CsmFunction fun) {
-        StringBuilder sb = new StringBuilder(fun.getName());
-        sb.append('(');
-        boolean addComma = false;
-        for( Iterator iter = fun.getParameters().iterator(); iter.hasNext(); ) {
-            CsmParameter par = (CsmParameter) iter.next();
-            if( addComma ) {
-                sb.append(", "); // NOI18N
-            } else {
-                addComma = true;
-            }
-            //sb.append(par.getText());
-            CsmType type = par.getType();
-            if( type != null ) {
-                sb.append(type.getText());
-                //sb.append(' ');
-            } else if (par.isVarArgs()){
-                sb.append("..."); // NOI18N
-            }
-            if (showParamNames && !par.isVarArgs()) {
-                String name = par.getName();
-                if (name != null && name.length() >0) {
-                    sb.append(' ');
-                    sb.append(name);
-                }
-            }
-        }
-        
-        sb.append(')');
-        if (CsmKindUtilities.isMethod(fun) && fun instanceof CsmMethod){
-            if( ((CsmMethod) fun).isConst() ) {
-                sb.append(" const");
-            }
-        }
-        return NameCache.getString(sb.toString());
+	return NameCache.getString(CsmUtilities.getSignature(fun, showParamNames));
     }
         
     public static String getNamesapceDisplayName(CsmNamespace ns){

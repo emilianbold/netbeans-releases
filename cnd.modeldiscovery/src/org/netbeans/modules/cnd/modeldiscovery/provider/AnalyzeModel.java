@@ -38,8 +38,11 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -245,6 +248,16 @@ public class AnalyzeModel implements DiscoveryProvider {
             return null;
         }
         
+        public boolean isExcluded(Item item){
+            MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+            ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+            if (itemConfiguration == null) {
+                return true;
+            }
+            BooleanConfiguration excl =itemConfiguration.getExcluded();
+            return excl.getValue();
+        }
+        
         private List<SourceFileProperties> getSourceFileProperties(String root){
             List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
             Map<String,List<String>> searchBase = search(root);
@@ -254,6 +267,9 @@ public class AnalyzeModel implements DiscoveryProvider {
                     break;
                 }
                 Item item = items[i];
+                if (isExcluded(item)) {
+                    continue;
+                }
                 Language lang = item.getLanguage();
                 if (lang == Language.C || lang == Language.CPP){
                     String path = item.getFile().getAbsolutePath();
@@ -281,7 +297,22 @@ public class AnalyzeModel implements DiscoveryProvider {
                         break;
                     }
                     Item item = items[i];
+                    if (isExcluded(item)) {
+                        continue;
+                    }
                     String path = item.getAbsPath();
+                    File file = new File(path);
+                    if (file.exists()) {
+                        unique.add(FileUtil.normalizeFile(file).getAbsolutePath());
+                    }
+                }
+                HashSet<String> unUnique = new HashSet<String>();
+                for(SourceFileProperties source : getSourcesConfiguration()){
+                    if (source instanceof ModelSource){
+                        unUnique.addAll( ((ModelSource)source).getIncludedFiles() );
+                    }
+                }
+                for(String path : unUnique){
                     File file = new File(path);
                     if (file.exists()) {
                         unique.add(FileUtil.normalizeFile(file).getAbsolutePath());

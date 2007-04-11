@@ -161,6 +161,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         super.write(output);
         assert this.name != null;
         output.writeUTF(this.name);
+        assert this.body != null;
         output.writeUTF(this.body);
         output.writeBoolean(this.system);
         String[] out = this.params == null?null:this.params.toArray(new String[params.size()]);
@@ -172,6 +173,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         this.name = TextCache.getString(input.readUTF());
         assert this.name != null;
         this.body = TextCache.getString(input.readUTF());
+        assert this.body != null;
         this.system = input.readBoolean();
         String[] out = PersistentUtils.readStrings(input, TextCache.getManager());
         this.params = out == null ? null : Collections.unmodifiableList(Arrays.asList(out));

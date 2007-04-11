@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -83,8 +84,8 @@ public class SunCCCompiler extends CCCCompiler {
     };
     
     /** Creates a new instance of SunCCompiler */
-    public SunCCCompiler() {
-        super(CCCompiler, "CC", getString("SUN_CPP_COMPILER")); // NOI18N
+    public SunCCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(flavor, kind, name, displayName, path);
     }
     
     public String getDevelopmentModeOptions(int value) {

@@ -94,7 +94,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         return enumeration;
     }    
 
-    protected void dispose() {
+    public void dispose() {
         super.dispose();
         onDispose();
     } 

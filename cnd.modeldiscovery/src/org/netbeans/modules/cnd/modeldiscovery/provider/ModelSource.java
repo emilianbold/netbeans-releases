@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.modeldiscovery.provider;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,13 +50,21 @@ public class ModelSource implements SourceFileProperties {
     private Map<String,List<String>> searchBase;
     private String itemPath;
     private List<String> userIncludePaths;
+    private Set<String> includedFiles = new HashSet<String>();
     
     public ModelSource(Item item, CsmFile file, Map<String,List<String>> searchBase){
         this.item = item;
         this.file = file;
         this.searchBase = searchBase;
     }
-    
+
+    public Set<String> getIncludedFiles() {
+        if (userIncludePaths == null) {
+            getUserInludePaths();
+        }
+        return includedFiles;
+    }
+
     public String getCompilePath() {
         return new File( getItemPath()).getParentFile().getAbsolutePath();
     }
@@ -162,6 +171,7 @@ public class ModelSource implements SourceFileProperties {
                     res.add(path);
                 }
             } else {
+                includedFiles.add(resolved.getAbsolutePath());
                 if (level < 5) {
                     analyzeUnresolved(res, resolved, level+1);
                 }

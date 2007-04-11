@@ -451,6 +451,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         setState(CsmModelState.OFF);
 	
 	RepositoryUtils.shutdown();
+        
+        ModelSupport.instance().shutdown();
     }
     
     public void unload() {

@@ -21,13 +21,15 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.util.List;
 import java.util.Vector;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 
 public class BasicCompiler extends Tool {
     
     /** Creates a new instance of GenericCompiler */
-    public BasicCompiler(int kind, String name, String displayName) {
-        super(kind, name, displayName);
+    public BasicCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(flavor, kind, name, displayName, path);
     }
     
     public String getDevelopmentModeOptions(int value) {

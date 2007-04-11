@@ -172,7 +172,7 @@ public final class CsmProjectContentResolver {
     public List getGlobalVariables(String strPrefix, boolean match) {
         boolean sort = isSortNeeded();
         if (project == null) {
-            return null;
+            return Collections.EMPTY_LIST;
         }
         CsmNamespace globNS = project.getGlobalNamespace();
         // add global variables
@@ -186,7 +186,7 @@ public final class CsmProjectContentResolver {
     public List getGlobalFunctions(String strPrefix, boolean match) {
         boolean sort = this.isSortNeeded();
         if (project == null) {
-            return null;
+            return Collections.EMPTY_LIST;
         }
         CsmNamespace globNS = project.getGlobalNamespace();
         List res = getNamespaceFunctions(globNS, strPrefix, match, false);
@@ -260,10 +260,10 @@ public final class CsmProjectContentResolver {
     
     private List getLibElements(NsContentResultsFilter filter, String strPrefix, boolean match, boolean sort) {
         if (project == null) {
-            return null;
+            return Collections.EMPTY_LIST;
         }
         Set handledLibs = new HashSet();
-        List res = null;
+        List res = new ArrayList();
         // add libararies elements
         for (Iterator it = project.getLibraries().iterator(); it.hasNext();) {
             CsmProject lib = (CsmProject) it.next();
@@ -402,7 +402,7 @@ public final class CsmProjectContentResolver {
         boolean sort = isSortNeeded();
         // get all enums and check theirs enumerators
         List enums = getNamespaceMembers(ns, CsmDeclaration.Kind.ENUM, "", false);
-        List res = null;
+        List res = new ArrayList();
         if (enums != null) {
             for (Iterator it = enums.iterator(); it.hasNext();) {
                 CsmEnum elemEnum = (CsmEnum) it.next();
@@ -451,7 +451,7 @@ public final class CsmProjectContentResolver {
         boolean sort = isSortNeeded();
         // get all enums and check theirs enumerators
         List enums = getClassMembers(clazz, contextDeclaration, CsmDeclaration.Kind.ENUM, "", false, false, inspectParentClasses);
-        List res = null;
+        List res = new ArrayList();
         if (enums != null) {
             for (Iterator it = enums.iterator(); it.hasNext();) {
                 CsmEnum elemEnum = (CsmEnum) it.next();
@@ -520,7 +520,7 @@ public final class CsmProjectContentResolver {
         
         Map set = getClassMembers(clazz, kinds, strPrefix, staticOnly, match,
                 new HashSet(), minVisibility, inheritanceLevel, inspectParentClasses);
-        List res = null;
+        List res = new ArrayList();
         if (set != null && set.size() > 0) {
             res = new ArrayList(set.values());
         }

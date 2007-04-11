@@ -27,6 +27,7 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -99,6 +100,10 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         return false;
     }
     
+    protected boolean isNamespace() {
+        return false;
+    }
+    
     protected SortedName getSortedName(CsmNamespace ns){
         return new SortedName(0,CVUtil.getNamesapceDisplayName(ns),0);
     }
@@ -163,6 +168,17 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
                 }
                 decl= fun;
             }
+        } else if (CsmKindUtilities.isFunctionDeclaration(decl)) {
+            CsmFunction fun = (CsmFunction)decl;
+            CsmFunctionDefinition def = fun.getDefinition();
+            if (def != null && def != decl){
+                PersistentKey defKey = PersistentKey.createKey(def);
+                if (myKeys.containsKey(defKey)) {
+                    myKeys.remove(defKey);
+                    myChanges.remove(defKey);
+                    childrenUpdater.unregister(myProject,defKey);
+                }
+            }
         }
         PersistentKey key = PersistentKey.createKey(decl);
         myKeys.put(key,getSortedName(decl));
@@ -176,11 +192,77 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
             return false;
         }
         PersistentKey key = PersistentKey.createKey(decl);
+        if (!myKeys.containsKey(key)){
+            return false;
+        }
         myKeys.remove(key);
         myChanges.remove(key);
         childrenUpdater.unregister(myProject,key);
+        if (CsmKindUtilities.isFunctionDeclaration(decl)) {
+            removeFunctionDeclaration(decl);
+        } else if (CsmKindUtilities.isFunctionDefinition(decl)) {
+            removeFunctionDefinition(decl);
+        }
         update = true;
         return true;
+    }
+    
+    private void removeFunctionDeclaration(final CsmOffsetableDeclaration decl) {
+        CsmFunction fun = (CsmFunction)decl;
+        CsmFile file = fun.getContainingFile();
+        if (file != null && file.isValid()){
+            CsmOffsetableDeclaration other = (CsmOffsetableDeclaration) file.getProject().findDeclaration(fun.getUniqueName());
+            if (other != null) {
+                PersistentKey otherKey = PersistentKey.createKey(other);
+                if (!myKeys.containsKey(otherKey)) {
+                    myKeys.put(otherKey,getSortedName(other));
+                    myChanges.remove(otherKey);
+                    return;
+                }
+            }
+        }
+        CsmFunctionDefinition def = fun.getDefinition();
+        if (def != null && def != decl){
+            file = fun.getContainingFile();
+            if (file != null && file.isValid() &&
+                    file.getProject().findDeclaration(def.getUniqueName()) != null){
+                PersistentKey defKey = PersistentKey.createKey(def);
+                if (!myKeys.containsKey(defKey)) {
+                    myKeys.put(defKey,getSortedName(def));
+                    myChanges.remove(defKey);
+                }
+            }
+        }
+    }
+    
+    private void removeFunctionDefinition(final CsmOffsetableDeclaration decl) {
+        CsmFunctionDefinition def = (CsmFunctionDefinition) decl;
+        CsmFunction fun = def.getDeclaration();
+        if (fun != null && fun != decl){
+            CsmFile file = fun.getContainingFile();
+            if (file != null && file.isValid()){
+                CsmOffsetableDeclaration other = (CsmOffsetableDeclaration) file.getProject().findDeclaration(fun.getUniqueName());
+                if (other != null) {
+                    PersistentKey otherKey = PersistentKey.createKey(other);
+                    if (!myKeys.containsKey(otherKey)) {
+                        myKeys.put(otherKey,getSortedName(other));
+                        myChanges.remove(otherKey);
+                        return;
+                    }
+                }
+            }
+        }
+        CsmFile file = def.getContainingFile();
+        if (file != null && file.isValid()){
+            CsmOffsetableDeclaration other = (CsmOffsetableDeclaration) file.getProject().findDeclaration(def.getUniqueName());
+            if (other != null) {
+                PersistentKey otherKey = PersistentKey.createKey(other);
+                if (!myKeys.containsKey(otherKey)) {
+                    myKeys.put(otherKey,getSortedName(other));
+                    myChanges.remove(otherKey);
+                }
+            }
+        }
     }
     
     public boolean changeDeclaration(CsmOffsetableDeclaration oldDecl,CsmOffsetableDeclaration newDecl) {
@@ -198,21 +280,21 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         }
         PersistentKey newKey = PersistentKey.createKey(newDecl);
         if (oldKey.equals(newKey)) {
-            myKeys.put(newKey,getSortedName(newDecl));
-            ChangeListener l = myChanges.get(newKey);
-            if (l != null) {
-                l.stateChanged(new ChangeEvent(newDecl));
+            if (myKeys.containsKey(newKey)){
+                myKeys.put(newKey,getSortedName(newDecl));
+                ChangeListener l = myChanges.get(newKey);
+                if (l != null) {
+                    l.stateChanged(new ChangeEvent(newDecl));
+                }
+                return false;
+            } else {
+                return newDeclaration(newDecl);
             }
-            return false;
-        } else {
-            myKeys.remove(oldKey);
-            myChanges.remove(oldKey);
-            childrenUpdater.unregister(myProject,oldKey);
-            myKeys.put(newKey,getSortedName(newDecl));
-            myChanges.remove(newKey);
-            update = true;
-            return true;
         }
+        removeDeclaration(oldDecl);
+        newDeclaration(newDecl);
+        update = true;
+        return true;
     }
     
     public boolean reset(CsmOffsetableDeclaration decl, List<CsmOffsetableDeclaration> recursive){
@@ -295,7 +377,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
     }
     
     protected void addNotify() {
-        if (isGlobalNamespace()) {
+        if (isNamespace()){ //isGlobalNamespace()) {
             myKeys = new HashMap<PersistentKey,SortedName>();
             myKeys.put(PersistentKey.createKey(getProject()), new SortedName(0,"",0)); // NOI18N
         } else {
@@ -305,7 +387,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         isInited = true;
         resetKeys();
         super.addNotify();
-        if (isGlobalNamespace()) {
+        if (isNamespace()){ //isGlobalNamespace()) {
             RequestProcessor.getDefault().post(new Runnable(){
                 public void run() {
                     myKeys = getMembers();

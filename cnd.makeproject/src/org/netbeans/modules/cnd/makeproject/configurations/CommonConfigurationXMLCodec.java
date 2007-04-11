@@ -46,6 +46,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerCo
 
 /**
  * History:
+ * V34:
+ *   Added C_REQUIRED_ELEMENT, CPP_REQUIRED_ELEMENT, and FORTRAN_REQUIRED_ELEMENT for build validation
+ *   Changed COMPILER_SET_ELEMENT semantics from expecting an integer (0 or 1)
+ *   to expecting a string (Sun, GNU, Cygwin, ...)
  * V33:
  *   Added DEPENDENCY_CHECKING (makefile dependency checking)
  * V32:
@@ -62,7 +66,7 @@ abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    protected final static int CURRENT_VERSION = 33;
+    protected final static int CURRENT_VERSION = 34;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -81,6 +85,9 @@ abstract class CommonConfigurationXMLCodec
     // Tools Set (Compiler set and platform)
     protected final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
     protected final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
+    protected final static String C_REQUIRED_ELEMENT = "cRequired"; // NOI18N
+    protected final static String CPP_REQUIRED_ELEMENT = "cppRequired"; // NOI18N
+    protected final static String FORTRAN_REQUIRED_ELEMENT = "fortranRequired"; // NOI18N
     protected final static String PLATFORM_ELEMENT = "platform"; // NOI18N
     protected final static String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
     // Compile Type
@@ -243,7 +250,10 @@ abstract class CommonConfigurationXMLCodec
     
     private void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
 	xes.elementOpen(TOOLS_SET_ELEMENT);
-	xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getValue()); // NOI18N
+        xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getOption());
+        xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
+        xes.element(CPP_REQUIRED_ELEMENT, "" + makeConfiguration.getCppRequired().getValue());
+        xes.element(FORTRAN_REQUIRED_ELEMENT, "" + makeConfiguration.getFortranRequired().getValue());
 	xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getPlatform().getValue()); // NOI18N
         if (makeConfiguration.getDependencyChecking().getModified())
             xes.element(DEPENDENCY_CHECKING, "" + makeConfiguration.getDependencyChecking().getValue()); // NOI18N

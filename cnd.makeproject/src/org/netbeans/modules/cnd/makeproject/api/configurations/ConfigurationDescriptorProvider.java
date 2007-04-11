@@ -19,12 +19,16 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.Vector;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 public class ConfigurationDescriptorProvider {
-    private static Vector auxObjectProviders = new Vector();
+    private static HashSet auxObjectProviders = new HashSet();
     
     private FileObject projectDirectory;
     private ConfigurationDescriptor projectDescriptor = null;
@@ -39,7 +43,7 @@ public class ConfigurationDescriptorProvider {
         this.relativeOffset = relativeOffset;
     }
     
-    public synchronized ConfigurationDescriptor getConfigurationDescriptor() {
+    public ConfigurationDescriptor getConfigurationDescriptor() {
         if (projectDescriptor == null && !hasTried) {
             hasTried = true;
             ConfigurationXMLReader reader;
@@ -67,12 +71,20 @@ public class ConfigurationDescriptorProvider {
         return projectDescriptor;
     }
     
+    /*
+     * Now deprecated. 
+     * @deprecated. Use sercies instaed to register a ConfigurationAuxObjectProvider
+     */
     public static void addAuxObjectProvider(ConfigurationAuxObjectProvider paop) {
         synchronized(auxObjectProviders) {
             auxObjectProviders.add(paop);
         }
     }
     
+    /*
+     * Now deprecated. 
+     * @deprecated. Use sercies instaed to register a ConfigurationAuxObjectProvider
+     */
     public static void removeAuxObjectProvider(ConfigurationAuxObjectProvider paop) {
         synchronized(auxObjectProviders) {
             auxObjectProviders.remove(paop);
@@ -81,23 +93,20 @@ public class ConfigurationDescriptorProvider {
     
     
     public static ConfigurationAuxObjectProvider[] getAuxObjectProviders() {
-        waitUntilReady();
         synchronized(auxObjectProviders) {
+            Lookup.Template template = new Lookup.Template(ConfigurationAuxObjectProvider.class);
+            Lookup.Result result = Lookup.getDefault().lookup(template);
+            Collection collection = result.allInstances();
+//            System.err.println("-------------------------------collection " + collection);
+            Iterator iterator = collection.iterator();
+            while (iterator.hasNext()) {
+                Object caop = iterator.next();
+                if (caop instanceof ConfigurationAuxObjectProvider) {
+                    auxObjectProviders.add(caop);
+                }
+            }
+//            System.err.println("-------------------------------auxObjectProviders " + auxObjectProviders);
             return (ConfigurationAuxObjectProvider[])auxObjectProviders.toArray(new ConfigurationAuxObjectProvider[auxObjectProviders.size()]);
         }
-    }
-    
-    private static boolean ready = false;    
-    private static void waitUntilReady() {
-        if (ready)
-            return;
-        synchronized(Thread.currentThread()) {
-            try {
-                Thread.currentThread().wait(500);
-            }
-            catch (Exception e) {
-            }
-        }
-        ready = true;
     }
 }

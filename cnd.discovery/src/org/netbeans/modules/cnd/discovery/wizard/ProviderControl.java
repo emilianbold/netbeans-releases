@@ -195,7 +195,7 @@ public class ProviderControl {
                 break;
             case BinaryFiles:
                 String text = field.getText();
-                StringTokenizer st = new StringTokenizer(text,";");
+                StringTokenizer st = new StringTokenizer(text,";"); // NOI18N
                 List<String> list = new ArrayList<String>();
                 while(st.hasMoreTokens()){
                     list.add(st.nextToken());
@@ -230,7 +230,7 @@ public class ProviderControl {
                 break;
             case BinaryFiles:
                 String text = field.getText();
-                StringTokenizer st = new StringTokenizer(text,";");
+                StringTokenizer st = new StringTokenizer(text,";"); // NOI18N
                 while(st.hasMoreTokens()){
                     path = st.nextToken();
                     if (path.length() == 0) {

@@ -85,10 +85,10 @@ public final class Path {
         StringBuffer buf = new StringBuffer();
         
         for (String dir : list) {
-            buf.append(File.separatorChar);
             buf.append(dir);
+            buf.append(File.pathSeparator);
         }
-        return buf.toString();
+        return buf.substring(0, buf.length() - 1); // remove the trailing pathSeparator...
     }
     
     /**

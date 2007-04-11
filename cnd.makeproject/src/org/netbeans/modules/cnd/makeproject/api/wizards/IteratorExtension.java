@@ -31,6 +31,8 @@ public interface IteratorExtension {
     
     boolean isApplicable(WizardDescriptor wizard);
 
+    String getProviderID(WizardDescriptor wizard);
+
     boolean canApply(WizardDescriptor wizard, Project project);
     
     void apply(WizardDescriptor wizard, Project project) throws IOException;

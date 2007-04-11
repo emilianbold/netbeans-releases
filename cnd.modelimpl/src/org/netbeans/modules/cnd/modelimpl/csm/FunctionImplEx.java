@@ -29,6 +29,7 @@ import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 
 /**
  * A class that 
@@ -176,16 +177,17 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        assert this.qualifiedName != null;
-        output.writeUTF(this.qualifiedName);
+        // can be null
+        PersistentUtils.writeUTF(this.qualifiedName, output);
         output.writeBoolean(this.qualifiedNameIsFake);
         PersistentUtils.writeStrings(this.classOrNspNames, output);
     }
     
     public FunctionImplEx(DataInput input) throws IOException {
 	super(input);
-        this.qualifiedName = input.readUTF();
-        assert this.qualifiedName != null;
+        // can be null
+        String read = PersistentUtils.readUTF(input);
+        this.qualifiedName = read == null ? null : QualifiedNameCache.getString(read);
         this.qualifiedNameIsFake = input.readBoolean();
         this.classOrNspNames = PersistentUtils.readStrings(input, TextCache.getManager());
     }

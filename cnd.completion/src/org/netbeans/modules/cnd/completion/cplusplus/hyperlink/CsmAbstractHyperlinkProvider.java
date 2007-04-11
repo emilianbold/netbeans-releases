@@ -128,4 +128,9 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider 
         }
         return true;        
     }
+    
+    protected Token getJumpToken() {
+        return this.jumpToken;
+    }
+    
 }

@@ -71,9 +71,13 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
             }
         }
     }
-
+    
     protected boolean isGlobalNamespace() {
         return isRootNamespase;
+    }
+    
+    protected boolean isNamespace() {
+        return true;
     }
     
     protected void addNotify() {
@@ -184,13 +188,14 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
                     }
                 } else if( d.getKind() == CsmDeclaration.Kind.TYPEDEF ) {
                     CsmTypedef def = (CsmTypedef) d;
-                    CsmClassifier cls = def.getType().getClassifier();
-                    if (cls != null && cls.getName().length()==0 &&
-                            (cls instanceof CsmCompoundClassifier)) {
-                        return new TypedefNode(def,new ClassifierKeyArray(updater, def, (CsmCompoundClassifier) cls));
-                    } else {
-                        return new TypedefNode(def);
+                    if (def.isTypeUnnamed()) {
+                        CsmClassifier cls = def.getType().getClassifier();
+                        if (cls != null && cls.getName().length()==0 &&
+                                (cls instanceof CsmCompoundClassifier)) {
+                            return new TypedefNode(def,new ClassifierKeyArray(updater, def, (CsmCompoundClassifier) cls));
+                        }
                     }
+                    return new TypedefNode(def);
                 }
             }
         }

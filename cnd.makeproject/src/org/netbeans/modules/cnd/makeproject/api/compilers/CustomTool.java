@@ -19,8 +19,12 @@
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.openide.util.NbBundle;
+
 public class CustomTool extends Tool {
-    public CustomTool() {
-        super(CustomTool, "", "Custom Tool"); // NOI18N
+    public CustomTool() { // GRP - FIXME
+        super(CompilerFlavor.GNU, CustomTool, "", NbBundle.getMessage(CustomTool.class, "LBL_CustomTool"), null); // NOI18N
     }
 }

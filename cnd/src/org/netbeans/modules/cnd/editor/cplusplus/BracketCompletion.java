@@ -167,7 +167,8 @@ public class BracketCompletion {
             }          
         } else if (ch == '>') {
  	    TokenID tokenAtDot = support.getTokenID(dotPos);
-            if (tokenAtDot == CCTokenContext.SYS_INCLUDE) {    
+            if (tokenAtDot == CCTokenContext.SYS_INCLUDE || 
+                    tokenAtDot == CCTokenContext.INCOMPLETE_SYS_INCLUDE) {    
                 char match [] = doc.getChars(dotPos + 1, 1);
                 if (match != null && match[0] == '>') { 
                     doc.remove(dotPos + 1, 1);  
@@ -1157,13 +1158,14 @@ public class BracketCompletion {
 
     }
 
-    TokenID[] tokenIDs = theBracket =='\"' ? new TokenID[] {CCTokenContext.STRING_LITERAL, CCTokenContext.USR_INCLUDE,
-                                                                CCTokenContext.INCOMPLETE_USR_INCLUDE}
+    TokenID[] tokenIDs = theBracket =='\"' ? new TokenID[] {CCTokenContext.STRING_LITERAL, CCTokenContext.INCOMPLETE_USR_INCLUDE}
                                             : new TokenID[] {CCTokenContext.CHAR_LITERAL};
 
     if ((posWithinQuotes(doc, dotPos+1, theBracket, tokenIDs) && isCompletablePosition(doc, dotPos+1)) && 
 
-        (isUnclosedStringAtLineEnd(doc, dotPos, tokenIDs) && doc.getLength() != dotPos+1 && doc.getChars(dotPos+1, 1)[0] != theBracket)) {
+        (isUnclosedStringAtLineEnd(doc, dotPos, tokenIDs) && 
+            ((doc.getLength() == dotPos + 1) || 
+            (doc.getLength() != dotPos+1 && doc.getChars(dotPos+1, 1)[0] != theBracket)))) {
 
       doc.insertString(dotPos + 1, "" + theBracket ,null);
 

@@ -28,9 +28,9 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
-import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -66,8 +66,9 @@ public class MakeProjectModule extends ModuleInstall {
     private CustomizerNode profileCustomizerNode;
     
     public void restored() {
-	RunProfileProvider profileProvider = new RunProfileProvider();
-	ConfigurationDescriptorProvider.addAuxObjectProvider(profileProvider);
+        // Moved to services...
+//	RunProfileProvider profileProvider = new RunProfileProvider();
+//	ConfigurationDescriptorProvider.addAuxObjectProvider(profileProvider);
 	profileCustomizerNode = new RunProfileNodeProvider().createProfileNode();
 	CustomizerRootNodeProvider.getInstance().addCustomizerNode(profileCustomizerNode);
 
@@ -80,12 +81,10 @@ public class MakeProjectModule extends ModuleInstall {
     }
     
     public void close() {
-        for (int i = 0; i < CompilerSets.getCompilerSets().length; i++) {
-            CompilerSet compilerCollection = CompilerSets.getCompilerSets()[i];
-            Tool[] tools = compilerCollection.getTools();
-            for (int j = 0; j < tools.length; j++) {
-                if (tools[j] instanceof CCCCompiler) { // FIXUP: should implement/use 'capability' of tool
-                    ((CCCCompiler)(tools[j])).saveSystemIncludesAndDefines();
+        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
+            for (Tool tool : cs.getTools()) {
+                if (tool instanceof CCCCompiler) { // FIXUP: should implement/use 'capability' of tool
+                    ((CCCCompiler) tool).saveSystemIncludesAndDefines();
                 }
             }
         }

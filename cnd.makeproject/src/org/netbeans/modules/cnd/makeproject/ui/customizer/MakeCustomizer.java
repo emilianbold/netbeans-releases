@@ -46,8 +46,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
-import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
@@ -785,16 +785,16 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     
     // C/C++/Fortran Node
-    private CustomizerNode createNewDescription(Project project, int compilerSet, int tool, Item item, Folder folder, boolean isCompilerConfiguration) {
+    private CustomizerNode createNewDescription(Project project, int compilerSetIdx, int tool, Item item, Folder folder, boolean isCompilerConfiguration) {
         ResourceBundle bundle = NbBundle.getBundle( MakeCustomizer.class );
         
         Vector descriptions = new Vector();
         if (tool < 0 || tool == Tool.CCompiler)
-            descriptions.add(createCCompilerDescription(project, compilerSet, item, folder, isCompilerConfiguration));
+            descriptions.add(createCCompilerDescription(project, compilerSetIdx, item, folder, isCompilerConfiguration));
         if (tool < 0 || tool == Tool.CCCompiler)
-            descriptions.add(createCCCompilerDescription(project, compilerSet, item, folder, isCompilerConfiguration));
+            descriptions.add(createCCCompilerDescription(project, compilerSetIdx, item, folder, isCompilerConfiguration));
         if (((tool < 0 && CppSettings.getDefault().isFortranEnabled() && folder == null) || tool == Tool.FortranCompiler) && isCompilerConfiguration)
-            descriptions.add(createFortranCompilerDescription(project, compilerSet, item, isCompilerConfiguration));
+            descriptions.add(createFortranCompilerDescription(project, compilerSetIdx, item, isCompilerConfiguration));
         
         String nodeLabel;
         if (isCompilerConfiguration) {
@@ -877,9 +877,10 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     
     // C Compiler Node
-    private CustomizerNode createCCompilerDescription(Project project, int compilerSet, Item item, Folder folder, boolean isCompilerConfiguration) {
-        String compilerName = CompilerSets.getCompilerSet(compilerSet).getTool(BasicCompiler.CCompiler).getName();
-        String compilerDisplayName = CompilerSets.getCompilerSet(compilerSet).getTool(BasicCompiler.CCompiler).getDisplayName();
+    private CustomizerNode createCCompilerDescription(Project project, int compilerSetIdx,
+            Item item, Folder folder, boolean isCompilerConfiguration) {
+        String compilerName = CompilerSetManager.getDefault().getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCompiler).getName();
+        String compilerDisplayName = CompilerSetManager.getDefault().getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCompiler).getDisplayName();
         ResourceBundle bundle = NbBundle.getBundle(MakeCustomizer.class);
         CustomizerNode cCompilerCustomizerNode = new CCompilerCustomizerNode(
                 "GeneralCCompiler", // NOI18N
@@ -946,9 +947,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     
     // CC Compiler Node
-    private CustomizerNode createCCCompilerDescription(Project project, int compilerSet, Item item, Folder folder, boolean isCompilerConfiguration) {
-        String compilerName = CompilerSets.getCompilerSet(compilerSet).getTool(BasicCompiler.CCCompiler).getName();
-        String compilerDisplayName = CompilerSets.getCompilerSet(compilerSet).getTool(BasicCompiler.CCCompiler).getDisplayName();
+    private CustomizerNode createCCCompilerDescription(Project project, int compilerSetIdx, Item item, Folder folder, boolean isCompilerConfiguration) {
+        String compilerName = CompilerSetManager.getDefault().getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCCompiler).getName();
+        String compilerDisplayName = CompilerSetManager.getDefault().getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCCompiler).getDisplayName();
         ResourceBundle bundle = NbBundle.getBundle(MakeCustomizer.class);
         CustomizerNode ccCompilerCustomizerNode = new CCCompilerCustomizerNode(
                 "GeneralCCCompiler", // NOI18N
@@ -1016,9 +1017,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     
     // Fortran Compiler Node
-    private CustomizerNode createFortranCompilerDescription(Project project, int compilerSet, Item item, boolean isCompilerConfiguration) {
-        String compilerName = CompilerSets.getCompilerSet(compilerSet).getTool(BasicCompiler.FortranCompiler).getName();
-        String compilerDisplayName = CompilerSets.getCompilerSet(compilerSet).getTool(BasicCompiler.FortranCompiler).getDisplayName();
+    private CustomizerNode createFortranCompilerDescription(Project project, int compilerSetIdx, Item item, boolean isCompilerConfiguration) {
+        String compilerName = CompilerSetManager.getDefault().getCompilerSet(compilerSetIdx).getTool(BasicCompiler.FortranCompiler).getName();
+        String compilerDisplayName = CompilerSetManager.getDefault().getCompilerSet(compilerSetIdx).getTool(BasicCompiler.FortranCompiler).getDisplayName();
         CustomizerNode fortranCompilerCustomizerNode = new FortranCompilerCustomizerNode(
                 "GeneralFortranCompiler", // NOI18N
                 getString("LBL_Config_General"), // NOI18N

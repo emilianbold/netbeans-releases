@@ -34,9 +34,9 @@ public class RepositoryThreadManager {
     private static final String threadNameBase = "Repository writer"; // NOI18N
     private RequestProcessor processor;
     
-    private Object theadsLock = new String("theadsLock");
+    private Object theadsLock = new String("theadsLock"); // NOI18N
     private Set<Thread> threads = new HashSet<Thread>();
-    private Object threadsWaitLock = new String("threadsWaitLock");
+    private Object threadsWaitLock = new String("threadsWaitLock"); // NOI18N
     private boolean finished = false;
     
     private int currThread = 0;
@@ -89,7 +89,7 @@ public class RepositoryThreadManager {
         if( ! standalone ) {
             processor = new RequestProcessor(threadNameBase, threadCount);
         }
-	queue = new RepositoryQueue();
+	queue = Stats.queueUseTicking ? new TickingRepositoryQueue() : new RepositoryQueue();
         for (int i = 0; i < threadCount; i++) {
             Runnable r = new Wrapper(new RepositoryWritingThread(writer, queue));
             if( standalone ) {

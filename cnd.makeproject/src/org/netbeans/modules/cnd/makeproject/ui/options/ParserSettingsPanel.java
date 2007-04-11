@@ -1,0 +1,197 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.cnd.makeproject.ui.options;
+
+import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import javax.swing.JPanel;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
+import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.util.NbBundle;
+
+public class ParserSettingsPanel extends JPanel {
+    
+    private ActionListener collectionActionListener;
+    private HashMap predefinedPanels = new HashMap();
+    
+    /**
+     * Creates new form ParserSettingsPanel
+     */
+    public ParserSettingsPanel() {
+        initComponents();
+        
+        updateCompilerCollections();
+        compilerCollectionComboBox.addActionListener(collectionActionListener = new ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateTabs();
+            }
+        });
+        
+        infoTextArea.setBackground(collectionPanel.getBackground());
+        
+        //setPreferredSize(new java.awt.Dimension(600, 700));
+        
+        // Accessible Description
+        getAccessibleContext().setAccessibleDescription(getString("MANAGE_COMPILERS_SETTINGS_AD"));
+        compilerCollectionComboBox.getAccessibleContext().setAccessibleDescription(getString("COMPILER_COLLECTION_AD"));
+        tabbedPane.getAccessibleContext().setAccessibleDescription(getString("COMPILERS_TABBEDPANE_AD"));
+        tabbedPane.getAccessibleContext().setAccessibleName(getString("COMPILERS_TABBEDPANE_AN"));
+    }
+    
+    private void updateCompilerCollections() {
+        compilerCollectionComboBox.removeAllItems();
+        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
+            compilerCollectionComboBox.addItem(cs);
+        }
+        
+        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(CppSettings.getDefault().getCompilerSetName());
+        if (cs == null) {
+            cs = CompilerSetManager.getDefault().getCompilerSet(0);
+        }
+        if (cs != null) {
+            compilerCollectionComboBox.setSelectedItem(cs);
+        }
+        updateTabs();
+    }
+    
+    private void updateTabs() {
+        tabbedPane.removeAll();
+        CompilerSet compilerCollection = (CompilerSet)compilerCollectionComboBox.getSelectedItem();
+        for (Tool tool : compilerCollection.getTools()) {
+            if (tool instanceof CCCCompiler) { // FIXUP: should implement/use 'capability' of tool
+                PredefinedPanel predefinedPanel = (PredefinedPanel)predefinedPanels.get(tool);
+                if (predefinedPanel == null) {
+                    predefinedPanel = new PredefinedPanel((CCCCompiler)tool, this);
+                    predefinedPanels.put(tool, predefinedPanel);
+                }
+                tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
+            }
+        }
+    }
+    
+    public void save() {
+        PredefinedPanel[] viewedPanels = (PredefinedPanel[])predefinedPanels.values().toArray(new PredefinedPanel[predefinedPanels.values().size()]);
+        for (int i = 0; i < viewedPanels.length; i++) {
+            viewedPanels[i].save();
+        }
+        fireFilesPropertiesChanged();
+    }
+    
+    public void fireFilesPropertiesChanged() {
+	Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+	for (int i = 0; i < openProjects.length; i++) {
+            NativeProjectProvider npv = (NativeProjectProvider)openProjects[i].getLookup().lookup(NativeProjectProvider.class );
+            if (npv != null)
+                npv.fireFilesPropertiesChanged();
+        }
+    }
+    
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        collectionPanel = new javax.swing.JPanel();
+        compilerCollectionLabel = new javax.swing.JLabel();
+        compilerCollectionComboBox = new javax.swing.JComboBox();
+        tabPanel = new javax.swing.JPanel();
+        tabbedPane = new javax.swing.JTabbedPane();
+        scrollPane = new javax.swing.JScrollPane();
+        infoTextArea = new javax.swing.JTextArea();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        collectionPanel.setLayout(new java.awt.GridBagLayout());
+
+        compilerCollectionLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("COMPILER_COLLECTION_MN").charAt(0));
+        compilerCollectionLabel.setLabelFor(compilerCollectionComboBox);
+        compilerCollectionLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("COMPILER_COLLECTION_LBL"));
+        collectionPanel.add(compilerCollectionLabel, new java.awt.GridBagConstraints());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        collectionPanel.add(compilerCollectionComboBox, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
+        add(collectionPanel, gridBagConstraints);
+
+        tabPanel.setLayout(new java.awt.GridBagLayout());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        tabPanel.add(tabbedPane, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 12);
+        add(tabPanel, gridBagConstraints);
+
+        scrollPane.setBorder(null);
+        infoTextArea.setColumns(60);
+        infoTextArea.setEditable(false);
+        infoTextArea.setLineWrap(true);
+        infoTextArea.setRows(5);
+        infoTextArea.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("INFO_TEXT"));
+        infoTextArea.setWrapStyleWord(true);
+        infoTextArea.setBorder(null);
+        scrollPane.setViewportView(infoTextArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
+        add(scrollPane, gridBagConstraints);
+
+    }// </editor-fold>//GEN-END:initComponents
+    
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel collectionPanel;
+    private javax.swing.JComboBox compilerCollectionComboBox;
+    private javax.swing.JLabel compilerCollectionLabel;
+    private javax.swing.JTextArea infoTextArea;
+    private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JPanel tabPanel;
+    private javax.swing.JTabbedPane tabbedPane;
+    // End of variables declaration//GEN-END:variables
+    
+    
+    private static String getString(String s) {
+        return NbBundle.getMessage(ParserSettingsPanel.class, s);
+    }
+}

@@ -97,7 +97,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private int fileType = UNDEFINED_FILE;
     
-    private APTPreprocState preprocState;
+    private APTPreprocState myPreprocState;
     
     private Object stateLock = new Object();
     
@@ -115,7 +115,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             this.projectRef = project;
             this.projectUID = null;
         }
-        this.preprocState = preprocState;
+        this.myPreprocState = preprocState;
         this.fileType = fileType;
         this.fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N
         Notificator.instance().registerNewFile(this);
@@ -168,7 +168,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private APTPreprocState getCreatePreprocState() {
         // use current
-        APTPreprocState preprocState = this.preprocState;
+        APTPreprocState preprocState = this.myPreprocState;
         // else ask project
         if (preprocState == null && (getProjectImpl() != null)) {
             preprocState = getProjectImpl().getPreprocState(fileBuffer.getFile());
@@ -301,7 +301,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	disposeAll(true);
     }
     
-    protected void onDispose() {
+    public void onProjectDispose(){
+        onDispose();
+    }
+    
+    private void onDispose() {
         if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
             // restore container from it's UID
             this.projectRef = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
@@ -444,6 +448,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
 
         APTPreprocState preprocState = getCreatePreprocState(); 
+        APTPreprocState.State oldState = preprocState.getState();
 
         // 1. get cache with AST
         // 2a if cache has AST => use AST and APTLight
@@ -461,6 +466,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         } else {
             try {
                 aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
+            } catch(FileNotFoundException ex){
+                System.err.println("File "+getBuffer().getFile().getAbsolutePath()+" not found.");
             } catch (IOException ex) {
                 ex.printStackTrace(System.err);
             }
@@ -488,6 +495,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }             
             // make real parse
             APTParseFileWalker walker = new APTParseFileWalker(aptFull, this, preprocState);
+            if (TraceFlags.DEBUG) {
+                System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocStateState(oldState));
+            }
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter()), flags);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             parser.translation_unit();
@@ -529,7 +539,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if(!TraceModel.LEAVE_PP_STATE_UNCLEANED) {
             setPreprocState(null);
             if (getProjectImpl() != null && getBuffer().isFileBased()) {
-                getProjectImpl().cleanPreprocStateAfterParse(this);
+                getProjectImpl().cleanPreprocStateAfterParse(this, oldState);
             }
         }
         return ast;
@@ -624,7 +634,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return fileBuffer.getFile().getName();
     }
 
-    public List/*<CsmInclude>*/ getIncludes() {
+    public List<CsmInclude> getIncludes() {
         if (TraceFlags.USE_REPOSITORY) {
             List out;
             synchronized (includes) {
@@ -638,7 +648,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    public List/*<CsmDeclaration>*/ getDeclarations() {
+    public List<CsmOffsetableDeclaration> getDeclarations() {
 	fixFakeRegistrations();
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmOffsetableDeclaration> decls;
@@ -664,7 +674,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
     
-    public List/*<CsmMacro>*/ getMacros() {
+    public List<CsmMacro> getMacros() {
         if (TraceFlags.USE_REPOSITORY) {
             List out;
             synchronized (macros) {
@@ -779,13 +789,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public void setPreprocState(APTPreprocState preprocState) {
-        this.preprocState = preprocState;
+        this.myPreprocState = preprocState;
     }
     
     // for tests only
     public APTPreprocState.State testGetPreprocStateState() {
-        if (preprocState != null) {
-            return preprocState.getState();
+        if (myPreprocState != null) {
+            return myPreprocState.getState();
         } else {
             return null;
         }

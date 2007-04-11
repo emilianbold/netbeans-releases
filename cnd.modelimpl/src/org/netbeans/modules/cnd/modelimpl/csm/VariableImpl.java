@@ -193,6 +193,10 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public void dispose() {
         super.dispose();
         onDispose();
+        // dispose type
+        if (this.type != null && this.type instanceof Disposable) {
+            ((Disposable)this.type).dispose();
+        }
         if( _getScope() instanceof MutableDeclarationsContainer ) {
             ((MutableDeclarationsContainer) _getScope()).removeDeclaration(this);
         }

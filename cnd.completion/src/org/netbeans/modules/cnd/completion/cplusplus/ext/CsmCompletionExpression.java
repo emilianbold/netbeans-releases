@@ -142,9 +142,12 @@ public class CsmCompletionExpression {
     
     /** dereference "*" or address-of "&" operators in the '*value' or '&value'*/
     public static final int MEMBER_POINTER = 32;
+    
+    /** dereference "*" or address-of "&" operators in the '((A)*' or '((A)&'*/
+    public static final int MEMBER_POINTER_OPEN = 33;    
 
     /** Last used id of the expression ids. */
-    private static final int LAST_ID = MEMBER_POINTER;
+    private static final int LAST_ID = MEMBER_POINTER_OPEN;
 
     private static final int cppTokenIDsLength
         = CCTokenContext.context.getTokenIDs().length;
@@ -220,7 +223,7 @@ public class CsmCompletionExpression {
         OP[cppTokenIDsLength + DOT_OPEN] = 0; // stop
         OP[cppTokenIDsLength + ARROW] = 1;
         OP[cppTokenIDsLength + ARROW_OPEN] = 0; // stop
-        OP[cppTokenIDsLength + SCOPE] = 1;
+        OP[cppTokenIDsLength + SCOPE] = 17 ;
         OP[cppTokenIDsLength + SCOPE_OPEN] = 0; // stop
         OP[cppTokenIDsLength + ARRAY_OPEN] = 0; // stop
         OP[cppTokenIDsLength + ARRAY] = 1;
@@ -229,13 +232,14 @@ public class CsmCompletionExpression {
         OP[cppTokenIDsLength + METHOD_OPEN] = 0; // stop
         OP[cppTokenIDsLength + METHOD] = 1;
         OP[cppTokenIDsLength + CONSTRUCTOR] = 1;
-        OP[cppTokenIDsLength + CONVERSION] = 1;
+        OP[cppTokenIDsLength + CONVERSION] = 15 | RIGHT_ASSOCIATIVE;
         OP[cppTokenIDsLength + TYPE] = 0; // stop
         OP[cppTokenIDsLength + NEW] = 0; // stop
         OP[cppTokenIDsLength + INSTANCEOF] = 10;
         OP[cppTokenIDsLength + CPPINCLUDE] = 0; // stop
 
-        OP[cppTokenIDsLength + MEMBER_POINTER] = 15; // as unary operators ?
+        OP[cppTokenIDsLength + MEMBER_POINTER_OPEN] = 0; // stop
+        OP[cppTokenIDsLength + MEMBER_POINTER] = 15 | RIGHT_ASSOCIATIVE; // as unary operators ?        
         OP[cppTokenIDsLength + TYPE_REFERENCE] = 1; // need to set correct value
         OP[cppTokenIDsLength + TYPE_POSTFIX] = 1; // need to set correct value
         OP[cppTokenIDsLength + TYPE_PREFIX] = 1; // need to set correct value
@@ -330,14 +334,19 @@ public class CsmCompletionExpression {
     static boolean isValidType(CsmCompletionExpression exp) {
         switch (exp.getExpID()) {
         case ARRAY:
-        case TYPE_POSTFIX:
-        case TYPE_PREFIX:
-        case TYPE_REFERENCE:    
             if (exp.getParameterCount() == 1) {
                 return isValidType(exp.getParameter(0));
             }
             return false;
 
+        case TYPE_POSTFIX:
+        case TYPE_PREFIX:
+        case TYPE_REFERENCE:    
+            if (exp.getParameterCount() >= 1) {
+                return isValidType(exp.getParameter(0));
+            }
+            return false;
+            
         case DOT:
         case ARROW:
         case SCOPE:
@@ -520,6 +529,8 @@ public class CsmCompletionExpression {
             return "TYPE_REFERENCE"; // NOI18N
         case MEMBER_POINTER:
             return "MEMBER_POINTER"; // NOI18N            
+        case MEMBER_POINTER_OPEN:
+            return "MEMBER_POINTER_OPEN"; // NOI18N  
         default:
             return "Unknown expID " + expID; // NOI18N
         }

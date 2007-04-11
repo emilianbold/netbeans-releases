@@ -39,6 +39,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.EmptyCompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyCompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTPreprocStateImpl;
@@ -321,14 +322,29 @@ public class PersistentUtils {
     public static void writeCompoundStatement(CsmCompoundStatement body, DataOutput output) throws IOException {
         assert body != null;
         if (body instanceof LazyCompoundStatementImpl) {
+            output.writeInt(LAZY_COMPOUND_STATEMENT_IMPL);
             ((LazyCompoundStatementImpl)body).write(output);
+        } else if (body instanceof EmptyCompoundStatementImpl) {
+            output.writeInt(EMPTY_COMPOUND_STATEMENT_IMPL);
+            ((EmptyCompoundStatementImpl)body).write(output);
         } else {
-            throw new IllegalArgumentException("unknown compound statement" + body);  //NOI18N
+            throw new IllegalArgumentException("unknown compound statement " + body);  //NOI18N
         }
     }
 
     public static CsmCompoundStatement readCompoundStatement(DataInput input) throws IOException {
-        CsmCompoundStatement body = new LazyCompoundStatementImpl(input);
+        int handler = input.readInt();
+        CsmCompoundStatement body;
+        switch (handler) {
+            case LAZY_COMPOUND_STATEMENT_IMPL:
+                body = new LazyCompoundStatementImpl(input);
+                break;
+            case EMPTY_COMPOUND_STATEMENT_IMPL:
+                body = new EmptyCompoundStatementImpl(input);
+                break;
+            default:
+                throw new IllegalArgumentException("unknown handler" + handler);  //NOI18N                
+        }
         return body;
     }
     
@@ -408,7 +424,11 @@ public class PersistentUtils {
     // state 
     private static final int PREPROC_STATE_STATE_IMPL = TYPE_IMPL + 1;
     
+    // compound statements
+    private static final int LAZY_COMPOUND_STATEMENT_IMPL = PREPROC_STATE_STATE_IMPL + 1;
+    private static final int EMPTY_COMPOUND_STATEMENT_IMPL = LAZY_COMPOUND_STATEMENT_IMPL + 1;
+    
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
-    public static final int LAST_INDEX              = PREPROC_STATE_STATE_IMPL;
+    public static final int LAST_INDEX              = EMPTY_COMPOUND_STATEMENT_IMPL;
 }

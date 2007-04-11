@@ -53,10 +53,15 @@ public class ParserThread implements Runnable {
                     Diagnostic.StopWatch stw = (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && ! file.isParsed()) ? new Diagnostic.StopWatch() : null;
                     try {
                             APTPreprocState preprocState = null;
-                            if (entry.getPreprocStateState() != null) {
+                            APTPreprocState.State state = entry.getPreprocStateState();
+                            if (state != null) {
                                 // init from entry
                                 preprocState = file.getProjectImpl().createDefaultPreprocState(file.getBuffer().getFile());
-                                preprocState.setState(entry.getPreprocStateState());
+                                if( TraceFlags.TRACE_PARSER_QUEUE ) {
+                                    System.err.println("before ensureParse on " + file.getAbsolutePath() + 
+                                            ParserQueue.tracePreprocStateState(state)); 
+                                }
+                                preprocState.setState(state);
                             }
                             file.ensureParsed(preprocState);
                     }

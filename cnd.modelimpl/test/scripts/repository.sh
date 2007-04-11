@@ -18,14 +18,14 @@
 # Microsystems, Inc. All Rights Reserved.
 
 TEST_PROJECT="$1"
-PROJECT_TEMP_FILE=/tmp/reptest.${RANDOM}
-echo ${PROJECT_TEMP_FILE}
+LOGPATH=${LOGPATH-/tmp}
+PROJECT_TEMP_FILE=${LOGPATH}/repositorytest
+echo Testing on project: ${TEST_PROJECT}
+echo Logs stored to: ${PROJECT_TEMP_FILE}
 echo "Running without repository..."
-./_parse_project.sh ${TEST_PROJECT} -fq  -J-Dcnd.repository.use.hardcache=true  > ${PROJECT_TEMP_FILE}.original 
-#2>&1
+./_parse_project.sh ${TEST_PROJECT} -fq  -J-Dcnd.repository.hardrefs=true  > ${PROJECT_TEMP_FILE}.original 2>&1
 echo "Running with repository..."
-./_parse_project.sh ${TEST_PROJECT} -fq --cleanrepository -J-Dcnd.repository.workaround.nulldata=true> ${PROJECT_TEMP_FILE}.repository 
-#2>&1
+./_parse_project.sh ${TEST_PROJECT} -fq --cleanrepository> ${PROJECT_TEMP_FILE}.repository 2>&1
 
 diff ${PROJECT_TEMP_FILE}.original ${PROJECT_TEMP_FILE}.repository > ${PROJECT_TEMP_FILE}.diff
 echo To see detailed results do
@@ -33,6 +33,20 @@ echo cat ${PROJECT_TEMP_FILE}.diff
 
 echo "Lines in diff file:"
 cat  ${PROJECT_TEMP_FILE}.diff | wc -l
+
+if [ -s ${PROJECT_TEMP_FILE}.diff ]; then
+    reptestresult="failed"
+else
+    reptestresult="passed"
+fi
+echo Repository correctness test: ${reptestresult}
+
+if [ -n "${XMLOUTPUT}" ]; then
+    echo "<log name='Model without repository'>${PROJECT_TEMP_FILE}.original</log>" >> ${XMLOUTPUT}
+    echo "<log name='Model with repository'>${PROJECT_TEMP_FILE}.repository</log>" >> ${XMLOUTPUT}
+    echo "<log name='Models diff'>${PROJECT_TEMP_FILE}.diff</log>" >> ${XMLOUTPUT}
+    echo "<result>${reptestresult}</result>" >> ${XMLOUTPUT}
+fi
 
 
 

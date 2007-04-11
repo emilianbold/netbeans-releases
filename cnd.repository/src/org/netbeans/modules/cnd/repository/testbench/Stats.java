@@ -50,25 +50,32 @@ public class Stats {
     public static final boolean useHardRefRepository = getBoolean("cnd.repository.hardrefs", false); //NOI18N
     public static final boolean queueTiming = getBoolean("cnd.repository.queue.timing", false); //NOI18N
     public static final boolean queueTrace = getBoolean("cnd.repository.queue.trace", false); //NOI18N
+    public static final boolean queueUseTicking = getBoolean("cnd.repository.queue.ticking", false); //NOI18N
     public static final boolean useThreading = getBoolean("cnd.repository.threading", true); //NOI18N
     
-    public static final boolean writeToASingleFile = getBoolean("cnd.repository.1file", true); //NOI18N
+    public static final boolean writeToASingleFile = getBoolean("cnd.repository.1file", false); //NOI18N
 
     public static final int fileStatisticsLevel = getInteger("cnd.repository.file.stat", 0); //NOI18N
     public static final int fileStatisticsRanges = getInteger("cnd.repository.file.stat.ranges", 10); //NOI18N
+
+    public static final boolean writeStatistics = getBoolean("cnd.repository.write.stat", false); //NOI18N
     
     public static final boolean dumoFileOnExit = getBoolean("cnd.repository.dump.on.exit", false); //NOI18N
     public static final int sleepOnEmptyWriteQueue = getInteger("cnd.repository.write.queue.sleep", 1000); //NOI18N
-    public static final boolean compactOnEmptyWriteQueue = getBoolean("cnd.repository.compact", false); //NOI18N
+    public static final boolean defragmentOnEmptyWriteQueue = getBoolean("cnd.repository.defragm", true); //NOI18N
     
     public static final int fileRWAccess = getInteger("cnd.repository.rw", 0); //NOI18N
     public static final int bufSize = getInteger("cnd.repository.bufsize", -1); //NOI18N
-    public static final boolean useCompactIndex = getBoolean("cnd.repository.compact.index", true);
+    public static final boolean useCompactIndex = getBoolean("cnd.repository.compact.index", true); //NOI18N
     
-    public static final String traceKeyName = System.getProperty("cnd.repository.trace.key");
-    public static final boolean traceKey = (traceKeyName != null);
+    public static final String traceKeyName = System.getProperty("cnd.repository.trace.key"); //NOI18N
+    public static final boolean traceKey = (traceKeyName != null); //NOI18N
     
-    public static final boolean traceCompacting = getBoolean("cnd.repository.trace.compacting", false);
+    public static final boolean traceDefragmentation = getBoolean("cnd.repository.trace.defragm", false); //NOI18N
+
+    public static final boolean hardFickle = getBoolean("cnd.repository.hard.fickle", false); //NOI18N
+    public static final boolean doubleFileStorage = getBoolean("cnd.repository.double", true); //NOI18N
+    public static final int defragmentationThreashold = getInteger("cnd.repository.defragm.threshold", 50); //NOI18N
             
     public static final boolean isTraceKey(Key key) {
 	if( traceKey ) {

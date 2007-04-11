@@ -21,11 +21,14 @@ package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.awt.Toolkit;
 import java.awt.Image;
+import java.awt.color.ColorSpace;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -47,6 +50,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
@@ -54,10 +58,12 @@ import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
-import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
+import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
@@ -78,7 +84,6 @@ import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.PasteAction;
-import org.openide.actions.PropertiesAction;
 import org.openide.actions.RenameAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
@@ -275,7 +280,44 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             ; // FIXUP
         }
     }
-    
+
+    public static void checkForChangedItems(Project project, Folder folder, Item item) {
+        if (item == null) {
+            checkForChangedItems(project);
+            return;
+        }
+        Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
+        Node root = findProjectNode(rootNode, project);
+        if (root != null){
+            Node node = findItemNode(root, item);
+            if (node instanceof FilterNode){
+                Object o = node.getLookup().lookup(ViewItemNode.class);
+                if (o != null){
+                    ((ChangeListener)o).stateChanged(null);
+                }
+            }
+        }
+    }
+
+    private static void checkForChangedItems(Project project) {
+        Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
+        checkForChangedItems(findProjectNode(rootNode, project));
+    }
+
+    private static void checkForChangedItems(Node root) {
+        if (root != null){
+            for(Node node : root.getChildren().getNodes(true)){
+                checkForChangedItems(node);
+                if (node instanceof FilterNode){
+                    Object o = node.getLookup().lookup(ViewItemNode.class);
+                    if (o != null){
+                        ((ChangeListener)o).stateChanged(null);
+                    }
+                }
+            }
+        }
+    }
+
     private static Node findProjectNode(Node root, Project p) {
         Node[] n = root.getChildren().getNodes(true);
         Template t = new Template(null, null, p);
@@ -1132,7 +1174,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
     
-    private class ViewItemNode extends FilterNode {
+    private class ViewItemNode extends FilterNode implements ChangeListener {
         Children.Keys childrenKeys;
         private Folder folder;
         private Item item;
@@ -1243,6 +1285,46 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 }
             }
             return (Action[]) newActions.toArray(new Action[newActions.size()]);
+        }
+
+        public Image getIcon(int type) {
+            Image image = super.getIcon(type);
+            if (isExcluded() && (image instanceof BufferedImage)) {
+                ColorSpace gray_space = ColorSpace.getInstance (ColorSpace.CS_GRAY);
+                ColorConvertOp convert_to_gray_op = new ColorConvertOp (gray_space, null);
+                image = convert_to_gray_op.filter ((BufferedImage)image, null);                
+            }
+            return image;
+        }
+
+        public String getHtmlDisplayName() {
+            if (isExcluded()) {
+                return "<font color='!controlShadow'>"+getDisplayName(); // NOI18N
+            }
+            return super.getHtmlDisplayName();
+        }
+        
+        private boolean isExcluded(){
+            if (item == null){
+                return false;
+            }
+            MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+            ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+            if (itemConfiguration == null) {
+                return false;
+            }
+            BooleanConfiguration excl = itemConfiguration.getExcluded();
+            return excl.getValue();
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            String displayName = getDisplayName();
+            // do not work:
+            //fireDisplayNameChange(displayName,displayName);
+            fireDisplayNameChange(displayName,"");
+            fireDisplayNameChange("",displayName);
+            fireIconChange();
+            fireOpenedIconChange();
         }
     }
     

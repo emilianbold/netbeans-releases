@@ -204,10 +204,14 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="OptionsDialog">
         <folder name="CPlusPlus">
-            <attr name="ToolsPanelController.instance/MakeProjectEditorPanelController.instance" boolvalue="true"/>
-            <file name="MakeProjectEditorPanelController.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.options.MakeProjectEditorPanelController"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+            <attr name="ToolsPanelController.instance/ProjectOptionsPanelController.instance" boolvalue="true"/>
+            <file name="ProjectOptionsPanelController.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.options.ProjectOptionsPanelController"/>
+            </file>
+            
+            <attr name="ProjectOptionsPanelController.instance/CodeAssistancePanelController.instance" boolvalue="true"/>
+            <file name="CodeAssistancePanelController.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.options.CodeAssistancePanelController"/>
             </file>
         </folder>
     </folder>

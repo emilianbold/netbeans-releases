@@ -8,7 +8,9 @@ class TestKey implements Key {
     
     private String key;
     
-    
+    public Behavior getBehavior() {
+	return Behavior.Default;
+    }
     
     public TestKey(String key) {
 	this.key = key;
@@ -50,7 +52,7 @@ class TestKey implements Key {
     }
 
     public String getUnit() {
-	return "Test";
+	return "Test"; // NOI18N
     }
     
 }

@@ -260,20 +260,20 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     private ProviderItem getDefaultProvider(List<ProviderItem> list, ProjectProxy proxy, DiscoveryDescriptor wizardDescriptor){
         ProviderItem def = null;
         for(ProviderItem item:list){
-            if ("model-folder".equals(item.getID())){
+            if ("model-folder".equals(item.getID())){ // NOI18N
                 // select model if no other variants
                 def = item;
-            } else if ("dwarf-executable".equals(item.getID())){
+            } else if ("dwarf-executable".equals(item.getID())){ // NOI18N
                 // select executable if make project has output
                 // and output has debug information.
-                item.getProvider().getProperty("executable").setValue(wizardDescriptor.getBuildResult());
+                item.getProvider().getProperty("executable").setValue(wizardDescriptor.getBuildResult()); // NOI18N
                 if (item.getProvider().canAnalyze(proxy)) {
                     return item;
                 }
-            } else if ("dwarf-folder".equals(item.getID())){
+            } else if ("dwarf-folder".equals(item.getID())){ // NOI18N
                 // select executable if make project has output
                 // and output has debug information.
-                item.getProvider().getProperty("folder").setValue(wizardDescriptor.getRootFolder());
+                item.getProvider().getProperty("folder").setValue(wizardDescriptor.getRootFolder()); // NOI18N
                 if (item.getProvider().canAnalyze(proxy)) {
                     return item;
                 }
@@ -295,7 +295,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             return false;
         }
         ProviderItem provider = (ProviderItem)prividersComboBox.getSelectedItem();
-        if ("model-folder".equals(provider.getID())){
+        if ("model-folder".equals(provider.getID())){ // NOI18N
             Project project = wizardDescriptor.getProject();
             if (project != null){
                 CsmProject langProject = CsmModelAccessor.getModel().getProject(project);

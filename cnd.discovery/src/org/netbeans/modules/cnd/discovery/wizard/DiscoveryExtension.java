@@ -54,8 +54,15 @@ public class DiscoveryExtension implements IteratorExtension {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
         descriptor.clean();
     }
-
+    
     public boolean isApplicable(DiscoveryDescriptor descriptor) {
+        if (isApplicableDwarfExecutable(descriptor)){
+            return true;
+        }
+        return isApplicableDwarfFolder(descriptor);
+    }
+    
+    private boolean isApplicableDwarfExecutable(DiscoveryDescriptor descriptor){
         String selectedExecutable = descriptor.getBuildResult();
         if (selectedExecutable == null) {
             return false;
@@ -64,86 +71,107 @@ public class DiscoveryExtension implements IteratorExtension {
         if (!file.exists()) {
             return false;
         }
-        DiscoveryProvider provider = descriptor.getProvider();
-        if (provider== null){
-            provider = findProvider();
-        }
-        if (provider == null){
-            return false;
-        }
-        provider.getProperty("executable").setValue(selectedExecutable);// NOI18N
-        provider.getProperty("libraries").setValue(new String[0]);// NOI18N
-        descriptor.setProvider(provider);
-        return provider.canAnalyze(new ProjectProxy(){
+        ProjectProxy proxy = new ProjectProxy(){
             public boolean createSubProjects() {
                 return false;
             }
-
             public Object getProject() {
                 return null;
             }
-        });
+        };
+        DiscoveryProvider provider = findProvider("dwarf-executable"); // NOI18N
+        if (provider != null){
+            provider.getProperty("executable").setValue(selectedExecutable); // NOI18N
+            provider.getProperty("libraries").setValue(new String[0]); // NOI18N
+            if (provider.canAnalyze(proxy)){
+                descriptor.setProvider(provider);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isApplicableDwarfFolder(DiscoveryDescriptor descriptor){
+        String rootFolder = descriptor.getRootFolder();
+        if (rootFolder == null) {
+            return false;
+        }
+        ProjectProxy proxy = new ProjectProxy(){
+            public boolean createSubProjects() {
+                return false;
+            }
+            public Object getProject() {
+                return null;
+            }
+        };
+        DiscoveryProvider provider = findProvider("dwarf-folder"); // NOI18N
+        if (provider != null){
+            provider.getProperty("folder").setValue(rootFolder); // NOI18N
+            if (provider.canAnalyze(proxy)){
+                descriptor.setProvider(provider);
+                return true;
+            }
+        }
+        return false;
     }
     
     public boolean isApplicable(WizardDescriptor wizard) {
         String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
-        if (selectedExecutable == null) {
-            return false;
-        }
-        File file = new File(selectedExecutable);
-        if (!file.exists()) {
-            return false;
-        }
+        String rootFolder = (String)wizard.getProperty("buildCommandWorkingDirTextField"); // NOI18N
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
         descriptor.setBuildResult(selectedExecutable);
+        descriptor.setRootFolder(rootFolder);
         return isApplicable(descriptor);
     }
-
+    
+    public String getProviderID(WizardDescriptor wizard){
+        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
+        return descriptor.getProviderID();
+    }
+    
     public boolean canApply(DiscoveryDescriptor descriptor) {
+        if (!isApplicable(descriptor)){
+            return false;
+        }
         String level = descriptor.getLevel();
         if (level == null || level.length() == 0){
             return false;
         }
-        String selectedExecutable = descriptor.getBuildResult();
-        String additional = descriptor.getAditionalLibraries();
-
         DiscoveryProvider provider = descriptor.getProvider();
-        if (provider== null){
-            provider = findProvider();
-        }
         if (provider == null){
             return false;
         }
-        provider.getProperty("executable").setValue(selectedExecutable);// NOI18N
-        if (additional != null && additional.length()>0){
-            List<String> list = new ArrayList<String>();
-            StringTokenizer st = new StringTokenizer(additional,";"); // NOI18N
-            while(st.hasMoreTokens()){
-                list.add(st.nextToken());
+        if ("dwarf-executable".equals(provider.getID())){ // NOI18N
+            String selectedExecutable = descriptor.getBuildResult();
+            String additional = descriptor.getAditionalLibraries();
+            provider.getProperty("executable").setValue(selectedExecutable); // NOI18N
+            if (additional != null && additional.length()>0){
+                List<String> list = new ArrayList<String>();
+                StringTokenizer st = new StringTokenizer(additional,";");  // NOI18N
+                while(st.hasMoreTokens()){
+                    list.add(st.nextToken());
+                }
+                provider.getProperty("libraries").setValue(list.toArray(new String[list.size()])); // NOI18N
+            } else {
+                provider.getProperty("libraries").setValue(new String[0]); // NOI18N
             }
-            provider.getProperty("libraries").setValue(list.toArray(new String[list.size()]));// NOI18N
+        } else if ("dwarf-folder".equals(provider.getID())){ // NOI18N
+            String rootFolder = descriptor.getRootFolder();
+            provider.getProperty("folder").setValue(rootFolder); // NOI18N
         } else {
-            provider.getProperty("libraries").setValue(new String[0]);// NOI18N
+            return false;
         }
-        descriptor.setProvider(provider);
         SelectConfigurationPanel.buildModel(descriptor);
         return !descriptor.isInvokeProvider()
-            && descriptor.getConfigurations() != null
-            && descriptor.getIncludedFiles() != null;
+        && descriptor.getConfigurations() != null
+                && descriptor.getIncludedFiles() != null;
     }
     
     public boolean canApply(WizardDescriptor wizard, Project project) {
         String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
-        if (selectedExecutable == null) {
-            return false;
-        }
-        File file = new File(selectedExecutable);
-        if (!file.exists()) {
-            return false;
-        }
         String additional = (String)wizard.getProperty("additionalLibraries"); // NOI18N
-        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
         String level = (String)wizard.getProperty("consolidationLevel"); // NOI18N
+        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
         descriptor.setBuildResult(selectedExecutable);
         descriptor.setAditionalLibraries(additional);
         descriptor.setLevel(level);
@@ -151,11 +179,11 @@ public class DiscoveryExtension implements IteratorExtension {
         return canApply(descriptor);
     }
     
-    private DiscoveryProvider findProvider(){
+    private DiscoveryProvider findProvider(String providerID){
         Lookup.Result providers = Lookup.getDefault().lookup(new Lookup.Template(DiscoveryProvider.class));
         for(Object p : providers.allInstances()){
             DiscoveryProvider provider = (DiscoveryProvider)p;
-            if ("dwarf-executable".equals(provider.getID())) {// NOI18N
+            if (providerID.equals(provider.getID())) {
                 provider.clean();
                 return provider;
             }

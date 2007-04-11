@@ -61,7 +61,7 @@ public class SelectModeWizard implements WizardDescriptor.Panel, ChangeListener 
     }
     
     public boolean isValid() {
-	boolean valid = ((SelectModePanel)getComponent()).valid();
+	boolean valid = ((SelectModePanel)getComponent()).valid(wizardDescriptor);
 	if (valid) {
 	    wizardDescriptor.setMessage(""); // NOI18N
         }

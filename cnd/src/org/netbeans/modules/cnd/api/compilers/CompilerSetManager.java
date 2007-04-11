@@ -22,8 +22,10 @@ package org.netbeans.modules.cnd.api.compilers;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
@@ -42,8 +44,15 @@ public class CompilerSetManager {
     private static final String gcc_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*gcc(([-.]\\d){2,4})?(\\.exe)?"; // NOI18N
     private static final String gpp_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*g\\+\\+(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
     private static final String cc_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*cc(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
-    private static final String CC_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*cc(([-.]\\d){2,4})?(\\.exe)?$";
+    private static final String CC_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*CC(([-.]\\d){2,4})?$"; // NOI18N
     private static final String fortran_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*[fg](77|90|95)(([-.]\\d){2,4})?(\\.exe)?"; // NOI18N
+    
+    /* Legacy defines for CND 5.5 compiler set definitions */
+    public static final int SUN_COMPILER_SET = 0;
+    public static final int GNU_COMPILER_SET = 1;
+    
+    public static final String Sun = "Sun"; // NOI18N
+    public static final String GNU = "GNU"; // NOI18N
     
     private CompilerFilenameFilter gcc_filter;
     private CompilerFilenameFilter gpp_filter;
@@ -54,9 +63,8 @@ public class CompilerSetManager {
     private ArrayList<CompilerSet> sets = new ArrayList();
     private ArrayList<String> dirlist;
     
-    private CompilerFlavor defaultCompilerFlavor = CompilerFlavor.Unknown;
-    
     private static CompilerSetManager instance = null;
+    private static Set<CompilerSetChangeListener> listeners = new HashSet();
     
     public CompilerSetManager() {
         dirlist = Path.getPath();
@@ -82,6 +90,7 @@ public class CompilerSetManager {
      */
     public static void setDefault(CompilerSetManager csm) {
         instance = csm;
+        fireCompilerSetChangeNotification(csm);
     }
     
     /** Search $PATH for all desired compiler sets and initialize cbCompilerSet and spCompilerSets */
@@ -90,39 +99,91 @@ public class CompilerSetManager {
         for (String path : dirlist) {
             File dir = new File(path);
             if (dir.isDirectory()) {
-                initCompiler(gcc_filter, Tool.CCompiler, path);
-                initCompiler(gpp_filter, Tool.CCCompiler, path);
-                initCompiler(cc_filter, Tool.CCompiler, path);
+                initCompiler(gcc_filter, "gcc", Tool.CCompiler, path); // NOI18N
+                initCompiler(gpp_filter, "g++", Tool.CCCompiler, path); // NOI18N
+                initCompiler(cc_filter, "cc", Tool.CCompiler, path); // NOI18N
+                initFortranCompiler(fortran_filter, Tool.FortranCompiler, path); // NOI18N
                 if (Utilities.isUnix()) {  // CC and cc are the same on Windows, so skip this step on Windows
-                    initCompiler(CC_filter, Tool.CCCompiler, path);
+                    initCompiler(CC_filter, "CC", Tool.CCCompiler, path); // NOI18N
                 }
-                if (isFortranEnabled()) {
-                    initCompiler(fortran_filter, Tool.FortranCompiler, path);
+            }
+        }
+        completeCompilerSets();
+    }
+    
+    private void initCompiler(CompilerFilenameFilter filter, String best, int kind, String path) {
+        File dir = new File(path);
+        String[] list = dir.list(filter);
+
+        if (list != null && list.length > 0) {
+            CompilerSet cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
+            add(cs);
+            for (String name : list) {
+                File file = new File(dir, name);
+                if (file.exists() && (name.equals(best) || name.equals(best + ".exe"))) { // NOI18N
+                    cs.addTool(name, path, kind);
                 }
             }
         }
     }
     
-    private void initCompiler(CompilerFilenameFilter filter, int kind, String path) {
-            File dir = new File(path);
-            String[] list = dir.list(filter);
-            
-            if (list != null && list.length > 0) {
-                CompilerSet cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
-                add(cs); // register the CompilerSet with the CompilerSetManager
-                for (String name : list) {
-                    File file = new File(dir, name);
-                    if (file.exists()) {
-                        cs.addTool(name, path, kind);
+    private void initFortranCompiler(CompilerFilenameFilter filter, int kind, String path) {
+        File dir = new File(path);
+        String[] list = dir.list(filter);
+        String[] best = {
+            "gfortran", // NOI18N
+            "g77", // NOI18N
+            "f95", // NOI18N
+            "f90", // NOI18N
+            "f77", // NOI18N
+        };
+
+        if (list != null && list.length > 0) {
+            CompilerSet cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
+            add(cs);
+            for (String name : list) {
+                File file = new File(dir, name);
+                if (file.exists()) {
+                    for (int i = 0; i < best.length; i++) {
+                        if (name.equals(best[i]) || name.equals(best[i] + ".exe")) { // NOI18N
+                            cs.addTool(name, path, kind);
+                        }
                     }
                 }
             }
+        }
+    }
+    
+    /**
+     * If a compiler set doesn't have one of each compiler types, add a "No compiler"
+     * tool. If selected, this will tell the build validation things are OK.
+     */
+    private void completeCompilerSets() {
+        for (CompilerSet cs : sets) {
+            if (cs.getTool(Tool.CCompiler) == null) {
+                cs.addTool("", "", Tool.CCompiler); // NOI18N
+            }
+            if (cs.getTool(Tool.CCCompiler) == null) {
+                cs.addTool("", "", Tool.CCCompiler); // NOI18N
+            }
+            if (cs.getTool(Tool.FortranCompiler) == null) {
+                cs.addTool("", "", Tool.FortranCompiler); // NOI18N
+            }
+            if (cs.getTool(Tool.CustomTool) == null) {
+                cs.addTool("", "", Tool.CustomTool); // NOI18N
+            }
+        }
+        
+        if (sets.size() == 0) { // No compilers found
+            add(CompilerSet.createEmptyCompilerSet());
+        }
     }
     
     private void initCompilerFilters() {
         gcc_filter = new CompilerFilenameFilter(gcc_pattern);
         gpp_filter = new CompilerFilenameFilter(gpp_pattern);
         cc_filter = new CompilerFilenameFilter(cc_pattern);
+        fortran_filter = new CompilerFilenameFilter(fortran_pattern);
         if (Utilities.isUnix()) {
             CC_filter = new CompilerFilenameFilter(CC_pattern);
         }
@@ -134,13 +195,34 @@ public class CompilerSetManager {
      * @param cs The CompilerSet to (possibly) add
      */
     public void add(CompilerSet cs) {
-        
-        if (sets.isEmpty()) {
-            // Use the 1st CompilerSet created (ie, first in the user's PATTH) as default
-            defaultCompilerFlavor = cs.getCompilerFlavor();
+        if (sets.size() == 1 && sets.get(0).getName() == CompilerSet.None) {
+            sets.remove(0);
         }
+        
         if (!sets.contains(cs)) {
             sets.add(cs);
+        }
+    }
+    
+    /**
+     * Remove a CompilerSet from this CompilerSetManager. Use caution with this method. Its primary
+     * use is to remove temporary CompilerSets which were added to represent missing compiler sets. In
+     * that context, they're removed immediately after showing the ToolsPanel after project open.
+     *
+     * @param cs The CompilerSet to (possibly) remove
+     */
+    public void remove(CompilerSet cs) {
+        if (sets.contains(cs)) {
+            sets.remove(cs);
+            if (CppSettings.getDefault().getCompilerSetName().equals(cs.getName())) {
+                CppSettings.getDefault().setCompilerSetName("");
+            }
+            if (this == instance) {
+                fireCompilerSetChangeNotification(instance);
+            }
+        }
+        if (sets.size() == 0) { // No compilers found
+            add(CompilerSet.createEmptyCompilerSet());
         }
     }
     
@@ -150,12 +232,21 @@ public class CompilerSetManager {
                 return cs;
             }
         }
-        return sets.size() > 0 ? sets.get(0) : null;
+        return null;
     }
     
-    public CompilerSet getCompilerSet(int cs) {
-        assert cs <= sets.size();
-        return sets.get(cs);
+    public CompilerSet getCompilerSet(String name, String dname) {
+        for (CompilerSet cs : sets) {
+            if (cs.getName().equals(name) && cs.getDisplayName().equals(dname)) {
+                return cs;
+            }
+        }
+        return null;
+    }
+    
+    public CompilerSet getCompilerSet(int idx) {
+        assert idx >= 0 && idx < sets.size();
+        return sets.get(idx);
     }
     
     public List<CompilerSet> getCompilerSets() {
@@ -171,20 +262,25 @@ public class CompilerSetManager {
         Iterator iter = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances().iterator();
         while (iter.hasNext()) {
             ModuleInfo info = (ModuleInfo) iter.next();
-            if (info.getCodeNameBase().equals("org.netbeans.modules.cnd.debugger.gdb") && info.isEnabled()) {
+            if (info.getCodeNameBase().equals("org.netbeans.modules.cnd.debugger.gdb") && info.isEnabled()) { // NOI18N
                 return true;
             }
         }
         return false;
     }
     
-    /**
-     * Check if the gdb module is enabled. Don't show the gdb line if it isn't.
-     *
-     * @return true if the gdb module is enabled, false if missing or disabled
-     */
-    protected boolean isFortranEnabled() {
-        return CppSettings.getDefault().isFortranEnabled();
+    public static void addCompilerSetChangeListener(CompilerSetChangeListener l) {
+        listeners.add(l);
+    }
+    
+    public static void removeCompilerSetChangeListener(CompilerSetChangeListener l) {
+        listeners.remove(l);
+    }
+    
+    private static void fireCompilerSetChangeNotification(CompilerSetManager csm) {
+        for (CompilerSetChangeListener l : listeners) {
+            l.compilerSetChange(new CompilerSetEvent(csm));
+        }
     }
     
     /** Special FilenameFilter which should recognize different variations of supported compilers */

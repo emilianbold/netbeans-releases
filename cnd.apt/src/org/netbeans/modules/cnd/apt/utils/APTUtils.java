@@ -145,7 +145,7 @@ public class APTUtils {
     
     public static String macros2String(Map/*<getTokenTextKey(token), APTMacro>*/ macros) {
         StringBuilder retValue = new StringBuilder();
-        retValue.append("MACROS (sorted):\n"); // NOI18N
+        retValue.append("MACROS (sorted "+macros.size()+"):\n"); // NOI18N
         List macrosSorted = new ArrayList(macros.keySet());
         Collections.sort(macrosSorted);
         for (Iterator it = macrosSorted.iterator(); it.hasNext();) {

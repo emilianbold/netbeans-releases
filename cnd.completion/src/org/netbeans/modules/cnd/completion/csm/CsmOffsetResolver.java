@@ -94,13 +94,14 @@ public class CsmOffsetResolver {
             }            
             // for function definition search deeper in body's statements
             if (CsmKindUtilities.isFunctionDefinition(decl)) {
-                last = null;
                 CsmFunctionDefinition funDef = (CsmFunctionDefinition)decl;
-                if (CsmOffsetUtilities.isInObject(funDef.getBody(), offset) &&
-                        // offset is in body, try to find inners statement
-                        CsmStatementResolver.findInnerObject(funDef.getBody(), offset, context)) {
-                    // if found exact object => return it, otherwise return last found scope
-                    last = (context.getLastObject() != null) ? context.getLastObject() : context.getLastScope();
+                if (CsmOffsetUtilities.isInObject(funDef.getBody(), offset)) {
+                    last = null;
+                    // offset is in body, try to find inners statement
+                    if (CsmStatementResolver.findInnerObject(funDef.getBody(), offset, context)) {
+                        // if found exact object => return it, otherwise return last found scope
+                        last = (context.getLastObject() != null) ? context.getLastObject() : context.getLastScope();
+                    }
                 }
             }
         } else if (CsmKindUtilities.isClass(decl)) {

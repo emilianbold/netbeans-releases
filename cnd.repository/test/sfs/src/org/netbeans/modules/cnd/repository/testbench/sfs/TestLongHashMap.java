@@ -52,8 +52,11 @@ public class TestLongHashMap extends BaseTest {
 //		lastChunkMap.put(e.getKey(), ChunkInfoFactory.instance().createChunkInfo(e.getValue(), 0));
 //	    }
 	}
+        
+        private boolean passed;
 	
-	public void test() {
+	public boolean test() {
+            passed = true;
 	    for( Map.Entry<K, Long> e : reference.entrySet() ) {
 		
 		K key = e.getKey();
@@ -73,6 +76,7 @@ public class TestLongHashMap extends BaseTest {
 		
 		cnt++;
 	    }
+            return passed;
 	}
 	
 	private void testEmpty(K key) {
@@ -89,6 +93,7 @@ public class TestLongHashMap extends BaseTest {
 	    if( ! condition ) {
 		errCnt++;
 		System.err.printf("%s\n", text);
+                passed = false;
 	    }
 	}
 	
@@ -96,37 +101,39 @@ public class TestLongHashMap extends BaseTest {
 	    if( actualValue != referenceValue) {
 		errCnt++;
 		System.err.printf("%s key=%s value=%d; should be %d\n", preface, key, actualValue, referenceValue);
+                passed = false;
 	    }
 	}
 	
     }
     
-    public void test(List<String> args) {
-	test_a();
-	test_files(args);
+    public boolean test(List<String> args) {
+	boolean passed = test_a();
+	passed &= test_files(args);
 	report();
+        return passed;
     }
     
     private void report() {
 	if( errCnt > 0 ) {
-	    System.out.printf("FAILURE. Count: %d Errors: %d\n", cnt, errCnt);
+	    System.out.printf("FAILURE. Count: %d Errors: %d\n", cnt, errCnt); // NOI18N
 	}
 	else {
 	    System.err.printf("SUCCESS. Count: %d \n", cnt);
 	}
     }
 
-    private void test_a() {
+    private boolean test_a() {
 	Map<String, Long> reference = new HashMap<String, Long>();
-	reference.put("One", 1L);
-	reference.put("Two", 2L);
-	new Unit<String>(reference).test();
+	reference.put("One", 1L); // NOI18N
+	reference.put("Two", 2L); // NOI18N
+	return new Unit<String>(reference).test();
     }
     
-    private void test_files(List<String> args) {
+    private boolean test_files(List<String> args) {
 	
 	if( args.isEmpty() ) {
-	    return;
+	    return true;
 	}
 	System.out.printf("Creating test objects...\n"); // NOI18N
 	
@@ -137,8 +144,7 @@ public class TestLongHashMap extends BaseTest {
 	    collectFiles(path, reference_s, reference_f);
 	}
 	
-	new Unit<String>(reference_s).test();
-	new Unit<File>(reference_f).test();
+	return new Unit<String>(reference_s).test() && new Unit<File>(reference_f).test();
     }
     
     private void collectFiles(String path, Map<String, Long> reference_s, Map<File, Long> reference_f) {

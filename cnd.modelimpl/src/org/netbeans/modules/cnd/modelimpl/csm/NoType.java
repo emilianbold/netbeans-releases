@@ -64,6 +64,10 @@ public class NoType implements CsmType {
         return "";
     }
     
+    public String getCanonicalText() {
+	return "";
+    }
+    
     public Position getStartPosition() {
         return null;
     }

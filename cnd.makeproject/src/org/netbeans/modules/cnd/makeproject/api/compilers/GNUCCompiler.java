@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -60,8 +61,8 @@ public class GNUCCompiler extends CCCCompiler {
     }
     
     /** Creates a new instance of GNUCCompiler */
-    public GNUCCompiler() {
-        super(CCompiler, "gcc", getString("GNU_C_COMPILER")); // NOI18N
+    public GNUCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) { 
+        super(flavor, kind, name, displayName, path);
     }
     
     public String getWarningLevelOptions(int value) {

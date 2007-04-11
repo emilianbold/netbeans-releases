@@ -43,7 +43,9 @@ public class GdbDebuggerModule extends ModuleInstall {
     
     public void restored() {
         // Profiles
-        ConfigurationDescriptorProvider.addAuxObjectProvider(new GdbProfileProvider());
+        
+        // Moved to services...
+//        ConfigurationDescriptorProvider.addAuxObjectProvider(new GdbProfileProvider());
         debugCustomizerNode = new ProfileNodeProvider().createDebugNode();
         CustomizerRootNodeProvider.getInstance().addCustomizerNode(debugCustomizerNode);
 

@@ -19,24 +19,32 @@
 
 package org.netbeans.modules.cnd.editor.parser;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.loaders.CppEditorSupport;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
+import org.openide.windows.TopComponent;
 
-public class CppMetaModel {
+public class CppMetaModel implements PropertyChangeListener {
 
     // TODO: need to get reparse time from settings
     private int reparseDelay = 1000;
     
     /** map of all files we're interested in */
-    private HashMap map = new HashMap();
+    private Map<String,CppFile> map = Collections.synchronizedMap(new HashMap<String,CppFile>());
 
-    private ArrayList listeners = new ArrayList();
+    private Set<ParsingListener> listeners = new HashSet<ParsingListener>();
 
     private static CppMetaModel instance;
 
@@ -52,8 +60,57 @@ public class CppMetaModel {
     public static CppMetaModel getDefault() {
 	if (instance == null) {
 	    instance = new CppMetaModel();
+            TopComponent.getRegistry().addPropertyChangeListener(instance);
+
 	}
 	return instance;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (TopComponent.Registry.PROP_OPENED.equals(evt.getPropertyName())){
+            checkClosed(evt.getNewValue());
+        }
+    }
+
+    private void checkClosed(Object o){
+        if (o instanceof Set) {
+            Set<CppEditorSupport.CppEditorComponent> editors = new HashSet<CppEditorSupport.CppEditorComponent>();
+            for(Object top : (Set)o){
+                if (top instanceof CppEditorSupport.CppEditorComponent){
+                    editors.add((CppEditorSupport.CppEditorComponent)top);
+                }
+            }
+            checkClosed(editors);
+        }
+    }
+    
+    private void checkClosed(Set<CppEditorSupport.CppEditorComponent> editors){
+        Set<String> opened = new HashSet<String>();
+        for (CppEditorSupport.CppEditorComponent editor : editors) {
+            CppEditorSupport support = editor.getSupport();
+            if (support != null) {
+                Document doc = support.getDocument();
+                if (doc != null) {
+                    String tittle = (String) doc.getProperty(Document.TitleProperty);
+                    opened.add(tittle);
+                }
+            }
+        }
+        List<String> toDelete = new ArrayList<String>();
+        for(String title : map.keySet()){
+            if (!opened.contains(title)){
+                toDelete.add(title);
+            }
+        }
+        for(String title : toDelete){
+            map.remove(title);
+        }
+        if (map.size() == 0){
+            if (task != null) {
+                task.cancel();
+                task = null;
+            }
+        }
     }
 
     // Helper methods for awhile...
@@ -73,7 +130,7 @@ public class CppMetaModel {
 	final String title = (String) doc.getProperty(Document.TitleProperty);
 	log.log("CppMetaModel.scheduleParsing: Checking " + getShortName(doc) +
 		" [" + Thread.currentThread().getName() + "]"); // NOI18N
-	final CppFile file = (CppFile) map.get(title);
+	final CppFile file = map.get(title);
         // try to cancel task
         if (task != null) {
             task.cancel();
@@ -141,7 +198,7 @@ public class CppMetaModel {
     }
 
     public CppFile get(String key) {
-	return (CppFile) map.get(key);
+	return map.get(key);
     }
 
     public void addParsingListener(ParsingListener listener) {
@@ -159,8 +216,8 @@ public class CppMetaModel {
     }
 
     private synchronized void fireParsingEvent(ParsingEvent evt) {
-	for (int i = 0; i < listeners.size(); i++) {
-	    ParsingListener listener = (ParsingListener) listeners.get(i);
+        List<ParsingListener> list = new ArrayList<ParsingListener>(listeners);
+	for (ParsingListener listener : list) {
 	    listener.objectParsed(evt);
 	}
     }

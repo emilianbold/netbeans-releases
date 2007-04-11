@@ -53,6 +53,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     
     private final String name;
     private final CsmType type;
+    private boolean typeUnnamed = false;
     
     // only one of containerRef/containerUID must be used (based on USE_REPOSITORY)
     private /*final*/ CsmIdentifiable containerRef;// can be set in onDispose or contstructor only
@@ -75,7 +76,15 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         }
         this.name = name;
     }
-    
+
+    public boolean isTypeUnnamed(){
+        return typeUnnamed;
+    }
+
+    public void setTypeUnnamed(){
+        typeUnnamed = true;
+    }
+
 //    Moved to OffsetableDeclarationBase
 //    public String getUniqueName() {
 //        return getQualifiedName();
@@ -99,6 +108,9 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     public void dispose() {
         super.dispose();
         onDispose();
+        if (this.type != null && this.type instanceof Disposable) {
+            ((Disposable)this.type).dispose();
+        }
         CsmScope scope = getScope();
         if( scope instanceof MutableDeclarationsContainer ) {
             ((MutableDeclarationsContainer) scope).removeDeclaration(this);

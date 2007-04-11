@@ -36,6 +36,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
@@ -108,22 +110,40 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     }
     
     private WizardDescriptor.Panel[] createPanels(String name) {
-        if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB) {
-            return new WizardDescriptor.Panel[] {
-                new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true)
-            };
-        } else if (wizardtype == TYPE_MAKEFILE) {
-            WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
-                new MakefileOrConfigureDescriptorPanel(),
-                new BuildActionsDescriptorPanel(),
-                new SourceFoldersDescriptorPanel(),
-                new ParserConfigurationDescriptorPanel(),
-                new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false),
-            };
-            return panels;
+        if (CompilerSetManager.getDefault().getCompilerSet(0).getName() == CompilerSet.None) {
+            if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB) {
+                return new WizardDescriptor.Panel[] {
+                    new BuildToolsDescriptorPanel(),
+                    new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true)
+                };
+            } else if (wizardtype == TYPE_MAKEFILE) {
+                WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
+                    new BuildToolsDescriptorPanel(),
+                    new MakefileOrConfigureDescriptorPanel(),
+                    new BuildActionsDescriptorPanel(),
+                    new SourceFoldersDescriptorPanel(),
+                    new ParserConfigurationDescriptorPanel(),
+                    new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false),
+                };
+                return panels;
+            }
         } else {
-            return null; // FIXUP
+            if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB) {
+                return new WizardDescriptor.Panel[] {
+                    new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true)
+                };
+            } else if (wizardtype == TYPE_MAKEFILE) {
+                WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
+                    new MakefileOrConfigureDescriptorPanel(),
+                    new BuildActionsDescriptorPanel(),
+                    new SourceFoldersDescriptorPanel(),
+                    new ParserConfigurationDescriptorPanel(),
+                    new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false),
+                };
+                return panels;
+            }
         }
+        return null; // FIXUP
     }
     
     private String[] createSteps(WizardDescriptor.Panel[] panels) {

@@ -123,8 +123,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 		    if( operator != null ) {
 			StringBuilder sb = new StringBuilder(operator.getText());
 			sb.append(' ');
-			AST next = operator.getNextSibling();
-			if( next != null ) {
+			for( AST next = operator.getNextSibling(); next != null; next = next.getNextSibling() ) {
 			    sb.append(next.getText());
 			}
 			return sb.toString();
@@ -335,7 +334,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             CsmParameter param = (CsmParameter) iter.next();
             CsmType type = param.getType();
             if( type != null )  {
-                sb.append(type.getText());
+                sb.append(type.getCanonicalText());
                 if( iter.hasNext() ) {
                     sb.append(',');
                 }

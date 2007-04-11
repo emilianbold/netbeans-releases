@@ -33,11 +33,11 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
  */
 public class TestIndexSize extends BaseTest {
     
-    public void test(List<String> params) throws IOException {
+    public boolean test(List<String> params) throws IOException {
 	int size = 200000;
 	Key[] keys = new Key[size];
 	for (int i = 0; i < keys.length; i++) {
-	    keys[i] = new TestKey("#" + i);
+	    keys[i] = new TestKey("#" + i); // NOI18N
 	}
 
 	
@@ -49,10 +49,11 @@ public class TestIndexSize extends BaseTest {
 	}
 	
 	pause();
+        return true;
     }
     
     private void pause() {
-	System.out.printf("Press any key to continue\n");
+	System.out.printf("Press any key to continue\n"); // NOI18N
 	try {
 	    System.in.read();
 	} catch (IOException ex) {

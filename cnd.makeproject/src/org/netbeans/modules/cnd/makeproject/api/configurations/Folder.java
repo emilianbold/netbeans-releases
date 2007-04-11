@@ -275,6 +275,10 @@ public class Folder {
             ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesRemoved(list);
         return removeItem(item);
     }
+
+    public void renameItemAction(String oldPath, Item newItem) {
+        ((MakeConfigurationDescriptor)configurationDescriptor).fireFileRenamed(oldPath, newItem);
+    }
     
     public boolean removeItem(Item item) {
         boolean ret = false;
@@ -287,13 +291,18 @@ public class Folder {
         
         // Remove item from the dataObject's lookup
         if (isProjectFiles()) {
-            if (item.getDataObject() instanceof CndDataObject) {
-                CndDataObject dataObject = (CndDataObject)item.getDataObject();
-                MyNativeFileItemSet myNativeFileItemSet = (MyNativeFileItemSet)dataObject.getCookie(MyNativeFileItemSet.class);
+            DataObject dataObject = item.getDataObject();
+            if (dataObject == null){
+                // try to use last Data Object (getDataObject() cannot find renamed data object)
+                dataObject = item.getLastDataObject();
+            }
+            if (dataObject instanceof CndDataObject) {
+                CndDataObject cndDataObject = (CndDataObject)dataObject;
+                MyNativeFileItemSet myNativeFileItemSet = (MyNativeFileItemSet)cndDataObject.getCookie(MyNativeFileItemSet.class);
                 if (myNativeFileItemSet != null) {
                     myNativeFileItemSet.remove(item);
                     if (myNativeFileItemSet.isEmpty())
-                        dataObject.removeCookie(myNativeFileItemSet);
+                        cndDataObject.removeCookie(myNativeFileItemSet);
                 }
             }
         }
@@ -323,7 +332,7 @@ public class Folder {
         ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesRemoved(folder.getAllItemsAsList());
         return removeFolder(folder);
     }
-    
+
     public boolean removeFolder(Folder folder) {
         boolean ret = false;
         if (folder != null) {

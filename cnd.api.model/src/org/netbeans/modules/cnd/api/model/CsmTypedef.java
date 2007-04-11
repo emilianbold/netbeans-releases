@@ -26,4 +26,6 @@ package org.netbeans.modules.cnd.api.model;
 public interface CsmTypedef extends CsmOffsetableDeclaration<CsmTypedef>, CsmClassifier<CsmTypedef> {
 
         CsmType getType();
+
+        boolean isTypeUnnamed();
 }

@@ -38,13 +38,13 @@ public class TestDataInputOutput extends BaseTest {
     private DataOutput out;
     private DataInput in;
 	
-    public void test(List<String> params ) throws IOException {
+    public boolean test(List<String> params ) throws IOException {
 	ByteBuffer buffer = ByteBuffer.allocate(1024*1024);
 	readBuffer = buffer.slice();
 	writeBuffer = buffer.slice();
 	out = new BufferDataOutput(writeBuffer);
 	in = new BufferDataInput(readBuffer);
-	test(in, out);
+	return test(in, out);
     }
     
     private void rewind() {
@@ -58,23 +58,26 @@ public class TestDataInputOutput extends BaseTest {
 	}
     }
 
-    private void test(DataInput in, DataOutput out) throws IOException {
-	testByte(in, out);		rewind();
-	testBoolean(in, out);		rewind();
-	testChar(in, out);		rewind();
-	testLine(in, out);		rewind();
-	testUTF(in, out);		rewind();
-	testUnsignedByte(in, out);	rewind();
-	testUnsignedShort(in, out);	rewind();
-	testSkip(in, out);		rewind();
-	testShort(in, out);		rewind();
-	testInt(in, out);		rewind();
-	testLong(in, out);		rewind();
-	testFloat(in, out);		rewind();
-	testDouble(in, out);		rewind();
+    private boolean test(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
+	passed &= testByte(in, out);		rewind();
+	passed &= testBoolean(in, out);         rewind();
+	passed &= testChar(in, out);		rewind();
+	passed &= testLine(in, out);		rewind();
+	passed &= testUTF(in, out);		rewind();
+	passed &= testUnsignedByte(in, out);	rewind();
+	passed &= testUnsignedShort(in, out);	rewind();
+	passed &= testSkip(in, out);		rewind();
+	passed &= testShort(in, out);		rewind();
+	passed &= testInt(in, out);		rewind();
+	passed &= testLong(in, out);		rewind();
+	passed &= testFloat(in, out);		rewind();
+	passed &= testDouble(in, out);		rewind();
+        return passed;
     }
 
-    private void testByte(DataInput in, DataOutput out) throws IOException {
+    private boolean testByte(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
 	System.err.printf("Testing bytes (one by one)\n");
 	for( int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++ ) {
 	    byte orig = (byte) i;
@@ -84,28 +87,35 @@ public class TestDataInputOutput extends BaseTest {
 	    out.writeByte(orig);
 	    res = in.readByte();
 	    if( res != orig ) {
+                passed = false;
 		System.err.printf("Error in byte(1): wrote %d , read %d\n", orig, res);
 	    }
 	    res = in.readByte();
 	    if( res != orig ) {
+                passed = false;
 		System.err.printf("Error in byte(2): wrote %d , read %d\n", orig, res);
 	    }
 	}
+        return passed;
     }
     
-    private void testBoolean(DataInput in, DataOutput out) throws IOException {
+    private boolean testBoolean(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
 	System.err.printf("Testing booleans\n");
 	boolean[] orig = new boolean[] { true, false };
 	for (int i = 0; i < orig.length; i++) {
 	    out.writeBoolean(orig[i]);
 	    boolean res = in.readBoolean();
 	    if( orig[i] != res ) {
+                passed = false;
 		System.err.printf("Error in boolean: wrote %b , read %b\n", orig[i], res);
 	    }
 	}
+        return passed;
     }
     
-    private void testChar(DataInput in, DataOutput out) throws IOException {
+    private boolean testChar(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
 	System.err.printf("Testing chars\n");
 	for( int i = Character.MIN_VALUE; i <= Character.MAX_VALUE; i++ ) {
 	    char orig = (char) i;
@@ -114,39 +124,48 @@ public class TestDataInputOutput extends BaseTest {
 	    out.writeChar(orig);
 	    res = in.readChar();
 	    if( res != orig ) {
+                passed = false;
 		System.err.printf("Error in char: wrote %c [0x%H] , read %c [0x%H]\n", orig, orig, res, res);
 	    }
 	    rewindIfNeed();
 	}
+        return passed;
     }    
 
-    private void testDouble(DataInput in, DataOutput out) throws IOException {
+    private boolean testDouble(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
 	System.err.printf("Testing doubles\n");
 	for( double i = Double.MIN_VALUE; i <= Double.MAX_VALUE; i++ ) {
 	    double orig = i;
 	    out.writeDouble(orig);
 	    double res = in.readDouble();
 	    if( res != orig ) {
+                passed = false;
 		System.err.printf("Error in double: wrote %e [0x%H] , read %e [0x%H]\n", orig, orig, res, res);
 	    }
 	    rewindIfNeed();
 	}
+        return passed;
     }    
     
-    private void testFloat(DataInput in, DataOutput out) throws IOException {
+    private boolean testFloat(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
 	System.err.printf("Testing floats\n");
 	for( float i = Float.MIN_VALUE; i <= Float.MAX_VALUE; i++ ) {
 	    float orig = i;
 	    out.writeFloat(orig);
 	    float res = in.readFloat();
 	    if( res != orig ) {
+                passed = false;
 		System.err.printf("Error in float: wrote %e [0x%H] , read %e [0x%H]\n", orig, orig, res, res);
 	    }
 	    rewindIfNeed();
 	}
+        return passed;
     }        
     
-    private void testLine(DataInput in, DataOutput out) throws IOException {
+    private boolean testLine(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
 	System.err.printf("Testing readLine\n");
 	String toWrite = "1\n22\r333\r\n4444\n\naaa\r\r"; // NOI18N
 	String[] reference = new String[] { "1", "22", "333", "4444", "", "aaa", "" }; // NOI18N
@@ -159,12 +178,15 @@ public class TestDataInputOutput extends BaseTest {
 	for (int i = 0; i < reference.length; i++) {
 	    String res = in.readLine();
 	    if( ! reference[i].equals(res) ) {
+                passed = false;
 		System.err.printf("Error in readLine: wrote \"%s\", read \"%s\"\n", reference[i], res);
 	    }
 	}
+        return passed;
     }        
     
-    private void testInt(DataInput in, DataOutput out) throws IOException {
+    private boolean testInt(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
 	System.err.printf("Testing ints\n");
 	for( int i = Integer.MIN_VALUE; i <= Integer.MAX_VALUE; i++ ){
 	    int orig = (int) i;
@@ -173,78 +195,97 @@ public class TestDataInputOutput extends BaseTest {
 	    out.writeInt(orig);
 	    res = in.readInt();
 	    if( res != orig ) {
+                passed = false;
 		System.err.printf("Error in int: wrote %d [0x%H] , read %d [0x%H]\n", orig, orig, res, res);
 	    }
 	    rewindIfNeed();
 	}
+        return passed;
     }    
     
-    private void testLong(DataInput in, DataOutput out) throws IOException {
+    private boolean testLong(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
 	System.err.printf("Testing longs\n");
 	for( long orig = Long.MIN_VALUE; orig <= Long.MAX_VALUE; orig++ ) {
 	    if( VERBOSE )  System.err.printf("Testng %d\n", orig);
 	    out.writeLong(orig);
 	    long res = in.readLong();
 	    if( res != orig ) {
+                passed = false;
 		System.err.printf("Error in long: wrote %d [0x%H] , read %d [0x%H]\n", orig, orig, res, res);
 	    }
 	    rewindIfNeed();
 	}
+        return passed;
     }
     
-    private void testShort(DataInput in, DataOutput out) throws IOException {
+    private boolean testShort(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
 	System.err.printf("Testing shorts\n");
 	for( short orig = Short.MIN_VALUE; orig <= Short.MAX_VALUE; orig++ ) {
 	    if( VERBOSE )  System.err.printf("Testng %d\n", orig);
 	    out.writeShort(orig);
 	    short res = in.readShort();
 	    if( res != orig ) {
+                passed = false;
 		System.err.printf("Error in short: wrote %d [0x%H] , read %d [0x%H]\n", orig, orig, res, res);
 	    }
 	    rewindIfNeed();
 	}	
+        return passed;
     }
     
-    private void testUTF(DataInput in, DataOutput out) throws IOException {
+    private boolean testUTF(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
 	System.err.printf("Testing UTF\n");
-	String[] reference = new String[] { "First", "Second", "Третья", "Четвертая", "С переводом \r\n каретки" }; // NOI18N
+	String[] reference = new String[] { "First", "Second", "????????????", "??????????????????", "?? ?????????????????? \r\n ??????????????" }; // NOI18N
 	for (int i = 0; i < reference.length; i++) {
 	    if( VERBOSE )  System.err.printf("Testng %s\n", reference[i]);
 	    out.writeUTF(reference[i]);
 	    String res = in.readUTF();
 	    if( ! reference[i].equals(res) ) {
+                passed = false;
 		System.err.printf("Error in QWE: wrote \"%s\", read \"%s\"\n", reference[i], res);
 	    }
 	    rewindIfNeed();
 	}	
+        return passed;
     }
     
-    private void testUnsignedByte(DataInput in, DataOutput out) throws IOException {
+    private boolean testUnsignedByte(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
 	System.err.printf("Testing unsigned bytes\n");
 	for (int orig = 0; orig <= 0xFF; orig++) {
 	    if( VERBOSE )  System.err.printf("Testng %d\n", orig);	    
 	    out.write((byte) orig);	    
 	    int res = in.readUnsignedByte();
 	    if( orig != res ) {
+                passed = false;
 		System.err.printf("Error in unsigned byte: wrote %d [0x%H] , read %d [0x%H]\n", orig, orig, res, res);
 	    }
 	    rewindIfNeed();
-	}	    }
+	}	    
+        return passed;
+    }
     
-    private void testUnsignedShort(DataInput in, DataOutput out) throws IOException {
+    private boolean testUnsignedShort(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
 	System.err.printf("Testing unsigned shorts\n");
 	for (int orig = 0; orig <= 0xFFFF; orig++) {
 	    if( VERBOSE )  System.err.printf("Testng %d\n", orig);	    
 	    out.writeShort((short) orig);	    
 	    int res = in.readUnsignedShort();
 	    if( orig != res ) {
+                passed = false;
 		System.err.printf("Error in unsigned short: wrote %d [0x%H] , read %d [0x%H]\n", orig, orig, res, res);
 	    }
 	    rewindIfNeed();
 	}	
+        return passed;
     }
     
-    private void testSkip(DataInput in, DataOutput out) throws IOException {
+    private boolean testSkip(DataInput in, DataOutput out) throws IOException {
+        boolean passed = true;
 	System.err.printf("Testing skipping bytes\n");
 	out.writeInt(1);
 	out.writeInt(2);
@@ -253,8 +294,10 @@ public class TestDataInputOutput extends BaseTest {
 	in.skipBytes(8); // skip 2 integers
 	String res = in.readUTF();
 	if( ! reference.equals(res) ) {
+            passed = false;
 	    System.err.printf("Error in skipping bytes: wrote \"%s\", read \"%s\"\n");
 	}
+        return passed;
     }
 
 }

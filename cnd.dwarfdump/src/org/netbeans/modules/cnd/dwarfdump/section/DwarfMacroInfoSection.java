@@ -49,6 +49,17 @@ public class DwarfMacroInfoSection extends ElfSection {
         reader.seek(header.getSectionOffset() + offset);
         
         MACINFO type = MACINFO.get(reader.readByte());
+        if (baseOnly) {
+            if (type.equals(MACINFO.DW_MACINFO_start_file)) {
+                long lineNum = reader.readUnsignedLEB128();
+                if (lineNum == 0) {
+                    long fileIdx = reader.readUnsignedLEB128();
+                } else {
+                    reader.seek(header.getSectionOffset() + offset);
+                }
+                type = MACINFO.get(reader.readByte());
+            }
+        }
         Stack<Integer> fileIndeces = new Stack<Integer>();
         int fileIdx = -1;
         
@@ -62,7 +73,6 @@ public class DwarfMacroInfoSection extends ElfSection {
                 if (baseOnly) {
                     break;
                 }
-                
                 entry.lineNum = reader.readUnsignedLEB128();
                 entry.fileIdx = reader.readUnsignedLEB128();
                 fileIndeces.push(fileIdx);

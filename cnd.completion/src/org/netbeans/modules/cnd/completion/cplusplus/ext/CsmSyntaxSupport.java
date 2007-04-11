@@ -423,6 +423,9 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             return true; // equal classes
         }
         
+//        if (CsmInheritanceUtilities.isAssignableFrom(toCls, fromCls)) {
+//            return true;
+//        }
         // XXX
 //        if (fromCls.isInterface()) {
 //            return toCls.isInterface()
@@ -496,6 +499,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         List ret = new ArrayList();
         int parmTypeCnt = parmTypeList.size();
         int cnt = methodList.size();
+        int maxMatched = -1;
         for (int i = 0; i < cnt; i++) {
             // Use constructor conversion to allow to use it too for the constructors
             CsmFunction m = (CsmFunction)methodList.get(i);
@@ -505,6 +509,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             ) {
                 boolean accept = true;
                 boolean bestMatch = !acceptMoreParameters;
+                int matched = 0;
                 for (int j = 0; accept && j < parmTypeCnt; j++) {
                     CsmType mpt = methodParms[j].getType();
                     CsmType t = (CsmType)parmTypeList.get(j);
@@ -513,8 +518,13 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                             bestMatch = false;
                             if (!isAssignable(t, mpt)) {
                                 accept = false;
-                                break;
+                                // TODO: do not break now, count matches
+                                // break; 
+                            } else {
+                                matched++;
                             }
+                        } else {
+                            matched++;
                         }
                     } else { // type in list is null
                         bestMatch = false;
@@ -524,13 +534,28 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                 if (accept) {
                     if (bestMatch) {
                         ret.clear();
+                    } else if (matched > maxMatched) {
+                        maxMatched = matched;
+                        ret.clear();
                     }
                     ret.add(m);
                     if (bestMatch) {
                         break;
                     }
+                } else {
+                    if (matched > maxMatched) {
+                        maxMatched = matched;
+                        ret.clear();
+                        ret.add(m);
+                    }
                 }
                 
+            } else if (methodParms.length == 0 && parmTypeCnt == 1) { // for cases like f(void)
+                CsmType t = (CsmType)parmTypeList.get(0);
+                if ("void".equals(t.getText())) { // best match
+                    ret.clear();
+                    ret.add(m);
+                }
             }
         }
         return ret;

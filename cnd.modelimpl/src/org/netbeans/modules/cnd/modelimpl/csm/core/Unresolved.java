@@ -146,10 +146,10 @@ public final class Unresolved implements Disposable {
         public String getName() {
             return "$unresolved file$"; // NOI18N
         }
-        public List getIncludes() {
+        public List<CsmInclude> getIncludes() {
             return Collections.EMPTY_LIST;
         }
-        public List getDeclarations() {
+        public List<CsmOffsetableDeclaration> getDeclarations() {
             return Collections.EMPTY_LIST;
         }
         public String getAbsolutePath() {
@@ -163,7 +163,7 @@ public final class Unresolved implements Disposable {
         public boolean isParsed() {
             return true;
         }
-        public List getMacros() {
+        public List<CsmMacro> getMacros() {
             return Collections.EMPTY_LIST;
         }
         

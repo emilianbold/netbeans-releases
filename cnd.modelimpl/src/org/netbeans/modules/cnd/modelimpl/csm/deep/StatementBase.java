@@ -58,5 +58,11 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     protected StatementBase(DataInput input) throws IOException {
         super(input);
         this.ast = null;
-    }    
+    }   
+
+    public String toString() {
+        return "" + getKind() + ' ' + getOffsetString(); // NOI18N
+    }
+    
+    
 }

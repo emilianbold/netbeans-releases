@@ -23,11 +23,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 
 public class CCCCompiler extends BasicCompiler {
-    public CCCCompiler(int kind, String name, String displayName) {
-        super(kind, name, displayName);
+    public CCCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(flavor, kind, name, displayName, path);
     }
     
     // To be overridden

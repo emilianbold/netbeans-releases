@@ -4,6 +4,9 @@ function params() {
     while [ -n "$1" ]
     do
 	case "$1" in
+	    --noant)
+		    NOANT="true"
+		    ;;
 	    -J-Xmx*)
 		    XMX="${1#-J}"
 		    ;;
@@ -43,15 +46,51 @@ function params() {
     done
 }
 
+function classpath() {
+
+    path_sep=":"
+
+    ### understand path separator
+    uname=`uname`
+    #uname_prefix=`expr substr "${uname}" 1 6`
+    uname_prefix=${uname:0:6}
+    if [ "${uname_prefix}" = "CYGWIN" ]; then
+       path_sep=";"
+    fi
+
+    CP=""
+
+    CP=./dist/lib/org-netbeans-modules-cnd-repository.jar
+    CP=./dist/sfs.jar
+    local error=""
+
+    for F in `echo ${CP} | awk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
+	if [ ! -r ${F} ]; then
+	    echo "File ${F} doesn't exist"
+	    error="y"
+	fi
+    done
+
+    if [ -n "${error}" ]; then
+	CP=""
+    else
+	#print classpath
+	echo "Using classpath:"
+	for F in `echo ${CP} | awk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
+	    echo $F
+	done
+    fi
+}
 
 function run() {
 
-	PARAMS=$@
-	XMX="-Xmx256m"
-	JVMAGRS=""
+    PARAMS=$@
+    XMX="-Xmx256m"
+    JVMAGRS=""
+
+    params $@
 	
-	params $@
-	
+    if [ -z "${NOANT}" ]; then
 	if [ -z "${NBDIST}" ]; then
 		echo "Please specify NBDIST environment variable; it should point to Netbeans installation"
 		return
@@ -63,8 +102,30 @@ function run() {
 			return
 		fi
 	fi
-		
-	ant run -Dapplication.args="${PARAMS}" ${SUITE_DEFS} -Drun.jvmargs="${XMX} ${JVMAGRS} ${DEBUG_PROFILE}"
+	ide7=`ls -d  $NBDIST/ide[789]`
+	if [ -d ${ide7} ]; then
+	    if [ ! -z ${ide7} ]; then
+		ant=${NBDIST}/ide7/ant/bin/ant
+		${ant} run -Dapplication.args="${PARAMS}" ${SUITE_DEFS} -Drun.jvmargs="${XMX} ${JVMAGRS} ${DEBUG_PROFILE}"
+	    else
+		echo "Can not find \"ide*\" subdirectory in Netbeans installation"
+	    fi
+	else
+	    echo "Can not find \"ide*\" subdirectory in Netbeans installation"
+	fi
+    else
+        JAVA="${JAVA-`which java`}"
+        MAIN="test.sfs.TestMain"
+        
+        classpath
+        if [ -z "${CP}" ]; then
+            echo "Can't find some necessary jars"
+            return
+        fi
+
+        ${JAVA} -cp ${CP} ${DEFS} ${MAIN} ${PARAMS}
+    fi
 }
 
 run $@
+echo result=$?

@@ -20,11 +20,12 @@
 package org.netbeans.modules.cnd.api.compilers;
 
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -35,15 +36,66 @@ import org.openide.util.Utilities;
 public class CompilerSet {
     
     /** Recognized (and prioritized) types of compiler sets */
-    public enum CompilerFlavor {Unknown, Sun, GNU, DJGPP, Interix, MinGW, Cygwin};
+    public enum CompilerFlavor {
+            Sun("Sun"), // NOI18N
+            SunUCB("SunUCB"), // NOI18N
+            GNU("GNU"), // NOI18N
+            Cygwin("Cygwin"), // NOI18N
+            MinGW("MinGW"), // NOI18N
+            DJGPP("DJGPP"), // NOI18N
+            Interix("Interix"), // NOI18N
+            Unknown("Unknown"); // NOI18N
     
-    public final static String CS_Cygwin = "Cygwin"; // NOI18N
-    public final static String CS_MinGW = "MinGW"; // NOI18N
-    public final static String CS_Interix = "Interix"; // NOI18N
-    public final static String CS_DJGPP = "DJGPP"; // NOI18N
-    public final static String CS_GNU = "GNU"; // NOI18N
-    public final static String CS_Sun = "Sun"; // NOI18N
-    public final static String CS_Unknown = "Unknown"; // NOI18N
+        private String sval;
+        
+        CompilerFlavor(String sval) {
+            this.sval = sval;
+        }
+        
+        public boolean isGnuCompiler() {
+            return this == GNU || this == Cygwin || this == MinGW || this == DJGPP || this == Interix;
+        }
+        
+        public boolean isSunCompiler() {
+            return this == Sun || this == SunUCB;
+        }
+        
+        public boolean isSunStudioCompiler() {
+            return this == Sun;
+        }
+        
+        public boolean isSunUCBCompiler() {
+            return this == SunUCB;
+        }
+        
+        public static CompilerFlavor toFlavor(String name) {
+            if (name != null) {
+                if (name.equals("Sun")) { // NOI18N
+                    return Sun;
+                } else if (name.equals("SunUCB")) { // NOI18N
+                    return SunUCB;
+                } else if (name.equals("Cygwin")) { // NOI18N
+                    return Cygwin;
+                } else if (name.equals("MinGW")) { // NOI18N
+                    return MinGW;
+                } else if (name.equals("DJGPP")) { // NOI18N
+                    return DJGPP;
+                } else if (name.equals("Interix")) { // NOI18N
+                    return Interix;
+                } else if (name.equals("Unknown")) { // NOI18N
+//                    return Unknown;
+                    return GNU; // No current support for Unknown, map it to GNU
+                }
+            }
+            return GNU;
+        }
+    
+        public String toString() {
+            return sval;
+        }
+    };
+    
+    public static final String None = "None"; // NOI18N
     
     private static HashMap<String, CompilerSet> csmap = new HashMap();
     private static HashMap<String, CompilerSet> basemap = new HashMap();
@@ -55,11 +107,11 @@ public class CompilerSet {
     private static int nextDJGPP = 0;
     private static int nextGNU = 0;
     private static int nextSun = 0;
+    private static int nextSunUCB = 0;
     private static int nextUnknown = 0;
     
     private CompilerFlavor flavor;
     private int id;
-    private int flavorID;
     private String name;
     private String displayName;
     private StringBuffer directory = new StringBuffer(256);
@@ -67,6 +119,7 @@ public class CompilerSet {
     private String librarySearchOption;
     private String dynamicLibrarySearchOption;
     private String libraryOption;
+    private CompilerProvider compilerProvider;
     
     /** Creates a new instance of CompilerSet */
     protected CompilerSet(CompilerFlavor flavor, String directory) {
@@ -74,83 +127,51 @@ public class CompilerSet {
         addDirectory(directory);
         id = nextID++;
         
+        compilerProvider = (CompilerProvider) Lookup.getDefault().lookup(CompilerProvider.class);
+        if (compilerProvider == null) {
+            compilerProvider = new DefaultCompilerProvider();
+        }
+        
         switch (flavor) {
             case Cygwin:
-                name = CS_Cygwin;
-                flavorID = nextCygwin++;
-                if (flavorID == 0) {
-                    displayName = NbBundle.getMessage(CompilerSet.class, "LBL_CygwinCompilerSet_0"); // NOI18N
-                } else {
-                    displayName = MessageFormat.format(NbBundle.getMessage(CompilerSet.class,
-                            "LBL_CygwinCompilerSet_X"), Integer.valueOf(flavorID)); // NOI18N
-                }
+                name = CompilerFlavor.Cygwin.toString();
+                displayName = mapNameToDisplayName(flavor, nextCygwin++, directory.length() == 0);
                 break;
                 
             case MinGW:
-                name = CS_MinGW;
-                flavorID = nextMinGW++;
-                if (flavorID == 0) {
-                    displayName = NbBundle.getMessage(CompilerSet.class, "LBL_MinGWCompilerSet_0"); // NOI18N
-                } else {
-                    displayName = MessageFormat.format(NbBundle.getMessage(CompilerSet.class,
-                            "LBL_MinGWCompilerSet_X"), Integer.valueOf(flavorID)); // NOI18N
-                }
+                name = CompilerFlavor.MinGW.toString();
+                displayName = mapNameToDisplayName(flavor, nextMinGW++, directory.length() == 0);
                 break;
                 
             case Interix:
-                name = CS_Interix;
-                flavorID = nextInterix++;
-                if (flavorID == 0) {
-                    displayName = NbBundle.getMessage(CompilerSet.class, "LBL_InterixCompilerSet_0"); // NOI18N
-                } else {
-                    displayName = MessageFormat.format(NbBundle.getMessage(CompilerSet.class,
-                            "LBL_InterixCompilerSet_X"), Integer.valueOf(flavorID)); // NOI18N
-                }
+                name = CompilerFlavor.Interix.toString();
+                displayName = mapNameToDisplayName(flavor, nextInterix++, directory.length() == 0);
                 basemap.put(getBase(directory), this);
                 break;
                 
             case DJGPP:
-                name = CS_DJGPP;
-                flavorID = nextDJGPP++;
-                if (flavorID == 0) {
-                    displayName = NbBundle.getMessage(CompilerSet.class, "LBL_DJGPPCompilerSet_0"); // NOI18N
-                } else {
-                    displayName = MessageFormat.format(NbBundle.getMessage(CompilerSet.class,
-                            "LBL_DJGPPCompilerSet_X"), Integer.valueOf(flavorID)); // NOI18N
-                }
+                name = CompilerFlavor.DJGPP.toString();
+                displayName = mapNameToDisplayName(flavor, nextDJGPP++, directory.length() == 0);
                 break;
                 
             case GNU:
-                name = CS_GNU;
-                flavorID = nextGNU++;
-                if (flavorID == 0) {
-                    displayName = NbBundle.getMessage(CompilerSet.class, "LBL_GNUCompilerSet_0"); // NOI18N
-                } else {
-                    displayName = MessageFormat.format(NbBundle.getMessage(CompilerSet.class,
-                            "LBL_GNUCompilerSet_X"), Integer.valueOf(flavorID)); // NOI18N
-                }
+                name = CompilerFlavor.GNU.toString();
+                displayName = mapNameToDisplayName(flavor, nextGNU++, directory.length() == 0);
                 break;
                 
             case Sun:
-                name = CS_Sun;
-                flavorID = nextSun++;
-                if (flavorID == 0) {
-                    displayName = NbBundle.getMessage(CompilerSet.class, "LBL_SunCompilerSet_0"); // NOI18N
-                } else {
-                    displayName = MessageFormat.format(NbBundle.getMessage(CompilerSet.class,
-                            "LBL_SunCompilerSet_X"), Integer.valueOf(flavorID)); // NOI18N
-                }
+                name = CompilerFlavor.Sun.toString();
+                displayName = mapNameToDisplayName(flavor, nextSun++, directory.length() == 0, directory);
+                break;
+                
+            case SunUCB:
+                name = CompilerFlavor.SunUCB.toString();
+                displayName = mapNameToDisplayName(flavor, nextSunUCB++, directory.length() == 0, directory);
                 break;
                 
             case Unknown:
-                name = CS_Unknown;
-                flavorID = nextUnknown++;
-                if (flavorID == 0) {
-                    displayName = NbBundle.getMessage(CompilerSet.class, "LBL_UnknownCompilerSet_0"); // NOI18N
-                } else {
-                    displayName = MessageFormat.format(NbBundle.getMessage(CompilerSet.class,
-                            "LBL_UnknownCompilerSet_X"), Integer.valueOf(flavorID)); // NOI18N
-                }
+                name = CompilerFlavor.Unknown.toString();
+                displayName = mapNameToDisplayName(flavor, nextUnknown++, directory.length() == 0);
                 break;
         }
         
@@ -160,8 +181,16 @@ public class CompilerSet {
         csmap.put(directory, this);
     }
     
+    protected CompilerSet() {
+        name = None;
+        displayName = NbBundle.getMessage(CompilerSet.class, "LBL_EmptyCompilerSetDisplayName"); // NOI18N
+    }
+    
     public static CompilerSet getCompilerSet(String directory, String[] list) {
-        
+        return getCompilerSet(directory, list, null);
+    }
+    
+    public static CompilerSet getCompilerSet(String directory, String[] list, String deftype) {
         CompilerSet cs = csmap.get(directory);
         if (cs != null) {
             return cs;
@@ -176,7 +205,7 @@ public class CompilerSet {
         }
         
         if (Utilities.isWindows()) {
-            if (directory.toLowerCase().indexOf("cygwin") != -1) { // NOI18
+            if (directory.toLowerCase().indexOf("cygwin") != -1) { // NOI18N
                 return new CompilerSet(CompilerFlavor.Cygwin, directory);
             }
             if (directory.toLowerCase().indexOf("mingw") != -1) { // NOI18N
@@ -186,8 +215,10 @@ public class CompilerSet {
                 return new CompilerSet(CompilerFlavor.Interix, directory);
             }
         } else {
-            if (directory.indexOf("SUNWspro") != -1) { // NOI18N
+            if (isSunCompilerDirectory(directory)) { 
                 return new CompilerSet(CompilerFlavor.Sun, directory);
+            } else if (isSunUCBCompilerDirectory(directory)) { 
+                return new CompilerSet(CompilerFlavor.SunUCB, directory);
             }
         }
         
@@ -198,11 +229,118 @@ public class CompilerSet {
                 return new CompilerSet(CompilerFlavor.GNU, directory);
             }
         }
-        return new CompilerSet(CompilerFlavor.Unknown, directory);
+        
+        if (Utilities.isWindows() && deftype.equals(CompilerFlavor.GNU.toString())) {
+            cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Cygwin.toString());
+            if (cs != null) {
+                return cs;
+            }
+            cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.MinGW.toString());
+            if (cs != null) {
+                return cs;
+            }
+            cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.DJGPP.toString());
+            if (cs != null) {
+                return cs;
+            }
+            cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Interix.toString());
+            if (cs != null) {
+                return cs;
+            }
+        }
+        
+        return new CompilerSet(CompilerFlavor.toFlavor(deftype), directory);
+    }
+    
+    /**
+     * If no compilers are found an empty compiler set is created so we don't have an empty list.
+     * Too many places in CND expect a non-empty list and throw NPEs if it is empty!
+     */
+    public static CompilerSet createEmptyCompilerSet() {
+        return new CompilerSet();
+    }
+    
+    private static String mapNameToDisplayName(CompilerFlavor flavor, int id, boolean isMissing) {
+        return mapNameToDisplayName(flavor, id, isMissing, null);
+    }
+    
+    private static String mapNameToDisplayName(CompilerFlavor flavor, int id, boolean isMissing, String dir) {
+        String displayName;
+        StringBuffer label = new StringBuffer("LBL_"); // NOI18N
+        
+        
+        label.append(flavor);
+        label.append(flavor.isSunStudioCompiler() ? mapSunStudioVersionString(dir) : ""); // NOI18N
+        label.append("CompilerSet_"); // NOI18N
+        if (isMissing) {
+            label.append("Missing"); // NOI18N
+        } else {
+            label.append(id == 0 ? "0" : "X"); // NOI18N
+        }
+        return NbBundle.getMessage(CompilerSet.class, label.toString(), Integer.valueOf(id));
+    }
+    
+    private static String mapSunStudioVersionString(String dir) {
+        String inventory;
+        File finv;
+        
+        if (dir.contains("/prod/bin")) { // NOI18N
+            inventory = "/../../inventory"; // NOI18N
+        } else {
+            inventory = "/../inventory"; // NOI18N
+        }
+        
+        finv = new File(dir + inventory);
+        if (finv.exists() && finv.isDirectory()) {
+            String[] dirs = finv.list();
+            for (int i = 0; i < dirs.length; i++) {
+                if (dirs[i].startsWith("v16")) { // NOI18N
+                    return "12"; // NOI18N
+                }
+                if (dirs[i].startsWith("v15")) { // NOI18N
+                    return "11"; // NOI18N
+                }
+                if (dirs[i].startsWith("v14")) { // NOI18N
+                    return "10"; // NOI18N
+                }
+                if (dirs[i].startsWith("v13")) { // NOI18N
+                    return "9"; // NOI18N
+                }
+                if (dirs[i].startsWith("v12")) { // NOI18N
+                    return "8"; // NOI18N
+                }
+            }
+        }
+        return ""; // NOI18N
+    }
+    
+    private static boolean isSunCompilerDirectory(String dir) {
+        if (dir.indexOf("SUNWspro") != -1 || dir.indexOf("/prod/bin") != -1) { // NOI18N
+            return true;
+        } else {
+            File prod = new File(dir + "/../prod"); // NOI18N
+            return prod.exists() && prod.isDirectory();
+        }
+    }
+    
+    private static boolean isSunUCBCompilerDirectory(String dir) {
+        return Utilities.getOperatingSystem() == Utilities.OS_SOLARIS && dir.equals("/usr/ucb"); // NOI18N
     }
     
     protected int getID() {
         return id;
+    }
+        
+    public boolean isGnuCompiler() {
+        return flavor.isGnuCompiler();
+    }
+
+    public boolean isSunCompiler() {
+        return flavor.isSunCompiler();
+    }
+
+    public boolean isSunUCBCompiler() {
+        return flavor.isSunUCBCompiler();
     }
     
     /**
@@ -216,7 +354,7 @@ public class CompilerSet {
         String base = "";
         
         if (directory.toLowerCase().indexOf("sfu") != -1 || directory.toLowerCase().indexOf("sua") != -1) { // NOI18N
-            int pos = directory.indexOf("\\opt\\gcc");  // NOI18
+            int pos = directory.indexOf("\\opt\\gcc");  // NOI18N
             if (pos != -1) {
                 base = directory.substring(0, pos);
             } else if (directory.endsWith("\\bin")) { // NOI18N
@@ -228,11 +366,6 @@ public class CompilerSet {
     
     public CompilerFlavor getCompilerFlavor() {
         return flavor;
-    }
-    
-    public boolean isGnuCompilerSet() {
-        return flavor == CompilerFlavor.GNU || flavor == CompilerFlavor.Cygwin || flavor == CompilerFlavor.MinGW ||
-                flavor == CompilerFlavor.Interix || flavor == CompilerFlavor.DJGPP;
     }
     
     public void addDirectory(String path) {
@@ -256,16 +389,18 @@ public class CompilerSet {
         return displayName;
     }
     
+    private static HashMap<String, Tool> cache = new HashMap();
+    
     public void addTool(String name, String path, int type) {
-        String displayName;
-        int pos = name.indexOf(".exe");
-        
-        if (pos >= 0) {
-            displayName = name.substring(0, pos);
-        } else {
-            displayName = name;
+        String fullpath = name.length() > 0 ? path + File.separator + name : path;
+        Tool tool = cache.get(fullpath);
+        if (tool == null) {
+            tool = compilerProvider.createCompiler(flavor, type, name, Tool.getToolDisplayName(type), path);
+            if (fullpath.length() > 0) {
+                cache.put(fullpath, tool);
+            }
         }
-        tools.add(new Tool(type, name, displayName, path));
+        tools.add(tool);
     }
     
     /**
@@ -295,6 +430,14 @@ public class CompilerSet {
                 return tool;
         }
         return null;
+    }
+    
+    public boolean isValid() {
+        Tool cCompiler = getTool(Tool.CCompiler);
+        Tool cppCompiler = getTool(Tool.CCCompiler);
+        Tool fortranCompiler = getTool(Tool.FortranCompiler);
+        
+        return cCompiler != null && cppCompiler != null && (!CppSettings.getDefault().isFortranEnabled() || fortranCompiler != null);
     }
     
     public List<Tool> getTools() {

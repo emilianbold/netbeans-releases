@@ -20,6 +20,7 @@ package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.util.NbBundle;
 
@@ -29,9 +30,12 @@ import org.openide.util.NbBundle;
  */
 public class SelectModePanel extends javax.swing.JPanel {
     private boolean first = true;
+    private boolean lastApplicable;
+    private SelectModeWizard wizard;
     
     /** Creates new form SelectModePanel */
     public SelectModePanel(SelectModeWizard wizard) {
+        this.wizard = wizard;
         initComponents();
         addListeners();
     }
@@ -56,6 +60,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         } else {
             instructionsTextArea.setText(getString("SelectModeAdvancedInstructionText")); // NOI18N
         }
+        wizard.stateChanged(null);
     }
     
     /** This method is called from within the constructor to
@@ -134,7 +139,8 @@ public class SelectModePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     void read(final DiscoveryDescriptor wizardDescriptor) {
-        if (isApplicable(wizardDescriptor)){
+        lastApplicable = isApplicable(wizardDescriptor);
+        if (lastApplicable){
             advancedMode.setEnabled(true);
             simpleMode.setEnabled(true);
             if (first) {
@@ -142,7 +148,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             }
         } else {
             advancedMode.setEnabled(true);
-            simpleMode.setEnabled(false);
+            simpleMode.setEnabled(true);
             advancedMode.setSelected(true);
         }
         first = false;
@@ -157,7 +163,23 @@ public class SelectModePanel extends javax.swing.JPanel {
         wizardDescriptor.setSimpleMode(simpleMode.isSelected());
     }
     
-    boolean valid() {
+    boolean valid(DiscoveryDescriptor wizardDescriptor) {
+        if (simpleMode.isSelected()){
+            if (!lastApplicable){
+                String selectedExecutable = wizardDescriptor.getBuildResult();
+                if (selectedExecutable == null || selectedExecutable.length()==0) {
+                    wizardDescriptor.setMessage(getString("SimpleMode.Error.NoOutputResult")); // NOI18N
+                    return false;
+                }
+                File file = new File(selectedExecutable);
+                if (!file.exists()) {
+                    wizardDescriptor.setMessage(getString("SimpleMode.Error.OutputResultNotExist")); // NOI18N
+                    return false;
+                }
+                wizardDescriptor.setMessage(getString("SimpleMode.Error.NoDebugOutputResult")); // NOI18N
+                return false;
+            }
+        }
         return true;
     }
     

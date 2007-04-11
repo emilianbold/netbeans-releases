@@ -32,7 +32,9 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
-import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
@@ -46,8 +48,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfigu
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.openide.filesystems.FileUtil;
@@ -90,7 +90,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     
     public List getAllSourceFiles() {
         ArrayList list = new ArrayList();
-        if (getMakeConfigurationDescriptor() == null)
+        if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null)
             return null;
         Item[] items = getMakeConfigurationDescriptor().getProjectItems();
         for (int i = 0; i < items.length; i++) {
@@ -188,7 +188,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
         }
     }
-    
+
+    public void fireFileRenamed(String oldPath, NativeFileItem newNativeFileIetm) {
+        for (int i = 0; i < listeners.size(); i++) {
+            NativeProjectItemsListener listener = (NativeProjectItemsListener)listeners.get(i);
+            listener.fileRenamed(oldPath, newNativeFileIetm);
+        }
+    }
+
     public void fireFilePropertiesChanged(NativeFileItem nativeFileIetm) {
         //System.out.println("fireFilePropertiesChanged " + nativeFileIetm.getFile());
         for (int i = 0; i < listeners.size(); i++) {
@@ -379,10 +386,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     public List/*<String>*/ getSystemIncludePaths() {
         ArrayList vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
-        Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
-        CompilerSet compilerSet = CompilerSets.getCompilerSet(makeConfiguration.getCompilerSet().getValue());
-        BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
-        vec.addAll(compiler.getSystemIncludeDirectories(platform));
+        if (makeConfiguration != null) {
+            Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
+            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+            BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+            if (compiler != null) {
+                vec.addAll(compiler.getSystemIncludeDirectories(platform));
+            }
+        }
         return vec;
     }
     
@@ -398,14 +409,16 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     public List/*<String>*/ getUserIncludePaths() {
         ArrayList vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
-        //Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
-        CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
-        ArrayList vec2 = new ArrayList();
-        vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
-        // Convert all paths to absolute paths
-        Iterator iter = vec2.iterator();
-        while (iter.hasNext()) {
-            vec.add(IpeUtils.toAbsolutePath(makeConfiguration.getBaseDir(), (String)iter.next()));
+        if (makeConfiguration != null) {
+            //Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
+            CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
+            ArrayList vec2 = new ArrayList();
+            vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
+            // Convert all paths to absolute paths
+            Iterator iter = vec2.iterator();
+            while (iter.hasNext()) {
+                vec.add(IpeUtils.toAbsolutePath(makeConfiguration.getBaseDir(), (String)iter.next()));
+            }
         }
         return vec;
     }
@@ -421,10 +434,12 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     public List/*<String>*/ getSystemMacroDefinitions() {
         ArrayList vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
-        Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
-        CompilerSet compilerSet = CompilerSets.getCompilerSet(makeConfiguration.getCompilerSet().getValue());
-        BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
-        vec.addAll(compiler.getSystemPreprocessorSymbols(platform));
+        if (makeConfiguration != null) {
+            Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
+            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+            BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+            vec.addAll(compiler.getSystemPreprocessorSymbols(platform));
+        }
         return vec;
     }
     
@@ -440,8 +455,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         ArrayList vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         //Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
-        CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
-        vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValuesAsList());
+        if (makeConfiguration != null) {
+            CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
+            vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValuesAsList());
+        }
         return vec;
     }
 }

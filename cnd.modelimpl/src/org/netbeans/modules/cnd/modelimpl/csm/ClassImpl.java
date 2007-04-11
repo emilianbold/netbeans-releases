@@ -132,20 +132,27 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         addMember(new DestructorImpl(token, ClassImpl.this, curentVisibility));
                         break;
                     case CPPTokenTypes.CSM_FIELD:
-                        //addMember(new FieldImpl(token, this, curentVisibility));
-                        if( ! renderVariable(token, null, null) ) {
-                            typedefs = renderTypedef(token, (FileImpl) getContainingFile(), ClassImpl.this);
-                            if( typedefs != null && typedefs.length > 0 ) {
-                                for (int i = 0; i < typedefs.length; i++) {
-                                    // It could be important to register in project before add as member...
-                                    ((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
-                                    addMember((MemberTypedef) typedefs[i]);
-                                }
-                            }
-                        }
+                        if( renderVariable(token, null, null) ) {
+			    break;
+			}
+			typedefs = renderTypedef(token, (FileImpl) getContainingFile(), ClassImpl.this);
+			if( typedefs != null && typedefs.length > 0 ) {
+			    for (int i = 0; i < typedefs.length; i++) {
+				// It could be important to register in project before add as member...
+				((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
+				addMember((MemberTypedef) typedefs[i]);
+			    }
+			    break;
+			}
+			if( renderBitField(token) ) {
+			    break;
+			}
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
-                        addMember(new MethodImpl(token, ClassImpl.this, curentVisibility));
+			AST child = token.getFirstChild();
+			if( child != null && child.getType() != CPPTokenTypes.LITERAL_friend ) {
+			    addMember(new MethodImpl(token, ClassImpl.this, curentVisibility));
+			}
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
                         addMember(new MethodDDImpl(token, ClassImpl.this, curentVisibility));
@@ -164,6 +171,30 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             }
         }
 
+	private boolean renderBitField(AST token) {
+	    
+	    AST typeAST = token.getFirstChild();
+	    if( typeAST == null || typeAST.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN ) {
+		return false;
+	    }
+	    
+	    AST idAST = typeAST.getNextSibling();
+	    if( idAST == null || idAST.getType() != CPPTokenTypes.ID ) {
+		return false;
+	    }
+	    
+	    AST colonAST = idAST.getNextSibling();
+	    if( colonAST == null || colonAST.getType() != CPPTokenTypes.COLON ) {
+		return false;
+	    }
+		    
+	    CsmType type = TypeImpl.createType(typeAST, getContainingFile(), null, 0);
+            FieldImpl field = new FieldImpl(token, getContainingFile(), type, idAST.getText(), ClassImpl.this, curentVisibility);
+            ClassImpl.this.addMember(field);
+	    
+	    return true;
+	}
+	
         protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
             return new MemberTypedef(ClassImpl.this, ast, type, name, curentVisibility);
         }
@@ -205,16 +236,16 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         }           
     }    
 
-    public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file) {
-        this(kind, name, namespace, file, null);
-    }
-    
-    public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
-        super(name, namespace, file, containingClass, null);
-        leftBracketPos = 0;
-        this.kind = CsmDeclaration.Kind.CLASS;
-        register();
-    }
+//    public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file) {
+//        this(kind, name, namespace, file, null);
+//    }
+//    
+//    public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
+//        super(name, namespace, file, containingClass, null);
+//        leftBracketPos = 0;
+//        this.kind = CsmDeclaration.Kind.CLASS;
+//        register();
+//    }
 
     public ClassImpl(AST ast, NamespaceImpl namespace, CsmFile file) { 
         this(ast, namespace, file, null);

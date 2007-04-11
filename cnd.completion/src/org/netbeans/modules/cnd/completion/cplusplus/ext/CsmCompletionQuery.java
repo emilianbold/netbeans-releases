@@ -170,7 +170,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 sup.refreshClassInfo();
 
                 CsmCompletionExpression exp = tp.getResultExp();
-//                System.err.println("expression " + exp);
+                //System.err.println("expression " + exp);
                 ret = getResult(component, sup, openingSource, offset, exp, sort);
             }
         } catch (BadLocationException e) {
@@ -1060,14 +1060,34 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             case CsmCompletionExpression.UNARY_OPERATOR:
                 if (item.getParameterCount() > 0) {
                     lastType = resolveType(item.getParameter(0));
+                    staticOnly = false;
                 }
                 break;
 
-            case CsmCompletionExpression.CONVERSION:
+            case CsmCompletionExpression.MEMBER_POINTER:
+                if (item.getParameterCount() > 0) {
+                    lastType = resolveType(item.getParameter(0));
+                    staticOnly = false;
+                    // TODO: need to convert lastType into reference based on item token '&' or '*'
+                    // and nested pointer expressions
+                }
+                break;
+
+           case CsmCompletionExpression.CONVERSION:
                 lastType = resolveType(item.getParameter(0));
                 staticOnly = false;
                 break;
 
+           case CsmCompletionExpression.TYPE_REFERENCE:
+               if (item.getParameterCount() > 0) {
+                CsmCompletionExpression param = item.getParameter(0);
+                lastType = resolveType(param);
+                // TODO: we need to wrap lastType with pointer and address-of
+                // based on the zero token of 'item' expression
+                staticOnly = false;
+               }
+                break;
+                
             case CsmCompletionExpression.TYPE:
                 lastType = CsmCompletion.getPredefinedType(item.getType());
                 break;

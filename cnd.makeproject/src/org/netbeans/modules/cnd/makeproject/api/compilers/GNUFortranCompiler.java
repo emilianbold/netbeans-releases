@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 
 public class GNUFortranCompiler extends BasicCompiler {
     private static final String[] DEVELOPMENT_MODE_OPTIONS = {
@@ -44,8 +44,8 @@ public class GNUFortranCompiler extends BasicCompiler {
     }
     
     /** Creates a new instance of GNUCCompiler */
-    public GNUFortranCompiler() {
-        super(FortranCompiler, "g77", getString("GNU_FORTRAN_COMPILER")); // NOI18N
+    public GNUFortranCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(flavor, kind, name, displayName, path); // NOI18N
     }
     
     public String getWarningLevelOptions(int value) {

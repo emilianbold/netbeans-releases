@@ -164,6 +164,10 @@ public class ModelSupport implements PropertyChangeListener {
                 }
             }
         }
+    
+        public void fileRenamed(String oldPath, NativeFileItem newFileIetm){
+            onProjectItemRenamed(oldPath, newFileIetm);
+        }
         
         public void filePropertiesChanged(NativeFileItem fileItem) {
             onProjectItemChanged(fileItem);
@@ -233,7 +237,23 @@ public class ModelSupport implements PropertyChangeListener {
         try {
             final ProjectBase project = getProject(item, false);
             if( project != null ) {
-                project.onFileRemoved(item);
+                File file = item.getFile();
+                project.onFileRemoved(file);
+            }
+        } catch( Exception e ) {
+            //TODO: FIX (most likely in Makeproject: path == null in this situation,
+            //this cause NPE
+            e.printStackTrace(System.err);
+        }
+    }
+
+    protected void onProjectItemRenamed(String oldPath, NativeFileItem newFileIetm) {
+        try {
+            final ProjectBase project = getProject(newFileIetm, false);
+            if( project != null ) {
+                File file = FileUtil.normalizeFile(new File(oldPath));
+                project.onFileRemoved(file);
+                project.onFileAdded(newFileIetm);
             }
         } catch( Exception e ) {
             //TODO: FIX (most likely in Makeproject: path == null in this situation,
@@ -291,17 +311,6 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
     
-//    // FIXUP: used only in old project api
-//    private ProjectBase getProject(File file) {
-//	FileObject fo = FileUtil.toFileObject(file);
-//	if( fo != null ) {
-//	    Project platformProject = FileOwnerQuery.getOwner(fo);
-//	    ProjectBase csmProject = (ProjectBase) model.getProject(platformProject);
-//	    return csmProject;
-//	}
-//	return null;
-//    }
-    
     private ProjectBase getProject(NativeFileItem nativeFile, boolean createIfNeeded) {
         assert nativeFile != null : "must not be null";
         assert nativeFile.getFile() != null : "must be associated with valid file";
@@ -309,12 +318,7 @@ public class ModelSupport implements PropertyChangeListener {
         ProjectBase csmProject = null;
         try {
             NativeProject nativeProject = nativeFile.getNativeProject();
-            if (nativeProject == null) {
-                // TODO: temporary use old approach with query
-                FileObject fo = FileUtil.toFileObject(nativeFile.getFile());
-                Project platformProject = FileOwnerQuery.getOwner(fo);
-                nativeProject = (NativeProject) platformProject.getLookup().lookup(NativeProject.class);
-            }
+	    assert(nativeProject != null) : "NativeFileItem should never return null NativeProject";
             if (nativeProject != null) {
                 csmProject = createIfNeeded ? (ProjectBase) model.getProject(nativeProject) :
                     (ProjectBase) model.findProject(nativeProject);
@@ -499,16 +503,23 @@ public class ModelSupport implements PropertyChangeListener {
             alerter.alert(event, fatal);
         }
     }
+
+    public void shutdown() {
+        DataObject.getRegistry().removeChangeListener(modifiedListener);
+    }
     
-    private static class BufAndProj {
+    private static final class BufAndProj {
         public BufAndProj(FileBuffer buffer, ProjectBase project, NativeFileItem nativeFile) {
+            assert buffer != null : "null buffer";
             this.buffer = buffer;
+            assert project != null : "null project";
             this.project = project;
+            assert nativeFile != null : "null nativeFile";
             this.nativeFile = nativeFile;
         }
-        public FileBuffer buffer;
-        public ProjectBase project;
-        public NativeFileItem nativeFile;
+        public final FileBuffer buffer;
+        public final ProjectBase project;
+        public final NativeFileItem nativeFile;
     }
     
     private class FileChangeListener implements ChangeListener {
@@ -544,13 +555,12 @@ public class ModelSupport implements PropertyChangeListener {
 		
 		for( NativeFileItem nativeFile : set ) {
 		    ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
-		    addBufNP(curObj, new BufAndProj(buffer, csmProject, nativeFile));
-		    csmProject.onFileEditStart(buffer, nativeFile);
+                    if (csmProject != null) { // this could be null when code assistance is turned off for project
+                        addBufNP(curObj, new BufAndProj(buffer, csmProject, nativeFile));
+                        csmProject.onFileEditStart(buffer, nativeFile);
+                    }
 		}
 	    }
-	    
-            FileObject primaryFile = curObj.getPrimaryFile();
-            Project platformProject = FileOwnerQuery.getOwner(primaryFile);
         }
         
 //        private void editEnd(DataObject curObj) {
@@ -562,9 +572,9 @@ public class ModelSupport implements PropertyChangeListener {
 //                bufNP.project.onFileEditEnd(bufNP.buffer);
 //            }
 //        }
-        
-        public void stateChanged(ChangeEvent e) {
-            if( TraceFlags.DEBUG ) {
+
+	private void traceStateChanged(ChangeEvent e) {
+	    if( TraceFlags.DEBUG ) {
                 Diagnostic.trace("state of registry changed:"); // NOI18N
                 Diagnostic.indent();
                 if (e != null) {
@@ -578,8 +588,16 @@ public class ModelSupport implements PropertyChangeListener {
                             Diagnostic.trace("object " + i + ":" + curObj.getName()); // NOI18N
                             Diagnostic.indent();
                             Diagnostic.trace("with file: " + curObj.getPrimaryFile()); // NOI18N
-                            Project prj = FileOwnerQuery.getOwner(curObj.getPrimaryFile());
-                            Diagnostic.trace("from project: " + prj); // NOI18N
+			    NativeFileItemSet set = (NativeFileItemSet) curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
+			    if( set == null ) {
+				Diagnostic.trace("NativeFileItemSet == null");
+			    }
+			    else {
+				Diagnostic.trace("NativeFileItemSet:");
+				for( NativeFileItem item : set ) {
+				    Diagnostic.trace("\t" + item.getNativeProject().getProjectDisplayName());
+				}
+			    }
                             EditorCookie editor = (EditorCookie) curObj.getCookie(EditorCookie.class);
                             Diagnostic.trace("has editor support: " + editor); // NOI18N
                             Document doc = editor != null ? editor.getDocument() : null;
@@ -591,6 +609,12 @@ public class ModelSupport implements PropertyChangeListener {
                     Diagnostic.trace("no additional info from event object"); // NOI18N
                 }
                 Diagnostic.unindent();
+	    }
+	}
+	
+        public void stateChanged(ChangeEvent e) {
+            if( TraceFlags.DEBUG ) {
+		traceStateChanged(e);
             }
             if (e != null) {
                 

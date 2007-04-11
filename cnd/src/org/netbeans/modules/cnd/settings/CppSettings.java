@@ -20,9 +20,12 @@
 package org.netbeans.modules.cnd.settings;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.ErrorManager;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
@@ -59,9 +62,15 @@ public class CppSettings extends SystemOption {
     public static final String PROP_C_COMPILER_NAME = "cCompilerName"; // NOI18N
     public static final String PROP_CPP_COMPILER_NAME = "cppCompilerName"; // NOI18N
     public static final String PROP_FORTRAN_COMPILER_NAME = "fortranCompilerName"; // NOI18N
+    public static final String PROP_GDB_REQUIRED = "gdbRequired"; // NOI18N
+    public static final String PROP_C_REQUIRED = "cRequired"; // NOI18N
+    public static final String PROP_CPP_REQUIRED = "cppRequired"; // NOI18N
+    public static final String PROP_FORTRAN_REQUIRED = "fortranRequired"; // NOI18N
     
     /** The resource bundle for the form editor */
     public static ResourceBundle bundle;
+    
+    private String path = null;
 
 
     /** Initialize each property */
@@ -72,6 +81,26 @@ public class CppSettings extends SystemOption {
     /** Return the signleton cppSettings */
     public static CppSettings getDefault() {
 	return (CppSettings) findObject(CppSettings.class, true);
+    }
+    
+    /**
+     * Return the local version of $PATH. This masquerades as a property but isn't!
+     * The reason it isn't is that we don't want persistance beyond the existing IDE
+     * session.
+     *
+     * @returns Current value of the path (as a String)
+     */
+    public String getPath() {
+        if (path == null) {
+            path = Path.getPathAsString();
+        }
+        return path;
+    }
+    
+    public void setPath(String p) {
+        if (!p.equals(path) && p.length() > 0) {
+            path = p;
+        }
     }
     
     public String getCompilerSetName() {
@@ -117,12 +146,33 @@ public class CppSettings extends SystemOption {
         }
     }
     
+    /**
+     * Get the current make path. If this isnt' set but make name is, do a path search and
+     * set the make path too.
+     *
+     * @returns Path to the make program
+     */
     public String getMakePath() {
         String path = (String) getProperty(PROP_MAKE_PATH);
         if (path == null) {
+            String name = (String) getProperty(PROP_MAKE_NAME);
+            if (name != null) {
+                StringTokenizer tok = new StringTokenizer(getPath(), File.pathSeparator);
+                while (tok.hasMoreTokens()) {
+                    String d = tok.nextToken();
+                    File file = new File(d, name);
+                    if (file.exists()) {
+                        path = file.getAbsolutePath();
+                        putProperty(PROP_MAKE_PATH, path, true);
+                        return path;
+                    }
+                }
+            }
             if (Utilities.isWindows()) {
                 return "C:\\Cygwin\\bin\\make.exe"; // NOI18N
-            } else {
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+                return "/usr/ccs/bin/make"; // NOI18N
+            } else { // pick /usr/bin/make as a default value
                 return "/usr/bin/make"; // NOI18N
             }
         } else {
@@ -176,7 +226,7 @@ public class CppSettings extends SystemOption {
     public String getCCompilerName() {
         String name = (String) getProperty(PROP_C_COMPILER_NAME);
         if (name == null) {
-            return "gcc"; // NOI18N
+            return getCompilerSetName().equals("Sun") ? "cc" : "gcc"; // NOI18N
         } else {
             return name;
         }
@@ -192,7 +242,7 @@ public class CppSettings extends SystemOption {
     public String getCppCompilerName() {
         String name = (String) getProperty(PROP_CPP_COMPILER_NAME);
         if (name == null) {
-            return "g++"; // NOI18N
+            return getCompilerSetName().equals("Sun") ? "CC" : "g++"; // NOI18N
         } else {
             return name;
         }
@@ -208,7 +258,7 @@ public class CppSettings extends SystemOption {
     public String getFortranCompilerName() {
         String name = (String) getProperty(PROP_FORTRAN_COMPILER_NAME);
         if (name == null) {
-            return "g77"; // NOI18N
+            return getCompilerSetName().equals("Sun") ? "f90" : "g77"; // NOI18N
         } else {
             return name;
         }
@@ -293,7 +343,7 @@ public class CppSettings extends SystemOption {
      */
     public boolean isFortranEnabled() {
         Boolean b = (Boolean) getProperty(PROP_FORTRAN_ENABLED);
-        return b == null ? DEFAULT_FORTRAN_ENABLED :b.booleanValue();
+        return b == null ? DEFAULT_FORTRAN_ENABLED : b.booleanValue();
     }
     
     /**
@@ -328,8 +378,44 @@ public class CppSettings extends SystemOption {
      }
 
      public void setFreeFormatFortran(boolean state){
-         putProperty(PROP_FREE_FORMAT_FORTRAN,state ? Boolean.TRUE : Boolean.FALSE);
+         putProperty(PROP_FREE_FORMAT_FORTRAN, state ? Boolean.TRUE : Boolean.FALSE);
      }
+    
+    public boolean isGdbRequired() {
+        Boolean b = (Boolean) getProperty(PROP_GDB_REQUIRED);
+        return b == null ? false : b.booleanValue();
+    }
+    
+    public void setGdbRequired(boolean enabled) {
+        putProperty(PROP_GDB_REQUIRED, Boolean.valueOf(enabled));
+    }
+    
+    public boolean isCRequired() {
+        Boolean b = (Boolean) getProperty(PROP_C_REQUIRED);
+        return b == null ? true : b.booleanValue();
+    }
+    
+    public void setCRequired(boolean enabled) {
+        putProperty(PROP_C_REQUIRED, Boolean.valueOf(enabled));
+    }
+    
+    public boolean isCppRequired() {
+        Boolean b = (Boolean) getProperty(PROP_CPP_REQUIRED);
+        return b == null ? true : b.booleanValue();
+    }
+    
+    public void setCppRequired(boolean enabled) {
+        putProperty(PROP_CPP_REQUIRED, Boolean.valueOf(enabled));
+    }
+    
+    public boolean isFortranRequired() {
+        Boolean b = (Boolean) getProperty(PROP_FORTRAN_REQUIRED);
+        return b == null ? false : b.booleanValue();
+    }
+    
+    public void setFortranRequired(boolean enabled) {
+        putProperty(PROP_FORTRAN_REQUIRED, Boolean.valueOf(enabled));
+    }
 
     /**
      * Get the display name.

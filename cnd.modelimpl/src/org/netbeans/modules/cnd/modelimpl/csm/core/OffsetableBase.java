@@ -33,7 +33,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  * Abstracr Base class for CsmOffsetable
  * @author Vladimir Kvashin
  */
-public abstract class OffsetableBase implements CsmOffsetable, CsmObject {
+public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmObject {
     // only one of fileRef/fileUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
     private /*final*/ CsmFile fileRef; // can be set in onDispose or contstructor only
     private final CsmUID<CsmFile> fileUID;
@@ -138,7 +138,7 @@ public abstract class OffsetableBase implements CsmOffsetable, CsmObject {
         return getContainingFile().getText(getStartOffset(), getEndOffset());
     }
 
-    protected void dispose() {
+    public void dispose() {
         onDispose();
     }
     

@@ -110,9 +110,6 @@ public class SimpleConfigurationWizard implements WizardDescriptor.Panel, Change
     public void storeSettings(Object settings) {
         DiscoveryDescriptor wizardDescriptor = DiscoveryWizardDescriptor.adaptee(settings);
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
-        if ( ((WizardDescriptor)settings).getValue()==WizardDescriptor.FINISH_OPTION){
-            new DiscoveryExtension().canApply(wizardDescriptor);
-        }
     }
 }
 

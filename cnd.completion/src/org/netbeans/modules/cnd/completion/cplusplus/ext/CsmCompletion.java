@@ -809,6 +809,10 @@ abstract public class CsmCompletion extends Completion {
         public String getText() {
             return format(true);
         }
+	
+	public String getCanonicalText() {
+	    return getText();
+	}
 
         public CsmFile getContainingFile() {
             return null;

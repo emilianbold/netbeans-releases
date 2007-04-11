@@ -66,4 +66,11 @@ public interface CsmType extends CsmObject, CsmOffsetable {
      * @param resolveTypeChain if true then resolve all typedefs (slow down)
      */
     boolean isBuiltInBased(boolean resolveTypeChain);
+    
+    /**
+     * Returns a canonical representation of this type.
+     * This canonical representation is used to form signatures
+     * and compare types with each other
+     */
+    String getCanonicalText();
 }

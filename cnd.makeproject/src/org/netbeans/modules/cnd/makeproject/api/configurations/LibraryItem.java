@@ -25,8 +25,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.filesystems.FileObject;
@@ -141,7 +141,7 @@ public class LibraryItem {
 	}
 
 	public String getOption(MakeConfiguration conf) {
-            CompilerSet compilerSet = CompilerSets.getCompilerSet(conf.getCompilerSet().getValue());
+            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
             Platform platform = Platforms.getPlatform(conf.getPlatform().getValue());
         
 	    String libPath = getMakeArtifact().getOutput();

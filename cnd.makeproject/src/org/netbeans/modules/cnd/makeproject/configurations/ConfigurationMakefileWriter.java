@@ -45,9 +45,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfigura
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
-import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 
@@ -153,21 +154,26 @@ public class ConfigurationMakefileWriter {
         CCCCompilerConfiguration cCompilerConfiguration = conf.getCCompilerConfiguration();
         CCCCompilerConfiguration ccCompilerConfiguration = conf.getCCCompilerConfiguration();
         FortranCompilerConfiguration fortranCompilerConfiguration = conf.getFortranCompilerConfiguration();
-        CompilerSet compilerSet = CompilerSets.getCompilerSet(conf.getCompilerSet().getValue());
+        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()); // GRP - 
         BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
         BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
         BasicCompiler fortranCompiler = (BasicCompiler)compilerSet.getTool(Tool.FortranCompiler);
         String cCompilerName = ""; // NOI18N
         String ccCompilerName = ""; // NOI18N
         String fortranCompilerName = ""; // NOI18N
-        if (cCompilerConfiguration.getTool().getModified())
-            cCompilerName = cCompilerConfiguration.getTool().getValue();
-        else
-            cCompilerName = cCompiler.getName();
-        if (ccCompilerConfiguration.getTool().getModified())
-            ccCompilerName = ccCompilerConfiguration.getTool().getValue();
-        else
-            ccCompilerName = ccCompiler.getName();
+        if (cCompiler != null) {
+            if (cCompilerConfiguration.getTool().getModified())
+                cCompilerName = cCompilerConfiguration.getTool().getValue();
+            else
+                cCompilerName = cCompiler.getName();
+        }
+        if (ccCompiler != null) {
+            if (ccCompilerConfiguration.getTool().getModified())
+                ccCompilerName = ccCompilerConfiguration.getTool().getValue();
+            else {
+                ccCompilerName = ccCompiler.getName();
+            }
+        }
         if (fortranCompiler != null) {
             if (fortranCompilerConfiguration.getTool().getModified())
                 fortranCompilerName = fortranCompilerConfiguration.getTool().getValue();
@@ -307,7 +313,7 @@ public class ConfigurationMakefileWriter {
                 comment = null;
 		additionalDep = null;
                 if (itemConfiguration.isCompilerToolConfiguration()) {
-                    CompilerSet compilerSet = CompilerSets.getCompilerSet(conf.getCompilerSet().getValue());
+                    CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
                     BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
                     BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                     target = compilerConfiguration.getOutputFile(items[i].getPath(true), conf, false);
@@ -398,7 +404,8 @@ public class ConfigurationMakefileWriter {
         if (conf.isCompileConfiguration()) {
             bw.write("\t${RM} -r " + MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + "\n"); // UNIX path // NOI18N
             bw.write("\t${RM} " + getOutput(conf) + "\n"); // NOI18N
-            if (conf.getCompilerSet().getValue() == CompilerSets.SUN_COMPILER_SET && conf.hasCPPFiles(projectDescriptor))
+            if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isSunCompiler() &&
+                    conf.hasCPPFiles(projectDescriptor))
 		bw.write("\t${CCADMIN} -clean" + "\n"); // NOI18N
             if (conf.hasFortranFiles(projectDescriptor))
 		bw.write("\t${RM} *.mod" + "\n"); // NOI18N

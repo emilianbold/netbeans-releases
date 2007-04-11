@@ -30,5 +30,5 @@ public abstract class BaseTest {
     
     protected final static boolean stopOnError = Boolean.getBoolean("cnd.repository.test.stop.on.error");
     
-    public abstract void test(List<String> params) throws IOException;
+    public abstract boolean test(List<String> params) throws IOException;
 }

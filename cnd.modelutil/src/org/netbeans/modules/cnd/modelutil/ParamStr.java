@@ -25,11 +25,14 @@ import java.awt.Color;
 public class ParamStr {
     private String type, simpleType, prm;
     private Color typeColor;
-    public ParamStr(String type, String simpleType, String prm, Color typeColor) {
+    private boolean isVarArg;
+    
+    public ParamStr(String type, String simpleType, String prm, boolean isVarArg, Color typeColor) {
         this.type = type;
         this.simpleType = simpleType;
         this.prm = prm;
         this.typeColor = typeColor;
+        this.isVarArg = isVarArg;
     }
 
     public String getTypeName() {
@@ -46,5 +49,9 @@ public class ParamStr {
 
     public Color getTypeColor() {
         return typeColor;
+    }
+    
+    public boolean isVarArg() {
+        return isVarArg;
     }
 }

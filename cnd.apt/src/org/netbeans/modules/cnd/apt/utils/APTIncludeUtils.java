@@ -104,8 +104,8 @@ public class APTIncludeUtils {
     private static String resolveFilePath(Iterator it, String file) {
         if (APTTraceFlags.APT_ABSOLUTE_INCLUDES) {
             File absFile = new File(file);
-            if (absFile.isAbsolute() && exists(absFile)) {
-                return absFile.getAbsolutePath();
+            if (absFile.isAbsolute() && !isDirectory(absFile) && exists(absFile)) {
+                return file;
             }
         }
         while( it.hasNext() ) {

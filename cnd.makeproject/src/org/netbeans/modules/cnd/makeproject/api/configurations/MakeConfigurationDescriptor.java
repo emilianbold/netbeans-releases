@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWrite
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.FolderEntry;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -314,9 +315,14 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
     public void fireFilesRemoved(List<NativeFileItem> fileItems) {
         getNativeProject().fireFilesRemoved(fileItems);
     }
+
+    public void fireFileRenamed(String oldPath, NativeFileItem newFileItem) {
+        getNativeProject().fireFileRenamed(oldPath, newFileItem);
+    }
     
-    public void checkForChangedItems(Folder folder, Item item) {
+    public void checkForChangedItems(Project project, Folder folder, Item item) {
         getNativeProject().checkForChangedItems(folder, item);
+        MakeLogicalViewProvider.checkForChangedItems(project, folder, item);
     }
     
     public void copyFromProjectDescriptor(ConfigurationDescriptor copyProjectDescriptor) {

@@ -130,12 +130,12 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
                     node = new MemberNode((CsmMember) member);
                 } else if( CsmKindUtilities.isFunction(member) ) {
                     if (traceEvents){
-                        System.out.println("It should be member:"+member.getUniqueName());
+                        System.out.println("It should be member:"+member.getUniqueName()); // NOI18N
                     }
                     node = new GlobalFuncNode((CsmFunction) member);
                 } else {
                     if (traceEvents){
-                        System.out.println("It should be member:"+member.getUniqueName());
+                        System.out.println("It should be member:"+member.getUniqueName()); // NOI18N
                     }
                 }
             }

@@ -33,6 +33,7 @@ public interface DiscoveryDescriptor {
     void setProject(Project project);
     
     DiscoveryProvider getProvider();
+    String getProviderID();
     void setProvider(DiscoveryProvider provider);
 
     String getRootFolder();

@@ -147,37 +147,12 @@ public class SmartChangeEvent {
     }
     
     private static CsmProject findProject(CsmOffsetableDeclaration decl){
-        CsmScope scope = decl.getScope();
-        if (CsmKindUtilities.isClass(scope)){
-            CsmClass cls = (CsmClass)scope;
-            if (cls.isValid()) {
-                CsmFile file = cls.getContainingFile();
-                if (file != null && file.isValid()) {
-                    return file.getProject();
-                }
-            }
-        } else if(CsmKindUtilities.isEnum(scope)){
-            CsmEnum cls = (CsmEnum)scope;
-            if (cls.isValid()) {
-                CsmFile file = cls.getContainingFile();
-                if (file != null && file.isValid()) {
-                    return file.getProject();
-                }
-            }
-        } else if (CsmKindUtilities.isNamespace(scope)){
-            CsmNamespace cls = (CsmNamespace)scope;
-            return cls.getProject();
-        } else if (CsmKindUtilities.isNamespaceDefinition(scope)){
-            CsmNamespaceDefinition cls = (CsmNamespaceDefinition)scope;
-            CsmFile file = cls.getContainingFile();
-            if (file != null && file.isValid()) {
+        CsmFile file = decl.getContainingFile();
+        if (file != null){
+            if (file.isValid()) {
                 return file.getProject();
             }
-        } else if (CsmKindUtilities.isFile(scope)){
-            CsmFile cls = (CsmFile)scope;
-            if (cls.isValid()) {
-                return cls.getProject();
-            }
+            return null;
         }
         System.err.println("Cannot fing project for declaration "+decl.getUniqueName());
         return null;

@@ -51,4 +51,7 @@ public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
 	queue.addLast(existent);
     }    
     
+    public void onIdle() {
+        // do nothing
+    }
 }

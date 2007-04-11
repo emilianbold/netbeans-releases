@@ -38,11 +38,15 @@ import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
+import org.netbeans.modules.cnd.modelutil.MethodParamsTipPaintComponent;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.openide.util.NbBundle;
 
 /**
  * this is the modified copy of JavaCompletionProvider
@@ -324,7 +328,9 @@ public class CsmCompletionProvider implements CompletionProvider {
             queryMethodParamsStartPos = null;
             NbCsmCompletionQuery query = new NbCsmCompletionQuery();
             BaseDocument bdoc = (BaseDocument)doc;
-            NbCsmCompletionQuery.CsmCompletionResult res = null;// (NbCsmCompletionQuery.CsmCompletionResult)query.tipQuery(component, caretOffset, bdoc.getSyntaxSupport(), false);
+            //NbCsmCompletionQuery.CsmCompletionResult res = null;// (NbCsmCompletionQuery.CsmCompletionResult)query.tipQuery(component, caretOffset, bdoc.getSyntaxSupport(), false);
+//            NbCsmCompletionQuery query = new NbCsmCompletionQuery();
+            NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult)query.query(component, caretOffset, bdoc.getSyntaxSupport(), true, false);
             if (res != null) {
                 queryCaretOffset = caretOffset;
                 List list = new ArrayList();
@@ -332,32 +338,32 @@ public class CsmCompletionProvider implements CompletionProvider {
                 boolean checked = false;
                 for (Iterator it = res.getData().iterator(); it.hasNext();) {
                     Object o = it.next();
-//                    if (o instanceof NbJMIResultItem.CallableFeatureResultItem) {
-//                        NbJMIResultItem.CallableFeatureResultItem item = (NbJMIResultItem.CallableFeatureResultItem) o;
-//
-//                        if (!checked) {
-//                            JCExpression exp = item.substituteExp;
-//                            if (exp.getTokenCount() > 0) {
-//                                try {
-//                                    queryMethodParamsStartPos = bdoc.createPosition(exp.getTokenOffset(0));
-//                                } catch (BadLocationException ble) {
-//                                }                                
-//                            }
-//                            checked = true;
-//                        }
-//
-//                        List parms = item.createParamsList();
-//                        if (parms.size() > 0) {
-//                            idx = item.getCurrentParamIndex();
-//                        } else {
-//                            parms.add(NbBundle.getMessage(CsmCompletionProvider.class, "JCP-no-parameters"));
-//                        }
-//                        list.add(parms);
-//                    }
+                    if (o instanceof CsmResultItem.ConstructorResultItem) {
+                        CsmResultItem.ConstructorResultItem item = (CsmResultItem.ConstructorResultItem) o;
+
+                        if (!checked) {
+                            CsmCompletionExpression exp = item.getExpression();
+                            if (exp.getTokenCount() > 0) {
+                                try {
+                                    queryMethodParamsStartPos = bdoc.createPosition(exp.getTokenOffset(0));
+                                } catch (BadLocationException ble) {
+                                }                                
+                            }
+                            checked = true;
+                        }
+
+                        List parms = item.createParamsList();
+                        if (parms.size() > 0) {
+                            idx = item.getCurrentParamIndex();
+                        } else {
+                            parms.add(NbBundle.getMessage(CsmCompletionProvider.class, "CC-no-parameters"));
+                        }
+                        list.add(parms);
+                    }
                 }
 
                 resultSet.setAnchorOffset(queryAnchorOffset = res.getSubstituteOffset() + 1);
-//                resultSet.setToolTip(queryToolTip = new MethodParamsTipPaintComponent(list, idx));
+                resultSet.setToolTip(queryToolTip = new MethodParamsTipPaintComponent(list, idx));
             }
             resultSet.finish();
         }
@@ -402,10 +408,12 @@ public class CsmCompletionProvider implements CompletionProvider {
                 if (balance < 0)
                     otherMethodContext = true;
             }
-            if (otherMethodContext && balance < 0)
+            if (otherMethodContext && balance < 0) {
                 otherMethodContext = false;
-            if (queryMethodParamsStartPos == null || caretOffset <= queryMethodParamsStartPos.getOffset())
+            }
+            if (queryMethodParamsStartPos == null || caretOffset <= queryMethodParamsStartPos.getOffset()) {
                 filter = false;
+            }
             return otherMethodContext || filter;
         }
         

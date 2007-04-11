@@ -108,7 +108,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         private String           startFile;
         
         private Map/*<String, Integer>*/ recurseIncludes = null;   
-        private Stack/*IncludeInfo*/ inclStack = null;        
+        private Stack<IncludeInfo> inclStack = null;        
         
         public StateImpl() {
         }
@@ -170,7 +170,35 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         
         public StateImpl(DataInput input) throws IOException {
             throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
-        }         
+        }        
+
+        public boolean equals(Object obj) {
+            if (obj == null || (obj.getClass() != this.getClass())) {
+                return false;
+            }
+            StateImpl other = (StateImpl)obj;
+            return this.startFile.equals(other.startFile) &&
+                    compareStacks(this.inclStack, other.inclStack);
+        }
+        
+        private boolean compareStacks(Stack<IncludeInfo> inclStack1, Stack<IncludeInfo> inclStack2) {
+            if (inclStack1 != null) {
+                int size = inclStack1.size();
+                if (inclStack2 == null || inclStack2.size() != size) {
+                    return false;
+                }
+                for (int i = 0; i < size; i++) {
+                    IncludeInfo cur1 = inclStack1.get(i);
+                    IncludeInfo cur2 = inclStack2.get(i);
+                    if (!cur1.equals(cur2)) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                return inclStack2 == null;
+            }
+        }
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -178,7 +206,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
 
     private boolean pushIncludeImpl(String path, int directiveLine) {
         if (recurseIncludes == null) {
-            assert (inclStack == null): inclStack.toString();
+            assert (inclStack == null): inclStack.toString() + " started on " + startFile;
             inclStack = new Stack();
             recurseIncludes = new HashMap();
         }
@@ -196,10 +224,12 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }    
     
     private static final class IncludeInfoImpl implements IncludeInfo {
-        private String path;
-        private int directiveLine;
+        private final String path;
+        private final int directiveLine;
         public IncludeInfoImpl(String path, int directiveLine) {
+            assert path != null;
             this.path = path;
+            assert directiveLine >= 0;
             this.directiveLine = directiveLine;
         }
 
@@ -216,6 +246,15 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             
             retValue = "(" + getIncludeDirectiveLine() + ": " + getIncludedPath() + ")"; // NOI18N
             return retValue;
+        }
+
+        public boolean equals(Object obj) {
+            if (obj == null || (obj.getClass() != this.getClass())) {
+                return false;
+            }
+            IncludeInfoImpl other = (IncludeInfoImpl)obj;
+            return this.directiveLine == other.directiveLine &&
+                    this.path.equals(other.path);
         }
     }
       

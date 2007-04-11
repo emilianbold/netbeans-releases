@@ -20,13 +20,12 @@
 package  org.netbeans.modules.cnd.editor.parser;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import java.util.StringTokenizer;
 import java.io.File;
+import org.netbeans.modules.cnd.settings.CppSettings;
 
 public class CtagsParser {
     // Whether or not using Exuberant ctags
@@ -351,7 +350,7 @@ public class CtagsParser {
             ctagsPath = "C:\\cygwin\\bin\\ctags.exe "; // NOI18N
         }
         if( ctagsPath == null || ! fileExists(ctagsPath) ) {
-            String path = System.getenv("PATH"); // NOI18N
+            String path = CppSettings.getDefault().getPath();
             if( path != null ) {
                 StringTokenizer tokenizer = new StringTokenizer(path, System.getProperty("path.separator")); // NOI18N
                 while( tokenizer.hasMoreTokens() ) {

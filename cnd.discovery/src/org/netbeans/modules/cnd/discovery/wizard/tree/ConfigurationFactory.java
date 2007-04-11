@@ -44,15 +44,15 @@ public class ConfigurationFactory {
         Collection<FolderProperties> folders = project.getConfiguredFolders();
         FolderConfigurationImpl root = new FolderConfigurationImpl("");
         for(FolderProperties folder : folders){
-            if (folder.getItemPath().startsWith(rootFolder)) {
+            //if (folder.getItemPath().startsWith(rootFolder)) {
                 FolderConfigurationImpl fo = addChild(folder.getItemPath(), root);
                 for(SourceFileProperties file : folder.getFiles()){
                     FileConfigurationImpl fi = new FileConfigurationImpl(file);
                     fo.addFile(fi);
                 }
-            } else {
+            //} else {
                 //System.out.println("Out of scope "+folder);
-            }
+            //}
         }
         // remove empty root
         StringTokenizer st = new StringTokenizer(rootFolder,"/\\"); // NOI18N

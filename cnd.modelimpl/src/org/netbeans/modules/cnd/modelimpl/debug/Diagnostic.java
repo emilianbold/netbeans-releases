@@ -93,6 +93,11 @@ public class Diagnostic {
         public boolean isRunning() {
             return running;
         }
+        
+        public long getTime() {
+            return time;
+        }
+        
     }
     
     public static int getStatisticsLevel() {

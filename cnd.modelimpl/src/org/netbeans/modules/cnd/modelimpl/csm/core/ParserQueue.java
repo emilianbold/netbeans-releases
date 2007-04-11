@@ -43,6 +43,10 @@ public class ParserQueue {
         private Entry next;
         
         private Entry(FileImpl file, APTPreprocState.State ppStateState) {
+            if( TraceFlags.TRACE_PARSER_QUEUE ) {
+                System.err.println("creating entry for " + file.getAbsolutePath() +
+                        " as " + tracePreprocStateState(ppStateState));            
+            }
             this.file = file;
             this.ppStateState = ppStateState;
         }
@@ -74,6 +78,11 @@ public class ParserQueue {
             // FIXUP: remove assert checks and update if statements to prevent NPE
             //            assert (ppStateState != null) : "why do pass null snapshot?";
             //            assert (this.ppStateState != null) : "if it was already included, where is the state?";
+
+            if( TraceFlags.TRACE_PARSER_QUEUE ) {
+                System.err.println("setPreprocStateStateIfNeed for " + file.getAbsolutePath() +
+                        " as " + tracePreprocStateState(ppStateState) + " with current " + tracePreprocStateState(this.ppStateState));
+            }
             if (this.ppStateState != null && this.ppStateState.isStateCorrect()) {
                 // do nothing
             } else if (ppStateState != null && ppStateState.isStateCorrect()) {
@@ -83,6 +92,22 @@ public class ParserQueue {
         }
     }
     
+    /*package*/static String tracePreprocStateState(APTPreprocState.State ppStateState) {
+        if (ppStateState == null) {
+            return "null";
+        } else {
+            StringBuilder msg = new StringBuilder("[");
+            if (!ppStateState.isCleaned()) {
+                msg.append("not");
+            }
+            msg.append(" cleaned, ");
+            if (!ppStateState.isStateCorrect()) {
+                msg.append("not");
+            }
+            msg.append(" correct stateState]");
+            return msg.toString();
+        }
+    }
     
     private static class Queue {
         
@@ -643,5 +668,9 @@ public class ParserQueue {
             }
         }
         if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("Finished waiting on Empty Project " + project.getName());
+    }
+    
+    public long getStopWatchTime() {
+        return TraceFlags.TIMING ? stopWatch.getTime() : -1;
     }
 }

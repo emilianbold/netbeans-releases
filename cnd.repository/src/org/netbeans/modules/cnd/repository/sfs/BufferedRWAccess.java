@@ -107,6 +107,7 @@ public class BufferedRWAccess implements FileRWAccess {
 	return writeBuffer;
     }
     
+    // TODO: optimize buffer allocation
     protected ByteBuffer getReadBuffer(int size) {
 	ByteBuffer buffer = ByteBuffer.allocate(size);
 	return buffer;
@@ -134,9 +135,24 @@ public class BufferedRWAccess implements FileRWAccess {
 	channel.write(buffer, newOffset);
     }
     
-    public void close() throws IOException {
-	channel.close();
+    public void move(FileRWAccess from, long offset, int size, long newOffset) throws IOException {
+	if( ! (from instanceof  BufferedRWAccess) ) {
+	    throw new IllegalArgumentException("Illegal class to move from: " + from.getClass().getName()); // NOI18N
+	}
+	BufferedRWAccess from2 = (BufferedRWAccess) from;
+	ByteBuffer buffer = getReadBuffer(size);
+	from2.channel.read(buffer, offset);
+	buffer.flip();
+	channel.write(buffer, newOffset);
     }
     
     
+    public void close() throws IOException {
+	channel.close();
+    }
+
+    public FileDescriptor getFD() throws IOException {
+	return randomAccessFile.getFD();
+    }
+
 }

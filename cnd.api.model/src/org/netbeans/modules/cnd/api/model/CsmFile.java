@@ -39,13 +39,13 @@ public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable, CsmIde
     String getText(int start, int end);
 
     /** Sorted (by start offset) list of #include directives in the file */
-    List/*<CsmInclude>*/ getIncludes();
+    List<CsmInclude> getIncludes();
     
     /** Sorted (by start offset) list of declarations in the file */
-    List/*<CsmDeclaration>*/ getDeclarations();
+    List<CsmOffsetableDeclaration> getDeclarations();
     
     /** Sorted (by start offset) list of #define directives in the file */
-    List/*<CsmMacro>*/ getMacros();
+    List<CsmMacro> getMacros();
     
     /** 
      * Returns true if the file has been already parsed

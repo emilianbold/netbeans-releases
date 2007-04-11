@@ -35,13 +35,15 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
  * @author Vladimir Voskresensky
  */
 public class APTRestorePreprocStateWalker extends APTParseFileWalker {
-    private String interestedFile;
-    private Stack/*<IncludeInfo>*/ inclStack;
-    private APTIncludeHandler.IncludeInfo stopDirective;
+    private final String interestedFile;
+    private final Stack/*<IncludeInfo>*/ inclStack;
+    private final APTIncludeHandler.IncludeInfo stopDirective;
+    private final boolean searchInterestedFile;
     
     /** Creates a new instance of APTRestorePreprocStateWalker */
     public APTRestorePreprocStateWalker(APTFile apt, FileImpl file, APTPreprocState preprocState, Stack/*<IncludeInfo>*/ inclStack, String interestedFile) {
         super(apt, file, preprocState);
+        this.searchInterestedFile = true;
         this.interestedFile = interestedFile;
         this.inclStack = inclStack;
         assert (!inclStack.empty());
@@ -49,30 +51,65 @@ public class APTRestorePreprocStateWalker extends APTParseFileWalker {
         assert (stopDirective != null);
     }
     
-    protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, APTPreprocState preprocState, int mode, APTInclude apt) throws IOException {
-        try {
-            if (!inclStack.empty()) {
-                // need to continue restoring
-                FileImpl csmFile = inclFileOwner.getFile(new File(inclPath));
-                assert csmFile != null;
-                APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
-                if (aptLight != null) {
-                    // one more interation
-                    APTWalker walker = new APTRestorePreprocStateWalker(aptLight, csmFile, preprocState, inclStack, interestedFile);
-                    walker.visit();
-                }
-            }
-        } finally {
+    /** Creates a new instance of APTRestorePreprocStateWalker */
+    public APTRestorePreprocStateWalker(APTFile apt, FileImpl file, APTPreprocState preprocState) {
+        super(apt, file, preprocState);
+        this.searchInterestedFile = false;
+        this.interestedFile = null;
+        this.inclStack = null;
+        this.stopDirective = null;
+    }
+    
+    protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, int mode, APTInclude apt) throws IOException {
+        FileImpl csmFile = null;
+        boolean foundDirective = false;
+        if (searchInterestedFile) {
             // in fact, we know, that the first correct inclusion has priority,
             // may be check for inclPath and interestedFile correspondence only?
-            if (apt.getToken().getLine() == stopDirective.getIncludeDirectiveLine() ||
-                    inclPath.equals(interestedFile)) {
+            if ((apt.getToken().getLine() == stopDirective.getIncludeDirectiveLine() ||
+                    inclPath.equals(interestedFile))) {
+                foundDirective = true;
+            }            
+        }
+        try {
+            csmFile = inclFileOwner.getFile(new File(inclPath));
+            assert csmFile != null;
+            if (foundDirective) {
+                // we met candidate to stop on #include directive
+                assert inclStack != null;
+                // look if it the real target or target is in sub-#include
+                if (!inclStack.empty()) {
+                    // this is not the target
+                    // need to continue restoring in sub-#includes
+                    APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
+                    if (aptLight != null) {
+                        APTWalker walker = new APTRestorePreprocStateWalker(aptLight, csmFile, getPreprocState(), inclStack, interestedFile);
+                        walker.visit();
+                    } else {
+                        // expected #included file was deleted
+                        csmFile = null;
+                    }
+                }
+            } else {
+                // usual gathering macro map without check on #include directives
+                APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
+                if (aptLight != null) {
+                    APTWalker walker = new APTRestorePreprocStateWalker(aptLight, csmFile, getPreprocState());
+                    walker.visit();
+                } else {
+                    // expected #included file was deleted
+                    csmFile = null;
+                }                
+            }
+        } finally {
+            if (foundDirective) {
                 // we restored everything. Time to stop
+                // but do not clear includes way => no popInclude
                 super.stop();
             } else {
                 getIncludeHandler().popInclude(); 
             }
         }
-        return null;
+        return csmFile;
     }    
 }

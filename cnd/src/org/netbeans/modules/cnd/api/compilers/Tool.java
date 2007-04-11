@@ -21,7 +21,9 @@ package org.netbeans.modules.cnd.api.compilers;
 
 import java.io.File;
 import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class Tool {
     
@@ -38,17 +40,19 @@ public class Tool {
         getString("CustomBuildTool"), // NOI18N
     };
     
+    private CompilerFlavor flavor;
     private int kind;
     private String name;
     private String displayName;
     private String path;
     
     /** Creates a new instance of GenericCompiler */
-    public Tool(int kind, String name, String displayName, String path) {
+    public Tool(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        this.flavor = flavor;
         this.kind = kind;
         this.name = name;
         this.displayName = displayName;
-        this.path = path + File.separator + name;
+        this.path = name.length() > 0 ? path + File.separator + name : path;
     }
     
     public int getKind() {
@@ -71,8 +75,17 @@ public class Tool {
         return TOOL_NAMES[getKind()];
     }
     
+    public static String getToolDisplayName(int kind) {
+        return TOOL_NAMES[kind];
+    }
+    
     public String toString() {
-        return getDisplayName();
+        String name = getName();
+        if (Utilities.isWindows() && name.endsWith(".exe")) { // NOI18N
+            return name.substring(0, name.length() - 4);
+        } else {
+            return name;
+        }
     }
     
     private static ResourceBundle bundle = null;

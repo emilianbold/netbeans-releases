@@ -58,6 +58,9 @@ public class ChildrenUpdater {
             map.put(project,p);
         }
         p.put(host,children);
+        if (traceEvents) {
+            System.out.println("Register Children Updater on key "+host.toString()); // NOI18N
+        }
     }
     
     public void unregister(){
@@ -217,13 +220,15 @@ public class ChildrenUpdater {
             }
         } else if(CsmKindUtilities.isTypedef(decl)){
             CsmTypedef def = (CsmTypedef)decl;
-            CsmClassifier classifier = def.getType().getClassifier();
-            if (classifier instanceof CsmCompoundClassifier) {
-                CsmCompoundClassifier cls = (CsmCompoundClassifier)classifier;
-                if (cls.isValid() && cls.getName().length()==0) {
-                    CsmFile file = cls.getContainingFile();
-                    if (file != null && file.isValid()) {
-                        return hosts.get(PersistentKey.createKey(def));
+            if (def.isTypeUnnamed()) {
+                CsmClassifier classifier = def.getType().getClassifier();
+                if (classifier instanceof CsmCompoundClassifier) {
+                    CsmCompoundClassifier cls = (CsmCompoundClassifier)classifier;
+                    if (cls.isValid() && cls.getName().length()==0) {
+                        CsmFile file = cls.getContainingFile();
+                        if (file != null && file.isValid()) {
+                            return hosts.get(PersistentKey.createKey(def));
+                        }
                     }
                 }
             }

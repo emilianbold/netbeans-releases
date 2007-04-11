@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 
 public class SunFortranCompiler extends BasicCompiler {
     private static final String[] DEVELOPMENT_MODE_OPTIONS = {
@@ -40,8 +40,8 @@ public class SunFortranCompiler extends BasicCompiler {
     };
     
     /** Creates a new instance of SunCCompiler */
-    public SunFortranCompiler() {
-        super(FortranCompiler, "f95", getString("SUN_FORTRAN_COMPILER")); // NOI18N
+    public SunFortranCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(flavor, kind, name, displayName, path);
     }
     
     public String getDevelopmentModeOptions(int value) {

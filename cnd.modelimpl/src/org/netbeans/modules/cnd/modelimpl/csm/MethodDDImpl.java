@@ -44,6 +44,7 @@ public class MethodDDImpl extends MethodImpl<CsmFunctionDefinition> implements C
     protected MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) {
         super(ast, cls, visibility, false);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile());
+        assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + getContainingFile().getAbsolutePath();
         if (register) {
             registerInProject();
         }

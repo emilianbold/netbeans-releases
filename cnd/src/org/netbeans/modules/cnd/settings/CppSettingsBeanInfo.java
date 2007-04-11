@@ -62,6 +62,10 @@ public class CppSettingsBeanInfo extends SimpleBeanInfo {
 		new PropertyDescriptor(CppSettings.PROP_C_COMPILER_NAME, CppSettings.class),
 		new PropertyDescriptor(CppSettings.PROP_CPP_COMPILER_NAME, CppSettings.class),
 		new PropertyDescriptor(CppSettings.PROP_FORTRAN_COMPILER_NAME, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_GDB_REQUIRED, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_C_REQUIRED, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_CPP_REQUIRED, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_FORTRAN_REQUIRED, CppSettings.class),
 	    };
 
 	    desc[i].setDisplayName(CppSettings.getString( "PROP_REPLACEABLE_STRINGS"));	    //NOI18N
@@ -70,16 +74,22 @@ public class CppSettingsBeanInfo extends SimpleBeanInfo {
  	    desc[i++].setShortDescription(CppSettings.getString( "HINT_FREE_FORMAT_FORTRAN"));	    //NOI18N
 	    desc[i].setDisplayName(CppSettings.getString( "PROP_AUTO_PARSING_DELAY"));	    //NOI18N
  	    desc[i++].setShortDescription(CppSettings.getString( "HINT_AUTO_PARSING_DELAY"));	    //NOI18N
-// 	    desc[i++].setHidden(true); // PROP_FORTRAN_ENABLED
-//            desc[i++].setHidden(true); // PROP_MAKE_NAME
-//            desc[i++].setHidden(true); // PROP_MAKE_PATH
-//            desc[i++].setHidden(true); // PROP_GDB_NAME
-//            desc[i++].setHidden(true); // PROP_GDB_PATH
-//            desc[i++].setHidden(true); // PROP_COMPILER_SET_NAME
-//            desc[i++].setHidden(true); // PROP_COMPILER_SET_DIRECTORIES
-//            desc[i++].setHidden(true); // PROP_C_COMPILER_NAME
-//            desc[i++].setHidden(true); // PROP_CPP_COMPILER_NAME
-//            desc[i++].setHidden(true); // PROP_FORTRAN_COMPILER_NAME
+            if (!Boolean.getBoolean("cnd.debug.showHiddenProperties")) {  // NOI18N
+                desc[i++].setHidden(true); // PROP_FORTRAN_ENABLED
+                desc[i++].setHidden(true); // PROP_MAKE_NAME
+                desc[i++].setHidden(true); // PROP_MAKE_PATH
+                desc[i++].setHidden(true); // PROP_GDB_NAME
+                desc[i++].setHidden(true); // PROP_GDB_PATH
+                desc[i++].setHidden(true); // PROP_COMPILER_SET_NAME
+                desc[i++].setHidden(true); // PROP_COMPILER_SET_DIRECTORIES
+                desc[i++].setHidden(true); // PROP_C_COMPILER_NAME
+                desc[i++].setHidden(true); // PROP_CPP_COMPILER_NAME
+                desc[i++].setHidden(true); // PROP_FORTRAN_COMPILER_NAME
+                desc[i++].setHidden(true); // PROP_GDB_REQUIRED
+                desc[i++].setHidden(true); // PROP_C_REQUIRED
+                desc[i++].setHidden(true); // PROP_CPP_REQUIRED
+                desc[i++].setHidden(true); // PROP_FORTRAN_REQUIRED
+            }
 	} catch (IntrospectionException ex) {
 	    throw new InternalError();
 	}

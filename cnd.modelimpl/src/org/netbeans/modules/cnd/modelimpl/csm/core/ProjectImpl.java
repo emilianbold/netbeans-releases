@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -33,45 +33,42 @@ import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
  * Project implementation
  * @author Vladimir Kvashin
  */
 public final class ProjectImpl extends ProjectBase {
-
+    
     public ProjectImpl(ModelImpl model, Object platformProject, String name) {
         super(model, platformProject, name);
         // RepositoryUtils.put(this);
     }
     
     protected void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile) {
-	assert (nativeFile != null && nativeFile.getFile() != null);
-	if( ! isLanguageSupported(nativeFile.getLanguage() )) {
-	    return;
-	}
-	File file = nativeFile.getFile();
-	APTPreprocState preprocState = getDefaultPreprocState(nativeFile);
-	if (preprocState != null && getPreprocStateState(file) == null){
-	    putPreprocStateState(file,preprocState.getState());
-	}
-	if (isSourceFile) {
-	    findFile(file, FileImpl.SOURCE_FILE, preprocState, true);
-	} else {
-	    findFile(file, FileImpl.HEADER_FILE, preprocState, true);
-	}
+        assert (nativeFile != null && nativeFile.getFile() != null);
+        if( ! isLanguageSupported(nativeFile.getLanguage() )) {
+            return;
+        }
+        File file = nativeFile.getFile();
+        APTPreprocState preprocState = getDefaultPreprocState(nativeFile);
+        if (isSourceFile) {
+            findFile(file, FileImpl.SOURCE_FILE, preprocState, true, preprocState.getState());
+        } else {
+            findFile(file, FileImpl.HEADER_FILE, preprocState, true, preprocState.getState());
+        }
     }
     
-    protected FileImpl findFile(File file, int fileType, APTPreprocState preprocState, boolean scheduleParseIfNeed) {
-        FileImpl impl = (FileImpl) getFile(file);
+    protected FileImpl findFile(File file, int fileType, APTPreprocState preprocState,
+            boolean scheduleParseIfNeed, APTPreprocState.State initial) {
+        FileImpl impl = getFile(file);
         if( impl == null ) {
-            synchronized( getFilesLock() ) {
-                impl = (FileImpl) getFile(file);
+            synchronized( fileContainer ) {
+                impl = getFile(file);
                 if( impl == null ) {
                     preprocState = preprocState == null ? getPreprocState(file) : preprocState;
                     impl = new FileImpl(ModelSupport.instance().getFileBuffer(file), this, fileType, preprocState);
-                    putFile(file, impl);
+                    putFile(file, impl, initial);
                     // NB: parse only after putting into a map
                     if( scheduleParseIfNeed ) {
                         APTPreprocState.State ppState = preprocState == null ? null : preprocState.getState();
@@ -79,12 +76,14 @@ public final class ProjectImpl extends ProjectBase {
                     }
                 }
             }
-        } else {
-            if (fileType == FileImpl.SOURCE_FILE && !impl.isSourceFile()){
-                impl.setSourceFile();
-            } else if (fileType == FileImpl.HEADER_FILE && !impl.isHeaderFile()){
-                impl.setHeaderFile();
-            }
+        }
+        if (fileType == FileImpl.SOURCE_FILE && !impl.isSourceFile()){
+            impl.setSourceFile();
+        } else if (fileType == FileImpl.HEADER_FILE && !impl.isHeaderFile()){
+            impl.setHeaderFile();
+        }
+        if (initial != null && getPreprocStateState(file)==null){
+            putPreprocStateState(file, initial);
         }
         return impl;
     }
@@ -95,38 +94,39 @@ public final class ProjectImpl extends ProjectBase {
     }
     
     public void onFileEditStart(FileBuffer buf, NativeFileItem nativeFile) {
-	if( ! isLanguageSupported(nativeFile.getLanguage() )) {
-	    return;
-	}
+        if( ! isLanguageSupported(nativeFile.getLanguage() )) {
+            return;
+        }
         if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName()); // NOI18N
-        FileImpl file = (FileImpl) getFile(buf.getFile());
+        FileImpl file = getFile(buf.getFile());
         if( file == null ) {
-            synchronized( getFilesLock() ) {
-                file = (FileImpl) getFile(buf.getFile());
+            synchronized( fileContainer ) {
+                file = getFile(buf.getFile());
                 if( file == null ) {
-                    putFile(buf.getFile(), new FileImpl(buf, this));
+                    APTPreprocState preprocState = getDefaultPreprocState(nativeFile);
+                    putFile(buf.getFile(), new FileImpl(buf, this), preprocState.getState());
                 }
             }
         }
         if (file != null) {
             file.setBuffer(buf); // don't enqueue here!
             synchronized( editedFiles ) {
-                editedFiles.add(file);                
+                editedFiles.add(file);
             }
             if (TraceFlags.USE_AST_CACHE) {
                 CacheManager.getInstance().invalidate(file);
             } else {
-                APTDriver.getInstance().invalidateAPT(buf);     
+                APTDriver.getInstance().invalidateAPT(buf);
             }
         }
     }
     
     public void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile) {
-	if( ! isLanguageSupported(nativeFile.getLanguage() )) {
-	    return;
-	}
+        if( ! isLanguageSupported(nativeFile.getLanguage() )) {
+            return;
+        }
         if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName()); // NOI18N
-        FileImpl file = (FileImpl) getFile(buf.getFile());
+        FileImpl file = getFile(buf.getFile());
         if( file != null ) {
             synchronized( editedFiles ) {
                 editedFiles.remove(file);
@@ -137,22 +137,28 @@ public final class ProjectImpl extends ProjectBase {
     }
     
     public void onFilePropertyChanged(NativeFileItem nativeFile) {
-	if( ! isLanguageSupported(nativeFile.getLanguage() )) {
-	    return;
-	}
+        if( ! isLanguageSupported(nativeFile.getLanguage() )) {
+            return;
+        }
         if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getFile().getName()); // NOI18N
-        FileImpl file = (FileImpl) getFile(nativeFile.getFile());	
+        FileImpl file = getFile(nativeFile.getFile());
         if( file != null ) {
             file.stateChanged(true);
-            ParserQueue.instance().addFirst(file, getPreprocState(nativeFile.getFile()).getState(), false);
+            APTPreprocState.State state;
+            if (file.isSourceFile()) {
+                state = getDefaultPreprocState(nativeFile).getState();
+            } else {
+                state = getPreprocState(nativeFile.getFile()).getState();
+            }
+            ParserQueue.instance().addFirst(file, state, false);
         }
     }
     
-    public void onFileRemoved(NativeFileItem nativeFile) {
+    public void onFileRemoved(File file) {
         try {
             //Notificator.instance().startTransaction();
-            File file = nativeFile.getFile();
-            FileImpl impl = (FileImpl) getFile(file);
+            //File file = nativeFile.getFile();
+            FileImpl impl = getFile(file);
             if( impl != null ) {
                 synchronized( editedFiles ) {
                     editedFiles.remove(impl);
@@ -173,27 +179,27 @@ public final class ProjectImpl extends ProjectBase {
     }
     
     public void onFileAdded(NativeFileItem nativeFile) {
-	if( isLanguageSupported(nativeFile.getLanguage() )) {
-	    try {
-		//Notificator.instance().startTransaction();
-		createIfNeed(nativeFile, isSourceFile(nativeFile));
-	    } finally {
-		//Notificator.instance().endTransaction();
-		Notificator.instance().flush();
-	    }
-	}
+        if( isLanguageSupported(nativeFile.getLanguage() )) {
+            try {
+                //Notificator.instance().startTransaction();
+                createIfNeed(nativeFile, isSourceFile(nativeFile));
+            } finally {
+                //Notificator.instance().endTransaction();
+                Notificator.instance().flush();
+            }
+        }
     }
-     
+    
     protected void ensureChangedFilesEnqueued() {
-	synchronized( editedFiles ) {
-	    super.ensureChangedFilesEnqueued();
-	    for( Iterator iter = editedFiles.iterator(); iter.hasNext(); ) {
-		FileImpl file = (FileImpl) iter.next();
-		if( ! file.isParsingOrParsed() ) {
-		    ParserQueue.instance().addLast(file, getPreprocState(file.getBuffer().getFile()).getState());
-		}
-	    }
-	}
+        synchronized( editedFiles ) {
+            super.ensureChangedFilesEnqueued();
+            for( Iterator iter = editedFiles.iterator(); iter.hasNext(); ) {
+                FileImpl file = (FileImpl) iter.next();
+                if( ! file.isParsingOrParsed() ) {
+                    ParserQueue.instance().addLast(file, getPreprocState(file.getBuffer().getFile()).getState());
+                }
+            }
+        }
         //N.B. don't clear list of editedFiles here.
     }
     
@@ -201,20 +207,20 @@ public final class ProjectImpl extends ProjectBase {
         if (skipFile == null) {
             return false;
         }
-	synchronized( editedFiles ) {
-	    for( Iterator iter = editedFiles.iterator(); iter.hasNext(); ) {
-		FileImpl file = (FileImpl) iter.next();
-		if( (skipFile != file) && ! file.isParsingOrParsed() ) {
-		    return true;
-		}
-	    }
-	}
+        synchronized( editedFiles ) {
+            for( Iterator iter = editedFiles.iterator(); iter.hasNext(); ) {
+                FileImpl file = (FileImpl) iter.next();
+                if( (skipFile != file) && ! file.isParsingOrParsed() ) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
     
     
     private Set/*<CsmFile>*/ editedFiles = new HashSet/*<CsmFile>*/();
-
+    
     public ProjectBase resolveFileProject(String absPath) {
         ProjectBase retValue = super.resolveFileProject(absPath);
         // trick for tracemodel. We should accept all not registered files as well, till it is not system one.
@@ -226,12 +232,12 @@ public final class ProjectImpl extends ProjectBase {
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
-        
+    
     public void write(DataOutput aStream) throws IOException {
         super.write(aStream);
     }
     
-    public ProjectImpl (DataInput input) throws IOException {
-        super(input);      
-    }    
+    public ProjectImpl(DataInput input) throws IOException {
+        super(input);
+    }
 }

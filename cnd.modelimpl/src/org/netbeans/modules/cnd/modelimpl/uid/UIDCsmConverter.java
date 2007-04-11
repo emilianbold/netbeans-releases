@@ -48,7 +48,8 @@ public class UIDCsmConverter {
     private static int lastHash = 0;
 	    
     public static CsmFile UIDtoFile(CsmUID<CsmFile> uid) {
-        CsmFile result = uid == null ? null : uid.getObject();
+        try {
+            CsmFile result = uid == null ? null : uid.getObject();
 //	if( result != null ) {
 //	    if( uid.toString().indexOf("unresolved") == -1 ) {
 //		if( lastHash != 0 && result.hashCode() != lastHash ) {
@@ -61,7 +62,13 @@ public class UIDCsmConverter {
 //		lastHash = result.hashCode();
 //	    }
 //	}
-	return result;
+            return result;
+        } catch (StackOverflowError ex) {
+            // needed to analyze IZ99230
+            System.err.println("StackOverflowError for UID " + uid);
+            ex.printStackTrace(System.err);
+            return null;
+        }
     }
     
     public static CsmObject UIDtoCsmObject(CsmUID uid) {

@@ -20,7 +20,9 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.LibrariesNodeProp;
@@ -30,8 +32,6 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
@@ -213,11 +213,12 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     public String getBasicOptions() {
-	String options = ""; // NOI18N
+	String options = ""; // NOI18N 
+        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(getMakeConfiguration().getCompilerSet().getValue());
 	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB ) {
-            if (getMakeConfiguration().getCompilerSet().getValue() == CompilerSets.SUN_COMPILER_SET)
+            if (cs.isSunCompiler())
                 options += "-G "; // NOI18N
-            else if (getMakeConfiguration().getCompilerSet().getValue() == CompilerSets.GNU_COMPILER_SET)
+            else if (cs.isGnuCompiler())
                 options += "-shared "; // NOI18N
             else
                 assert false;
@@ -225,7 +226,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	options += getOutputOptions() + " "; // NOI18N
 	options += getStripOption().getOption() + " "; // NOI18N
 	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB && // FIXUP: should move to Platform
-                getMakeConfiguration().getCompilerSet().getValue() == CompilerSets.SUN_COMPILER_SET) {
+                cs.isSunCompiler()) {
 	    options += getKpicOption().getOption() + " "; // NOI18N
 	    options += getNorunpathOption().getOption() + " "; // NOI18N
 	    options += getNameassignOption(getNameassignOption().getValue()) + " "; // NOI18N
@@ -236,9 +237,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
     public String getLibraryItems() {
         String libPrefix = "-L"; // NOI18N
         String dynSearchPrefix = ""; // NOI18N
-        if (getMakeConfiguration().getCompilerSet().getValue() == CompilerSets.SUN_COMPILER_SET)
+        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(getMakeConfiguration().getCompilerSet().getValue());
+        if (cs.isSunCompiler())
             dynSearchPrefix = "-R"; // NOI18N
-        else if (getMakeConfiguration().getCompilerSet().getValue() == CompilerSets.GNU_COMPILER_SET)
+        else if (cs.isGnuCompiler())
             dynSearchPrefix = "-Wl,-rpath "; // NOI18N
         else
             assert false;
@@ -259,7 +261,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     // Sheet
     public Sheet getGeneralSheet(MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf) {
 	Sheet sheet = new Sheet();
-        CompilerSet compilerSet = CompilerSets.getCompilerSet(conf.getCompilerSet().getValue());
+        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
         String linkDriver;
         if (conf.hasCPPFiles(configurationDescriptor)) {
             BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
@@ -283,7 +285,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	set2.setDisplayName(getString("OptionsTxt"));
 	set2.setShortDescription(getString("OptionsHint"));
 	set2.put(new BooleanNodeProp(getStripOption(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
-	if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB && conf.getCompilerSet().getValue() == CompilerSets.SUN_COMPILER_SET) {
+	if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB && compilerSet.isSunCompiler()) {
 	    set2.put(new BooleanNodeProp(getKpicOption(), true, "PositionIndependantCode", getString("PositionIndependantCodeTxt"), getString("PositionIndependantCodeHint"))); // NOI18N
 	    set2.put(new BooleanNodeProp(getNorunpathOption(), true, "NoRunPath", getString("NoRunPathTxt"), getString("NoRunPathHint"))); // NOI18N
 	    set2.put(new BooleanNodeProp(getNameassignOption(), true, "AssignName", getString("AssignNameTxt"), getString("AssignNameHint"))); // NOI18N

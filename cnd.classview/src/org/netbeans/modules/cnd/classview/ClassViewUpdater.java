@@ -74,7 +74,7 @@ public class ClassViewUpdater extends Thread {
     private volatile boolean isStoped = false;
     
     public ClassViewUpdater(ClassViewModel model) {
-        super("Class View Updater");
+        super("Class View Updater"); // NOI18N
         this.model = model;
         queue = new BlockingQueue();
     }

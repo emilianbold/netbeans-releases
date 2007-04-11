@@ -779,7 +779,7 @@ public class CCTokenContext extends TokenContext {
     */
     public static boolean isType(TokenID keywordTokenID) {
         int numID = (keywordTokenID != null) ? keywordTokenID.getNumericID() : -1;
-        return (numID >= BOOLEAN_ID && numID < VOID_ID);
+        return (numID >= BOOLEAN_ID && numID <= VOID_ID);
     }
 
     /** Checks whether the given string is a type-keyword. */

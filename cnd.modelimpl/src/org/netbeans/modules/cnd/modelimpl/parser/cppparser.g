@@ -128,9 +128,12 @@ tokens {
 	CSM_PARAMETER_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TYPE_BUILTIN<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TYPE_COMPOUND<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+
 	CSM_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_CLASS_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_EXTERN_TEMPLATE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+
 	CSM_DTOR_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_DTOR_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_CTOR_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -612,6 +615,7 @@ external_declaration {String s; K_and_R = false;}
 				LT(1).getLine());
 		}
 		LITERAL_extern LITERAL_template external_declaration                
+		{ #external_declaration = #(#[CSM_EXTERN_TEMPLATE, "CSM_EXTERN_TEMPLATE"], #external_declaration); }
         |       				
 	
 	// Template explicit specialisation function definition (VK 30/05/06)

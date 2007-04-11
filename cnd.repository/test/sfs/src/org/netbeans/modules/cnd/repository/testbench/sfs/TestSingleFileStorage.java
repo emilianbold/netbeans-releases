@@ -23,6 +23,7 @@ import java.io.*;
 import java.util.*;
 import org.netbeans.modules.cnd.repository.sfs.*;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 
 /**
@@ -32,20 +33,20 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
 public class TestSingleFileStorage extends BaseTest {
     
     private File storageFile;
-    private SingleFileStorage sfs;
+    private FileStorage sfs;
     
     private boolean verbose = false;
     private boolean dump = false;
     
     private int errCnt = 0;
     
-    public void test(List<String> args) throws IOException {
+    public boolean test(List<String> args) throws IOException {
 	
 	args = processOptions(args);
 	
 	storageFile = new File("/tmp/sfs.dat"); // NOI18N
-	System.out.printf("Testing SingleFileStorage. Storage file: %s RWAccess: %d\n", storageFile.getAbsolutePath(), -1 /*Stats.fileRWAccess*/); // NOI18N
-	sfs = new SingleFileStorage(storageFile);
+	System.out.printf("Testing FileStorage. Storage file: %s RWAccess: %d\n", storageFile.getAbsolutePath(), -1 /*Stats.fileRWAccess*/); // NOI18N
+	sfs = FileStorage.create(storageFile);
 	
 	simpleTest1();
 	simpleTest2();
@@ -61,7 +62,7 @@ public class TestSingleFileStorage extends BaseTest {
 	
 	System.out.printf("Compacting...\n"); // NOI18N
 	long t = System.currentTimeMillis();
-	sfs.compact();
+	sfs.defragment();
 	t = System.currentTimeMillis() - t;
 	System.out.printf("Compacting took %d seconds\n", t/1000); // NOI18N
 	
@@ -74,6 +75,8 @@ public class TestSingleFileStorage extends BaseTest {
 	
 	System.out.printf("%8d objects tested\n", sfs.getObjectsCount()); // NOI18N
 	System.out.printf("%8d errors\n", errCnt); // NOI18N
+        
+        return errCnt == 0;
     }
     
     private List<String> processOptions(List<String> args) {
@@ -101,12 +104,12 @@ public class TestSingleFileStorage extends BaseTest {
     }
     
     private void simpleTest2() throws IOException {
-	TestObject obj1 = new TestObject("TestObject2a", "1", "22", "333");
+	TestObject obj1 = new TestObject("TestObject2a", "1", "22", "333"); // NOI18N
 	testWriteAndReadImmediately(obj1); // NOI18N
-	TestObject obj2 = new TestObject("TestObject2b", "aaa", "bb", "c");
+	TestObject obj2 = new TestObject("TestObject2b", "aaa", "bb", "c"); // NOI18N
 	testWriteAndReadImmediately(obj2); // NOI18N
 	sfs.dump(System.out);
-	sfs.compact();
+	sfs.defragment();
 	sfs.dump(System.out);
 	testRead(obj1);
 	testRead(obj2);
@@ -128,7 +131,7 @@ public class TestSingleFileStorage extends BaseTest {
 	t = System.currentTimeMillis();
 	filesTestW(objects);
 	System.out.printf("Done putting. Object count: %d  File size: %d   Time: %d seconds\n", // NOI18N
-		sfs.getObjectsCount(), sfs.getFileSize(), (System.currentTimeMillis()-t)/1000);
+		sfs.getObjectsCount(), sfs.getSize(), (System.currentTimeMillis()-t)/1000);
 	
 	readCycle(objects);
 
@@ -136,13 +139,13 @@ public class TestSingleFileStorage extends BaseTest {
 	t = System.currentTimeMillis();
 	filesTestW2(objects);
 	System.out.printf("Done putting. Object count: %d  File size: %d   Time: %d seconds\n", // NOI18N
-		sfs.getObjectsCount(), sfs.getFileSize(), (System.currentTimeMillis()-t)/1000);
+		sfs.getObjectsCount(), sfs.getSize(), (System.currentTimeMillis()-t)/1000);
 	
 	readCycle(objects);
 	
-	System.out.printf("Compacting (size %d)...\n", sfs.getFileSize());
-	sfs.compact();
-	System.out.printf("\tCompacting (size %d) done\n", sfs.getFileSize());
+	System.out.printf("Compacting (size %d)...\n", sfs.getSize()); // NOI18N
+	sfs.defragment();
+	System.out.printf("\tCompacting (size %d) done\n", sfs.getSize()); // NOI18N
 	
 	readCycle(objects);
 	

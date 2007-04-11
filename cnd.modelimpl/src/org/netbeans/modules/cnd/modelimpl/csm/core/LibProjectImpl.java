@@ -26,7 +26,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocState;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.platform.*;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
  * @author Vladimir Kvasihn
@@ -53,14 +52,15 @@ public final class LibProjectImpl extends ProjectBase {
 	// NB: for those who decide to implement this: don't forget to check the language
     }
     
-    public FileImpl findFile(File srcFile, int fileType, APTPreprocState preprocState, boolean scheduleParseIfNeed) {
-        FileImpl impl = (FileImpl) getFile(srcFile);
+    public FileImpl findFile(File srcFile, int fileType, APTPreprocState preprocState,
+            boolean scheduleParseIfNeed, APTPreprocState.State initial) {
+        FileImpl impl = getFile(srcFile);
         if( impl == null ) {
-            synchronized( getFilesLock() ) {
-                impl = (FileImpl) getFile(srcFile);
+            synchronized( fileContainer ) {
+                impl = getFile(srcFile);
                 if( impl == null ) {
                     impl = new FileImpl(ModelSupport.instance().getFileBuffer(srcFile), this, fileType, preprocState);
-                    putFile(srcFile, impl);
+                    putFile(srcFile, impl, initial);
                     //impl.parse();
                     if( scheduleParseIfNeed ) {
                         APTPreprocState.State ppState = preprocState == null ? null : preprocState.getState();
@@ -68,6 +68,9 @@ public final class LibProjectImpl extends ProjectBase {
                     }
                 }
             }
+        }
+        if (initial != null && getPreprocStateState(srcFile)==null){
+            putPreprocStateState(srcFile, initial);
         }
         return impl;
     }
@@ -77,7 +80,7 @@ public final class LibProjectImpl extends ProjectBase {
         return Collections.EMPTY_SET;
     }
     
-    public void onFileRemoved(NativeFileItem file) {}
+    public void onFileRemoved(File file) {}
     public void onFileAdded(NativeFileItem file) {}
     public void onFilePropertyChanged(NativeFileItem nativeFile) {}
     

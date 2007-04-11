@@ -50,7 +50,7 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     }
 
     private Map<K, Entry> map = new HashMap<K, Entry>();
-    private boolean active = true;
+    protected boolean active = true;
 	    
     public KeyValueQueue() {
 	queue = new BaseQueue.Queue();
@@ -73,7 +73,7 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     }
     
     protected Entry doAddLast(K key, V value) {
-	Entry entry = new Entry(key, value);
+	Entry entry = createEntry(key, value);
 	map.put(key, entry);
 	queue.addLast(entry);
 	return entry;
@@ -99,8 +99,12 @@ public class KeyValueQueue<K, V> extends BaseQueue {
 	}
     }
     
+    protected Entry createEntry(K key, V value) {
+        return new Entry(key, value);
+    }
+    
     protected Entry doAddFirst(K key, V value) {
-	Entry entry = new Entry(key, value);
+	Entry entry = createEntry(key, value);
 	map.put(key, entry);
 	queue.addFirst(entry);
 	return entry;
@@ -115,11 +119,15 @@ public class KeyValueQueue<K, V> extends BaseQueue {
 	synchronized( lock ) {
             Entry e = (Entry) queue.poll(); // TODO: find out more elegant solution than a stupid cast!
             if( e != null ) {
-		map.remove(e.getKey());
+                doPostPoll(e);
 		if( needsTrace() ) System.err.printf("    %s: polling -> %s\n", getTraceName(), e.getKey());
 	    }
 	    return e;
 	}
+    }
+    
+    protected void doPostPoll(Entry polled) {
+        map.remove(polled.getKey());
     }
     
     public boolean contains(K key) {
@@ -138,23 +146,35 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     
     public void waitReady() throws InterruptedException {
         synchronized ( lock ) {
-            while( active && queue.isEmpty() ) {
+            while( active && !isReady() ) {
 		if( needsTrace() ) System.err.printf("%s: waitReady() ...\n", getTraceName());
-                lock.wait();
+                _waitReady();
 		if( needsTrace() ) System.err.printf("%s: waiting finished\n", getTraceName());
             }
         }
     }
     
+    protected void _waitReady() throws InterruptedException {
+        lock.wait();
+    }
+    
+    public boolean isReady()  {
+        synchronized ( lock ) {
+            return !queue.isEmpty();
+        }
+    }
+    
+    public boolean disposable() {
+	synchronized ( lock ) {
+            return queue.isEmpty();
+        }
+    }
+
     public void shutdown() {
 	active = false;
 	synchronized ( lock ) {
 	    lock.notifyAll();
 	}
-    }
-    
-    public boolean isEmpty() {
-        return queue.isEmpty();
     }
     
 }

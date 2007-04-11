@@ -158,6 +158,7 @@
             <public-packages>
                 <package>org.netbeans.modules.cnd</package>
                 <package>org.netbeans.modules.cnd.actions</package>
+                <package>org.netbeans.modules.cnd.api.compilers</package>
                 <package>org.netbeans.modules.cnd.api.execution</package>
                 <package>org.netbeans.modules.cnd.api.picklist</package>
                 <package>org.netbeans.modules.cnd.api.project</package>
@@ -179,7 +180,7 @@
                 <package>org.netbeans.modules.cnd.loaders</package>
                 <package>org.netbeans.modules.cnd.makewizard</package>
                 <package>org.netbeans.modules.cnd.settings</package>
-                <package>org.netbeans.spi.cnd.options</package>
+                <package>org.netbeans.modules.cnd.ui.options</package>
             </public-packages>
         </data>
     </configuration>

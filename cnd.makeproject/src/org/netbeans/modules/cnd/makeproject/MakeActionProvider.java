@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,8 +28,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.StringTokenizer;
 import javax.swing.JButton;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.cnd.actions.BuildToolsAction;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
@@ -50,10 +54,14 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSetConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
+import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
+import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -67,11 +75,14 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 
 /** Action provider of the Make project. This is the place where to do
  * strange things to Make actions. E.g. compile-single.
  */
 public class MakeActionProvider implements ActionProvider {
+    
     // Commands available from Make project
     public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
     public static final String COMMAND_DEBUG_LOAD_ONLY = "debug.load.only"; // NOI18N
@@ -92,7 +103,7 @@ public class MakeActionProvider implements ActionProvider {
         COMMAND_COPY,
         COMMAND_MOVE,
         COMMAND_RENAME,
-        COMMAND_CUSTOM_ACTION,       
+        COMMAND_CUSTOM_ACTION, 
     };
     
     // Project
@@ -107,6 +118,8 @@ public class MakeActionProvider implements ActionProvider {
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
     Map/*<String,String[]>*/ commandsNoBuild;
+    
+    private boolean lastValidation = false;
     
     public MakeActionProvider( MakeProject project, AntProjectHelper antProjectHelper ) {
         
@@ -254,7 +267,8 @@ public class MakeActionProvider implements ActionProvider {
     
     public void addAction(ArrayList actionEvents, String projectName, MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context) throws IllegalArgumentException {
         String[] targetNames;
-        
+        boolean validated = false;
+        lastValidation = false;
         
         targetNames = getTargetNames(command, context);
         if (targetNames == null) {
@@ -338,13 +352,8 @@ public class MakeActionProvider implements ActionProvider {
                             String location = FilePathAdaptor.naturalize((String)iter.next());
                             path = location + ";" + path; // NOI18N
                         }
-                        if (System.getProperty("Env-PATH") != null) { // IZ 77324 // NOI18N
-                            path = path + ";" + System.getProperty("Env-PATH"); // NOI18N
-                        }
-                        if (!path.equals("")) { // NOI18N
-                            runProfile.getEnvironment().putenv("PATH", path); // NOI18N
-                            // } else { // no need to set empty path
-                        }
+                        path = path + ";" + CppSettings.getDefault().getPath(); // NOI18N
+                        runProfile.getEnvironment().putenv("PATH", path); // NOI18N
                     }
                     
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
@@ -396,114 +405,123 @@ public class MakeActionProvider implements ActionProvider {
                     assert false;
                 }
             } else if (targetName.equals("build")) { // NOI18N
-                MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                String buildCommand = makeArtifact.getBuildCommand(MakeOptions.getInstance().getMakeCommand(), "");  // NOI18N
-                String args = ""; // NOI18N
-                int index = buildCommand.indexOf(' '); // NOI18N
-                if (index > 0) {
-                    args = buildCommand.substring(index+1);
-                    buildCommand = buildCommand.substring(0, index);
+                if (validateBuildSystem(pd, conf, validated)) {
+                    MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+                    String buildCommand = makeArtifact.getBuildCommand(CppSettings.getDefault().getMakePath(), "");
+                    String args = "";
+                    int index = buildCommand.indexOf(' ');
+                    if (index > 0) {
+                        args = buildCommand.substring(index+1);
+                        buildCommand = buildCommand.substring(0, index);
+                    }
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory());
+                    profile.setArgs(args);
+                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                            project,
+                            actionEvent,
+                            projectName + " (" + targetName + ")", // NOI18N
+                            buildCommand,
+                            conf,
+                            profile,
+                            true);
+                    actionEvents.add(projectActionEvent);
                 }
-                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory());
-                profile.setArgs(args);
-                ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                        project,
-                        actionEvent,
-                        projectName + " (" + targetName + ")", // NOI18N
-                        buildCommand,
-                        null,
-                        profile,
-                        true);
-                actionEvents.add(projectActionEvent);
+                validated = true;
             } else if (targetName.equals("clean")) { // NOI18N
-                MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                String buildCommand = makeArtifact.getCleanCommand(MakeOptions.getInstance().getMakeCommand(), ""); // NOI18N
-                String args = ""; // NOI18N
-                int index = buildCommand.indexOf(' '); // NOI18N
-                if (index > 0) {
-                    args = buildCommand.substring(index+1);
-                    buildCommand = buildCommand.substring(0, index);
+                if (validateBuildSystem(pd, conf, validated)) {
+                    MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+                    String buildCommand = makeArtifact.getCleanCommand(CppSettings.getDefault().getMakePath(), ""); // NOI18N
+                    String args = ""; // NOI18N
+                    int index = buildCommand.indexOf(' '); // NOI18N
+                    if (index > 0) {
+                        args = buildCommand.substring(index+1);
+                        buildCommand = buildCommand.substring(0, index);
+                    }
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory());
+                    profile.setArgs(args);
+                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                            project,
+                            actionEvent,
+                            projectName + " (" + targetName + ")", // NOI18N
+                            buildCommand,
+                            conf,
+                            profile,
+                            true);
+                    actionEvents.add(projectActionEvent);
                 }
-                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory());
-                profile.setArgs(args);
-                ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                        project,
-                        actionEvent,
-                        projectName + " (" + targetName + ")", // NOI18N
-                        buildCommand,
-                        null,
-                        profile,
-                        true);
-                actionEvents.add(projectActionEvent);
+                validated = true;
             } else if (targetName.equals("compile-single")) { // NOI18N
-                Iterator it = context.lookup(new Lookup.Template(Node.class)).allInstances().iterator();
-                while (it.hasNext()) {
-                    Node node = (Node)it.next();
-                    Item item = getNoteItem(node); // NOI18N
-                    if (item == null)
-                        return;
-                    ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);//ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
-                    if (itemConfiguration == null)
-                        return;
-                    if (itemConfiguration.getExcluded().getValue())
-                        return;;
-                        if (itemConfiguration.getTool() == Tool.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified())
+                if (validateBuildSystem(pd, conf, validated)) {
+                    Iterator it = context.lookup(new Lookup.Template(Node.class)).allInstances().iterator();
+                    while (it.hasNext()) {
+                        Node node = (Node)it.next();
+                        Item item = getNoteItem(node); // NOI18N
+                        if (item == null)
                             return;
-                        MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                        String outputFile = null;
-                        if (itemConfiguration.getTool() == Tool.CCompiler) {
-                            CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
-                            outputFile = cCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
-                        } else if (itemConfiguration.getTool() == Tool.CCCompiler) {
-                            CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
-                            outputFile = ccCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
-                        } else if (itemConfiguration.getTool() == Tool.FortranCompiler) {
-                            FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
-                            outputFile = fortranCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
-                        } else if (itemConfiguration.getTool() == Tool.CustomTool) {
-                            CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
-                            outputFile = customToolConfiguration.getOutputs().getValue();
-                        }
-                        // Clean command
-                        String commandLine = "rm -rf " + outputFile; // NOI18N
-                        String args = ""; // NOI18N
-                        int index = commandLine.indexOf(' '); // NOI18N
-                        if (index > 0) {
-                            args = commandLine.substring(index+1);
-                            commandLine = commandLine.substring(0, index);
-                        }
-                        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory());
-                        profile.setArgs(args);
-                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                                project,
-                                ProjectActionEvent.CLEAN,
-                                projectName + " (" + "clean" + ")", // NOI18N
-                                commandLine,
-                                null,
-                                profile,
-                                true);
-                        actionEvents.add(projectActionEvent);
-                        // Build commandLine
-                        commandLine = MakeOptions.getInstance().getMakeCommand() + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
-                        args = ""; // NOI18N
-                        index = commandLine.indexOf(' '); // NOI18N
-                        if (index > 0) {
-                            args = commandLine.substring(index+1);
-                            commandLine = commandLine.substring(0, index);
-                        }
-                        // Add the build commandLine
-                        profile = new RunProfile(makeArtifact.getWorkingDirectory());
-                        profile.setArgs(args);
-                        projectActionEvent = new ProjectActionEvent(
-                                project,
-                                actionEvent,
-                                projectName + " (" + targetName + ")", // NOI18N
-                                commandLine,
-                                null,
-                                profile,
-                                true);
-                        actionEvents.add(projectActionEvent);
+                        ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);//ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
+                        if (itemConfiguration == null)
+                            return;
+                        if (itemConfiguration.getExcluded().getValue())
+                            return;;
+                            if (itemConfiguration.getTool() == Tool.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified())
+                                return;
+                            MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+                            String outputFile = null;
+                            if (itemConfiguration.getTool() == Tool.CCompiler) {
+                                CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
+                                outputFile = cCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
+                            } else if (itemConfiguration.getTool() == Tool.CCCompiler) {
+                                CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
+                                outputFile = ccCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
+                            } else if (itemConfiguration.getTool() == Tool.FortranCompiler) {
+                                FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
+                                outputFile = fortranCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
+                            } else if (itemConfiguration.getTool() == Tool.CustomTool) {
+                                CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
+                                outputFile = customToolConfiguration.getOutputs().getValue();
+                            }
+                            // Clean command
+                            String commandLine = "rm -rf " + outputFile; // NOI18N
+                            String args = ""; // NOI18N
+                            int index = commandLine.indexOf(' '); // NOI18N
+                            if (index > 0) {
+                                args = commandLine.substring(index+1);
+                                commandLine = commandLine.substring(0, index);
+                            }
+                            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory());
+                            profile.setArgs(args);
+                            ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                                    project,
+                                    ProjectActionEvent.CLEAN,
+                                    projectName + " (" + "clean" + ")", // NOI18N
+                                    commandLine,
+                                    conf,
+                                    profile,
+                                    true);
+                            actionEvents.add(projectActionEvent);
+                            // Build commandLine
+                            commandLine = CppSettings.getDefault().getMakePath() + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
+                            args = ""; // NOI18N
+                            index = commandLine.indexOf(' '); // NOI18N
+                            if (index > 0) {
+                                args = commandLine.substring(index+1);
+                                commandLine = commandLine.substring(0, index);
+                            }
+                            // Add the build commandLine
+                            profile = new RunProfile(makeArtifact.getWorkingDirectory());
+                            profile.setArgs(args);
+                            projectActionEvent = new ProjectActionEvent(
+                                    project,
+                                    actionEvent,
+                                    projectName + " (" + targetName + ")", // NOI18N
+                                    commandLine,
+                                    conf,
+                                    profile,
+                                    true);
+                            actionEvents.add(projectActionEvent);
+                    }
                 }
+                validated = true;
             } else if (targetName.equals("custom-action")) { // NOI18N
                         String exe = ""; // NOI18N
                         if (conf.isMakefileConfiguration()) {
@@ -634,6 +652,145 @@ public class MakeActionProvider implements ActionProvider {
     
     private static boolean hasDebugger() {
         return CustomizerRootNodeProvider.getInstance().getCustomizerNode("Debug") != null; // NOI18N
+    }
+    
+    public boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf, boolean validated) {
+        CompilerSetConfiguration csconf = conf.getCompilerSet();
+        ArrayList<String> errs = new ArrayList();
+        CompilerSet cs;
+        BuildToolsAction bt = null;
+        String csname;
+        String csdirs;
+        File file;
+        boolean cRequired = conf.getCRequired().getValue();
+        boolean cppRequired = conf.getCppRequired().getValue();
+        boolean fRequired = CppSettings.getDefault().isFortranEnabled() && conf.getFortranRequired().getValue();
+        
+        if (validated) {
+            return lastValidation;
+        }
+        
+        if (csconf.isValid()) {
+            csname = csconf.getOption();
+            cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+            csdirs = cs.getDirectory();
+        } else {
+            csname = csconf.getOldName();
+            cs = CompilerSet.getCompilerSet("", new String[0], csconf.getOldName());
+            CompilerSetManager.getDefault().add(cs);
+            csconf.setValid();
+            csdirs = "";
+        }
+
+        String cName = conf.getCCompilerConfiguration().getTool().getValue();
+        String cppName = conf.getCCCompilerConfiguration().getTool().getValue();
+        String fName = conf.getFortranCompilerConfiguration().getTool().getValue();
+        String cPath = null;
+        String cppPath = null;
+        String fPath = null;
+        boolean runBTA = false;
+
+        if (cName.length() == 0) {
+            cName = (cs != null && cs.isSunCompiler()) ? "cc" : "gcc"; // NOI18N
+        }
+        if (cppName.length() == 0) {
+            cppName = (cs != null && cs.isSunCompiler()) ? "CC" : "g++"; // NOI18N
+        }
+        if (fName.length() == 0) {
+            fName = (cs != null && cs.isSunCompiler()) ? "f90" : "g77"; // NOI18N
+        }
+
+        // Check for a valid make program
+        file = new File(CppSettings.getDefault().getMakePath());
+        if (!file.exists()) {
+            runBTA = true;
+        }
+
+        // Check for C and C++ compilers. If Fortran is enabled, check for that compiler too.
+        StringTokenizer tok = new StringTokenizer(csdirs, File.pathSeparator);
+        while (tok.hasMoreTokens()) {
+            String dir = tok.nextToken();
+
+            if (cRequired && cPath == null) {
+                file = new File(dir, cName);
+                if (file.exists()) {
+                    cPath = file.getAbsolutePath();
+                } else if (Utilities.isWindows()) {
+                    file = new File(dir, cName + ".exe"); // NOI18N
+                    if (file.exists()) {
+                        cPath = file.getAbsolutePath();
+                    }
+                }
+            }
+
+            if (cppRequired && cppPath == null) {
+                file = new File(dir, cppName);
+                if (file.exists()) {
+                    cppPath = file.getAbsolutePath();
+                } else if (Utilities.isWindows()) {
+                    file = new File(dir, cppName + ".exe"); // NOI18N
+                    if (file.exists()) {
+                        cppPath = file.getAbsolutePath();
+                    }
+                }
+            }
+
+            if (fRequired && fPath == null) {
+                file = new File(dir, fName);
+                if (file.exists()) {
+                    fPath = file.getAbsolutePath();
+                } else if (Utilities.isWindows()) {
+                    file = new File(dir, fName + ".exe"); // NOI18N
+                    if (file.exists()) {
+                        fPath = file.getAbsolutePath();
+                    }
+                }
+            }
+        }
+
+        if (cRequired && cPath == null) {
+            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cName)); // NOI18N
+            runBTA = true;
+        }
+        if (cppRequired && cppPath == null ) {
+            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCppCompiler", csname, cppName)); // NOI18N
+            runBTA = true;
+        }
+        if (fRequired && fPath == null) {
+            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fName)); // NOI18N
+            runBTA = true;
+        }
+
+        if (runBTA || Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
+            bt = (BuildToolsAction) SystemAction.get(BuildToolsAction.class);
+            bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N
+        }
+
+        if (bt != null) {
+            ToolsPanelModel model = new LocalToolsPanelModel();
+            model.setCompilerSetName(csname);
+            model.setGdbEnabled(false);
+            model.setCRequired(cRequired);
+            model.setCppRequired(cppRequired);
+            model.setFortranRequired(fRequired);
+            if (bt.initBuildTools(model, errs)) {
+                String name = model.getCompilerSetName();
+                conf.getCRequired().setValue(model.isCRequired());
+                conf.getCppRequired().setValue(model.isCppRequired());
+                conf.getFortranRequired().setValue(model.isFortranRequired());
+                conf.getCompilerSet().setValue(name);
+                pd.setModified();
+                pd.save();
+                lastValidation = true;
+                return true;
+            } else {
+                lastValidation = false;
+                return false;
+            }
+        } else {
+            lastValidation = true;
+            return true;
+        }
     }
     
     // Private methods -----------------------------------------------------

@@ -22,6 +22,8 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -30,6 +32,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
@@ -174,6 +177,10 @@ public class KeyUtilities {
         public int getSecondaryAt(int level) {
             assert level == 0;
             return KeyObjectFactory.KEY_NAMESPACE_KEY;
+        }
+
+        public Key.Behavior getBehavior() {
+            return Key.Behavior.LargeAndMutable;
         }
     }
     
@@ -440,11 +447,11 @@ public class KeyUtilities {
     }
     
     private abstract static class ProjectFileNameBasedKey extends ProjectNameBasedKey {
-        private final String fileName;
+        private final int fileNameIndex;
         protected ProjectFileNameBasedKey(String prjName, String fileName) {
             super(prjName);
             assert fileName != null;
-            this.fileName = fileName;
+            this.fileNameIndex = files.getId(fileName);
         }
         
         protected ProjectFileNameBasedKey(CsmFile file) {
@@ -457,22 +464,22 @@ public class KeyUtilities {
             assert (prj != null);
             return prj == null ? "<No Project Name>" : prj.getQualifiedName();  // NOI18N
         }
+
+        private static final IntToStringCache files = new IntToStringCache();
         
         public void write(DataOutput aStream) throws IOException {
             super.write(aStream);
-            assert this.fileName != null;
-            aStream.writeUTF(fileName);
+            aStream.writeInt(fileNameIndex);
         }
         
         protected ProjectFileNameBasedKey(DataInput aStream) throws IOException {
             super(aStream);
-            this.fileName = FilePathCache.getString(aStream.readUTF());
-            assert this.fileName != null;
+            this.fileNameIndex = aStream.readInt();
         }
         
         public int hashCode() {
             int key = super.hashCode();
-            key = 17*key + fileName.hashCode();
+            key = 17*key + fileNameIndex;
             return key;
         }
         
@@ -482,11 +489,11 @@ public class KeyUtilities {
             }
             ProjectFileNameBasedKey other = (ProjectFileNameBasedKey)obj;
             
-            return this.fileName.equals(other.fileName);
+            return this.fileNameIndex==other.fileNameIndex;
         }
         
         protected String getFileName() {
-            return this.fileName;
+            return FilePathCache.getString(files.getValueById(this.fileNameIndex));
         }
         
         public int getDepth() {
@@ -496,25 +503,52 @@ public class KeyUtilities {
         
         public String getAt(int level) {
             assert super.getDepth() == 0 && level < getDepth();
-            return this.fileName;
+            return getFileName();
         }
     }
     
+    private static class IntToStringCache {
+        private final List<String> cache = new ArrayList<String>();
+        
+        public int getId(String value) {
+            synchronized (cache) {
+                int id = cache.indexOf(value);
+                if (id == -1) {
+                    cache.add(value);
+                    id = cache.indexOf(value);
+                }
+                return id;
+            }
+        }
+        
+        public String getValueById(int id) {
+            synchronized (cache) {
+                return cache.get(id);
+            }
+        }        
+
+        protected void finalize() throws Throwable {
+            super.finalize();
+            if (TraceFlags.DEBUG) {
+                System.err.println("KeyUtilities Cache Size: " + cache.size());
+            }
+        }
+}
     
     private static abstract class ProjectNameBasedKey extends AbstractKey {
-        private final String projectQualifiedName;
+        private final int projectQualifiedNameIndex;
         
         protected ProjectNameBasedKey(String project) {
             assert project != null;
-            this.projectQualifiedName = project;
+            this.projectQualifiedNameIndex = projects.getId(project);
         }
         
         public String toString() {
-            return projectQualifiedName;
+            return getProjectName();
         }
         
         public int hashCode() {
-            return projectQualifiedName.hashCode();
+            return projectQualifiedNameIndex;
         }
         
         public boolean equals(Object obj) {
@@ -523,21 +557,19 @@ public class KeyUtilities {
             }
             ProjectNameBasedKey other = (ProjectNameBasedKey)obj;
             
-            return this.projectQualifiedName.equals(other.projectQualifiedName);
+            return this.projectQualifiedNameIndex==other.projectQualifiedNameIndex;
         }
         
         protected String getProjectName() {
-            return this.projectQualifiedName;
+            return ProjectNameCache.getString(projects.getValueById(this.projectQualifiedNameIndex));
         }
-        
+
         public void write(DataOutput aStream) throws IOException {
-            assert this.projectQualifiedName != null;
-            aStream.writeUTF(this.projectQualifiedName);
+            aStream.writeInt(this.projectQualifiedNameIndex);
         }
         
         protected ProjectNameBasedKey(DataInput aStream) throws IOException {
-            this.projectQualifiedName = ProjectNameCache.getString(aStream.readUTF());
-            assert this.projectQualifiedName != null;
+            this.projectQualifiedNameIndex = aStream.readInt();
         }
         
         public int getDepth() {
@@ -549,8 +581,11 @@ public class KeyUtilities {
         }
         
         public String getUnit() {
-            return this.projectQualifiedName;
+            return getProjectName();
         }
+
+        // Project names caching utility code
+        private static final IntToStringCache projects = new IntToStringCache();
     }
     
     // have to be public or UID factory does not work
@@ -575,6 +610,10 @@ public class KeyUtilities {
             return true;
         }
 
+        public Key.Behavior getBehavior() {
+            return Key.Behavior.Default;
+        }
+
         public abstract int getSecondaryAt(int level);
 
         public abstract String getAt(int level);
@@ -584,5 +623,6 @@ public class KeyUtilities {
         public abstract int getSecondaryDepth();
 
         public abstract int getDepth();
+
     }
 }

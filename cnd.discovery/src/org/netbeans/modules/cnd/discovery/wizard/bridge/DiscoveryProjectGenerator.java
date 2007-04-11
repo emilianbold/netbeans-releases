@@ -47,7 +47,6 @@ import org.openide.util.Utilities;
  */
 public class DiscoveryProjectGenerator {
     private static boolean DEBUG = Boolean.getBoolean("cnd.discovery.trace.project_update"); // NOI18N
-    private static boolean KEEP_UNUSED = Boolean.getBoolean("cnd.discovery.keep_unused"); // NOI18N
     private ProjectBridge projectBridge;
     private DiscoveryDescriptor wizard;
     private String baseFolder;
@@ -73,14 +72,35 @@ public class DiscoveryProjectGenerator {
         for (ProjectConfiguration config: projectConfigurations){
             setupCompilerConfiguration(config);
             FolderConfiguration folderConfig = config.getRoot();
-            addFolder(sourceRoot, folderConfig, config.getLanguageKind()==ItemProperties.LanguageKind.CPP, true);
+            addFolder(sourceRoot, folderConfig, config.getLanguageKind()==ItemProperties.LanguageKind.CPP);
         }
         // add other files
         addAdditional(sourceRoot, baseFolder);
         return projectBridge.getResult();
     }
     
+    private Set<String> getSourceFolders(){
+        Set<String> used = new HashSet<String>();
+        Set<String> folders = new HashSet<String>();
+        List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
+        for (ProjectConfiguration conf : projectConfigurations) {
+            for (FileConfiguration file : conf.getFiles()){
+                String path = file.getFilePath();
+                if (Utilities.isWindows()) {
+                    path = path.replace('\\', '/');
+                }
+                int i = path.lastIndexOf('/');
+                if (i > 0) {
+                    path = path.substring(0,i+1);
+                }
+                used.add(path);
+            }
+        }
+        return used;
+    }
+    
     private void addAdditional(Folder folder, String base){
+        Set<String> folders = getSourceFolders();
         Set<String> used = new HashSet<String>();
         List<String> list = wizard.getIncludedFiles();
         for (String name : list){
@@ -90,11 +110,18 @@ public class DiscoveryProjectGenerator {
             }
             if (path.startsWith(base)){
                 used.add(name);
+            } else {
+                for(String dir : folders){
+                    if (path.startsWith(dir)){
+                        used.add(name);
+                        break;
+                    }
+                }
             }
         }
         AbstractRoot additional = UnusedFactory.createRoot(used);
         if (used.size()>0) {
-            addFolder(folder, additional, true);
+            addAdditionalFolder(folder, additional);
         }
         // remove unused
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
@@ -115,7 +142,7 @@ public class DiscoveryProjectGenerator {
         for (Map.Entry<String,Item> entry : sorted.entrySet()){
             String path = entry.getKey();
             Item item = entry.getValue();
-            if (!relatives.contains(path)) {
+            if (!(relatives.contains(path)||used.contains(path))) {
                 // remove item;
                 Folder parent = item.getFolder();
                 if (DEBUG) System.out.println("Exclude Item "+path); // NOI18N
@@ -124,77 +151,60 @@ public class DiscoveryProjectGenerator {
         }
     }
     
-    private void addFolder(Folder folder, AbstractRoot used, boolean first){
+    private void addAdditionalFolder(Folder folder, AbstractRoot used){
         String name = used.getName();
-        Folder added = null;
-        if (first && folder.getName().equals(name)) {
-            added = folder;
-        } else {
-            added = folder.findFolderByName(name);
-        }
+        Folder added = folder.findFolderByName(name);
         if (added == null) {
             added = projectBridge.createFolder(folder, name);
             folder.addFolder(added);
         }
         for(AbstractRoot sub : used.getChildren()){
-            addFolder(added, sub, false);
+            addAdditionalFolder(added, sub);
         }
         List<String> files = used.getFiles();
         if (files != null) {
             for(String file : files){
                 String path = projectBridge.getRelativepath(file);
-                Item item = added.findItemByPath(path);
-                if (item==null){
-                    Item itemInAnotheFolder = projectBridge.getProjectItem(path);
-                    Object old = null;
-                    if (itemInAnotheFolder != null) {
-                        // TODO: What we should do? May remove item from folder and create in current folder?
-                        old = projectBridge.getAuxObject(itemInAnotheFolder);
-                        itemInAnotheFolder.getFolder().removeItem(itemInAnotheFolder);
-                        item = itemInAnotheFolder;
-                    } else {
-                        item = projectBridge.createItem(file);
+                Item item =  projectBridge.getProjectItem(path);
+                if (item!=null) {
+                    if (item.getFolder() != added){
+                        Object old = projectBridge.getAuxObject(item);
+                        item.getFolder().removeItem(item);
+                        item = added.addItem(item);
+                        if (old != null) {
+                            projectBridge.setAuxObject(item, old);
+                        }
                     }
+                    projectBridge.setExclude(item,false);
+                } else {
+                    item = projectBridge.createItem(file);
                     item = added.addItem(item);
-                    if (old != null) {
-                        projectBridge.setAuxObject(item, old);
-                    }
                     projectBridge.setExclude(item,false);
                 }
             }
         }
     }
     
-    private void addFolder(Folder folder, FolderConfiguration folderConfig, boolean isCPP, boolean first){
+    private void addFolder(Folder folder, FolderConfiguration folderConfig, boolean isCPP){
         String name = folderConfig.getFolderName();
-        Folder added = null;
-        if (first && folder.getName().equals(name)) {
-            added = folder;
-        } else {
-            added = folder.findFolderByName(name);
-        }
+        Folder added = folder.findFolderByName(name);
         if (added == null) {
             added = projectBridge.createFolder(folder, name);
             folder.addFolder(added);
         }
         setupFolder(folderConfig, added, isCPP);
         for(FolderConfiguration sub : folderConfig.getFolders()){
-            addFolder(added, sub, isCPP, false);
+            addFolder(added, sub, isCPP);
         }
         for(FileConfiguration file : folderConfig.getFiles()){
             String path = projectBridge.getRelativepath(file.getFilePath());
-            Item item = added.findItemByPath(path);
+            Item item = projectBridge.getProjectItem(path);
             if (item == null){
-                Item itemInAnotheFolder = projectBridge.getProjectItem(path);
-                Object old = null;
-                if (itemInAnotheFolder != null) {
-                    // TODO: What we should do? May remove item from folder and create in current folder?
-                    old = projectBridge.getAuxObject(itemInAnotheFolder);
-                    itemInAnotheFolder.getFolder().removeItem(itemInAnotheFolder);
-                    item = itemInAnotheFolder;
-                } else {
-                    item = projectBridge.createItem(file.getFilePath());
-                }
+                item = projectBridge.createItem(file.getFilePath());
+                added.addItem(item);
+            } else if (item.getFolder() != added) {
+                Object old = projectBridge.getAuxObject(item);
+                item.getFolder().removeItem(item);
                 added.addItem(item);
                 if (old != null) {
                     projectBridge.setAuxObject(item, old);
@@ -265,7 +275,7 @@ public class DiscoveryProjectGenerator {
         }
         projectBridge.setupFile(config.getCompilePath(), vector, !config.overrideIncludes(), buf.toString(), !config.overrideMacros(), item);
     }
-
+    
     private void reConsolidate(Set set, FileConfiguration file){
         String compilePath = file.getCompilePath();
         for (String path : file.getUserInludePaths()){

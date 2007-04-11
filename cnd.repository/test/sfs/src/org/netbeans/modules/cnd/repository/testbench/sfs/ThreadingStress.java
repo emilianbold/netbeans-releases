@@ -26,36 +26,51 @@ import org.netbeans.modules.cnd.repository.sfs.*;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 /**
- * Threading test for SingleFileStorage
+ * Threading test for FileStorage
  * @author Vladimir Kvashin
  */
 public class ThreadingStress extends BaseTest {
     
-    private SingleFileStorage sfs;
+    private FileStorage sfs;
     private TestObject[] objects;
     private Object startBarrier = new Object();
     
-    private int writeCycles = Integer.getInteger("thread.test.write.cycles", 80);
-    private int readCycles = Integer.getInteger("thread.test.read.cycles", 320);
-    private int readersCount = Integer.getInteger("thread.test.readers.count", 8);
+    private int writeCycles = Integer.getInteger("thread.test.write.cycles", 80); // NOI18N
+    private int readCycles = Integer.getInteger("thread.test.read.cycles", 320); // NOI18N
+    private int readersCount = Integer.getInteger("thread.test.readers.count", 8); // NOI18N
     
     private boolean compact = Stats.getBoolean("thread.test.compact", true); 
     
-    private Thread writerThread;
-    private Collection<Thread> readerThreads;
+    private Writer writer;
+    private Collection<Reader> readers;
     
     private boolean writingFinished = false;
     
     private int currReader = 0;
     
     private int errors = 0;
+
+    enum WriterStatus {
+	Initial,
+	Writing,
+	Defragmenting,
+	Finished
+    }
     
-    private class Writer implements Runnable {
+    private class Writer extends Thread {
+	
+	private int writtenThisCycle = 0;
+	private WriterStatus status;
+	
+	public Writer() {
+	    super("Stress Writer"); // NOI18N
+	    status = WriterStatus.Initial;
+	}
 	
 	public void run() {
 	    
-	    Thread.currentThread().setName("Stress Writer");
-	    System.out.printf("%s started. waiting on barier.\n", Thread.currentThread().getName());
+	    Thread.currentThread().setName("Stress Writer"); // NOI18N
+	    System.out.printf("%s started. waiting on barier.\n", Thread.currentThread().getName()); // NOI18N
 	    waitBarrier(startBarrier);
 
 	    try {
@@ -68,16 +83,38 @@ public class ThreadingStress extends BaseTest {
 		e.printStackTrace(System.err);
 		incermentErrorCnt();
 	    }
-	    System.out.printf("%s finished.\n", Thread.currentThread().getName());
+	    status = WriterStatus.Finished;
+	    System.out.printf("%s finished.\n", Thread.currentThread().getName()); // NOI18N
 	}
+	
+	private void writeCycle(int cycleId) throws IOException {
+	    status = WriterStatus.Writing;
+	    System.out.printf("%s: starting write cycle %d \n", Thread.currentThread().getName(), cycleId); // NOI18N
+	    for (writtenThisCycle = 0; writtenThisCycle < objects.length; writtenThisCycle++) {
+		TestObject obj = objects[writtenThisCycle];
+		sfs.put(obj.getKey(), obj);
+	    }
+	    if( compact ) {
+		status = WriterStatus.Defragmenting;
+		long time = (cycleId % 2 == 0) ? 1000 : 0;
+		String kind = (time == 0) ? "Full" : "Partial"; // NOI18N
+		System.out.printf("%s compacting (cycle %d size %d)...\n", kind, cycleId, sfs.getSize()); // NOI18N
+		sfs.defragment(time);
+		System.out.printf("\t%s compacting (cycle %d size %d) done\n", kind, cycleId, sfs.getSize()); // NOI18N
+	    }
+	}
+	
     }
     
-    private class Reader implements Runnable {
+    private class Reader extends Thread {
+	
+	public Reader() {
+	    super("Stress Reader " + currReader++); // NOI18N
+	}
 	
 	public void run() {
 	    
-	    Thread.currentThread().setName("Stress Reader " + currReader++);
-	    System.out.printf("%s started. waiting on barier.\n", Thread.currentThread().getName());
+	    System.out.printf("%s started. waiting on barier.\n", Thread.currentThread().getName()); // NOI18N
 	    waitBarrier(startBarrier);
 	    
 	    try {
@@ -89,7 +126,7 @@ public class ThreadingStress extends BaseTest {
 		e.printStackTrace(System.err);
 		incermentErrorCnt();
 	    }
-	    System.out.printf("%s finished.\n", Thread.currentThread().getName());
+	    System.out.printf("%s finished.\n", Thread.currentThread().getName()); // NOI18N
 	}
     }
 
@@ -103,33 +140,33 @@ public class ThreadingStress extends BaseTest {
 	}
     }
     
-    public void test(List<String> args) throws IOException {
+    public boolean test(List<String> args) throws IOException {
 	
 	File storageFile = new File("/tmp/stress.dat"); // NOI18N
-	System.out.printf("Testing SingleFileStorage threading. Storage file: %s\n", storageFile.getAbsolutePath()); // NOI18N
-	sfs = new SingleFileStorage(storageFile);
+	System.out.printf("Testing FileStorage threading. Storage file: %s\n", storageFile.getAbsolutePath()); // NOI18N
+	sfs = FileStorage.create(storageFile);
 
-	writerThread = new Thread(new Writer());
-	readerThreads = new ArrayList<Thread>();
+	writer = new Writer();
+	readers = new ArrayList<Reader>();
 	for (int i = 0; i < readersCount; i++) {
-	    readerThreads.add(new Thread(new Reader()));
+	    readers.add(new Reader());
 	}
 	
-	writerThread.start();
-	for( Thread reader : readerThreads ) {
+	writer.start();
+	for( Thread reader : readers ) {
 	    reader.start();
 	}
 	wait(1000);
 
-	System.out.printf("Creating test objects...\n");
+	System.out.printf("Creating test objects...\n"); // NOI18N
 	Collection<TestObject> tmp_objects = new TestObjectCreator().createTestObjects(args);
 	objects = tmp_objects.toArray(new TestObject[tmp_objects.size()]);
-	System.out.printf("\nCreating objects done. %d objects are created\n", objects.length);
+	System.out.printf("\nCreating objects done. %d objects are created\n", objects.length); // NOI18N
 	
 //	System.out.printf("\nInitial writing...\n");
 //	writeCycle();
 	
-	System.out.printf("\nReader threads: %d. Read cycles: %d, Write cycles: %d \n", readersCount, readCycles, writeCycles);
+	System.out.printf("\nReader threads: %d. Read cycles: %d, Write cycles: %d \n", readersCount, readCycles, writeCycles); // NOI18N
 	synchronized(startBarrier) {
 	    startBarrier.notifyAll();
 	}
@@ -148,12 +185,12 @@ public class ThreadingStress extends BaseTest {
 	sfs.close();
 	
 	if( errors == 0 ) {
-	    System.out.printf("\nSUCCESS\n");
+	    System.out.printf("\nSUCCESS\n"); // NOI18N
 	}
 	else {
-	    System.out.printf("\nFAULIRE: %d errors\n", errors);
+	    System.out.printf("\nFAULIRE: %d errors\n", errors); // NOI18N
 	}
-	
+	return errors == 0;
     }
     
     private void wait(int millis) {
@@ -165,10 +202,10 @@ public class ThreadingStress extends BaseTest {
     }
     
     private boolean threadsDone() {
-	if( writerThread.getState() != Thread.State.TERMINATED ) {
+	if( writer.getState() != Thread.State.TERMINATED ) {
 	    return false;
 	}
-	for( Thread reader : readerThreads ) {
+	for( Thread reader : readers ) {
 	    if( reader.getState() != Thread.State.TERMINATED ) {
 		return false;
 	    }
@@ -176,22 +213,9 @@ public class ThreadingStress extends BaseTest {
 	return true;
     }
 
-    private void writeCycle(int cycleId) throws IOException {
-	System.out.printf("%s: starting write cycle %d \n", Thread.currentThread().getName(), cycleId);
-	for (int i = 0; i < objects.length; i++) {
-	    sfs.put(objects[i].getKey(), objects[i]);
-	}
-	if( compact ) {
-	    long time = (cycleId % 2 == 0) ? 1000 : 0;
-	    String kind = (time == 0) ? "Full" : "Partial";
-	    System.out.printf("%s compacting (cycle %d size %d)...\n", kind, cycleId, sfs.getFileSize());
-	    sfs.compact(time);
-	    System.out.printf("\t%s compacting (cycle %d size %d) done\n", kind, cycleId, sfs.getFileSize());
-	}
-    }
-    
     private void readCycle(int cycleId) throws IOException {
-	System.out.printf("%s: starting read cycle %d \n", Thread.currentThread().getName(), cycleId);
+	System.out.printf("%s: starting read cycle %d; writer status is %s\n", // NOI18N
+		Thread.currentThread().getName(), cycleId, writer.status); // NOI18N
 	for (int i = 0; i < objects.length; i++) {
 	    int index = Math.min((int) (Math.random() * objects.length), objects.length-1);
 	    testRead(objects[index]);
@@ -203,19 +227,19 @@ public class ThreadingStress extends BaseTest {
 	TestObject read = (TestObject) sfs.get(key);
 	if( read == null ) {
 	    if( writingFinished ) {
+		System.err.printf("ERROR: read null by key %s; writer status is %s\n", key, writer.status);
 		incermentErrorCnt();
-		System.err.printf("ERROR: read null by key %s\n", key);
 	    }
 	}
 	else {
 	    if( ! read.equals(orig) ) {
-		incermentErrorCnt();
 		System.err.printf("ERROR:\n");
 		System.err.printf("Wrote: %s\n", orig.toString());
 		System.err.printf("Read:  %s\n", read.toString());
-		long fileSize = sfs.getFileSize();
+		long fileSize = sfs.getSize();
 		read = (TestObject) sfs.get(key);
 		read = (TestObject) sfs.get(key);
+		incermentErrorCnt();
 	    }
 	}
     }

@@ -25,6 +25,7 @@ import antlr.collections.AST;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.EmptyCompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 import org.netbeans.modules.cnd.modelimpl.csm.*;
@@ -287,6 +288,9 @@ public class AstRenderer {
                             case CPPTokenTypes.SEMICOLON:
                                 TypeImpl typeImpl = TypeImpl.createType(cls, ptrOperator, arrayDepth, ast, file);
                                 CsmTypedef typedef = createTypedef((nameToken == null) ? ast : nameToken, file, container, typeImpl, name);
+                                if (cls != null && cls.getName().length()==0){
+                                    ((TypedefImpl)typedef).setTypeUnnamed();
+                                }
                                 if( typedef != null ) {
                                     results.add(typedef);
                                 }
@@ -338,6 +342,7 @@ public class AstRenderer {
                                 }
                                 if( nsp != null ) {
                                     ei = new EnumImpl(curr, nsp, file);
+                                    file.addDeclaration(ei);
                                     if( container instanceof  MutableDeclarationsContainer )
                                     ((MutableDeclarationsContainer) container).addDeclaration(ei);
                                 }
@@ -379,6 +384,9 @@ public class AstRenderer {
                             if( typeImpl != null) {
                                 CsmTypedef typedef = createTypedef(ast/*nameToken*/, file, container, typeImpl, name);
                                 if( typedef != null ) {
+                                    if (ei != null && ei.getName().length()==0){
+                                        ((TypedefImpl)typedef).setTypeUnnamed();
+                                    }
                                     results.add(typedef);
                                 }
                             }
@@ -941,7 +949,8 @@ public class AstRenderer {
 		    return new LazyCompoundStatementImpl(token, file);
 	    }
         }
-        return null;
+        // prevent null bodies
+        return new EmptyCompoundStatementImpl(ast, file);
     }
     
     public static StatementBase renderStatement(AST ast, CsmFile file) {

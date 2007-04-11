@@ -33,7 +33,8 @@ import org.openide.util.NbBundle;
 /**
  * Panel just asking for basic info.
  */
-public class PanelConfigureProject implements WizardDescriptor.Panel, NewMakeProjectWizardIterator.Name, WizardDescriptor.FinishablePanel {
+public class PanelConfigureProject implements WizardDescriptor.Panel, NewMakeProjectWizardIterator.Name,
+        WizardDescriptor.FinishablePanel {
     
     private WizardDescriptor wizardDescriptor;
     private String name;

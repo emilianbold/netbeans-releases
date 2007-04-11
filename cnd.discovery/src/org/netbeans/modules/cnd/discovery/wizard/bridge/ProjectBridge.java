@@ -29,12 +29,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
-import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
@@ -60,9 +60,11 @@ import org.openide.util.Utilities;
 public class ProjectBridge {
     private String baseFolder;
     private MakeConfigurationDescriptor makeConfigurationDescriptor;
+    private Project project;
     private Set resultSet = new HashSet();
     
     public ProjectBridge(Project project) {
+        this.project = project;
         baseFolder = File.separator+project.getProjectDirectory().getPath();
         resultSet.add(project);
         ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
@@ -76,7 +78,7 @@ public class ProjectBridge {
         String workingDirRel = IpeUtils.toRelativePath(baseFolder, FilePathAdaptor.naturalize(workingDir));
         workingDirRel = FilePathAdaptor.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
-        Project project = ProjectGenerator.createBlankProject("DiscoveryProject", baseFolder, new MakeConfiguration[] {extConf}, true); // NOI18N
+        project = ProjectGenerator.createBlankProject("DiscoveryProject", baseFolder, new MakeConfiguration[] {extConf}, true); // NOI18N
         resultSet.add(project);
         ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
@@ -205,11 +207,6 @@ public class ProjectBridge {
                             roots.add(s);
                         }
                     }
-                } else if (MakeConfigurationDescriptor.HEADER_FILES_FOLDER.equals(sub.getName()) ||
-                        MakeConfigurationDescriptor.RESOURCE_FILES_FOLDER.equals(sub.getName())){
-                    // skip
-                } else {
-                    roots.add(sub);
                 }
             }
         }
@@ -220,7 +217,7 @@ public class ProjectBridge {
     }
     
     public Set getResult(){
-        makeConfigurationDescriptor.checkForChangedItems(null, null);
+        makeConfigurationDescriptor.checkForChangedItems(project, null, null);
         return resultSet;
     }
     
@@ -314,7 +311,7 @@ public class ProjectBridge {
             systemIncludePaths = new ArrayList<String>();
             MakeConfiguration makeConfiguration = (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
             Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
-            CompilerSet compilerSet = CompilerSets.getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
             BasicCompiler compiler;
             if (isCPP) {
                 compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
@@ -362,7 +359,7 @@ public class ProjectBridge {
             systemMacroDefinitions = new HashMap<String,String>();
             MakeConfiguration makeConfiguration = (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
             Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
-            CompilerSet compilerSet = CompilerSets.getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
             BasicCompiler compiler;
             if (isCPP) {
                 compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);

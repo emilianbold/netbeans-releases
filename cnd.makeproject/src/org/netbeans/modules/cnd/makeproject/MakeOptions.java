@@ -21,28 +21,19 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyEditorSupport;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
-import org.openide.util.Utilities;
 
 public class MakeOptions extends SystemOption implements PropertyChangeListener {
     static final long serialVersionUID = 5619262632730516348L;
     static private MakeOptions instance = null;
     //
-    // Default make command
-    static final String MAKE_COMMAND = "makeCommand"; // NOI18N
-    static private String defaultMakeCommand = "make"; // NOI18N
-    static private String makeCommand = null;
-    //
-    // Default Compiler Set
-    static final String COMPILER_SET = "compilerSet"; // NOI18N
-    static private int defaultCompilerSet = CompilerSets.GNU_COMPILER_SET;
-    static private int compilerSet = -1;
+    // Default make options
+    static final String MAKE_OPTIONS = "makeOptions"; // NOI18N
+    static private String defaultMakeOptions = "";
+    static private String makeOptions = null;
     //
     // Default Platform
     static final String PLATFORM = "platform"; // NOI18N
@@ -80,12 +71,12 @@ public class MakeOptions extends SystemOption implements PropertyChangeListener 
         return instance;
     }
     
-    public static void setDefaultMakeCommand(String makeCommand) {
-        defaultMakeCommand = makeCommand;
+    public static void setDefaultMakeOptions(String makeOptions) {
+        defaultMakeOptions = makeOptions;
     }
     
-    public static String getDefaultMakeCommand() {
-        return defaultMakeCommand;
+    public static String getDefaultMakeOptions() {
+        return defaultMakeOptions;
     }    
     
     public MakeOptions() {
@@ -97,32 +88,18 @@ public class MakeOptions extends SystemOption implements PropertyChangeListener 
         return "Make Project Options"; // NOI18N (not visible)
     }
     
-    public String getMakeCommand() {
-        if (makeCommand == null) {
-            makeCommand = defaultMakeCommand;
+    public String getMakeOptions() {
+        if (makeOptions == null) {
+            makeOptions = defaultMakeOptions;
         }
-        return makeCommand;
+        return makeOptions;
     }
     
-    public void setMakeCommand(String value) {
-        String oldValue = getMakeCommand();
-        makeCommand = value;
+    public void setMakeOptions(String value) {
+        String oldValue = getMakeOptions();
+        makeOptions = value;
         if (!oldValue.equals(value))
-            firePropertyChange(MAKE_COMMAND, oldValue, value);
-    }
-    
-    public int getCompilerSet() {
-        if (compilerSet < 0) {
-            compilerSet = defaultCompilerSet;
-        }
-        return compilerSet;
-    }
-    
-    public void setCompilerSet(int value) {
-        int oldValue = getCompilerSet();
-        compilerSet = value;
-        if (oldValue != value)
-            firePropertyChange(COMPILER_SET, "" + oldValue, "" + value); // NOI18N
+            firePropertyChange(MAKE_OPTIONS, oldValue, value);
     }
     
     public int getPlatform() {
@@ -136,7 +113,7 @@ public class MakeOptions extends SystemOption implements PropertyChangeListener 
         int oldValue = getPlatform();
         platform = value;
         if (oldValue != value)
-            firePropertyChange(COMPILER_SET, "" + oldValue, "" + value); // NOI18N
+            firePropertyChange(PLATFORM, "" + oldValue, "" + value); // NOI18N
     }
     
     public int getPathMode() {
@@ -147,7 +124,7 @@ public class MakeOptions extends SystemOption implements PropertyChangeListener 
         int oldValue = getPathMode();
         this.pathMode = pathMode;
         if (oldValue != pathMode)
-            firePropertyChange(MAKE_COMMAND, new Integer(oldValue), new Integer(pathMode));
+            firePropertyChange(MAKE_OPTIONS, new Integer(oldValue), new Integer(pathMode));
     }
     
     public void setDepencyChecking(boolean dependencyChecking) {

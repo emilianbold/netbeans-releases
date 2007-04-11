@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -35,6 +36,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
+import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -188,6 +190,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     pae.getID() == ProjectActionEvent.CLEAN) {
                 String exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
                 String args = pae.getProfile().getArgsFlat();
+                String[] env = pae.getProfile().getEnvironment().getenv();
                 boolean showInput = pae.getID() == ProjectActionEvent.RUN;
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {
@@ -225,11 +228,28 @@ public class DefaultProjectActionHandler implements ActionListener {
                             exe = pae.getProfile().getTerminalPath();
                         }
                     }
+                } else { // Build or Clean
+                    String[] env1 = new String[env.length + 1];
+                    String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption().trim();
+                    String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname).getDirectory();
+                    boolean gotpath = false;
+                    int i;
+                    for (i = 0; i < env.length; i++) {
+                        if (env[i].startsWith("PATH=")) { // NOI18N
+                            env1[i] = "PATH=" + csdirs + File.pathSeparator + env[i].substring(5); // NOI18N
+                            gotpath = true;
+                        } else {
+                            env1[i] = env[i];
+                        }
+                    }
+                    if (!gotpath) {
+                        env1[i] = "PATH=" + csdirs + File.pathSeparator + CppSettings.getDefault().getPath(); // NOI18N
+                    }
+                    env = env1;
                 }
                 NativeExecutor projectExecutor =  new NativeExecutor(
                         pae.getProfile().getRunDirectory(),
-                        exe, args,
-                        pae.getProfile().getEnvironment().getenv(),
+                        exe, args, env,
                         pae.getTabName(),
                         pae.getActionName(),
                         pae.getID() == ProjectActionEvent.BUILD,

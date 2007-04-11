@@ -333,6 +333,7 @@ public class CCSyntax extends Syntax {
                     return CCTokenContext.CPPINCLUDE;                                        
                 }                 
                 state = ISA_INCLUDE_A_WS; 
+                break;
                 
             case ISA_INCLUDE_A_WS:
                 if (Character.isWhitespace(actChar)) {
@@ -912,13 +913,13 @@ public class CCSyntax extends Syntax {
             case ISI_STRING_A_BSLASH:
                 return CCTokenContext.STRING_LITERAL; // hold the state
             case ISI_SYS_INCLUDE:
-                return CCTokenContext.SYS_INCLUDE; // hold the state
+                return CCTokenContext.INCOMPLETE_SYS_INCLUDE; // hold the state
             case ISA_INCLUDE:
                 return CCTokenContext.CPPINCLUDE; // hold the state
             case ISA_INCLUDE_A_WS:
                 return CCTokenContext.WHITESPACE; // hold the state
             case ISI_USR_INCLUDE:
-                return CCTokenContext.USR_INCLUDE; // hold the state
+                return CCTokenContext.INCOMPLETE_USR_INCLUDE; // hold the state
             case ISI_CHAR:
             case ISI_CHAR_A_BSLASH:
                 return CCTokenContext.CHAR_LITERAL; // hold the state

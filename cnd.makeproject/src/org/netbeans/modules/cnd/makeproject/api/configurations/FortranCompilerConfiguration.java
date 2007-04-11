@@ -23,9 +23,9 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
-import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -100,7 +100,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
     // Sheet
     public Sheet getGeneralSheet(MakeConfiguration conf) {
 	Sheet sheet = new Sheet();
-        CompilerSet compilerSet = CompilerSets.getCompilerSet(conf.getCompilerSet().getValue());
+        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
         BasicCompiler fortranCompiler = (BasicCompiler)compilerSet.getTool(Tool.FortranCompiler);
         
 	sheet.put(getBasicSet());
@@ -119,7 +119,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
     public Sheet getCommandLineSheet(Configuration conf) {
 	Sheet sheet = new Sheet();
 	String[] texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
-        CompilerSet compilerSet = CompilerSets.getCompilerSet(((MakeConfiguration)conf).getCompilerSet().getValue());
+        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(((MakeConfiguration)conf).getCompilerSet().getValue());
         BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
 
 	Sheet.Set set2 = new Sheet.Set();

@@ -201,7 +201,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 		//projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
 		projectDescriptor.assign(clonedProjectdescriptor);
 		projectDescriptor.setModified();
-                ((MakeConfigurationDescriptor)projectDescriptor).checkForChangedItems(folder, item);
+                ((MakeConfigurationDescriptor)projectDescriptor).checkForChangedItems(project, folder, item);
 
 		((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();// FIXUP: should be moved into ProjectDescriptorHelper...
                 

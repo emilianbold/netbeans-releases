@@ -20,53 +20,100 @@
 
 package org.netbeans.modules.cnd.ui.options;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /** Manage the data for the ToolsPanel */
-public class ToolsPanelModel {
+public abstract class ToolsPanelModel {
+    
+    protected ArrayList getPath() {
+        ArrayList<String> path = new ArrayList();
+        StringTokenizer tok = new StringTokenizer(CppSettings.getDefault().getPath(), File.pathSeparator);
+        while (tok.hasMoreTokens()) {
+            path.add(tok.nextToken());
+        }
+        return path;
+    }
+    
+    protected void setPath(ArrayList<String> list) {
+        StringBuffer path = new StringBuffer();
+        for (String dir : list) {
+            path.append(dir);
+            path.append(File.pathSeparator);
+        }
+        CppSettings.getDefault().setPath(path.toString());
+    }
     
     protected String getMakeName() {
         return CppSettings.getDefault().getMakeName();
+    }
+    
+    protected void setMakeName(String name) {
+        CppSettings.getDefault().setMakeName(name);
+    }
+    
+    protected void setMakePath(String dir) {
+        CppSettings.getDefault().setMakePath(dir);
     }
     
     protected String getGdbName() {
         return CppSettings.getDefault().getGdbName();
     }
     
-    protected void setCompilerSetName(String name) {
-        CppSettings.getDefault().setCompilerSetName(name);
+    protected void setGdbName(String name) {
+        CppSettings.getDefault().setGdbName(name);
     }
     
-    protected String getCompilerSetName() {
-        return CppSettings.getDefault().getCompilerSetName();
+    protected void setGdbPath(String dir) {
+        CppSettings.getDefault().setGdbPath(dir);
     }
     
-    protected void setCompilerSetDirectories(String directories) {
-        CppSettings.getDefault().setCompilerSetDirectories(directories);
+    /**
+     * Check if the gdb module is enabled. Don't show the gdb line if it isn't.
+     *
+     * @return true if the gdb module is enabled, false if missing or disabled
+     */
+    protected boolean isGdbEnabled() {
+        Iterator iter = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances().iterator();
+        while (iter.hasNext()) {
+            ModuleInfo info = (ModuleInfo) iter.next();
+            if (info.getCodeNameBase().equals("org.netbeans.modules.cnd.debugger.gdb") && info.isEnabled()) { // NOI18N
+                return true;
+            }
+        }
+        return false;
     }
     
-    protected String getCCompilerName() {
-        String dbg = CppSettings.getDefault().getCCompilerName();
-        return CppSettings.getDefault().getCCompilerName();
-    }
+    public abstract void setGdbEnabled(boolean value);
     
-    protected void setCCompilerName(String name) {
-        CppSettings.getDefault().setCCompilerName(name);
-    }
+    public abstract boolean isGdbRequired();
     
-    protected String getCppCompilerName() {
-        return CppSettings.getDefault().getCppCompilerName();
-    }
+    public abstract void setGdbRequired(boolean value);
     
-    protected void setCppCompilerName(String name) {
-        CppSettings.getDefault().setCppCompilerName(name);
-    }
+    public abstract boolean isCRequired();
     
-    protected String getFortranCompilerName() {
-        return CppSettings.getDefault().getFortranCompilerName();
-    }
+    public abstract void setCRequired(boolean value);
     
-    protected void setFortranCompilerName(String name) {
-        CppSettings.getDefault().setFortranCompilerName(name);
-    }
+    public abstract boolean isCppRequired();
+    
+    public abstract void setCppRequired(boolean value);
+    
+    public abstract boolean isFortranRequired();
+    
+    public abstract void setFortranRequired(boolean value);
+    
+    public abstract void setCompilerSetName(String name);
+    
+    public abstract String getCompilerSetName();
+    
+    protected abstract void setCCompilerName(String name);
+    
+    protected abstract void setCppCompilerName(String name);
+    
+    protected abstract void setFortranCompilerName(String name);
 }

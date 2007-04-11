@@ -38,6 +38,31 @@ public class RepositoryWritingThread implements Runnable {
 	this.writer = writer;
 	this.queue = queue;
     }
+
+    private void waitReady() throws IOException, InterruptedException {
+	if( Stats.sleepOnEmptyWriteQueue > 0 ) {
+	    if( Stats.defragmentOnEmptyWriteQueue ) {
+		while( ! queue.isReady() ) {
+		    if( Stats.queueTrace ) System.err.printf("%s: maintenance %n ms...\n", getName(), Stats.sleepOnEmptyWriteQueue); // NOI18N
+		    long time = System.currentTimeMillis();
+		    if( ! writer.maintenance(Stats.sleepOnEmptyWriteQueue) ) {
+			time = System.currentTimeMillis() - time;
+			if( time < Stats.sleepOnEmptyWriteQueue ) {
+			    Thread.currentThread().sleep(Stats.sleepOnEmptyWriteQueue - time);
+			}
+			break;
+		    }
+                    queue.onIdle();
+		}
+	    }
+	    else {
+		if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.sleepOnEmptyWriteQueue); // NOI18N
+		Thread.currentThread().sleep(Stats.sleepOnEmptyWriteQueue);
+	    }
+	}
+	if( Stats.queueTrace ) System.err.printf("%s: waiting...\n", getName()); // NOI18N
+	queue.waitReady();
+    }
     
     public void run() {
 	if( Stats.queueTrace ) System.err.printf("%s: started.\n", getName());
@@ -46,23 +71,7 @@ public class RepositoryWritingThread implements Runnable {
 		RepositoryQueue.Entry entry = queue.poll();
 		if( entry == null ) {
 		    if( RepositoryThreadManager.proceed() ) {
-			if( Stats.sleepOnEmptyWriteQueue > 0 ) {
-			    if( Stats.compactOnEmptyWriteQueue ) {
-				if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.sleepOnEmptyWriteQueue); // NOI18N
-				long time = System.currentTimeMillis();
-				writer.maintenance(Stats.sleepOnEmptyWriteQueue);
-				time = System.currentTimeMillis() - time;
-				if( time < Stats.sleepOnEmptyWriteQueue ) {
-				    Thread.currentThread().sleep(Stats.sleepOnEmptyWriteQueue - time);
-				}
-			    }
-			    else {
-				if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.sleepOnEmptyWriteQueue); // NOI18N
-				Thread.currentThread().sleep(Stats.sleepOnEmptyWriteQueue);
-			    }
-			}
-			if( Stats.queueTrace ) System.err.printf("%s: waiting...\n", getName()); // NOI18N
-			queue.waitReady();
+			 waitReady();
 		    }
 		    else {
 			if( Stats.queueTrace ) System.err.printf("%s: exiting\n", getName()); // NOI18N

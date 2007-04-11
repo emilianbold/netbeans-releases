@@ -24,7 +24,7 @@ import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
-import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.xml.sax.Attributes;
 

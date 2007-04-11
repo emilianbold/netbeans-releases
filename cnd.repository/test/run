@@ -1,0 +1,5 @@
+export JAR_PATH=../../suite/build/cluster/modules/org-netbeans-modules-cnd-repository.jar
+/bin/rm -rf /export/home/cache-raw
+echo $1
+java $1 -Dcnd.repository.cache.path=/export/home/cache-raw -cp $JAR_PATH org.netbeans.modules.cnd.repository.testbench.TestBench -p 1 -i 1 -l 0.01 -t 10 -m 0 -x 50000 -lf 0.05
+echo return code: $?

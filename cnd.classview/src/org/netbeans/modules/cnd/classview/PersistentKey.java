@@ -155,15 +155,15 @@ public final class PersistentKey {
     public String toString() {
         switch(kind){
             case PROXY:
-                return "Proxy "+key.toString();
+                return "Proxy "+key.toString(); // NOI18N
             case UID:
-                return "UID "+key.toString();
+                return "UID "+key.toString(); // NOI18N
             case NAMESPACE:
-                return "Namespace "+key;
+                return "Namespace "+key; // NOI18N
             case DECLARATION:
-                return "Declaration "+key;
+                return "Declaration "+key; // NOI18N
             case PROJECT:
-                return "Project "+project.getName();
+                return "Project "+project.getName(); // NOI18N
         }
         return super.toString();
     }

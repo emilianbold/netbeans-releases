@@ -42,6 +42,9 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
     }
     
     public Set instantiate() throws IOException {
+        if (wizard.isSimpleMode()){
+            new DiscoveryExtension().canApply(wizard);
+        }
         DiscoveryProjectGenerator generator = new DiscoveryProjectGenerator(wizard);
         return generator.makeProject();
     }

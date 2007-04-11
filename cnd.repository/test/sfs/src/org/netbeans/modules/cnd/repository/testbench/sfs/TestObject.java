@@ -88,7 +88,7 @@ public class TestObject implements Persistent {
     public String toString() {
 	StringBuilder sb = new StringBuilder("TestOBject @"); // NOI18N
 	sb.append(hashCode());
-	sb.append(" key=");
+	sb.append(" key="); // NOI18N
 	sb.append(key);
 	sb.append(" sData="); // NOI18N
 	if( sData == null ) {

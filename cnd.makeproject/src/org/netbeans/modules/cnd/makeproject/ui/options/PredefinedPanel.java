@@ -38,13 +38,13 @@ public class PredefinedPanel extends javax.swing.JPanel {
     private DefinitionsPanel definitionsPanel;
     private Platform platform;
     private CCCCompiler compiler;
-    private ManageCompilersPanel manageCompilersPanel;
+    private ParserSettingsPanel parserSettingsPanel;
     
     /** Creates new form PredefinedPanel */
-    public PredefinedPanel(CCCCompiler compiler, ManageCompilersPanel manageCompilersPanel) {
+    public PredefinedPanel(CCCCompiler compiler, ParserSettingsPanel parserSettingsPanel) {
         initComponents();
         this.compiler = compiler;
-        this.manageCompilersPanel = manageCompilersPanel;
+        this.parserSettingsPanel = parserSettingsPanel;
         platform = Platforms.getPlatform(MakeOptions.getInstance().getPlatform());
         updatePanels(platform);
         
@@ -128,7 +128,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
             updatePanels(platform);
             validate();
             repaint();
-            manageCompilersPanel.fireFilesPropertiesChanged();
+            parserSettingsPanel.fireFilesPropertiesChanged();
         }
     }//GEN-LAST:event_resetButtonActionPerformed
     

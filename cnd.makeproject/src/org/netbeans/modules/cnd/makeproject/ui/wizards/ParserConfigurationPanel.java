@@ -50,6 +50,7 @@ import org.openide.util.Utilities;
 public class ParserConfigurationPanel extends javax.swing.JPanel implements HelpCtx.Provider{
     private ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel;
     private boolean first = true;
+    private boolean lastApplicable;
     
     public ParserConfigurationPanel(ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel) {
         initComponents();
@@ -75,7 +76,18 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     private boolean isApplicable(WizardDescriptor settings){
         IteratorExtension extension = (IteratorExtension)Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
-            return extension.isApplicable(settings);
+            boolean res = extension.isApplicable(settings);
+            String providerID = extension.getProviderID(settings);
+            if ("dwarf-executable".equals(providerID)){ // NOI18N
+                additionalLibrariesButton.setVisible(true);
+                librariesLabel.setVisible(true);
+                librariesTextField.setVisible(true);
+            } else if ("dwarf-folder".equals(providerID)){ // NOI18N
+                additionalLibrariesButton.setVisible(false);
+                librariesLabel.setVisible(false);
+                librariesTextField.setVisible(false);
+            }
+            return res;
         }
         return false;
     }
@@ -102,7 +114,8 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     }
 
     void read(WizardDescriptor settings) {
-        if (isApplicable(settings)){
+        lastApplicable = isApplicable(settings);
+        if (lastApplicable){
             manualButton.setEnabled(true);
             automaticButton.setEnabled(true);
             if (first) {
@@ -111,7 +124,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
             }
         } else {
             manualButton.setEnabled(true);
-            automaticButton.setEnabled(false);
+            automaticButton.setEnabled(true);
             manualButton.setSelected(true);
             togglePanel(true);
         }
@@ -138,7 +151,21 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     
     boolean valid(WizardDescriptor settings) {
         if (automaticButton.isSelected()){
-            StringTokenizer st = new StringTokenizer(librariesTextField.getText());
+            if (!lastApplicable){
+                String selectedExecutable = (String)settings.getProperty("outputTextField"); // NOI18N
+                if (selectedExecutable == null || selectedExecutable.length()==0) {
+                    settings.putProperty("WizardPanel_errorMessage",getString("Automatic.Error.NoOutputResult")); // NOI18N
+                    return false;
+                }
+                File file = new File(selectedExecutable);
+                if (!file.exists()) {
+                    settings.putProperty("WizardPanel_errorMessage",getString("Automatic.Error.OutputResultNotExist")); // NOI18N
+                    return false;
+                }
+                settings.putProperty("WizardPanel_errorMessage",getString("Automatic.Error.NoDebugOutputResult")); // NOI18N
+                return false;
+            }
+            StringTokenizer st = new StringTokenizer(librariesTextField.getText(),";"); // NOI18N
             while(st.hasMoreTokens()){
                 String path = st.nextToken();
                 File file = new File(path);

@@ -107,6 +107,14 @@ public class CCKit extends NbEditorKit {
         return new CCFormatter(this.getClass());
     }
 
+    protected Action getCommentAction() {
+        return new CommentAction("//"); // NOI18N
+    }
+    
+    protected Action getUncommentAction() {
+        return new UncommentAction("//"); // NOI18N
+    }
+    
     protected Action[] createActions() {
         Action[] ccActions = new Action[] {
 	    new CCDefaultKeyTypedAction(),
@@ -115,8 +123,8 @@ public class CCKit extends NbEditorKit {
             new CCInsertBreakAction(),
             new CCDeleteCharAction(deletePrevCharAction, false),
             new CCGenerateGoToPopupAction(),
-            new CommentAction("//"), // NOI18N
-            new UncommentAction("//") // NOI18N
+            getCommentAction(),
+            getUncommentAction()
 	};
         ccActions = TextAction.augmentList(super.createActions(), ccActions);
         GotoDeclarationProvider gotoDeclaration = (GotoDeclarationProvider) Lookup.getDefault().lookup(GotoDeclarationProvider.class);
@@ -378,8 +386,8 @@ public class CCKit extends NbEditorKit {
             int dotPos = caret.getDot();
             if (BracketCompletion.posWithinString(doc, dotPos)) { 
                 try {
-                    doc.insertString(dotPos, "\" + \"", null); //NOI18N
-                    dotPos += 3;
+                    doc.insertString(dotPos, "\"\"", null); //NOI18N
+                    dotPos += 1;
                     caret.setDot(dotPos);
                     return new Integer(dotPos);
                 } catch (BadLocationException ex) {

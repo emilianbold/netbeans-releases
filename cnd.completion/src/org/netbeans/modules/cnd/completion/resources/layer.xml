@@ -37,9 +37,7 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
                 </folder>
-                <folder name="Defaults">
-                    <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
-                </folder>                
+                
                 <folder name="Popup">
                     <folder name="goto">
                         <file name="goto-declaration"/>
@@ -62,10 +60,6 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>                    
-                </folder>
-                
-                <folder name="Defaults">
-                    <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
                 </folder>
                 
                 <folder name="Popup">

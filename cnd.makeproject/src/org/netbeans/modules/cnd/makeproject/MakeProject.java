@@ -32,8 +32,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.actions.BuildToolsAction;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSetConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -45,6 +50,8 @@ import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
+import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -62,7 +69,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openidex.search.SearchInfo;
 import org.w3c.dom.Element;
@@ -84,6 +93,7 @@ final class MakeProject implements Project, AntProjectListener {
     private final Lookup lookup;
     private ConfigurationDescriptorProvider projectDescriptorProvider;
     private int projectType = -1;
+    private MakeProject thisMP;
     
     MakeProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -94,6 +104,7 @@ final class MakeProject implements Project, AntProjectListener {
         genFilesHelper = new GeneratedFilesHelper(helper);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
+        thisMP = this;
 
 	// Find the project type from project.xml
         Element data = helper.getPrimaryConfigurationData(true);
@@ -453,6 +464,67 @@ final class MakeProject implements Project, AntProjectListener {
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
+            ConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+            Configuration[] confs = projectDescriptor.getConfs().getConfs();
+            ArrayList<String> errs = new ArrayList();
+            String name = null;
+            String csname = null;
+            MakeConfiguration mconf = null;
+            
+            for (int i = 0; i < confs.length; i++) {
+		MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
+                CompilerSetConfiguration csconf = makeConfiguration.getCompilerSet();
+                if (csconf.isValid()) {
+                    name = csconf.getOldName();
+                } else {
+                    name = csconf.getOldName();
+                    csconf.setValid();
+                    CompilerSet cs = CompilerSet.getCompilerSet("", new String[0], name);
+                    CompilerSetManager.getDefault().add(cs);
+                    if (cs.isValid()) {
+                        name = cs.getName();
+                        csconf.setValue(name);
+                    } else {
+                        if (makeConfiguration.isDefault()) {
+                            mconf = makeConfiguration;
+                            csname = name;
+                        }
+                        String msg = NbBundle.getMessage(MakeProject.class, "ERR_MissingCompilerSet", name);
+                        if (!errs.contains(msg)) {
+                            errs.add(msg);
+                        }
+                    }
+                }
+	    }
+            if (!errs.isEmpty() && mconf != null) {
+                BuildToolsAction bt = (BuildToolsAction) SystemAction.get(BuildToolsAction.class);
+                bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingCompilerSets_Title")); // NOI18N
+                ToolsPanelModel model = new LocalToolsPanelModel();
+                model.setCompilerSetName(csname);
+                model.setGdbEnabled(false);
+                if (bt.initBuildTools(model, errs)) {
+                    mconf.getCompilerSet().setValue(model.getCompilerSetName());
+                    projectDescriptor.setModified();
+                    projectDescriptor.save();
+                    CompilerSetManager csm = CompilerSetManager.getDefault();
+                    ArrayList<CompilerSet> cslist = new ArrayList();
+                    for (CompilerSet cs : csm.getCompilerSets()) {
+                        if (!cs.isValid()) {
+                            cslist.add(cs);
+                        }
+                    }
+                    for (CompilerSet cs : cslist) {
+                        csm.remove(cs);
+                    }
+                } else {
+                    // GRP - FIXME
+                    // Close the project because the user cancelled validation. The following code
+                    // closes the project but does it before a pending action on the project and causes an
+                    // IllegalArgumentException when the project system tries to set the closed project as main.
+                    Project p = thisMP;
+                    OpenProjects.getDefault().close(new Project[] { thisMP });
+                }
+            }
         }
         
         protected void projectClosed() {

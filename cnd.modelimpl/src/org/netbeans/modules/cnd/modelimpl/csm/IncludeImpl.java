@@ -41,7 +41,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
     
     // only one of includeFileOLD/includeFileUID must be used (based on USE_REPOSITORY)   
     private final CsmFile includeFileOLD;
-    private final CsmUID<CsmFile> includeFileUID;
+    private CsmUID<CsmFile> includeFileUID;
     
     public IncludeImpl(String name, boolean system, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
         super(containingFile, inclPos);
@@ -109,7 +109,10 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
     private CsmFile _getIncludeFile() {
         if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             CsmFile file = UIDCsmConverter.UIDtoFile(includeFileUID);
-            assert (file != null || includeFileUID == null) : "no object for UID " + includeFileUID;
+            if (file == null && includeFileUID != null) {
+                // include file was removed
+                includeFileUID = null;
+            }
             return file;
         } else {
             return includeFileOLD;

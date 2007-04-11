@@ -26,6 +26,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
+import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -54,7 +55,8 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     }
     
     protected boolean isValidToken(Token token) {
-        if ((token != null) && (token.getTokenID() == CCTokenContext.IDENTIFIER)) {
+        if ((token != null) && (token.getTokenID() == CCTokenContext.IDENTIFIER ||
+                token.getTokenID() == CCTokenContext.OPERATOR)) {
             return true;
         } else {
             return false;
@@ -65,11 +67,30 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         if (!preJump(doc, target, offset, "opening-csm-element")) { //NOI18N
             return false;
         }
+        Token jumpToken = getJumpToken();
         CsmOffsetable item = null;
         CsmDeclaration declItem = null;
-        // try with code completion engine
-        CsmObject csmObject = CompletionUtilities.findItemAtCaretPos(target, offset);
-        
+        assert jumpToken != null;
+        CsmObject csmObject = null;
+        // support for overloaded operators
+        if (jumpToken.getTokenID() == CCTokenContext.OPERATOR) {
+            CsmFile file = CsmUtilities.getCsmFile(doc, true);
+            csmObject = file == null ? null : CsmOffsetResolver.findObject(file, offset);
+            if (CsmKindUtilities.isFunction(csmObject)) {
+                if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
+                    CsmFunction decl = ((CsmFunctionDefinition)csmObject).getDeclaration();
+                    if (decl != null) {
+                        csmObject = decl;
+                    }
+                }
+            } else {
+                csmObject = null;
+            }
+        }
+        if (csmObject == null) {
+            // try with code completion engine
+            csmObject = CompletionUtilities.findItemAtCaretPos(target, offset);
+        }
         if (CsmKindUtilities.isOffsetable(csmObject)) {
             item = (CsmOffsetable)csmObject;
             if (CsmKindUtilities.isFunctionDeclaration(csmObject)) {

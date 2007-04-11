@@ -130,7 +130,7 @@ public class CompletionUtilities {
                             CsmObject itm = getAssociatedObject(result.getData().get(0));
                             if (result.getData().size() > 1 && (CsmKindUtilities.isFunction(itm))) {
                                 // It is overloaded method, lets check for the right one
-                                int endOfMethod = findEndOfMethod(target, idFunBlk[ind]);
+                                int endOfMethod = findEndOfMethod(target, idFunBlk[ind]-1);
                                 if (endOfMethod > -1){
                                     CompletionQuery.Result resultx = query.query(target, endOfMethod, sup, true, false);
                                     if (resultx != null && resultx.getData().size() > 0) {
@@ -153,10 +153,10 @@ public class CompletionUtilities {
     private static CsmObject getAssociatedObject(Object item) {
         if (item instanceof CsmResultItem){
             CsmObject ret = (CsmObject) ((CsmResultItem)item).getAssociatedObject();
-            // for constructors return class
-            if (CsmKindUtilities.isConstructor(ret)) {
-                ret = ((CsmConstructor)ret).getContainingClass();
-            }
+//            // for constructors return class
+//            if (CsmKindUtilities.isConstructor(ret)) {
+//                ret = ((CsmConstructor)ret).getContainingClass();
+//            }
             if (ret != null) {
                 return ret;
             }

@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.Stack;
 import java.util.Vector;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -40,11 +41,13 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.VersionException;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSetConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.xml.sax.Attributes;
 
 /**
@@ -264,8 +267,16 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             confs.add(currentConf);
             currentConf = null;
         } else if (element.equals(COMPILER_SET_ELEMENT)) {
-            int set = new Integer(currentText).intValue();
-            ((MakeConfiguration)currentConf).getCompilerSet().setValue(set);
+	    if (descriptorVersion <= 33) {
+		currentText = currentText.equals("1") ? "GNU" : "Sun"; // NOI18N
+            }
+            ((MakeConfiguration) currentConf).getCompilerSet().setValue(currentText);
+        } else if (element.equals(C_REQUIRED_ELEMENT)) {
+            ((MakeConfiguration) currentConf).getCRequired().setValue(currentText.equals(TRUE_VALUE));
+        } else if (element.equals(CPP_REQUIRED_ELEMENT)) {
+            ((MakeConfiguration) currentConf).getCppRequired().setValue(currentText.equals(TRUE_VALUE));
+        } else if (element.equals(FORTRAN_REQUIRED_ELEMENT)) {
+            ((MakeConfiguration) currentConf).getFortranRequired().setValue(currentText.equals(TRUE_VALUE));
         } else if (element.equals(PLATFORM_ELEMENT)) {
             int set = new Integer(currentText).intValue();
             ((MakeConfiguration)currentConf).getPlatform().setValue(set);

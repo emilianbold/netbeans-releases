@@ -29,6 +29,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
 import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
@@ -42,8 +43,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocState;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.utils.APTMacroUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
-import org.netbeans.modules.cnd.apt.utils.FilePathCache;
-import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -51,8 +51,6 @@ import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
-import org.netbeans.modules.cnd.modelimpl.repository.KeyHolder;
-import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -88,6 +86,10 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         } else {
             this.globalNamespaceOLD = ns;
             this.globalNamespaceUID = null;
+        }
+        
+        if (TraceFlags.CLOSE_AFTER_PARSE) {
+            Terminator.create(this);
         }
     }
     
@@ -180,66 +182,11 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     public CsmDeclaration findDeclaration(String uniqueName) {
-        return _getDeclaration(uniqueName);
+        return declarationsSorage.getDeclaration(uniqueName);
     }
     
     public Collection<CsmOffsetableDeclaration> findDeclarations(String uniqueName) {
-        if (TraceFlags.USE_REPOSITORY) {
-            List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-            synchronized(declarations) {
-                Object o = declarations.get(uniqueName);
-                if (o instanceof CsmUID[]) {
-                    CsmUID[] uids = (CsmUID[])o;
-                    for(CsmUID uid:uids){
-                        list.add(uid);
-                    }
-                } else if (o instanceof CsmUID){
-                    list.add((CsmUID)o);
-                }
-            }
-            return UIDCsmConverter.UIDsToDeclarations(list);
-        } else {
-            List<CsmOffsetableDeclaration> list = new ArrayList<CsmOffsetableDeclaration>();
-            synchronized(declarationsOLD){
-                Object o = declarationsOLD.get(uniqueName);
-                if (o instanceof CsmOffsetableDeclaration[]) {
-                    CsmOffsetableDeclaration[] decls = (CsmOffsetableDeclaration[])o;
-                    for(CsmOffsetableDeclaration decl:decls){
-                        list.add(decl);
-                    }
-                } else if (o instanceof CsmOffsetableDeclaration){
-                    list.add((CsmOffsetableDeclaration)o);
-                }
-            }
-            return list;
-        }
-    }
-    
-    private CsmDeclaration _getDeclaration(String uniqueName) {
-        CsmDeclaration result;
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmDeclaration> uid = null;
-            synchronized(declarations) {
-                Object o = declarations.get(uniqueName);
-                if (o instanceof CsmUID[]) {
-                    uid = ((CsmUID[])o)[0];
-                } else if (o instanceof CsmUID){
-                    uid = (CsmUID)o;
-                }
-            }
-            result = UIDCsmConverter.UIDtoDeclaration(uid);
-            assert result != null || uid == null : "no declaration for UID " + uid;
-        } else {
-            synchronized(declarationsOLD){
-                Object o = declarationsOLD.get(uniqueName);
-                if (o instanceof CsmDeclaration[]) {
-                    result = ((CsmDeclaration[])o)[0];
-                } else {
-                    result = (CsmDeclaration)o;
-                }
-            }
-        }
-        return result;
+        return declarationsSorage.findDeclarations(uniqueName);
     }
     
     private CsmClassifier _getClassifier(String qualifiedName) {
@@ -272,79 +219,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         return false;
     }
     
-    private void _putDeclaration(CsmDeclaration decl) {
-        String name = decl.getUniqueName();
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
-            assert uid != null;
-            synchronized(declarations) {
-                Object o = declarations.get(name);
-                if (o instanceof CsmUID[]) {
-                    CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID[])o;
-                    boolean find = false;
-                    for(int i = 0; i < uids.length; i++){
-                        if (isSameFile(uids[i],uid)){
-                            uids[i] = uid;
-                            find = true;
-                            break;
-                        }
-                    }
-                    if (!find){
-                        CsmUID<CsmOffsetableDeclaration>[] res = new CsmUID[uids.length+1];
-                        res[0]=uid;
-                        for(int i = 0; i < uids.length; i++){
-                            res[i+1] = uids[i];
-                        }
-                        declarations.put(name, res);
-                    }
-                } else if (o instanceof CsmUID) {
-                    CsmUID<CsmOffsetableDeclaration> oldUid = (CsmUID<CsmOffsetableDeclaration>)o;
-                    if (isSameFile(oldUid,uid)) {
-                        declarations.put(name, uid);
-                    } else {
-                        CsmUID[] uids = new CsmUID[]{uid,oldUid};
-                        declarations.put(name, uids);
-                    }
-                } else {
-                    declarations.put(name, uid);
-                }
-            }
-        } else {
-            CsmOffsetableDeclaration newDecl = (CsmOffsetableDeclaration)decl;
-            synchronized(declarationsOLD){
-                Object o = declarationsOLD.get(name);
-                if (o instanceof CsmOffsetableDeclaration[]) {
-                    CsmOffsetableDeclaration[] decls = (CsmOffsetableDeclaration[])o;
-                    boolean find = false;
-                    for(int i = 0; i < decls.length; i++){
-                        if (isSameFile(decls[i], newDecl)){
-                            decls[i] = newDecl;
-                            find = true;
-                            break;
-                        }
-                    }
-                    if (!find){
-                        CsmOffsetableDeclaration[] res = new CsmOffsetableDeclaration[decls.length+1];
-                        res[0]=newDecl;
-                        for(int i = 0; i < decls.length; i++){
-                            res[i+1] = decls[i];
-                        }
-                        declarationsOLD.put(name, res);
-                    }
-                } else if (o instanceof CsmOffsetableDeclaration) {
-                    CsmOffsetableDeclaration oldDecl = (CsmOffsetableDeclaration)o;
-                    if (isSameFile(oldDecl, newDecl)) {
-                        declarationsOLD.put(name, decl);
-                    } else {
-                        CsmOffsetableDeclaration[] decls = new CsmOffsetableDeclaration[]{newDecl,oldDecl};
-                        declarationsOLD.put(name, decls);
-                    }
-                } else {
-                    declarationsOLD.put(name, newDecl);
-                }
-            }
-        }
-    }
     
 //    public void registerClassifier(ClassEnumBase ce) {
 //        classifiers.put(ce.getNestedNamespaceQualifiedName(), ce);
@@ -378,7 +252,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             return;
         }
         if (TraceFlags.CHECK_DECLARATIONS) {
-            CsmDeclaration old = _getDeclaration(decl.getUniqueName());
+            CsmDeclaration old = declarationsSorage.getDeclaration(decl.getUniqueName());
             if (old != null && old != decl) {
                 System.err.println("\n\nRegistering different declaration with the same name:" + decl.getUniqueName());
                 System.err.print("WAS:");
@@ -387,7 +261,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                 new CsmTracer().dumpModel(decl);
             }
         }
-        _putDeclaration(decl);
+        declarationsSorage.putDeclaration(decl);
         
         if( decl instanceof CsmClassifier ) {
             String qn = decl.getQualifiedName();
@@ -421,115 +295,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         if( decl instanceof CsmClassifier ) {
             _removeClassifier(decl);
         }
-        _removeDeclaration(decl);
+        declarationsSorage.removeDeclaration(decl);
     }
     
-    private boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmUID<CsmOffsetableDeclaration> uid2){
-        CsmOffsetableDeclaration decl1 = uid1.getObject();
-        CsmOffsetableDeclaration decl2 = uid2.getObject();
-        if (decl1 != null && decl2 != null){
-            return decl1.getContainingFile() == decl2.getContainingFile();
-        }
-        // assert?
-        return false;
-    }
-    
-    private boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmOffsetableDeclaration decl2){
-        CsmOffsetableDeclaration decl1 = uid1.getObject();
-        if (decl1 != null && decl2 != null){
-            return decl1.getContainingFile() == decl2.getContainingFile();
-        }
-        // assert?
-        return false;
-    }
-    
-    private boolean isSameFile(CsmOffsetableDeclaration decl1, CsmOffsetableDeclaration decl2){
-        if (decl1 != null && decl2 != null){
-            return decl1.getContainingFile() == decl2.getContainingFile();
-        }
-        // assert?
-        return false;
-    }
-    
-    private void _removeDeclaration(CsmDeclaration decl) {
-        if (TraceFlags.USE_REPOSITORY) {
-            String uniqueName = decl.getUniqueName();
-            synchronized(declarations){
-                Object o = declarations.get(uniqueName);
-                if (o instanceof CsmUID[]) {
-                    CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID<CsmOffsetableDeclaration>[])o;
-                    int size = uids.length;
-                    CsmUID<CsmOffsetableDeclaration> res = null;
-                    int k = size;
-                    for(int i = 0; i < size; i++){
-                        CsmUID<CsmOffsetableDeclaration> uid = uids[i];
-                        if (isSameFile(uid,(CsmOffsetableDeclaration)decl)){
-                            uids[i] = null;
-                            k--;
-                        } else {
-                            res = uid;
-                        }
-                    }
-                    if (k == 0) {
-                        declarations.remove(uniqueName);
-                    } else if (k == 1){
-                        declarations.put(uniqueName,res);
-                    } else {
-                        CsmUID<CsmOffsetableDeclaration>[] newUids = new CsmUID[k];
-                        k = 0;
-                        for(int i = 0; i < size; i++){
-                            CsmUID<CsmOffsetableDeclaration> uid = uids[i];
-                            if (uid != null){
-                                newUids[k]=uid;
-                                k++;
-                            }
-                        }
-                        declarations.put(uniqueName,newUids);
-                    }
-                } else if (o instanceof CsmUID){
-                    declarations.remove(uniqueName);
-                }
-            }
-        } else {
-            String uniqueName = decl.getUniqueName();
-            synchronized(declarationsOLD){
-                Object o = declarationsOLD.get(uniqueName);
-                if (o instanceof CsmOffsetableDeclaration[]) {
-                    CsmOffsetableDeclaration[] decls = (CsmOffsetableDeclaration[])o;
-                    int size = decls.length;
-                    CsmOffsetableDeclaration res = null;
-                    int k = size;
-                    for(int i = 0; i < size; i++){
-                        CsmOffsetableDeclaration d = decls[i];
-                        if (isSameFile(d,(CsmOffsetableDeclaration)decl)){
-                            decls[i] = null;
-                            k--;
-                        } else {
-                            res = d;
-                        }
-                    }
-                    if (k == 0) {
-                        declarationsOLD.remove(uniqueName);
-                    } else if (k == 1){
-                        declarationsOLD.put(uniqueName,res);
-                    } else {
-                        CsmOffsetableDeclaration[] newDecls = new CsmOffsetableDeclaration[k];
-                        k = 0;
-                        for(int i = 0; i < size; i++){
-                            CsmOffsetableDeclaration d = decls[i];
-                            if (d != null){
-                                newDecls[k]=d;
-                                k++;
-                            }
-                        }
-                        declarationsOLD.put(uniqueName,newDecls);
-                    }
-                } else if (o instanceof CsmOffsetableDeclaration){
-                    declarationsOLD.remove(uniqueName);
-                }
-            }
-        }
-    }
     
     private void _removeClassifier(CsmDeclaration decl) {
         if (TraceFlags.USE_REPOSITORY) {
@@ -626,10 +394,20 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             }
         }
         long time = System.currentTimeMillis();
-        
+        final Set<NativeFileItem> removedFiles = Collections.synchronizedSet(new HashSet<NativeFileItem>());
+        NativeProjectItemsListener projectItemListener = new NativeProjectItemsListener() {
+            public void fileAdded(NativeFileItem fileItem) {}
+            public void filesAdded(List<NativeFileItem> fileItems) {}
+            public void fileRemoved(NativeFileItem fileItem) { removedFiles.add(fileItem); }
+            public void filesRemoved(List<NativeFileItem> fileItems) {removedFiles.addAll(fileItems);}
+            public void fileRenamed(String oldPath, NativeFileItem newFileIetm){}
+            public void filePropertiesChanged(NativeFileItem fileItem) {}
+            public void filesPropertiesChanged(List<NativeFileItem> fileItems) {}
+            public void filesPropertiesChanged() {}
+        };
+        nativeProject.addProjectItemsListener(projectItemListener);
         List<NativeFileItem> sources = nativeProject.getAllSourceFiles();
         List<NativeFileItem> headers = nativeProject.getAllHeaderFiles();
-        
         
         if( TraceFlags.TIMING ) {
             time = System.currentTimeMillis() - time;
@@ -650,6 +428,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         }
         
         for( NativeFileItem nativeFileItem : sources ) {
+            if (removedFiles.contains(nativeFileItem)){
+                continue;
+            }
             if( ProjectBase.this.isProjectDisposed ) {
                 if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ProjevtBase.ensureFilesCreated interrupted");
                 return;
@@ -660,6 +441,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         }
         
         for( NativeFileItem nativeFileItem : headers ) {
+            if (removedFiles.contains(nativeFileItem)){
+                continue;
+            }
             if( ProjectBase.this.isProjectDisposed ) {
                 if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ProjevtBase.ensureFilesCreated interrupted");
                 return;
@@ -668,6 +452,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             if( TraceFlags.DEBUG ) ModelSupport.instance().trace(nativeFileItem);
             createIfNeed(nativeFileItem, false);
         }
+        nativeProject.removeProjectItemsListener(projectItemListener);
         // in fact if visitor used for parsing => visitor will parse all included files
         // recursively starting from current source file
         // so, when we visit headers, they should not be reparsed if already were parsed
@@ -690,7 +475,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     
     protected APTPreprocState createDefaultPreprocState(File file) {
-        return new APTPreprocStateImpl(new APTFileMacroMap(), new APTIncludeHandlerImpl(getFileKey(file, true)), false);
+        return new APTPreprocStateImpl(new APTFileMacroMap(),
+                new APTIncludeHandlerImpl(FileContainer.getFileKey(file, true)), false);
     }
     
     protected APTPreprocState getDefaultPreprocState(NativeFileItem nativeFile) {
@@ -708,7 +494,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         List userIncludePaths = nativeFile.getUserIncludePaths();
         List sysIncludePaths = nativeFile.getSystemIncludePaths();
         sysIncludePaths = sysAPTData.getIncludes(sysIncludePaths.toString(), sysIncludePaths);
-        return new APTIncludeHandlerImpl(getFileKey(nativeFile.getFile(), true), sysIncludePaths, userIncludePaths);
+        return new APTIncludeHandlerImpl(FileContainer.getFileKey(nativeFile.getFile(), true),
+                sysIncludePaths, userIncludePaths);
     }
     
     private APTMacroMap getMacroMap(NativeFileItem nativeFile) {
@@ -749,43 +536,33 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     /**
      * This method for testing purpose only. Used from TraceModel
      */
-    public CsmFile testAPTParseFile(String file, APTPreprocState preprocState) {
-        APTPreprocState.State state = (APTPreprocState.State) getPreprocStateState(new File(file));
-        boolean firsTime = (state == null);
-        if( firsTime ) {
-            // remember the first callback state
-            putPreprocStateState(new File(file), preprocState.getState());
+    public CsmFile testAPTParseFile(String path, APTPreprocState preprocState) {
+        File file = new File(path);
+        APTPreprocState.State state = getPreprocStateState(file);
+        if( state == null ) {
+            // remember the first state
+            return findFile(file, FileImpl.UNDEFINED_FILE, preprocState, true, preprocState.getState());
         } else {
-            preprocState = restorePreprocState(new File(file), preprocState, state);
+            preprocState = restorePreprocState(file, preprocState, state);
+            return findFile(file, FileImpl.UNDEFINED_FILE, preprocState, true, null);
         }
-        CsmFile csmFile = findFile(file, FileImpl.UNDEFINED_FILE, preprocState, true);
-        return csmFile;
     }
     
     protected void putPreprocStateState(File file, APTPreprocState.State state) {
-        String path = getFileKey(file, true);
-        filesHandlers.put(path, state);
-        if (TRACE_PP_STATE_OUT) {
-            System.err.println("\nPut state for file" + path + "\n");
-            System.err.println(state);
-        }
+        fileContainer.putPreprocStateState(file, state);
     }
     
     protected APTPreprocState.State getPreprocStateState(File file) {
-        String path = getFileKey(file, false);
-        return filesHandlers.get(path);
+        return fileContainer.getPreprocStateState(file);
     }
     
     public void invalidateFiles() {
-        filesHandlers.clear();
+        fileContainer.clearState();
         for (Iterator it = getLibraries().iterator(); it.hasNext();) {
             ProjectBase lib = (ProjectBase) it.next();
             lib.invalidateFiles();
         }
     }
-    
-    public static final int GATHERING_MACROS    = 0;
-    public static final int GATHERING_TOKENS    = 1;
     
     /**
      * called to inform that file was #included from another file with specific preprocState
@@ -797,7 +574,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
      *          false if file was included before
      */
     public FileImpl onFileIncluded(String file, APTPreprocState preprocState, int mode) throws IOException {
-        FileImpl csmFile = (FileImpl)findFile(file, FileImpl.HEADER_FILE, preprocState, false);
+        FileImpl csmFile = findFile(new File(file), FileImpl.HEADER_FILE, preprocState, false, null);
         
         APTPreprocState.State state = updateFileStateIfNeeded(csmFile, preprocState);
         
@@ -877,20 +654,22 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     protected abstract void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile);
-    protected abstract FileImpl findFile(File file, int fileType, APTPreprocState preprocState, boolean scheduleParseIfNeed);
+    protected abstract FileImpl findFile(File file, int fileType, APTPreprocState preprocState, boolean scheduleParseIfNeed, APTPreprocState.State initialState);
     public abstract void onFileAdded(NativeFileItem nativeFile);
-    public abstract void onFileRemoved(NativeFileItem nativeFile);
+    //public abstract void onFileRemoved(NativeFileItem nativeFile);
+    public abstract void onFileRemoved(File nativeFile);
     public abstract void onFilePropertyChanged(NativeFileItem nativeFile);
     protected abstract void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocState.State state);
     
     public CsmFile findFile(String absolutePath) {
+        File file = new File(absolutePath);
         APTPreprocState preprocState = null;
-        if (getPreprocStateState(new File(absolutePath)) == null){
+        if (getPreprocStateState(file) == null){
             // Try to find native file
             if (getPlatformProject() instanceof NativeProject){
                 NativeProject prj = (NativeProject)getPlatformProject();
                 if (prj != null){
-                    NativeFileItem nativeFile = prj.findFileItem(new File(absolutePath));
+                    NativeFileItem nativeFile = prj.findFileItem(file);
                     if( nativeFile == null ) {
                         // if not belong to NB project => not our file
                         return null;
@@ -902,67 +681,23 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                     preprocState = getDefaultPreprocState(nativeFile);
                 }
             }
+            if (preprocState != null) {
+                return findFile(file, FileImpl.UNDEFINED_FILE, preprocState, true, preprocState.getState());
+            }
         }
-        return findFile(absolutePath, FileImpl.UNDEFINED_FILE, preprocState, true);
-    }
-    
-    public FileImpl findFile(String absolutePath, int fileType, APTPreprocState preprocState, boolean scheduleParseIfNeed) {
-        return findFile(new File(absolutePath), fileType, preprocState, scheduleParseIfNeed);
-    }
-    
-    protected Object getFilesLock() {
-        return TraceFlags.USE_REPOSITORY ? files : filesOLD;
+        return findFile(file, FileImpl.UNDEFINED_FILE, preprocState, true, null);
     }
     
     public FileImpl getFile(File file) {
-        String path = getFileKey(file, false);
-        if (TraceFlags.USE_REPOSITORY) {
-            // i do not know why but next 3 lines miraculous remove assertion in following commented 2 lines
-            CsmUID<CsmFile> fileUID = files.get(path);
-            FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(fileUID);
-            assert (impl != null || fileUID == null) : "no file for UID " + fileUID;
-            //FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(files.get(path));
-            //assert (impl != null || files.get(path) == null) : "no file for UID " + files.get(path);
-            return impl;
-        } else {
-            return (FileImpl) filesOLD.get(path);
-        }
+        return fileContainer.getFile(file);
     }
     
     protected void removeFile(File file) {
-        String path = getFileKey(file, false);
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmFile> uid = files.remove(path);
-            // clean repository
-            RepositoryUtils.remove(uid);
-        } else {
-            filesOLD.remove(path);
-        }
+        fileContainer.removeFile(file);
     }
     
-    protected void putFile(File file, FileImpl impl) {
-        String path = getFileKey(file, true);
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmFile> uid = RepositoryUtils.put(impl);
-            files.put(path, uid);
-        } else {
-            filesOLD.put(path, impl);
-        }
-        
-    }
-    
-    private String getFileKey(File file, boolean sharedText) {
-        String key = null;
-        if (false && TraceFlags.USE_CANONICAL_PATH) {
-            try {
-                key = file.getCanonicalPath();
-            } catch (IOException ex) {
-                key = file.getAbsolutePath();
-            }
-        } else {
-            key = file.getAbsolutePath();
-        }
-        return sharedText ? FilePathCache.getString(key) : key;
+    protected void putFile(File file, FileImpl impl, APTPreprocState.State state) {
+        fileContainer.putFile(file,impl, state);
     }
     
     public Collection<CsmProject> getLibraries() {
@@ -1013,8 +748,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         // and does not release it upon project closure
         _clearNamespaces();
         _clearClassifiers();
-        _clearDeclarations();
-        filesHandlers.clear();
+        declarationsSorage.clearDeclarations();
         sysAPTData = new APTSystemStorage();
         unresolved = null;
         uid = null;
@@ -1028,46 +762,23 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         }
     }
     
-    private void _clearDeclarations() {
-        if (TraceFlags.USE_REPOSITORY) {
-            //List<CsmUID<CsmDeclaration>> uids = new ArrayList<CsmUID<CsmDeclaration>>(declarations.values());
-            List<Object> uids = new ArrayList<Object>(declarations.values());
-        } else {
-            declarationsOLD.clear();
-        }
-    }
-    
     private void disposeFiles() {
-        if (TraceFlags.USE_REPOSITORY) {
-            List<CsmUID<CsmFile>> uids;
-            synchronized (getFilesLock()) {
-                uids = new ArrayList<CsmUID<CsmFile>>(files.values());
-                files.clear();
+        List<FileImpl> list;
+        synchronized (fileContainer) {
+            list = fileContainer.getFiles();
+            fileContainer.clear();
+        }
+        for (FileImpl file : list){
+            file.onProjectDispose();
+            if (TraceFlags.USE_AST_CACHE) {
+                CacheManager.getInstance().invalidate(file);
+            } else {
+                APTDriver.getInstance().invalidateAPT(file.getBuffer());
             }
-            for (CsmUID<CsmFile> uid : uids) {
-                FileImpl file = (FileImpl) UIDCsmConverter.UIDtoFile(uid);
-                assert (file != null);
-                if (TraceFlags.USE_AST_CACHE) {
-                    CacheManager.getInstance().invalidate(file);
-                } else {
-                    APTDriver.getInstance().invalidateAPT(file.getBuffer());
-                }
-                RepositoryUtils.remove(uid);
-            }
-        } else {
-            List<FileImpl> list;
-            synchronized (getFilesLock()) {
-                list = new ArrayList<FileImpl>(filesOLD.values());
-                filesOLD.clear();
-            }
-            for (Iterator<FileImpl> it = list.iterator(); it.hasNext();) {
-                FileImpl file = it.next();
-                if (TraceFlags.USE_AST_CACHE) {
-                    CacheManager.getInstance().invalidate(file);
-                } else {
-                    APTDriver.getInstance().invalidateAPT(file.getBuffer());
-                }
-            }
+// don't remove files from repository on project closure
+//            if (TraceFlags.USE_REPOSITORY) {
+//                RepositoryUtils.remove(file.getUID());
+//            }
         }
     }
     
@@ -1164,9 +875,11 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         synchronized( waitParseLock ) {
             waitParseLock.notifyAll();
         }
-        for (Iterator it = getFileList().iterator(); it.hasNext();) {
-            FileImpl file= (FileImpl) it.next();
-            file.fixFakeRegistrations();
+        if( ! isProjectDisposed ) {
+            for (Iterator it = getFileList().iterator(); it.hasNext();) {
+                FileImpl file= (FileImpl) it.next();
+                file.fixFakeRegistrations();
+            }
         }
     }
     
@@ -1176,18 +889,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
      * and it is used intensively
      */
     public Collection<FileImpl> getFileList() {
-        if (TraceFlags.USE_REPOSITORY) {
-            List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>(files.values());
-            List<FileImpl> out = new ArrayList<FileImpl>(uids.size());
-            for (CsmUID<CsmFile> uid : uids) {
-                FileImpl file = (FileImpl) UIDCsmConverter.UIDtoFile(uid);
-                assert (file != null);
-                out.add(file);
-            }
-            return out;
-        } else {
-            return new ArrayList<FileImpl>(filesOLD.values());
-        }
+        return fileContainer.getFiles();
     }
     
     public Collection<CsmFile> getSourceFiles() {
@@ -1212,82 +914,99 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     public long getMemoryUsageEstimation() {
         //TODO: replace with some smart algorythm
-        if (TraceFlags.USE_REPOSITORY) {
-            return files.size();
-        } else {
-            return filesOLD.size();
-        }
+        return fileContainer.getSize();
     }
     
     public String toString() {
         return getName() + ' ' + getClass().getName() + " @" + hashCode(); // NOI18N
     }
     
-    private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
-    public static final boolean REMEMBER_RESTORED = TraceFlags.CLEAN_MACROS_AFTER_PARSE && (DebugUtils.getBoolean("cnd.remember.restored", false) || TRACE_PP_STATE_OUT);
-    
-    /*package*/final void cleanPreprocStateAfterParse(FileImpl fileImpl) {
+    /*package*/final void cleanPreprocStateAfterParse(FileImpl fileImpl, APTPreprocState.State state2Clean) {
         if (TraceFlags.CLEAN_MACROS_AFTER_PARSE) {
-            APTPreprocState.State state = (APTPreprocState.State) getPreprocStateState(fileImpl.getBuffer().getFile());
-            if (TRACE_PP_STATE_OUT) System.err.println("was " + state);
-            if (state != null && !state.isCleaned()) {
-                state.cleanExceptIncludeStack();
+            File file = fileImpl.getBuffer().getFile();
+            Object stateLock = fileContainer.getLock(file);
+            synchronized (stateLock) {
+                APTPreprocState.State rememberedState = (APTPreprocState.State) getPreprocStateState(file);
+                if (TRACE_PP_STATE_OUT) System.err.println("was " + rememberedState);
+                if (rememberedState != null) {
+                    if (state2Clean.equals(rememberedState)) {
+                        if (!rememberedState.isCleaned()) {
+                            if (TRACE_PP_STATE_OUT) System.err.println("cleaning for " + file.getAbsolutePath());
+                            rememberedState.cleanExceptIncludeStack();
+                        } else {
+                            if (TRACE_PP_STATE_OUT) System.err.println("not need cleaning for " + file.getAbsolutePath());
+                        }
+                    } else {
+                        if (TRACE_PP_STATE_OUT) System.err.println("don't need to clean replaced state for " + file.getAbsolutePath());
+                    }
+                }
+                if (TRACE_PP_STATE_OUT) System.err.println("after cleaning " + rememberedState);
             }
-            if (TRACE_PP_STATE_OUT) System.err.println("after cleaning " + state);
         }
     }
     
     private APTPreprocState restorePreprocState(File interestedFile, APTPreprocState preprocState, APTPreprocState.State state) {
         if (state != null) {
-            if (state.isCleaned()) {
-                // walk through include stack to restore preproc information
-                Stack reverseInclStack = state.cleanIncludeStack();
-                // we need to reverse includes stack
-                assert (reverseInclStack != null && !reverseInclStack.empty());
-                Stack inclStack = new Stack();
-                do {
-                    inclStack.push(reverseInclStack.pop());
-                } while (!reverseInclStack.empty());
-                
-                preprocState.setState(state);
-                if (TRACE_PP_STATE_OUT) System.err.println("before restoring " + preprocState); // NOI18N
-                APTIncludeHandler inclHanlder = preprocState.getIncludeHandler();
-                assert inclHanlder != null;
-                // start from the first file, then use include stack
-                String startFile = inclHanlder.getStartFile();
-                FileImpl csmFile = getFile(new File(startFile));
-                assert csmFile != null;
-                APTFile aptLight = null;
-                try {
-                    aptLight = getAPTLight(csmFile);
-                } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
-                }
-                if (aptLight != null) {
-                    // for testing remember restored file
-                    long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
-                    int stackSize = inclStack.size();
-                    APTWalker walker = new APTRestorePreprocStateWalker(aptLight, csmFile, preprocState, inclStack, getFileKey(interestedFile, false));
-                    walker.visit();
-                    if (REMEMBER_RESTORED) {
-                        if (testRestoredFiles == null) {
-                            testRestoredFiles = new ArrayList();
-                        }
-                        FileImpl interestedFileImpl = getFile(interestedFile);
-                        assert interestedFileImpl != null;
-                        String msg = interestedFile.getAbsolutePath() +
-                                " [" + (interestedFileImpl.isHeaderFile() ? "H" : interestedFileImpl.isSourceFile() ? "S" : "U") + "]"; // NOI18N
-                        time = System.currentTimeMillis() - time;
-                        msg = msg + " within " + time + "ms" + " stack " + stackSize + " elems"; // NOI18N
-                        System.err.println("#" + testRestoredFiles.size() + " restored: " + msg); // NOI18N
-                        testRestoredFiles.add(msg);
+            Object stateLock = fileContainer.getLock(interestedFile);
+            synchronized (stateLock) {
+                if (state.isCleaned()) {
+                    if (TRACE_PP_STATE_OUT) System.err.println("restoring for " + interestedFile);
+                    // walk through include stack to restore preproc information
+                    Stack reverseInclStack = state.cleanIncludeStack();
+                    // we need to reverse includes stack
+                    assert (reverseInclStack != null && !reverseInclStack.empty()) : "state of stack is " + reverseInclStack;
+                    Stack inclStack = new Stack();
+                    do {
+                        inclStack.push(reverseInclStack.pop());
+                    } while (!reverseInclStack.empty());
+                    
+                    APTPreprocState.State oldState = preprocState.getState();
+                    preprocState.setState(state);
+                    if (TRACE_PP_STATE_OUT) System.err.println("before restoring " + preprocState); // NOI18N
+                    APTIncludeHandler inclHanlder = preprocState.getIncludeHandler();
+                    assert inclHanlder != null;
+                    // start from the first file, then use include stack
+                    String startFile = inclHanlder.getStartFile();
+                    FileImpl csmFile = getFile(new File(startFile));
+                    if (csmFile == null) {
+                        preprocState.setState(oldState);
+                        return preprocState;
                     }
-                    if (TRACE_PP_STATE_OUT) System.err.println("after restoring " + preprocState); // NOI18N
-                    APTPreprocState.State fullState = preprocState.getState();
-                    putPreprocStateState(interestedFile, fullState);
+                    assert csmFile != null;
+                    APTFile aptLight = null;
+                    try {
+                        aptLight = getAPTLight(csmFile);
+                    } catch (IOException ex) {
+                        ex.printStackTrace(System.err);
+                    }
+                    if (aptLight != null) {
+                        // for testing remember restored file
+                        long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
+                        int stackSize = inclStack.size();
+                        APTWalker walker = new APTRestorePreprocStateWalker(aptLight, csmFile,
+                                preprocState, inclStack, FileContainer.getFileKey(interestedFile, false));
+                        walker.visit();
+                        if (REMEMBER_RESTORED) {
+                            if (testRestoredFiles == null) {
+                                testRestoredFiles = new ArrayList();
+                            }
+                            FileImpl interestedFileImpl = getFile(interestedFile);
+                            assert interestedFileImpl != null;
+                            String msg = interestedFile.getAbsolutePath() +
+                                    " [" + (interestedFileImpl.isHeaderFile() ? "H" : interestedFileImpl.isSourceFile() ? "S" : "U") + "]"; // NOI18N
+                            time = System.currentTimeMillis() - time;
+                            msg = msg + " within " + time + "ms" + " stack " + stackSize + " elems"; // NOI18N
+                            System.err.println("#" + testRestoredFiles.size() + " restored: " + msg); // NOI18N
+                            testRestoredFiles.add(msg);
+                        }
+                        if (TRACE_PP_STATE_OUT) System.err.println("after restoring " + preprocState); // NOI18N
+                        APTPreprocState.State fullState = preprocState.getState();
+                        putPreprocStateState(interestedFile, fullState);
+                    }
+                } else {
+                    if (TRACE_PP_STATE_OUT) System.err.println("retrurn without restoring for " + interestedFile);
+                    preprocState.setState(state);
                 }
-            } else {
-                preprocState.setState(state);
             }
         }
         return preprocState;
@@ -1319,19 +1038,31 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         }
         
         public List getUserMacroDefinitions() {
-            return project.getUserMacroDefinitions();
+            if (project != null) {
+                return project.getUserMacroDefinitions();
+            }
+            return Collections.EMPTY_LIST;
         }
         
         public List getUserIncludePaths() {
-            return project.getUserIncludePaths();
+            if (project != null) {
+                return project.getUserIncludePaths();
+            }
+            return Collections.EMPTY_LIST;
         }
         
         public List getSystemMacroDefinitions() {
-            return project.getSystemMacroDefinitions();
+            if (project != null) {
+                return project.getSystemMacroDefinitions();
+            }
+            return Collections.EMPTY_LIST;
         }
         
         public List getSystemIncludePaths() {
-            return project.getSystemIncludePaths();
+            if (project != null) {
+                return project.getSystemIncludePaths();
+            }
+            return Collections.EMPTY_LIST;
         }
         
         public NativeProject getNativeProject() {
@@ -1388,31 +1119,26 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     private Map<String, NamespaceImpl> namespacesOLD = Collections.synchronizedMap(new HashMap<String, NamespaceImpl>());
     private Map<String, CsmUID<CsmNamespace>> namespaces = Collections.synchronizedMap(new HashMap<String, CsmUID<CsmNamespace>>());
     
-    // only one of filesOLD/fileUIDs must be used (based on USE_REPOSITORY)
-    private Map<String, FileImpl> filesOLD = Collections.synchronizedMap(new HashMap<String, FileImpl>());
-    private Map<String, CsmUID<CsmFile>> files = Collections.synchronizedMap(new HashMap<String, CsmUID<CsmFile>>());
-    
     private Map/*<String, ClassImpl>*/ classifiersOLD = Collections.synchronizedMap(new HashMap(/*<String, ClassImpl>*/));
     private Map<String, CsmUID<CsmClassifier>> classifiers = Collections.synchronizedMap(new HashMap<String, CsmUID<CsmClassifier>>());
     
-    private Map<String, Object> declarationsOLD = Collections.synchronizedMap(new HashMap<String, Object>());
-    //private Map<String, CsmUID<CsmDeclaration>> declarations = Collections.synchronizedMap(new HashMap<String, CsmUID<CsmDeclaration>>());
-    private Map<String, Object> declarations = Collections.synchronizedMap(new HashMap<String, Object>());
+    private DeclarationContainer declarationsSorage = new DeclarationContainer();
     
     // collection of sharable system macros and system includes
     private APTSystemStorage sysAPTData = new APTSystemStorage();
     
     private Object namespaceLock = new String("namespaceLock in Projectbase "+hashCode()); // NOI18N
     
-    protected Map<String, APTPreprocState.State> filesHandlers = Collections.synchronizedMap(new HashMap<String, APTPreprocState.State>());
+    protected FileContainer fileContainer = new FileContainer();
     
     //private NamespaceImpl fakeNamespace;
     
     // test variables.
-    protected static final boolean NO_REPARSE_INCLUDE = Boolean.getBoolean("cnd.modelimpl.no.reparse.include");
-    protected static final boolean LEX_NEXT_INCLUDES = Boolean.getBoolean("cnd.modelimpl.lex.next.include");
-    protected static final boolean ONLY_LEX_INCLUDES = Boolean.getBoolean("cnd.modelimpl.lex.include");
     protected static final boolean ONLY_LEX_SYS_INCLUDES = Boolean.getBoolean("cnd.modelimpl.lex.sys.include");
+    private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
+    private static final boolean REMEMBER_RESTORED = TraceFlags.CLEAN_MACROS_AFTER_PARSE && (DebugUtils.getBoolean("cnd.remember.restored", false) || TRACE_PP_STATE_OUT);
+    public static final int GATHERING_MACROS    = 0;
+    public static final int GATHERING_TOKENS    = 1;
     
     ////////////////////////////////////////////////////////////////////////////
     /**
@@ -1436,10 +1162,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         aStream.writeUTF(this.name);
         aFactory.writeUID(this.globalNamespaceUID, aStream);
         aFactory.writeStringToUIDMap(this.namespaces, aStream, true);
-        aFactory.writeStringToUIDMap(this.files, aStream, true);
+        fileContainer.write(aStream);
         aFactory.writeStringToUIDMap(this.classifiers, aStream, true);
-        aFactory.writeStringToArrayUIDMap(this.declarations, aStream, true);
-        PersistentUtils.writeStringToStateMap(this.filesHandlers, aStream);
+        declarationsSorage.write(aStream);
     }
     
     protected ProjectBase(DataInput aStream) throws IOException {
@@ -1451,10 +1176,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         assert this.name != null;
         this.globalNamespaceUID = aFactory.readUID(aStream);
         aFactory.readStringToUIDMap(this.namespaces, aStream, QualifiedNameCache.getManager());
-        aFactory.readStringToUIDMap(this.files, aStream, FilePathCache.getManager());
+        fileContainer.read(aStream);
         aFactory.readStringToUIDMap(this.classifiers, aStream, QualifiedNameCache.getManager());
-        aFactory.readStringToArrayUIDMap(this.declarations, aStream, TextCache.getManager());
-        PersistentUtils.readStringToStateMap(this.filesHandlers, aStream);
+        declarationsSorage.read(aStream);
         
         this.model = (ModelImpl) CsmModelAccessor.getModel();
         

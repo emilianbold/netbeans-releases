@@ -19,6 +19,11 @@
 
 package org.netbeans.modules.cnd.modelutil;
 
+import java.util.Iterator;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -591,6 +596,65 @@ public class CsmUtilities {
         }  
         return buf.toString();
     }    
+    
+    //-------------------------------------------------------------------------
+    
+    /**
+     * Gets function signature in the form that is shown to client
+     * @param fun function, which signature should be returned
+     */
+    public static String getSignature(CsmFunction fun) {
+	return getSignature(fun, true);
+    }
+    
+    /**
+     * Gets function signature in the form that is shown to client
+     * @param fun function, which signature should be returned
+     * @param showParamNames determines whether to include parameter names in signature
+     */
+    public static String getSignature(CsmFunction fun, boolean showParamNames) {
+        StringBuilder sb = new StringBuilder(fun.getName());
+        sb.append('(');
+        boolean addComma = false;
+        for( Iterator iter = fun.getParameters().iterator(); iter.hasNext(); ) {
+            CsmParameter par = (CsmParameter) iter.next();
+            if( addComma ) {
+                sb.append(", "); // NOI18N
+            } else {
+                addComma = true;
+            }
+            //sb.append(par.getText());
+            CsmType type = par.getType();
+            if( type != null ) {
+                sb.append(type.getText());
+                //sb.append(' ');
+            } else if (par.isVarArgs()){
+                sb.append("..."); // NOI18N
+            }
+            if (showParamNames && !par.isVarArgs()) {
+                String name = par.getName();
+                if (name != null && name.length() >0) {
+                    sb.append(' ');
+                    sb.append(name);
+                }
+            }
+        }
+        
+        sb.append(')');
+        if (CsmKindUtilities.isMethod(fun) && fun instanceof CsmMethod){
+            if( ((CsmMethod) fun).isConst() ) {
+                sb.append(" const");
+            }
+        }
+	// TODO: as soon as we extract APTStringManager into a separate module,
+	// use string manager here.
+	// For now it's client responsibility to do this
+        //return NameCache.getString(sb.toString());
+	return sb.toString();
+    }
+    
+    //-------------------------------------------------------------------------
+    
     
 //    public static List/*<CsmDeclaration*/ findFunctionLocalVariables(BaseDocument doc, int offset) {
 //        CsmFile file = CsmUtilities.getCsmFile(doc);

@@ -20,70 +20,87 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.Name;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
 public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
 
     private static final long serialVersionUID = 4L;
-
-    int currentIndex;
-    PanelConfigureProject basicPanel;
+    
+    private transient int index = 0;
+    private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
 
     static Object create() {
         return new MakeSampleProjectIterator();
     }
     
-    public MakeSampleProjectIterator () {
+    public MakeSampleProjectIterator() {
     }
     
-    public void addChangeListener (javax.swing.event.ChangeListener changeListener) {
+    public void addChangeListener(ChangeListener changeListener) {
     }
     
-    public void removeChangeListener (javax.swing.event.ChangeListener changeListener) {
+    public void removeChangeListener(ChangeListener changeListener) {
     }
     
-    public org.openide.WizardDescriptor.Panel current () {
-        return basicPanel;
+    public WizardDescriptor.Panel current() {
+        return panels[index];
     }
     
-    public boolean hasNext () {
-        return false;
+    public boolean hasNext() {
+        return index < panels.length - 1;
     }
     
-    public boolean hasPrevious () {
-        return false;
+    public boolean hasPrevious() {
+        return index > 0;
     }
     
-    public void initialize (org.openide.loaders.TemplateWizard templateWizard) {
+    public void initialize(TemplateWizard templateWizard) {
+        int i = 0;
         this.wiz = templateWizard;
         String name = templateWizard.getTemplate().getNodeDelegate().getDisplayName();
         if (name != null) {
             name = name.replaceAll(" ", ""); // NOI18N
         }
-        templateWizard.putProperty ("name", name); // NOI18N
+        templateWizard.putProperty("name", name); // NOI18N
 	String wizardTitle = getString("SAMPLE_PROJECT") + name; // NOI18N
 	String wizardTitleACSD = getString("SAMPLE_PROJECT_ACSD"); // NOI18N
-        basicPanel = new PanelConfigureProject(name, -1, wizardTitle, wizardTitleACSD, false);
-        currentIndex = 0;
-        updateStepsList ();
+        
+        if (CompilerSetManager.getDefault().getCompilerSet(0).getName() == CompilerSet.None) {
+            panels = new WizardDescriptor.Panel[2];
+            panels[i++] = new BuildToolsDescriptorPanel();
+        } else {
+            panels = new WizardDescriptor.Panel[1];
+        }
+        panels[i] = new PanelConfigureProject(name, -1, wizardTitle, wizardTitleACSD, false);
+        String[] steps = new String[panels.length];
+        for (i = 0; i < panels.length; i++) {
+            JComponent jc = (JComponent) panels[i].getComponent();
+            steps[i] = ((Name) panels[i]).getName();
+            jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+            jc.putClientProperty ("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+        };
     }
     
-    public void uninitialize (org.openide.loaders.TemplateWizard templateWizard) {
-        basicPanel = null;
-        currentIndex = -1;
+    public void uninitialize(org.openide.loaders.TemplateWizard templateWizard) {
+        panels = null;
+        index = -1;
         this.wiz.putProperty("projdir",null); // NOI18N
         this.wiz.putProperty("name",null); // NOI18N
     }
     
-    public Set instantiate (org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
+    public Set instantiate(TemplateWizard templateWizard) throws IOException {
         File projectLocation = (File) wiz.getProperty("projdir"); // NOI18N
         String name = (String) wiz.getProperty("name"); // NOI18N
         return MakeSampleProjectGenerator.createProjectFromTemplate(templateWizard.getTemplate().getPrimaryFile(), projectLocation, name);
@@ -94,24 +111,17 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
     }
     
     public void nextPanel() {
-        throw new NoSuchElementException ();
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
+        index++;
     }
     
     public void previousPanel() {
-        throw new NoSuchElementException ();
-    }
-    
-    void updateStepsList() {
-        JComponent component = (JComponent) current ().getComponent ();
-        if (component == null) {
-            return;
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
         }
-        String[] list;
-        list = new String[] {
-            NbBundle.getMessage(PanelConfigureProject.class, "LAB_ConfigureProject"), // NOI18N
-        };
-        component.putClientProperty ("WizardPanel_contentData", list); // NOI18N
-        component.putClientProperty ("WizardPanel_contentSelectedIndex", new Integer (currentIndex)); // NOI18N
+        index--;
     }
 
     /** Look up i18n strings here */

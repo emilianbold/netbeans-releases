@@ -49,7 +49,7 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
         configurationComboBox.setSelectedIndex(2);
         addListeners();
     }
-
+    
     private void addListeners(){
         DocumentListener documentListener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
@@ -66,7 +66,7 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
         };
         librariesTextField.getDocument().addDocumentListener(documentListener);
     }
-
+    
     private void update(DocumentEvent e) {
         wizard.stateChanged(null);
     }
@@ -183,7 +183,7 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
         add(discoveryPanel, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
-
+    
     private void configurationComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_configurationComboBoxItemStateChanged
         Object item = evt.getItem();
         if (item instanceof ConfigutationItem) {
@@ -219,6 +219,16 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
     }
     
     void read(final DiscoveryDescriptor wizardDescriptor) {
+        String providerID = wizardDescriptor.getProviderID();
+        if ("dwarf-executable".equals(providerID)){ // NOI18N
+            additionalLibrariesButton.setVisible(true);
+            librariesLabel.setVisible(true);
+            librariesTextField.setVisible(true);
+        } else if ("dwarf-folder".equals(providerID)){ // NOI18N
+            additionalLibrariesButton.setVisible(false);
+            librariesLabel.setVisible(false);
+            librariesTextField.setVisible(false);
+        }
     }
     
     void store(DiscoveryDescriptor wizardDescriptor) {

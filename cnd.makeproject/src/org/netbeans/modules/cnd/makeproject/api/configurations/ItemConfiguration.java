@@ -30,9 +30,9 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
-import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
@@ -123,7 +123,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     // Tool
     public void setTool(String genericName) {
         if (genericName != null) {
-            CompilerSet set = CompilerSets.getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
+            CompilerSet set = CompilerSetManager.getDefault().getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
             tool = set.getToolKind(genericName);
         }
     }
@@ -134,11 +134,11 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         return tool;
     }
     protected String getToolName() {
-        CompilerSet set = CompilerSets.getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
+        CompilerSet set = CompilerSetManager.getDefault().getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
         return set.getTool(getTool()).getName();
     }
     protected String[] getToolNames() {
-        CompilerSet set = CompilerSets.getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
+        CompilerSet set = CompilerSetManager.getDefault().getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
         return set.getToolGenericNames();
     }
     
@@ -334,7 +334,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         
         public String getAsText() {
             int val = ((Integer)getValue()).intValue();
-            CompilerSet set = CompilerSets.getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
+            CompilerSet set = CompilerSetManager.getDefault().getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
             return set.getTool(val).getGenericName();
         }
         

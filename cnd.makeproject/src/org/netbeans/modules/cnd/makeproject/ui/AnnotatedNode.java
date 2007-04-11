@@ -100,7 +100,9 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
             Iterator it = files.iterator();
             try {
                 FileObject fo = (FileObject) it.next();
-                annotatedImg = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
+                if (fo.isValid()){
+                    annotatedImg = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
+                }
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -114,7 +116,9 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
             Iterator it = files.iterator();
             try {
                 FileObject fo = (FileObject) it.next();
-                annotatedName = fo.getFileSystem().getStatus().annotateName(name, files);
+                if (fo.isValid()){
+                    annotatedName = fo.getFileSystem().getStatus().annotateName(name, files);
+                }
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }

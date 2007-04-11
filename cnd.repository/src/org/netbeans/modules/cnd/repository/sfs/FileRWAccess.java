@@ -39,10 +39,14 @@ public interface FileRWAccess {
     
     public void move(long offset, int size, long newOffset) throws IOException;
     
+    public void move(FileRWAccess from, long offset, int size, long newOffset) throws IOException;
+    
     public void truncate(long size) throws IOException;
     
     public void close() throws IOException;
     
     public long size() throws IOException;
+    
+    public FileDescriptor getFD() throws IOException;
     
 }

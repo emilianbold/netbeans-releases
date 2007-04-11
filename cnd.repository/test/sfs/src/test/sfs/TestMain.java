@@ -35,10 +35,11 @@ import org.netbeans.modules.cnd.repository.testbench.sfs.ThreadingStress;
 public class TestMain {
     
     public static void main(String[] args) {
-	new TestMain().run(args);
+	System.exit(new TestMain().run(args) ? 0 : 1);
     }
     
-    private void run(String[] args) {
+    private boolean run(String[] args) {
+        boolean passed = true;
 	
 	BaseTest test = new TestSingleFileStorage();
 	List<String> params = new ArrayList<String>();
@@ -64,19 +65,19 @@ public class TestMain {
 		params.add(args[i]);
 	    }
 	}
-	
 	try {
-	    test.test(params);
+	    passed &= test.test(params);
 	}
 	catch( Exception e ) {
 	    e.printStackTrace(System.err);
 	}
 	if( wait ) {
-	    System.out.printf("Press any key to continue\n");
+	    System.out.printf("Press any key to continue\n"); // NOI18N
 	    try {
 		System.in.read();
 	    } catch (IOException ex) {
 	    }
 	}
+        return passed;
     }    
 }

@@ -148,7 +148,7 @@ public class TraceModel {
         
 	private Cache cache;
 	
-	private CsmTracer tracer = new CsmTracer(false);
+	private static CsmTracer tracer = new CsmTracer(false);
 	
 	private boolean showAstWindow = false;
 	private boolean dumpAst = false;
@@ -1589,7 +1589,7 @@ public class TraceModel {
 		return decl == null || decl instanceof Unresolved.UnresolvedClass;
 	}
 	
-	private void dumpAst(AST ast) {
+	public static void dumpAst(AST ast) {
 		ASTVisitor visitor = new ASTVisitor() {
 			public void visit(AST node) {
 				for( AST node2 = node; node2 != null; node2 = node2.getNextSibling() ) {
@@ -1617,7 +1617,7 @@ public class TraceModel {
 		tracer.dumpModel(libProject);
 	}
 	
-	private void print(String s) {
+	private static void print(String s) {
 		tracer.print(s);
 	}
 	
@@ -1625,11 +1625,11 @@ public class TraceModel {
 		tracer.print(s, newLine);
 	}
         
-	private void indent() {
+	private static void indent() {
 		tracer.indent();
 	}
 	
-	private void unindent() {
+	private static void unindent() {
 		tracer.unindent();
 	}
 	

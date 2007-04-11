@@ -53,9 +53,10 @@ import org.openide.filesystems.FileUtil;
  * @author Vladimir Voskresensky
  */
 public class APTParseFileWalker extends APTWalker {
-    private APTPreprocState preprocState;
-    private String startPath;
-    private FileImpl file;
+    private final APTPreprocState preprocState;
+    private final String startPath;
+    private final FileImpl file;
+    
     private int mode;
     private boolean createMacroAndIncludes;
     
@@ -90,12 +91,12 @@ public class APTParseFileWalker extends APTWalker {
         // remove comments
         ts = new APTCommentsFilter(ts);
         // expand macros
-        ts = new APTParserMacroExpandedStream(ts, preprocState.getMacroMap());
+        ts = new APTParserMacroExpandedStream(ts, getMacroMap());
         return ts;
     }
     
     protected APTIncludeHandler getIncludeHandler() {
-        return preprocState == null ? null: preprocState.getIncludeHandler();
+        return getPreprocState() == null ? null: getPreprocState().getIncludeHandler();
     }
     
     protected void onInclude(APT apt) {
@@ -241,15 +242,16 @@ public class APTParseFileWalker extends APTWalker {
             if (curProject != null) {
                 ProjectBase inclFileOwner = curProject.resolveFileProjectOnInclude(path);
                 try {
-                    included = includeAction(inclFileOwner, path, preprocState, mode, apt);
+                    included = includeAction(inclFileOwner, path, mode, apt);
                 } catch (FileNotFoundException ex) {
                     removedFile = true;
                     APTUtils.LOG.log(Level.SEVERE, "file {0} not found", new Object[] {path});// NOI18N
                 } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
+                    APTUtils.LOG.log(Level.SEVERE, "error on including {0}:\n{1}", new Object[] {path, ex});
                 }
             } else {
                 APTUtils.LOG.log(Level.SEVERE, "file {0} without project!!!", new Object[] {file});// NOI18N
+                getIncludeHandler().popInclude();
             }
         }
         
@@ -258,9 +260,9 @@ public class APTParseFileWalker extends APTWalker {
         }
     }
     
-    protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, APTPreprocState preprocState, int mode, APTInclude apt) throws IOException {
+    protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, int mode, APTInclude apt) throws IOException {
         try {
-            return inclFileOwner.onFileIncluded(inclPath, preprocState, mode);
+            return inclFileOwner.onFileIncluded(inclPath, getPreprocState(), mode);
         } catch (NullPointerException ex) {
             APTUtils.LOG.log(Level.SEVERE, "file without project!!!", ex);// NOI18N
         } finally {
@@ -297,6 +299,10 @@ public class APTParseFileWalker extends APTWalker {
             e.printStackTrace(System.err);
             return null;
         }
+    }
+
+    protected APTPreprocState getPreprocState() {
+        return preprocState;
     }
     
 }

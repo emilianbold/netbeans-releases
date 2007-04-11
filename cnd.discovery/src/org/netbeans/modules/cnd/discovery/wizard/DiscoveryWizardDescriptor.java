@@ -95,6 +95,13 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public DiscoveryProvider getProvider(){
         return (DiscoveryProvider) getProperty(PRIVIDER);
     }
+    public String getProviderID(){
+        DiscoveryProvider provider =(DiscoveryProvider) getProperty(PRIVIDER);
+        if (provider != null){
+            return provider.getID();
+        }
+        return null;
+    }
     public void setProvider(DiscoveryProvider provider){
         stateChanged = true;
         putProperty(PRIVIDER, provider);
@@ -203,6 +210,13 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         
         public DiscoveryProvider getProvider(){
             return (DiscoveryProvider) wizard.getProperty(PRIVIDER);
+        }
+        public String getProviderID(){
+            DiscoveryProvider provider =(DiscoveryProvider) wizard.getProperty(PRIVIDER);
+            if (provider != null){
+                return provider.getID();
+            }
+            return null;
         }
         public void setProvider(DiscoveryProvider provider){
             wizard.putProperty(INVOKE_PROVIDER, Boolean.TRUE);

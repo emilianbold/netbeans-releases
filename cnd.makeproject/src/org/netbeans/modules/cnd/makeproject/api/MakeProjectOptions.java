@@ -19,25 +19,97 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.settings.CppSettings;
 
 public class MakeProjectOptions {
 
     public static void setDefaultMakeCommand(String defaultMakeCommand) {
-        MakeOptions.setDefaultMakeCommand(defaultMakeCommand);
+        CppSettings.getDefault().setMakeName(defaultMakeCommand);
     }
 
     public static String getDefaultMakeCommand() {
-        return MakeOptions.getDefaultMakeCommand();
+        return CppSettings.getDefault().getMakeName();
     }
-
+    
+    /**
+     * Choose either Sun or GNU compiler sets. Unfortunately, we no longer guarantee either
+     * exists. In CND 5.5, you had a Sun and GNU compiler set regardless of whether you had
+     * compilers to make either set usable. In CND 5.5.1, a compiler set is defined for every
+     * directory which has executables recognized as compilers.
+     * 
+     * @deprecated
+     */
     public static void setDefaultCompilerSet(int compilerSet) {
-        MakeOptions.getInstance().setCompilerSet(compilerSet);
+        CompilerSet cs = null;
+        
+        if (compilerSet == 0) {
+            cs = CompilerSetManager.getDefault().getCompilerSet("Sun"); // NOI18N
+        } else if (compilerSet == 1) {
+            cs = CompilerSetManager.getDefault().getCompilerSet("GNU"); // NOI18N
+        }
+        if (cs != null) {
+            CppSettings.getDefault().setCompilerSetName(cs.getName());
+            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
+        } else {
+            // The choices are:
+            //     Set the 0th compiler set as the default
+            //     throw an illegal state exception
+            //     or do nothing
+            cs = CompilerSetManager.getDefault().getCompilerSet(0); // use 0th as default?
+            // throw new IllegalStateException("MissingCompilerSet");
+        }
     }
 
+    /**
+     * Return a default compiler set index. Note that this index is only valid if the user
+     * doesn't modify their path INSIDE THE IDE. Also, if there are no compiler sets in the
+     * user's path, the return is 0 and the results are somewhat undefined.
+     *
+     * @returns index of the current default compiler set
+     *
+     * @deprecated
+     */
     public static int getDefaultCompilerSet() {
-        return MakeOptions.getInstance().getCompilerSet();
+        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(CppSettings.getDefault().getCompilerSetName());
+        if (cs != null) {
+            int i = 0;
+            for (CompilerSet cs2 : CompilerSetManager.getDefault().getCompilerSets()) {
+                if (cs2 == cs) {
+                    return i;
+                } else {
+                    i++;
+                }
+            }
+        }
+        return 0; // the choice is to return 0 (and hope its valid) or
+        // throw new IllegalStateException("MissingDefaultCompilerSet");
+    }
+
+    public static void setDefaultMakeOptions(String defaultMakeOptions) {
+        MakeOptions.setDefaultMakeOptions(defaultMakeOptions);
+    }
+
+    public static String getDefaultMakeOptions() {
+        return MakeOptions.getDefaultMakeOptions();
+    }
+
+    public static void setDefaultCompilerSetName(String compilerSetName) {
+        CppSettings.getDefault().setCompilerSetName(compilerSetName);
+    }
+
+    public static String getDefaultCompilerSetName() {
+        return CppSettings.getDefault().getCompilerSetName();
+    }
+
+    public static void setDefaultCompilerSetDirectories(String compilerSetDirectories) {
+        CppSettings.getDefault().setCompilerSetDirectories(compilerSetDirectories);
+    }
+
+    public static String getDefaultCompilerSetDirectories() {
+        return CppSettings.getDefault().getCompilerSetDirectories();
     }
     
     public static void setDefaultPlatform(int platform) {

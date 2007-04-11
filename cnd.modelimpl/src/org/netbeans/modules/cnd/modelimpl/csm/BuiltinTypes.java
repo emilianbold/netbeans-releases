@@ -91,6 +91,12 @@ public class BuiltinTypes {
             BuiltinImpl other = (BuiltinImpl)obj;
             return name.equals(other.name);
         }
+
+        public String toString() {
+            return "" + getKind() + " " +  getQualifiedName();
+        }
+        
+        
     }
     
     private static Map<String, CsmBuiltIn> types = new HashMap();

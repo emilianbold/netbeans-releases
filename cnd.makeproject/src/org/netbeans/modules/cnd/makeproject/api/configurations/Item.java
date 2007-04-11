@@ -41,9 +41,9 @@ import org.netbeans.modules.cnd.loaders.CDataLoader;
 import org.netbeans.modules.cnd.loaders.FortranDataLoader;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
-import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.settings.CppSettings;
@@ -112,8 +112,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public void moveTo(String newPath) {
         Folder f = getFolder();
         // FIXUP: update all configurations with settings from old item....
+        String oldPath = getAbsPath();
         f.removeItem(this);
         Item item = f.addItem(new Item(newPath));
+        f.renameItemAction(oldPath,  item);
     }
     
     public String getPath() {
@@ -163,6 +165,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             dataObject.removePropertyChangeListener(this);
             dataObject = null;
         }
+    }
+    
+    public DataObject getLastDataObject(){
+        return dataObject;
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -215,8 +221,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public ItemConfiguration getItemConfiguration(Configuration configuration) {
-        ItemConfiguration itemConfiguration = (ItemConfiguration)configuration.getAuxObject(getId());
-        return itemConfiguration;
+        if (configuration != null) {
+            return (ItemConfiguration)configuration.getAuxObject(getId());
+        }
+        return null;
     }
     
     public FileObject getFileObject() {
@@ -284,8 +292,12 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public NativeProject getNativeProject() {
-        Project project = getFolder().getProject();
-        return (NativeProject)project.getLookup().lookup(NativeProject.class);
+        Folder folder = getFolder();
+        if (folder != null) {
+            Project project = folder.getProject();
+            return (NativeProject)project.getLookup().lookup(NativeProject.class);
+        }
+        return null;
     }
     
     public List getSystemIncludePaths() {
@@ -295,7 +307,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: sometimes itemConfiguration is null (should not happen)
             return vec;
         Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
-        CompilerSet compilerSet = CompilerSets.getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
@@ -312,7 +324,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: sometimes itemConfiguration is null (should not happen)
             return vec;
         Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
-        CompilerSet compilerSet = CompilerSets.getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
@@ -344,7 +356,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: itemConfiguration should never be null
             return vec;
         Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
-        CompilerSet compilerSet = CompilerSets.getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
@@ -361,7 +373,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: itemConfiguration should never be null
             return vec;
         Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
-        CompilerSet compilerSet = CompilerSets.getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {

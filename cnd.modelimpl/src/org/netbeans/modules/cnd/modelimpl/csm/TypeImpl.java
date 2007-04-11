@@ -140,7 +140,16 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         return _const;
     }
 
+    public String getCanonicalText() {
+	return getText(true);
+    }
+    
     public String getText() {
+	// TODO: resolve typedefs
+	return getText(false);
+    }
+    
+    public String getText(boolean canonical) {
 //        if( text == null ) {
             StringBuilder sb = new StringBuilder();
             if( isConst() ) {
@@ -154,7 +163,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
                 sb.append('&');
             }
             for( int i = 0; i < getArrayDepth(); i++ ) {
-                sb.append("[]"); // NOI18N
+                sb.append(canonical ? "*" : "[]"); // NOI18N
             }
 //            text = sb.toString();
 //        }
@@ -413,6 +422,10 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         return CsmKindUtilities.isBuiltIn(classifier);
     }
     
+
+    public String toString() {
+        return "TYPE " + getText()  + getOffsetString(); // NOI18N
+    }    
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     
