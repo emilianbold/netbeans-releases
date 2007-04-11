@@ -179,6 +179,14 @@ public class JsfMultiViewElement implements MultiViewElement {
     public void designContextGenerationChanged() {
         jsfTopComponent.designContextGenerationChanged();
     }
+    
+    public JsfForm getJsfForm() {
+        return jsfTopComponent.getJsfForm();
+    }
+    
+    public Designer getDesigner() {
+        return jsfTopComponent.getDesigner();
+    }
     // JSF notifications <<<
             
 }

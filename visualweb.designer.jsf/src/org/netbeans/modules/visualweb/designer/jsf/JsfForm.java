@@ -104,8 +104,9 @@ public class JsfForm {
 //    private static final Map<JsfForm, Set<Designer>> jsfForm2designerSet = new WeakHashMap<JsfForm, Set<Designer>>();
     private final Set<Designer> designers = new WeakSet<Designer>();
     
-    /** Weak <code>Marp</code> between <code>Designer</code> and <code>JsfMultiViewElement</code>. */
-    private static final Map<Designer, JsfMultiViewElement> designer2jsfMultiViewElement = new WeakHashMap<Designer, JsfMultiViewElement>();
+//    /** Weak <code>Marp</code> between <code>Designer</code> and <code>JsfMultiViewElement</code>. */
+//    private static final Map<Designer, JsfMultiViewElement> designer2jsfMultiViewElement = new WeakHashMap<Designer, JsfMultiViewElement>();
+    private static final Set<JsfMultiViewElement> jsfMultiViewElements = new WeakSet<JsfMultiViewElement>();
 
 
     /** <code>FacesModel</code> associated with this JSF form. */
@@ -271,18 +272,29 @@ public class JsfForm {
     }
     
     private static JsfMultiViewElement[] findJsfMultiViewElements(JsfForm jsfForm) {
-        Designer[] designers = findDesigners(jsfForm);
+//        Designer[] designers = findDesigners(jsfForm);
+        if (jsfForm == null) {
+            return new JsfMultiViewElement[0];
+        }
         
-        List<JsfMultiViewElement> jsfMultiViewElements = new ArrayList<JsfMultiViewElement>();
-        synchronized (designer2jsfMultiViewElement) {
-            for (Designer designer : designers) {
-                JsfMultiViewElement jsfMultiViewElement = designer2jsfMultiViewElement.get(designer);
-                if (jsfMultiViewElement != null) {
-                    jsfMultiViewElements.add(jsfMultiViewElement);
-                }
+        Set<JsfMultiViewElement> multiViewElements;
+//        synchronized (designer2jsfMultiViewElement) {
+        synchronized (jsfMultiViewElements) {
+//            for (Designer designer : designers) {
+//                JsfMultiViewElement jsfMultiViewElement = designer2jsfMultiViewElement.get(designer);
+//                if (jsfMultiViewElement != null) {
+//                    jsfMultiViewElements.add(jsfMultiViewElement);
+//                }
+//            }
+            multiViewElements = new HashSet<JsfMultiViewElement>(jsfMultiViewElements);
+        }
+        for (Iterator<JsfMultiViewElement> it = multiViewElements.iterator(); it.hasNext(); ) {
+            JsfMultiViewElement multiViewElement = it.next();
+            if (multiViewElement.getJsfForm() != jsfForm) {
+                it.remove();
             }
         }
-        return jsfMultiViewElements.toArray(new JsfMultiViewElement[jsfMultiViewElements.size()]);
+        return multiViewElements.toArray(new JsfMultiViewElement[multiViewElements.size()]);
     }
     
     static MultiViewElement createMultiViewElement(JsfForm jsfForm, Designer designer) {
@@ -291,16 +303,33 @@ public class JsfForm {
         }
         
         JsfMultiViewElement jsfMultiViewElement = new JsfMultiViewElement(jsfForm, designer);
-        synchronized (designer2jsfMultiViewElement) {
-            designer2jsfMultiViewElement.put(designer, jsfMultiViewElement);
+//        synchronized (designer2jsfMultiViewElement) {
+//            designer2jsfMultiViewElement.put(designer, jsfMultiViewElement);
+//        }
+        synchronized (jsfMultiViewElements) {
+            jsfMultiViewElements.add(jsfMultiViewElement);
         }
         return jsfMultiViewElement;
     }
     
     static JsfMultiViewElement findJsfMultiViewElementForDesigner(Designer designer) {
-        synchronized (designer2jsfMultiViewElement) {
-            return designer2jsfMultiViewElement.get(designer);
+        if (designer == null) {
+            return null;
         }
+//        synchronized (designer2jsfMultiViewElement) {
+//            return designer2jsfMultiViewElement.get(designer);
+//        }
+        Set<JsfMultiViewElement> multiViewElements;
+        synchronized (jsfMultiViewElements) {
+            multiViewElements = new HashSet<JsfMultiViewElement>(jsfMultiViewElements);
+        }
+        
+        for (JsfMultiViewElement multiViewElement : multiViewElements) {
+            if (multiViewElement.getDesigner() == designer) {
+                return multiViewElement;
+            }
+        }
+        return null;
     }
     
     static Designer[] getDesigners(JsfForm jsfForm) {
