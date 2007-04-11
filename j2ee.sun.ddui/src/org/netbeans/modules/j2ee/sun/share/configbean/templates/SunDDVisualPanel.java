@@ -60,8 +60,7 @@ public final class SunDDVisualPanel extends JPanel {
         sunDDFileName = getConfigFileName(j2eeModule);
 
         // Calculate location:
-        // DDBean Removal
-        // sunDDFile = (sunDDFileName != null) ? provider.getDeploymentConfigurationFile(sunDDFileName) : null;
+        sunDDFile = (sunDDFileName != null) ? j2eeModule.getDeploymentConfigurationFile(sunDDFileName) : null;
         sunDDLocation = (sunDDFile != null) ? sunDDFile.getParentFile() : null;
         
         // initialize visual components
