@@ -22,7 +22,9 @@ package org.netbeans.modules.uml.ui.addins.reguiaddin;
 //import java.awt.Cursor;
 //import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
@@ -62,8 +64,10 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 //import org.netbeans.modules.uml.ui.swing.projecttree.JProjectTree;
 //import com.tomsawyer.graph.TSGraphObject;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 
-public class REGUIAddin //implements IAddIn, IAddInButtonSupport, IViewActionDelegate
+public class REGUIAddin extends Thread //implements IAddIn, IAddInButtonSupport, IViewActionDelegate
 {
 	public static String RE_OPER_BTN_SOURCE =
 			REGUIResources.getString("IDS_RE_OPERATION"); // NOI18N
@@ -88,6 +92,9 @@ public class REGUIAddin //implements IAddIn, IAddInButtonSupport, IViewActionDel
 	/// UML parsing integrator, only access via GetUMLParsingIntegrator()
 	private IUMLParsingIntegrator m_UMLParsingIntegrator = null;
 	
+        private String action = null;
+        private ETArrayList <IElement> elements = null ;
+        
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.addinframework.IAddIn#initialize(java.lang.Object)
 	 */
@@ -151,7 +158,7 @@ public class REGUIAddin //implements IAddIn, IAddInButtonSupport, IViewActionDel
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.addinframework.IAddIn#getName()
 	 */
-	public String getName()
+	public String getName1()
 	{
 		// TODO Auto-generated method stub
 		return null;
@@ -708,12 +715,27 @@ public class REGUIAddin //implements IAddIn, IAddInButtonSupport, IViewActionDel
 			}
 		}
 	}
+        
+	//kris - this method was added in order to set these default values outside
+        // the run method. This is in response to issue 95928.
+        public void prepareForRun(String action, ETArrayList <IElement> elements) {
+                
+            this.action = action ;
+            this.elements = elements ;
+        }
+        
+        //kris - added this since this class now extends Thread
+        public void run() {
+            run (action, elements);
+        }
 	
-	/*
+        /*
 	 * cvc - New version of method for Buzz release
 	 */
 	public void run(String action, ETArrayList <IElement> elements)
 	{
+            
+            
 		// generate code action
 		if (action.equals(CODEGEN_BTN_SOURCE))
 		{
@@ -746,73 +768,56 @@ public class REGUIAddin //implements IAddIn, IAddInButtonSupport, IViewActionDel
 				if (proj != null)
 				{
 					ETSmartWaitCursor waitCursor = new ETSmartWaitCursor();
-					
-					try
-					{
-						IUMLParsingIntegrator integrator =
-								getUMLParsingIntegrator();
-						
-						integrator.reverseEngineerOperations(proj, elements);
-					}
-					finally
-					{
-						waitCursor.stop();
-					}
+					ProgressHandle handler = ProgressHandleFactory.createHandle("RE Operation");      
+                                        handler.start() ;
+                                        
+					try {
+                                            
+                                            IUMLParsingIntegrator integrator =
+                                                    getUMLParsingIntegrator();
+                                            
+                                            integrator.reverseEngineerOperations(proj, elements);
+                                            
+                                        } finally {
+                                            waitCursor.stop();
+                                            handler.finish() ;
+                                        }
 				}
                                 
-
-                                IDiagCreatorAddIn diaCreator = new DiagCreatorAddIn();
-
-				//fix concurrentModification exception
-				IElement[] elemArray=(IElement[])elements.toArray(new IElement[0]);
-				for (IElement pEle: elemArray)
-				{
-					// IElement pEle = elements.get(i);
-					IInteraction pInteraction = getLastInteraction(pEle);
-
-					IProjectTreeControl pControl =
-							ProductHelper.getProjectTree();
-
-					if (pInteraction != null)
-					{
-						diaCreator.guiCreateDiagramFromElements(
-							elements, pInteraction, pControl);
-					}
-				}
+                                //kris - made local copy because it is needed in this inner class
+                                final ETArrayList <IElement> elementsLocal = elements ;
                                 
-
-				
-//				// Ask the user if they want to create a
-//				//  diagram for the interactions
-//				ETList<IElement> pElements = new ETArrayList<IElement>();
-//				IDiagCreatorAddIn diaCreator = getDiagCreatorAddin();
-//				
-//				if (diaCreator != null)
-//				{
-//					int count = m_OperationElements.size();
-//					for (int i=0; i<count; i++)
-//					{
-//						IElement pEle = elements.get(i);
-//						IInteraction pInteraction = getLastInteraction(pEle);
-//						
-//						IProjectTreeControl pControl =
-//								ProductHelper.getProjectTree();
-//						
-//						if (pInteraction != null)
-//						{
-//							diaCreator.guiCreateDiagramFromElements(
-//									null, pInteraction, pControl);
-//						}
-//					}
-//				}
-//				
-//				else
-//				{
-//					//inform user that IDiagCreatorAddIn is not loaded.
-//				}
+                                //kris - the diaCreator.guiCreateDiagramFromElements call below
+                                // creates a new top component. This must happen in the event thread.
+                                // So it is bring forced into the event thread.
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    
+                                    public void run() {
+                                        IDiagCreatorAddIn diaCreator = new DiagCreatorAddIn();
+                                        
+                                        //fix concurrentModification exception
+                                        IElement[] elemArray=(IElement[])elementsLocal.toArray(new IElement[0]);
+                                        for (IElement pEle: elemArray) {
+                                            // IElement pEle = elements.get(i);
+                                            final IInteraction pInteraction = getLastInteraction(pEle);
+                                            
+                                            final IProjectTreeControl pControl =
+                                                    ProductHelper.getProjectTree();
+                                            
+                                            if (pInteraction != null) {                                                
+                                                diaCreator.guiCreateDiagramFromElements(
+                                                        elementsLocal, pInteraction, pControl);
+                                            }
+                                            
+                                            
+                                        }
+                                    }
+                                });
+                                
 			}
 			elements = null;
 		}	
+            
 	}
 	
 	

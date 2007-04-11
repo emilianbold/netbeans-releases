@@ -25,6 +25,7 @@
 
 package org.netbeans.modules.uml.ui.addins.reguiaddin;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 //import org.netbeans.modules.uml.regui.*;
@@ -33,6 +34,8 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
+//import org.netbeans.api.progress.ProgressHandle;
+//import org.netbeans.api.progress.ProgressHandleFactory;
 
 /**
  *
@@ -86,29 +89,24 @@ public class REOperationAction extends CookieAction
 				REOperationAction.class, "IDS_RE_OPERATION"); // NOI18N
 	}
 	
-	protected void performAction(Node[] nodes)
-	{
-		final ETArrayList<IElement> elements = new ETArrayList<IElement>();
-
-		for (Node curNode : nodes)
-		{
-			IElement curElement = (IElement)curNode.getCookie(IElement.class);
-		
-			if (curElement != null)
-				elements.add(curElement);
-		}
-		
-		Thread thread = new Thread(new Runnable()
-		{
-			public void run()
-			{
-				REGUIAddin regui = new REGUIAddin();
-				regui.run(getName(), elements);
-			}
-		});
-
-		thread.run();
-	}
+	protected void performAction(Node[] nodes) {
+            ETArrayList<IElement> elements = new ETArrayList<IElement>();
+            
+            for (Node curNode : nodes) {
+                IElement curElement = (IElement)curNode.getCookie(IElement.class);
+                
+                if (curElement != null)
+                    elements.add(curElement);
+            }
+            
+            //kris - made changes to fix issue 95928 (get the progress bar to show up
+            // while RE OP loads the new larger library)
+            REGUIAddin regui = new REGUIAddin();
+            regui.prepareForRun(getName(), elements) ;
+            
+            regui.start() ;
+            
+        }
 	
     protected boolean asynchronous()
     {
