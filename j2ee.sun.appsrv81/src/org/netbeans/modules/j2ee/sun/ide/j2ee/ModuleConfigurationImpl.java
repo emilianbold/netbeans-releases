@@ -62,19 +62,21 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         this.config = new SunONEDeploymentConfiguration(module);
         Object type = module.getModuleType();
         File dds[] = new File[0];
-        if (module.EJB.equals(type)) {
-            dds = new File[] { module.getDeploymentConfigurationFile("META-INF/sun-ejb-jar.xml"),
-                module.getDeploymentConfigurationFile("META-INF/sun-cmp-mappings.xml") };
+        
+        if (module.WAR.equals(type)) {
+            dds = new File[] { module.getDeploymentConfigurationFile("sun-web.xml") };
+        } else if (module.EJB.equals(type)) {
+            dds = new File[] { module.getDeploymentConfigurationFile("sun-ejb-jar.xml"),
+                    module.getDeploymentConfigurationFile("sun-cmp-mappings.xml") };
         } else if (module.CLIENT.equals(type)) {
-            dds = new File[] { module.getDeploymentConfigurationFile("META-INF/sun-application-client.xml")};
-        } else if (module.WAR.equals(type)) {
-            dds = new File[] { module.getDeploymentConfigurationFile("WEB-INF/sun-web.xml") };
-        } else if (module.CONN.equals(type)) {
-            dds = new File[] { module.getDeploymentConfigurationFile("META-INF/sun-ra.xml") };
+            dds = new File[] { module.getDeploymentConfigurationFile("sun-application-client.xml")};
         } else if (module.EAR.equals(type)) {
-            dds = new File[] { module.getDeploymentConfigurationFile("META-INF/sun-application.xml") };
+            dds = new File[] { module.getDeploymentConfigurationFile("sun-application.xml") };
+        } else if (module.CONN.equals(type)) {
+            dds = new File[] { module.getDeploymentConfigurationFile("sun-ra.xml") };
         }
-        try {            
+        
+        try {
             config.init(dds, module.getResourceDirectory(), true);
         } catch (javax.enterprise.deploy.spi.exceptions.ConfigurationException ex) {
             throw new ConfigurationException("",ex);
