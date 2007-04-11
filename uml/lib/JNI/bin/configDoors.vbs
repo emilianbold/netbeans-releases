@@ -31,7 +31,7 @@ Function ConfigDoors
     pathLen = Len(scriptFullPath)   ' get the length of the script full path name
     nameLen = Len(scriptName)       ' get the length of the script name
 
-    scriptPath = Left(scriptFullPath, (pathLen - nameLen))  ' extract the path from the full path name
+    scriptPath = Left(scriptFullPath, (pathLen - (nameLen+1)))  ' extract the path from the full path name minus the trailing \
     WScript.Echo "Path to this script " & scriptPath 
 
     Rem *** Get Doors Installation Directory from window registry
