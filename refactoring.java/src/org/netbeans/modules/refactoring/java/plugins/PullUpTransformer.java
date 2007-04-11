@@ -55,10 +55,38 @@ public class PullUpTransformer extends SearchVisitor {
                 if (members[i].getType()==1) {
                     njuClass = make.addClassImplementsClause(njuClass, make.Identifier(members[i].getElementHandle().resolve(workingCopy)));
                 } else {
-                    njuClass = make.addClassMember(njuClass, SourceUtils.treeFor(workingCopy, members[i].getElementHandle().resolve(workingCopy)));
+                    Boolean b = members[i].getUserData().lookup(Boolean.class);
+                    if (b==null?Boolean.FALSE:b) {
+                        
+                        if (!classIsAbstract) {
+                            classIsAbstract = true;
+                            Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
+                            mod.add(Modifier.ABSTRACT);
+                            ModifiersTree modifiers = make.Modifiers(mod);
+                            workingCopy.rewrite(njuClass.getModifiers(), modifiers);
+                        }
+                        
+                        
+                        MethodTree method = (MethodTree) SourceUtils.treeFor(workingCopy,members[i].getElementHandle().resolve(workingCopy));
+                        Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
+                        mod.add(Modifier.ABSTRACT);
+                        MethodTree nju = make.Method(
+                                make.Modifiers(mod),
+                                method.getName(),
+                                method.getReturnType(),
+                                method.getTypeParameters(),
+                                method.getParameters(),
+                                method.getThrows(),
+                                (BlockTree) null,
+                                (ExpressionTree)method.getDefaultValue());
+                        njuClass = make.addClassMember(njuClass, nju);
+                        workingCopy.rewrite(tree, njuClass);
+                    } else {
+                        njuClass = make.addClassMember(njuClass, SourceUtils.treeFor(workingCopy, members[i].getElementHandle().resolve(workingCopy)));
+                        workingCopy.rewrite(tree, njuClass);
+                    }
                 }
             }
-            workingCopy.rewrite(tree, njuClass);
         } else {
             for (int i=0; i<members.length; i++) {
                 if (members[i].getType()==1 ) {
@@ -74,31 +102,7 @@ public class PullUpTransformer extends SearchVisitor {
                     Element currentMember = members[i].getElementHandle().resolve(workingCopy);
                     if (currentMember.getEnclosingElement().equals(current)) {
                         Boolean b = members[i].getUserData().lookup(Boolean.class);
-                        if (b==null?Boolean.FALSE:b) {
-                            
-                            if (!classIsAbstract) {
-                                classIsAbstract = true;
-                                Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
-                                mod.add(Modifier.ABSTRACT);
-                                ModifiersTree modifiers = make.Modifiers(mod);
-                                workingCopy.rewrite(njuClass.getModifiers(), modifiers);
-                            }
-                            
-                            
-                            MethodTree method = (MethodTree) workingCopy.getTrees().getTree(currentMember);
-                            Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
-                            mod.add(Modifier.ABSTRACT);
-                            MethodTree nju = make.Method(
-                                    make.Modifiers(mod),
-                                    method.getName(),
-                                    method.getReturnType(),
-                                    method.getTypeParameters(),
-                                    method.getParameters(),
-                                    method.getThrows(),
-                                    (BlockTree) null,
-                                    (ExpressionTree)method.getDefaultValue());
-                            workingCopy.rewrite(method, nju);
-                        } else {
+                        if (!(b==null?Boolean.FALSE:b)) {
                             njuClass = make.removeClassMember(njuClass, workingCopy.getTrees().getTree(currentMember));
                             workingCopy.rewrite(tree, njuClass);
                         }
