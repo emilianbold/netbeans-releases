@@ -19,10 +19,8 @@
 
 package org.netbeans.modules.refactoring.java.ui.tree;
 
-import java.util.Collections;
 import javax.lang.model.element.ElementKind;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.UiUtils;
@@ -31,12 +29,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -73,7 +70,19 @@ public class FolderTreeElement implements TreeElement {
     }
 
     public String getText(boolean isLogical) {
-        return ClassPath.getClassPath(fo, ClassPath.SOURCE).getResourceName(fo).replace('/','.');
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if (cp==null) {
+            return fo.getPath();
+        } else {
+            if (getJavaSourceGroup(fo)!=null) {
+                String name = cp.getResourceName(fo).replace('/','.');
+                if ("".equals(name))
+                    return NbBundle.getMessage(UiUtils.class, "LBL_DefaultPackage_PDU");
+                return name;
+            } else {
+                return fo.getPath();
+            }
+        }
     }
 
     static SourceGroup getSourceGroup(FileObject file) {
@@ -81,13 +90,34 @@ public class FolderTreeElement implements TreeElement {
         if (prj == null)
             return null;
         Sources src = ProjectUtils.getSources(prj);
-        SourceGroup[] groups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        for(int i=0; i<groups.length; i++) {
-            if (groups[i].getRootFolder().equals(file) || FileUtil.isParentOf(groups[i].getRootFolder(), file))
-                return groups[i];
+        //TODO: needs to be generified
+        SourceGroup[] javagroups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] xmlgroups = src.getSourceGroups("xml");//NOI18N
+        
+        SourceGroup[] allgroups =  new SourceGroup[javagroups.length + xmlgroups.length];
+        System.arraycopy(javagroups,0,allgroups,0,javagroups.length);
+        System.arraycopy(xmlgroups,0,allgroups,allgroups.length,xmlgroups.length);
+        for(int i=0; i<allgroups.length; i++) {
+            if (allgroups[i].getRootFolder().equals(file) || FileUtil.isParentOf(allgroups[i].getRootFolder(), file))
+                return allgroups[i];
         }
         return null;
     }
+    
+    private static SourceGroup getJavaSourceGroup(FileObject file) {
+        Project prj = FileOwnerQuery.getOwner(file);
+        if (prj == null)
+            return null;
+        Sources src = ProjectUtils.getSources(prj);
+        SourceGroup[] javagroups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        
+        for(int i=0; i<javagroups.length; i++) {
+            if (javagroups[i].getRootFolder().equals(file) || FileUtil.isParentOf(javagroups[i].getRootFolder(), file))
+                return javagroups[i];
+        }
+        return null;
+    }
+    
 
     public Object getUserObject() {
         return fo;
