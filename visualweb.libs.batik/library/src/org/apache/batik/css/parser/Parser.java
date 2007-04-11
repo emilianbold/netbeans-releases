@@ -899,7 +899,13 @@ public class Parser implements ExtendedParser, Localizable {
             String name = scanner.getStringValue();
         
             if (nextIgnoreSpaces() != LexicalUnits.COLON) {
-                throw createCSSParseException("colon");
+                // <rave>
+//                throw createCSSParseException("colon");
+                // ====
+                // XXX #94268 Try to continue with the next rule.
+                errorHandler.error(createCSSParseException("colon")); // NOI18N
+                continue;
+                // </rave>
             }
             nextIgnoreSpaces();
         
