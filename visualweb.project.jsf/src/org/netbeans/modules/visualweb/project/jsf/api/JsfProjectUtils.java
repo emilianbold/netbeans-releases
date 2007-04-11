@@ -36,6 +36,7 @@ import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.beans.PropertyChangeListener;
@@ -58,7 +59,9 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 // XXX wait for NetBeans API
 //import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -210,21 +213,28 @@ public class JsfProjectUtils {
     
     private static String getCreatorProperty(final Project project, String propName) {
         EditableProperties props;
-        try {
-            props = (EditableProperties) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
-                    EditableProperties ep = new EditableProperties();
-                    FileObject propFile = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    InputStream is = propFile.getInputStream();
+        WebPropertyEvaluator wpe = (WebPropertyEvaluator) project.getLookup().lookup(WebPropertyEvaluator.class);
+        if (wpe != null) {
+            PropertyEvaluator pe = wpe.evaluator();
+            props = new EditableProperties(pe.getProperties());
+        } else {
+            // Can't find anything, try to read the project.properties file directly. Shouldn't be here.
+            try {
+                props = (EditableProperties) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
+                    public Object run() throws Exception {
+                        EditableProperties ep = new EditableProperties();
+                        FileObject propFile = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        InputStream is = propFile.getInputStream();
             
-                    ep.load(is);
-                    is.close();
+                        ep.load(is);
+                        is.close();
 
-                    return ep;
-                }
-            });
-        } catch (Exception e) {
-            return "";
+                        return ep;
+                    }
+                });
+            } catch (Exception e) {
+                return "";
+            }
         }
 
         // Store Creator properties into the new format
