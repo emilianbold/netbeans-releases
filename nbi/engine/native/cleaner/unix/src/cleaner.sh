@@ -19,8 +19,10 @@
 # Rights Reserved.
 
 deleteFiles() {
+	#wait for main thread to finish...
+	sleep 3
 	waitOnError=1
-	tryTimes=2
+	tryTimes=3
 	list="$1"
 	if [ -n "$list" ] && [ -f "$list" ] ; then
 		#echo "Using list file : $list"
@@ -28,8 +30,13 @@ deleteFiles() {
 		#echo "Total items : $itemsNumber"
 		counter=1
 		try=$tryTimes
+		allitems=`cat "$list" 2>/dev/null`
+		if [ -f "$list" ] ; then 
+			#echo "... remove cleaner list $list"
+			rm -f "$list"
+		fi
 		while [ $counter -le $itemsNumber ] ; do			
-			file=`sed -n "${counter}p" "$list"`
+			file=`echo "$allitems" | sed -n "${counter}p" 2>/dev/null`
 			#echo "entry : $file"
 			result=1
 			if [ -n "$file" ] ; then
@@ -67,11 +74,7 @@ deleteFiles() {
 				counter=`expr "$counter" + 1`
 				try=$tryTimes
 			fi		
-		done
-		if [ -f "$list" ] ; then 
-			#echo "... remove cleaner list $list"
-			rm -f "$list"
-		fi		
+		done				
 	fi
 	if [ -f "$0" ] ; then 
 		#echo "... remove cleaner itself $0"
