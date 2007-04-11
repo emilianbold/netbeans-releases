@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.IOException;
 import java.util.List;
 import javax.swing.AbstractAction;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
@@ -45,6 +47,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 /**
  *
@@ -94,55 +98,83 @@ public class AddOperationAction extends AbstractAction {
             desc.setButtonListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     if (evt.getSource() == DialogDescriptor.OK_OPTION) {
-                        OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);                        
-                        WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
-                        String operationName = panel.getOperationName();
-                        List<ParamModel> parameterTypes = panel.getParameterTypes();
-                        ReferenceableSchemaComponent returnType = panel.getReturnType();
-                        List<ReferenceableSchemaComponent> faultTypes = panel.getFaultTypes();
-                        Operation operation = generatorHelper.addWsOperation(wsdlModel, generatorHelper.getPortTypeName(implementationClass),
-                                operationName, parameterTypes, returnType, faultTypes);
-                        generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, operationName, false);
-                        
-                        //TODO:this will go away when the recopying of the changed wsdls and schemas
-                        //from the src/conf to the WEB-INF/wsdl directory is done in the build script.
-                        try{
-                            FileObject wsdlFolder = generatorHelper.
-                                    getWsdlFolderForService(implementationClass, service.getName());
-                            FileObject localWsdlFolder = generatorHelper.
-                                    getLocalWsdlFolderForService(implementationClass, service.getName());
-                            WSUtils.copyFiles(localWsdlFolder, wsdlFolder);
-                        }catch(IOException e){
-                            ErrorManager.getDefault().notify(e);
-                        }
+                        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.
+                                getMessage(AddOperationAction.class, "MSG_AddingOperation", panel.getOperationName())); //NOI18N
+                        Task task = new Task(new Runnable() {
+                            public void run() {
+                                try{
+                                    handle.start();
+                                    addWSDLOperation(panel);
+                                }catch(IOException e){
+                                    handle.finish();
+                                }finally{
+                                    handle.finish();
+                                }
+                            }
+                        });
+                        RequestProcessor.getDefault().post(task);
                     }
                 }
             });
             
             Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
             dialog.setVisible(true);
-         } else { // WS from Java
-            AddWsOperationHelper strategy = new AddWsOperationHelper(getName());
-            try {
-                String className = _RetoucheUtil.getMainClassName(implementationClass);
-                if (className != null) {
-                    strategy.addMethod(implementationClass, className);
-                }
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
+        } else { // WS from Java
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.
+                    getMessage(AddOperationAction.class, "MSG_AddingNewOperation")); //NOI18N
+            Task task = new Task(new Runnable() {
+                public void run() {
+                    try{
+                        handle.start();
+                        addJavaMethod();
+                    }catch(IOException e){
+                        handle.finish();
+                        ErrorManager.getDefault().notify(e);
+                    }finally{
+                        handle.finish();
+                    }
+                }});
+                RequestProcessor.getDefault().post(task);
         }
-        //save the changes so events will be fired
-        try {
-            DataObject dobj = DataObject.find(implementationClass);
-            if(dobj.isModified()) {
-                SaveCookie cookie = dobj.getCookie(SaveCookie.class);
-                if(cookie!=null) cookie.save();
-            }
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
-        
     }
     
+    private void saveImplementationClass(FileObject implementationClass) throws IOException{
+        DataObject dobj = DataObject.find(implementationClass);
+        if(dobj.isModified()) {
+            SaveCookie cookie = dobj.getCookie(SaveCookie.class);
+            if(cookie!=null) cookie.save();
+        }
+    }
+    
+    private void addJavaMethod() throws IOException{
+        AddWsOperationHelper strategy = new AddWsOperationHelper(getName());
+        String className = _RetoucheUtil.getMainClassName(implementationClass);
+        if (className != null) {
+            strategy.addMethod(implementationClass, className);
+            saveImplementationClass(implementationClass);
+        }
+    }
+    
+    private void addWSDLOperation(AddOperationFromSchemaPanel panel) throws IOException{
+        OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
+        WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
+        String operationName = panel.getOperationName();
+        List<ParamModel> parameterTypes = panel.getParameterTypes();
+        ReferenceableSchemaComponent returnType = panel.getReturnType();
+        List<ReferenceableSchemaComponent> faultTypes = panel.getFaultTypes();
+        Operation operation = generatorHelper.addWsOperation(wsdlModel, generatorHelper.getPortTypeName(implementationClass),
+                operationName, parameterTypes, returnType, faultTypes);
+        generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, operationName, false);
+        
+        //TODO:this will go away when the recopying of the changed wsdls and schemas
+        //from the src/conf to the WEB-INF/wsdl directory is done in the build script.
+        FileObject wsdlFolder = generatorHelper.
+                getWsdlFolderForService(implementationClass, service.getName());
+        FileObject localWsdlFolder = generatorHelper.
+                getLocalWsdlFolderForService(implementationClass, service.getName());
+        WSUtils.copyFiles(localWsdlFolder, wsdlFolder);
+        saveImplementationClass(implementationClass);
+    }
 }
+
+

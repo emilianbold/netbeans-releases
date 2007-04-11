@@ -94,6 +94,13 @@ public class OperationWidget extends AbstractTitledWidget {
         createContent();
     }
     
+    /**
+     * Obtain the underlying MethodModel
+     */
+     public MethodModel getMethodModel(){
+         return operation;
+     }
+    
     private void createContent() {
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 

@@ -10,18 +10,17 @@
 package org.netbeans.modules.websvc.design.navigator;
 
 import java.awt.BorderLayout;
-import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -37,7 +36,7 @@ public class WSDesignViewNavigatorContent extends JPanel
     private ExplorerManager explorerManager;
     /** Our schema component node tree view. */
     private TreeView treeView;
-   
+    
     
     /** Creates a new instance of WSDesignViewNavigatorContent */
     public WSDesignViewNavigatorContent() {
@@ -55,16 +54,20 @@ public class WSDesignViewNavigatorContent extends JPanel
         return explorerManager;
     }
     
-    public void navigate(){
+    public void navigate(DataObject implClass){
         add(treeView, BorderLayout.CENTER);
-        AbstractNode root = new AbstractNode(new WSChildren());
+        AbstractNode root = new AbstractNode(new WSChildren(implClass));
         root.setName("Operations");
         getExplorerManager().setRootContext(root);
         revalidate();
         repaint();
     }
     
-   public class WSChildren extends Children.Keys{
+    public class WSChildren extends Children.Keys{
+        DataObject implClass;
+        public WSChildren(DataObject implClass){
+            this.implClass = implClass;
+        }
         protected Node[] createNodes(Object key) {
             if(key instanceof MethodModel){
                 MethodModel m = (MethodModel)key;
@@ -81,6 +84,10 @@ public class WSDesignViewNavigatorContent extends JPanel
         
         private void updateKeys(){
             List keys = new ArrayList();
+            if(implClass != null){
+                ServiceModel model = ServiceModel.getServiceModel(implClass.getPrimaryFile());
+                keys = model.getOperations();
+            }
             this.setKeys(keys);
         }
     }

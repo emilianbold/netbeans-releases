@@ -100,7 +100,7 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
         view(View.SOURCE);
     }
     
-    DataObject getDataObject() {
+    public DataObject getDataObject() {
         return dataObject;
     }
 

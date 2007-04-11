@@ -37,6 +37,7 @@ import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderR
 import org.netbeans.modules.websvc.design.navigator.WSDesignNavigatorHint;
 import org.netbeans.modules.websvc.design.view.DesignView;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 

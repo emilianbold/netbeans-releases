@@ -13,6 +13,8 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.AbstractAction;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
@@ -24,9 +26,13 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 /**
  *
@@ -55,31 +61,53 @@ public class RemoveOperationAction extends AbstractAction{
                 (NbBundle.getMessage(RemoveOperationAction.class, "MSG_OPERATION_DELETE", methodName));
         Object retVal = DialogDisplayer.getDefault().notify(desc);
         if (retVal == NotifyDescriptor.YES_OPTION) {
-            if(wsdlFile != null){
-                WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
-                OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
-                //TODO: methodName should be the equivalent operation name in the WSDL
-                //i.e., should look at operationName annotation if present
-                generatorHelper.removeWSOperation(wsdlModel, generatorHelper.
-                        getPortTypeName(implementationClass), methodName);
-                generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, methodName, true);
-                //TODO:this will go away when the recopying of the changed wsdls and schemas
-                //from the src/conf to the WEB-INF/wsdl directory is done in the build script.
-                try{
-                    FileObject wsdlFolder = generatorHelper.
-                            getWsdlFolderForService(implementationClass, service.getName());
-                    FileObject localWsdlFolder = generatorHelper.
-                            getLocalWsdlFolderForService(implementationClass, service.getName());
-                    WSUtils.copyFiles(localWsdlFolder, wsdlFolder);
-                }catch(IOException e){
-                    ErrorManager.getDefault().notify(e);
-                }
-            }
-            else{
-                //WS from Java
-            }
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.
+                    getMessage(RemoveOperationAction.class, "MSG_RemoveOperation", methodName)); //NOI18N
+            Task task = new Task(new Runnable() {
+                public void run() {
+                    handle.start();
+                    try{
+                        removeOperation();
+                    }catch(IOException e){
+                        handle.finish();
+                        ErrorManager.getDefault().notify(e);
+                    } finally{
+                        handle.finish();
+                    }
+                }});
+                RequestProcessor.getDefault().post(task);
         }
+    }
+    
+    private void removeOperation() throws IOException{
+        OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
+        if(wsdlFile != null){
+            WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
+            //TODO: methodName should be the equivalent operation name in the WSDL
+            //i.e., should look at operationName annotation if present
+            generatorHelper.removeWSOperation(wsdlModel, generatorHelper.
+                    getPortTypeName(implementationClass), methodName);
+            generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, methodName, true);
+            //TODO:this will go away when the recopying of the changed wsdls and schemas
+            //from the src/conf to the WEB-INF/wsdl directory is done in the build script.
+            
+            FileObject wsdlFolder = generatorHelper.
+                    getWsdlFolderForService(implementationClass, service.getName());
+            FileObject localWsdlFolder = generatorHelper.
+                    getLocalWsdlFolderForService(implementationClass, service.getName());
+            WSUtils.copyFiles(localWsdlFolder, wsdlFolder);
+            
+        } else{
+            //WS from Java
+            generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, methodName, true);
+        }
+        //save the changes so events will be fired
         
+        DataObject dobj = DataObject.find(implementationClass);
+        if(dobj.isModified()) {
+            SaveCookie cookie = dobj.getCookie(SaveCookie.class);
+            if(cookie!=null) cookie.save();
+        }
     }
     
     private File getWSDLFile(){

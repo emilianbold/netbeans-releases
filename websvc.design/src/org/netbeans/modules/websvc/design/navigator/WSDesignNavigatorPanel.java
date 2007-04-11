@@ -10,9 +10,12 @@
 package org.netbeans.modules.websvc.design.navigator;
 
 import java.beans.PropertyChangeEvent;
+import java.util.Collection;
 import javax.swing.JComponent;
+import org.netbeans.modules.websvc.core.MultiViewCookie;
+import org.netbeans.modules.websvc.design.multiview.MultiViewSupport;
+import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -52,13 +55,15 @@ public class WSDesignNavigatorPanel implements NavigatorPanel, LookupListener{
     public void panelActivated(Lookup context) {
         getComponent();
         TopComponent.getRegistry().addPropertyChangeListener(navigator);
-        selection = context.lookup(new Lookup.Template(DataObject.class));
+        selection = context.lookup(new Lookup.Template(MultiViewCookie.class));
         selection.addLookupListener(this);
         resultChanged(null);
         // hack to init selection if any
         navigator.propertyChange(new PropertyChangeEvent(this,
                 TopComponent.getRegistry().PROP_ACTIVATED_NODES,false,true));
-        navigator.navigate();
+        
+        //temporarily display root node
+        navigator.navigate(null);
     }
     
     public void panelDeactivated() {
@@ -72,7 +77,11 @@ public class WSDesignNavigatorPanel implements NavigatorPanel, LookupListener{
     }
     
     public void resultChanged(LookupEvent ev) {
-        navigator.navigate();
+        Collection selected = selection.allInstances();
+        if (selected.size() == 1) {
+            MultiViewSupport mvs = (MultiViewSupport) selected.iterator().next();
+            navigator.navigate(mvs.getDataObject());
+        }
     }
     
 }
