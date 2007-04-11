@@ -180,10 +180,8 @@ public abstract class CasaPinWidget extends Widget {
     
     private Image createHighlightedImage(Image src) {
         RescaleOp convolution = new RescaleOp(HIGHLIGHT_LIGHT_FACTOR, 0, null);
-        Image targ = Toolkit.getDefaultToolkit().createImage(src.getSource());
         BufferedImage bs = toBufferedImage(src);
-        BufferedImage bt = toBufferedImage(targ);
-	return convolution.filter(bs, bt);
+	return convolution.filter(bs, bs);
     }
     
     private static final BufferedImage toBufferedImage(Image img) {
