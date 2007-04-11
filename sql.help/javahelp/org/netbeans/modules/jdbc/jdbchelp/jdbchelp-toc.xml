@@ -23,9 +23,7 @@
 <toc version="2.0">
 <tocitem text="Servers and Databases">
 <tocitem text="Working With Databases">
-<tocitem text="Setting Up a Database Connection">
-<tocitem text="Connecting to a Database Using the JDBC Database Wizard" target="jdbc_about" />
-</tocitem>
+<tocitem text="Generating WSDL from a JDBC Data Source" target="jdbc_about" />
 </tocitem>
 </tocitem>
 </toc>
