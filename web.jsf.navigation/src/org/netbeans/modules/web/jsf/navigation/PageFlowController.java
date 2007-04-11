@@ -219,10 +219,9 @@ public class PageFlowController {
         List<NavigationRule> rules = facesConfig.getNavigationRules();
         
         for( NavigationRule rule : rules ){
-            //            System.out.println("\nDo these match?");
-            //            System.out.println(rule.getFromViewId() + " == " + fromViewId);
-            if( rule.getFromViewId().equals(fromViewId) ){
-                //                System.out.println("Match Found.");
+            String rulefromViewId = rule.getFromViewId();
+            if( rulefromViewId != null && rulefromViewId.equals(fromViewId) ){
+                //  Match Found
                 return rule;
             }
         }
@@ -335,9 +334,11 @@ public class PageFlowController {
     
     private void createEdge(NavigationCaseNode caseNode ){
         String toPage = caseNode.getToViewId();
-        String action = caseNode.getFromAction();
         String fromPage = caseNode.getFromViewId();
-        view.createEdge(caseNode, pageName2Node.get(fromPage), pageName2Node.get(toPage));
+        
+        if( toPage != null && fromPage != null ) {
+            view.createEdge(caseNode, pageName2Node.get(fromPage), pageName2Node.get(toPage));
+        }
     }
     
     
@@ -350,7 +351,9 @@ public class PageFlowController {
             List<NavigationCase> navCases = rule.getNavigationCases();
             for( NavigationCase navCase : navCases ){
                 String toPage = navCase.getToViewId();
-                pages.add(toPage);
+                if( toPage != null ) {
+                    pages.add(toPage);
+                }
             }
         }
         return pages;
@@ -414,21 +417,23 @@ public class PageFlowController {
         Collection<String> pages = new HashSet<String>(pagesInConfig);
         
         for( String pageName : pages ) {
-            FileObject file = getFileObject(pageName);
-            Node wrapNode = null;
-            if( file == null ) {
-                wrapNode = new AbstractNode(Children.LEAF);
-                wrapNode.setName(pageName);
-                
-            } else {
-                try {
-                    wrapNode = (DataObject.find(file)).getNodeDelegate();
-                } catch(DataObjectNotFoundException donfe ){
-                    donfe.printStackTrace();
+            if( pageName != null ) {
+                FileObject file = getFileObject(pageName);
+                Node wrapNode = null;
+                if( file == null ) {
+                    wrapNode = new AbstractNode(Children.LEAF);
+                    wrapNode.setName(pageName);
+                    
+                } else {
+                    try {
+                        wrapNode = (DataObject.find(file)).getNodeDelegate();
+                    } catch(DataObjectNotFoundException donfe ){
+                        donfe.printStackTrace();
+                    }
                 }
+                PageFlowNode node = new PageFlowNode(this, wrapNode);
+                view.createNode(node, null, null);
             }
-            PageFlowNode node = new PageFlowNode(this, wrapNode);
-            view.createNode(node, null, null);
         }
     }
     
@@ -502,32 +507,32 @@ public class PageFlowController {
                 setupGraph();
             } else if ( ev.getPropertyName() == "from-view-id"  || ev.getPropertyName() == "to-view-id"){
                 /* Going to have to do this another day. */
-//                String oldName = (String) ev.getOldValue();
-//                String newName = (String) ev.getNewValue();
-//                PageFlowNode oldPageNode = pageName2Node.get(oldName);
-//                PageFlowNode newPageNode = pageName2Node.get(oldName);
-//                boolean isNewPageLinked = false;
-//                if( newPageNode != null && view.getNodeEdges(newPageNode).size() > 0 ){
-//                    isNewPageLinked = true;
-//                }
-//                
-//                if ( oldPageNode != null && !isPageInFacesConfig(oldName) && !isNewPageLinked ) {
-//                    FileObject fileObj = getWebFolder().getFileObject(newName);
-//                    if ( fileObj != null && webFiles.contains(fileObj) ){
-//                        try                 {
-//                            Node delegate = DataObject.find(fileObj).getNodeDelegate();
-//                            oldPageNode.replaceWrappedNode(createPageFlowNode(delegate));
-//                            view.resetNodeWidget(oldPageNode);
-//                            view.validateGraph();
-//                        } catch (DataObjectNotFoundException ex) {
-//                            Exceptions.printStackTrace(ex);
-//                        }
-//                    } else {
-//                        changeToAbstractNode(oldPageNode, newName);
-//                    }
-//                } else {
-                    setupGraph();
-//                }
+                //                String oldName = (String) ev.getOldValue();
+                //                String newName = (String) ev.getNewValue();
+                //                PageFlowNode oldPageNode = pageName2Node.get(oldName);
+                //                PageFlowNode newPageNode = pageName2Node.get(oldName);
+                //                boolean isNewPageLinked = false;
+                //                if( newPageNode != null && view.getNodeEdges(newPageNode).size() > 0 ){
+                //                    isNewPageLinked = true;
+                //                }
+                //
+                //                if ( oldPageNode != null && !isPageInFacesConfig(oldName) && !isNewPageLinked ) {
+                //                    FileObject fileObj = getWebFolder().getFileObject(newName);
+                //                    if ( fileObj != null && webFiles.contains(fileObj) ){
+                //                        try                 {
+                //                            Node delegate = DataObject.find(fileObj).getNodeDelegate();
+                //                            oldPageNode.replaceWrappedNode(createPageFlowNode(delegate));
+                //                            view.resetNodeWidget(oldPageNode);
+                //                            view.validateGraph();
+                //                        } catch (DataObjectNotFoundException ex) {
+                //                            Exceptions.printStackTrace(ex);
+                //                        }
+                //                    } else {
+                //                        changeToAbstractNode(oldPageNode, newName);
+                //                    }
+                //                } else {
+                setupGraph();
+                //                }
             } else {
                 System.out.println("Did not catch this event.: " + ev.getPropertyName());
                 setupGraph();
@@ -535,7 +540,7 @@ public class PageFlowController {
         }
     }
     
-   
+    
     
     public void removeSceneNodeEdges(PageFlowNode pageNode) {
         
@@ -561,12 +566,14 @@ public class PageFlowController {
         FacesConfig facesConfig = configModel.getRootComponent();
         List<NavigationRule> navRules = facesConfig.getNavigationRules();
         for( NavigationRule navRule : navRules ){
-            if ( navRule.getFromViewId().equals(oldDisplayName) ){
+            String fromViewId = navRule.getFromViewId();
+            if ( fromViewId != null && fromViewId.equals(oldDisplayName) ){
                 navRule.setFromViewId(newDisplayName);
             }
             List<NavigationCase> navCases = navRule.getNavigationCases();
             for( NavigationCase navCase : navCases ) {
-                if ( navCase.getToViewId().equals(oldDisplayName) ) {
+                String toViewId = navCase.getToViewId();
+                if ( toViewId != null && toViewId.equals(oldDisplayName) ) {
                     navCase.setToViewId(newDisplayName);
                 }
             }
@@ -590,13 +597,15 @@ public class PageFlowController {
         FacesConfig facesConfig = configModel.getRootComponent();
         List<NavigationRule> navRules = facesConfig.getNavigationRules();
         for( NavigationRule navRule : navRules ){
-            if ( navRule.getFromViewId().equals(displayName) ){
+            String fromViewId = navRule.getFromViewId();
+            if ( fromViewId != null && fromViewId.equals(displayName) ){
                 //if the rule is removed, don't check the cases.
                 facesConfig.removeNavigationRule(navRule);
             } else {
                 List<NavigationCase> navCases = navRule.getNavigationCases();
                 for( NavigationCase navCase : navCases ) {
-                    if ( navCase.getToViewId().equals(displayName) ) {
+                    String toViewId = navCase.getToViewId();
+                    if ( toViewId != null && toViewId.equals(displayName) ) {
                         navRule.removeNavigationCase(navCase);
                     }
                 }
@@ -768,7 +777,7 @@ public class PageFlowController {
         
         
         private void fileRename(FileObject fileObj, String oldDisplayName, String newDisplayName ){
-
+            
             PageFlowNode oldNode = pageName2Node.get(oldDisplayName);
             
             if ( oldNode.isRenaming()){

@@ -248,12 +248,9 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * @return
      */
     protected VMDNodeWidget createNode( PageFlowNode pageNode, String type, List<Image> glyphs) {
+        assert pageNode.getDisplayName() != null;
+        
         VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
-        //        String pageName = pageNode.getName();
-        //        if( pageNode instanceof DataNode ){
-        //            pageName = ((DataNode)pageNode).getDataObject().getPrimaryFile().getNameExt();
-        //            System.out.println("PageName : " + pageName);
-        //        }
         String pageName = pageNode.getDisplayName();
         //        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
         widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
@@ -262,43 +259,17 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return widget;
     }
     
-    //    protected boolean resetNode( PageFlowNode oldPageNode, PageFlowNode newPageNode ){
-    //
-    //    }
-    
-    //    /**
-    //     * Creates a PageFlowScene pin from a pageNode and pin name String.
-    //     * In general a pin represents a NavigasbleComponent orginally designed for VWP.
-    //     * @param pageNode
-    //     * @param navComp
-    //     * @return
-    //     */
-    //    protected VMDPinWidget createPin( Node pageNode, NavigationCaseNode navComp) {
-    //        //        Pin pin = new Pin(page, navComp);
-    //        VMDPinWidget widget = (VMDPinWidget) scene.addPin(pageNode, navComp);
-    //        //        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, pin);
-    //        //        if( navComp != null ){
-    //        //            widget.setProperties(navComp, Arrays.asList(navComp.getBufferedIcon()));
-    //        //        }
-    //        return widget;
-    //    }
-    
     /**
      * Creates an Edge or Connection in the Graph Scene
      * @param navCaseNode
      * @param fromPageNode
      * @param toPageNode
      */
-    protected void createEdge( NavigationCaseNode navCaseNode, PageFlowNode fromPageNode, PageFlowNode toPageNode  ) {
-        
-        
-        //
-        //        PageFlowNode fromPageNode = pfc.page2Node.get(fromPage);
-        //        PageFlowNode toPageNode = pfc.page2Node.get(toPage);
+    protected void createEdge( NavigationCaseNode navCaseNode, PageFlowNode fromPageNode, PageFlowNode toPageNode  ) {     
+        assert fromPageNode.getDisplayName() != null;
+        assert toPageNode.getDisplayName() != null;
         
         ConnectionWidget widget = (ConnectionWidget)scene.addEdge(navCaseNode);
-        
-        
         //I need to remove extension so it matches the DataNode's pins.
         scene.setEdgeSource(navCaseNode, scene.getDefaultPin( fromPageNode) );
         scene.setEdgeTarget(navCaseNode, scene.getDefaultPin( toPageNode) );
@@ -474,7 +445,9 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
         String fromViewId = node.getDisplayName();
         for( NavigationCaseNode navCase : navCases ){
-            if( navCase.getToViewId().equals(fromViewId) || navCase.getFromViewId().equals(fromViewId)){
+            String strToViewId = navCase.getToViewId();
+            String strFromViewId = navCase.getFromViewId();
+            if( (strToViewId != null && strToViewId.equals(fromViewId)) || (strFromViewId != null && strFromViewId.equals(fromViewId))){
                 myNavCases.add(navCase);
             }
         }
