@@ -45,6 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.WeakHashMap;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
@@ -130,7 +131,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         actions.addAction(ActionFactory.createZoomAction());
         actions.addAction(ActionFactory.createPanAction());
         actions.addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
-        actions.addAction(popupGraphAction);        
+        actions.addAction(popupGraphAction);
         actions.addAction(createActionMap());
         addObjectSceneListener(new MyObjectSceneListener(), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
         //        actions.addAction(dragNdropAction);
@@ -226,8 +227,9 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         nodeWidget.setMinimized(true);
         
         Point point = locations.get(displayName);
-        if( point == null )
+        if( point == null ) {
             point = PageFlowLayoutUtilities.getPreferredNodePosition(this,true);
+        }
         //        nodeWidget2Point.put(nodeWidget, point);
         nodeWidget.setPreferredLocation(point);
         
@@ -419,16 +421,24 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     
     private Map<String,Point> locations = new HashMap<String,Point>();
     public void saveLocations() {
+        if( !newSavedLocations ){
+            locations.clear();
+        }
         Collection<PageFlowNode> pageNodes = getNodes();
         for( PageFlowNode pageNode : pageNodes ){
             locations.put(pageNode.getDisplayName(), findWidget(pageNode).getLocation());
         }
+        newSavedLocations=false;
     }
     
-    public void clearLocations() {
-        locations.clear();
+    private boolean newSavedLocations = false;
+    public void saveLocation(PageFlowNode pageNode, String newDisplayName){
+        newSavedLocations=true;
+        Widget widget = findWidget(pageNode);
+        Point widgetPoint = widget.getLocation();
+        widget.setPreferredLocation(widgetPoint);
+        locations.put(newDisplayName, widgetPoint);
     }
-       
     
     
     private final class PageFlowSelectProvider implements SelectProvider {
@@ -482,7 +492,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
             }
             
             ((LabelWidget)widget).setLabel(newName);
-                        
+            
         }
     }
     
@@ -537,11 +547,11 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
             
             throw new UnsupportedOperationException("Not supported yet.");
-            /* Workaround for issue: 100275 
+            /* Workaround for issue: 100275
              * selectionChanged should have been sufficient to take care of the case when a selected object is removed */
-//            if ( getSelectedObjects().size() == 0 ){
-//                tc.setDefaultActivatedNode();
-//            }
+            //            if ( getSelectedObjects().size() == 0 ){
+            //                tc.setDefaultActivatedNode();
+            //            }
         }
         
         public void objectStateChanged(ObjectSceneEvent event,

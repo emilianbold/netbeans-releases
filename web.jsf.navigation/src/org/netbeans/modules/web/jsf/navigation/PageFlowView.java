@@ -236,7 +236,6 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public void saveLocations() {
-        scene.clearLocations();
         scene.saveLocations();
     }
     
@@ -480,5 +479,9 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
             }
         }
         return myNavCases;
+    }
+    
+    public void saveLocation(PageFlowNode pageNode, String newDisplayName){
+        scene.saveLocation(pageNode,newDisplayName);
     }
 }

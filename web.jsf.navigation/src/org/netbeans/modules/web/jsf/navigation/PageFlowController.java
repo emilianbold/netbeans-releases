@@ -441,7 +441,7 @@ public class PageFlowController {
         
         public void propertyChange(PropertyChangeEvent ev) {
             if( ev.getOldValue() == State.NOT_WELL_FORMED ){
-                view.removeUserMalFormedFacesConfig();
+                view.removeUserMalFormedFacesConfig();  // Does clear graph take care of this?
                 setupGraph();
             }
             
@@ -494,17 +494,49 @@ public class PageFlowController {
                 if( myNewRule != null ){
                     navRule2String.put(myNewRule, myNewRule.getFromViewId());
                 }
-                
             } else if ( ev.getNewValue() == State.NOT_SYNCED ) {
                 // Do nothing.
             } else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
+                view.clearGraph();
                 view.warnUserMalFormedFacesConfig();
-                setupGraph();
             } else if (ev.getPropertyName() == "textContent" ){
                 setupGraph();
-            } 
+            } else if ( ev.getPropertyName() == "from-view-id"  || ev.getPropertyName() == "to-view-id"){
+                /* Going to have to do this another day. */
+//                String oldName = (String) ev.getOldValue();
+//                String newName = (String) ev.getNewValue();
+//                PageFlowNode oldPageNode = pageName2Node.get(oldName);
+//                PageFlowNode newPageNode = pageName2Node.get(oldName);
+//                boolean isNewPageLinked = false;
+//                if( newPageNode != null && view.getNodeEdges(newPageNode).size() > 0 ){
+//                    isNewPageLinked = true;
+//                }
+//                
+//                if ( oldPageNode != null && !isPageInFacesConfig(oldName) && !isNewPageLinked ) {
+//                    FileObject fileObj = getWebFolder().getFileObject(newName);
+//                    if ( fileObj != null && webFiles.contains(fileObj) ){
+//                        try                 {
+//                            Node delegate = DataObject.find(fileObj).getNodeDelegate();
+//                            oldPageNode.replaceWrappedNode(createPageFlowNode(delegate));
+//                            view.resetNodeWidget(oldPageNode);
+//                            view.validateGraph();
+//                        } catch (DataObjectNotFoundException ex) {
+//                            Exceptions.printStackTrace(ex);
+//                        }
+//                    } else {
+//                        changeToAbstractNode(oldPageNode, newName);
+//                    }
+//                } else {
+                    setupGraph();
+//                }
+            } else {
+                System.out.println("Did not catch this event.: " + ev.getPropertyName());
+                setupGraph();
+            }
         }
     }
+    
+   
     
     public void removeSceneNodeEdges(PageFlowNode pageNode) {
         
@@ -697,9 +729,6 @@ public class PageFlowController {
             if( !webFiles.contains(fileObj) && !isKnownFolder(fileObj) ){
                 return;
             }
-            //            if( !isKnownFileEvent(fileObj) ){
-            //                return;
-            //            }
             
             if( fileObj.isFolder() ){
                 //I may still need to modify display names.
@@ -740,8 +769,13 @@ public class PageFlowController {
         
         
         private void fileRename(FileObject fileObj, String oldDisplayName, String newDisplayName ){
-            
+
             PageFlowNode oldNode = pageName2Node.get(oldDisplayName);
+            
+            if ( oldNode.isRenaming()){
+                return;
+            }
+            
             PageFlowNode abstractNode = pageName2Node.get(newDisplayName);
             Node newNodeDelegate = null;
             try {
@@ -800,7 +834,8 @@ public class PageFlowController {
         return configDataObj;
     }
     
-    
-    
+    public void saveLocation(PageFlowNode node, String newDisplayName) {
+        view.saveLocation(node, newDisplayName);
+    }
     
 }
