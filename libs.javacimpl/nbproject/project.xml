@@ -14,7 +14,23 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.jackpot.rules</friend>
+                <friend>org.netbeans.modules.java.source</friend>
+                <package>com.sun.tools.javac</package>
+                <package>com.sun.tools.javac.api</package>
+                <package>com.sun.tools.javac.code</package>
+                <package>com.sun.tools.javac.comp</package>
+                <package>com.sun.tools.javac.jvm</package>
+                <package>com.sun.tools.javac.main</package>
+                <package>com.sun.tools.javac.model</package>
+                <package>com.sun.tools.javac.parser</package>
+                <package>com.sun.tools.javac.processing</package>
+                <package>com.sun.tools.javac.resources</package>
+                <package>com.sun.tools.javac.tree</package>
+                <package>com.sun.tools.javac.util</package>
+                <package>com.sun.tools.javadoc</package>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/javac-impl.jar</runtime-relative-path>
                 <binary-origin>../../external/javac-impl.jar</binary-origin>
