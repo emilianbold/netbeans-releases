@@ -104,7 +104,7 @@ public class CasaPaletteItems extends Index.ArrayChildren {
         consumeItem.setTitle(getMessage("Palette_Consume_Title"));      // NOI18N
         childrenNodes.add( new CasaPaletteItemNode( 
                 consumeItem, 
-                "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesRight.png", // NOI18N
+                "org/netbeans/modules/compapp/casaeditor/palette/resources/consumesPalette.png", // NOI18N
                 mLookup) );
         
         CasaPaletteItem provideItem = new CasaPaletteItem();
@@ -113,7 +113,7 @@ public class CasaPaletteItems extends Index.ArrayChildren {
         provideItem.setTitle(getMessage("Palette_Provide_Title"));  // NOI18N
         childrenNodes.add( new CasaPaletteItemNode( 
                 provideItem, 
-                "org/netbeans/modules/compapp/casaeditor/graph/resources/providesRight.png", // NOI18N
+                "org/netbeans/modules/compapp/casaeditor/palette/resources/providesPalette.png", // NOI18N
                 mLookup) ); 
     }
 
