@@ -127,11 +127,13 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     
     public RenameRefactoringUI(FileObject file, TreePathHandle handle, CompilationInfo info) {
         if (handle!=null) {
+            jmiObject = handle;
             this.refactoring = new RenameRefactoring(Lookups.fixed(file, handle));
+            oldName = jmiObject.resolveElement(info).getSimpleName().toString();
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(file));
+            oldName = file.getName();
         }
-        oldName = file.getName();
         dispOldName = oldName;
         if (info!=null)
             refactoring.getContext().add(info);

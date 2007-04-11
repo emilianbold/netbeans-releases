@@ -89,7 +89,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     }
                     if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
                         FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
-                        return new RenameRefactoringUI(f==null?info.getFileObject():f, selectedElement, info);
+                        if (selected.getSimpleName().toString().equals(f.getName())) {
+                            return new RenameRefactoringUI(f==null?info.getFileObject():f, selectedElement, info);
+                        } else {
+                            return new RenameRefactoringUI(selectedElement, info);
+                        }
                     } else {
                         return new RenameRefactoringUI(selectedElement, info);
                     }
