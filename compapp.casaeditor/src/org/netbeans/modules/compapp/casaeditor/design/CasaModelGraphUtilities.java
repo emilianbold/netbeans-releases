@@ -126,8 +126,8 @@ public class CasaModelGraphUtilities {
     }
 
     private static void renderLayout(final CasaModelGraphScene scene) {
-        boolean isPartial = false;
-        boolean isFull    = true;
+        int nodeCount = 0;
+        int badCount = 0;
         
         // determine what kind of layout is required, if any
         for (CasaComponent node : scene.getNodes()) {
@@ -135,30 +135,21 @@ public class CasaModelGraphUtilities {
             if (!(widget instanceof CasaNodeWidget)) {
                 continue;
             }
+            nodeCount++;
             Point point = widget.getPreferredLocation();
             boolean isBadPoint = point == null || point.x < 0 || point.y < 0;
             if (isBadPoint) {
-                isPartial = true;
-            }
-            if (node instanceof CasaPort && !isBadPoint) {
-                isFull = false;
-            }
-            if (node instanceof CasaServiceEngineServiceUnit) {
-                CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) node;
-                if (su.isDefined() && !isBadPoint) {
-                    isFull = false;
-                }
-                if (!su.isInternal() && !isBadPoint) {
-                    isFull = false;
-                }
+                badCount++;
             }
         }
         
-        if (isPartial && !isFull) {
-            scene.progressiveLayout(true);
-            RegionUtilities.stretchScene(scene);
-        } else if (isFull) {
-            scene.autoLayout(false);
+        if (badCount > 0) {
+            if (badCount == nodeCount) {
+                scene.autoLayout(false);
+            } else {
+                scene.progressiveLayout(false);
+                RegionUtilities.stretchScene(scene);
+            }
         }
     }
     
