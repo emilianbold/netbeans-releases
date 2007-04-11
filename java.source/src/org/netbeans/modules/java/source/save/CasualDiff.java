@@ -446,9 +446,6 @@ public class CasualDiff {
             localPointer = diffParameterList(oldT.params, newT.params, false, posHint, printer);
             printer.setPrec(old);
         }
-        // temporary
-        tokenSequence.moveNext();
-        posHint = tokenSequence.offset();
         if (localPointer < posHint)
             copyTo(localPointer, localPointer = posHint);
         // if abstract, hint is before ending semi-colon, otherwise before method body
@@ -527,8 +524,8 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected int diffBlock(JCBlock oldT, JCBlock newT, int lastPrinted) {
-        int localPointer = lastPrinted;
+    protected int diffBlock(JCBlock oldT, JCBlock newT, int[] blockBounds) {
+        int localPointer = blockBounds[0];
         if (oldT.flags != newT.flags)
             append(Diff.flags(oldT.pos, endPos(oldT), oldT.flags, newT.flags));
         VeryPretty bodyPrinter = new VeryPretty(context, JavaFormatOptions.getDefault());
@@ -1711,8 +1708,8 @@ public class CasualDiff {
      * (Currently for imports and members diffing.)
      */
     private int[] diffList(
-            List<? extends JCTree> oldList, 
-            List<? extends JCTree> newList,
+            java.util.List<? extends JCTree> oldList, 
+            java.util.List<? extends JCTree> newList,
             int initialPos, 
             PositionEstimator estimator,
             Measure measure, 
@@ -2247,7 +2244,7 @@ public class CasualDiff {
           case JCTree.SKIP:
               break;
           case JCTree.BLOCK:
-              retVal = diffBlock((JCBlock)oldT, (JCBlock)newT, elementBounds[0]);
+              retVal = diffBlock((JCBlock)oldT, (JCBlock)newT, elementBounds);
               break;
           case JCTree.DOLOOP:
               retVal = diffDoLoop((JCDoWhileLoop)oldT, (JCDoWhileLoop)newT, elementBounds);
@@ -2471,10 +2468,6 @@ public class CasualDiff {
         Kind.LOGICAL_COMPLEMENT
     );
 
-    private int diffTree(JCTree oldT, JCTree newT, int lastPrinted) {
-        return diffTree(oldT, newT, new int[] { lastPrinted, -1 });
-    }
-    
     protected boolean listsMatch(List<? extends JCTree> oldList, List<? extends JCTree> newList) {
         if (oldList == newList)
             return true;
