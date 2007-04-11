@@ -152,6 +152,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      */
     public void run(final TestResult result) {
         if (canRun()) {
+            System.setProperty("netbeans.full.hack", "true"); // NOI18N
             System.setProperty("java.util.prefs.PreferencesFactory",
                     MemoryPreferencesFactory.class.getName());//NOI18N
             try {

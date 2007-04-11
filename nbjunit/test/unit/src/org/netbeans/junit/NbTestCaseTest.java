@@ -40,6 +40,10 @@ public class NbTestCaseTest extends NbTestCase {
 
     protected void tearDown() throws Exception {
     }
+    
+    public void testNetBeansFullHackIsSet() throws Exception {
+        assertEquals("true", System.getProperty("netbeans.full.hack"));
+    }
 
     public void testJustRunTestCase() {
         class Fail extends NbTestCase {
