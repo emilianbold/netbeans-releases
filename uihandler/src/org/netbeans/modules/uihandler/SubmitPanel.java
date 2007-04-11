@@ -76,6 +76,8 @@ implements ExplorerManager.Provider, PropertyChangeListener {
         setPreferredSize(new java.awt.Dimension(640, 480));
         setLayout(new java.awt.BorderLayout());
 
+        tabs.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
+
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
         listView1.setTraversalAllowed(false);
@@ -92,14 +94,14 @@ implements ExplorerManager.Provider, PropertyChangeListener {
             structuredLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(structuredLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
+                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
                 .addContainerGap())
         );
         structuredLayout.setVerticalGroup(
             structuredLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(structuredLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 602, Short.MAX_VALUE)
+                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -114,20 +116,22 @@ implements ExplorerManager.Provider, PropertyChangeListener {
             rawLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(rawLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
                 .addContainerGap())
         );
         rawLayout.setVerticalGroup(
             rawLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(rawLayout.createSequentialGroup()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 614, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, rawLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         tabs.addTab(org.openide.util.NbBundle.getMessage(SubmitPanel.class, "MSG_Tab_Text"), raw); // NOI18N
 
         add(tabs, java.awt.BorderLayout.CENTER);
-    }// </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>    public ExplorerManager getExplorerManager() {//GEN-END:initComponents
+
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -194,6 +198,7 @@ implements ExplorerManager.Provider, PropertyChangeListener {
     private javax.swing.JTabbedPane tabs;
     private javax.swing.JEditorPane text;
     // End of variables declaration//GEN-END:variables
-    private ExplorerManager manager;
     
+    
+    private ExplorerManager manager;    
 }

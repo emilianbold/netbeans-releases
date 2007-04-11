@@ -754,6 +754,7 @@ public class Installer extends ModuleInstall {
             browser.setStatusLineVisible(false);
             browser.setToolbarVisible(false);
             browser.setPreferredSize(new Dimension(640, 480));
+            browser.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
             dd.setMessage(browser);
             
             //        AbstractNode root = new AbstractNode(new Children.Array());
