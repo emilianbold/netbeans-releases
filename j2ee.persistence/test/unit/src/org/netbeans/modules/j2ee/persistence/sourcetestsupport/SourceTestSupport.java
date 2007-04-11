@@ -28,8 +28,8 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 
@@ -48,7 +48,9 @@ public abstract class SourceTestSupport extends NbTestCase {
         MockServices.setServices(FakeJavaDataLoaderPool.class, RepositoryImpl.class, ClassPathProviderImpl.class);
         clearWorkDir();
         initTemplates();
+        setCacheFolder();
     }
+
     protected void tearDown() throws Exception{
         super.tearDown();
         getSystemFs().reset();
@@ -58,6 +60,12 @@ public abstract class SourceTestSupport extends NbTestCase {
         return (RepositoryImpl.MultiFileSystemImpl)Repository.getDefault().getDefaultFileSystem();
     }
     
+    private void setCacheFolder() throws IOException{
+        File cacheFolder = new File(getWorkDir(),"cache");
+        cacheFolder.mkdirs();
+        IndexUtil.setCacheFolder(cacheFolder);
+    }
+
     private void initTemplates() throws Exception{
         RepositoryImpl.MultiFileSystemImpl systemFS = getSystemFs();
         FileObject interfaceTemplate = systemFS.getRoot().getFileObject("Templates/Classes/Interface.java");
