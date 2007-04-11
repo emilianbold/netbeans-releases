@@ -52,7 +52,6 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.ui.lock.LockAction;
 import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
 import org.netbeans.modules.subversion.ui.relocate.RelocateAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -458,7 +457,6 @@ public class Annotator {
             actions.add(SystemAction.get(RevertModificationsAction.class));
             actions.add(SystemAction.get(ResolveConflictsAction.class));
             actions.add(SystemAction.get(IgnoreAction.class));
-            actions.add(SystemAction.get(LockAction.class));
             actions.add(null);
             actions.add(SystemAction.get(SvnPropertiesAction.class));
         } else {
@@ -492,8 +490,7 @@ public class Annotator {
                                                                 ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ? 
                                                                         loc.getString("CTL_PopupMenuItem_Unignore") : 
                                                                         loc.getString("CTL_PopupMenuItem_Ignore"), context));                                        
-                }
-                actions.add(SystemActionBridge.createAction(SystemAction.get(LockAction.class), loc.getString("CTL_PopupMenuItem_Lock"), context));                                    
+                }               
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(
                                 SystemAction.get(SvnPropertiesAction.class), 
