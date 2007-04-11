@@ -390,6 +390,7 @@ public class Installer extends ModuleInstall {
                     String value = attrValue(in, "value");
                     String align = attrValue(in, "align");
                     String alt = attrValue(in, "alt");
+                    boolean enabled = !"true".equals(attrValue(in, "disabled")); // NOI18N
                     
                     List<Object> addTo = "left".equals(align) ? left : buttons;
                     
@@ -402,6 +403,7 @@ public class Installer extends ModuleInstall {
                         b.setDefaultCapable(addTo.isEmpty() && addTo == buttons);
                         b.putClientProperty("alt", alt); // NOI18N
                         b.putClientProperty("now", f.submitValue); // NOI18N
+                        b.setEnabled(enabled);
                         addTo.add(b);
                         continue;
                     }
@@ -414,6 +416,7 @@ public class Installer extends ModuleInstall {
                         b.setDefaultCapable(addTo.isEmpty() && addTo == buttons);
                         b.putClientProperty("alt", alt); // NOI18N
                         b.putClientProperty("now", value); // NOI18N
+                        b.setEnabled(enabled);
                         addTo.add(b);
                         if ("exit".equals(name)) { // NOI18N
                             defaultButton = null;

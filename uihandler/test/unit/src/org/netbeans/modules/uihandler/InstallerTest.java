@@ -116,6 +116,28 @@ public class InstallerTest extends NbTestCase {
         assertEquals("It is named", "Send Feedback", b.getText());
         assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
     }
+    public void testDisabledButton() throws Exception {
+        String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
+            "<input type='hidden' name='submit' disabled='true' value=\"Send Feedback\"/>" +
+            "<input type='hidden' name='cancel' value=\"Cancel\"></input>" +
+            "\n" +
+            "</form></body></html>";
+        
+        InputStream is = new ByteArrayInputStream(page.getBytes());
+        JButton def = new JButton("Default");
+        Object[] buttons = parseButtons(is, def);
+        is.close();
+        
+        assertNotNull("buttons parsed", buttons);
+        assertEquals("There are 3 buttons", 3, buttons.length);
+        assertEquals("3rd is default", def, buttons[2]);
+        assertEquals("It is a button", JButton.class, buttons[0].getClass());
+        assertEquals("It is a button2", JButton.class, buttons[0].getClass());
+        JButton b = (JButton)buttons[0];
+        assertEquals("It is named", "Send Feedback", b.getText());
+        assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
+        assertFalse("disabled", b.isEnabled());
+    }
     
     public void testReadListOfSubmitButtonsWithAmpersand() throws Exception {
         String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
