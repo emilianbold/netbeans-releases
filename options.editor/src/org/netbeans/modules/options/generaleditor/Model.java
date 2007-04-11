@@ -66,51 +66,41 @@ public class Model {
         boolean foldJavaDoc,
         boolean foldMethods
     ) {
-        if (javaOptions == null)
-            javaOptions = getOptions ("text/x-java");
-        if (javaOptions == null) return;
-        Map javaFoldingMap = javaOptions.getCodeFoldingProps ();
-
-        javaFoldingMap.put (
-            SettingsNames.CODE_FOLDING_ENABLE,
-            Boolean.valueOf (showCodeFolding)
-        );
-        javaFoldingMap.put (
-            "code-folding-collapse-import",
-            Boolean.valueOf (foldImports)
-        );
-        javaFoldingMap.put (
-            "code-folding-collapse-initial-comment",
-            Boolean.valueOf (foldInitialComent)
-        );
-        javaFoldingMap.put (
-            "code-folding-collapse-innerclass",
-            Boolean.valueOf (foldInnerClasses)
-        );
-        javaFoldingMap.put (
-            "code-folding-collapse-javadoc",
-            Boolean.valueOf (foldJavaDoc)
-        );
-        javaFoldingMap.put (
-            "code-folding-collapse-method",
-            Boolean.valueOf (foldMethods)
-        );
-        javaOptions.setCodeFoldingProps (javaFoldingMap);
-        
-        Set mimeTypes = EditorSettings.getDefault().getMimeTypes();
-        for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
-            String mimeType = (String) i.next();
-            BaseOptions baseOptions = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
+        Set<String> mimeTypes = EditorSettings.getDefault().getAllMimeTypes();
+        for(String mimeType : mimeTypes) {
+            BaseOptions baseOptions = getOptions(mimeType);
             
             if (baseOptions == null) {
                 continue;
             }
             
             Map m = baseOptions.getCodeFoldingProps ();
+
             m.put (
                 SettingsNames.CODE_FOLDING_ENABLE,
                 Boolean.valueOf (showCodeFolding)
             );
+            m.put (
+                "code-folding-collapse-import",
+                Boolean.valueOf (foldImports)
+            );
+            m.put (
+                "code-folding-collapse-initial-comment",
+                Boolean.valueOf (foldInitialComent)
+            );
+            m.put (
+                "code-folding-collapse-innerclass",
+                Boolean.valueOf (foldInnerClasses)
+            );
+            m.put (
+                "code-folding-collapse-javadoc",
+                Boolean.valueOf (foldJavaDoc)
+            );
+            m.put (
+                "code-folding-collapse-method",
+                Boolean.valueOf (foldMethods)
+            );
+            
             baseOptions.setCodeFoldingProps (m);
         }
     }
@@ -219,35 +209,56 @@ public class Model {
         String parameterName, 
         boolean defaultValue
     ) {
-        BaseOptions options = getOptions ("text/x-java");
-        if (options == null)
-            options = getOptions ("text/plain");
-        if (options == null) return defaultValue;
-        Map javaFoldingMap = options.getCodeFoldingProps ();
-        Boolean b = (Boolean) javaFoldingMap.get (parameterName);
-        if (b != null) return b.booleanValue ();
-        return defaultValue;
+        boolean successfullRead = false;
+        Set<String> mimeTypes = EditorSettings.getDefault().getAllMimeTypes();
+        
+        for(String mimeType : mimeTypes) {
+            BaseOptions options = getOptions(mimeType);
+            
+            if (options == null) {
+                continue;
+            }
+        
+            Map foldingParams = options.getCodeFoldingProps();
+            Boolean value = (Boolean) foldingParams.get(parameterName);
+            
+            if (value != null && value.booleanValue()) {
+                return true;
+            } else {
+                successfullRead = true;
+            }
+        }
+        
+        return successfullRead ? false : defaultValue;
     }
     
-    private BaseOptions javaOptions;
-    
     private boolean getParameter (String parameterName, boolean defaultValue) {
-        if (javaOptions == null) {
-            javaOptions = getOptions ("text/x-java");
-            if (javaOptions == null)
-                javaOptions = getOptions ("text/plain");
+        boolean successfullRead = false;
+        Set<String> mimeTypes = EditorSettings.getDefault().getAllMimeTypes();
+        
+        for(String mimeType : mimeTypes) {
+            BaseOptions options = getOptions(mimeType);
+            
+            if (options == null) {
+                continue;
+            }
+            
+            try {
+                Method method = options.getClass ().getMethod (
+                    parameterName,
+                    new Class [0]
+                );
+                boolean value = ((Boolean) method.invoke(options, new Object[0])).booleanValue();
+                if (value) {
+                    return true;
+                } else {
+                    successfullRead = true;
+                }
+            } catch (Exception ex) {
+            }
         }
-        if (javaOptions == null) return defaultValue;
-        try {
-            Method method = javaOptions.getClass ().getMethod (
-                parameterName,
-                new Class [0]
-            );
-            return ((Boolean) method.invoke (javaOptions, new Object [0])).
-                booleanValue ();
-        } catch (Exception ex) {
-        }
-        return defaultValue;
+        
+        return successfullRead ? false : defaultValue;
     }
     
     private static BaseOptions getOptions (String mimeType) {

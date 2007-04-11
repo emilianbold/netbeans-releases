@@ -309,7 +309,8 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     
     void applyChanges () {
         
-        if (model == null) return;
+        if (model == null || !changed) return;
+        
         // code folding options
         model.setFoldingOptions (
             cbUseCodeFolding.isSelected (),
