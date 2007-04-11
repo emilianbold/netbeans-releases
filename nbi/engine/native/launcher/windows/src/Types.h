@@ -16,15 +16,11 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * $Id$
  */
-
-
-#include <windows.h>
-
 #ifndef _Types_H
 #define	_Types_H
 
+#include <windows.h>
 #ifdef	__cplusplus
 extern "C" {
 #endif

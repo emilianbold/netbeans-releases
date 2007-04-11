@@ -15,11 +15,8 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * $Id$
+ * 
  */
-
-
 #ifndef _SystemUtils_H
 #define	_SystemUtils_H
 

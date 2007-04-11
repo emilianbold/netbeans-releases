@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * $Id$
  */
 #include "ProcessUtils.h"
 #include "StringUtils.h"
@@ -66,13 +65,13 @@ DWORD readProcessStream(PROCESS_INFORMATION pi, HANDLE currentProcessStdin, HAND
     DWORD outRead =0;
     DWORD errRead =0;
     DWORD inRead =0;
-    while(1) {                
+    while(1) {
         outRead = readNextData(currentProcessStdout, buf, hWriteOutput);
-        errRead = readNextData(currentProcessStderr, buf, hWriteError);        
+        errRead = readNextData(currentProcessStderr, buf, hWriteError);
         inRead  = readNextData(hWriteInput, buf, currentProcessStdin);
         GetExitCodeProcess(pi.hProcess, &exitCode);
         if (exitCode != STILL_ACTIVE) break;
-                
+        
         if(outRead == 0 && errRead==0 && inRead==0 && timeOut!=INFINITE) {
             if((GetTickCount() - started) > timeOut) break;
         }
@@ -108,10 +107,10 @@ char * readHandle(HANDLE hRead) {
 // command - executing command
 // timeLimitMillis - timeout of the process running without any output
 // dir - working directory
-// return MAXDWORD for serios error
-// return EXIT_CODE_TIMEOUT for timeout
+// return ERROR_ON_EXECUTE_PROCESS for serios error
+// return ERROR_PROCESS_TIMEOUT for timeout
 
-DWORD executeCommand(WCHAR * command, WCHAR * dir, DWORD timeLimitMillis, HANDLE hWriteOutput, HANDLE hWriteError, DWORD priority) {
+DWORD executeCommand(DWORD * status, WCHAR * command, WCHAR * dir, DWORD timeLimitMillis, HANDLE hWriteOutput, HANDLE hWriteError, DWORD priority) {
     STARTUPINFOW si;
     SECURITY_ATTRIBUTES sa;
     SECURITY_DESCRIPTOR sd;
@@ -134,14 +133,16 @@ DWORD executeCommand(WCHAR * command, WCHAR * dir, DWORD timeLimitMillis, HANDLE
     
     if (!CreatePipe(&newProcessInput, &currentProcessStdin, &sa, 0)) {
         writeErrorA(OUTPUT_LEVEL_NORMAL, getStderrHandle(), "Can`t create pipe for input. ", NULL , GetLastError());
-        return MAXDWORD;
+        *status = ERROR_ON_EXECUTE_PROCESS;
+        return (*status);
     }
     
     if (!CreatePipe(&currentProcessStdout, &newProcessOutput, &sa, 0)) {
         writeErrorA(OUTPUT_LEVEL_NORMAL, getStderrHandle(), "Can`t create pipe for output. ", NULL , GetLastError());
         CloseHandle(newProcessInput);
         CloseHandle(currentProcessStdin);
-        return MAXDWORD;
+        *status = ERROR_ON_EXECUTE_PROCESS;
+        return (*status);
     }
     
     if (!CreatePipe(&currentProcessStderr, &newProcessError, &sa, 0)) {
@@ -150,7 +151,8 @@ DWORD executeCommand(WCHAR * command, WCHAR * dir, DWORD timeLimitMillis, HANDLE
         CloseHandle(currentProcessStdin);
         CloseHandle(newProcessOutput);
         CloseHandle(currentProcessStdout);
-        return MAXDWORD;
+        *status = ERROR_ON_EXECUTE_PROCESS;
+        return (*status);
     }
     
     
@@ -169,10 +171,12 @@ DWORD executeCommand(WCHAR * command, WCHAR * dir, DWORD timeLimitMillis, HANDLE
     writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "        directory : ", 0);
     writeMessageW(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), directory, 1);
     
-    DWORD exitCode;
+    DWORD exitCode = ERROR_OK;
     if (CreateProcessW(NULL, command, NULL, NULL, TRUE,
     CREATE_NEW_CONSOLE | CREATE_NO_WINDOW | CREATE_DEFAULT_ERROR_MODE | priority,
     NULL, directory, &si, &pi)) {
+        *status = ERROR_OK;
+        
         writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... process created", 1);
         DWORD timeOut = ((timeLimitMillis<=0) ? DEFAULT_PROCESS_TIMEOUT: timeLimitMillis);
         
@@ -187,17 +191,17 @@ DWORD executeCommand(WCHAR * command, WCHAR * dir, DWORD timeLimitMillis, HANDLE
                 TerminateProcess(pi.hProcess, 0);
                 writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "... terminate process", 1);
                 //Terminating process...It worked too much without any stdout/stdin/stderr
-                exitCode = EXIT_CODE_TIMEOUT;//terminated by timeout
+                *status = ERROR_PROCESS_TIMEOUT;//terminated by timeout
             }
         } else {
-            //application finished its work... succesfully or not - it doesn`t matter
+            //application finished its work... succesfully or not - it doesn`t matter            
             writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... process finished his work", 1);
         }
         CloseHandle(pi.hThread);
         CloseHandle(pi.hProcess);
     }  else {
-        writeErrorA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "... can`t create process.", NULL, GetLastError());        
-        exitCode = MAXDWORD;
+        writeErrorA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "... can`t create process.", NULL, GetLastError());
+        *status = ERROR_ON_EXECUTE_PROCESS;
     }
     
     

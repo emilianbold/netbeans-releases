@@ -16,10 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * $Id$
  */
-
-
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>

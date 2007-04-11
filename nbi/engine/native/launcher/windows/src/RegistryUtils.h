@@ -16,13 +16,11 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  * 
- * $Id$
  */
-#include <windows.h>
-
 #ifndef _RegistryUtils_H
 #define	_RegistryUtils_H
 
+#include <windows.h>
 #ifdef	__cplusplus
 extern "C" {
 #endif

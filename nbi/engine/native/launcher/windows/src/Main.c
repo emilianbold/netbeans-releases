@@ -16,9 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * $Id$
  */
-
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -333,34 +331,48 @@ DWORD createGui(HINSTANCE hInstance, HINSTANCE hi, int nCmdShow) {
     FREE(events);
     return (result == WAIT_OBJECT_0);
 }
+
+WCHARList * getCommandlineArguments() {
+    int argumentsNumber = 0;
+    int i=0;
+    
+    WCHAR ** commandLine = CommandLineToArgvW(GetCommandLineW(), &argumentsNumber);
+    
+    // the first is always the running program..  we don`t need it
+    // it is that same as GetModuleFileNameW says
+    WCHARList * commandsList = newWCHARList((DWORD) (argumentsNumber - 1) );
+    
+    for(i=0;i<argumentsNumber - 1;i++) {
+        
+        commandsList->items[i] = appendStringW(NULL, commandLine[i + 1]);
+    }
+    
+    LocalFree(commandLine);
+    return commandsList;
+}
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hi, PSTR pszCmdLine, int nCmdShow) {
-    DWORD exitCode = MAXDWORD;
+    DWORD exitCode = 1;
+    DWORD status = ERROR_OK;
     globalInstance = hInstance;
     if(is9x()) {
         showMessageA(0, "Windows 9X platform is not supported");
-        return -1;
-    }
-    
-    if(isOnlyLauncher()) {
-        showMessageW(0, L"It is only a launcher stub!");
-    }
-    else {
-        
-        setStdoutHandle(GetStdHandle(STD_OUTPUT_HANDLE));
-        int argumentsNumber = 0;
-        WCHAR ** commandLine = CommandLineToArgvW(GetCommandLineW(), &argumentsNumber);
-        // the first is always the running program..  we don`t need it
-        // it is that same as GetModuleFileNameW says
-        FREE(commandLine [0]);
-        setRunningMode(commandLine, argumentsNumber);
-        if(!createGui(hInstance, hi, nCmdShow)) {
-            return EXIT_CODE_INITIALIZATION_ERROR;
+        status = EXIT_CODE_SYSTEM_ERROR;
+    } else {
+        if(isOnlyLauncher()) {
+            showMessageW(0, L"It is only a launcher stub!");
+            status = EXIT_CODE_STUB;
+        } else {
+            setStdoutHandle(GetStdHandle(STD_OUTPUT_HANDLE));
+            WCHARList * commandsList = getCommandlineArguments();
+            setRunningMode(commandsList);
+            if(!createGui(hInstance, hi, nCmdShow)) {
+                status = EXIT_CODE_GUI_INITIALIZATION_ERROR;
+            } else {
+                exitCode = processLauncher(&status, commandsList);
+                closeLauncherWindows();
+            }
+            freeWCHARList(&commandsList);
         }
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... process launcher ", 1);
-        exitCode = processLauncher(commandLine, argumentsNumber);
-        
-        closeLauncherWindows();
-        LocalFree(commandLine);
     }
-    return exitCode;
+    return (status==ERROR_OK) ? exitCode : status;
 }

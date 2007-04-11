@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * $Id$
  */
 #include <wchar.h>
 #include <stdio.h>
@@ -260,14 +259,15 @@ DWORD getJavaProperties(WCHAR * location, LauncherProperties * props, JavaProper
         HANDLE hWrite;
         CreatePipe(&hRead, &hWrite, NULL, 0);
         // Start the child process.
-        result = executeCommand(command, NULL, JAVA_VERSION_PROCESS_TIMEOUT, hWrite, hWrite, NORMAL_PRIORITY_CLASS);
-        if(result!= MAXDWORD && result!= EXIT_CODE_TIMEOUT) {
+        DWORD status = ERROR_OK;
+        executeCommand(&status, command, NULL, JAVA_VERSION_PROCESS_TIMEOUT, hWrite, hWrite, NORMAL_PRIORITY_CLASS);
+        if(status!= ERROR_ON_EXECUTE_PROCESS && status!= ERROR_PROCESS_TIMEOUT) {
             char * output = readHandle(hRead);
             writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "           output :\n", 0);
             writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), output, 1);
             
             result = getJavaPropertiesFromOutput(output, javaProps);
-            if(result==ERROR_OK) {
+            if(status==ERROR_OK) {
                 (*javaProps)->javaHome = appendStringW(NULL, location);
                 (*javaProps)->javaExe  = appendStringW(NULL, javaExecutable);
             }

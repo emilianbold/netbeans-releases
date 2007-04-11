@@ -16,25 +16,16 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * $Id$
  */
-#include <windows.h>
-#include <stdarg.h>
 #ifndef _StringUtils_H
 #define	_StringUtils_H
 
+#include <windows.h>
+#include <stdarg.h>
 #ifdef	__cplusplus
 extern "C" {
 #endif
     
-    
-#define ERROR_OK 0
-#define ERROR_INTEGRITY 1
-#define ERROR_FREESPACE 2
-#define ERROR_INPUTOUPUT 3
-#define ERROR_JVM_UNCOMPATIBLE 4   
-#define ERROR_JVM_NOT_FOUND 5   
-
     
 
 #define  JVM_NOT_FOUND_PROP           "nlw.jvm.notfoundmessage"

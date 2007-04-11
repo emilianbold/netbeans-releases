@@ -16,14 +16,14 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  * 
- * $Id$
  */
-
-#include <windows.h>
 #ifndef _JavaUtils_H
 #define	_JavaUtils_H
+
+#include <windows.h>
 #include "Launcher.h"
 #include "Types.h"
+#include "Errors.h"
 
 #ifdef	__cplusplus
 extern "C" {

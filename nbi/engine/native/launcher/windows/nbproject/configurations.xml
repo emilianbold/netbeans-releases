@@ -17,6 +17,7 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <itemPath>src/Errors.h</itemPath>
       <itemPath>src/ExtractUtils.h</itemPath>
       <itemPath>src/FileUtils.h</itemPath>
       <itemPath>src/JavaUtils.h</itemPath>
@@ -143,6 +144,9 @@
       <item path="src/Types.h">
         <itemTool>3</itemTool>
       </item>
+      <item path="src/Errors.h">
+        <itemTool>3</itemTool>
+      </item>
     </conf>
     <conf name="Release" type="1">
       <toolsSet>
@@ -240,6 +244,9 @@
         <itemTool>3</itemTool>
       </item>
       <item path="src/Types.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/Errors.h">
         <itemTool>3</itemTool>
       </item>
     </conf>

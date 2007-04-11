@@ -16,17 +16,16 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  * 
- * $Id$
  */
 #ifndef _ProcessUtils_H
 #define	_ProcessUtils_H
 
 #include <windows.h>
 #include <stdio.h>
+#include "Errors.h"
 #include "ExtractUtils.h"
 #include "FileUtils.h"
 
-#define EXIT_CODE_TIMEOUT (MAXDWORD - 2)
 
 #ifdef	__cplusplus
 extern "C" {
@@ -38,7 +37,7 @@ extern "C" {
     
     char * readHandle(HANDLE hRead);
     
-    DWORD executeCommand(WCHAR * command, WCHAR * dir, DWORD timeLimitMillis, HANDLE hWriteOutput, HANDLE hWriteError, DWORD priority);
+    DWORD executeCommand(DWORD * status, WCHAR * command, WCHAR * dir, DWORD timeLimitMillis, HANDLE hWriteOutput, HANDLE hWriteError, DWORD priority);
     
 #ifdef	__cplusplus
 }

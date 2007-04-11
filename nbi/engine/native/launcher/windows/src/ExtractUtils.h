@@ -17,15 +17,14 @@
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  * 
- * $Id$
  */
+#ifndef _ExtractUtils_H
+#define	_ExtractUtils_H
 
 #include <windows.h>
 #include "StringUtils.h"
 #include "JavaUtils.h"
-
-#ifndef _ExtractUtils_H
-#define	_ExtractUtils_H
+#include "Errors.h"
 
 #ifdef	__cplusplus
 extern "C" {

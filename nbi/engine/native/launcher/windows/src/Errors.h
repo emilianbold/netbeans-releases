@@ -17,30 +17,31 @@
  * Microsystems, Inc. All Rights Reserved.
  *
  */
-#ifndef _Main_H
-#define	_Main_H
-
-#include "Errors.h"
+#ifndef _Errors_H
+#define	_Errors_H
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
+
     
-void addProgressPosition(DWORD add);
-void setProgressRange(double size);
-void setDetailString(WCHAR * message);
-void setTitleString(WCHAR * message);
+#define ERROR_OK                            0
+#define ERROR_INTEGRITY                     1000
+#define ERROR_FREESPACE                     1001
+#define ERROR_INPUTOUPUT                    1002
+#define ERROR_JVM_UNCOMPATIBLE              1003
+#define ERROR_JVM_NOT_FOUND                 1004
+#define ERROR_ON_EXECUTE_PROCESS            1005
+#define ERROR_PROCESS_TIMEOUT               1006
+    
+#define EXIT_CODE_GUI_INITIALIZATION_ERROR  1023
+#define EXIT_CODE_STUB                      1024
+#define EXIT_CODE_SYSTEM_ERROR              1025
 
-void showLauncherWindows();
-void closeLauncherWindows();
-void hideLauncherWindows();
-
-void showMessageW(const DWORD number, const WCHAR* message,...);
-void showMessageA(const DWORD varArgsNumber, const char * message, ...);
 
 #ifdef	__cplusplus
 }
 #endif
 
-#endif	/* _Main_H */
+#endif	/* _Errors_H */
 

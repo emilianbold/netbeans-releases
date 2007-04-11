@@ -16,12 +16,12 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * $Id$
  */
 #ifndef _Launcher_H
 #define	_Launcher_H
 
 #include <windows.h>
+#include "Errors.h"
 #include "JavaUtils.h"
 #include "Types.h"
 
@@ -36,12 +36,12 @@ extern "C" {
     
     void freeLauncherProperties(LauncherProperties ** props);
     
-    void setRunningMode(WCHAR ** commandLine, int argumentsNumber);
-    void setSpaceChecking(WCHAR **commandLine, int argumentsNumber);
+    void setRunningMode(WCHARList * commandLine);
+    void setSpaceChecking(WCHARList * commandLine);
     
     DWORD isSilent();
     
-    DWORD processLauncher(WCHAR ** commandLine, int argumentsNumber);
+    DWORD processLauncher(DWORD * status, WCHARList * commandLine);
     
     void resolvePath (LauncherProperties * props, LauncherResource * file);
     
