@@ -68,9 +68,13 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="mobility.url" url="nbresloc:/org/netbeans/modules/welcome/resources/mobility.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 </file>
+                <file name="uml.url" url="nbresloc:/org/netbeans/modules/welcome/resources/uml.url">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                </file>
 
 
                 <attr name="profiler.url/mobility.url" boolvalue="true"/>
+                <attr name="mobility.url/uml.url" boolvalue="true"/>
             </folder>
 
             <folder name="Resources">
