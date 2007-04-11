@@ -441,6 +441,17 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         locations.put(newDisplayName, widgetPoint);
     }
     
+    /* Save For Later */
+    private boolean isLocationReserved( Point potentionalPoint ) {
+        Collection<Point> points = locations.values();
+        for( Point point : points ) {
+            Rectangle rect = new Rectangle( point.x, point.y, PageFlowLayoutUtilities.NODE_SIZE_APPROX_WIDTH, PageFlowLayoutUtilities.NODE_SIZE_APPROX_HEIGHT);
+            if( rect.contains(potentionalPoint)){
+                return true;
+            }
+        }
+        return false;
+    }
     
     private final class PageFlowSelectProvider implements SelectProvider {
         
