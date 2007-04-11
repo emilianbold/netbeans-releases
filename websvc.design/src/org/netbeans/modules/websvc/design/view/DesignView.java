@@ -38,6 +38,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
+import org.netbeans.modules.websvc.design.view.widget.ButtonAction;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
 import org.openide.filesystems.FileObject;
 
@@ -74,6 +75,7 @@ public class DesignView extends JPanel  {
         // add actions
         scene.getActions().addAction(ActionFactory.createZoomAction());
         scene.getActions().addAction(ActionFactory.createPanAction());
+        scene.getActions().addAction(ButtonAction.DEFAULT);
         
         mMainLayer = new LayerWidget(scene);
         mMainLayer.setPreferredLocation(new Point(0, 0));
