@@ -21,7 +21,15 @@ package org.netbeans.modules.compapp.casaeditor.design;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.lang.Thread.State;
 import java.util.ArrayList;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
+import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
+import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetEvent;
+import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
+import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Constants;
@@ -50,14 +58,19 @@ import org.openide.util.NbBundle;
  */
 public class CasaModelGraphUtilities {
     
+    private static final DisablingAction DISABLER = new DisablingAction();
+    
     
     public static void renderModel(final CasaWrapperModel model, final CasaModelGraphScene scene)
     {
         try {
+            scene.getPriorActions().addAction(0, DISABLER);
             safeRenderModel(model, scene);
         } catch (final Throwable t) {
             scene.autoLayout(false);
             ErrorManager.getDefault().notify(t);
+        } finally {
+            scene.getPriorActions().removeAction(DISABLER);
         }
     }
     
@@ -386,5 +399,85 @@ public class CasaModelGraphUtilities {
      */
     public static void ensureVisibity(Widget w) {
         w.getScene().getView().scrollRectToVisible(w.convertLocalToScene(w.getBounds()));
+    }
+    
+    
+    private static class DisablingAction extends WidgetAction.Adapter {
+        
+        @Override
+        public State mouseClicked(Widget arg0, WidgetMouseEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State mousePressed(Widget arg0, WidgetMouseEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State mouseReleased(Widget arg0, WidgetMouseEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State mouseEntered(Widget arg0, WidgetMouseEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State mouseExited(Widget arg0, WidgetMouseEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State mouseDragged(Widget arg0, WidgetMouseEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State mouseMoved(Widget arg0, WidgetMouseEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State keyTyped(Widget arg0, WidgetKeyEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State keyPressed(Widget arg0, WidgetKeyEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State keyReleased(Widget arg0, WidgetKeyEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State dragEnter(Widget arg0, WidgetDropTargetDragEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State dragOver(Widget arg0, WidgetDropTargetDragEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State dropActionChanged(Widget arg0,
+                WidgetDropTargetDragEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State dragExit(Widget arg0, WidgetDropTargetEvent arg1) {
+            return State.CONSUMED;
+        }
+        
+        @Override
+        public State drop(Widget arg0, WidgetDropTargetDropEvent arg1) {
+            return State.CONSUMED;
+        }
     }
 }
