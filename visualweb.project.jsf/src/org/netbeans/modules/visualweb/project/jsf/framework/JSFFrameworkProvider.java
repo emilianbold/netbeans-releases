@@ -488,12 +488,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             JspConfig jspConfig = ddRoot.getSingleJspConfig();
                             if (jspConfig == null) {
                                 jspConfig = (JspConfig)ddRoot.createBean("JspConfig"); // NOI18N
-                                JspPropertyGroup jspGroup = (JspPropertyGroup)jspConfig.createBean("JspPropertyGroup"); // NOI18N
-                                jspGroup.addUrlPattern("*.jspf");
-                                jspGroup.setIsXml(true);
-                                jspConfig.addJspPropertyGroup(jspGroup);
                                 ddRoot.addJspConfig(jspConfig);
                             }
+
+                            JspPropertyGroup jspGroup = (JspPropertyGroup)jspConfig.createBean("JspPropertyGroup"); // NOI18N
+                            jspGroup.addUrlPattern("*.jspf");
+                            jspGroup.setIsXml(true);
+                            jspConfig.addJspPropertyGroup(jspGroup);
                         } catch (VersionNotSupportedException e) {
                             // already exclude J2EE 1.3 project here
                         }
