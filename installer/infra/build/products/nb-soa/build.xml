@@ -27,7 +27,7 @@
   core properties. For more details on the values of these properties see
   the build.properties file.
 -->
-<project name="nb-soa-product" default="usage" basedir=".">
+<project name="nb-soa" default="usage" basedir=".">
     <!-- import the properties that are specific to this environment -->
     <property file="${environment.properties}"/>
     
@@ -45,23 +45,32 @@
     <target name="-pre-package">
         <delete includeemptydirs="true">
             <fileset dir="${data.directory}">
-                <exclude name="soa${sources.params.2.value}"/>
-                <exclude name="soa${sources.params.2.value}/**"/>
+                <exclude name="soa1"/>
+                <exclude name="soa1/**"/>
             </fileset>
         </delete>
         
         <move todir="${data.directory}">
-            <fileset dir="${data.directory}/soa${sources.params.2.value}">
+            <fileset dir="${data.directory}/soa1">
                 <include name="**/*"/>
             </fileset>
         </move>
         
         <delete includeemptydirs="true">
             <fileset dir="${data.directory}">
-                <include name="soa${sources.params.2.value}"/>
-                <include name="soa${sources.params.2.value}/**"/>
+                <include name="soa1"/>
+                <include name="soa1/**"/>
             </fileset>
         </delete>
+        
+        <if property="instrument.jars" value="true">
+            <exec executable="bash.exe" failonerror="true" dir="${data.directory}">
+                <arg value="${emma.sh.file}"/>
+                <arg value="."/>
+                <arg value="${emma.txt.file}"/>
+                <arg value="${emma.jar.file}"/>
+            </exec>
+        </if>
     </target>
     
     <!-- ============================================================================
