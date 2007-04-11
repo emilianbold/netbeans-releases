@@ -84,8 +84,8 @@
     ======================================================================== -->
 
     <target name="native-clean" depends="jnilib-clean,launcher-clean,cleaner-clean"/>
-    <target name="native-compile" depends="native-clean,jnilib-compile,launcher-compile,cleaner-compile"/>
-    <target name="native-build" depends="native-clean,native-compile"/>
+    <target name="native-compile" depends="jnilib-compile,launcher-compile,cleaner-compile"/>
+    <target name="native-build" depends="jnilib-build,launcher-build,cleaner-build"/>
 
     <target name="define-platform">
         <condition property="is.windows">
