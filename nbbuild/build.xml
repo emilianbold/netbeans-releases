@@ -450,6 +450,7 @@ Microsystems, Inc. All Rights Reserved.
     <echo file="${netbeans.javadoc.dir}/index.html" ><![CDATA[
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
 <HTML><HEAD><TITLE>NetBeans API Index</TITLE>
+<link type="application/atom+xml" rel="alternate" href="apichanges.atom">
 </HEAD>
 <FRAMESET cols="20%,80%" title="" onLoad="top.loadFrames()">
 <FRAMESET rows="30%,70%" title="" onLoad="top.loadFrames()">
@@ -461,7 +462,7 @@ Microsystems, Inc. All Rights Reserved.
 <H2>Frame Alert</H2>
 <P>
 This document is designed to be viewed using the frames feature. If you see this message, you are using a non-frame-capable web client.
-Link to<A HREF="overview-summary.html">Non-frame version.</A>
+Link to <A HREF="overview-summary.html">Non-frame version.</A>
 </NOFRAMES>
 </FRAMESET>
 </HTML>
