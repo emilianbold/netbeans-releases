@@ -61,6 +61,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.project.api.WebProjectLibrariesModifier;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 // XXX wait for NetBeans API
 //import org.netbeans.modules.project.ui.ProjectTab;
@@ -101,11 +102,12 @@ import org.openide.util.Mutex;
  * @author Po-Ting Wu
  */
 public class JsfProjectUtils {
+    public final static String PATH_IN_WAR_LIB = "WEB-INF/lib"; //NOI18N
     public final static String SUN_WEB_XML_PATH = "web/WEB-INF/sun-web.xml"; // NOI18N
 
     private final static String RAVE_AUX_NAMESPACE = "http://www.sun.com/creator/ns";
     private final static String RAVE_AUX_NAME = "creator-data";
-    private static final String[] CreatorProperties = {
+    private final static String[] CreatorProperties = {
         JsfProjectConstants.PROP_CURRENT_THEME,
         JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE,
         JsfProjectConstants.PROP_JSF_PROJECT_LIBRARIES_DIR,
@@ -1160,40 +1162,69 @@ public class JsfProjectUtils {
     }
     
     /**
-     * @deprecated
-     * Use {@link JsfProjectUtils#addLibraryReferences}.
-     * Add a single library reference to a project, qualified by the role parameter.
-     */
-    public static boolean addLibraryReference(Project project, Library library, String type) throws IOException {
-        return addLibraryReferences(project, new Library[] { library }, type);
-    }
-    
-    /**
-     * Add an array of library references to a project, qualified by the role parameter.
+     * Add an array of library references to a project, qualified for both the design-time classpath or deployed with the application
      * @param project Project to which the library is to be added
      * @param library Library object from the LibraryManager registry
-     * @param role Determines whether the library is to be added to the design-time classpath or deployed
-     * with the application
      * @return Returns true if the library reference was successfully added
      * @throws an IOException if there was a problem adding the reference
      */
-    public static boolean addLibraryReferences(Project project, Library[] libraries, String type) throws IOException {
-        // XXX NetBeans API not finished yet
-        type = ClassPath.COMPILE;
+    public static boolean addLibraryReferences(Project project, Library[] libraries) throws IOException {
         try {
-            return ProjectClassPathModifier.addLibraries(libraries, getSourceRoot(project), type);
+            return ProjectClassPathModifier.addLibraries(libraries, getSourceRoot(project), ClassPath.COMPILE);
         } catch (IOException e) {
             // Should continue here, many exceptions happened in NetBeans codes are not fatal.
         }
 
         return false;
     }
+
+    /**
+     * Add an array of library references to a project, qualified by the type parameter.
+     * @param project Project to which the library is to be added
+     * @param library Library object from the LibraryManager registry
+     * @param type Determines whether the library is to be added to the design-time classpath or deployed
+     * with the application
+     * @return Returns true if the library reference was successfully added
+     * @throws an IOException if there was a problem adding the reference
+     */
+    public static boolean addLibraryReferences(Project project, Library[] libraries, String type) throws IOException {
+        WebProjectLibrariesModifier wplm = (WebProjectLibrariesModifier) project.getLookup().lookup(WebProjectLibrariesModifier.class);
+        if (wplm == null) {
+            // Something is wrong, shouldn't be here.
+            return addLibraryReferences(project, libraries);
+        }
+
+        if (type == ClassPath.COMPILE) {
+            return wplm.addCompileLibraries(libraries);
+        } else if (type == ClassPath.EXECUTE) {
+            return wplm.addPackageLibraries(libraries, PATH_IN_WAR_LIB);
+        }
+
+        return false;
+    }
     
     /**
-     * Remove an array of library references from a project, qualified by the role parameter.
+     * Remove an array of library references from a project, qualified for both the design-time classpath or deployed with the application
      * @param project Project from which the library references are to be removed
      * @param library Array of Library objects from the LibraryManager registry
-     * @param role Determines whether the library is to be removed from the design-time classpath or deployed
+     * @return Returns true if at least one of the library references were successfully removed
+     * @throws an IOException if there was a problem removing the reference
+     */
+    public static boolean removeLibraryReferences(Project project, Library[] libraries) throws IOException {
+        try {
+            return ProjectClassPathModifier.removeLibraries(libraries, getSourceRoot(project), ClassPath.COMPILE);
+        } catch (IOException e) {
+            // Should continue here, many exceptions happened in NetBeans codes are not fatal.
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Remove an array of library references from a project, qualified by the type parameter.
+     * @param project Project from which the library references are to be removed
+     * @param library Array of Library objects from the LibraryManager registry
+     * @param type Determines whether the library is to be removed from the design-time classpath or deployed
      * with the application
      * @return Returns true if at least one of the library references were successfully removed
      * @throws an IOException if there was a problem removing the reference
@@ -1211,10 +1242,20 @@ public class JsfProjectUtils {
     }
     
     /**
-     * Check if a project has a library reference to the named library qualified by the role parameter.
+     * Check if a project has a library reference to the named library qualified for both the design-time classpath or deployed with the application
      * @param project Target project
      * @param library Library object
-     * @param role Determines whether the library is to be referenced from the design-time classpath or deploy
+     * @return Returns true if the library is already referenced by the project, false otherwise
+     */
+    public static boolean hasLibraryReference(Project project, Library library) {
+        return hasLibraryReference(project, library, ClassPath.COMPILE);
+    }
+
+    /**
+     * Check if a project has a library reference to the named library qualified by the type parameter.
+     * @param project Target project
+     * @param library Library object
+     * @param type Determines whether the library is to be referenced from the design-time classpath or deploy
      * time classpath
      * @return Returns true if the library is already referenced by the project, false otherwise
      */
@@ -1238,40 +1279,69 @@ public class JsfProjectUtils {
     }
     
     /**
-     * @deprecated
-     * Use {@link JsfProjectUtils#addRootReferences}.
-     * Add a single root reference to a project, qualified by the role parameter.
-     */
-    public static boolean addRootReference(Project project, URL rootFile, String type) throws IOException {
-        return addRootReferences(project, new URL[] { rootFile }, type);
-    }
-    
-    /**
-     * Add an root reference to a project qualified by the role parameter.
+     * Add an root reference to a project qualified for both the design-time classpath or deployed with the application
      * @param project Project to which the root is to be added
      * @param rootFile file object of the root
-     * @param role Determines whether the root is to be added to the design-time classpath or deployed
-     * with the application
      * @return Returns true if the root was successfully added
      * @throws an IOException if there was a problem adding the reference
      */
-    public static boolean addRootReferences(Project project, URL[] rootFiles, String type) throws IOException {
-        // XXX NetBeans API not finished yet
-        type = ClassPath.COMPILE;
+    public static boolean addRootReferences(Project project, URL[] rootFiles) throws IOException {
         try {
-            return ProjectClassPathModifier.addRoots(rootFiles, getSourceRoot(project), type);
+            return ProjectClassPathModifier.addRoots(rootFiles, getSourceRoot(project), ClassPath.COMPILE);
         } catch (IOException e) {
             // Should continue here, many exceptions happened in NetBeans codes are not fatal.
         }
 
         return false;
     }
-    
+
     /**
-     * Remove an array of root references from a project qualified by the role parameter.
+     * Add an root reference to a project qualified by the type parameter.
+     * @param project Project to which the root is to be added
+     * @param rootFile file object of the root
+     * @param type Determines whether the root is to be added to the design-time classpath or deployed
+     * with the application
+     * @return Returns true if the root was successfully added
+     * @throws an IOException if there was a problem adding the reference
+     */
+    public static boolean addRootReferences(Project project, URL[] rootFiles, String type) throws IOException {
+        WebProjectLibrariesModifier wplm = (WebProjectLibrariesModifier) project.getLookup().lookup(WebProjectLibrariesModifier.class);
+        if (wplm == null) {
+            // Something is wrong, shouldn't be here.
+            return addRootReferences(project, rootFiles);
+        }
+
+        if (type == ClassPath.COMPILE) {
+            return wplm.addCompileRoots(rootFiles);
+        } else if (type == ClassPath.EXECUTE) {
+            return wplm.addPackageRoots(rootFiles, PATH_IN_WAR_LIB);
+        }
+
+        return false;
+    }
+
+    /**
+     * Remove an array of root references from a project qualified for both the design-time classpath or deployed with the application
      * @param project Project from which the root references is to be removed
      * @param rootFile file object of the root
-     * @param role Determines whether the root is to be removed from the design-time classpath or deploy
+     * @return Returns true if at least one of the roots was successfully removed
+     * @throws an IOException if there was a problem removing the references
+     */
+    public static boolean removeRootReferences(Project project, URL[] rootFiles) throws IOException {
+        try {
+            return ProjectClassPathModifier.removeRoots(rootFiles, getSourceRoot(project), ClassPath.COMPILE);
+        } catch (IOException e) {
+            // Should continue here, many exceptions happened in NetBeans codes are not fatal.
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Remove an array of root references from a project qualified by the type parameter.
+     * @param project Project from which the root references is to be removed
+     * @param rootFile file object of the root
+     * @param type Determines whether the root is to be removed from the design-time classpath or deploy
      * time classpath
      * @return Returns true if at least one of the roots was successfully removed
      * @throws an IOException if there was a problem removing the references
@@ -1289,10 +1359,20 @@ public class JsfProjectUtils {
     }
     
     /**
-     * Check if a project has an root reference to the named root qualified by the role parameter.
+     * Check if a project has an root reference to the named root qualified for both the design-time classpath or deployed with the application
      * @param project Target project
      * @param rootFile file object of the root
-     * @param role Determines whether the root is to be referenced from the design-time classpath or deploy
+     * @return Returns true if the root is already referenced by the project, false otherwise
+     */
+    public static boolean hasRootReference(Project project, URL rootFile) {
+        return hasRootReference(project, rootFile, ClassPath.COMPILE);
+    }
+
+    /**
+     * Check if a project has an root reference to the named root qualified by the type parameter.
+     * @param project Target project
+     * @param rootFile file object of the root
+     * @param type Determines whether the root is to be referenced from the design-time classpath or deploy
      * time classpath
      * @return Returns true if the root is already referenced by the project, false otherwise
      */
@@ -1309,15 +1389,6 @@ public class JsfProjectUtils {
         return cp.contains(obj);
     }
     
-    /**
-     * @deprecated
-     * Use {@link JsfProjectUtils#addLocalizedRoots}.
-     * Add a single localized root reference to a project, qualified by the role parameter.
-     */
-    public static void addLocalizedRoot(Project project, String jarName, String type) throws IOException {
-        addLocalizedRoots(project, new String[] { jarName }, type);
-    }
-
     public static void addLocalizedRoots(Project project, String[] jarName, String type) throws IOException {
         ArrayList jars = new ArrayList(jarName.length);
         for (int i = 0; i < jarName.length; i++) {
@@ -1343,11 +1414,8 @@ public class JsfProjectUtils {
     public static void addLocalizedTheme(Project project, String themeName) throws IOException {
         URL root = JsfProjectLibrary.getLocalizedThemeRoot(themeName);
         if (root != null) {
-            if (!hasRootReference(project, root, ClassPath.COMPILE)) {
-                addRootReferences(project, new URL[] { root }, ClassPath.COMPILE);
-            }
-            if (!hasRootReference(project, root, ClassPath.EXECUTE)) {
-                addRootReferences(project, new URL[] { root }, ClassPath.EXECUTE);
+            if (!hasRootReference(project, root)) {
+                addRootReferences(project, new URL[] { root });
             }
         }
     }
@@ -1355,11 +1423,8 @@ public class JsfProjectUtils {
     public static void removeLocalizedTheme(Project project, String themeName)  throws IOException {
         URL root = JsfProjectLibrary.getLocalizedThemeRoot(themeName);
         if (root != null) {
-            if (hasRootReference(project, root, ClassPath.COMPILE)) {
-                removeRootReferences(project, new URL[] { root }, ClassPath.COMPILE);
-            }
-            if (hasRootReference(project, root, ClassPath.EXECUTE)) {
-                removeRootReferences(project, new URL[] { root }, ClassPath.EXECUTE);
+            if (hasRootReference(project, root)) {
+                removeRootReferences(project, new URL[] { root });
             }
         }
     }
