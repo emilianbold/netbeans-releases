@@ -129,7 +129,7 @@ public final class VCSContext {
      * - the file passed through the supplied FileFilter
      *  
      * @param filter custom file filter
-     * @return filtered se of files that must pass through the filter
+     * @return filtered set of files that must pass through the filter
      */
     public Set<File> computeFiles(FileFilter filter) {
         return substract(rootFiles, exclusions, filter);
