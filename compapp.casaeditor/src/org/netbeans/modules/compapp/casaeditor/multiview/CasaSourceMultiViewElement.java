@@ -123,7 +123,7 @@ public class CasaSourceMultiViewElement extends CloneableEditor implements Multi
 
     @Override
     public UndoRedo getUndoRedo() {
-        return mDataObject.getEditorSupport().getUndoManager();
+        return null;//mDataObject.getEditorSupport().getUndoManager();
     }
 
     /**
@@ -166,14 +166,14 @@ public class CasaSourceMultiViewElement extends CloneableEditor implements Multi
         if (mDataObject.isModified()) {
             editor.syncModel();
         }
-        editor.removeUndoManagerFromDocument();
+//        editor.removeUndoManagerFromDocument();
     }
 
     @Override
     public void componentActivated() {
         super.componentActivated();
-        CasaDataEditorSupport editor = mDataObject.getEditorSupport();
-        editor.addUndoManagerToDocument();
+//        CasaDataEditorSupport editor = mDataObject.getEditorSupport();
+//        editor.addUndoManagerToDocument();
     }
 
     @Override
@@ -184,8 +184,8 @@ public class CasaSourceMultiViewElement extends CloneableEditor implements Multi
     @Override
     public void componentShowing() {
         super.componentShowing();
-        CasaDataEditorSupport editor = mDataObject.getEditorSupport();
-        editor.addUndoManagerToDocument();
+//        CasaDataEditorSupport editor = mDataObject.getEditorSupport();
+//        editor.addUndoManagerToDocument();
     }
 
     @Override
@@ -197,7 +197,7 @@ public class CasaSourceMultiViewElement extends CloneableEditor implements Multi
         if (mDataObject.isModified()) {
             editor.syncModel();
         }
-        editor.removeUndoManagerFromDocument();
+//        editor.removeUndoManagerFromDocument();
     }
 
     @Override
