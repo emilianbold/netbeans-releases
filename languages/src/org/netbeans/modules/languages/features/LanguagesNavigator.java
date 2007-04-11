@@ -39,22 +39,19 @@ import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.loaders.DataObject;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.TreeModelListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.*;
-import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -77,10 +74,14 @@ public class LanguagesNavigator implements NavigatorPanel {
     /** holds UI of this panel */
     private JComponent panelUI;
     private JTree tree;
-
+    private Lookup navigLookup;
+    private InstanceContent lookupContent;
+    private Node currentNode;
     
     /** Creates a new instance of LanguagesNavigator */
     public LanguagesNavigator () {
+        lookupContent = new InstanceContent();
+        navigLookup = new AbstractLookup(lookupContent);
     }
 
     public String getDisplayHint () {
@@ -109,7 +110,7 @@ public class LanguagesNavigator implements NavigatorPanel {
             tree.setRootVisible (false);
             tree.setShowsRootHandles (true);
             tree.addMouseListener (new Listener ());
-            tree.setToggleClickCount(99999); // [PENDING]
+            tree.setToggleClickCount(Integer.MAX_VALUE); // [PENDING]
             /*
             tree.addTreeSelectionListener (new TreeSelectionListener () {
                 public void valueChanged (TreeSelectionEvent e) {
@@ -156,8 +157,12 @@ public class LanguagesNavigator implements NavigatorPanel {
             public void run() {
                 // lookup context and listen to result to get notified about context changes
                 Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
-                if (nodes == null) return;
-                if (nodes.length != 1) return;
+                if (nodes == null || nodes.length == 0) return;
+                if (currentNode != null) {
+                    lookupContent.remove(currentNode);
+                }
+                currentNode = nodes[0];
+                lookupContent.add(currentNode);
                 DataObject dob = (DataObject) nodes [0].
                     getLookup ().lookup (DataObject.class);
                 if (dob == null) return;
@@ -235,11 +240,14 @@ public class LanguagesNavigator implements NavigatorPanel {
     public void panelDeactivated() {
         TopComponent.getRegistry ().removePropertyChangeListener (topComponentListener);
         topComponentListener = null;
+        if (currentNode != null) {
+            lookupContent.remove(currentNode);
+            currentNode = null;
+        }
     }
     
     public Lookup getLookup () {
-        // go with default activated Node strategy
-        return null;
+        return navigLookup;
     }
     
     

@@ -44,13 +44,16 @@ import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.lexer.TokenHierarchyListener;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.LanguagesManager.LanguagesManagerListener;
+import org.netbeans.modules.languages.dataobject.LanguagesDataObject;
 import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.parser.TokenInputUtils;
 import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
@@ -87,6 +90,12 @@ public class ParserManagerImpl extends ParserManager {
             }
         }
         new DocListener (this, tokenHierarchy);
+        if (state == State.NOT_PARSED) {
+            DataObject dobj = NbEditorUtilities.getDataObject(doc);
+            if (dobj instanceof LanguagesDataObject) {
+                startParsing();
+            }
+        }
     }
     
     public State getState () {
