@@ -60,6 +60,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         suite.addTest(new ClassMemberTest("testMemberIndent93735_2"));
         suite.addTest(new ClassMemberTest("testAddArrayMember"));
         suite.addTest(new ClassMemberTest("testAddCharMember"));
+        suite.addTest(new ClassMemberTest("testRenameReturnTypeInAbstract"));
         return suite;
     }
 
@@ -1094,7 +1095,48 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
+    public void testRenameReturnTypeInAbstract() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public abstract class Test {\n" +
+            "    \n" +
+            "    public Object taragui();\n" +
+            "    \n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public abstract class Test {\n" +
+            "    \n" +
+            "    public String taragui();\n" +
+            "    \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) classTree.getMembers().get(1);
+                workingCopy.rewrite(method.getReturnType(), make.Identifier("String"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }
