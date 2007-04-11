@@ -30,7 +30,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -291,6 +290,7 @@ public class PageFlowController {
         assert webFiles != null;
         
         
+        view.saveLocations();
         view.clearGraph();
         pageName2Node.clear();
         case2Node.clear();
@@ -497,13 +497,12 @@ public class PageFlowController {
                 
             } else if ( ev.getNewValue() == State.NOT_SYNCED ) {
                 // Do nothing.
-            }else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
+            } else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
                 view.warnUserMalFormedFacesConfig();
                 setupGraph();
-            } else {
-                //                view.validateGraph();
-            }
-            
+            } else if (ev.getPropertyName() == "textContent" ){
+                setupGraph();
+            } 
         }
     }
     

@@ -82,9 +82,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     public void requestMultiViewActive() {
         multiview.getMultiViewCallback().requestActive();
         requestFocus();  //This is a hack because requestActive does not call requestFocus when it is already active (BUT IT SHOULD).
-    }
-    
-    
+    }    
     
     /**
      *
@@ -237,7 +235,10 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         //        scene.layoutSceneImmediately();
     }
     
-    
+    public void saveLocations() {
+        scene.clearLocations();
+        scene.saveLocations();
+    }
     
     /**
      * Creates a PageFlowScene node from a pageNode.  The PageNode will generally be some type of DataObject unless

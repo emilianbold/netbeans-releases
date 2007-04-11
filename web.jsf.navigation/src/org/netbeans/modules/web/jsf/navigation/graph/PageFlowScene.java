@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.web.jsf.navigation.graph;
 
-import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -27,7 +26,6 @@ import java.util.Set;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.LinkCreateProvider;
 import org.netbeans.api.visual.action.ActionFactory;
-import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
@@ -50,10 +48,7 @@ import java.util.Queue;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.border.Border;
-import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
@@ -206,7 +201,8 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     protected Widget attachNodeWidget(PageFlowNode node) {
         assert node != null;
         VMDNodeWidget nodeWidget = new VMDNodeWidget(this);
-        nodeWidget.setNodeName(node.getDisplayName());
+        String displayName = node.getDisplayName();
+        nodeWidget.setNodeName(displayName);
         
         Widget header = nodeWidget.getHeader();
         ImageWidget imageWidget = new DefaultAnchorWidget(this, Utilities.loadImage("org/netbeans/modules/visual/resources/vmd-pin.png"));
@@ -228,7 +224,10 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         nodeWidget.getActions().addAction(selectAction);
         nodeWidget.getActions().addAction(moveAction);
         nodeWidget.setMinimized(true);
-        Point point = PageFlowLayoutUtilities.getPreferredNodePosition(this,true);
+        
+        Point point = locations.get(displayName);
+        if( point == null )
+            point = PageFlowLayoutUtilities.getPreferredNodePosition(this,true);
         //        nodeWidget2Point.put(nodeWidget, point);
         nodeWidget.setPreferredLocation(point);
         
@@ -416,6 +415,18 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
      */
     public void layoutSceneImmediately() {
         sceneLayout.invokeLayoutImmediately();
+    }
+    
+    private Map<String,Point> locations = new HashMap<String,Point>();
+    public void saveLocations() {
+        Collection<PageFlowNode> pageNodes = getNodes();
+        for( PageFlowNode pageNode : pageNodes ){
+            locations.put(pageNode.getDisplayName(), findWidget(pageNode).getLocation());
+        }
+    }
+    
+    public void clearLocations() {
+        locations.clear();
     }
        
     
