@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.mobility.lib.activesync
+OpenIDE-Module-Localizing-Bundle: org/netbeans/mobility/lib/activesync/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+
