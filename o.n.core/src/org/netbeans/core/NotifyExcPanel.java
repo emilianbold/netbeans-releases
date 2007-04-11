@@ -195,7 +195,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
             }
         }
         
-        arr.add(DialogDescriptor.OK_OPTION);
+        arr.add(DialogDescriptor.CLOSED_OPTION);
         return arr.toArray();
     }
     
