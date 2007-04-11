@@ -303,10 +303,6 @@ implements
         super.notifyClosed();
     }
     
-    public void unmarkModified() {
-        getEnv().unmarkModified();
-    }
-    
     // When the scene is created, it is set here for access later.
     public void setScene(CasaModelGraphScene scene) {
         mScene = scene;
