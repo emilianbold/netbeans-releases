@@ -22,10 +22,10 @@ package org.netbeans.modules.visualweb.outline;
 import com.sun.rave.designtime.DesignBean;
 import java.util.Collection;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.nodes.Node;
+import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
 import org.openide.ErrorManager;
+import org.openide.awt.UndoRedo;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -38,7 +38,7 @@ import org.openide.util.NbBundle;
  *
  * @author Peter Zavadsky
  */
-public class OutlinePanelProvider implements NavigatorPanel {
+public class OutlinePanelProvider implements NavigatorPanelWithUndo {
 
     /** Debugging flag. */
     private static final boolean DEBUG = ErrorManager.getDefault()
@@ -117,5 +117,25 @@ public class OutlinePanelProvider implements NavigatorPanel {
             OutlinePanel.getDefault().setActiveBeans(designBeans.toArray(new DesignBean[designBeans.size()]));
         }
     } // End of OultlineLookupListener.
+
+    
+    public UndoRedo getUndoRedo() {
+        return getUndoRedoFromNodes(OutlinePanel.getDefault().getExplorerManager().getSelectedNodes());
+    }
+    
+    private static UndoRedo getUndoRedoFromNodes(Node[] nodes) {
+        if (nodes == null) {
+            return UndoRedo.NONE;
+        }
+
+        for (Node node : nodes) {
+            UndoRedo undoRedo = node.getLookup().lookup(UndoRedo.class);
+            if (undoRedo != null) {
+                return undoRedo;
+            }
+        }
+        
+        return UndoRedo.NONE;
+    }
 
 }
