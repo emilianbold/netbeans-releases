@@ -178,6 +178,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.core.ide</friend>
                 <friend>org.netbeans.core.windows</friend>
                 <friend>org.netbeans.modules.autoupdate</friend>
+                <friend>org.netbeans.modules.autoupdate.services</friend>
                 <friend>org.netbeans.modules.form</friend>
                 <friend>org.netbeans.modules.i18n</friend>
                 <friend>org.netbeans.modules.java</friend>

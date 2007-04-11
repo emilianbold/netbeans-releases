@@ -41,6 +41,14 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="url_key" stringvalue="URL_Default_N"/>
         <attr name="enabled" boolvalue="true"/>
       </file>
+      
+      <!--<file name="dev-update-provider.settings" url="dev-update-provider.settings">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
+        <attr name="url_key" stringvalue="URL_DevUpdateProvider"/>
+        <attr name="enabled" boolvalue="true"/>
+      </file>-->
+      
     </folder>
     
   </folder> <!-- Services -->

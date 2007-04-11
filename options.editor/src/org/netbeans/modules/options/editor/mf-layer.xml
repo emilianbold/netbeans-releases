@@ -486,9 +486,9 @@ Microsystems, Inc. All Rights Reserved.
 <!--                <file name="Javadoc Index Search.shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/javadoc-Search-Doc-Action.instance"/>
                 </file>-->
-                <file name="Module Manager.shadow">
+<!--                <file name="Module Manager.shadow">
                     <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-autoupdate-catalog-ModuleCatalogAction.instance"/>
-                </file>
+                </file>-->
                 <file name="Template Manager.shadow">
                     <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-favorites-templates-TemplatesAction.instance"/>
                 </file>
@@ -501,9 +501,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Save As Template.shadow">
                     <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
                 </file>
-                <file name="Update Center.shadow">
+<!--                <file name="Update Center.shadow">
                     <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-autoupdate-UpdateAction.instance"/>
-                </file>
+                </file>-->
             </folder>
             <folder name="View">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
