@@ -19,60 +19,62 @@
 -->
 <project name="org.netbeans.modules.bpel.samples" default="netbeans" basedir=".">
     <import file="nbproject/build-impl.xml"/>
-    <property name="src.samples.resources" value="src/org/netbeans/modules/bpel/samples/resources"/>
+    <property name="zip.folder" value="src/org/netbeans/modules/bpel/samples/resources/zip"/>
 
-    <target name="jar" depends="zip-trs,zip-synchronous,zip-asynchronous,zip-blueprint,projectized-common.jar"/>
+    <target name="jar" depends="create-zip,zip-trs,zip-synchronous,zip-asynchronous,zip-blueprint,projectized-common.jar"/>
                               
+    <target name="create-zip">
+        <mkdir dir="${zip.folder}"/>
+    </target>
+
     <target name="zip-synchronous">
-        <zip destfile="${src.samples.resources}/SynchronousSample.zip"
+        <zip destfile="${zip.folder}/SynchronousSample.zip"
              basedir="resources/SynchronousSample/SynchronousSample" update="true"/>
-        <zip destfile="${src.samples.resources}/SynchronousSampleApplication.zip"
+        <zip destfile="${zip.folder}/SynchronousSampleApplication.zip"
              basedir="resources/SynchronousSample/SynchronousSampleApplication" update="true"/>
     </target>
     
     <target name="zip-asynchronous">
-        <zip destfile="${src.samples.resources}/AsynchronousSample.zip"
+        <zip destfile="${zip.folder}/AsynchronousSample.zip"
              basedir="resources/AsynchronousSample/AsynchronousSample" update="true"/>
-        <zip destfile="${src.samples.resources}/AsynchronousSampleApplication.zip"
+        <zip destfile="${zip.folder}/AsynchronousSampleApplication.zip"
              basedir="resources/AsynchronousSample/AsynchronousSampleApplication" update="true"/>
     </target>    
     
     <target name="zip-trs">
-        <zip destfile="${src.samples.resources}/TravelReservationService.zip"
+        <zip destfile="${zip.folder}/TravelReservationService.zip"
              basedir="resources/TravelReservationService/TravelReservationService" update="true"/>
-        <zip destfile="${src.samples.resources}/TravelReservationServiceApplication.zip"
+        <zip destfile="${zip.folder}/TravelReservationServiceApplication.zip"
              basedir="resources/TravelReservationService/TravelReservationServiceApplication" update="true"/>
-        <zip destfile="${src.samples.resources}/ReservationPartnerServices.zip"
+        <zip destfile="${zip.folder}/ReservationPartnerServices.zip"
              basedir="resources/TravelReservationService/ReservationPartnerServices" update="true"/>
     </target>
 
     <target name="zip-blueprint">
-        <zip destfile="${src.samples.resources}/BluePrint1.zip"
+        <zip destfile="${zip.folder}/BluePrint1.zip"
              basedir="resources/BluePrint/BluePrint1" update="true"/>
-        <zip destfile="${src.samples.resources}/BluePrint1Application.zip"
+        <zip destfile="${zip.folder}/BluePrint1Application.zip"
              basedir="resources/BluePrint/BluePrint1Application" update="true"/>
-        <zip destfile="${src.samples.resources}/BluePrint2.zip"
+        <zip destfile="${zip.folder}/BluePrint2.zip"
              basedir="resources/BluePrint/BluePrint2" update="true"/>
-        <zip destfile="${src.samples.resources}/BluePrint2Application.zip"
+        <zip destfile="${zip.folder}/BluePrint2Application.zip"
              basedir="resources/BluePrint/BluePrint2Application" update="true"/>
-        <zip destfile="${src.samples.resources}/BluePrint3.zip"
+        <zip destfile="${zip.folder}/BluePrint3.zip"
              basedir="resources/BluePrint/BluePrint3" update="true"/>
-        <zip destfile="${src.samples.resources}/BluePrint3Application.zip"
+        <zip destfile="${zip.folder}/BluePrint3Application.zip"
              basedir="resources/BluePrint/BluePrint3Application" update="true"/>
-        <zip destfile="${src.samples.resources}/BluePrint4.zip"
+        <zip destfile="${zip.folder}/BluePrint4.zip"
              basedir="resources/BluePrint/BluePrint4" update="true"/>
-        <zip destfile="${src.samples.resources}/BluePrint4Application.zip"
+        <zip destfile="${zip.folder}/BluePrint4Application.zip"
              basedir="resources/BluePrint/BluePrint4Application" update="true"/>
-        <zip destfile="${src.samples.resources}/BluePrint5.zip"
+        <zip destfile="${zip.folder}/BluePrint5.zip"
              basedir="resources/BluePrint/BluePrint5" update="true"/>
-        <zip destfile="${src.samples.resources}/BluePrint5Application.zip"
+        <zip destfile="${zip.folder}/BluePrint5Application.zip"
              basedir="resources/BluePrint/BluePrint5Application" update="true"/>
     </target>      
 
     <target name="clean-zip">
-        <delete>
-          <fileset dir="${src.samples.resources}" includes="**/*.zip"/>
-        </delete>
+        <delete dir="${zip.folder}"/>
         <delete dir="build"/>
     </target>
 </project>

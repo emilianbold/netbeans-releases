@@ -3,11 +3,6 @@ package partnerservices;
 import javax.ejb.SessionBean;
 import partnerservices.callback.ReservationCallbackProviderBean;
 
-/**
- * This is the implementation bean class for the AirlineReservationService web service.
- * Created Aug 31, 2006 2:25:58 PM
- * @author Praveen
- */
 public class AirlineReservationPortType_Impl implements partnerservices.AirlineReservationPortType, SessionBean {
     
     javax.ejb.SessionContext context;

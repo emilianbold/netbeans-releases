@@ -58,7 +58,7 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
         FileObject j2eeReservationProjectDir = targetProjectDir.createFolder(SoaSampleProjectProperties.RESERVATION_PARTNER_SERVICES);
 
         FileObject j2eeSamples = Repository.getDefault().
-                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources/ReservationPartnerServices.zip");// NOI18N
+                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/ReservationPartnerServices.zip");// NOI18N
 
         SoaSampleUtils.unZipFile(j2eeSamples.getInputStream(), j2eeReservationProjectDir);
 
@@ -75,7 +75,7 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
         assert compApptargetProjectDir != null : "targetProjectDir for TRSCompositeApplicationProject project is null";
         
         FileObject trsCompositeApp = Repository.getDefault().
-                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources/TravelReservationServiceApplication.zip");// NOI18N
+                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/TravelReservationServiceApplication.zip");// NOI18N
         SoaSampleUtils.unZipFile(trsCompositeApp.getInputStream(), compApptargetProjectDir);
                 
         SoaSampleUtils.setProjectName(compApptargetProjectDir, 

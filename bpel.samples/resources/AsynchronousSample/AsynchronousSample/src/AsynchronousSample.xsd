@@ -8,8 +8,8 @@
         <complexType>
             <sequence>
                 <element name="paramA" type="xsd:string"/>
-                                <element name="id" type="xsd:string"/>
+                <element name="id" type="xsd:string"/>
             </sequence>
         </complexType>
-        </element>
+    </element>
 </xsd:schema>

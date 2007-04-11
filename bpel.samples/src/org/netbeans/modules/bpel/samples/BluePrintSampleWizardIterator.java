@@ -84,7 +84,7 @@ public abstract class BluePrintSampleWizardIterator extends SampleWizardIterator
         assert compApptargetProjectDir != null : "targetProjectDir for Blue Print project is null";
         
         FileObject bluePrintCompositeApp = Repository.getDefault().
-                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources/" + getCompositeApplicationArchiveName());// NOI18N
+                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/" + getCompositeApplicationArchiveName());// NOI18N
         
         SoaSampleUtils.unZipFile(bluePrintCompositeApp.getInputStream(),compApptargetProjectDir);
         

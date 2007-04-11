@@ -82,7 +82,7 @@ public class SynchronousSampleWizardIterator extends SampleWizardIterator {
         assert compApptargetProjectDir != null : "targetProjectDir for SynchronousCompositeApplicationProject project is null";
         
         FileObject trsCompositeApp = Repository.getDefault().
-                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources/SynchronousSampleApplication.zip");// NOI18N
+                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/SynchronousSampleApplication.zip");// NOI18N
         SoaSampleUtils.unZipFile(trsCompositeApp.getInputStream(),compApptargetProjectDir);
         
         SoaSampleUtils.setProjectName(compApptargetProjectDir, 
