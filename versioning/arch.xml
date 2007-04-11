@@ -55,6 +55,10 @@ Microsystems, Inc. All Rights Reserved.
       SCM module extends VersioningSystem and registers itself via default Lookup: 
       it puts "org.netbeans.modules.versioning.spi.VersioningSystem" file in its META-INF/services folder.
       
+      <api name="VersioningSPI" group="java" type="export" category="devel">
+          Enables Source Code Management (SCM or Versioning) modules to fully integrate into the IDE workflow.
+      </api>
+      
   </p>
  </answer>
 
