@@ -67,10 +67,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     
     private SyncTable                   syncTable;
     private RequestProcessor.Task       refreshViewTask;
-    private Thread                      refreshViewThread;
 
     private SvnProgressSupport          svnProgressSupport;   
-    private static final RequestProcessor   rp = new RequestProcessor("SubversionView", 1);  // NOI18N
+    private static final RequestProcessor   rp = new RequestProcessor("SubversionView", 1, true);  // NOI18N
 
     private final NoContentPanel noContentComponent = new NoContentPanel();
 
@@ -236,7 +235,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         // XXX attach Cancelable hook
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(VersioningPanel.class, "MSG_Refreshing_Versioning_View")); // NOI18N
         try {
-            refreshViewThread = Thread.currentThread();
             Thread.interrupted();  // clear interupted status
             ph.start();
             final SyncFileNode [] nodes = getNodes(context, displayStatuses);  // takes long
@@ -290,7 +288,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     ph.finish();
-                    refreshViewThread = null;
                 }
             });
         }
@@ -465,15 +462,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * </ul>
      */
     public void cancelRefresh() {
-/*
-        if (refreshCommandGroup != null) {
-            refreshCommandGroup.cancel();
-        }
-*/
         refreshViewTask.cancel();
-        if (refreshViewThread != null) {
-            refreshViewThread.interrupt();
-        }
     }
 
     private class RefreshViewTask implements Runnable {

@@ -38,11 +38,14 @@ import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
+import org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -78,19 +81,25 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
 
     protected void validateBeforeNext() {
         try {
-            if(support != null) {
-                support.performInCurrentThread(org.openide.util.NbBundle.getMessage(ImportStep.class, "CTL_Import_Progress")); // NOI18N
-            }
+            support =  new ImportProgressSupport(importPanel.progressPanel, importPanel.progressLabel);  
+            SVNUrl url = getUrl();
+            support.setRepositoryRoot(url);            
+            RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
+            RequestProcessor.Task task = support.start(rp, url, org.openide.util.NbBundle.getMessage(ImportStep.class, "CTL_Import_Progress"));
+            task.waitFinished();
         } finally {
             support = null;
         }
     }   
-
-    public void prepareValidation() {
-        support = new ImportProgressSupport(importPanel.progressPanel, importPanel.progressLabel);
-        support.startProgress();
+        
+    public void prepareValidation() {        
     }
 
+    private SVNUrl getUrl() {        
+        RepositoryFile repositoryFile = getRepositoryFile();
+        return repositoryFile.getRepositoryUrl();
+    }
+    
     public boolean validateUserInput() {
         invalid(null);
         

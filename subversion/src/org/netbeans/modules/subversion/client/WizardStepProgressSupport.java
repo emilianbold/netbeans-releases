@@ -41,16 +41,10 @@ public abstract class WizardStepProgressSupport extends SvnProgressSupport imple
     private JPanel progressComponent;
     private JLabel progressLabel;
     private JPanel panel;
-
+    private JButton stopButton;
+    
     public WizardStepProgressSupport(JPanel panel) {
-        this.panel = panel;
-
-
-    }
-
-    public void performInCurrentThread(String displayName) {
-        setDisplayName(displayName);
-        performIntern();
+        this.panel = panel;        
     }
 
     public abstract void setEditable(boolean bl);
@@ -60,7 +54,7 @@ public abstract class WizardStepProgressSupport extends SvnProgressSupport imple
             public void run() {
                 ProgressHandle progress = getProgressHandle(); // NOI18N
                 JComponent bar = ProgressHandleFactory.createProgressComponent(progress);
-                JButton stopButton = new JButton(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2022")); // NOI18N
+                stopButton = new JButton(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2022")); // NOI18N
                 stopButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         cancel();
@@ -95,10 +89,14 @@ public abstract class WizardStepProgressSupport extends SvnProgressSupport imple
     }
 
     public void setDisplayName(String displayName) {
-        if(progressLabel != null) {
-            progressLabel.setText(displayName);
-        }
+        if(progressLabel != null) progressLabel.setText(displayName);
         super.setDisplayName(displayName);
     }
     
+    public synchronized boolean cancel() {
+        if(stopButton!=null) stopButton.setEnabled(false);
+        setDisplayName(org.openide.util.NbBundle.getMessage(WizardStepProgressSupport.class, "MSG_Progress_Terminating"));
+        return super.cancel();
+    }
+        
 }

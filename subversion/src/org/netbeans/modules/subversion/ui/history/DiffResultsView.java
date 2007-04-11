@@ -60,6 +60,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     private int                     currentIndex;
     private boolean                 dividerSet;
     private List<RepositoryRevision> results;
+    private static final RequestProcessor rp = new RequestProcessor("SubversionDiff", 1, true);  // NOI18N
 
     public DiffResultsView(SearchHistoryPanel parent, List<RepositoryRevision> results) {
         this.parent = parent;
@@ -182,7 +183,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         synchronized(this) {
             cancelBackgroundTasks();
             currentTask = new ShowDiffTask(header, revision1, revision2, showLastDifference);
-            currentShowDiffTask = RequestProcessor.getDefault().create(currentTask);
+            currentShowDiffTask = rp.create(currentTask);
             currentShowDiffTask.schedule(0);
         }
     }
@@ -292,7 +293,6 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         private final String revision2;
         private boolean showLastDifference;
         private volatile boolean cancelled;
-        private Thread thread;
 
         public ShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
             this.header = header;
@@ -301,8 +301,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             this.showLastDifference = showLastDifference;
         }
 
-        public void run() {
-            thread = Thread.currentThread();
+        public void run() { 
             final Diff diff = Diff.getDefault();
             final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1);
             final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2);
@@ -344,10 +343,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         }
 
         public boolean cancel() {
-            cancelled = true;
-            if (thread != null) {
-                thread.interrupt();
-            }
+            cancelled = true;            
             return true;
         }
     }

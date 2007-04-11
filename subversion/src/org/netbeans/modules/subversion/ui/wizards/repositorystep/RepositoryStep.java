@@ -30,6 +30,7 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
@@ -38,6 +39,7 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -83,28 +85,31 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
         return panel;
     }
 
-    protected void validateBeforeNext() {    
+    protected void validateBeforeNext() {            
         try {
-            if(support != null) {
-                support.performInCurrentThread(NbBundle.getMessage(RepositoryStep.class, "BK2012")); // NOI18N
-            }
+            support = new RepositoryStepProgressSupport(panel.progressPanel);        
+            SVNUrl url = getUrl();
+            support.setRepositoryRoot(url);            
+            RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
+            RequestProcessor.Task task = support.start(rp, url, NbBundle.getMessage(RepositoryStep.class, "BK2012"));
+            task.waitFinished();
         } finally {
             support = null;
         }
     }
     
-    public void prepareValidation() {
-        support = new RepositoryStepProgressSupport(panel.progressPanel);
-        try {
-            SVNUrl url = getSelectedRepositoryConnection().getSvnUrl();
-            support.setRepositoryRoot(url);    
-        } catch (MalformedURLException mue) {            
-            // should not happen
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); // should not happen
-        }        
-        support.startProgress();
+    public void prepareValidation() {                
     }
 
+    private SVNUrl getUrl() {        
+        try {
+            return getSelectedRepositoryConnection().getSvnUrl();                
+        } catch (MalformedURLException mue) {                            
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); // should not happen
+        }                                
+        return null;
+    }
+    
     private void storeHistory() {        
         RepositoryConnection rc = getSelectedRepositoryConnection();
         if(rc != null) {  

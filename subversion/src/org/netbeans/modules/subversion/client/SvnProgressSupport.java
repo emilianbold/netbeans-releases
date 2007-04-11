@@ -39,8 +39,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public abstract class SvnProgressSupport implements Runnable, Cancellable {
 
     private Cancellable delegate; 
-    private boolean canceled;
-    private Thread interruptibleThread;
+    private volatile boolean canceled;
     
     private ProgressHandle progressHandle = null;    
     private String displayName = ""; // NOI18N
@@ -56,7 +55,6 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
         task.addTaskListener(new TaskListener() {
             public void taskFinished(org.openide.util.Task task) {
                 delegate = null;
-                interruptibleThread = null;
                 delegate = null;
             }
         });
@@ -75,7 +73,6 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
 
     protected void performIntern() {
         try {
-            interruptibleThread = Thread.currentThread();
             Diagnostics.println("Start - " + displayName); // NOI18N
             if(!canceled) {
                 perform();
@@ -103,10 +100,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
         }
         if(delegate != null) {
             delegate.cancel();
-        }
-        if (interruptibleThread != null) {
-            interruptibleThread.interrupt();  
-        }
+        }        
         canceled = true;
         return true;
     }
