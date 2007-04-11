@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- $Header$ -->
 <definitions targetNamespace="http://enterprise.netbeans.org/bpel/wsdl/inventory/bp1"
              name="InventoryService"
              xmlns:tns="http://enterprise.netbeans.org/bpel/wsdl/inventory/bp1"
@@ -68,5 +67,4 @@
         <plink:role name="inventoryService"
                     portType="tns:inventoryPortType"></plink:role>
     </plink:partnerLinkType>
-    
 </definitions>
