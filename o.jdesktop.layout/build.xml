@@ -27,13 +27,14 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${cluster}/modules/ext"/>
         <copy todir="${cluster}/modules/ext">
             <fileset dir="../external">
-                <include name="swing-layout-1.0.1.jar"/>
+                <include name="swing-layout-1.0.2.jar"/>
             </fileset>
         </copy>
         <mkdir dir="${cluster}/docs"/>
         <copy todir="${cluster}/docs">
             <fileset dir="../external">
-                <include name="swing-layout-1.0.1-doc.zip"/>
+                <include name="swing-layout-1.0.2-doc.zip"/>
+                <include name="swing-layout-1.0.2-src.zip"/>
             </fileset>
         </copy>
     </target>
