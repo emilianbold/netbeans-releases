@@ -158,8 +158,8 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.visualweb.project.navigationloader</friend>
-                <package>org.netbeans.modules.web.jsf.navigation</package>
+                <friend>org.netbeans.modules.visualweb.navigation</friend>
+                <package>org.netbeans.modules.web.jsf.navigation.pagecontentmodel</package>
             </friend-packages>
         </data>
         <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit4"/>
