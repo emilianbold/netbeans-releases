@@ -1079,6 +1079,118 @@ public final class DBMetaData {
             }
         }
     }
+    public static final Table getTableMetaDataForODBCDriver(String tcatalog, String tschema, final String tname, final String ttype, final Connection connection) throws Exception {
+        //this.errMsg = "";
+        ResultSet rs = null;
+
+        try {
+            // create a new Table object
+            final Table newTable = new Table(tname, tcatalog, tschema, ttype);
+            final Vector v = new Vector();
+
+            if (tcatalog.equals("")) {
+                tcatalog = null;
+            }
+
+            if (tschema.equals("")) {
+                tschema = null;
+            }
+
+            // get table column information
+            rs = connection.getMetaData().getColumns(tcatalog, tschema, tname, "%");
+
+            TableColumn[] columns = null;
+                     
+            while (rs.next()) {
+				// {13=COLUMN_DEF, 12=REMARKS, 11=NULLABLE, 10=NUM_PREC_RADIX,
+				// 9=DECIMAL_DIGITS, 8=BUFFER_LENGTH, 7=COLUMN_SIZE,
+				// 6=TYPE_NAME,
+				// 5=DATA_TYPE, 4=COLUMN_NAME, 3=TABLE_NAME, 2=TABLE_SCHEM,
+				// 1=TABLE_CAT}
+				String tablecat = rs.getString(1);
+				String tablesch = rs.getString(2);
+				String tablename = rs.getString(3);
+				String colName = rs.getString(4);
+				int sqlTypeCode = rs.getInt(5);
+				String typename = rs.getString(6);
+				int precision = rs.getInt(7);
+				int bufflen = rs.getInt(8);
+				int scale = rs.getInt(9);
+				int radix = rs.getInt(10);
+				boolean nullable = rs.getBoolean(11);
+				String remarks = rs.getString(12);
+				String defaultValue = rs.getString(13);
+				
+				final String sqlType = DBMetaData.getSQLTypeDescription(sqlTypeCode);
+	            final String javaType = getJavaFromSQLTypeDescription(sqlType);
+
+				// create a table column and add it to the vector
+				final TableColumn col = new TableColumn(colName, javaType);
+				boolean isNullable = false;
+				if (rs.getString("IS_NULLABLE").equals("YES")) {
+					isNullable = true;
+				}
+				col.setJavaType(javaType);
+				col.setSqlType(sqlType);
+				col.setIsNullable(isNullable);
+				col.setIsSelected(true);
+				col.setIsPrimaryKey(false);
+				col.setIsForeignKey(false);
+				col.setSqlTypeCode(sqlTypeCode);
+				//col.setOrdinalPosition(position);
+				col.setNumericPrecision(precision);
+				col.setNumericScale(scale);
+				col.setNumericRadix(radix);
+
+				if (defaultValue != null) {
+					col.setDefaultValue(defaultValue.trim());
+				}
+
+				// add to vector
+				v.add(col);
+			}
+
+            // now copy Vector to array
+            if (v.size() > 0) {
+                columns = new TableColumn[v.size()];
+                v.copyInto(columns);
+            }
+
+            // now set up columns in the table to return
+            newTable.setColumns(columns);
+
+            // now check the columns that are primary keys
+            checkPrimaryKeys(newTable,connection);
+
+            // now check the columns that are foreign keys
+            checkForeignKeys(newTable,connection);
+
+            // catch exceptions for this as index only makes sense for
+            // tables and not views (can't check the table type because it's dependent on driver)
+            try {
+                // get index info for this table
+                rs = connection.getMetaData().getIndexInfo(tcatalog, tschema, tname, false, true);
+                newTable.setIndexList(IndexColumn.createIndexList(rs));
+            } catch (final Exception e) {
+                // ignore and continue
+               //this.errMsg = e.getLocalizedMessage();
+            }
+
+            return newTable;
+        } catch (final Exception e) {
+            e.printStackTrace();
+            //this.errMsg = e.getLocalizedMessage();
+            throw e;
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (final SQLException e) {
+                    /* Ignore... */;
+                }
+            }
+        }
+    }
 
     /**
      * Converts a JDBC SQL Type to a Java Type.

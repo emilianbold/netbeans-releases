@@ -434,9 +434,10 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
      */
     public HelpCtx getHelp() {
         // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-
+         return new HelpCtx(JDBCWizardSelectionPanel.class);
+		//return HelpCtx.DEFAULT_HELP;
     }
+
     /**
      * @param settings
      */
@@ -511,7 +512,6 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
      */
 	public DBTable populateDBTable(String tableName){
 		final Connection connection = this.selectedConnection.getJDBCConnection();
-        
 		try{
 		 final String[][] tableList = DBMetaData.getTablesOnly("", "", "", false,connection);
             DBTable ffTable = null;
@@ -521,9 +521,19 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                     currTable = tableList[i];
                     if(tableName.equals(currTable[DBMetaData.NAME])){
                         ffTable = new DBTableImpl(currTable[DBMetaData.NAME], currTable[DBMetaData.SCHEMA], currTable[DBMetaData.CATALOG]);
-    
-                        final Table t = DBMetaData.getTableMetaData(currTable[DBMetaData.CATALOG], currTable[DBMetaData.SCHEMA],
-                                currTable[DBMetaData.NAME], currTable[DBMetaData.TYPE],connection);
+                        Table t = null;
+                        String driverName = connection.getMetaData().getDriverName();
+                        //For JDBC-ODBC driver we need to select columns by order otherwise, driver throws 
+                        //Invalid Descriptor Index exception
+                        if(driverName.startsWith("JDBC-ODBC")){
+                        	t = DBMetaData.getTableMetaDataForODBCDriver(currTable[DBMetaData.CATALOG], currTable[DBMetaData.SCHEMA],
+                                    currTable[DBMetaData.NAME], currTable[DBMetaData.TYPE],connection);
+                        }else{
+                        	t = DBMetaData.getTableMetaData(currTable[DBMetaData.CATALOG], currTable[DBMetaData.SCHEMA],
+                                    currTable[DBMetaData.NAME], currTable[DBMetaData.TYPE],connection);
+                            
+                        }
+                        
                         final TableColumn[] cols = t.getColumns();
                         TableColumn tc = null;
                         DBColumn ffColumn = null;
