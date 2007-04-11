@@ -78,7 +78,6 @@ class LuceneIndex extends Index {
     private Long rootTimeStamp;
     
     private IndexReader reader; //Cache, do not use this dirrectly, use getReader
-    private IndexWriter writer; //Cache, do not use this dirrectly, use getWriter
     private Set<String> rootPkgCache;   //Cache, do not use this dirrectly
     
     public static Index create (final File cacheRoot) throws IOException {        
@@ -539,55 +538,59 @@ class LuceneIndex extends Index {
     }    
     
     private void storeData (final Map<String, List<String>> refs, final boolean create, final long timeStamp) throws IOException {        
-        IndexWriter out = getWriter(create);
-        if (debugIndexMerging) {
-            out.setInfoStream (System.err);
-        }
-        final LuceneIndexMBean indexSettings = LuceneIndexMBeanImpl.getDefault();
-        if (indexSettings != null) {
-            out.setMergeFactor(indexSettings.getMergeFactor());
-            out.setMaxMergeDocs(indexSettings.getMaxMergeDocs());
-            out.setMaxBufferedDocs(indexSettings.getMaxBufferedDocs());
-        }        
-        LowMemoryNotifier lm = LowMemoryNotifier.getDefault();
-        LMListener lmListener = new LMListener ();
-        lm.addLowMemoryListener (lmListener);        
-        Directory memDir = null;
-        IndexWriter activeOut = null;        
-        if (lmListener.lowMemory.getAndSet(false)) {
-            activeOut = out;
-        }
-        else {
-            memDir = new RAMDirectory ();
-            activeOut = new IndexWriter (memDir,new KeywordAnalyzer(), true);
-        }        
+        final IndexWriter out = getWriter(create);
         try {
-            activeOut.addDocument (DocumentUtil.createRootTimeStampDocument (timeStamp));
-            for (Iterator<Map.Entry<String,List<String>>> it = refs.entrySet().iterator(); it.hasNext();) {
-                Map.Entry<String,List<String>> refsEntry = it.next();
-                it.remove();
-                String cn = refsEntry.getKey();
-                List<String> cr = refsEntry.getValue();
-                Document newDoc = DocumentUtil.createDocument(cn,timeStamp,cr);
-                activeOut.addDocument(newDoc);
-                if (memDir != null && lmListener.lowMemory.getAndSet(false)) {                       
-                    activeOut.close();
-                    out.addIndexes(new Directory[] {memDir});                        
-                    memDir = new RAMDirectory ();        
-                    activeOut = new IndexWriter (memDir,new KeywordAnalyzer(), true);
+            if (debugIndexMerging) {
+                out.setInfoStream (System.err);
+            }
+            final LuceneIndexMBean indexSettings = LuceneIndexMBeanImpl.getDefault();
+            if (indexSettings != null) {
+                out.setMergeFactor(indexSettings.getMergeFactor());
+                out.setMaxMergeDocs(indexSettings.getMaxMergeDocs());
+                out.setMaxBufferedDocs(indexSettings.getMaxBufferedDocs());
+            }        
+            LowMemoryNotifier lm = LowMemoryNotifier.getDefault();
+            LMListener lmListener = new LMListener ();
+            lm.addLowMemoryListener (lmListener);        
+            Directory memDir = null;
+            IndexWriter activeOut = null;        
+            if (lmListener.lowMemory.getAndSet(false)) {
+                activeOut = out;
+            }
+            else {
+                memDir = new RAMDirectory ();
+                activeOut = new IndexWriter (memDir,new KeywordAnalyzer(), true);
+            }        
+            try {
+                activeOut.addDocument (DocumentUtil.createRootTimeStampDocument (timeStamp));
+                for (Iterator<Map.Entry<String,List<String>>> it = refs.entrySet().iterator(); it.hasNext();) {
+                    Map.Entry<String,List<String>> refsEntry = it.next();
+                    it.remove();
+                    String cn = refsEntry.getKey();
+                    List<String> cr = refsEntry.getValue();
+                    Document newDoc = DocumentUtil.createDocument(cn,timeStamp,cr);
+                    activeOut.addDocument(newDoc);
+                    if (memDir != null && lmListener.lowMemory.getAndSet(false)) {                       
+                        activeOut.close();
+                        out.addIndexes(new Directory[] {memDir});                        
+                        memDir = new RAMDirectory ();        
+                        activeOut = new IndexWriter (memDir,new KeywordAnalyzer(), true);
+                    }
                 }
-            }
-            if (memDir != null) {
-                activeOut.close();
-                out.addIndexes(new Directory[] {memDir});   
-                activeOut = null;
-                memDir = null;
-            }
-            synchronized (this) {
-                this.rootTimeStamp = new Long (timeStamp);
+                if (memDir != null) {
+                    activeOut.close();
+                    out.addIndexes(new Directory[] {memDir});   
+                    activeOut = null;
+                    memDir = null;
+                }
+                synchronized (this) {
+                    this.rootTimeStamp = new Long (timeStamp);
+                }
+            } finally {
+                lm.removeLowMemoryListener (lmListener);  
             }
         } finally {
-            lm.removeLowMemoryListener (lmListener);  
+            out.close();
         }
     }
 
@@ -618,10 +621,6 @@ class LuceneIndex extends Index {
                 this.reader.close();
                 this.reader = null;
             }
-            if (this.writer != null) {
-                this.writer.close();
-                this.writer = null;
-            }
         } finally {
            this.directory.close();
         }
@@ -632,25 +631,19 @@ class LuceneIndex extends Index {
     }
     
     private synchronized IndexReader getReader () throws IOException {
-        if (this.reader == null) {
-            if (this.writer != null) {
-                this.writer.close();
-                this.writer = null;
-            }
+        if (this.reader == null) {            
             this.reader = IndexReader.open(this.directory);
         }        
         return this.reader;
     }
     
     private synchronized IndexWriter getWriter (final boolean create) throws IOException {
-        if (this.writer == null) {
-            if (this.reader != null) {
-                this.reader.close();
-                this.reader = null;
-            }
-            this.writer = new IndexWriter (this.directory,new KeywordAnalyzer(), create);
-        }        
-        return this.writer;
+        if (this.reader != null) {
+            this.reader.close();
+            this.reader = null;
+        }
+        IndexWriter writer = new IndexWriter (this.directory,new KeywordAnalyzer(), create);
+        return writer;
     }
     
     
