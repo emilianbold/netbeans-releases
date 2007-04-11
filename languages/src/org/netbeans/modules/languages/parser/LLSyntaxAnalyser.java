@@ -258,10 +258,12 @@ public class LLSyntaxAnalyser {
         ASTNode root = language.getAnalyser ().read (in, skipErrors);
         Feature astProperties = language.getFeature ("AST");
         if (astProperties != null) {
-            root = (ASTNode) astProperties.getValue (
+            ASTNode newRoot = (ASTNode) astProperties.getValue (
                 "process", 
                 SyntaxContext.create (null, ASTPath.create (root))
             );
+            if (newRoot != null)
+                root = newRoot;
         }
         return ASTToken.create (
             token.getMimeType (),
