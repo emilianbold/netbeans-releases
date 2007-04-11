@@ -211,6 +211,9 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             ////////////////////////////////////////////////////////////////////
             // Second configuration step:
             // Install   : modify system/user PATH variable so the necessary .dll would be in path
+	    // 	           Due to the discussion at 
+	    //             http://www.netbeans.org/issues/show_bug.cgi?id=98633   
+            //             the manual adding of the addon is switched off
             // Uninstall : remove the necessary path from the the system envvar PATH
             LogManager.log(ErrorLevel.DEBUG,
                     "... modify PATH environent variable within windows registry");
@@ -239,9 +242,11 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             pathValue = (pathValue == null) ? StringUtils.EMPTY_STRING : pathValue;
             
             if (install) {
-                if(!pathValue.contains(doorsBin)) {
+                /* // commented due to the comments above
+		if(!pathValue.contains(doorsBin)) {
                     pathValue += File.pathSeparator + doorsBin;
                 }
+		*/ 
             } else {
                 // remove all occurences of the path to DLL directory
                 pathValue = pathValue.
@@ -250,10 +255,12 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
                 
             }
             
-            // last parameters is true because PATH in most cases set to expandable
-            LogManager.log(ErrorLevel.DEBUG,
-                    "... new PATH : " + pathValue);
-            SystemUtils.setEnvironmentVariable(PATH_ENV, pathValue, scope, true);            
+	    if(!install) {                
+                LogManager.log(ErrorLevel.DEBUG,
+                    "... new PATH : " + pathValue);	    
+		// last parameters is true because PATH in most cases set to expandable
+                SystemUtils.setEnvironmentVariable(PATH_ENV, pathValue, scope, true);            
+            }
             LogManager.log(ErrorLevel.DEBUG,
                     "... Telelogic Doors configuration finished");
             
