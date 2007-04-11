@@ -19,11 +19,14 @@
 
 package org.netbeans.modules.uml.core.reverseengineering.reframework;
 
+import java.util.List;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.BaseElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IDependency;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
@@ -32,6 +35,7 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.INavigableEnd;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
+import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.ClassLoaderListener;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IClassLoaderListener;
@@ -47,6 +51,7 @@ import org.netbeans.modules.uml.core.roundtripframework.codegeneration.IParseInf
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.ui.products.ad.applicationcore.IADProduct;
 
 /**
@@ -681,6 +686,46 @@ public class UMLParserUtilities
         
     }
     
+    protected static boolean matchCollectionParameter(IParameter parameter, 
+                                                      IREParameter parameterRE)
+    {
+        boolean retVal = false;
+        
+        if(parameterRE.isTemplateType() == true)
+        {
+            ILanguage lang = parameter.getLanguages().get(0);
+            if(parameterRE.isCollectionType(lang) == true)
+            {
+                CollectionInformation info = parameterRE.getCollectionTypeInfo();
+                String paramType = parameter.getTypeName();
+                String reParamType = info.getTypeName();
+                
+                if(paramType.equals(reParamType) == true)
+                {
+                    retVal = true;
+                    
+                    IMultiplicity mult = parameter.getMultiplicity();
+                    if(info.getNumberOfRanges() == mult.getRangeCount())
+                    {
+                        List<IMultiplicityRange> ranges = mult.getRanges();
+                        for(int index = 0; index < info.getNumberOfRanges(); index++)
+                        {
+                            String paramColType = ranges.get(index).getCollectionType(false);
+                            String reColType = info.getCollectionForRange(index);
+                            
+                            if(paramColType.equals(reColType) == false)
+                            {
+                                retVal = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return retVal;
+    }
    /** 
     * Determines if the IParameter @a pParameter matches the IREParameter
     * @a pParameterRE.  The method used for detecting a match depends on
@@ -723,6 +768,10 @@ public class UMLParserUtilities
           isMatching = true;
        }
        else if (matchTemplateParameter(parameterType,parameterTypeRE)) {
+           isMatching = true;
+       }
+       else if(matchCollectionParameter(parameter, parameterRE) == true)
+       {
            isMatching = true;
        }
        else

@@ -4275,7 +4275,7 @@ public class UMLParsingIntegrator
             ILanguage lang = clazzObj.getLanguages().get(0);
             if ((param != null) && (lang != null))
             {
-                Node derivation = isDerivationPresent(param, false);
+                Node derivation = isDerivationPresent(param, false); 
                             
                 if (derivation != null)
                 {

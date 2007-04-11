@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.uml.core.reverseengineering.reframework;
 
+import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
 public interface IREParameter extends IParserData {
@@ -53,4 +54,10 @@ public interface IREParameter extends IParserData {
     public boolean getIsPrimitive();
     
     public ETList<IREMultiplicityRange> getMultiplicity() ;
+    
+    public boolean isTemplateType();
+    
+    public boolean isCollectionType(ILanguage lang);
+    
+    public CollectionInformation getCollectionTypeInfo();
 }

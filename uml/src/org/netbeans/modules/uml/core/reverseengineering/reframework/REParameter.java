@@ -19,9 +19,11 @@
 
 package org.netbeans.modules.uml.core.reverseengineering.reframework;
 
+import java.util.List;
 import org.dom4j.Node;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.BaseElement;
+import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
@@ -105,5 +107,85 @@ public class REParameter extends ParserData implements IREParameter {
     public boolean getIsPrimitive() {
         return Boolean.valueOf(getTokenDescriptorValue("IsPrimitive"))
         .booleanValue();
+    }
+    
+    public boolean isTemplateType()
+    {
+        Node derivation = isDerivationPresent(getEventData());
+        
+        return derivation != null;
+    }
+    
+    public boolean isCollectionType(ILanguage lang)
+    {
+        boolean retVal = false;
+        
+        Node type = isDerivationPresent(getEventData());
+        String typeName = XMLManip.getAttributeValue(type, "name");
+        
+        return lang.isCollectionType(typeName);
+    }
+    
+    protected Node isDerivationPresent(Node pNode)
+    {
+        Node ppDerivationElement = null;
+        try
+        {
+            // Get derivations from TokenDescriptors
+            Node spDerivationElement = pNode.selectSingleNode("./TokenDescriptors/TDerivation");
+            ppDerivationElement = spDerivationElement;
+        }
+        catch (Exception e)
+        {
+            ppDerivationElement = null;
+        }
+        return ppDerivationElement;
+    }
+    
+    public CollectionInformation getCollectionTypeInfo()
+    {
+        CollectionInformation retVal = null;
+        
+        
+        
+        return getCollectionTypeInfo(isDerivationPresent(getEventData()));
+    }
+    
+    protected CollectionInformation getCollectionTypeInfo(Node type)
+    {
+        CollectionInformation retVal = null;
+        
+        if(type != null)
+        {            
+            String colectionName = XMLManip.getAttributeValue(type, "name");
+            
+            List params = type.selectNodes("./DerivationParameter");
+            if(params.size() == 1)
+            {
+//                setDefaultRange(attr, fullName);
+                
+//              // Currently the Data is setup so that if one of the parameters
+                // has derivation, then it is under the parent derivation not
+                // the parameter.  It should be under the parameter.  However,
+                // since we only have 1 parameter this is not a big deal at this
+                // time.
+                
+                Node derivation = isDerivationPresent(type);
+                if(derivation != null)
+                {
+                    retVal = getCollectionTypeInfo(derivation);
+                    retVal.addCollectionName(colectionName);
+                }
+                else
+                {
+                    Node param = (Node) params.get(0);
+                    String typeName = XMLManip.getAttributeValue(param, "value");
+                    retVal = new CollectionInformation(typeName);
+                    retVal.addCollectionName(colectionName);
+                }
+            }
+        }
+        
+        return retVal;
     }
 }
