@@ -100,8 +100,9 @@ public class JsfForm {
 //    private static final Map<FacesModel, JsfForm> facesModel2jsfForm = new WeakHashMap<FacesModel, JsfForm>();
     private static final Set<JsfForm> jsfForms = new WeakSet<JsfForm>();
 
-    /** Weak <code>Map</code> between <code>JsfForm</code> and <code>Designer</code>. */
-    private static final Map<JsfForm, Set<Designer>> jsfForm2designerSet = new WeakHashMap<JsfForm, Set<Designer>>();
+//    /** Weak <code>Map</code> between <code>JsfForm</code> and <code>Designer</code>. */
+//    private static final Map<JsfForm, Set<Designer>> jsfForm2designerSet = new WeakHashMap<JsfForm, Set<Designer>>();
+    private final Set<Designer> designers = new WeakSet<Designer>();
     
     /** Weak <code>Marp</code> between <code>Designer</code> and <code>JsfMultiViewElement</code>. */
     private static final Map<Designer, JsfMultiViewElement> designer2jsfMultiViewElement = new WeakHashMap<Designer, JsfMultiViewElement>();
@@ -240,30 +241,32 @@ public class JsfForm {
 //    }
 
     public /*private*/ static Designer[] findDesigners(JsfForm jsfForm) {
-        Set<Designer> designerSet;
-        synchronized (jsfForm2designerSet) {
-            designerSet = jsfForm2designerSet.get(jsfForm);
-        }
-        if (designerSet != null) {
-            // XXX To be sure there are not lost some weak refs.
-            designerSet = new HashSet<Designer>(designerSet);
-        }
-        return designerSet == null ? new Designer[0] : designerSet.toArray(new Designer[designerSet.size()]);
+//        Set<Designer> designerSet;
+//        synchronized (jsfForm2designerSet) {
+//            designerSet = jsfForm2designerSet.get(jsfForm);
+//        }
+//        if (designerSet != null) {
+//            // XXX To be sure there are not lost some weak refs.
+//            designerSet = new HashSet<Designer>(designerSet);
+//        }
+//        return designerSet == null ? new Designer[0] : designerSet.toArray(new Designer[designerSet.size()]);
+        return jsfForm == null ? new Designer[0] : jsfForm.getDesigners();
     }
     
     /*private*/ static Designer createDesigner(JsfForm jsfForm) {
         // TODO There should be always created new designer.
         Designer designer;
-        synchronized (jsfForm2designerSet) {
-            Set<Designer> designerSet = jsfForm2designerSet.get(jsfForm);
-            if (designerSet == null) {
-                designerSet = new WeakSet<Designer>();
-            }
+//        synchronized (jsfForm2designerSet) {
+//            Set<Designer> designerSet = jsfForm2designerSet.get(jsfForm);
+//            if (designerSet == null) {
+//                designerSet = new WeakSet<Designer>();
+//            }
             
             designer = DesignerFactory.createDesigner(jsfForm.getDomProvider());
-            designerSet.add(designer);
-            jsfForm2designerSet.put(jsfForm, designerSet);
-        }
+//            designerSet.add(designer);
+//            jsfForm2designerSet.put(jsfForm, designerSet);
+            jsfForm.addDesigner(designer);
+//        }
         return designer;
     }
     
@@ -1340,8 +1343,11 @@ public class JsfForm {
         }
         List<JsfForm> projectJsfForms = new ArrayList<JsfForm>();
         Set<JsfForm> allJsfForms;
-        synchronized (jsfForm2designerSet) {
-            allJsfForms = jsfForm2designerSet.keySet();
+//        synchronized (jsfForm2designerSet) {
+//            allJsfForms = jsfForm2designerSet.keySet();
+//        }
+        synchronized (jsfForms) {
+            allJsfForms = new HashSet(jsfForms);
         }
         for (JsfForm jsfForm : allJsfForms) {
             if (project == jsfForm.getFacesModel().getProject()
@@ -2282,5 +2288,18 @@ public class JsfForm {
         }
     }
 
+    private Designer[] getDesigners() {
+        Set<Designer> ds;
+        synchronized (designers) {
+            ds = new HashSet<Designer>(designers);
+        }
+        return ds.toArray(new Designer[ds.size()]);
+    }
+
+    private void addDesigner(Designer designer) {
+        synchronized (designers) {
+            designers.add(designer);
+        }
+    }
 }
 
