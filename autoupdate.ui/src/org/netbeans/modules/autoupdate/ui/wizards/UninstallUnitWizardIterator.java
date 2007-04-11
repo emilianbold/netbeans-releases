@@ -51,7 +51,7 @@ public final class UninstallUnitWizardIterator implements WizardDescriptor.Itera
     
     private void createPanels () {
         assert panels != null && panels.isEmpty() : "Panels are still empty";
-        panels.add (new OperationDescriptionStep<OperationSupport> (uninstallModel));
+        panels.add (new OperationDescriptionStep (uninstallModel));
         panels.add (new UninstallStep (uninstallModel));
     }
     

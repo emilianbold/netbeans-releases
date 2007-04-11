@@ -50,7 +50,7 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     
     private void createPanels () {
         assert panels != null && panels.isEmpty() : "Panels are still empty";
-        panels.add (new OperationDescriptionStep<InstallSupport> (installModel));
+        panels.add (new OperationDescriptionStep (installModel));
         if (! installModel.allLicensesApproved ()) {
             panels.add (new LicenseApprovalStep (installModel));
         }

@@ -27,7 +27,7 @@ import org.netbeans.modules.autoupdate.ui.Containers;
  *
  * @author Jiri Rechtacek
  */
-public class UninstallUnitWizardModel extends OperationWizardModel<OperationSupport> {
+public class UninstallUnitWizardModel extends OperationWizardModel {
     private OperationType operationType;
     
     /** 
@@ -54,7 +54,7 @@ public class UninstallUnitWizardModel extends OperationWizardModel<OperationSupp
         return operationType;
     }
     
-    public OperationContainer<OperationSupport> getContainer () {
+    public OperationContainer getContainer () {
         switch (operationType) {
             case UNINSTALL :
                 return Containers.forUninstall ();

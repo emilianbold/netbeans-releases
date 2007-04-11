@@ -34,7 +34,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jiri Rechtacek
  */
-public class OperationDescriptionStep<Support> implements WizardDescriptor.Panel<WizardDescriptor> {
+public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDescriptor> {
     private static final String HEAD = "OperationDescriptionStep_Header_Head";
     private static final String CONTENT = "OperationDescriptionStep_Header_Content";
     private static final String TABLE_TITLE_INSTALL = "OperationDescriptionStep_TableInstall_Title";
@@ -56,10 +56,10 @@ public class OperationDescriptionStep<Support> implements WizardDescriptor.Panel
     private static final String TABLE_TITLE_BROKEN = "OperationDescriptionStep_BrokenDependencies_Title";
     private static final String TITLE_BROKEN_DEPENDENCIES = "OperationDescriptionStep_BrokenDependencies";
     private PanelBodyContainer component;
-    private OperationWizardModel<Support> model = null;
+    private OperationWizardModel model = null;
     
     /** Creates a new instance of OperationDescriptionStep */
-    public OperationDescriptionStep (OperationWizardModel<Support> model) {
+    public OperationDescriptionStep (OperationWizardModel model) {
         this.model = model;
     }
     
@@ -121,7 +121,7 @@ public class OperationDescriptionStep<Support> implements WizardDescriptor.Panel
         return component;
     }
     
-    private String prepareBrokenDependenciesForShow (OperationWizardModel<Support> model) {
+    private String prepareBrokenDependenciesForShow (OperationWizardModel model) {
         String s = new String ();
         for (String dep : model.getBrokenDependencies ()) {
             s += s + "<b>"  + tryTakeDisplayName (dep) + "</b>" + "<br>";

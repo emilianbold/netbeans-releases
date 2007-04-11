@@ -113,7 +113,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
     }
     
     private void handleAction () {
-        OperationSupport support = model.getContainer ().getSupport ();
+        OperationSupport support = (OperationSupport) model.getContainer ().getSupport ();
         assert support != null;
         ProgressHandle handle = null;
         switch (model.getOperation ()) {

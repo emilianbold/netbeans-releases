@@ -34,7 +34,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jiri Rechtacek
  */
-public abstract class OperationWizardModel<Support> {
+public abstract class OperationWizardModel {
     private List<UpdateElement> primaryElements;
     private List<UpdateElement> requiredElements = null;
     private List<UpdateElement> allElements = null;
@@ -42,7 +42,7 @@ public abstract class OperationWizardModel<Support> {
     private JButton originalNext = null;
     
     abstract OperationType getOperation ();
-    abstract OperationContainer<Support> getContainer ();
+    abstract OperationContainer getContainer ();
     
     public static enum OperationType {
         /** Install <code>UpdateElement</code> */
@@ -63,7 +63,8 @@ public abstract class OperationWizardModel<Support> {
         if (primaryElements == null) {
             assert getContainer () != null;
             primaryElements = new ArrayList<UpdateElement> ();
-            for (OperationInfo info : getContainer ().listAll ()) {
+            List<OperationInfo> l = (List<OperationInfo>) getContainer ().listAll ();
+            for (OperationInfo info : l) {
                 primaryElements.add (info.getUpdateElement ());
             }
         }
@@ -78,7 +79,8 @@ public abstract class OperationWizardModel<Support> {
         if (requiredElements == null) {
             requiredElements = new ArrayList<UpdateElement> ();
             
-            for (OperationInfo<Support> info : getContainer ().listAll()) {
+            List<OperationInfo> l = (List<OperationInfo>) getContainer ().listAll ();
+            for (OperationInfo info : l) {
                 requiredElements.addAll (info.getRequiredElements ());
             }
             
@@ -96,7 +98,8 @@ public abstract class OperationWizardModel<Support> {
     public List<String> getBrokenDependencies () {
         List<String> brokenDeps = new ArrayList<String> ();
 
-        for (OperationInfo<Support> info : getContainer ().listAll ()) {
+        List<OperationInfo> l = (List<OperationInfo>) getContainer ().listAll ();
+        for (OperationInfo info : l) {
             brokenDeps.addAll (info.getBrokenDependencies ());
         }
         return brokenDeps;

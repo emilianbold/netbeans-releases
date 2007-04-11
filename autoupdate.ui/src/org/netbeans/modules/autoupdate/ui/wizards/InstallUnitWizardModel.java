@@ -35,7 +35,7 @@ import org.netbeans.modules.autoupdate.ui.Containers;
  *
  * @author Jiri Rechtacek
  */
-public class InstallUnitWizardModel extends OperationWizardModel<InstallSupport> {
+public class InstallUnitWizardModel extends OperationWizardModel {
     private Installer installer = null;
     private boolean doUpdate;
     private static Set<String> approvedLicences = new HashSet<String> ();
@@ -55,7 +55,7 @@ public class InstallUnitWizardModel extends OperationWizardModel<InstallSupport>
         return doUpdate ? OperationWizardModel.OperationType.UPDATE : OperationWizardModel.OperationType.INSTALL;
     }
     
-    public OperationContainer<InstallSupport> getContainer() {
+    public OperationContainer getContainer() {
         return installContainer;
     }
     
