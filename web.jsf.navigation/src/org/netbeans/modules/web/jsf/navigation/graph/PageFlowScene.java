@@ -229,13 +229,14 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         Point point = locations.get(displayName);
         if( point == null ) {
             point = PageFlowLayoutUtilities.getPreferredNodePosition(this,true);
+        } else {
+            //Just in case there is another widget there. Relocate that one instead.
+            Widget widget = PageFlowLayoutUtilities.isWidgetAt(this, point);
+            if (widget != null ){
+                widget.setPreferredLocation(PageFlowLayoutUtilities.getPreferredNodePosition(this,true));
+            }
         }
-        //        nodeWidget2Point.put(nodeWidget, point);
         nodeWidget.setPreferredLocation(point);
-        
-        //        nodeWidget.getActions().addAction(createActionMap());
-        //        nodeWidget.getActions ().addAction (popupGraphAction);
-        //        imageWidget.getActions().addAction(connectAction);
         
         return nodeWidget;
     }
