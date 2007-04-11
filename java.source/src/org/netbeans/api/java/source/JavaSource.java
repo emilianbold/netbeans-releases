@@ -23,6 +23,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Source;
+import com.sun.tools.javac.code.Symbol.CompletionFailure;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Abort;
@@ -452,7 +453,16 @@ public final class JavaSource {
                             infoStack.pop ();
                         }
                     }                    
-                } catch (Exception e) {
+                }
+                catch (CompletionFailure e) {
+                    IOException ioe = new IOException ();
+                    ioe.initCause(e);
+                    throw ioe;
+                }
+                catch (RuntimeException e) {
+                    throw e;
+                }
+                catch (Exception e) {
                     IOException ioe = new IOException ();
                     ioe.initCause(e);
                     throw ioe;
@@ -498,8 +508,17 @@ public final class JavaSource {
                                 throw new InsufficientMemoryException (activeFile);
                             }
                         }
-                    }
-                } catch (Exception e) {
+                    }                
+                } 
+                catch (CompletionFailure e) {
+                    IOException ioe = new IOException ();
+                    ioe.initCause(e);
+                    throw ioe;
+                }
+                catch (RuntimeException e) {
+                    throw e;
+                }
+                catch (Exception e) {
                     IOException ioe = new IOException ();
                     ioe.initCause(e);
                     throw ioe;
@@ -559,7 +578,16 @@ public final class JavaSource {
                     List<Difference> diffs = copy.getChanges();
                     if (diffs != null && diffs.size() > 0)
                         result.diffs.put(currentInfo.getFileObject(), diffs);
-                } catch (Exception e) {
+                }
+                catch (CompletionFailure e) {
+                    IOException ioe = new IOException ();
+                    ioe.initCause(e);
+                    throw ioe;
+                }
+                catch (RuntimeException e) {
+                    throw e;
+                }
+                catch (Exception e) {
                     IOException ioe = new IOException ();
                     ioe.initCause(e);
                     throw ioe;
@@ -612,7 +640,16 @@ public final class JavaSource {
                             }
                         }
                     }
-                } catch (Exception e) {
+                }
+                catch (CompletionFailure e) {
+                    IOException ioe = new IOException ();
+                    ioe.initCause(e);
+                    throw ioe;
+                }
+                catch (RuntimeException e) {
+                    throw e;
+                }
+                catch (Exception e) {
                     IOException ioe = new IOException ();
                     ioe.initCause(e);
                     throw ioe;
