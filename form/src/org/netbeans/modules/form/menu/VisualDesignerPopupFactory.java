@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
+import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.Popup;
@@ -68,7 +69,7 @@ class VisualDesignerPopupFactory extends PopupFactory {
             }
             cont.setBorder(BorderFactory.createLineBorder(Color.BLACK));
             containerMap.put(menu,cont);
-            canvas.add(cont);
+            canvas.layers.add(cont, JLayeredPane.DEFAULT_LAYER);
         }
         
         // if the parent is a menu then this is a submenu
