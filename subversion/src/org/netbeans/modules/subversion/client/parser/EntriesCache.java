@@ -21,7 +21,6 @@ package org.netbeans.modules.subversion.client.parser;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -303,7 +302,7 @@ public class EntriesCache {
                 }
                 
                 String nameValue = attributes.get(NAME_ATTRIBUTE);                             
-                if (EMPTY_STRING.equals(nameValue)) {           
+                if (nameValue == null || EMPTY_STRING.equals(nameValue)) {           
                     nameValue = SVN_THIS_DIR;
                 }
                 if(entryAttributes == null) {
