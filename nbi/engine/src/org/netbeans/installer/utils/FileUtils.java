@@ -393,7 +393,10 @@ public final class FileUtils {
     
     public static void deleteEmptyParents(File file) throws IOException {
         if (!exists(file)) {
-            deleteWithEmptyParents(file.getParentFile());
+            File parent = file.getParentFile();
+            if(isEmpty(parent)) {
+                deleteWithEmptyParents(parent);
+            }
         }
     }
     

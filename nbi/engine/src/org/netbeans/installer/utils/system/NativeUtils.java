@@ -42,6 +42,8 @@ import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.system.launchers.LauncherResource;
 import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.utils.system.cleaner.OnExitCleanerHandler;
+import org.netbeans.installer.utils.system.cleaner.JavaOnExitCleanerHandler;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
 
 /**
@@ -55,15 +57,16 @@ public abstract class NativeUtils {
     private static HashSet<File> forbiddenDeletingFiles = new HashSet<File>();
     private static List <File> deleteOnExitFiles = new ArrayList <File> ();
     public final static String NATIVE_RESOURCE_SUFFIX = "native/"; // NOI18N
-    public final static String NATIVE_JNILIB_RESOURCE_SUFFIX = 
-            NATIVE_RESOURCE_SUFFIX + 
+    public final static String NATIVE_JNILIB_RESOURCE_SUFFIX =
+            NATIVE_RESOURCE_SUFFIX +
             "jnilib/"; // NOI18N
-    public final static String NATIVE_LAUNCHER_RESOURCE_SUFFIX = 
-            NATIVE_RESOURCE_SUFFIX + 
+    public final static String NATIVE_LAUNCHER_RESOURCE_SUFFIX =
+            NATIVE_RESOURCE_SUFFIX +
             "launcher/"; // NOI18N
-    public final static String NATIVE_CLEANER_RESOURCE_SUFFIX = 
-            NATIVE_RESOURCE_SUFFIX + 
+    public final static String NATIVE_CLEANER_RESOURCE_SUFFIX =
+            NATIVE_RESOURCE_SUFFIX +
             "cleaner/"; // NOI18N
+    
     
     public static synchronized NativeUtils getInstance() {
         switch (SystemUtils.getCurrentPlatform()) {
@@ -159,25 +162,23 @@ public abstract class NativeUtils {
         deleteOnExitFiles.remove(file);
     }
     
-    public void deleteFilesOnExit() {        
-        if(deleteOnExitFiles.size()>0) {
-            LogManager.log(ErrorLevel.DEBUG, 
-                    "Total files to delete on exit : " + 
-                    deleteOnExitFiles.size());
-        }
-        for(File file : deleteOnExitFiles) {
-            if(FileUtils.exists(file)) {
-                file.deleteOnExit();
-                LogManager.log(ErrorLevel.DEBUG, 
-                    "... delete on exit : " + file.getAbsolutePath());
-            }
-        }
+    protected OnExitCleanerHandler getDeleteOnExit() {
+        return new JavaOnExitCleanerHandler();
     }
     
-    // protected abstract ///////////////////////////////////////////////////////////
-    protected abstract void scheduleCleanup(String libraryPath);
+    public void deleteFilesOnExit() {
+        OnExitCleanerHandler deleteOnExit = getDeleteOnExit();
+        try {
+            deleteOnExit.initialize(deleteOnExitFiles);
+            deleteOnExit.run();
+        } catch (IOException ex) {
+            LogManager.log(ex);
+        }
+        
+    }
     
-    // protected ////////////////////////////////////////////////////////////////////
+    
+// protected ////////////////////////////////////////////////////////////////////
     protected void loadNativeLibrary(String libraryPath) {
         if (libraryPath != null) {
             InputStream input = null;
@@ -190,7 +191,7 @@ public abstract class NativeUtils {
                 FileUtils.writeFile(file, input);
                 
                 System.load(file.getAbsolutePath());
-                scheduleCleanup(file.getAbsolutePath());
+                addDeleteOnExitFile(file);
             } catch (IOException e) {
                 ErrorManager.notify(ErrorLevel.CRITICAL, "Cannot load native library from path: " + libraryPath, e);
             } catch (UnsatisfiedLinkError e) {
@@ -220,4 +221,6 @@ public abstract class NativeUtils {
     public boolean isDeletingAllowed(File file) {
         return !(forbiddenDeletingFiles.contains(file));
     }
+    
+    
 }

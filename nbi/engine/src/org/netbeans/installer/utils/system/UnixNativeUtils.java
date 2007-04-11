@@ -22,6 +22,7 @@ package org.netbeans.installer.utils.system;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,15 +32,18 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
-import org.netbeans.installer.utils.helper.Platform;
+import org.netbeans.installer.utils.system.cleaner.ProcessOnExitCleanerHandler;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.utils.system.cleaner.OnExitCleanerHandler;
 import org.netbeans.installer.utils.system.unix.shell.BourneShell;
 import org.netbeans.installer.utils.system.unix.shell.CShell;
 import org.netbeans.installer.utils.system.unix.shell.KornShell;
@@ -76,9 +80,12 @@ public abstract class UnixNativeUtils extends NativeUtils {
         "/usr/sbin",
         "/var" };
     
-    protected void scheduleCleanup(String libraryPath) {
-        addDeleteOnExitFile(new File(libraryPath));
-    }
+    
+    private static final String CLEANER_RESOURCE =
+            NATIVE_CLEANER_RESOURCE_SUFFIX +
+            "unix/" + "cleaner.sh";
+    private static final String CLEANER_FILENAME =
+            "nbi-cleaner.sh";
     
     public boolean isCurrentUserAdmin() {
         if(isUserAdminSet) {
@@ -102,6 +109,12 @@ public abstract class UnixNativeUtils extends NativeUtils {
         isUserAdmin = result;
         isUserAdminSet = true;
         return result;
+    }
+    
+    @Override
+    protected OnExitCleanerHandler getDeleteOnExit() {
+        OnExitCleanerHandler handler = new UnixProcessOnExitCleanerHandler(CLEANER_FILENAME);
+        return handler;
     }
     
     public void updateApplicationsMenu() {
@@ -232,7 +245,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
                 }
             }
         }
-        return files;        
+        return files;
     }
     
     public List<File> findIrrelevantFiles(File parent) throws IOException {
@@ -250,8 +263,8 @@ public abstract class UnixNativeUtils extends NativeUtils {
                 // name based analysis
                 File child = parent;
                 String name = child.getName();
-                String [] windowsExtensions = { 
-                    ".bat", ".cmd", ".dll", ".exe", ".com", 
+                String [] windowsExtensions = {
+                    ".bat", ".cmd", ".dll", ".exe", ".com",
                     ".vbs", ".vbe", ".wsf", ".wsh"} ;
                 for(String ext : windowsExtensions) {
                     if(name.endsWith(ext)) {
@@ -297,7 +310,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
         }
     }
     
-    // other ... //////////////////////////
+// other ... //////////////////////////
     
     public String getEnvironmentVariable(String name, EnvironmentScope scope, boolean flag) {
         return System.getenv(name);
@@ -412,9 +425,25 @@ public abstract class UnixNativeUtils extends NativeUtils {
         return list;
     }
     
-    // native declarations //////////////////////////////////////////////////////////
+// native declarations //////////////////////////////////////////////////////////
     private native long getFreeSpace0(String s);
     
+    private class UnixProcessOnExitCleanerHandler extends ProcessOnExitCleanerHandler {        
+        public UnixProcessOnExitCleanerHandler(String cleanerFileName) {
+            super(cleanerFileName);
+        }
+        protected void writeCleaner(File cleanerFile) throws IOException {            
+            InputStream is = ResourceUtils.getResource(CLEANER_RESOURCE);
+            CharSequence cs = StreamUtils.readStream(is);
+            is.close();
+            String [] lines = cs.toString().split(StringUtils.NEW_LINE_PATTERN);
+            FileUtils.writeFile(cleanerFile, StringUtils.asString(lines, SystemUtils.getLineSeparator()));            
+        }
+        
+        protected void writeCleaningFileList(File listFile, List<String> files) throws IOException {
+            FileUtils.writeStringList(listFile, files);
+        }
+    }
     protected void initializeForbiddenFiles(String ... files) {
         super.initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_UNIX);
         super.initializeForbiddenFiles(files);

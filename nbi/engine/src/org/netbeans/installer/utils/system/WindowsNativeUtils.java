@@ -22,6 +22,7 @@ package org.netbeans.installer.utils.system;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -31,6 +32,7 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.SystemUtils;
@@ -44,6 +46,8 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.utils.system.cleaner.OnExitCleanerHandler;
+import org.netbeans.installer.utils.system.cleaner.ProcessOnExitCleanerHandler;
 import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 
 /**
@@ -54,10 +58,17 @@ import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 public class WindowsNativeUtils extends NativeUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String LIBRARY_PATH = 
+    public static final String LIBRARY_PATH =
             NATIVE_JNILIB_RESOURCE_SUFFIX +
             "windows/" + //NOI18N
             "windows.dll"; //NOI18N
+    
+    private static final String CLEANER_RESOURCE =
+            NATIVE_CLEANER_RESOURCE_SUFFIX +
+            "windows/" + "cleaner.exe";
+    
+    private static final String CLEANER_FILENAME =
+            "nbi-cleaner.exe";
     
     public static final String UNINSTALL_KEY = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
     
@@ -74,17 +85,17 @@ public class WindowsNativeUtils extends NativeUtils {
     private static final int MIN_UID_INDEX = 1;
     private static final int MAX_UID_INDEX = 100;
     
-    private static final String SHELL_FOLDERS_KEY = 
+    private static final String SHELL_FOLDERS_KEY =
             "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders";
     
     public static final String CURRENT_USER_ENVIRONMENT_KEY =
             "Environment";
-    public static final String ALL_USERS_ENVIRONMENT_KEY    = 
+    public static final String ALL_USERS_ENVIRONMENT_KEY    =
             "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
     
-    private static final String RUNONCE_KEY = 
+    private static final String RUNONCE_KEY =
             "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce";
-    private static final String RUNONCE_DELETE_VALUE_NAME = 
+    private static final String RUNONCE_DELETE_VALUE_NAME =
             "NBI Temporary Files Delete";
     
     private static final String EXT_PREFIX = "NBI.";
@@ -213,6 +224,11 @@ public class WindowsNativeUtils extends NativeUtils {
         isUserAdminSet = true;
         return result;
         
+    }
+    
+    @Override
+    protected OnExitCleanerHandler getDeleteOnExit() {
+        return new WindowsProcessOnExitCleanerHandler(CLEANER_FILENAME);
     }
     
     public File getDefaultApplicationsLocation() throws NativeException {
@@ -399,7 +415,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
         
         if (descriptor.getUninstallCommand() != null) {
-            String uninstallString = modifyCommand;            
+            String uninstallString = modifyCommand;
             for(String s : descriptor.getUninstallCommand()) {
                 boolean add = true;
                 for(String sm : descriptor.getModifyCommand()) {
@@ -560,15 +576,6 @@ public class WindowsNativeUtils extends NativeUtils {
     
     public void correctFilesPermissions(File parent) {
         // does nothing, as there is no such thing as execute permissions
-    }
-    
-// protected ////////////////////////////////////////////////////////////////////
-    protected void scheduleCleanup(String libraryPath) {
-        try {
-            deleteFileOnReboot(new File(libraryPath));
-        } catch (NativeException e) {
-            ErrorManager.notify(ErrorLevel.DEBUG, "Cannot schedule native library for deletion", e);
-        }
     }
     
 // windows-specific operations //////////////////////////////////////////////////
@@ -1127,6 +1134,21 @@ public class WindowsNativeUtils extends NativeUtils {
     
     private void notifyAssociationChanged() throws NativeException {
         notifyAssociationChanged0();
+    }
+    
+    private class WindowsProcessOnExitCleanerHandler extends ProcessOnExitCleanerHandler {
+        public WindowsProcessOnExitCleanerHandler(String cleanerDefaultFileName) {
+            super(cleanerDefaultFileName);
+        }
+        protected void writeCleaner(File cleanerFile) throws IOException {            
+            InputStream is = ResourceUtils.getResource(CLEANER_RESOURCE);
+            FileUtils.writeFile(cleanerFile, is);
+            is.close();              
+        }
+        
+        protected void writeCleaningFileList(File listFile, List<String> files) throws IOException {
+            FileUtils.writeStringList(listFile, files, "UNICODE");
+        }
     }
     
     private class FileExtensionKey extends FileExtension {
