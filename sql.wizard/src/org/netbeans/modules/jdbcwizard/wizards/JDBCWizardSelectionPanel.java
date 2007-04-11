@@ -512,6 +512,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
      */
 	public DBTable populateDBTable(String tableName){
 		final Connection connection = this.selectedConnection.getJDBCConnection();
+		String driverName  = null;
 		try{
 		 final String[][] tableList = DBMetaData.getTablesOnly("", "", "", false,connection);
             DBTable ffTable = null;
@@ -522,7 +523,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                     if(tableName.equals(currTable[DBMetaData.NAME])){
                         ffTable = new DBTableImpl(currTable[DBMetaData.NAME], currTable[DBMetaData.SCHEMA], currTable[DBMetaData.CATALOG]);
                         Table t = null;
-                        String driverName = connection.getMetaData().getDriverName();
+                        driverName = connection.getMetaData().getDriverName();
                         //For JDBC-ODBC driver we need to select columns by order otherwise, driver throws 
                         //Invalid Descriptor Index exception
                         if(driverName.startsWith("JDBC-ODBC")){
