@@ -269,14 +269,9 @@ public class LanguagesNavigator implements NavigatorPanel {
         int end = item.getEndOffset ();
         Context context = SyntaxContext.create (doc, path2);
         String displayName = (String) navigator.getValue ("display_name", context);
-        if (displayName == null)
-            try {
-                displayName = doc.getText (
-                    start,
-                    end - start
-                );
-            } catch (BadLocationException ex) {
-            }
+        if (displayName == null || displayName.trim().length() == 0) {
+            return null;
+        }
         String tooltip = (String) navigator.getValue ("tooltip", context);
         String icon = (String) navigator.getValue ("icon", context);
         if (icon == null)
