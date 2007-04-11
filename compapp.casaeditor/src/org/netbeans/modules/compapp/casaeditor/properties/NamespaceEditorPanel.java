@@ -183,6 +183,7 @@ implements ActionListener, ListSelectionListener, DocumentListener {
 
 
     private void initializeCustomListeners() {
+        localNameTextField.getDocument().addDocumentListener(this);
         prefixTextField.getDocument().addDocumentListener(this);
     }
     
