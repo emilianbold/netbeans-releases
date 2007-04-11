@@ -34,7 +34,7 @@ import java.awt.*;
 public class DevicePanel extends JPanel {
 
     private static final Color BACKGROUND_COLOR = new Color (0xFCFAF5);
-    //private static final Color BACKGROUND_COLOR = Color.WHITE; // just for test
+    //private static final Color BACKGROUND_COLOR = Color.RED; // just for test
 
     private final ScreenDisplayPresenter dummyPresenter = new DummyDisplayPresenter ();
 
@@ -108,6 +108,7 @@ public class DevicePanel extends JPanel {
         constraints.gridx = 1;
         constraints.gridy = 1;
         constraints.fill = GridBagConstraints.BOTH;
+        constraints.weightx = 1.0;
         add(displayPanel,constraints);
 
         constraints = new GridBagConstraints();
@@ -137,7 +138,10 @@ public class DevicePanel extends JPanel {
 
         JPanel fillPanel = new JPanel ();
         fillPanel.setBackground (BACKGROUND_COLOR);
-        add(fillPanel, new GridBagConstraints (0, 3, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets (0, 0, 0, 0), 0, 0));
+        constraints.gridx = 0;
+        constraints.gridy = GridBagConstraints.RELATIVE;
+        constraints.weighty = 1.0;
+        add(fillPanel, constraints);
     }
 
     public void reload () {
@@ -147,14 +151,32 @@ public class DevicePanel extends JPanel {
             presenter = dummyPresenter;
         displayPanel.setVisible (false);
         displayPanel.removeAll ();
-        displayPanel.add (presenter.getView (), BorderLayout.CENTER);
+        displayPanel.setPreferredSize(null);
+
+        JComponent comp = presenter.getView ();
+        displayPanel.add (comp, BorderLayout.CENTER);
         displayPanel.setBackground (getDeviceInfo ().getDeviceTheme ().getColor (ScreenDeviceInfo.DeviceTheme.COLOR_BACKGROUND));
 
         presenter.reload (getDeviceInfo ());
 
+        //due to issues in GridBagLayout which ignores minSize, we need to compute necessary height for component
+        int requiredHeight = 0;
+        Component[] content = comp.getComponents();
+        for (int i = 0; i < content.length; i++) {
+            Component jComponent = content[i];
+            requiredHeight += jComponent.getPreferredSize().getHeight();
+//            GridBagConstraints constrains = ((GridBagLayout)comp.getLayout()).getConstraints(jComponent);
+//            requiredHeight += constrains.insets.top;
+//            requiredHeight += constrains.insets.bottom;
+        }
         Dimension size = getDeviceInfo ().getCurrentScreenSize ();
-        displayPanel.setMinimumSize (new Dimension (size.width, 0));
-        displayPanel.setPreferredSize (size);
+        displayPanel.setMinimumSize (size);
+        //if the size of component is less than required size, force it. Otherwise force the size to computed one
+        if (size.height >= requiredHeight){
+            displayPanel.setPreferredSize(size);
+        } else {
+            displayPanel.setPreferredSize(new Dimension(size.width, requiredHeight));
+        }
         displayPanel.setMaximumSize (new Dimension (size.width, Integer.MAX_VALUE));
 
         displayPanel.setVisible (true);
@@ -209,4 +231,16 @@ public class DevicePanel extends JPanel {
         return point;
     }
 
+    /**
+     * Helper debugging method for inspecting component's hiearchy
+     */
+    private void dump(JComponent component){
+        System.out.println("Type " + component.getClass() + " Layout " + component.getLayout() + " Size: " + component.getSize() + " Preferred size: " + component.getPreferredSize());
+        Component comps[] = component.getComponents();
+        for (int i = 0; i < comps.length; i++) {
+            Component component1 = comps[i];
+            dump((JComponent)component1);
+        }
+
+    }
 }
