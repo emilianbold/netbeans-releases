@@ -95,7 +95,6 @@ public final class UI {
         if (component == null) {
             if (refactoringPanel.splitPane.getRightComponent() == null)
                 return false;
-            component = new JLabel("<Preview not Available>", SwingConstants.CENTER);
         }
         refactoringPanel.splitPane.setRightComponent(component);
         return true;
