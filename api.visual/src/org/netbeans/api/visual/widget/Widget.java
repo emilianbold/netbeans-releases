@@ -702,6 +702,8 @@ public class Widget {
         Insets insets = border.getInsets ();
         Rectangle clientArea = calculateClientArea ();
         for (Widget child : children) {
+            if (! child.isVisible ())
+                continue;
             Point location = child.getLocation ();
             Rectangle bounds = child.getBounds ();
             bounds.translate (location.x, location.y);
