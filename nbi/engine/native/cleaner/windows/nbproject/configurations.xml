@@ -39,7 +39,7 @@
           <output>dist/cleaner</output>
           <stripSymbols>true</stripSymbols>
           <linkerLibItems>
-            <linkerOptionItem>-lole32 -luuid -lkernel32 -lcomctl32</linkerOptionItem>
+            <linkerOptionItem>-lole32 -lkernel32</linkerOptionItem>
           </linkerLibItems>
           <commandLine>-mno-cygwin -mwindows</commandLine>
         </linkerTool>

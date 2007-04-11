@@ -37,9 +37,7 @@ FFLAGS=
 # Link Libraries and Options
 LDLIBSOPTIONS=\
 	-lole32 \
-	-luuid \
-	-lkernel32 \
-	-lcomctl32
+	-lkernel32
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS} dist/cleaner.exe
