@@ -286,6 +286,9 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
      */
     public PinNode getDefaultPin( PageFlowNode pageNode ){
         Collection<PinNode> pins = getNodePins(pageNode);
+        if( pins == null ){
+            System.out.println("Node is null?");
+        }
         for ( PinNode pin : pins ){
             if( pin.isDefault())
                 return pin;
@@ -414,17 +417,7 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     public void layoutSceneImmediately() {
         sceneLayout.invokeLayoutImmediately();
     }
-    
-    private static class MyPopupMenuProvider implements PopupMenuProvider {
-        
-        public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
-            JPopupMenu popupMenu = new JPopupMenu();
-            popupMenu.add(new JMenuItem("Open " + ((VMDNodeWidget) widget).getNodeName()));
-            return popupMenu;
-        }
-        
-    }
-    
+       
     
     
     private final class PageFlowSelectProvider implements SelectProvider {

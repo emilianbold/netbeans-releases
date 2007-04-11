@@ -46,6 +46,7 @@ import org.netbeans.modules.xml.xam.Model.State;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -56,7 +57,7 @@ import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
-import org.openide.util.WeakListeners;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -114,19 +115,14 @@ public class PageFlowController {
                 configModel.addPropertyChangeListener(pcl);
             }
         }
+        FileObject webFolder = getWebFolder();
         if( fcl == null ){
             fcl = new WebFolderListener();
             if( webFolder != null ){
-                webFolder.addFileChangeListener(fcl);
-                for (Enumeration<FileObject> e = (Enumeration<FileObject>) webFolder.getFolders(true); e.hasMoreElements() ;) {
-                    //                    System.out.println(e.nextElement());
-                    //I need to exclude WEB-INF, or maybe I should just allow it to stay..  Will it hurt?
-                    FileObject folderObj = e.nextElement();
-                    //                    String nameName = folderObj.getName();
-                    if( isKnownFolder(folderObj) ) {
-                        //                        folderObj.addFileChangeListener(WeakListeners.create(FileChangeListener.class, fcl, folderObj));
-                        folderObj.addFileChangeListener(fcl);
-                    }
+                try             {
+                    webFolder.getFileSystem().addFileChangeListener(fcl);
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }
@@ -141,12 +137,19 @@ public class PageFlowController {
             configModel.removePropertyChangeListener(pcl);
             pcl = null;
         }
+        
+        FileObject webFolder = getWebFolder();
         if (fcl != null && webFolder != null ) {
-            webFolder.removeFileChangeListener(fcl);
-            for (Enumeration<FileObject> e = (Enumeration<FileObject>) webFolder.getFolders(true); e.hasMoreElements() ;) {
-                e.nextElement().removeFileChangeListener(fcl);
+            try         {
+                webFolder.getFileSystem().removeFileChangeListener(fcl);
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            fcl = null;
+            //            webFolder.removeFileChangeListener(fcl);
+            //            for (Enumeration<FileObject> e = (Enumeration<FileObject>) webFolder.getFolders(true); e.hasMoreElements() ;) {
+            //                e.nextElement().removeFileChangeListener(fcl);
+            //            }
+            //            fcl = null;
         }
     }
     
@@ -454,6 +457,18 @@ public class PageFlowController {
                 if ( myOldCase != null ){
                     NavigationCaseNode caseNode = case2Node.remove(myOldCase);
                     view.removeEdge(caseNode);
+                    
+                    String toPage = caseNode.getToViewId();
+                    PageFlowNode pageNode = pageName2Node.get(toPage);
+                    assert pageNode != null;
+                    if( pageNode != null && !isPageInFacesConfig(toPage)){
+                        if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
+                            pageName2Node.remove(pageNode);
+                            view.removeNodeWithEdges(pageNode);
+                            view.validateGraph();
+                            //                                node.destroy(); //only okay because it is an abstract node.
+                        }
+                    }
                 }
                 view.validateGraph();
             } else if (ev.getPropertyName() == "navigation-rule" ) {
@@ -464,12 +479,14 @@ public class PageFlowController {
                 //Because it does not consistantly work, I can't account for reactions.
                 if( myOldRule != null ){
                     String fromPage = navRule2String.remove(myOldRule);
-                    PageFlowNode node = pageName2Node.get(fromPage);
-                    assert node != null;
+                    PageFlowNode pageNode = pageName2Node.get(fromPage);
+                    assert pageNode != null;
                     
-                    if( node != null && !isPageInFacesConfig(fromPage)){
-                        if( !node.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
-                            view.removeNodeWithEdges(node);
+                    if( pageNode != null && !isPageInFacesConfig(fromPage)){
+                        if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
+                            pageName2Node.remove(pageNode);
+                            view.removeNodeWithEdges(pageNode);
+                            view.validateGraph();
                             //                                node.destroy(); //only okay because it is an abstract node.
                         }
                     }
@@ -484,7 +501,7 @@ public class PageFlowController {
                 view.warnUserMalFormedFacesConfig();
                 setupGraph();
             } else {
-                view.validateGraph();
+                //                view.validateGraph();
             }
             
         }
@@ -596,9 +613,25 @@ public class PageFlowController {
     
     private class WebFolderListener extends FileChangeAdapter{
         
+        
+        private boolean isKnownFileEvent(FileObject potentialChild ) {
+            if ( FileUtil.isParentOf(getWebFolder(), potentialChild) ) {
+                if( potentialChild.isFolder() ){
+                    return isKnownFolder(potentialChild);
+                } else {
+                    return isKnownFile(potentialChild);
+                }
+            }
+            return false;
+        }
+        
         public void fileDataCreated(FileEvent fe) {
+            FileObject fileObj = fe.getFile();
+            if( !isKnownFileEvent(fileObj) ){
+                return;
+            }
+            
             try         {
-                FileObject fileObj = fe.getFile();
                 if( isKnownFile(fileObj)){
                     webFiles.add(fileObj);
                     DataObject dataObj = DataObject.find(fileObj);
@@ -622,30 +655,30 @@ public class PageFlowController {
         }
         
         public void fileChanged(FileEvent fe) {
-            System.out.println("File Changed Event: " + fe);
+            //            System.out.println("File Changed Event: " + fe);
         }
         
         public void fileDeleted(FileEvent fe) {
             FileObject fileObj = fe.getFile();
-            
-            if( fileObj.isFolder() ){
-                fileObj.removeFileChangeListener(this);
+            if ( !webFiles.remove(fileObj) ) {
                 return;
             }
+            //            if( fileObj.isFolder() ){
+            //                return;
+            //            }
             
             //DISPLAYNAME:
             String pageDisplayName = PageFlowNode.getFolderDisplayName(getWebFolder(), fileObj);
-            //            String pageDisplayName = fileObj.getNameExt();
-            webFiles.remove(fileObj);
             
             PageFlowNode oldNode = pageName2Node.get(pageDisplayName);
             if( oldNode != null ) {
-                if( oldNode.isDataNode() && isPageInFacesConfig(oldNode.getDisplayName())) {
+                if( isPageInFacesConfig(oldNode.getDisplayName()) ) {
                     Node tmpNode = new AbstractNode(Children.LEAF);
                     tmpNode.setName(pageDisplayName);
                     oldNode.replaceWrappedNode(tmpNode);
                     view.resetNodeWidget(oldNode);  /* If I add a listener to PageFlowNode, then I won't have to do this*/
                 } else {
+                    pageName2Node.remove(oldNode);
                     view.removeNodeWithEdges(oldNode);
                 }
                 view.validateGraph();   //Either action validate graph
@@ -662,22 +695,24 @@ public class PageFlowController {
              * should reload it.
              * WARNING: Will get setup twice.*/
             FileObject fileObj = fe.getFile();
+            if( !webFiles.contains(fileObj) && !isKnownFolder(fileObj) ){
+                return;
+            }
+            //            if( !isKnownFileEvent(fileObj) ){
+            //                return;
+            //            }
             
             if( fileObj.isFolder() ){
                 //I may still need to modify display names.
                 
-                FileObject[] fileObjs = fileObj.getChildren();
                 if( fe.getName().equals(oldFolderName) && fileObj.getName().equals(newFolderName) ){
                     //Folder rename triggers two listeners.  Only pay attention to the first one.
                     return;
                 }
                 oldFolderName = fe.getName();
                 newFolderName = fileObj.getName();
-                for( FileObject file : fileObjs) {
-                    String newDisplayName = PageFlowNode.getFolderDisplayName(getWebFolder(), file);
-                    String oldDisplayName = newDisplayName.replaceFirst(newFolderName, oldFolderName);
-                    fileRename(file, oldDisplayName, newDisplayName);
-                }
+                folderRename( fileObj, oldFolderName, newFolderName);
+                
             } else {
                 //DISPLAYNAME:
                 String newDisplayName  = PageFlowNode.getFolderDisplayName(getWebFolder(), fileObj);
@@ -690,7 +725,23 @@ public class PageFlowController {
             
         }
         
+        private void folderRename( FileObject folderObject, String oldFolderName, String newFolderName ){
+            FileObject[] fileObjs = folderObject.getChildren();
+            for( FileObject file : fileObjs) {
+                
+                if( file.isFolder() ){
+                    folderRename( file, oldFolderName, newFolderName);
+                } else {
+                    String newDisplayName = PageFlowNode.getFolderDisplayName(getWebFolder(), file);
+                    String oldDisplayName = newDisplayName.replaceFirst(newFolderName, oldFolderName);
+                    fileRename(file, oldDisplayName, newDisplayName);
+                }
+            }
+        }
+        
+        
         private void fileRename(FileObject fileObj, String oldDisplayName, String newDisplayName ){
+            
             PageFlowNode oldNode = pageName2Node.get(oldDisplayName);
             PageFlowNode abstractNode = pageName2Node.get(newDisplayName);
             Node newNodeDelegate = null;
@@ -734,12 +785,13 @@ public class PageFlowController {
                     view.resetNodeWidget(oldNode);
                 }
             }
+            view.validateGraph();
             
         }
         
         
         public void fileFolderCreated(FileEvent fe) {
-            fe.getFile().addFileChangeListener( fcl);
+            //            fe.getFile().addFileChangeListener( fcl);
         }
         
         
