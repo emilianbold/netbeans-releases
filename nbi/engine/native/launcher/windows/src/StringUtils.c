@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "StringUtils.h"
-#include "FileUtils.h"
 
 //adds string the the initial string and modifies totalWCHARs and capacity
 // initial - the beginning of the string

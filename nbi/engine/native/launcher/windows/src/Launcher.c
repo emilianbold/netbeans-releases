@@ -665,8 +665,7 @@ void freeLauncherProperties(LauncherProperties **props) {
 DWORD processLauncher(WCHAR ** commandLine, int argumentsNumber) {
     DWORD exitCode = 0;
     I18N_PROPERTIES_NUMBER = 0;
-    
-    setOutput(commandLine, argumentsNumber);
+    setOutput(commandLine, argumentsNumber);    
     setFreeSpaceChecking(commandLine, argumentsNumber);
     // size of buffer for reading data from exe file
     DWORD bufsize = 65536;
@@ -737,7 +736,7 @@ DWORD processLauncher(WCHAR ** commandLine, int argumentsNumber) {
         }
         freeSizedString(&restOfBytes);
     }
-    LocalFree(commandLine);
+    
     writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... closing file and std handles", 1);
     CloseHandle(hFileRead);
     closeStdHandles();

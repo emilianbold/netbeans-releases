@@ -145,7 +145,7 @@ void addProgressPosition(DWORD add) {
         currentProgressSize += (double) add;
         double pos = currentProgressSize / totalProgressSize;
         SendMessage(hwndPB, PBM_SETPOS, (long) pos, 0);
-        UpdateWindow(hwndPB);       
+        UpdateWindow(hwndPB);
         UpdateWindow(hwndMain);
     }
 }
@@ -196,11 +196,11 @@ void hideLauncherWindows() {
 }
 
 
-void showLauncherWindows() {    
-    ShowWindow(hwndMain, iCmdShowGlobal);        
+void showLauncherWindows() {
+    ShowWindow(hwndMain, iCmdShowGlobal);
     SetForegroundWindow(hwndMain);
-    UpdateWindow(hwndMain);        
-      
+    UpdateWindow(hwndMain);
+    
 }
 
 void showMessageW(const DWORD varArgsNumber, const WCHAR* message, ...) {
@@ -304,7 +304,7 @@ DWORD WINAPI guiThread(void * ptr)  {
         SetEvent(initializationFailed);
     } else {
         SetEvent(initializationSuccess);
-        messageLoop();        
+        messageLoop();
     }
 }
 
@@ -322,7 +322,7 @@ DWORD createGui(HINSTANCE hInstance, HINSTANCE hi, int nCmdShow) {
     initializationFailed = CreateEventW(NULL, TRUE, FALSE, L"Application Initialization Failed");
     if(initializationFailed==NULL) {
         return 0;
-    }        
+    }
     
     DWORD threadId;
     CreateThread( NULL, 0, &guiThread, (LPVOID) guiArgs, 0, &threadId );
@@ -351,19 +351,16 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hi, PSTR pszCmdLine, int nCmd
         WCHAR ** commandLine = CommandLineToArgvW(GetCommandLineW(), &argumentsNumber);
         // the first is always the running program..  we don`t need it
         // it is that same as GetModuleFileNameW says
-        commandLine [0] = NULL;
-        
+        FREE(commandLine [0]);
         setRunningMode(commandLine, argumentsNumber);
-        
-        if(!createGui(hInstance, hi, nCmdShow)) {            
+        if(!createGui(hInstance, hi, nCmdShow)) {
             return EXIT_CODE_INITIALIZATION_ERROR;
         }
-        
         writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... process launcher ", 1);
         exitCode = processLauncher(commandLine, argumentsNumber);
         
         closeLauncherWindows();
-        
+        LocalFree(commandLine);
     }
     return exitCode;
 }
