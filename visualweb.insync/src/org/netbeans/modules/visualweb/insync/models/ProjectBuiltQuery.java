@@ -71,8 +71,6 @@ public class ProjectBuiltQuery {
      * 
      * This will throw a <code>NullPointerException</code> if a <code>null</code>
      * <code>project</code> is passed in.
-     * This will throw a <code>IllegalStateException</code> if the 
-     * <code>project</code> is not open.
      * This will throw a <code>IllegalArgumentException</code> if the 
      * <code>project</code> does not have any <code>org.netbeans.api.project.SourceGroup<code>s.
      * 
@@ -174,10 +172,6 @@ public class ProjectBuiltQuery {
                 throw new NullPointerException();
             }
             
-            if (!isProjectOpen()) {
-                throw new IllegalStateException(NbBundle.getMessage(ProjectBuiltQuery.class, "ERROR_ProjectIsNotOpen"));                
-            }
-            
             Sources sources = project.getLookup().lookup(Sources.class);
             if (sources == null) {
                 throw new IllegalArgumentException(NbBundle.getMessage(ProjectBuiltQuery.class, "ERROR_ProjectHasNoSources"));
@@ -226,7 +220,7 @@ public class ProjectBuiltQuery {
         }
 
         public boolean isBuilt() {
-            if (!isProjectOpen()) {
+            if (!checkProjectOpen()) {
                 throw new IllegalStateException(NbBundle.getMessage(ProjectBuiltQuery.class, "ERROR_ProjectIsNotOpen"));
             }
             return built;
@@ -344,7 +338,11 @@ public class ProjectBuiltQuery {
             if (project == null) {
                 return false;
             }
-            boolean open = Arrays.asList(OpenProjects.getDefault().getOpenProjects()).contains(project);
+            return Arrays.asList(OpenProjects.getDefault().getOpenProjects()).contains(project);
+        }
+
+		private boolean checkProjectOpen() {
+            boolean open = isProjectOpen();
             if (!open) {
                 dispose();
             }
@@ -353,7 +351,9 @@ public class ProjectBuiltQuery {
         
         private void dispose() {
             try {
-                project.getProjectDirectory().getFileSystem().removeFileChangeListener(this);
+                if (project != null) {
+                    project.getProjectDirectory().getFileSystem().removeFileChangeListener(this);
+                }
             } catch (FileStateInvalidException e) {
                 Exceptions.printStackTrace(e);
             }
