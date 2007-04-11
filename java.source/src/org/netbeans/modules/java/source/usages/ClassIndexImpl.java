@@ -13,23 +13,33 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.source.usages;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndexListener;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TypesEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /** Should probably final class with private constructor.
  *
  * @author Petr Hrebejk, Tomas Zezula
  */
 public abstract class ClassIndexImpl {
+    
+    public final List<WeakReference<ClassIndexImplListener>> listeners = Collections.synchronizedList(new ArrayList<WeakReference<ClassIndexImplListener>> ());
 
 
     public static enum UsageType {
@@ -70,4 +80,52 @@ public abstract class ClassIndexImpl {
     
     protected abstract void close () throws IOException;
     
+    public void addClassIndexImplListener (final ClassIndexImplListener listener) {
+        assert listener != null;        
+        this.listeners.add (new Ref (listener));
+    }
+    
+    public void removeClassIndexImplListener (final ClassIndexImplListener listener) {
+        assert listener != null;
+        synchronized (this.listeners) {
+            for (Iterator<WeakReference<ClassIndexImplListener>> it = this.listeners.iterator(); it.hasNext();) {
+                WeakReference<ClassIndexImplListener> lr = it.next();
+                ClassIndexImplListener l = lr.get();
+                if (listener == l) {
+                    it.remove();
+                }
+            }
+        }
+    }
+    
+    public void typesEvent (final ClassIndexImplEvent added, final ClassIndexImplEvent removed, final ClassIndexImplEvent changed) {
+        WeakReference<ClassIndexImplListener>[] _listeners;
+        synchronized (this.listeners) {
+            _listeners = this.listeners.toArray(new WeakReference[this.listeners.size()]);
+        }
+        for (WeakReference<ClassIndexImplListener> lr : _listeners) {
+            ClassIndexImplListener l = lr.get();
+            if (l != null) {
+                if (added != null) {
+                    l.typesAdded(added);
+                }
+                if (removed != null) {
+                    l.typesRemoved(removed);
+                }
+                if (changed != null) {
+                    l.typesChanged(changed);
+                }
+            }
+        }
+    }
+    
+    private class Ref extends WeakReference<ClassIndexImplListener> implements Runnable {
+        public Ref (ClassIndexImplListener listener) {
+            super (listener, Utilities.activeReferenceQueue());
+        }
+
+        public void run() {
+            listeners.remove(this);
+        }
+    }
 }

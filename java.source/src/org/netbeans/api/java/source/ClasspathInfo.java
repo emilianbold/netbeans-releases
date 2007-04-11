@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source;
@@ -65,6 +65,8 @@ public final class ClasspathInfo {
     private final ClassPath srcClassPath;
     private final ClassPath bootClassPath;
     private final ClassPath compileClassPath;
+    private final ClassPath cachedBootClassPath;
+    private final ClassPath cachedCompileClassPath;
     private ClassPath outputClassPath;
     
     private final ClassPathListener cpListener;
@@ -81,10 +83,12 @@ public final class ClasspathInfo {
         assert archiveProvider != null && bootCp != null && compileCp != null;
         this.cpListener = new ClassPathListener ();
         this.archiveProvider = archiveProvider;        
-        this.bootClassPath = CacheClassPath.forBootPath(bootCp);
-        this.compileClassPath = CacheClassPath.forClassPath(compileCp);
-	this.bootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.bootClassPath));
-	this.compileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.compileClassPath));
+        this.bootClassPath = bootCp;
+        this.compileClassPath = compileCp;
+        this.cachedBootClassPath = CacheClassPath.forBootPath(this.bootClassPath);
+        this.cachedCompileClassPath = CacheClassPath.forClassPath(this.compileClassPath);
+	this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
+	this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
 	if ( srcCp != null ) {
             this.srcClassPath = srcCp;
             this.outputClassPath = CacheClassPath.forSourcePath (this.srcClassPath);
@@ -100,7 +104,7 @@ public final class ClasspathInfo {
     }
     
     public String toString() {
-        return "ClasspathInfo boot:[" + bootClassPath + "],compile:[" + compileClassPath + "],src:[" + srcClassPath + "]";  //NOI18N
+        return "ClasspathInfo boot:[" + cachedBootClassPath + "],compile:[" + cachedCompileClassPath + "],src:[" + srcClassPath + "]";  //NOI18N
     }
     
     // Factory methods ---------------------------------------------------------
@@ -159,7 +163,7 @@ public final class ClasspathInfo {
     }
        
     // Public methods ----------------------------------------------------------
-        
+       
     /** Registers ChangeListener which will be notified about the changes in the classpath.
      * @param listener The listener to register.
      */
@@ -185,13 +189,27 @@ public final class ClasspathInfo {
 		return this.compileClassPath;
 	    case SOURCE:
 		return this.srcClassPath;
+	    default:
+		assert false : "Unknown path type";     //NOI18N
+		return null;
+	}
+    }
+    
+    ClassPath getCachedClassPath (PathKind pathKind) {
+        switch( pathKind ) {
+	    case BOOT:
+		return this.cachedBootClassPath;
+	    case COMPILE:
+		return this.cachedCompileClassPath;
+	    case SOURCE:
+		return this.srcClassPath;
 	    case OUTPUT:
 		return this.outputClassPath;
 	    default:
 		assert false : "Unknown path type";     //NOI18N
 		return null;
 	}
-    }    
+    }
     
     
     public synchronized ClassIndex getClassIndex () {
@@ -210,8 +228,8 @@ public final class ClasspathInfo {
         if (this.fileManager == null) {
             boolean hasSources = this.srcClassPath != null;
             this.fileManager = new ProxyFileManager (
-                new CachingFileManager (this.archiveProvider, this.bootClassPath, true, true),
-                new CachingFileManager (this.archiveProvider, this.compileClassPath, false, true),
+                new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
+                new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (backgroundCompilation ? new CachingFileManager (this.archiveProvider, this.srcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.srcClassPath, ignoreExcludes)) : null,
                 hasSources ? new OutputFileManager (this.archiveProvider, this.outputClassPath, this.srcClassPath) : null
@@ -221,7 +239,7 @@ public final class ClasspathInfo {
     }
     
     // Private methods ---------------------------------------------------------
-
+    
     private void fireChangeListenerStateChanged() {
         ChangeEvent e = null;
         if (listenerList == null) return;
@@ -237,7 +255,8 @@ public final class ClasspathInfo {
 
 
     // Innerclasses ------------------------------------------------------------
-    
+
+
     public static enum PathKind {	
 	BOOT,	
 	COMPILE,	
@@ -253,8 +272,6 @@ public final class ClasspathInfo {
                 synchronized (this) {
                     // Kill FileManager
                     fileManager = null;
-                    // Kill indexes
-                    usagesQuery = null;                    
                 }
                 fireChangeListenerStateChanged();
             }
@@ -267,6 +284,10 @@ public final class ClasspathInfo {
         public JavaFileManager getFileManager(ClasspathInfo cpInfo) {
             return cpInfo.getFileManager();
         }
+
+        public ClassPath getCachedClassPath(final ClasspathInfo cpInfo, final PathKind kind) {
+            return cpInfo.getCachedClassPath(kind);
+        }                
         
         @Override
         public ClasspathInfo create (ClassPath bootPath, ClassPath classPath, ClassPath sourcePath, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes) {
@@ -276,6 +297,6 @@ public final class ClasspathInfo {
         @Override
         public ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes) {
             return ClasspathInfo.create(fo, filter, backgroundCompilation, ignoreExcludes);
-        }
+        }                                
     }
 }

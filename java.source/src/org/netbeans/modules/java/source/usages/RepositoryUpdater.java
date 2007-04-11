@@ -64,6 +64,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ErrorType;
 import javax.swing.event.ChangeEvent;
@@ -78,6 +79,7 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -85,7 +87,6 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.*;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
-import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.modules.java.source.classpath.GlobalSourcePath;
 import org.netbeans.modules.java.source.parsing.*;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -995,6 +996,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 else {
                     cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath,filter,true,true);
                 }                
+                
+                Set<ElementHandle<TypeElement>> removed = isInitialCompilation ? null : new HashSet<ElementHandle<TypeElement>> ();
+                Set<ElementHandle<TypeElement>> added =   isInitialCompilation ? null : new HashSet<ElementHandle<TypeElement>> ();
                 for (File child : children) {       
                     String offset = FileObjects.getRelativePath(rootFile,child);                    
                     if (entry == null || entry.includes(offset.replace(File.separatorChar,'/'))) {                                                
@@ -1021,6 +1025,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                         else {
                                             String className = FileObjects.getBinaryName(toDelete,classCache);
                                             sa.delete(className);
+                                            if (removed != null) {
+                                                removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                                            }
                                         }                            
                                     }
                                 }
@@ -1039,6 +1046,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             if (toDelete.getName().endsWith(FileObjects.SIG)) {
                                 String className = FileObjects.getBinaryName(toDelete,classCache);                        
                                 sa.delete(className);
+                                if (removed != null) {
+                                    removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                                }
                             }
                         }
                     }
@@ -1048,9 +1058,20 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         final String message = String.format (NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile"),rootFile.getAbsolutePath());
                         handle.setDisplayName(message);
                     }
-                    batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles);
+                    batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles, added);
                 }
                 sa.store();
+                if (added != null) {
+                    assert removed != null;
+                    Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (added);      //Added
+                    Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removed);    //Removed
+                    _at.removeAll(removed);
+                    _rt.removeAll(added);
+                    added.retainAll(removed);                                                                   //Changed
+                    uqImpl.typesEvent(_at.isEmpty() ? null : new ClassIndexImplEvent(uqImpl, _at),
+                            _rt.isEmpty() ? null : new ClassIndexImplEvent (uqImpl,_rt), 
+                            added.isEmpty() ? null : new ClassIndexImplEvent (uqImpl,added));
+                }
             } finally {
                 if (!clean && isInitialCompilation) {
                     RepositoryUpdater.this.scannedRoots.add(root);
@@ -1082,12 +1103,15 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 List<File> files = resources.remove (offset);                
                 SourceAnalyser sa = uqImpl.getSourceAnalyser();
                 assert sa != null;
+                final Set<ElementHandle<TypeElement>> added = new HashSet<ElementHandle<TypeElement>>();
+                final Set<ElementHandle<TypeElement>> removed = new HashSet <ElementHandle<TypeElement>> ();
                 if (files != null) {
                     for (File toDelete : files) {
                         toDelete.delete();
                         if (toDelete.getName().endsWith(FileObjects.SIG)) {
                             String className = FileObjects.getBinaryName (toDelete,classCache);                                                           
                             sa.delete (className);
+                            removed.add (ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                         }
                     }
                 }
@@ -1107,11 +1131,19 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     jt.analyze ();
                     dumpClasses(listener.getEnteredTypes(), fm, root.toExternalForm(), null,
                         com.sun.tools.javac.code.Types.instance(jt.getContext()),
-                        com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
-                    sa.analyse (trees, jt, fm, active);
-                    listener.cleanDiagnostics();
-                    sa.store();
+                        com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));                    
+                    sa.analyse (trees, jt, fm, active, added);                    
+                    listener.cleanDiagnostics();                    
                 }
+                sa.store();
+                Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (added);      //Added
+                Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removed);    //Removed
+                _at.removeAll(removed);
+                _rt.removeAll(added);
+                added.retainAll(removed);                                                                   //Changed
+                uqImpl.typesEvent(_at.isEmpty() ? null : new ClassIndexImplEvent(uqImpl, _at),
+                        _rt.isEmpty() ? null : new ClassIndexImplEvent(uqImpl,_rt), 
+                        added.isEmpty() ? null : new ClassIndexImplEvent(uqImpl,added));                
             }
         }
         
@@ -1150,6 +1182,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
             }
             if (affectedFiles != null && affectedFiles.length > 0) {
+                Set<ElementHandle<TypeElement>> removed = new HashSet<ElementHandle<TypeElement>>();
                 final ClassIndexImpl uqImpl = ClassIndexManager.getDefault().createUsagesQuery(root, true);
                 assert uqImpl != null;                
                 final SourceAnalyser sa = uqImpl.getSourceAnalyser();
@@ -1161,16 +1194,19 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         for (File rsf : rsFiles) {
                             String className = FileObjects.getBinaryName (rsf,classCache);                                                                        
                             sa.delete (className);
+                            removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                             rsf.delete();
                         }
                     }
                     else {
                         String className = FileObjects.getBinaryName (f,classCache);                                                                        
                         sa.delete (className);
+                        removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                     }
                     f.delete();                    
                 }
-                sa.store();
+                sa.store();                
+                uqImpl.typesEvent(null,new ClassIndexImplEvent(uqImpl, removed), null);
             }
         }
         
@@ -1381,12 +1417,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
     }    
     
-    public static void batchCompile (final List<JavaFileObject> toCompile, final FileObject rootFo, final ClasspathInfo cpInfo, final SourceAnalyser sa, final Set<URI> dirtyFiles) throws IOException {
+    public static void batchCompile (final List<JavaFileObject> toCompile, final FileObject rootFo, final ClasspathInfo cpInfo, final SourceAnalyser sa,
+        final Set<URI> dirtyFiles, final Set<? super ElementHandle<TypeElement>> added) throws IOException {
         assert toCompile != null;
         assert rootFo != null;
         assert cpInfo != null;
         JavaFileObject active = null;
-        final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFo);
         final JavaFileManager fileManager = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);
         final CompilerListener listener = new CompilerListener ();        
         LowMemoryNotifier.getDefault().addLowMemoryListener(listener);
@@ -1510,8 +1546,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             continue;
                         }
                         if (sa != null) {
-                            sa.analyse(trees,jt, ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo), active);
-                        }                                        
+                            sa.analyse(trees,jt, ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo), active, added);
+                        }
                         if (!listener.errors.isEmpty()) {
                             Log.instance(jt.getContext()).nerrors = 0;
                             listener.cleanDiagnostics();

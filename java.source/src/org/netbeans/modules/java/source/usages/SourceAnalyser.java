@@ -66,6 +66,8 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -102,10 +104,10 @@ public class SourceAnalyser {
         return this.index.isValid(true);
     }
 
-    public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager, javax.tools.JavaFileObject sibling) throws IOException {
+    public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager, javax.tools.JavaFileObject sibling, Set<? super ElementHandle<TypeElement>> newTypes) throws IOException {
         final Map<String,Map<String,Set<ClassIndexImpl.UsageType>>> usages = new HashMap<String,Map<String,Set<ClassIndexImpl.UsageType>>> ();
         for (CompilationUnitTree cu : data) {
-            UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, sibling);
+            UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, sibling, newTypes);
             uv.scan(cu,usages);
             if (uv.rsList != null && uv.rsList.size()>0) {
                 final int index = uv.sourceName.lastIndexOf('.');              //NOI18N
@@ -203,13 +205,15 @@ public class SourceAnalyser {
         private final javax.tools.JavaFileObject sibling;
         private final String sourceName;
         private final boolean signatureFiles;
+        private final List<? super String> topLevels;
+        private final Set<? super ElementHandle<TypeElement>> newTypes;
         private State state;        
         private Element enclosingElement = null;
         private Set<String> rsList;
-        private List<? super String> topLevels;
         
         
-        public UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling) {
+        
+        public UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling, Set<? super ElementHandle<TypeElement>> newTypes) {
             assert jt != null;
             assert cu != null;
             assert manager != null;
@@ -224,6 +228,8 @@ public class SourceAnalyser {
             this.manager = manager;
             this.sibling = sibling;
             this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, this.sibling);            
+            this.topLevels = null;
+            this.newTypes = newTypes;
         }
                 
         protected UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, List<? super String> topLevels) {
@@ -241,6 +247,7 @@ public class SourceAnalyser {
             this.sibling = null;
             this.sourceName = "";   //NOI18N
             this.topLevels = topLevels;
+            this.newTypes = null;
         }
         
         final Types getTypes() {
@@ -396,6 +403,9 @@ public class SourceAnalyser {
                             activeClass.push (classNameType);
                             errorIgnorSubtree = false;
                             addUsage (classNameType,className, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                            if (newTypes !=null) {
+                                newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS,className));
+                            }
                         }
                         else {
                             Logger.getLogger("global").warning(String.format("Cannot resolve %s, ignoring whole subtree.\n",sym.toString()));    //NOI18N
@@ -407,7 +417,8 @@ public class SourceAnalyser {
                     final StringBuilder classNameBuilder = new StringBuilder ();
                     ClassFileUtil.encodeClassName(sym, classNameBuilder, '.');  //NOI18N
                     className = classNameBuilder.toString();
-                    classNameBuilder.append(DocumentUtil.encodeKind(sym.getKind()));
+                    ElementKind kind = sym.getKind();
+                    classNameBuilder.append(DocumentUtil.encodeKind(kind));
                     final String classNameType = classNameBuilder.toString();                                        
                     if (signatureFiles && activeClass.isEmpty() && !className.equals(sourceName)) {
                         rsList = new HashSet<String>();
@@ -418,8 +429,10 @@ public class SourceAnalyser {
                     activeClass.push (classNameType);                    
                     errorIgnorSubtree = false;
                     addUsage (classNameType,className, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                }
-                
+                    if (newTypes !=null) {
+                        newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.INSTANCE.create(kind, className));
+                    }
+                }                
             }            
             if (!errorIgnorSubtree) {
                 Element old = enclosingElement;

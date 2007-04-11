@@ -82,7 +82,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        
+
+        <change id="ClassIndexListener">
+            <api name="general"/>
+            <summary>Added a listener for listening on changes in the <code>ClassIndex</code>.</summary>
+            <version major="0" minor="8"/>
+            <date day="4" month="4" year="2007"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                The listener for listening on changes in the <code>ClassIndex</code> was added. The listener fires
+                events when a declared type was removed, added, changed in the <code>ClassIndex</code> oe when the underlaying
+                <code>ClassPath</code> was changed.
+            </description>
+            <issue number="91763"/>
+        </change>
+
         <change id="package-property">
             <api name="general"/>
             <summary>Adding template attribute <code>package</code></summary>

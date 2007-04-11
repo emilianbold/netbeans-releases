@@ -204,7 +204,7 @@ public final class ElementHandle<T extends Element> {
      * in the same {@link javax.tools.JavaCompiler} task.
      */
     public boolean signatureEquals (final ElementHandle<? extends Element> handle) {
-         if (this.kind != handle.kind || this.signatures.length != handle.signatures.length) {
+         if (!isSameKind (this.kind, handle.kind) || this.signatures.length != handle.signatures.length) {
              return false;
          }
          for (int i=0; i<signatures.length; i++) {
@@ -213,6 +213,16 @@ public final class ElementHandle<T extends Element> {
              }
          }
          return true;
+    }
+    
+    
+    private static boolean isSameKind (ElementKind k1, ElementKind k2) {
+        if ((k1 == k2) ||
+           (k1 == ElementKind.OTHER && (k2.isClass() || k2.isInterface())) ||     
+           (k2 == ElementKind.OTHER && (k1.isClass() || k1.isField()))) {
+            return true;
+        }
+        return false;
     }
     
     
@@ -225,7 +235,7 @@ public final class ElementHandle<T extends Element> {
      * isn't creatred for the {@link TypeElement}.
      */
     public String getBinaryName () throws IllegalStateException {
-        if ((this.kind.isClass() && !isArray(signatures[0])) || this.kind.isInterface()) {
+        if ((this.kind.isClass() && !isArray(signatures[0])) || this.kind.isInterface() || this.kind == ElementKind.OTHER) {
             return this.signatures[0];
         }
         else {
@@ -243,7 +253,7 @@ public final class ElementHandle<T extends Element> {
      * isn't creatred for the {@link TypeElement}.
      */
     public String getQualifiedName () throws IllegalStateException {
-        if ((this.kind.isClass() && !isArray(signatures[0])) || this.kind.isInterface()) {
+        if ((this.kind.isClass() && !isArray(signatures[0])) || this.kind.isInterface() || this.kind == ElementKind.OTHER) {
             return this.signatures[0].replace (Target.DEFAULT.syntheticNameChar(),'.');    //NOI18N
         }
         else {
@@ -262,7 +272,9 @@ public final class ElementHandle<T extends Element> {
      * in the same {@link javax.tools.JavaCompiler} task.
      */
     public boolean signatureEquals (final T element) {
-        if (!element.getKind().equals(getKind())) {
+        final ElementKind ek = element.getKind();
+        final ElementKind thisKind = getKind();
+        if ((ek != thisKind) && !(thisKind == ElementKind.OTHER && (ek.isClass() || ek.isInterface()))) {
             return false;
         }
         final ElementHandle<T> handle = create (element);

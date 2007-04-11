@@ -22,7 +22,11 @@ package org.netbeans.modules.java.source.usages;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.openide.util.Exceptions;
@@ -31,22 +35,60 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Zezula
  */
-public class ClassIndexManager {
+public final class ClassIndexManager {
+    
+    private static final byte OP_ADD    = 1;
+    private static final byte OP_REMOVE = 2;
 
     private static ClassIndexManager instance;
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
-    private ReadWriteLock lock;
+    private final ReadWriteLock lock;
+    private final List<ClassIndexManagerListener> listeners = new CopyOnWriteArrayList<ClassIndexManagerListener> ();
     private boolean invalid;
+    private Set<URL> added;
+    private Set<URL> removed;
+    private int depth = 0;
+    
     
     
     private ClassIndexManager() {
         this.lock = new ReentrantReadWriteLock (false);
     }
     
+    public void addClassIndexManagerListener (final ClassIndexManagerListener listener) {
+        assert listener != null;
+        this.listeners.add(listener);
+    }
+    
+    public void removeClassIndexManagerListener (final ClassIndexManagerListener listener) {
+        assert listener != null;
+        this.listeners.remove(listener);
+    }
+    
     public <T> T writeLock (final ExceptionAction<T> r) throws IOException {
         this.lock.writeLock().lock();
         try {
-            return r.run();
+            depth++;
+            try {
+                if (!this.listeners.isEmpty() && depth == 1) {
+                    this.added = new HashSet<URL>();
+                    this.removed = new HashSet<URL>();
+                }
+                try {
+                    return r.run();
+                } finally {
+                    if (depth == 1) {
+                        if (removed != null && !removed.isEmpty()) {
+                            fire (removed, OP_REMOVE);
+                        }
+                        if (added != null && !added.isEmpty()) {
+                            fire (added, OP_ADD);
+                        }                
+                    }
+                }
+            } finally {
+                depth--;
+            }
         } finally {
             this.lock.writeLock().unlock();
         }
@@ -77,15 +119,21 @@ public class ClassIndexManager {
         ClassIndexImpl qi = this.instances.get (root);
         if (qi == null) {  
             qi = PersistentClassIndex.create (root, Index.getDataFolder(root), source);
-            this.instances.put(root,qi);            
+            this.instances.put(root,qi);
+            if (added != null) {
+                added.add (root);
+            }
         }
         return qi;
     }
     
     synchronized void removeRoot (final URL root) throws IOException {
-        ClassIndexImpl ci = this.instances.remove(root);
-        if (ci != null) {
+        ClassIndexImpl ci = this.instances.remove(root);                
+        if (ci != null) {                
             ci.close();
+            if (removed != null) {
+                removed.add (root);
+            }
         }
     }
     
@@ -104,12 +152,26 @@ public class ClassIndexManager {
         public T run () throws IOException;
     }
     
+    private void fire (final Set<? extends URL> roots, final byte op) {
+        final ClassIndexManagerEvent event = new ClassIndexManagerEvent (this, roots);
+        for (ClassIndexManagerListener listener : this.listeners) {
+            if (op == OP_ADD) {
+                listener.classIndexAdded(event);
+            }
+            else if (op == OP_REMOVE) {
+                listener.classIndexRemoved(event);
+            }
+            else {
+                assert false : "Unknown op: " + op;     //NOI18N
+            }
+        }
+    }
+    
     
     public static synchronized ClassIndexManager getDefault () {
         if (instance == null) {
             instance = new ClassIndexManager ();            
         }
         return instance;
-    }
-    
+    }        
 }

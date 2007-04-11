@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,8 +24,10 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -33,11 +35,16 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.classpath.GlobalSourcePath;
 import org.netbeans.modules.java.source.usages.ClassIndexFactory;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
+import org.netbeans.modules.java.source.usages.ClassIndexImplEvent;
+import org.netbeans.modules.java.source.usages.ClassIndexImplListener;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
-import org.netbeans.modules.java.source.usages.Index;
+import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
+import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
+import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.WeakListeners;
 
 /**
  * The ClassIndex provides access to information stored in the 
@@ -54,10 +61,14 @@ public final class ClassIndex {
     private final ClassPath bootPath;
     private final ClassPath classPath;
     private final ClassPath sourcePath;
+
+    private final Set<URL> oldSources;
+    private final Set<URL> oldDeps;    
+    private final Set<ClassIndexImpl> sourceIndeces;
+    private final Set<ClassIndexImpl> depsIndeces;
     
-    private Set<ClassIndexImpl> sourceIndeces;
-    private Set<ClassIndexImpl> depsIndeces;
-    
+    private final List<ClassIndexListener> listeners = new CopyOnWriteArrayList<ClassIndexListener>();
+    private final SPIListener spiListener = new SPIListener ();    
     
     
     /**
@@ -158,6 +169,36 @@ public final class ClassIndex {
         this.bootPath = bootPath;
         this.classPath = classPath;
         this.sourcePath = sourcePath;
+        final ClassIndexManager manager = ClassIndexManager.getDefault();
+        manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, (ClassIndexManagerListener) this.spiListener, manager));
+        this.sourceIndeces = new HashSet<ClassIndexImpl>();        
+        this.oldSources = new HashSet<URL>();
+        createQueriesForRoots (this.sourcePath, true, this.sourceIndeces, oldSources);
+        this.depsIndeces = new HashSet<ClassIndexImpl>();
+        this.oldDeps = new HashSet<URL>();
+        createQueriesForRoots (this.bootPath, false, this.depsIndeces, oldDeps);                
+        createQueriesForRoots (this.classPath, false, this.depsIndeces, oldDeps);	    
+    }
+    
+    
+    /**
+     * Adds an {@link ClassIndexListener}. The listener is notified about the
+     * changes of declared types in this {@link ClassIndex}
+     * @param listener to be added
+     */
+    public void addClassIndexListener (final ClassIndexListener listener) {
+        assert listener != null;
+        listeners.add (listener);
+    }
+    
+    /**
+     * Removes an {@link ClassIndexListener}. The listener is notified about the
+     * changes of declared types in this {@link ClassIndex}
+     * @param listener to be removed
+     */
+    public void removeClassIndexListener (final ClassIndexListener listener) {
+        assert listener != null;
+        listeners.remove(listener);
     }
     
     
@@ -214,7 +255,7 @@ public final class ClassIndex {
     
     /**
      * Returns {@link ElementHandle}s for all declared types in given classpath corresponding to the name.
-     * @param case sensitive prefix, case insensitive prefix, exact simple name,
+     * @param name case sensitive prefix, case insensitive prefix, exact simple name,
      * camel case or regular expression depending on the kind parameter.
      * @param kind of the name {@see NameKind}
      * @param scope to search in {@see SearchScope}
@@ -264,57 +305,69 @@ public final class ClassIndex {
     //Private methods
     
     
+    private synchronized void reset (final boolean source, final boolean deps) {
+        if (source) {            
+            for (ClassIndexImpl impl : sourceIndeces) {
+                impl.removeClassIndexImplListener(spiListener);
+            }
+            this.sourceIndeces.clear();
+            this.oldSources.clear();
+            createQueriesForRoots (this.sourcePath, true, this.sourceIndeces, this.oldSources);
+        }
+        if (deps) {
+            for (ClassIndexImpl impl : depsIndeces) {
+                impl.removeClassIndexImplListener(spiListener);
+            }
+            this.depsIndeces.clear();
+            this.oldDeps.clear();
+            createQueriesForRoots (this.bootPath, false, this.depsIndeces,  this.oldDeps);                
+            createQueriesForRoots (this.classPath, false, this.depsIndeces, this.oldDeps);	    
+        }
+    }
+    
     private synchronized Iterable<? extends ClassIndexImpl> getQueries (final Set<SearchScope> scope) {        
         Set<ClassIndexImpl> result = new HashSet<ClassIndexImpl> ();
         if (scope.contains(SearchScope.SOURCE)) {            
-            if (this.sourceIndeces == null) {
-                Set<ClassIndexImpl> indeces = new HashSet<ClassIndexImpl>();
-                createQueriesForRoots (this.sourcePath, true, indeces);
-                this.sourceIndeces = indeces;
-            }
             result.addAll(this.sourceIndeces);
         }        
         if (scope.contains(SearchScope.DEPENDENCIES)) {
-            if (this.depsIndeces == null) {
-                Set<ClassIndexImpl> indeces = new HashSet<ClassIndexImpl>();
-                createQueriesForRoots (this.bootPath, false, indeces);                
-                createQueriesForRoots (this.classPath, false, indeces);	    
-                this.depsIndeces = indeces;
-            }
             result.addAll(this.depsIndeces);
         }
         LOGGER.fine(String.format("ClassIndex.queries[Scope=%s, sourcePath=%s, bootPath=%s, classPath=%s] => %s\n",scope,sourcePath,bootPath,classPath,result));
         return result;
     }
     
+    private synchronized Set<? extends URL> getOldState (final Set<SearchScope> scope) {
+        final Set<URL> result = new HashSet<URL>();
+        if (scope.contains(SearchScope.SOURCE)) {
+            result.addAll(this.oldSources);
+        }
+        if (scope.contains(SearchScope.DEPENDENCIES)) {
+            result.addAll(this.oldDeps);
+        }
+        return result;
+    }
     
-    private void createQueriesForRoots (final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries) {
+    private void createQueriesForRoots (final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries, final Set<? super URL> oldState) {
         final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
         List<ClassPath.Entry> entries = cp.entries();
 	for (ClassPath.Entry entry : entries) {
 	    try {
-                boolean indexNow = false;
                 URL[] srcRoots;
                 if (!sources) {
-                    URL srcRoot = Index.getSourceRootForClassFolder (entry.getURL());
-                    if (srcRoot != null) {
-                        srcRoots = new URL[] {srcRoot};
+                    srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, true);                        
+                    if (srcRoots == null) {
+                        srcRoots = new URL[] {entry.getURL()};
                     }
-                    else {                        
-                        srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, true);                        
-                        if (srcRoots == null) {
-                            indexNow = true;
-                            srcRoots = new URL[] {entry.getURL()};
-                        }
-                    }
-                    //End to be removed
                 }
                 else {
                     srcRoots = new URL[] {entry.getURL()};
                 }                
                 for (URL srcRoot : srcRoots) {
+                    oldState.add (srcRoot);
                     ClassIndexImpl ci = ClassIndexManager.getDefault().getUsagesQuery(srcRoot);
                     if (ci != null) {
+                        ci.addClassIndexImplListener(spiListener);
                         queries.add (ci);
                     }
                 }
@@ -365,4 +418,100 @@ public final class ClassIndex {
         return result;
     }           
     
+    private class SPIListener implements ClassIndexImplListener, ClassIndexManagerListener {
+        
+        public void typesAdded (final ClassIndexImplEvent event) {
+            assert event != null;
+            TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
+            for (ClassIndexListener l : listeners) {
+                l.typesAdded(_event);
+            }
+        }
+        
+        public void typesRemoved (final ClassIndexImplEvent event) {
+            assert event != null;
+            TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
+            for (ClassIndexListener l : listeners) {
+                l.typesRemoved(_event);
+            }
+        }
+        
+        public void typesChanged (final ClassIndexImplEvent event) {
+            assert event != null;
+            TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
+            for (ClassIndexListener l : listeners) {
+                l.typesChanged(_event);
+            }
+        }        
+        
+        public void classIndexAdded (final ClassIndexManagerEvent event) {
+            final Set<? extends URL> roots = event.getRoots();
+            assert roots != null;
+            List<URL> ar = new LinkedList<URL>();
+            boolean srcF = containsRoot (sourcePath,roots,ar, false);
+            boolean depF = containsRoot (bootPath, roots, ar, true);
+            depF |= containsRoot (classPath, roots, ar, true);            
+            if (srcF || depF) {
+                reset (srcF, depF);
+                final RootsEvent e = new RootsEvent(ClassIndex.this, ar);
+                for (ClassIndexListener l : listeners) {
+                    l.rootsAdded(e);
+                }
+            }
+        }
+        
+        public void classIndexRemoved (final ClassIndexManagerEvent event) {
+            final Set<? extends URL> roots = event.getRoots();
+            assert roots != null;
+            List<URL> ar = new LinkedList<URL> ();
+            boolean srcF = containsRoot(getOldState(EnumSet.of(SearchScope.SOURCE)), roots, ar);
+            boolean depF = containsRoot(getOldState(EnumSet.of(SearchScope.DEPENDENCIES)), roots, ar);
+            if (srcF || depF) {
+                reset (srcF, depF);
+                final RootsEvent e = new RootsEvent(ClassIndex.this, ar);
+                for (ClassIndexListener l : listeners) {
+                    l.rootsRemoved(e);
+                }
+            }
+        }
+        
+        private boolean containsRoot (final ClassPath cp, final Set<? extends URL> roots, final List<? super URL> affectedRoots, final boolean translate) {
+            final List<ClassPath.Entry> entries = cp.entries();
+            final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
+            boolean result = false;
+            for (ClassPath.Entry entry : entries) {
+                URL url = entry.getURL();
+                URL[] srcRoots = null;
+                if (translate) {
+                    srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, false);
+                }                
+                if (srcRoots == null) {
+                    if (roots.contains(url)) {
+                        affectedRoots.add(url);
+                        result = true;                    
+                    }
+                }
+                else {
+                    for (URL _url : srcRoots) {
+                        if (roots.contains(_url)) {
+                            affectedRoots.add(url);
+                            result = true;                    
+                        }
+                    }
+                }                
+            }
+            return result;
+        }
+        
+        private boolean containsRoot (final Set<? extends URL> cp, final Set<? extends URL> roots, final List<? super URL> affectedRoots) {            
+            boolean result = false;
+            for (URL url : cp) {
+                if (roots.contains(url)) {
+                    affectedRoots.add(url);
+                    result = true;                    
+                }
+            }
+            return result;
+        }
+    }   
 }

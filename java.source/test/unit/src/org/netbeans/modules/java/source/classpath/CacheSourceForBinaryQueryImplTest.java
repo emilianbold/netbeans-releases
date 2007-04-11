@@ -84,7 +84,7 @@ public class CacheSourceForBinaryQueryImplTest extends NbTestCase {
     }
 
     public void testFindSourceRoots() throws Exception {
-        ClassPath outCp = this.cpInfo.getClassPath(ClasspathInfo.PathKind.OUTPUT);        
+        ClassPath outCp = ClasspathInfoAccessor.INSTANCE.getCachedClassPath(this.cpInfo,ClasspathInfo.PathKind.OUTPUT);        
         assertNotNull(outCp);
         assertEquals(srcRoots.length,outCp.entries().size());
         Iterator<ClassPath.Entry> it = ((List<ClassPath.Entry>)outCp.entries()).iterator();

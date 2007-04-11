@@ -63,6 +63,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -827,7 +828,7 @@ out:                for (URL e : roots) {
     
     // --------------- Helper methods of getFile () -----------------------------
     private static ClassPath createClassPath (ClasspathInfo cpInfo, PathKind kind) throws MalformedURLException {
-	return cpInfo.getClassPath (kind);	
+	return ClasspathInfoAccessor.INSTANCE.getCachedClassPath(cpInfo, kind);	
     }    
     
     // --------------- End of getFile () helper methods ------------------------------
