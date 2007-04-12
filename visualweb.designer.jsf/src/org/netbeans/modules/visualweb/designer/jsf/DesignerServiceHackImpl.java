@@ -56,10 +56,12 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.designer.jsf.ui.JsfTopComponent;
+import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -123,6 +125,7 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
         try {
             dobj = DataObject.find(fo);
         } catch (DataObjectNotFoundException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return null;
         }
 
@@ -215,6 +218,19 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 
 //        XhtmlCssEngine engine = webform.getMarkup().getCssEngine();
 
+        DesignContext designContext = bean.getDesignContext();
+        if (!(designContext instanceof LiveUnit)) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("Design context should be LiveUnit instance, designContext=" + designContext + ", bean=" + bean)); // NOI18N
+            return null;
+        }
+        FacesModel facesModel = ((LiveUnit)designContext).getModel();
+        if (facesModel == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new NullPointerException("FacesModel is null, designContext=" + designContext + ", bean=" + bean)); // NOI18N
+            return null;
+        }
+        UndoEvent writeLock = facesModel.writeLock(NbBundle.getMessage(DesignerServiceHackImpl.class, "LBL_CssPreviewImage")); // NOI18N
         try {
 //            engine.setErrorHandler(XhtmlCssEngine.SILENT_ERROR_HANDLER);
 //            CssProvider.getEngineService().setSilentErrorHandlerForDocument(webform.getMarkup().getSourceDom());
@@ -298,7 +314,7 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
                     Method m = prop.getPropertyDescriptor().getWriteMethod();
                     m.invoke(bean.getInstance(), new Object[] { oldStyleProperty });
                 } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
 
@@ -316,6 +332,8 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //            cssEngineService.setNullErrorHandlerForDocument(webform.getMarkup().getRenderedDom());
 //            cssEngineService.setNullErrorHandlerForDocument(webform.getHtmlDom());
             cssEngineService.setNullErrorHandlerForDocument(mu.getRenderedDom());
+            
+            facesModel.writeUnlock(writeLock);
         }
 // <<< Moved from designer/PageBox.paintCssPreview
     }
