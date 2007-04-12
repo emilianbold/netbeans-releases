@@ -75,7 +75,6 @@ public final class EditedScreenSupport {
         synchronized (listeners) {
             listenersArray = listeners.toArray(new Listener[listeners.size()]);
         }
-        System.out.println("fire listeners: " + listeners);
         for (EditedScreenSupport.Listener listener : listenersArray)
             listener.editedScreenChanged(editedScreenComponentID);
     }
