@@ -144,6 +144,9 @@ public abstract class RestSupport {
         copyFile(testdir, "expand.gif");
         copyFile(testdir, "collapse.gif");
         copyFile(testdir, "item.gif");
+        copyFile(testdir, "cc.gif");
+        copyFile(testdir, "og.gif");
+        copyFile(testdir, "cg.gif");
         return testFO;
     }
 
