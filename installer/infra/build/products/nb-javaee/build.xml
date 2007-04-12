@@ -62,6 +62,9 @@
                 <fileset dir="${data.directory}">
                     <include name="enterprise4"/>
                     <include name="enterprise4/**"/>
+                    <include name="apache-tomcat-*"/>
+                    <include name="apache-tomcat-*/**"/>
+                    <include name="**/*tomcat*bundled*"/>
                 </fileset>
             </delete>
         </if>
