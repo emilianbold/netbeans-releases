@@ -20,20 +20,26 @@
 package org.netbeans.modules.debugger.jpda.heapwalk.views;
 
 import com.sun.tools.profiler.heap.Heap;
+
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
+import java.lang.ref.WeakReference;
 import javax.swing.JPanel;
+
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+
 import org.netbeans.modules.profiler.heapwalk.ClassesController;
+import org.netbeans.modules.profiler.heapwalk.ClassesListController;
 import org.netbeans.modules.profiler.heapwalk.HeapFragmentWalker;
-import org.netbeans.modules.profiler.heapwalk.InstancesController;
 
 import org.netbeans.modules.debugger.jpda.heapwalk.HeapImpl;
 
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
@@ -47,6 +53,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
     private transient EngineListener listener;
     private transient JPanel content;
     private transient HeapFragmentWalker hfw;
+    private transient ClassesListController clc;
     
     /**
      * Creates a new instance of ClassesCountsView
@@ -56,10 +63,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
     }
     
     private void setUp() {
-        DebuggerManager.getDebuggerManager ().addDebuggerListener (
-            DebuggerManager.PROP_CURRENT_ENGINE,
-            listener
-        );
+        listener.start();
         setContent();
     }
     
@@ -69,6 +73,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (engine != null) {
             debugger = (JPDADebugger) engine.lookupFirst(null, JPDADebugger.class);
+            System.out.println("ClassesCountsView.setContent(): debugger = "+debugger);
         }
         if (content != null) {
             remove(content);
@@ -78,11 +83,20 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
             Heap heap = new HeapImpl(debugger);
             setLayout (new BorderLayout ());
             hfw = new DebuggerHeapFragmentWalker(heap);
-            //InstancesController ic = new InstancesController(hfw);
-            //ic.getPanel();
-            ClassesController cc = hfw.getClassesController();//new ClassesController(hfw);
+            ClassesController cc = hfw.getClassesController();
             content = cc.getPanel();
+            clc = cc.getClassesListController();
+            cc.getClassesListController().setColumnVisibility(3, false);
             add(content, "Center");
+        }
+    }
+    
+    private void refreshContent() {
+        System.out.println("ClassesCountsView.refreshContent(), clc = "+clc);
+        if (clc != null) {
+            clc.refreshView();
+        } else {
+            setContent();
         }
     }
     
@@ -106,10 +120,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
             hfw = null;
         }
         if (listener != null) {
-            DebuggerManager.getDebuggerManager ().removeDebuggerListener (
-                DebuggerManager.PROP_CURRENT_ENGINE,
-                listener
-            );
+            listener.stop();
             listener = null;
         }
     }
@@ -143,12 +154,82 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
     
     private final class EngineListener extends DebuggerManagerAdapter {
         
+        private WeakReference<JPDADebugger> lastDebugger = new WeakReference<JPDADebugger>(null);
+        private Task refreshTask;
+        
+        void start() {
+            DebuggerManager.getDebuggerManager ().addDebuggerListener (
+                DebuggerManager.PROP_CURRENT_ENGINE,
+                this
+            );
+            DebuggerEngine engine = DebuggerManager.getDebuggerManager ().getCurrentEngine();
+            attachToStateChange(engine);
+        }
+        
+        void stop() {
+            DebuggerManager.getDebuggerManager ().removeDebuggerListener (
+                DebuggerManager.PROP_CURRENT_ENGINE,
+                this
+            );
+            detachFromStateChange();
+        }
+        
+        private synchronized void attachToStateChange(DebuggerEngine engine) {
+            detachFromStateChange();
+            if (engine == null) return ;
+            JPDADebugger debugger = (JPDADebugger) engine.lookupFirst(null, JPDADebugger.class);
+            debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, this);
+            lastDebugger = new WeakReference<JPDADebugger>(debugger);
+        }
+        
+        private synchronized void detachFromStateChange() {
+            JPDADebugger debugger = lastDebugger.get();
+            if (debugger != null) {
+                debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
+            }
+        }
+        
         public void propertyChange (PropertyChangeEvent e) {
+            System.out.println("EngineListener.propertyChange("+e+")");
+            if (e.getSource() instanceof JPDADebugger) {
+                if (((JPDADebugger) e.getSource()).getState() == JPDADebugger.STATE_DISCONNECTED) {
+                    detachFromStateChange();
+                } else {
+                    getRefreshContentTask().schedule(10);
+                }
+                return ;
+            }
+            DebuggerEngine engine = (DebuggerEngine) e.getNewValue();
+            attachToStateChange(engine);
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     setContent();
                 }
             });
+        }
+        
+        private synchronized Task getRefreshContentTask() {
+            if (refreshTask == null) {
+                refreshTask = RequestProcessor.getDefault().create(new Runnable() {
+                    public void run() {
+                        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                refreshContent();
+                            }
+                        });
+                        JPDADebugger debugger;
+                        synchronized (EngineListener.this) {
+                            debugger = lastDebugger.get();
+                        }
+                        if (debugger != null) {
+                            if (debugger.getState() == JPDADebugger.STATE_RUNNING) {
+                                refreshTask.schedule(500);
+                            }
+                        }
+                    }
+                });
+            }
+            return refreshTask;
         }
     
     }

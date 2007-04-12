@@ -59,8 +59,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Groups">
             <folder name="debugger">
                 <file name="classesCounts.wstcgrp" url="classesCounts.wstcgrp"/>
-            </folder>
-            <folder name="editor">
                 <file name="dbgInstances.wstcgrp" url="dbgInstances.wstcgrp"/>
             </folder>
         </folder>

@@ -21,6 +21,7 @@ package org.netbeans.modules.debugger.jpda.heapwalk.views;
 
 import java.awt.BorderLayout;
 import org.netbeans.modules.profiler.heapwalk.HeapFragmentWalker;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -47,13 +48,11 @@ public class InstancesView extends TopComponent {
     }
     
     public String getName () {
-        return "Instances";
-        //return NbBundle.getMessage (ClassesView.class, "CTL_Classes_view");
+        return NbBundle.getMessage (InstancesView.class, "CTL_Instances_view");
     }
     
     public String getToolTipText () {
-        return "Instances";
-        //return NbBundle.getMessage (ClassesView.class, "CTL_Classes_tooltip");// NOI18N
+        return NbBundle.getMessage (InstancesView.class, "CTL_Instances_tooltip");// NOI18N
     }
 
     public int getPersistenceType() {
