@@ -133,9 +133,7 @@ class Constants {
         XML_ROOT_ELEMENT,
         XML_ELEMENT,
         XML_TRANSIENT,
-        XML_ATTRIBUTE,
-        QUERY_TYPE,
-        ENTITY_MANAGER_TYPE,
+        XML_ATTRIBUTE
     };
     
 }
