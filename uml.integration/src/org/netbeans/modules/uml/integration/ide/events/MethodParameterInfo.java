@@ -261,7 +261,8 @@ public class MethodParameterInfo implements Cloneable
         
         return GenCodeUtil.getCodeGenType(
             getParameterElement().getType(), 
-            JavaClassUtils.getShortClassName(getCollectionOverrideDataType()),
+	    GenCodeUtil.getCollectionOverrideDataTypes
+	        (getParameterElement().getMultiplicity(), true),
             isUseGenerics(),
 //            getParameterElement().getMultiplicity().getRangeCount());
 //            GenCodeUtil.getMultiplicityMaxUpperRange(
@@ -336,7 +337,8 @@ public class MethodParameterInfo implements Cloneable
     {
 	return GenCodeUtil
 	    .getReferredCodeGenTypes(getParameterElement().getType(), 
-				     getCollectionOverrideDataType(),
+				     GenCodeUtil.getCollectionOverrideDataTypes
+				         (getParameterElement().getMultiplicity(), false),
 				     isUseGenerics(),
 				     getParameterElement().getMultiplicity());
     }

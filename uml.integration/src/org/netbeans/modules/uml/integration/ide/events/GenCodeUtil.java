@@ -36,6 +36,7 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassif
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.integration.ide.JavaClassUtils;
+import org.netbeans.modules.uml.integration.ide.UMLSupport;
 
 /**
  *
@@ -61,7 +62,7 @@ public final class GenCodeUtil
     
     public static String getCodeGenType(
         IClassifier classType, 
-        String collectionType, 
+        String[] collectionTypes, 
         boolean useGenerics, 
         IMultiplicity mult)
     {
@@ -82,74 +83,53 @@ public final class GenCodeUtil
 //        if (mult != null && mult.getRangeCount() > 0)
         if (mult != null && isMultiDim(mult))
         {
-            if (!JavaClassUtils.isPrimitive(fullClassName) && 
-                collectionType != null && collectionType.length() > 0)
-            {
-                // TODO: use parameter's Collection Override Data Type and
-                // Use Generics property instead of the global preferences
-
-                return assembleCollectionDataType(
-                    fullClassName, collectionType, 
-                    useGenerics, mult.getRangeCount());
-            }
-            
-            else
-                return assembleArrayDataType(
-                    fullClassName, mult.getRangeCount());
-        }
-        
+	    return assembleMultiDimDataType(fullClassName, 
+					    collectionTypes, 
+					    useGenerics, 
+					    mult.getRangeCount());
+	}        
         else
-            // return getReturnParameter().getType();
+	{
             return fullClassName;
+	}
+
     }
     
     
-    public static String assembleCollectionDataType(
+    public static String assembleMultiDimDataType(
         String coreType, 
-        String collectionType, 
+        String[] collectionTypes, 
         boolean useGenerics, 
         long dimCount)
     {
         if (dimCount == 0)
             return coreType;
         
-        if (JavaClassUtils.isPrimitive(coreType))
-            coreType = JavaClassUtils.getPrimitiveWrapperType(coreType);
-        
-        StringBuffer retType = new StringBuffer(collectionType);
+	boolean isPrimitive = JavaClassUtils.isPrimitive(coreType);
 
-        if (useGenerics)
+	String leftPart = "";
+	String rightPart = "";
+
+	for (int i = 0; i < dimCount; i++)
         {
-            String endAngles = ""; // NOI18N
-
-            for (int i=0; i <= dimCount-1; i++)
-            {
-                endAngles += '>'; // NOI18N
-
-                if (i < dimCount-1)
-                    retType.append('<').append(collectionType);
-
-                else if (i == dimCount-1)
-                    retType.append('<').append(coreType);
-            }
-
-            return retType.append(endAngles).toString();
-        }
-        
-        else
-            return collectionType;
+	    String colType = collectionTypes[i];
+	    if (((colType != null) && ( ! colType.trim().equals(""))) 
+		&& ((i != dimCount - 1) || ( ! isPrimitive)))
+	    {
+		leftPart += colType;
+		if (! useGenerics) {
+		    return leftPart + rightPart;
+		} else {
+		    leftPart += '<';
+		    rightPart = '>' + rightPart;
+		}
+	    } else {
+		rightPart += "[]";
+	    }
+	}
+	return leftPart + coreType + rightPart;
     }
 
-    private static String assembleArrayDataType(
-        String dataType, long dimCount)
-    {
-        for (int i=0; i < dimCount; i++)
-        {
-            dataType += "[]";
-        }
-        
-        return dataType;
-    }
 
     public final static String ASTERIK = "*";
     
@@ -220,10 +200,11 @@ public final class GenCodeUtil
     }
     
 
-    // see getCodeGenType() for how the type string is formed 
+    // see getCodeGenType()/assembleMultiDimDataType() 
+    // for how the type string is formed 
     public static ArrayList<String[]> getReferredCodeGenTypes(
         IClassifier classType, 
-        String collectionType, 
+        String[] collectionTypes, 
         boolean useGenerics, 
         IMultiplicity mult)
     {
@@ -247,12 +228,20 @@ public final class GenCodeUtil
 	boolean reffersTheType = true;
         if (mult != null && isMultiDim(mult))
         {
-            if (! isPrimitive && 
-                collectionType != null && collectionType.length() > 0)
+	    int dimCount = (int)mult.getRangeCount();
+	    for (int i = 0; i < dimCount; i++)
 	    {
-		res.add(new String[]{JavaClassUtils.getPackageName(collectionType), 
-				     JavaClassUtils.getShortClassName(collectionType)});
-		reffersTheType = ! useGenerics;
+		String colType = collectionTypes[i];
+		if (((colType != null) && ( ! colType.trim().equals(""))) 
+		    && ((i != dimCount - 1) || ( ! isPrimitive)))
+		{
+		    res.add(new String[]{JavaClassUtils.getPackageName(colType), 
+					 JavaClassUtils.getShortClassName(colType)});		    
+		    if (! useGenerics) {
+			reffersTheType = false;
+			break;
+		    } 
+		}
 	    }
 	}
 	
@@ -342,6 +331,39 @@ public final class GenCodeUtil
 		}
 	    }
 	}	       
+    }
+
+
+    public static String[] getCollectionOverrideDataTypes(IMultiplicity multiplicity, boolean shortNames){
+	
+	if (multiplicity == null) {
+	    return null;
+	} 
+	List<IMultiplicityRange> ranges = multiplicity.getRanges();
+	if (ranges == null) {
+	    return null;
+	}
+	// should be the same, yet
+	String[] res = new String[(int)multiplicity.getRangeCount()];
+	Iterator<IMultiplicityRange> iter = ranges.iterator();
+	for(int i = 0 ; i < res.length; i++) {
+	    String type = null;
+	    if (iter.hasNext()) {	
+		IMultiplicityRange range = iter.next();
+		if (range != null) {
+		    type = range.getCollectionType(false);
+		}	        
+	    }
+	    if (type == null || type.trim().equals("") ) {
+		type = UMLSupport.getUMLSupport().getCollectionOverride();		
+	    }
+	    if (shortNames) {
+		type = JavaClassUtils.getShortClassName(type);
+	    }
+	    res[i] = type;
+	}
+	return res;
+
     }
 
 

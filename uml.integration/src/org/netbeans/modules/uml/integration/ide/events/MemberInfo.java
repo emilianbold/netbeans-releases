@@ -483,8 +483,7 @@ public class MemberInfo extends ElementInfo
         
         return GenCodeUtil.getCodeGenType(
             getAttribute().getType(), 
-            JavaClassUtils.getShortClassName(
-                getCollectionOverrideDataType()),
+	    GenCodeUtil.getCollectionOverrideDataTypes(getAttribute().getMultiplicity(), true),
             isUseGenerics(),
             // getAttribute().getMultiplicity().getRangeCount());
 //            GenCodeUtil.getMultiplicityMaxUpperRange(
@@ -887,7 +886,8 @@ public class MemberInfo extends ElementInfo
     {
 	return GenCodeUtil
 	    .getReferredCodeGenTypes(getAttribute().getType(), 
-				     getCollectionOverrideDataType(),
+				     GenCodeUtil.getCollectionOverrideDataTypes
+				         (getAttribute().getMultiplicity(), false),
 				     isUseGenerics(),
 				     getAttribute().getMultiplicity());
 

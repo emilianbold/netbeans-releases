@@ -407,9 +407,10 @@ public class MethodInfo extends ConstructorInfo
         
         MethodParameterInfo param = getReturnParameter();
         IParameter element = param.getParameterElement();
-        String shortName = JavaClassUtils.getShortClassName(param.getCollectionOverrideDataType());
+        String[] shortNames = GenCodeUtil
+	    .getCollectionOverrideDataTypes(element.getMultiplicity(), true);
         return GenCodeUtil.getCodeGenType(element.getType(), 
-                                          shortName,
+                                          shortNames,
                                           param.isUseCollectionOverride(),
                                           element.getMultiplicity());
     }
