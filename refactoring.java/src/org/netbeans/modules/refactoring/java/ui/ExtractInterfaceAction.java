@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.ui;
@@ -25,13 +25,13 @@ import org.openide.util.NbBundle;
 /**
  * @author Jan Becicka
  */
-public class ExtractInterfaceAction extends JavaRefactoringGlobalAction {
+public final class ExtractInterfaceAction extends JavaRefactoringGlobalAction {
 
     /**
      * Creates a new instance of WhereUsedAction
      */
     public ExtractInterfaceAction() {
-        super(NbBundle.getMessage(ExtractInterfaceAction.class, "LBL_ExtractInterface_Action"), null);
+        super(NbBundle.getMessage(ExtractInterfaceAction.class, "LBL_ExtractInterface_Action"), null); // NOI18N
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,6 @@ import org.netbeans.modules.refactoring.java.spi.ui.JavaActionsImplementationPro
 import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceRefactoringUI;
 import org.netbeans.modules.refactoring.java.ui.RefactoringActionsProvider.NodeToFileObject;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -48,12 +47,10 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     @Override
     public void doExtractInterface(final Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (RefactoringActionsProvider.isFromEditor(ec)) {
             new RefactoringActionsProvider.TextComponentRunnable(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    Element selected = selectedElement.resolveElement(info);
                     return new ExtractInterfaceRefactoringUI(selectedElement, info);
                 }
             }.run();
@@ -61,8 +58,8 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    throw new UnsupportedOperationException("Not supported yet!");
-                    //return new ExtractInterfaceRefactoringUI(selectedElements[0],(CompilationInfo) null);
+                    TreePathHandle tph = handles.iterator().next();
+                    return new ExtractInterfaceRefactoringUI(tph, cinfo.get());
                 }
             }.run();
         }

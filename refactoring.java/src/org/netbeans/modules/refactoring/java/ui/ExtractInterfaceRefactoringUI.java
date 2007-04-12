@@ -13,15 +13,19 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.ui;
 
-import java.util.Iterator;
+import com.sun.source.util.TreePath;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
@@ -34,23 +38,23 @@ import org.openide.util.NbBundle;
 
 /** Refactoring UI object for Extract Interface refactoring.
  *
- * @author Martin Matula, Jan Becicka
+ * @author Martin Matula, Jan Becicka, Jan Pokorsky
  */
-public class ExtractInterfaceRefactoringUI implements RefactoringUI {
+public final class ExtractInterfaceRefactoringUI implements RefactoringUI {
     // reference to extract interface refactoring this UI object corresponds to
     private final ExtractInterfaceRefactoring refactoring;
     // source type
     private final TreePathHandle sourceType;
     // UI panel for collecting parameters
     private ExtractInterfacePanel panel;
+    private String name;
     
     /** Creates a new instance of ExtractInterfaceRefactoringUI
-     * @param selectedElements Elements the refactoring action was invoked on.
+     * @param selectedElement Elements the refactoring action was invoked on.
      */
     public ExtractInterfaceRefactoringUI(TreePathHandle selectedElement, CompilationInfo info) {
         // compute source type
-        //sourceType = getSourceType(selectedElement);
-        sourceType = selectedElement;
+        sourceType = getSourceType(selectedElement, info);
         // create an instance of pull up refactoring object
         refactoring = new ExtractInterfaceRefactoring(sourceType);
     }
@@ -69,14 +73,12 @@ public class ExtractInterfaceRefactoringUI implements RefactoringUI {
     }
 
     public Problem setParameters() {
-        //TODO:
-        //captureParameters();
+        captureParameters();
         return refactoring.checkParameters();
     }
     
     public Problem checkParameters() {
-        //TODO:
-        //captureParameters();
+        captureParameters();
         return refactoring.fastCheckParameters();
     }
 
@@ -85,7 +87,7 @@ public class ExtractInterfaceRefactoringUI implements RefactoringUI {
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(ExtractInterfaceAction.class, "DSC_ExtractInterface", "TODO: getName()"/* sourceType.getName()*/); // NOI18N
+        return NbBundle.getMessage(ExtractInterfaceAction.class, "DSC_ExtractInterface", name); // NOI18N
     }
 
     public String getName() {
@@ -102,40 +104,47 @@ public class ExtractInterfaceRefactoringUI implements RefactoringUI {
     
     // --- PRIVATE HELPER METHODS ----------------------------------------------
     
-//    /** Gets parameters from the refactoring panel and sets them
-//     * to the refactoring object.
-//     */
-//    private void captureParameters() {
-//        refactoring.setIfcName(panel.getIfcName());
-//        refactoring.setMembers(panel.getMembers());
-//    }
-//    
-//    static TreePathHandle getSourceType(TreePathHandle element) {
-//        JavaClass result = null;
-//        // iterate through the containers of the element (until we get to null
-//        // or a resource)
-//        while (element != null && !(element instanceof Resource)) {
-//            if (element instanceof JavaClass) {
-//                result = (JavaClass) element;
-//                break;
-//            }
-//            element = (Element) element.refImmediateComposite();
-//        }
-//        if (result == null && element instanceof Resource) {
-//            String name = ((Resource) element).getName();
-//            int start = name.lastIndexOf('/') + 1;
-//            int end = name.indexOf('.', start);
-//            if (end < 0) end = name.length();
-//            name = name.substring(start, end);
-//            for (Iterator it = ((Resource) element).getClassifiers().iterator(); it.hasNext();) {
-//                JavaClass cls = (JavaClass) it.next();
-//                result = cls;
-//                // if the class of a same name is found, exit the loop
-//                if (name.equals(cls.getSimpleName())) break;
-//            }
-//            // if no class of the same name is found, then the last class in
-//            // the resource is taken as the selected one
-//        }
-//        return result;
-//    }
+    /** Gets parameters from the refactoring panel and sets them
+     * to the refactoring object.
+     */
+    private void captureParameters() {
+        panel.storeSettings();
+    }
+    
+    private TreePathHandle getSourceType(TreePathHandle selected, CompilationInfo javac) {
+        TreePathHandle srcType = null;
+        TreePath path = selected.resolve(javac);
+        Element sourceElm = javac.getTrees().getScope(path).getEnclosingClass();
+        sourceElm = resolveEnclosingClass(sourceElm);
+        if (sourceElm != null) {
+            srcType = TreePathHandle.create(
+                    javac.getTrees().getPath(sourceElm),
+                    javac);
+            name = UiUtils.getHeader(sourceElm, javac, UiUtils.PrintPart.NAME);
+        }
+        return srcType;
+    }
+    
+    /**
+     * returns enclosing class of element or directly the element in case it is
+     * class, enum, interface or annotation type and it is not localor anonymous.
+     */
+    private Element resolveEnclosingClass(Element e) {
+        do {
+            switch(e.getKind()) {
+            case CLASS:
+            case INTERFACE:
+            case ENUM:
+            case ANNOTATION_TYPE:
+                TypeElement te = (TypeElement) e;
+                if (te.getNestingKind() != NestingKind.ANONYMOUS && te.getNestingKind() != NestingKind.LOCAL) {
+                    return e;
+                }
+            default:
+                e = e.getEnclosingElement();
+            }
+        } while(e != null);
+        return null;
+    }
+    
 }

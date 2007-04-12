@@ -13,33 +13,39 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.api;
 
-import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
 
 /** Extract Interface Refactoring implementation class.
  *
- * @author Martin Matula, Jan Becicka
+ * @author Martin Matula, Jan Becicka, Jan Pokorsky
  */
 public final class ExtractInterfaceRefactoring extends AbstractRefactoring {
-    private static final TreePathHandle[] EMPTY_MEMBERS = new TreePathHandle[0];
-
     // name of the new class to be created
     private String ifcName;
-    private TreePathHandle[] members;
+    private List<ElementHandle<ExecutableElement>> methods;
+    private List<ElementHandle<VariableElement>> fields;
+    private List<TypeMirrorHandle<TypeMirror>> implementz;
     
     /** Creates a new instance of ExtractInterfaceRefactoring 
      * @param sourceType Type the members of which should be extracted into an interface.
      */
     public ExtractInterfaceRefactoring(TreePathHandle sourceType) {
         super(Lookups.fixed(sourceType));
-        // check if the sourceType is a ParameterizedType - if so, unwrap it
     }
     
     /** Returns the type the members of which should be extracted into an interface
@@ -66,40 +72,64 @@ public final class ExtractInterfaceRefactoring extends AbstractRefactoring {
         this.ifcName = ifcName;
     }
 
-    /** Returns members to extract.
-     * @return Array of members.
+    /**
+     * Gets methods to extract.
+     * @return list of methods
      */
-    public TreePathHandle[] getMembers() {
-        // never return null
-        return members == null ? EMPTY_MEMBERS : members;
+    public List<ElementHandle<ExecutableElement>> getMethods() {
+        return methods != null? methods: Collections.<ElementHandle<ExecutableElement>>emptyList();
     }
 
-    /** Sets members to extract.
-     * @param members Array of members to extract.
+    /**
+     * Sets public methods to extract.
+     * @param methods list of methods
      */
-    public void setMembers(TreePathHandle[] members) {
-        this.members = members;
+    public void setMethods(List<ElementHandle<ExecutableElement>> methods) {
+        if (methods == null) {
+            throw new NullPointerException();
+        }
+        List<ElementHandle<ExecutableElement>> l = new ArrayList<ElementHandle<ExecutableElement>>(methods);
+        this.methods = Collections.<ElementHandle<ExecutableElement>>unmodifiableList(l);
+    }
+
+    /**
+     * Gets fields to extract.
+     * @return list of fields
+     */
+    public List<ElementHandle<VariableElement>> getFields() {
+        return fields != null? fields: Collections.<ElementHandle<VariableElement>>emptyList();
+    }
+
+    /**
+     * Sets public static final fields with default value to extract.
+     * @param fields list of fields
+     */
+    public void setFields(List<ElementHandle<VariableElement>> fields) {
+        if (fields == null) {
+            throw new NullPointerException();
+        }
+        List<ElementHandle<VariableElement>> l = new ArrayList<ElementHandle<VariableElement>>(fields);
+        this.fields = Collections.<ElementHandle<VariableElement>>unmodifiableList(l);
+    }
+
+    /**
+     * Gets interfaces to extract.
+     * @return list of interfaces
+     */
+    public List<TypeMirrorHandle<TypeMirror>> getImplements() {
+        return implementz != null? implementz: Collections.<TypeMirrorHandle<TypeMirror>>emptyList();
+    }
+
+    /**
+     * Sets interfaces to extract.
+     * @param implementz list of interfaces
+     */
+    public void setImplements(List<TypeMirrorHandle<TypeMirror>> implementz) {
+        if (implementz == null) {
+            throw new NullPointerException();
+        }
+        List<TypeMirrorHandle<TypeMirror>> l = new ArrayList<TypeMirrorHandle<TypeMirror>>(implementz);
+        this.implementz = Collections.<TypeMirrorHandle<TypeMirror>>unmodifiableList(l);
     }
     
-    // --- HELPER METHODS ------------------------------------------------------
-    
-//    public boolean acceptFeature(Feature feature) {
-//        int modifiers = feature.getModifiers();
-//        if (Modifier.isPublic(modifiers)) {
-//            if (feature instanceof JavaClass) {
-//                if (Modifier.isStatic(modifiers)) {
-//                    return true;
-//                }
-//            } else if (feature instanceof Field) {
-//                if (Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers) && ((Field) feature).getInitialValueText() != null) {
-//                    return true;
-//                }
-//            } else if (feature instanceof Method) {
-//                if (!Modifier.isStatic(modifiers)) {
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-//    }
 }

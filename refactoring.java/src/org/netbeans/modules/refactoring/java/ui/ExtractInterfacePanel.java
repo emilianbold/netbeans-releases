@@ -13,31 +13,56 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+import javax.swing.Icon;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.UiUtils.PrintPart;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /** UI panel for collecting refactoring parameters.
  *
- * @author Martin Matula, Jan Becicka
+ * @author Martin Matula, Jan Becicka, Jan Pokorsky
  */
-public class ExtractInterfacePanel extends JPanel implements CustomRefactoringPanel {
+public final class ExtractInterfacePanel extends JPanel implements CustomRefactoringPanel {
     // helper constants describing columns in the table of members
     private static final String[] COLUMN_NAMES = {"LBL_Selected", "LBL_ExtractInterface_Member"}; // NOI18N
     private static final Class[] COLUMN_CLASSES = {Boolean.class, TreePathHandle.class};
@@ -47,7 +72,7 @@ public class ExtractInterfacePanel extends JPanel implements CustomRefactoringPa
     // table model for the table of members
     private final TableModel tableModel;
     // data for the members table (first dimension - rows, second dimension - columns)
-    // the columns are: 0 = Selected (true/false), 1 = Member (Java element)
+    // the columns are: 0 = Selected (true/false), 1 = ExtractInterfaceInfo (Java element)
     private Object[][] members = new Object[0][0];
     
     /** Creates new form ExtractInterfacePanel
@@ -85,16 +110,22 @@ public class ExtractInterfacePanel extends JPanel implements CustomRefactoringPa
      */
     public void initialize() {
         // *** initialize table
-        // set renderer for the second column ("Member") do display name of the feature
-        membersTable.setDefaultRenderer(COLUMN_CLASSES[1], new UIUtilities.JavaElementTableCellRenderer() {
-            // override the extractText method to add "implements " prefix to the text
-            // in case the value is instance of MultipartId (i.e. it represents an interface
-            // name from implements clause)
+        // set renderer for the second column ("Member") to display name of the feature
+        membersTable.setDefaultRenderer(COLUMN_CLASSES[1], new DefaultTableCellRenderer() {
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                super.getTableCellRendererComponent(table, extractText(value), isSelected, hasFocus, row, column);
+                if (value instanceof ExtractInterfaceInfo) {
+                    setIcon(((ExtractInterfaceInfo) value).icon);
+                }
+                return this;
+            }
             protected String extractText(Object value) {
-                String displayValue = super.extractText(value);
-//                if (value instanceof MultipartId) {
-//                    displayValue = "implements " + displayValue; // NOI18N
-//                }
+                String displayValue;
+                if (value instanceof ExtractInterfaceInfo) {
+                    displayValue = ((ExtractInterfaceInfo) value).htmlText;
+                } else {
+                    displayValue = String.valueOf(value);
+                }
                 return displayValue;
             }
         });
@@ -114,27 +145,30 @@ public class ExtractInterfacePanel extends JPanel implements CustomRefactoringPa
     
     // --- GETTERS FOR REFACTORING PARAMETERS ----------------------------------
     
-    /** Getter used by the refactoring UI to get value
-     * of interface name.
-     * @return Interface name.
+    /** stores data collected via the panel.
      */
-    public String getIfcName() {
-        return nameText.getText();
-    }
-    
-    /** Getter used by the refactoring UI to get members to be extracted.
-     * @return Members to be extracted.
-     */
-    public TreePathHandle[] getMembers() {
-        List list = new ArrayList();
+    public void storeSettings() {
+        List<ElementHandle<VariableElement>> fields = new ArrayList<ElementHandle<VariableElement>>();
+        List<ElementHandle<ExecutableElement>> methods = new ArrayList<ElementHandle<ExecutableElement>>();
+        List<TypeMirrorHandle<TypeMirror>> implementz = new ArrayList<TypeMirrorHandle<TypeMirror>>();
+        
+        List<TreePathHandle> list = new ArrayList<TreePathHandle>();
         // go through all rows of a table and collect selected members
         for (int i = 0; i < members.length; i++) {
             if (members[i][0].equals(Boolean.TRUE)) {
-                list.add(members[i][1]);
+                ExtractInterfaceInfo info = (ExtractInterfaceInfo) members[i][1];
+                switch(info.group) {
+                case FIELD: fields.add((ElementHandle<VariableElement>) info.handle); break;
+                case METHOD: methods.add((ElementHandle<ExecutableElement>) info.handle); break;
+                case IMPLEMENTS: implementz.add((TypeMirrorHandle<TypeMirror>) info.handle); break;
+                }
             }
         }
-        // return the array of selected members
-        return (TreePathHandle[]) list.toArray(new TreePathHandle[list.size()]);
+        
+        refactoring.setFields(fields);
+        refactoring.setImplements(implementz);
+        refactoring.setMethods(methods);
+        refactoring.setInterfaceName(nameText.getText());
     }
     
     // --- GENERATED CODE ------------------------------------------------------
@@ -233,51 +267,130 @@ public class ExtractInterfacePanel extends JPanel implements CustomRefactoringPa
         
 
         private void initialize() {
-//            TreePathHandle sourceType = refactoring.getSourceType();
-//            if (sourceType == null) return;
-//            
-//            ArrayList result = new ArrayList();
-//            
-//            for (Iterator it = sourceType.getInterfaceNames().iterator(); it.hasNext();) {
-//                result.add(it.next());
-//            }
-//            // collect fields, methods and inner classes
-//            Feature[] features = (Feature[]) sourceType.getFeatures().toArray(new Feature[0]);
-//            for (int j = 0; j < features.length; j++) {
-//                if (refactoring.acceptFeature(features[j])) {
-//                    result.add(features[j]);
-//                }
-//            }
-//            // the members are collected
-//            // now, create a tree map (to sort them) and create the table data
-//            Collections.sort(result, new Comparator() {
-//                public int compare(Object o1, Object o2) {
-//                    NamedElement ne1 = (NamedElement) o1, ne2 = (NamedElement) o2;
-//                    // elements are sorted primarily by their class name
-//                    int result = ne1.getClass().getName().compareTo(ne2.getClass().getName());
-//                    if (result == 0) {
-//                        // then by their display text
-//                        result = UIUtilities.getDisplayText(ne1).compareTo(UIUtilities.getDisplayText(ne2));
-//                    }
-//                    if (result == 0) {
-//                        // then the mofid is compared (to not take two non-identical
-//                        // elements as equals)
-//                        result = ne1.refMofId().compareTo(ne2.refMofId());
-//                    }
-//                    return result;
-//                }
-//            });
-//            members = new Object[result.size()][2];
-//            for (int i = 0; i < members.length; i++) {
-//                members[i][0] = Boolean.FALSE;
-//                members[i][1] = result.get(i);
-//            }
-//            // fire event to repaint the table
-//            this.fireTableDataChanged();
+            final TreePathHandle sourceType = refactoring.getSourceType();
+            if (sourceType == null) return;
+            
+            FileObject fo = sourceType.getFileObject();
+            JavaSource js = JavaSource.forFileObject(fo);
+            try {
+                js.runUserActionTask(new CancellableTask<CompilationController>() {
+                        public void cancel() {
+                        }
+
+                        public void run(CompilationController javac) throws Exception {
+                            javac.toPhase(JavaSource.Phase.RESOLVED);
+                            initializeInTransaction(javac, sourceType);
+                        }
+
+                    }, true);
+            } catch (IOException ex) {
+                new IllegalStateException(ex);
+            }
+        }
+        
+        private void initializeInTransaction(CompilationController javac, TreePathHandle sourceType) {
+            TreePath sourceTreePath = sourceType.resolve(javac);
+            ClassTree sourceTree = (ClassTree) sourceTreePath.getLeaf();
+            List result = new ArrayList();
+            
+            for (Tree implTree : sourceTree.getImplementsClause()) {
+                TreePath implPath = javac.getTrees().getPath(javac.getCompilationUnit(), implTree);
+                TypeMirror implMirror = javac.getTrees().getTypeMirror(implPath);
+                result.add(new ExtractInterfaceInfo<TypeMirrorHandle>(
+                        TypeMirrorHandle.create(implMirror),
+                        "implements " + implTree.toString(), // NOI18N
+                        UiUtils.getElementIcon(ElementKind.INTERFACE, null),
+                        implTree.toString(),
+                        Group.IMPLEMENTS
+                        ));
+            }
+            
+            for (Tree member : sourceTree.getMembers()) {
+                TreePath memberTreePath = javac.getTrees().getPath(javac.getCompilationUnit(), member);
+                if (javac.getTreeUtilities().isSynthetic(memberTreePath))
+                    continue;
+                
+                Element memberElm = javac.getTrees().getElement(memberTreePath);
+                Set<Modifier> mods;
+                if (memberElm == null || !(mods = memberElm.getModifiers()).contains(Modifier.PUBLIC))
+                    continue;
+                
+                Group group;
+                String format = PrintPart.NAME;
+                if (memberElm.getKind() == ElementKind.FIELD) {
+                    if (!mods.contains(Modifier.STATIC) || !mods.contains(Modifier.FINAL)
+                            || ((VariableTree) member).getInitializer() == null)
+                        continue;
+                    group = Group.FIELD;
+                    format += " : " + PrintPart.TYPE; // NOI18N
+// XXX see ExtractInterfaceRefactoringPlugin class description
+//                } else if (member.getKind() == Tree.Kind.CLASS) {
+//                    if (!mods.contains(Modifier.STATIC))
+//                        continue;
+//                    group = 3;
+                } else if (memberElm.getKind() == ElementKind.METHOD) {
+                    if (mods.contains(Modifier.STATIC))
+                        continue;
+                    group = Group.METHOD;
+                    format += PrintPart.PARAMETERS + " : " + PrintPart.TYPE; // NOI18N
+                } else {
+                    continue;
+                }
+                result.add(new ExtractInterfaceInfo<ElementHandle>(
+                        ElementHandle.create(memberElm),
+                        UiUtils.getHeader(memberElm, javac, format),
+                        UiUtils.getElementIcon(memberElm.getKind(), mods),
+                        memberElm.getSimpleName().toString(),
+                        group
+                        ));
+            }
+
+            // the members are collected
+            // now, create a tree map (to sort them) and create the table data
+            Collections.sort(result, new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    ExtractInterfaceInfo i1 = (ExtractInterfaceInfo) o1;
+                    ExtractInterfaceInfo i2 = (ExtractInterfaceInfo) o2;
+                    int result = i1.group.compareTo(i2.group);
+                    
+                    if (result == 0) {
+                        result = i1.name.compareTo(i2.name);
+                    }
+                    
+                    return result;
+                }
+            });
+            members = new Object[result.size()][2];
+            for (int i = 0; i < members.length; i++) {
+                members[i][0] = Boolean.FALSE;
+                members[i][1] = result.get(i);
+            }
+            // fire event to repaint the table
+            this.fireTableDataChanged();
         }
     }
 
     public Component getComponent() {
         return this;
+    }
+    
+    private static final class ExtractInterfaceInfo<H> {
+        final H handle;
+        final String htmlText;
+        final Icon icon;
+        final String name;
+        final Group group;
+        
+        public ExtractInterfaceInfo(H handle, String htmlText, Icon icon, String name, Group group) {
+            this.handle = handle;
+            this.htmlText = htmlText;
+            this.icon = icon;
+            this.name = name;
+            this.group = group;
+        }
+    }
+    
+    private enum Group {
+        IMPLEMENTS, METHOD, FIELD;
     }
 }

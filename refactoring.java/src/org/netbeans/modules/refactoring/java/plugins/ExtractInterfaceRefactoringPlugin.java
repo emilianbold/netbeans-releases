@@ -13,439 +13,703 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.DiffElement;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
 import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.PositionBounds;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
-public class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlugin {
+/**
+ * Plugin that implements the core functionality of Extract Interface refactoring.
+ * <br>Extracts: <ul>
+ * <li>implements interfaces</li>
+ * <li>public nonstatic methods</li>
+ * <li>public static final fields</li>
+ * <li>XXX public static class/interface/enum/annotation type.<br><i>dangerous, it might contain
+ *     elements that will be unaccessible from the new interface. Maybe reusing Move Class refactoring
+ *     would be appropriate. Not implemented in 6.0 yet. Pre-6.0 implementation was not solved references at all.</i></li>
+ * </ul>
+ * XXX there should be option Copy/Move/AsIs javadoc.
+ *
+ * @author Martin Matula, Jan Pokorsky
+ */
+public final class ExtractInterfaceRefactoringPlugin extends RetoucheRefactoringPlugin {
     
-    private ExtractInterfaceRefactoring refactoring;
+    /** Reference to the parent refactoring instance */
+    private final ExtractInterfaceRefactoring refactoring;
     
+    private String pkgName;
+    
+    /** class for extracting interface */
+    private ElementHandle<TypeElement> classHandle;
+    
+    /** Creates a new instance of ExtractInterfaceRefactoringPlugin
+     * @param refactoring Parent refactoring instance.
+     */
     ExtractInterfaceRefactoringPlugin(ExtractInterfaceRefactoring refactoring) {
         this.refactoring = refactoring;
     }
 
-    public Problem preCheck() {
-        //TODO: implement me
-        return null;
-    }
-
     public Problem checkParameters() {
-        //TODO: implement me
-        return null;
+        if (refactoring.getMethods().isEmpty() && refactoring.getFields().isEmpty() && refactoring.getImplements().isEmpty()) {
+            return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ExtractInterface_MembersNotAvailable")); // NOI18N);
+        }
+        return super.checkParameters();
     }
 
     public Problem fastCheckParameters() {
-        //TODO: implement me
+        Problem result = null;
+        
+        String newName = refactoring.getInterfaceName();
+        
+        if (!Utilities.isJavaIdentifier(newName)) {
+            result = createProblem(result, true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_InvalidIdentifier", newName)); // NOI18N
+            return result;
+        }
+        
+        FileObject primFile = refactoring.getSourceType().getFileObject();
+        FileObject folder = primFile.getParent();
+        FileObject[] children = folder.getChildren();
+        for (FileObject child: children) {
+            if (!child.isVirtual() && child.getName().equals(newName) && "java".equals(child.getExt())) { // NOI18N
+                result = createProblem(result, true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ClassClash", newName, pkgName)); // NOI18N
+                return result;
+            }
+        }
+
         return null;
     }
 
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        //TODO: implement me
+    public Problem prepare(RefactoringElementsBag bag) {
+        FileObject primFile = refactoring.getSourceType().getFileObject();
+        try {
+            // create interface file
+            bag.add(refactoring, new CreateInterfaceElement(refactoring, primFile.getParent(), classHandle));
+            UpdateClassTask.create(bag, primFile, refactoring, classHandle);
+        } catch (IOException ex) {
+            throw (RuntimeException) new RuntimeException().initCause(ex);
+        }
         return null;
     }
+    
+    protected FileObject getFileObject() {
+        return refactoring.getSourceType().getFileObject();
+    }
+    
+    protected Problem preCheck(CompilationController javac) throws IOException {
+        // fire operation start on the registered progress listeners (1 step)
+        fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 1);
+        javac.toPhase(JavaSource.Phase.RESOLVED);
+        try {
+            TreePathHandle sourceType = refactoring.getSourceType();
+            
+            // check whether the element is valid
+            Problem result = isElementAvail(sourceType, javac);
+            if (result != null) {
+                // fatal error -> don't continue with further checks
+                return result;
+            }
+            if (!RetoucheUtils.isElementInOpenProject(sourceType.getFileObject())) {
+                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened")); // NOI18N
+            }
+            
+            // check whether the element is an unresolved class
+            Element sourceElm = sourceType.resolveElement(javac);
+            if (sourceElm == null || (sourceElm.getKind() != ElementKind.CLASS && sourceElm.getKind() != ElementKind.INTERFACE && sourceElm.getKind() != ElementKind.ENUM)) {
+                // fatal error -> return
+                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
+            }
+            
+            classHandle = ElementHandle.<TypeElement>create((TypeElement) sourceElm);
+            
+            PackageElement pkgElm = javac.getElementUtilities().packageElement(sourceElm);
+            pkgName = pkgElm.getQualifiedName().toString();
+            
+            // increase progress (step 1)
+            fireProgressListenerStep();
+            
+            // all checks passed -> return null
+            return null;
+        } finally {
+            // fire operation end on the registered progress listeners
+            fireProgressListenerStop();
+        }
+    }
+    
+    protected Problem checkParameters(CompilationController javac) throws IOException {
+        // check whether the selected members are public and non-static in case of methods, static in other cases
+        // check whether all members belong to the source type
+        // XXX check if method params and return type will be accessible after extraction; likely not fatal
+        javac.toPhase(JavaSource.Phase.RESOLVED);
+        
+        TypeElement sourceType = (TypeElement) refactoring.getSourceType().resolveElement(javac);
+        assert sourceType != null;
+        
+        Set<? extends Element> members = new HashSet<Element>(sourceType.getEnclosedElements());
+        
+        for (ElementHandle<ExecutableElement> elementHandle : refactoring.getMethods()) {
+            ExecutableElement elm = elementHandle.resolve(javac);
+            if (elm == null) {
+                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
+            }
+            if (javac.getElementUtilities().isSynthetic(elm) || elm.getKind() != ElementKind.METHOD) {
+                return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ExtractInterface_UnknownMember", // NOI18N
+                        elm.toString()));
+            }
+            if (!members.contains(elm)) {
+                return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ExtractInterface_UnknownMember", // NOI18N
+                        elm.toString()));
+            }
+            Set<Modifier> mods = elm.getModifiers();
+            if (!mods.contains(Modifier.PUBLIC) || mods.contains(Modifier.STATIC)) {
+                return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ExtractInterface_WrongModifiers", elm.getSimpleName().toString())); // NOI18N
+            }
+        }
+        
+        for (ElementHandle<VariableElement> elementHandle : refactoring.getFields()) {
+            VariableElement elm = elementHandle.resolve(javac);
+            if (elm == null) {
+                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
+            }
+            if (javac.getElementUtilities().isSynthetic(elm) || elm.getKind() != ElementKind.FIELD) {
+                return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ExtractInterface_UnknownMember", // NOI18N
+                        elm.toString()));
+            }
+            if (!members.contains(elm)) {
+                return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ExtractInterface_UnknownMember", // NOI18N
+                        elm.toString()));
+            }
+            Set<Modifier> mods = elm.getModifiers();
+            if (mods.contains(Modifier.PUBLIC) && mods.contains(Modifier.STATIC) && mods.contains(Modifier.FINAL)) {
+                VariableTree tree = (VariableTree) javac.getTrees().getTree(elm);
+                if (tree.getInitializer() != null) {
+                    continue;
+                }
+            }
+            return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ExtractInterface_WrongModifiers", elm.getSimpleName().toString())); // NOI18N
+        }
+        
+        // XXX check refactoring.getImplements()
 
+        return null;
+    }
+    
+    protected Problem fastCheckParameters(CompilationController javac) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+    
+    protected Problem prepare(WorkingCopy wc, RefactoringElementsBag bag) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * Finds all type parameters of <code>javaClass</code> that are referenced by
+     * any member that is going to be extract.
+     * @param refactoring the refactoring containing members to extract
+     * @param javac compilation info
+     * @param javaClass java class declaring parameters to find
+     * @return type parameters to extract
+     */
+    private static List<TypeMirror> findUsedGenericTypes(ExtractInterfaceRefactoring refactoring, CompilationInfo javac, TypeElement javaClass) {
+        List<TypeMirror> typeArgs = resolveTypeParamsAsTypes(javaClass.getTypeParameters());
+        if (typeArgs.isEmpty())
+            return typeArgs;
+        
+        Types typeUtils = javac.getTypes();
+        List<TypeMirror> result = new ArrayList<TypeMirror>(typeArgs.size());
+
+        // do not check fields since static fields cannot use type parameter of the enclosing class
+        
+        // check methods
+        for (Iterator<ElementHandle<ExecutableElement>> methodIter = refactoring.getMethods().iterator(); methodIter.hasNext() && !typeArgs.isEmpty();) {
+            ElementHandle<ExecutableElement> handle = methodIter.next();
+            ExecutableElement elm = handle.resolve(javac);
+            
+            findUsedGenericTypes(typeUtils, typeArgs, result, elm.getReturnType());
+            
+            for (Iterator<? extends VariableElement> paramIter = elm.getParameters().iterator(); paramIter.hasNext() && !typeArgs.isEmpty();) {
+                VariableElement param = paramIter.next();
+                findUsedGenericTypes(typeUtils, typeArgs, result, param.asType());
+            }
+        }
+        
+        // check implents
+        for (Iterator<TypeMirrorHandle<TypeMirror>> it = refactoring.getImplements().iterator(); it.hasNext() && !typeArgs.isEmpty();) {
+            TypeMirrorHandle<TypeMirror> handle = it.next();
+            TypeMirror implemetz = handle.resolve(javac);
+            findUsedGenericTypes(typeUtils, typeArgs, result, implemetz);
+        }
+
+        return result;
+    }
+    
+    /**
+     * Finds type parameters from <code>typeArgs</code> list that are referenced
+     * by <code>tm</code> type.
+     * @param utils compilation type utils
+     * @param typeArgs modifiable list of type parameters to search; found types will be removed (performance reasons).
+     * @param result modifiable list that will contain found type parameters
+     * @param tm type where to search
+     */
+    private static void findUsedGenericTypes(Types utils, List<TypeMirror> typeArgs, List<TypeMirror> result, TypeMirror tm) {
+        if (typeArgs.isEmpty()) {
+            return;
+        } else if (tm.getKind() == TypeKind.TYPEVAR) {
+            TypeVariable type = (TypeVariable) tm;
+            TypeMirror low = type.getLowerBound();
+            if (low != null && low.getKind() != TypeKind.NULL) {
+                findUsedGenericTypes(utils, typeArgs, result, low);
+            }
+            TypeMirror up = type.getUpperBound();
+            if (up != null) {
+                findUsedGenericTypes(utils, typeArgs, result, up);
+            }
+            int index = findTypeIndex(utils, typeArgs, type);
+            if (index >= 0) {
+                result.add(typeArgs.remove(index));
+            }
+        } else if (tm.getKind() == TypeKind.DECLARED) {
+            DeclaredType type = (DeclaredType) tm;
+            for (TypeMirror tp : type.getTypeArguments()) {
+                findUsedGenericTypes(utils, typeArgs, result, tp);
+            }
+        } else if (tm.getKind() == TypeKind.WILDCARD) {
+            WildcardType type = (WildcardType) tm;
+            TypeMirror ex = type.getExtendsBound();
+            if (ex != null) {
+                findUsedGenericTypes(utils, typeArgs, result, ex);
+            }
+            TypeMirror su = type.getSuperBound();
+            if (su != null) {
+                findUsedGenericTypes(utils, typeArgs, result, su);
+            }
+        }
+    }
+    
+    private static int findTypeIndex(Types utils, List<TypeMirror> typeArgs, TypeMirror type) {
+        int i = -1;
+        for (TypeMirror typeArg : typeArgs) {
+            i++;
+            if (utils.isSameType(type, typeArg)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    /**
+     * translates list of elements to list of types
+     * @param typeParams elements
+     * @return types
+     */
+    private static List<TypeMirror> resolveTypeParamsAsTypes(List<? extends TypeParameterElement> typeParams) {
+        if (typeParams.isEmpty()) {
+            return Collections.<TypeMirror>emptyList();
+        }
+        List<TypeMirror> typeArgs = new ArrayList<TypeMirror>(typeParams.size());
+        for (TypeParameterElement elm : typeParams) {
+            typeArgs.add(elm.asType());
+        }
+        return typeArgs;
+    }
+
+    // --- REFACTORING ELEMENTS ------------------------------------------------
+    
+    /**
+     * creates new file with empty interface and adds type params if necessary
+     */
+    private static final class CreateInterfaceElement extends SimpleRefactoringElementImplementation implements CancellableTask<WorkingCopy> {
+        private final URL folderURL;
+        private URL ifcURL;
+        private final String ifcName;
+        private final ExtractInterfaceRefactoring refactoring;
+        private final ElementHandle<TypeElement> sourceType;
+        
+        private CreateInterfaceElement(ExtractInterfaceRefactoring refactoring, FileObject folder, ElementHandle<TypeElement> sourceType) {
+            this.refactoring = refactoring;
+            this.folderURL = URLMapper.findURL(folder, URLMapper.INTERNAL);
+            this.ifcName = refactoring.getInterfaceName();
+            this.sourceType = sourceType;
+        }
+
+        // --- SimpleRefactoringElementImpl methods ----------------------------------
+        
+        public void performChange() {
+            try {
+                FileObject folderFO = URLMapper.findFileObject(folderURL);
+                if (folderFO == null)
+                    return;
+                
+                // create new file
+                
+                // XXX not nice; user might modify the template to something entirely different from the interface
+                FileObject tempFO = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Classes/Interface.java"); // NOI18N
+                
+                DataFolder folder = (DataFolder) DataObject.find(folderFO);
+                DataObject template = DataObject.find(tempFO);
+                DataObject newIfcDO = template.createFromTemplate(folder, ifcName);
+                this.ifcURL = URLMapper.findURL(newIfcDO.getPrimaryFile(), URLMapper.INTERNAL);
+                refactoring.getContext().add(newIfcDO.getPrimaryFile());
+                
+                // add type params and members
+                JavaSource js = JavaSource.forFileObject(newIfcDO.getPrimaryFile());
+                js.runModificationTask(this).commit();
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        public void undoChange() {
+            FileObject ifcFO = null;
+            if (ifcURL != null) {
+                ifcFO = URLMapper.findFileObject(ifcURL);
+            }
+            if (ifcFO != null) {
+                try {
+                    ifcFO.delete();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        
+        public String getText() {
+            return NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "TXT_ExtractInterface_CreateIfc", ifcName); // NOI18N
+        }
+
+        public String getDisplayText() {
+            return getText();
+        }
+
+        public FileObject getParentFile() {
+            return URLMapper.findFileObject(folderURL);
+        }
+
+        public PositionBounds getPosition() {
+            return null;
+        }
+    
+        public Lookup getLookup() {
+            FileObject fo = ifcURL == null? null: URLMapper.findFileObject(ifcURL);
+            return fo != null? Lookups.singleton(fo): Lookup.EMPTY;
+        }
+        
+        // --- CancellableTask methods ----------------------------------
+        
+        public void cancel() {
+            
+        }
+
+        public void run(WorkingCopy wc) throws Exception {
+            wc.toPhase(JavaSource.Phase.RESOLVED);
+            ClassTree interfaceTree = findInterface(wc, ifcName);
+            TreeMaker make = wc.getTreeMaker();
+            
+            
+            // add type parameters
+            List<TypeMirror> typeParams = findUsedGenericTypes(refactoring, wc, sourceType.resolve(wc));
+            List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParams.size());
+            // lets retrieve param type trees from origin class since it is
+            // almost impossible to create them via TreeMaker
+            TypeElement sourceTypeElm = sourceType.resolve(wc);
+            for (TypeParameterElement typeParam : sourceTypeElm.getTypeParameters()) {
+                TypeMirror origParam = typeParam.asType();
+                for (TypeMirror newParam : typeParams) {
+                    if (wc.getTypes().isSameType(origParam, newParam)) {
+                        Tree t = SourceUtils.treeFor(wc, typeParam);
+                        if (t.getKind() == Tree.Kind.TYPE_PARAMETER) {
+                            newTypeParams.add((TypeParameterTree) t);
+                        }
+                    }
+                }
+
+            }
+
+            // add new fields
+            List<Tree> members = new ArrayList<Tree>();
+            for (ElementHandle<VariableElement> handle : refactoring.getFields()) {
+                VariableElement memberElm = handle.resolve(wc);
+                Tree tree = SourceUtils.treeFor(wc, memberElm);
+                members.add(tree);
+            }
+            // add newmethods
+            for (ElementHandle<ExecutableElement> handle : refactoring.getMethods()) {
+                ExecutableElement memberElm = handle.resolve(wc);
+                members.add(make.Method(memberElm, null));
+            }
+            // add super interfaces
+            List <Tree> extendsList = new ArrayList<Tree>();
+            extendsList.addAll(interfaceTree.getImplementsClause());
+            for (TypeMirrorHandle<? extends TypeMirror> handle : refactoring.getImplements()) {
+                // XXX check if interface is not aready there; the templates might be changed by user :-(
+                TypeMirror implMirror = handle.resolve(wc);
+                extendsList.add(make.Type(implMirror));
+            }
+            // create new interface
+            ClassTree newInterfaceTree = make.Interface(
+                    interfaceTree.getModifiers(),
+                    interfaceTree.getSimpleName(),
+                    newTypeParams,
+                    extendsList,
+                    members);
+            
+            wc.rewrite(interfaceTree, newInterfaceTree);
+        }
+        
+        // --- helper methods ----------------------------------
+        
+        private ClassTree findInterface(CompilationInfo javac, String name) {
+            for (Tree tree : javac.getCompilationUnit().getTypeDecls()) {
+                if (Tree.Kind.CLASS == tree.getKind()
+                        && javac.getTreeUtilities().isInterface((ClassTree) tree)
+                        && name.contentEquals(((ClassTree) tree).getSimpleName())) {
+                    return (ClassTree) tree;
+                }
+            }
+            throw new IllegalStateException("wrong template, cannot find the interface in " + javac.getFileObject()); // NOI18N
+        }
+    }
+    
+    private final static class UpdateClassTask implements CancellableTask<WorkingCopy> {
+        private final ExtractInterfaceRefactoring refactoring;
+        private final ElementHandle<TypeElement> sourceType;
+        private final List typeParams;
+        
+        private UpdateClassTask(ExtractInterfaceRefactoring refactoring, ElementHandle<TypeElement> sourceType, List typeParams) {
+            this.sourceType = sourceType;
+            this.refactoring = refactoring;
+            this.typeParams = typeParams;
+        }
+        
+        public static void create(RefactoringElementsBag bag, FileObject fo, ExtractInterfaceRefactoring refactoring, ElementHandle<TypeElement> sourceType) throws IOException {
+            JavaSource js = JavaSource.forFileObject(fo);
+            ModificationResult modification = js.runModificationTask(new UpdateClassTask(refactoring, sourceType, Collections.emptyList()));
+            List<? extends ModificationResult.Difference> diffs = modification.getDifferences(fo);
+            for (ModificationResult.Difference diff : diffs) {
+                bag.add(refactoring, DiffElement.create(diff, fo, modification));
+            }
+            bag.registerTransaction(new RetoucheCommit(Collections.singletonList(modification)));
+        }
+        
+        public void cancel() {
+        }
+
+        public void run(WorkingCopy wc) throws Exception {
+            wc.toPhase(JavaSource.Phase.RESOLVED);
+            TypeElement clazz = this.sourceType.resolve(wc);
+            assert clazz != null;
+            ClassTree classTree = (ClassTree) wc.getTrees().getTree(clazz);
+            TreeMaker maker = wc.getTreeMaker();
+            // fake interface since interface file does not exist yet
+            Tree interfaceTree;
+            List<TypeMirror> typeParams = findUsedGenericTypes(refactoring, wc, clazz);
+            if (typeParams.isEmpty()) {
+                interfaceTree = maker.Identifier(refactoring.getInterfaceName());
+            } else {
+                List<ExpressionTree> typeParamTrees = new ArrayList<ExpressionTree>(typeParams.size());
+                for (TypeMirror typeParam : typeParams) {
+                    Tree t = maker.Type(typeParam);
+                    typeParamTrees.add((ExpressionTree) t);
+                }
+                interfaceTree = maker.ParameterizedType(
+                        maker.Identifier(refactoring.getInterfaceName()),
+                        typeParamTrees
+                        );
+            }
+            
+            Set<Tree> members2Remove = new HashSet<Tree>();
+            Set<Tree> interfaces2Remove = new HashSet<Tree>();
+            
+            members2Remove.addAll(getFields2Remove(wc, refactoring.getFields()));
+            members2Remove.addAll(getMethods2Remove(wc, refactoring.getMethods(), clazz));
+            interfaces2Remove.addAll(getImplements2Remove(wc, refactoring.getImplements(), clazz));
+            
+            // filter out obsolete members
+            List<Tree> members2Add = new ArrayList<Tree>();
+            for (Tree tree : classTree.getMembers()) {
+                if (!members2Remove.contains(tree)) {
+                    members2Add.add(tree);
+                }
+            }
+            // filter out obsolete implements trees
+            List<Tree> impls2Add = resolveImplements(classTree.getImplementsClause(), interfaces2Remove, interfaceTree);
+
+            ClassTree nc;
+            if (clazz.getKind() == ElementKind.CLASS) {
+                nc = maker.Class(
+                        classTree.getModifiers(),
+                        classTree.getSimpleName(),
+                        classTree.getTypeParameters(),
+                        classTree.getExtendsClause(),
+                        impls2Add,
+                        members2Add);
+            } else if (clazz.getKind() == ElementKind.INTERFACE) {
+                nc = maker.Interface(
+                        classTree.getModifiers(),
+                        classTree.getSimpleName(),
+                        classTree.getTypeParameters(),
+                        impls2Add,
+                        members2Add);
+            } else if (clazz.getKind() == ElementKind.ENUM) {
+                nc = maker.Enum(
+                        classTree.getModifiers(),
+                        classTree.getSimpleName(),
+                        impls2Add,
+                        members2Add);
+            } else {
+                throw new IllegalStateException(classTree.toString());
+            }
+            
+            wc.rewrite(classTree, nc);
+        }
+        
+        private List<Tree> getFields2Remove(CompilationInfo javac, List<ElementHandle<VariableElement>> members) {
+            if (members.isEmpty()) {
+                return Collections.<Tree>emptyList();
+            }
+            List<Tree> result = new ArrayList<Tree>(members.size());
+            for (ElementHandle<VariableElement> handle : members) {
+                VariableElement elm = handle.resolve(javac);
+                assert elm != null;
+                Tree t = javac.getTrees().getTree(elm);
+                assert t != null;
+                result.add(t);
+            }
+
+            return result;
+        }
+        
+        private List<Tree> getMethods2Remove(CompilationInfo javac, List<ElementHandle<ExecutableElement>> members, TypeElement clazz) {
+            if (members.isEmpty()) {
+                return Collections.<Tree>emptyList();
+            }
+            boolean isInterface = clazz.getKind() == ElementKind.INTERFACE;
+            List<Tree> result = new ArrayList<Tree>(members.size());
+            for (ElementHandle<ExecutableElement> handle : members) {
+                ExecutableElement elm = handle.resolve(javac);
+                assert elm != null;
+                
+                
+                if (isInterface || elm.getModifiers().contains(Modifier.ABSTRACT)) {
+                    // it is interface method nor abstract method
+                    Tree t = javac.getTrees().getTree(elm);
+                    assert t != null;
+                    result.add(t);
+                }
+            }
+
+            return result;
+        }
+        
+        private List<Tree> getImplements2Remove(CompilationInfo javac, List<TypeMirrorHandle<TypeMirror>> members, TypeElement clazz) {
+            if (members.isEmpty()) {
+                return Collections.<Tree>emptyList();
+            }
+            
+            // resolve members to remove
+            List<TypeMirror> memberTypes = new ArrayList<TypeMirror>(members.size());
+            for (TypeMirrorHandle<TypeMirror> handle : members) {
+                TypeMirror tm = handle.resolve(javac);
+                memberTypes.add(tm);
+            }
+
+            
+            ClassTree classTree = javac.getTrees().getTree(clazz);
+            List<Tree> result = new ArrayList<Tree>();
+            Types types = javac.getTypes();
+            
+            // map TypeMirror to Tree
+            for (Tree tree : classTree.getImplementsClause()) {
+                TreePath path = javac.getTrees().getPath(javac.getCompilationUnit(), tree);
+                TypeMirror existingTM = javac.getTrees().getTypeMirror(path);
+                
+                for (TypeMirror tm : memberTypes) {
+                    if (types.isSameType(tm, existingTM)) {
+                        result.add(tree);
+                        break;
+                    }
+                }
+            }
+
+            return result;
+        }
+        
+        private static List<Tree> resolveImplements(List<? extends Tree> allImpls, Set<Tree> impls2Remove, Tree impl2Add) {
+            List<Tree> ret;
+            if (allImpls == null) {
+                ret = new ArrayList<Tree>(1);
+            } else {
+                ret = new ArrayList<Tree>(allImpls.size() + 1);
+                ret.addAll(allImpls);
+            }
+            
+            if (impls2Remove != null && !impls2Remove.isEmpty()) {
+                ret.removeAll(impls2Remove);
+            }
+            ret.add(impl2Add);
+            return ret;
+        }
+    }
+    
 }
-///** Plugin that implements the core functionality of Extract Interface refactoring.
-// *
-// * @author Martin Matula
-// */
-//public class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlugin {
-//    /** Reference to the parent refactoring instance */
-//    private final ExtractInterfaceRefactoring refactoring;
-//    
-//    /** Creates a new instance of ExtractInterfaceRefactoringPlugin
-//     * @param refactoring Parent refactoring instance.
-//     */
-//    ExtractInterfaceRefactoringPlugin(ExtractInterfaceRefactoring refactoring) {
-//        this.refactoring = refactoring;
-//    }
-//    
-//    /** Checks pre-conditions of the refactoring.
-//     * @return Problems found or <code>null</code>.
-//     */
-//    public Problem preCheck() {
-//        // fire operation start on the registered progress listeners (1 step)
-//        fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 1);
-//        try {
-//            JavaClass sourceType = refactoring.getSourceType();
-//            
-//            // check whether the element is valid
-//            Problem result = isElementAvail(sourceType);
-//            if (result != null) {
-//                // fatal error -> don't continue with further checks
-//                return result;
-//            }
-//            if (!CheckUtils.isElementInOpenProject(sourceType)) {
-//                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
-//            }
-//            
-//            // check whether the element is an unresolved class
-//            if (sourceType instanceof UnresolvedClass) {
-//                // fatal error -> return
-//                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
-//            }
-//            
-//            // increase progress (step 1)
-//            fireProgressListenerStep();
-//
-//            // all checks passed -> return null
-//            return null;
-//        } finally {
-//            // fire operation end on the registered progress listeners
-//            fireProgressListenerStop();
-//        }
-//    }
-//    
-//    public Problem fastCheckParameters() {
-//        Problem result = null;
-//        
-//        JavaClass sourceType = refactoring.getSourceType();
-//        String oldName = sourceType.getSimpleName();
-//        String newName = refactoring.getIfcName();
-//        
-//        if (!org.openide.util.Utilities.isJavaIdentifier(newName)) {
-//            result = createProblem(result, true, NbBundle.getMessage(RenameRefactoring.class, "ERR_InvalidIdentifier", newName)); // NOI18N
-//            return result;
-//        }
-//        
-//        Resource resource = sourceType.getResource();
-//        FileObject primFile = JavaModel.getFileObject(resource);
-//        FileObject folder = primFile.getParent();
-//        FileObject[] children = folder.getChildren();
-//        for (int x = 0; x < children.length; x++) {
-//            if (!children[x].isVirtual() && children[x].getName().equals(newName) && "java".equals(children[x].getExt())) { // NOI18N
-//                result = createProblem(result, true, NbBundle.getMessage(RenameRefactoring.class, "ERR_ClassClash", newName, resource.getPackageName())); // NOI18N
-//                return result;
-//            }
-//        }
-//
-//        return null;
-//    }
-//
-//    public Problem checkParameters() {
-//        // TODO: check whether the selected members are public and non-static in case of methods, static in other cases
-//        // TODO: check whether all members belong to the source type
-//        return null;
-//    }
-//
-//    public Problem prepare(RefactoringElementsBag refactoringElements) {
-//        NamedElement[] members = refactoring.getMembers();
-//
-//        List typeParams = findUsedGenericTypes(members, refactoring.getSourceType());
-//        
-//        CreateIfcElement createIfcElement = new CreateIfcElement(refactoring.getSourceType().getResource(), refactoring.getIfcName(), typeParams);
-//        refactoringElements.add(refactoring, createIfcElement);
-//        refactoringElements.add(refactoring, new AddImplementsElement(refactoring.getSourceType(), refactoring.getIfcName(), typeParams));
-//        for (int i = 0; i < members.length; i++) {
-//            refactoringElements.add(refactoring, new GenerateMemberElement(members[i], createIfcElement));
-//        }
-//
-//        return null;
-//    }
-//    
-//    /**
-//     * Returns list of TypeParameters from javaClass that are used by the passed members elements.
-//     */
-//    static List findUsedGenericTypes(NamedElement[] members, JavaClass javaClass) {
-//        List typePars = javaClass.getTypeParameters();
-//        if (typePars.isEmpty())
-//            return Collections.EMPTY_LIST;
-//        Map nameToType = new HashMap();
-//        for (Iterator iter = typePars.iterator(); iter.hasNext(); ) {
-//            TypeParameter tp = (TypeParameter) iter.next();
-//            nameToType.put(tp.getName(), tp);
-//        }
-//        Set set = new HashSet();
-//        Set redefined = new HashSet();
-//        for (int x = 0; x < members.length; x++) {
-//            findUsedGenericTypes(members[x], set, redefined, nameToType);
-//        }
-//        List result = new ArrayList(set.size());
-//        for (Iterator iter = typePars.iterator(); iter.hasNext(); ) {
-//            TypeParameter tp = (TypeParameter) iter.next();
-//            if (set.contains(tp.getName()))
-//                result.add(tp);
-//        }
-//        return result;
-//    }
-//    
-//    private static void findUsedGenericTypes(Element elem, Set result, Set hidden, Map nameToType) {
-//        if (elem instanceof GenericElement) {
-//            GenericElement gelem = (GenericElement) elem;
-//            List tpList = gelem.getTypeParameters();
-//            if (!tpList.isEmpty()) {
-//                boolean extendedHiddenSetCreated = false;
-//                for (Iterator iter = tpList.iterator(); iter.hasNext(); ) {
-//                    TypeParameter tp = (TypeParameter) iter.next();
-//                    String name = tp.getName();
-//                    if (nameToType.get(name) != null && !hidden.contains(name)) {
-//                        if (!extendedHiddenSetCreated) {
-//                            hidden = new HashSet(hidden);
-//                            extendedHiddenSetCreated = true;
-//                        }
-//                        hidden.add(name);
-//                    }
-//                } // for
-//            } // if
-//        } // if
-//        if (elem instanceof MultipartId) {
-//            MultipartId id = (MultipartId) elem;
-//            if (id.getElement() instanceof TypeParameter) {
-//                String tpName = id.getName();
-//                if (nameToType.get(tpName) != null && !hidden.contains(tpName))
-//                    result.add(tpName);
-//            }
-//        }
-//        for (Iterator iter = elem.getChildren().iterator(); iter.hasNext(); ) {
-//            findUsedGenericTypes((Element) iter.next(), result, hidden, nameToType);
-//        }
-//    }
-//    
-//    // --- REFACTORING ELEMENTS ------------------------------------------------
-//    
-//    private static class CreateIfcElement extends SimpleRefactoringElementImpl {
-//        private final String ifcName;
-//        private final Resource source;
-//        private final String text;
-//        private final List typeParams;
-//        
-//        private JavaClass newIfc = null;
-//        
-//        CreateIfcElement(Resource source, String ifcName, List typeParams) {
-//            this.source = source;
-//            this.ifcName = ifcName;
-//            this.typeParams = typeParams;
-//            this.text = NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "TXT_ExtractInterface_CreateIfc", ifcName); // NOI18N
-//        }
-//
-//        public void performChange() {
-//            ExternalChange ec = new ExternalChange() {
-//                private FileSystem fs;
-//                private String newIfcName;
-//                private String folderName;
-//                
-//                public void performExternalChange() {
-//                    try {
-//                        FileObject tempFO = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Classes/Interface.java"); // NOI18N
-//                        
-//                        FileObject folderFO;
-//                        if (fs == null) {
-//                            FileObject sourceFO = JavaModel.getFileObject(source);
-//                            folderFO = sourceFO.getParent();
-//                            folderName = folderFO.getPath();
-//                            fs = folderFO.getFileSystem();
-//                        } else {
-//                            folderFO = fs.findResource(folderName);
-//                        }
-//                            
-//                        DataFolder folder = (DataFolder) DataObject.find(folderFO);
-//                        DataObject template = DataObject.find(tempFO);
-//                        DataObject newIfcDO = template.createFromTemplate(folder, ifcName);
-//                        UndoWatcher.watch(newIfcDO);
-//                        FileObject newIfcFO = newIfcDO.getPrimaryFile();
-//                        newIfcName = newIfcFO.getPath();
-//                        newIfc = (JavaClass) JavaMetamodel.getManager().getResource(newIfcFO).getClassifiers().iterator().next();
-//                    } catch (DataObjectNotFoundException e) {
-//                        ErrorManager.getDefault().notify(e);
-//                    } catch (IOException e) {
-//                        ErrorManager.getDefault().notify(e);
-//                    }
-//                }
-//                
-//                public void undoExternalChange() {
-//                    try {
-//                        FileObject newIfcFO = fs.findResource(newIfcName);
-//                        DataObject newIfcDO = DataObject.find(newIfcFO);
-//                        newIfcDO.delete();
-//                    } catch (DataObjectNotFoundException e) {
-//                        ErrorManager.getDefault().notify(e);
-//                    } catch (IOException e) {
-//                        ErrorManager.getDefault().notify(e);
-//                    }
-//                }
-//            };
-//            ec.performExternalChange();
-//            JavaMetamodel.getManager().registerUndoElement(ec);
-//            
-//            List ifcTypeParams = newIfc.getTypeParameters();
-//            for (Iterator iter = typeParams.iterator(); iter.hasNext(); ) {
-//                ifcTypeParams.add(((TypeParameter) iter.next()).duplicate());
-//            }
-//        }
-//        
-//        JavaClass getNewInterface() {
-//            return newIfc;
-//        }
-//
-//        public String getText() {
-//            return text;
-//        }
-//
-//        public String getDisplayText() {
-//            return text;
-//        }
-//
-//        public FileObject getParentFile() {
-//            return null;
-//        }
-//
-//        public Element getJavaElement() {
-//            return (Element) source.refImmediateComposite();
-//        }
-//
-//        public PositionBounds getPosition() {
-//            return null;
-//        }
-//    }
-//    
-//    private static class AddImplementsElement extends SimpleRefactoringElementImpl {
-//        private final JavaClass sourceType;
-//        private final String ifcName;
-//        private final List typeParams;
-//        private final String text;
-//        
-//        AddImplementsElement(JavaClass sourceType, String ifcName, List typeParams) {
-//            this.sourceType = sourceType;
-//            this.ifcName = ifcName;
-//            this.typeParams = typeParams;
-//            this.text = NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "TXT_ExtractInterface_AddImplements", ifcName); // NOI18N
-//        }
-//        
-//        public void performChange() {
-//            JavaModelPackage extent = (JavaModelPackage) sourceType.refImmediatePackage();
-//            MultipartIdClass idProxy = extent.getMultipartId();
-//            MultipartId mpi = idProxy.createMultipartId(ifcName, null, null);
-//            if (typeParams != null && typeParams.size() > 0) {
-//                List typeArgs = mpi.getTypeArguments();
-//                for (Iterator iter = typeParams.iterator(); iter.hasNext(); ) {
-//                    typeArgs.add(idProxy.createMultipartId(((TypeParameter) iter.next()).getName(), null, null));
-//                }
-//            }
-//            sourceType.getInterfaceNames().add(mpi);
-//        }
-//
-//        public String getText() {
-//            return text;
-//        }
-//
-//        public String getDisplayText() {
-//            return text;
-//        }
-//
-//        public FileObject getParentFile() {
-//            return JavaMetamodel.getManager().getFileObject(sourceType.getResource());
-//        }
-//
-//        public Element getJavaElement() {
-//            return sourceType;
-//        }
-//
-//        public PositionBounds getPosition() {
-//            return JavaMetamodel.getManager().getElementPosition(sourceType);
-//        }
-//    }
-//    
-//    private static class GenerateMemberElement extends SimpleRefactoringElementImpl {
-//        private final NamedElement elementToGenerate;
-//        private final CreateIfcElement cie;
-//        private final String text;
-//        
-//        GenerateMemberElement(NamedElement elementToGenerate, CreateIfcElement element) {
-//            this.elementToGenerate = elementToGenerate;
-//            this.cie = element;
-//            this.text = NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, getBundleKey(elementToGenerate), UIUtilities.getDisplayText(elementToGenerate));
-//        }
-//        
-//        private static String getBundleKey(NamedElement element) {
-//            if (element instanceof Method) {
-//                Object comp = element.refImmediateComposite();
-//                if (comp instanceof JavaClass && ((JavaClass) comp).isInterface()) {
-//                    return "TXT_ExtractInterface_MoveMethod"; // NOI18N
-//                } else {
-//                    return "TXT_ExtractInterface_Method"; // NOI18N
-//                }
-//            } else if (element instanceof Field) {
-//                return "TXT_ExtractInterface_Field"; // NOI18N
-//            } else if (element instanceof JavaClass) {
-//                return "TXT_ExtractInterface_Class"; // NOI18N
-//            } else if (element instanceof MultipartId) {
-//                return "TXT_ExtractInterface_Implements"; // NOI18N
-//            }
-//            throw new IllegalArgumentException("Wrong type of element: " + element.getClass().getName()); // NOI18N
-//        }
-//
-//        public void performChange() {
-//            if (cie.getNewInterface() == null) return;
-//            
-//            if (elementToGenerate instanceof Method) {
-//                JavaModelPackage extent = (JavaModelPackage) cie.getNewInterface().refImmediatePackage();
-//                Method oldMethod = (Method) elementToGenerate;
-//                Method method = extent.getMethod().createMethod(
-//                        oldMethod.getName(),
-//                        Utilities.duplicateList(oldMethod.getAnnotations(), extent),
-//                        0,
-//                        oldMethod.getJavadocText(),
-//                        null,
-//                        null,
-//                        null,
-//                        Utilities.duplicateList(oldMethod.getTypeParameters(), extent),
-//                        Utilities.duplicateList(oldMethod.getParameters(), extent),
-//                        Utilities.duplicateList(oldMethod.getExceptionNames(), extent),
-//                        (TypeReference) oldMethod.getTypeName().duplicate(),
-//                        oldMethod.getDimCount()
-//                        );
-//                cie.getNewInterface().getFeatures().add(method);
-//                ((MetadataElement) method).fixImports(cie.getNewInterface(), elementToGenerate);
-//                
-//                Object comp = oldMethod.refImmediateComposite();
-//                if (comp instanceof JavaClass) {
-//                    JavaClass jc = (JavaClass)comp;
-//                    if (jc.isInterface()) {
-//                        jc.replaceChild(oldMethod, null);
-//                    }
-//                }
-//            } else {
-//                // remove element from the original type
-//                Element parent = (Element) elementToGenerate.refImmediateComposite();
-//                parent.replaceChild(elementToGenerate, null);
-//                // add the element to the interface
-//                if (elementToGenerate instanceof MultipartId) {
-//                    cie.getNewInterface().getInterfaceNames().add(JavaModelUtil.resolveImportsForClass(cie.getNewInterface(), (JavaClass) ((MultipartId) elementToGenerate).getElement()));
-//                    elementToGenerate.refDelete();
-//                } else {
-//                    Feature feature = (Feature) elementToGenerate;
-//                    feature.setModifiers(feature.getModifiers() & ~(Modifier.FINAL | Modifier.STATIC | Modifier.PUBLIC));
-//                    cie.getNewInterface().getContents().add(elementToGenerate);
-//                    ((MetadataElement) elementToGenerate).fixImports(cie.getNewInterface(), elementToGenerate);
-//                }
-//            }
-//        }
-//
-//        public String getText() {
-//            return text;
-//        }
-//
-//        public String getDisplayText() {
-//            return text;
-//        }
-//
-//        public FileObject getParentFile() {
-//            return JavaMetamodel.getManager().getFileObject(elementToGenerate.getResource());
-//        }
-//
-//        public Element getJavaElement() {
-//            return (Element) JavaModelUtil.getDeclaringFeature(elementToGenerate);
-//        }
-//
-//        public PositionBounds getPosition() {
-//            return JavaMetamodel.getManager().getElementPosition(elementToGenerate);
-//        }
-//    }
-//}
