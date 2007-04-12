@@ -33,7 +33,7 @@ import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.source.save.TreeDiff.LineInsertionType;
+import org.netbeans.modules.java.source.save.CasualDiff.LineInsertionType;
 
 /**
  * Estimates the position for given element or element set. Offsets are

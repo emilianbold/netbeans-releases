@@ -45,10 +45,8 @@ import org.netbeans.modules.java.source.engine.JavaFormatOptions;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.ListMatcher;
-import static org.netbeans.modules.java.source.save.TreeDiff.LineInsertionType.*;
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
-import static org.netbeans.modules.java.source.save.TreeDiff.*;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 public class CasualDiff {
@@ -1887,9 +1885,9 @@ public class CasualDiff {
             copyTo(localPointer, pos, printer);
             printer.print(aHead.toString());
             for (JCTree item : newList) {
-                if (BEFORE == estimator.lineInsertType()) printer.newline();
+                if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
                 printer.printExpr(item);
-                if (AFTER == estimator.lineInsertType()) printer.newline();
+                if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
             }
             printer.print(aTail.toString());
             return pos;
@@ -2682,10 +2680,245 @@ public class CasualDiff {
         public int hashCode() {
             return vars.hashCode();
         }
-
         
     }
     
+    // ---- TreeDiff inner classes - need refactoring.
+    
+    public static enum DiffTypes {
+        /**
+         * The tree has been modified; that is, different versions
+         * of it exist in the old and new parent trees.
+         */
+        MODIFY("modify"), 
+        
+        /**
+         * The tree is an insertion; that is, it exists in the
+         * new tree, but not the old.
+         */
+        INSERT("insert"), 
+        
+        /**
+         * The tree was deleted; which means that it exists in the
+         * old parent tree, but not the new one.
+         */
+        DELETE("delete"), 
+        
+        /**
+         * The comment has been modified; that is, different versions
+         * of it exist in the old and new parent trees.
+         */
+        MODIFY_COMMENT("modify_comment"), 
+        
+        /**
+         * The comment is an insertion; that is, it exists in the
+         * new tree, but not the old.
+         */
+        INSERT_COMMENT("insert_comment"), 
+        
+        /**
+         * The comment was deleted; which means that it exists in the
+         * old parent tree, but not the new one.
+         */
+        DELETE_COMMENT("delete_comment"),
+
+        /**
+         * Offset
+         */
+        INSERT_OFFSET("insert_offset"),
+        DELETE_OFFSET("delete_offset");
+        
+        DiffTypes(String name) {
+            this.name = name;
+        }
+        public final String name;
+    }
+    
+    public static enum LineInsertionType {
+        BEFORE, AFTER, NONE
+    }
+
+    public static class Diff {
+        protected DiffTypes type;
+        int pos;
+        protected JCTree oldTree;
+        protected JCTree newTree;
+        protected LineInsertionType newLine;
+        protected Comment oldComment;
+        protected Comment newComment;
+        protected boolean trailing;
+        protected Name owningClassName;
+        
+        static Diff delete(JCTree oldTree, int pos) {
+            return new Diff(DiffTypes.DELETE, pos, oldTree, null);
+        }
+
+        static Diff insert(JCTree newTree, int pos, LineInsertionType newLine) {
+            return new Diff(DiffTypes.INSERT, pos, null, newTree, newLine);
+        }
+        
+        static Diff insert(JCTree newTree, int pos, LineInsertionType newLine, Name owningClassName) {
+            return new Diff(DiffTypes.INSERT, pos, null, newTree, newLine, null, null, false, owningClassName);
+        }
+        
+        static Diff modify(JCTree oldTree, int oldPos, JCTree newTree) {
+            return new Diff(DiffTypes.MODIFY, oldPos, oldTree, newTree);
+        }
+
+        static Diff delete(JCTree oldTree, JCTree newTree, Comment oldC) {
+            return new Diff(DiffTypes.DELETE_COMMENT, oldC.pos(), oldTree, newTree, LineInsertionType.BEFORE, oldC, null, false, null);
+        }
+
+        static Diff insert(int pos, LineInsertionType newLine, JCTree oldTree, JCTree newTree, Comment newC, boolean trailing) {
+            return new Diff(DiffTypes.INSERT_COMMENT, pos, oldTree, newTree, newLine, null, newC, trailing, null);
+        }
+
+        static Diff modify(JCTree oldTree, JCTree newTree, Comment oldC, Comment newC) {
+            return new Diff(DiffTypes.MODIFY_COMMENT, oldC.pos(), oldTree, newTree, LineInsertionType.NONE, oldC, newC, false, null);
+        }
+        
+        static Diff insert(int pos, String head, JCTree newTree, String tail, LineInsertionType type, Name owningClassName) {
+            return new OffsetDiff(DiffTypes.INSERT_OFFSET, pos, Position.NOPOS /* does not matter */, head, newTree, tail, type, owningClassName);
+        }
+        
+        static Diff insert(int pos, String head, JCTree newTree, String tail, LineInsertionType type) {
+            return new OffsetDiff(DiffTypes.INSERT_OFFSET, pos, Position.NOPOS /* does not matter */, head, newTree, tail, type, null);
+        }
+        
+        static Diff delete(int startOffset, int endOffset) {
+            return new OffsetDiff(DiffTypes.DELETE_OFFSET, startOffset, endOffset, null, null, null, LineInsertionType.NONE, null);
+        }
+        
+        Diff(DiffTypes type, int pos) {
+            this(type, pos, null, null);
+        }
+
+        Diff(DiffTypes type, int pos, JCTree oldTree, JCTree newTree) {
+            this(type, pos, oldTree, newTree, LineInsertionType.NONE, null, null, false, null);
+        }
+
+        Diff(DiffTypes type, int pos, JCTree oldTree, JCTree newTree, LineInsertionType newLine) {
+            this(type, pos, oldTree, newTree, newLine, null, null, false, null);
+        }
+
+        Diff(DiffTypes tape, int pos, JCTree oldTree, JCTree newTree, LineInsertionType newLine,
+             Comment oldComment, Comment newComment, boolean trailing, Name owningClassName) {
+            assert pos >= 0 : "invalid source offset";
+            this.type = tape;
+            this.pos = pos;
+            this.oldTree = oldTree;
+            this.newTree = newTree;
+            this.newLine = newLine;
+            this.oldComment = oldComment;
+            this.newComment = newComment;
+            this.trailing = trailing;
+            this.owningClassName = owningClassName;
+        }
+
+        public JCTree getOld() {
+            return oldTree;
+        }
+
+        public JCTree getNew() {
+            return newTree;
+        }
+        
+        public LineInsertionType needsNewLine() {
+            return newLine;
+        }
+        
+        public int getPos() {
+            return pos;
+        }
+        
+        public Comment getOldComment() {
+            return oldComment;
+        }
+        
+        public Comment getNewComment() {
+            return newComment;
+        }
+        
+        public boolean isTrailingComment() {
+            return trailing;
+        }
+
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Diff))
+                return false;
+            Diff d2 = (Diff)obj;
+            return type != d2.type && 
+                   pos != d2.pos && 
+                   oldTree != d2.oldTree &&
+                   newTree != d2.newTree && 
+                   newLine != d2.newLine && 
+                   oldComment != d2.oldComment && 
+                   newComment != d2.newComment &&
+                   trailing != d2.trailing;
+        }
+
+        public int hashCode() {
+            return type.hashCode() + pos + 
+                   (oldTree != null ? oldTree.hashCode() : 0) +
+                   (newTree != null ? newTree.hashCode() : 0) +
+                   newLine.hashCode() +
+                   (oldComment != null ? oldComment.hashCode() : 0) +
+                   (newComment != null ? newComment.hashCode() : 0) +
+                   Boolean.valueOf(trailing).hashCode();
+        }
+
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            sb.append("tree (");
+            sb.append(type.toString());
+            sb.append(") pos=");
+            sb.append(pos);
+            if (trailing)
+                sb.append(" trailing comment");
+            sb.append("\n");
+
+            if (type == DiffTypes.DELETE || type == DiffTypes.INSERT || type == DiffTypes.MODIFY)
+                addDiffString(sb, oldTree, newTree);
+            else
+                addDiffString(sb, oldComment, newComment);
+            return sb.toString();
+        }
+        
+        private void addDiffString(StringBuffer sb, Object o1, Object o2) {
+            if (o1 != null) {
+                sb.append("< ");
+                sb.append(o1.toString());
+                sb.append((o2 != null) ? "\n---\n> " : "\n");
+            } else
+                sb.append("> ");
+            if (o2 != null) {
+                sb.append(o2.toString());
+                sb.append('\n');
+            }
+        }
+    }
+    
+    public static class OffsetDiff extends Diff {
+        private final String head;
+        private final String tail;
+        private final int endOffset;
+        
+        // todo (#pf): ins type should be removed after all things will be
+        // rewritten to new line separator policy
+        OffsetDiff(DiffTypes type, int startOffset, int endOffset, String head, JCTree newTree, String tail, LineInsertionType insType, Name owningClassName) {
+            super(type, startOffset, null, newTree, insType);
+            this.endOffset = endOffset;
+            this.head = head;
+            this.tail = tail;
+            this.owningClassName = owningClassName;
+        }
+        
+        public int getStartOffset() { return getPos(); }
+        public int getEndOffset()   { return endOffset; }
+        
+        public String getHead() { return head; }
+        String getTail() { return tail; }
+    }
     ////////////////////////////////////////////////////////////////////////////
     
     private static class Line {
