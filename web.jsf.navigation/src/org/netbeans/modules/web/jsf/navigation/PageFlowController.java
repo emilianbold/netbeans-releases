@@ -466,14 +466,15 @@ public class PageFlowController {
                     view.removeEdge(caseNode);
                     
                     String toPage = caseNode.getToViewId();
-                    PageFlowNode pageNode = pageName2Node.get(toPage);
-                    assert pageNode != null;
-                    if( pageNode != null && !isPageInFacesConfig(toPage)){
-                        if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
-                            pageName2Node.remove(pageNode);
-                            view.removeNodeWithEdges(pageNode);
-                            view.validateGraph();
-                            //                                node.destroy(); //only okay because it is an abstract node.
+                    if( toPage != null ) {
+                        PageFlowNode pageNode = pageName2Node.get(toPage);
+                        if( pageNode != null && !isPageInFacesConfig(toPage)){
+                            if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
+                                pageName2Node.remove(pageNode);
+                                view.removeNodeWithEdges(pageNode);
+                                view.validateGraph();
+                                //                                node.destroy(); //only okay because it is an abstract node.
+                            }
                         }
                     }
                 }
@@ -486,15 +487,16 @@ public class PageFlowController {
                 //Because it does not consistantly work, I can't account for reactions.
                 if( myOldRule != null ){
                     String fromPage = navRule2String.remove(myOldRule);
-                    PageFlowNode pageNode = pageName2Node.get(fromPage);
-                    assert pageNode != null;
                     
-                    if( pageNode != null && !isPageInFacesConfig(fromPage)){
-                        if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
-                            pageName2Node.remove(pageNode);
-                            view.removeNodeWithEdges(pageNode);
-                            view.validateGraph();
-                            //                                node.destroy(); //only okay because it is an abstract node.
+                    if( fromPage != null ){
+                        PageFlowNode pageNode = pageName2Node.get(fromPage);
+                        if( pageNode != null && !isPageInFacesConfig(fromPage)){
+                            if( !pageNode.isDataNode() || PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
+                                pageName2Node.remove(pageNode);
+                                view.removeNodeWithEdges(pageNode);
+                                view.validateGraph();
+                                //                                node.destroy(); //only okay because it is an abstract node.
+                            }
                         }
                     }
                 }
