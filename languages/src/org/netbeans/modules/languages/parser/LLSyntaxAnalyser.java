@@ -43,6 +43,7 @@ import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 
@@ -253,26 +254,30 @@ public class LLSyntaxAnalyser {
         if (children.isEmpty ())
             return token;
         TokenInput in = TokenInputUtils.create (children);
-        Language language = LanguagesManager.getDefault ().
-            getLanguage (children.get (0).getMimeType ());
-        ASTNode root = language.getAnalyser ().read (in, skipErrors);
-        Feature astProperties = language.getFeature ("AST");
-        if (astProperties != null) {
-            ASTNode newRoot = (ASTNode) astProperties.getValue (
-                "process", 
-                SyntaxContext.create (null, ASTPath.create (root))
+        try {
+            Language language = LanguagesManager.getDefault ().
+                getLanguage (children.get (0).getMimeType ());
+            ASTNode root = language.getAnalyser ().read (in, skipErrors);
+            Feature astProperties = language.getFeature ("AST");
+            if (astProperties != null) {
+                ASTNode newRoot = (ASTNode) astProperties.getValue (
+                    "process", 
+                    SyntaxContext.create (null, ASTPath.create (root))
+                );
+                if (newRoot != null)
+                    root = newRoot;
+            }
+            return ASTToken.create (
+                token.getMimeType (),
+                token.getType (),
+                token.getIdentifier (),
+                token.getOffset (),
+                token.getLength (),
+                Collections.<ASTItem>singletonList (root)
             );
-            if (newRoot != null)
-                root = newRoot;
+        } catch (LanguageDefinitionNotFoundException ex) {
+            return readNoGrammar (in, skipErrors);
         }
-        return ASTToken.create (
-            token.getMimeType (),
-            token.getType (),
-            token.getIdentifier (),
-            token.getOffset (),
-            token.getLength (),
-            Collections.<ASTItem>singletonList (root)
-        );
     }
     
     private ASTNode readNoGrammar (

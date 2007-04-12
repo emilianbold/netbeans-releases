@@ -50,6 +50,7 @@ import org.openide.ErrorManager;
 import java.util.Iterator;
 import javax.swing.text.JTextComponent;
 import java.util.List;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 
 
 /**
@@ -177,18 +178,18 @@ public class CompletionProviderImpl implements CompletionProvider {
             String mimeType = tokenSequence.language ().mimeType ();
             Feature feature = null;
             String start = null;
+            tokenSequence.move (offset - 1);
+            if (!tokenSequence.moveNext ()) return;
+            Token token = tokenSequence.token ();
+            start = token.text ().toString ();
+            if (tokenSequence.offset () > offset) {
+                // border of embedded language
+                // [HACK] borders should be represented by some tokens!!!
+                return;
+            }
             try {
                 Language language = LanguagesManager.getDefault ().
                     getLanguage (mimeType);
-                tokenSequence.move (offset - 1);
-                if (!tokenSequence.moveNext ()) return;
-                Token token = tokenSequence.token ();
-                start = token.text ().toString ();
-                if (tokenSequence.offset () > offset) {
-                    // border of embedded language
-                    // [HACK] borders should be represented by some tokens!!!
-                    return;
-                }
                 String tokenType = token.id ().name ();
                 feature = language.getFeature (Language.COMPLETION, tokenType);
                 boolean doNotUsePrefix = feature != null && "true".equals(feature.getValue("doNotUsePrefix"));
@@ -203,7 +204,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                 if (f != null)
                     ignoreCase = f.getBoolean ("ignoreCase", false);
                 if (ignoreCase) start = start.toLowerCase ();
-            } catch (ParseException ex) {
+            } catch (LanguageDefinitionNotFoundException ex) {
             }
             if (feature == null)
                 compute (tokenSequence.embedded (), offset, resultSet, doc);
@@ -241,7 +242,9 @@ public class CompletionProviderImpl implements CompletionProvider {
             int offset = component.getCaret ().getDot ();
             ASTPath path = node.findPath (offset - 1);
             if (path == null) return;
-            ASTToken token = (ASTToken) path.getLeaf ();
+            ASTItem item = path.getLeaf ();
+            if (item instanceof ASTNode) return;
+            ASTToken token = (ASTToken) item;
             if (token.getLength () != token.getIdentifier ().length ()) {
                 // [HACK]
                 // something like token.getRealIndex () + 
@@ -267,7 +270,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             //S ystem.out.println("CodeCompletion: (syntax) start=" + start + ": stoken=" + token);
             
             for (int i = path.size () - 1; i >= 0; i--) {
-                ASTItem item = path.get (i);
+                item = path.get (i);
                 try {
                     Language language = LanguagesManager.getDefault ().
                         getLanguage (item.getMimeType ());
