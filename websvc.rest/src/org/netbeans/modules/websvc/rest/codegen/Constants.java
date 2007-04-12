@@ -17,21 +17,27 @@ import javax.lang.model.element.Modifier;
  */
 class Constants {
     
-    public static final String WEB_APPLICATION_EXCEPTION = "com.sun.ws.rest.api.WebApplicationException";
+    public static final String REST_API_PACKAGE = "com.sun.ws.rest.api.";       //NOI18N
     
-    public static final String URI_TEMPLATE = "com.sun.ws.rest.api.UriTemplate";        //NOI18N
+    public static final String WEB_APPLICATION_EXCEPTION = REST_API_PACKAGE + "WebApplicationException";
     
-    public static final String HTTP_METHOD = "com.sun.ws.rest.api.HttpMethod";         //NOI18N
+    public static final String URI_TEMPLATE = REST_API_PACKAGE + "UriTemplate";        //NOI18N
     
-    public static final String PRODUCE_MIME = "com.sun.ws.rest.api.ProduceMime";        //NOI18N
+    public static final String HTTP_METHOD = REST_API_PACKAGE + "HttpMethod";         //NOI18N
     
-    public static final String SUB_RESOURCES = "com.sun.ws.rest.api.SubResources";      //NOI18N
+    public static final String PRODUCE_MIME = REST_API_PACKAGE + "ProduceMime";        //NOI18N
+    
+    public static final String SUB_RESOURCES = REST_API_PACKAGE + "SubResources";      //NOI18N
+ 
+    public static final String CONSUME_MIME = REST_API_PACKAGE + "ConsumeMime";    //NOI18N
+    
+    public static final String URI_PARAM = REST_API_PACKAGE + "UriParam";  //NOI18N
+    
+    public static final String HTTP_RESPONSE = REST_API_PACKAGE + "response.HttpResponse"; //NOI18N
+    
+    public static final String CREATED = REST_API_PACKAGE + "response.Created";     //NOI18N
     
     public static final String RESOURCE = "javax.annotation.Resource";      //NOI18N
-    
-    public static final String CONSUME_MIME = "com.sun.ws.rest.api.ConsumeMime";    //NOI18N
-    
-    public static final String URI_PARAM = "com.sun.ws.rest.api.UriParam";  //NOI18N
     
     public static final String URI_TYPE = "java.net.URI";       //NOI18N
     
@@ -45,7 +51,7 @@ class Constants {
     
     public static final String PERSISTENCE = "javax.persistence.Persistence";
     
-    public static final String ENTITY_TYPE = "com.sun.ws.rest.api.Entity";
+    public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity";
     
     public static final String XML_ROOT_ELEMENT = "javax.xml.bind.annotation.XmlRootElement";             //NOI18N
     
@@ -114,6 +120,7 @@ class Constants {
         PRODUCE_MIME,
         SUB_RESOURCES,
         WEB_APPLICATION_EXCEPTION,
+        CREATED,
         RESOURCE
     };
     
