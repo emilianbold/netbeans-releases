@@ -63,7 +63,6 @@ public class NavigationCaseImpl extends DescriptionGroupImpl implements Navigati
     
     public void setFromOutcome(String fromOutcome) {
         setChildElementText(FROM_OUTCOME, fromOutcome, JSFConfigQNames.FROM_OUTCOME.getQName(getModel().getVersion()));
-        reorderChildren();
     }
 
     protected List<String> getSortedListOfLocalNames(){
