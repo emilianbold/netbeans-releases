@@ -61,6 +61,10 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
         this.id = id;
         this.blockingType = BlockingType.NONE;
     }
+    
+    ProxyAction() {
+        this("","");
+    }
 
     ProxyAction(ProxyAction copy) {
         id = copy.id;
@@ -158,6 +162,10 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
     
     public String getClassname() {
         return classname;
+    }
+    
+    public void setClassname(String classname) {
+        this.classname = classname;
     }
     
     public String toString() {

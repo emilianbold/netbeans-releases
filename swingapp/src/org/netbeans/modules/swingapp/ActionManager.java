@@ -299,6 +299,7 @@ public class ActionManager {
             if (ec == null) {
                 return false;
             }
+            ec.open(); //josh: we fail if the document isn't opened yet. is there a better way to do this?
             Document doc = ec.getDocument();
             int pos;
             if (ec instanceof FormEditorSupport) {

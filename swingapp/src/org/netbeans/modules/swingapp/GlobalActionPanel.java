@@ -262,23 +262,26 @@ public class GlobalActionPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         newActionButton = new javax.swing.JButton();
         editActionButton = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jSplitPane1 = new javax.swing.JSplitPane();
-        jPanel1 = new javax.swing.JPanel();
+        deleteActionButton = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        projectCombo = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
         classCombo = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         filterTextfield = new javax.swing.JTextField();
+        jPanel3 = new javax.swing.JPanel();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        jPanel1 = new javax.swing.JPanel();
         scrollPane = new javax.swing.JScrollPane();
         actionTable = new javax.swing.JTable();
-        jLabel4 = new javax.swing.JLabel();
-        projectCombo = new javax.swing.JComboBox();
         jPanel2 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         boundComponentList = new javax.swing.JList();
+        viewSourceButton = new javax.swing.JButton();
 
         newActionButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.newActionButton.text")); // NOI18N
         newActionButton.addActionListener(new java.awt.event.ActionListener() {
@@ -294,11 +297,18 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             }
         });
 
-        jButton3.setAction(getDeleteAction());
-        jButton3.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.jButton3.text")); // NOI18N
+        deleteActionButton.setAction(getDeleteAction());
+        deleteActionButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.deleteActionButton.text")); // NOI18N
 
-        jSplitPane1.setBorder(null);
-        jSplitPane1.setDividerLocation(500);
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.jLabel4.text")); // NOI18N
+
+        projectCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        projectCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                projectComboActionPerformed(evt);
+            }
+        });
+
         jLabel1.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.jLabel1.text")); // NOI18N
 
         classCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -311,6 +321,11 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         jLabel2.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.jLabel2.text")); // NOI18N
 
         filterTextfield.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.filterTextfield.text")); // NOI18N
+
+        jPanel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        jSplitPane1.setBorder(null);
+        jSplitPane1.setDividerLocation(500);
 
         actionTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -325,46 +340,17 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         ));
         scrollPane.setViewportView(actionTable);
 
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.jLabel4.text")); // NOI18N
-
-        projectCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        projectCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                projectComboActionPerformed(evt);
-            }
-        });
-
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(jLabel4)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(classCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 139, Short.MAX_VALUE)
-                .add(jLabel2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(filterTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
             .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(filterTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2)
-                    .add(classCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1)
-                    .add(jLabel4)
-                    .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
         );
+
         jSplitPane1.setLeftComponent(jPanel1);
 
         jLabel3.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.jLabel3.text")); // NOI18N
@@ -382,40 +368,83 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(jLabel3)
-                .addContainerGap(145, Short.MAX_VALUE))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                .addContainerGap(40, Short.MAX_VALUE))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(jLabel3)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE))
         );
+
         jSplitPane1.setRightComponent(jPanel2);
+
+        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 672, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        viewSourceButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.viewSourceButton.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(newActionButton)
+                .add(jLabel4)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(classCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 321, Short.MAX_VALUE)
+                .add(jLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(filterTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(layout.createSequentialGroup()
+                .add(newActionButton)
+                .add(6, 6, 6)
                 .add(editActionButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton3)
-                .add(455, 455, 455))
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 777, Short.MAX_VALUE)
+                .add(viewSourceButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(deleteActionButton)
+                .addContainerGap(285, Short.MAX_VALUE))
+            .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(classCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1)
+                    .add(jLabel4)
+                    .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(filterTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(newActionButton)
                     .add(editActionButton)
-                    .add(jButton3)))
+                    .add(viewSourceButton)
+                    .add(deleteActionButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -495,7 +524,12 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         // get a file from the project
         FileObject fileInProject =  actionManager.getRoot();
         
-        final CreateNewActionPanel panel = new CreateNewActionPanel(fileInProject);
+        final ActionEditor editor = new ActionEditor(fileInProject, true);//actionManager.getFileForClass(defClassName));
+        //editor.setValue(null);
+        final ActionPropertyEditorPanel panel = (ActionPropertyEditorPanel) editor.getCustomEditor();
+        panel.setMode(ActionPropertyEditorPanel.Mode.NewActionGlobal);
+        
+        //final CreateNewActionPanel panel = new CreateNewActionPanel(fileInProject);
         final DialogDescriptor dd = new DialogDescriptor(panel,"Create New Action");
         dd.setOptions(new String[] {"Cancel","Create"});
         dd.setValue("Create");
@@ -507,17 +541,26 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dd.setButtonListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(dd.getValue().equals("Cancel") || panel.validateFields()) {
+                if(dd.getValue().equals("Cancel") /*|| panel.validateFields()*/) {
                     dialog.setVisible(false);
                 } else {
+                    if(panel.canCreateNewAction()) {
+                        dialog.setVisible(false);
+                        editor.setSourceFile(panel.getSelectedSourceFile());
+                        editor.createNewAction();
+                    } else {
+                        //josh: need to update this to handle all of the things that could
+                        // go wrong
+                        JOptionPane.showMessageDialog(dialog, "Method name cannot be empty");
+                    }
                 }
             }
         });
-        panel.setDialog(dialog);
+        //panel.setDialog(dialog);
         dialog.pack();
         dialog.setVisible(true);
         
-        if(panel.isInputIsValid()) {
+        /*if(panel.isInputIsValid()) {
             ProxyAction act = new ProxyAction(panel.getSelectedClassName(),
                     panel.getMethodText());
             act.setTaskEnabled(panel.isAsynchronous());
@@ -526,7 +569,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             actionManager.createActionMethod(act);
             actionManager.addNewAction(act);
             reloadTable();
-        }
+        }*/
     }//GEN-LAST:event_newActionButtonActionPerformed
     
     private void classComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classComboActionPerformed
@@ -627,20 +670,22 @@ public class GlobalActionPanel extends javax.swing.JPanel {
     private javax.swing.JTable actionTable;
     private javax.swing.JList boundComponentList;
     private javax.swing.JComboBox classCombo;
+    private javax.swing.JButton deleteActionButton;
     private javax.swing.JButton editActionButton;
     private javax.swing.JTextField filterTextfield;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton newActionButton;
     private javax.swing.JComboBox projectCombo;
     private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JButton viewSourceButton;
     // End of variables declaration//GEN-END:variables
     
     private PropertyChangeListener topcompsListener;

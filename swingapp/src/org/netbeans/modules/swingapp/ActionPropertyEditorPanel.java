@@ -28,6 +28,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
@@ -41,6 +42,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.form.FormProperty;
+import org.netbeans.modules.form.editors.ClassPathFileChooser;
 import org.netbeans.modules.form.editors.IconEditor;
 import org.netbeans.modules.swingapp.actions.AcceleratorKeyListener;
 import org.openide.DialogDescriptor;
@@ -74,8 +76,13 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
     private ProxyAction newAction = null;
     private ProxyAction globalAction = null;
     private boolean globalMode = false;
+    private ProxyAction NEW_ACTION = new ProxyAction("-newaction-","-id-");
+    private FileObject selectedSourceFile;
     
     
+    enum Mode { Form, NewActionForm, Global, NewActionGlobal}
+    
+    private Mode mode;
     
     /** Creates new form ActionPropertyEditorPanel */
     public ActionPropertyEditorPanel(final FormProperty property, FileObject sourceFile) {
@@ -85,14 +92,16 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             globalMode = true;
         }
         parsedActions = new HashMap<ProxyAction.Scope, List<ProxyAction>>();
+        
+        /*
         Object[] vals = new Object[] {
             ProxyAction.Scope.Application,
             ProxyAction.Scope.Form };
         DefaultComboBoxModel model = new DefaultComboBoxModel(vals);
         scopeCombo.setModel(model);
-        scopeCombo.setSelectedItem(ProxyAction.Scope.Form);
+        scopeCombo.setSelectedItem(ProxyAction.Scope.Form);*/
         
-        vals = new Object[] {
+        Object[] vals = new Object[] {
             ProxyAction.BlockingType.NONE,
             ProxyAction.BlockingType.ACTION,
             ProxyAction.BlockingType.COMPONENT,
@@ -123,7 +132,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         ((IconButton)iconButtonSmall).setIconText("small");
         iconButtonSmall.addActionListener(new IconButtonListener(property,iconButtonSmall, Action.SMALL_ICON));
         iconButtonLarge.addActionListener(new IconButtonListener(property,iconButtonLarge, LARGE_ICON_KEY));
-        
+        /*
         scopeCombo.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component comp = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
@@ -136,20 +145,76 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                 }
                 return comp;
             }
-        });
+        });*/
         
         actionsCombo.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component comp = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-                ProxyAction act = (ProxyAction)value;
-                ((JLabel)comp).setText(act != null ? act.getId() : "<none>");
+                String text = "<none>";
+                if(value instanceof ProxyAction) {
+                    ProxyAction act = (ProxyAction)value;
+                    if(value == NEW_ACTION) {
+                        text = "Create New Action ...";
+                    } else {
+                        text = act != null ? act.getId() : "<none>";
+                        if(act != null && act.isAppWide()) {
+                            text += " (global)";
+                        }
+                    }
+                }
+                ((JLabel)comp).setText(text);
                 return comp;
             }
         });
         
         setupAccelField();
+        if(globalMode) {
+            this.setMode(Mode.Global);
+        } else {
+            this.setMode(Mode.Form);
+        }
     }
     
+    
+    void setMode(Mode mode) {
+        this.mode = mode;
+        if(mode == Mode.Form) {
+            actionsCombo.setVisible(true);
+            actionsLabel.setVisible(false);
+            classLabel.setVisible(true);
+            classField.setVisible(false);
+            targetClassButton.setVisible(false);
+            methodLabel.setVisible(true);
+            methodField.setVisible(false);
+            backgroundTaskLabel.setVisible(true);
+            backgroundTaskCheckbox.setVisible(false);
+            resetFields();
+        }
+        if(mode == Mode.NewActionForm) {
+            newAction =  new ProxyAction();
+            //classField.getText(), methodField.getText());
+            setNewActionCreated(true);
+            classField.setText(scopeClasses.get(ProxyAction.Scope.Form));
+        }
+        if(mode == Mode.Global) {
+            actionsCombo.setVisible(false);
+            actionsLabel.setVisible(true);
+            classLabel.setVisible(true);
+            classField.setVisible(false);
+            methodLabel.setVisible(true);
+            methodField.setVisible(false);
+            backgroundTaskLabel.setVisible(true);
+            backgroundTaskCheckbox.setVisible(false);
+        }
+        if(mode == Mode.NewActionGlobal) {
+            newAction = new ProxyAction();
+            setNewActionCreated(true);
+            classField.setText("");
+            classLabel.setVisible(false);
+            classField.setVisible(true);
+            targetClassButton.setVisible(true);
+        }
+    }
     
     private void updateFieldsFromAction(final ProxyAction act) {
         if(act == null) {
@@ -183,9 +248,16 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         if(act == null) {
             methodNameField.setText("< none >");
             methodSigLabel.setText(""); // NOI18N
+            methodLabel.setText(""); // NOI18N
+            classLabel.setText(""); // NOI18N
+            backgroundTaskLabel.setText(""); // NOI18N
         } else {
+            actionsLabel.setText(act.getId());
             methodNameField.setText(sig.toString());
             methodSigLabel.setText(act.getClassname()+"."+act.getId()+"()"); // NOI18N
+            methodLabel.setText(sig.toString());
+            classLabel.setText(act.getClassname());
+            backgroundTaskLabel.setText(act.isTaskEnabled() ? "yes" : "no");
         }
 
         smallIconName = (String) act.getValue(Action.SMALL_ICON +".IconName"); // NOTI18N
@@ -246,12 +318,13 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
         componentNameLabel = new javax.swing.JLabel();
         methodSigLabel = new javax.swing.JLabel();
         methodNameField = new javax.swing.JLabel();
-        scopeCombo = new javax.swing.JComboBox();
-        actionsCombo = new javax.swing.JComboBox();
         newActionButton = new javax.swing.JButton();
+        viewSourceButton = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -275,33 +348,46 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         blockingType = new javax.swing.JComboBox();
         blockingDialogTitle = new javax.swing.JTextField();
         blockingDialogText = new javax.swing.JTextField();
-        viewSourceButton = new javax.swing.JButton();
         jLabel16 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        jLabel14 = new javax.swing.JLabel();
+        jLabel17 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        classLabel = new javax.swing.JLabel();
+        classField = new javax.swing.JTextField();
+        targetClassButton = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
+        methodLabel = new javax.swing.JLabel();
+        methodField = new javax.swing.JTextField();
+        jPanel5 = new javax.swing.JPanel();
+        backgroundTaskLabel = new javax.swing.JLabel();
+        backgroundTaskCheckbox = new javax.swing.JCheckBox();
+        jPanel6 = new javax.swing.JPanel();
+        actionsCombo = new javax.swing.JComboBox();
+        actionsLabel = new javax.swing.JLabel();
 
         componentNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         componentNameLabel.setText("fooButton");
+
         methodSigLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         methodSigLabel.setText("main.MainPanel.doStuff()");
+
         methodNameField.setText("methodName");
         methodNameField.setEnabled(false);
 
-        scopeCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Application Wide", "MyTestForm" }));
-        scopeCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                scopeComboActionPerformed(evt);
-            }
-        });
-
-        actionsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "save", "open", "new", "exit", "cut" }));
-        actionsCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                actionsComboActionPerformed(evt);
-            }
-        });
-
         newActionButton.setText("New Action");
 
+        viewSourceButton.setText("View Source");
+        viewSourceButton.setOpaque(false);
+        viewSourceButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                viewSourceButtonActionPerformed(evt);
+            }
+        });
+
         jPanel2.setOpaque(false);
+
         jLabel2.setText("Text:");
 
         textField.setText("Save");
@@ -354,8 +440,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                             .add(org.jdesktop.layout.GroupLayout.LEADING, tooltipField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, textField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
                             .add(jPanel2Layout.createSequentialGroup()
-                                .add(acceleratorText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(acceleratorText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 19, Short.MAX_VALUE)
                                 .add(clearAccelButton)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .addContainerGap())
@@ -381,11 +467,13 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                     .add(jLabel5)
                     .add(iconButtonSmall, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(iconButtonLarge, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(66, Short.MAX_VALUE))
         );
+
         jTabbedPane1.addTab("Basic", jPanel2);
 
         jPanel3.setOpaque(false);
+
         jLabel6.setText("Blocking Dialog Text:");
 
         jLabel3.setText("Blocking Dialog Title:");
@@ -457,19 +545,129 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel6)
                     .add(blockingDialogText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap(74, Short.MAX_VALUE))
         );
+
         jTabbedPane1.addTab("Advanced", jPanel3);
 
-        viewSourceButton.setText("View Source");
-        viewSourceButton.setOpaque(false);
-        viewSourceButton.addActionListener(new java.awt.event.ActionListener() {
+        jLabel16.setText("Action to edit:");
+
+        jLabel9.setText("Class:");
+
+        jLabel12.setText("Method:");
+
+        jLabel14.setText("Background Task:");
+
+        jLabel17.setText("Attributes:");
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        classLabel.setText("package.package.class");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(classLabel, gridBagConstraints);
+
+        classField.setText("jTextField1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(classField, gridBagConstraints);
+
+        targetClassButton.setText("Choose Class");
+        targetClassButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                viewSourceButtonActionPerformed(evt);
+                targetClassButtonActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel1.add(targetClassButton, gridBagConstraints);
 
-        jLabel16.setText("Invoke:");
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
+        methodLabel.setText("Method()");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel4.add(methodLabel, gridBagConstraints);
+
+        methodField.setText("jTextField1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel4.add(methodField, gridBagConstraints);
+
+        jPanel5.setLayout(new java.awt.GridBagLayout());
+
+        backgroundTaskLabel.setText("not selected");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel5.add(backgroundTaskLabel, gridBagConstraints);
+
+        backgroundTaskCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        backgroundTaskCheckbox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        backgroundTaskCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                backgroundTaskCheckboxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel5.add(backgroundTaskCheckbox, gridBagConstraints);
+
+        jPanel6.setLayout(new java.awt.GridBagLayout());
+
+        actionsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "save", "open", "new", "exit", "cut" }));
+        actionsCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                actionsComboActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel6.add(actionsCombo, gridBagConstraints);
+
+        actionsLabel.setText("jLabel10");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel6.add(actionsLabel, gridBagConstraints);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -478,40 +676,73 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel16)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(newActionButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(viewSourceButton))
-                            .add(layout.createSequentialGroup()
-                                .add(scopeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(actionsCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .add(43, 43, 43))))
+                    .add(jLabel14)
+                    .add(jLabel17)
+                    .add(jLabel9)
+                    .add(jLabel12)
+                    .add(jLabel16))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                    .add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                    .add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                    .add(jPanel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 143, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel16)
-                    .add(scopeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(actionsCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(63, 63, 63)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jPanel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel16))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(newActionButton)
-                    .add(viewSourceButton))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel9)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(4, 4, 4)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel12)
+                    .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel14)
+                    .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel17)
+                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void targetClassButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetClassButtonActionPerformed
+
+    ClassPathFileChooser cp = new ClassPathFileChooser(sourceFile, new ClassPathFileChooser.Filter() {
+        public boolean accept(FileObject file) {
+            return true;
+        }
+    },true,true);
+
+    cp.getDialog("Choose a Class", null).setVisible(true);
+    if(cp.getSelectedFile() != null) {
+        selectedSourceFile = cp.getSelectedFile();
+        String selectedClass = AppFrameworkSupport.getClassNameForFile(cp.getSelectedFile());
+        classField.setText(selectedClass);
+        //validate();
+        //SwingUtilities.getWindowAncestor(this).pack();
+    }
+}//GEN-LAST:event_targetClassButtonActionPerformed
+
+private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backgroundTaskCheckboxActionPerformed
+    if(backgroundTaskCheckbox.isVisible()) {
+        blockingType.setEnabled(backgroundTaskCheckbox.isSelected());
+        blockingDialogText.setEnabled(backgroundTaskCheckbox.isSelected());
+        blockingDialogTitle.setEnabled(backgroundTaskCheckbox.isSelected());
+    }
+    // TODO add your handling code here:
+}//GEN-LAST:event_backgroundTaskCheckboxActionPerformed
 
     private void clearAccelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearAccelButtonActionPerformed
         // clear the accelerator because you can't actually use backspace to clear it
@@ -526,24 +757,26 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_viewSourceButtonActionPerformed
     
     private void actionsComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionsComboActionPerformed
-        if(!isChanging) {
-            firePropertyChange("action",null,getSelectedAction()); // NOI18N
+        if(actionsCombo.getSelectedItem() == NEW_ACTION) {
+            setMode(Mode.NewActionForm);
+        } else {
+            if(!isChanging) {
+                firePropertyChange("action",null,getSelectedAction()); // NOI18N
+            }
         }
     }//GEN-LAST:event_actionsComboActionPerformed
-    
-    private void scopeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeComboActionPerformed
-        List<ProxyAction> selectedActions = parsedActions.get(scopeCombo.getSelectedItem());
-        if(selectedActions != null) {
-            actionsCombo.setModel(new DefaultComboBoxModel(selectedActions.toArray()));
-        }
-        if(!isChanging) {
-            firePropertyChange("action",null,getSelectedAction()); // NOI18N
-        }
-    }//GEN-LAST:event_scopeComboActionPerformed
+
     
     void setParsedActions(Map<ProxyAction.Scope, List<ProxyAction>> actionMap) {
         this.parsedActions = actionMap;
-        scopeCombo.setSelectedIndex(0);
+        List<ProxyAction> actions = new ArrayList<ProxyAction>();
+        actions.addAll(parsedActions.get(ProxyAction.Scope.Application));
+        actions.addAll(parsedActions.get(ProxyAction.Scope.Form));
+        actions.add(NEW_ACTION);
+        actionsCombo.setModel(new DefaultComboBoxModel(actions.toArray()));
+        if(!isChanging) {
+            firePropertyChange("action",null,getSelectedAction()); // NOI18N
+        }
     }
     
     // returns the selected action with the properties filled in from the
@@ -581,11 +814,15 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
     }
     
     ProxyAction getNewAction() {
+        //ProxyAction act = new ProxyAction(classField.getText(), methodField.getText());
         ProxyAction act = newAction;
-        act.setId(newMethodName);//methodNameField.getText());
+        act.setClassname(classField.getText());
+        //act.setMethodname(methodField.getText());
+        act.setId(methodField.getText());
         act.putValue(Action.NAME,textField.getText());
         act.putValue(Action.SHORT_DESCRIPTION,tooltipField.getText());
-        act.setTaskEnabled(returnsTask);
+        //act.setTaskEnabled(returnsTask);
+        act.setTaskEnabled(backgroundTaskCheckbox.isSelected());
         
         act.putValue(Action.SMALL_ICON+".IconName",this.smallIconName); // NOI18N
         act.putValue(LARGE_ICON_KEY+".IconName",this.largeIconName); // NOI18N
@@ -614,9 +851,10 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         return (ProxyAction.BlockingType)blockingType.getSelectedItem();
     }
     
+    /*
     ProxyAction.Scope getSelectedScope() {
         return newActionScope;
-    }
+    }*/
     
     ProxyAction getSelectedAction() {
         if(globalMode) {
@@ -650,8 +888,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             }
             setNewActionCreated(false);
             actionsCombo.setEnabled(true);
-            scopeCombo.setEnabled(true);
-            scopeCombo.setSelectedItem(act.getScope());
+            //scopeCombo.setEnabled(true);
+            //scopeCombo.setSelectedItem(act.getScope());
             //set the selection action by finding the right match
             for(int i=0; i<actionsCombo.getModel().getSize(); i++) {
                 Object o = actionsCombo.getModel().getElementAt(i);
@@ -659,6 +897,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                     ProxyAction act2 = (ProxyAction)o;
                     if(act2.getId().equals(act.getId())) {
                         actionsCombo.setSelectedItem(act2);
+                        actionsLabel.setText(act2.getId());
                         break;
                     }
                 }
@@ -674,9 +913,14 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField acceleratorText;
     private javax.swing.JComboBox actionsCombo;
+    private javax.swing.JLabel actionsLabel;
+    private javax.swing.JCheckBox backgroundTaskCheckbox;
+    private javax.swing.JLabel backgroundTaskLabel;
     private javax.swing.JTextField blockingDialogText;
     private javax.swing.JTextField blockingDialogTitle;
     private javax.swing.JComboBox blockingType;
+    private javax.swing.JTextField classField;
+    private javax.swing.JLabel classLabel;
     private javax.swing.JButton clearAccelButton;
     private javax.swing.JLabel componentNameLabel;
     private javax.swing.JTextField enabledTextfield;
@@ -684,7 +928,10 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
     private javax.swing.JButton iconButtonSmall;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -692,14 +939,21 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTextField methodField;
+    private javax.swing.JLabel methodLabel;
     private javax.swing.JLabel methodNameField;
     private javax.swing.JLabel methodSigLabel;
     private javax.swing.JButton newActionButton;
-    private javax.swing.JComboBox scopeCombo;
     private javax.swing.JTextField selectedTextfield;
+    private javax.swing.JButton targetClassButton;
     private javax.swing.JTextField textField;
     private javax.swing.JTextField tooltipField;
     private javax.swing.JButton viewSourceButton;
@@ -736,7 +990,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         selectedTextfield.setEnabled(true);
         enabledTextfield.setEnabled(true);
         actionsCombo.setEnabled(false);
-        scopeCombo.setEnabled(false);
+        //scopeCombo.setEnabled(false);
         viewSourceButton.setEnabled(false);
         textField.setText(""); // NOI18N
         acceleratorText.setText(""); // NOI18N
@@ -747,6 +1001,21 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         iconButtonLarge.setIcon(null);
         // josh: is this next line correct?
         blockingType.setEnabled(false);
+        
+        classLabel.setText("");
+        classLabel.setVisible(false);
+        classField.setText("");
+        classField.setVisible(true);
+        
+        methodLabel.setText("");
+        methodLabel.setVisible(false);
+        methodField.setText("");
+        methodField.setVisible(true);
+        
+        backgroundTaskLabel.setText("");
+        backgroundTaskLabel.setVisible(false);
+        backgroundTaskCheckbox.setSelected(false);
+        backgroundTaskCheckbox.setVisible(true);
     }
     
     public void resetFields() {
@@ -761,13 +1030,14 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         if(newActionCreated) {
             clearFieldsForNewAction();
         } else {
-            scopeCombo.setEnabled(true);
+            //scopeCombo.setEnabled(true);
             blockingType.setEnabled(true);
             actionsCombo.setEnabled(true);
         }
     }
         
     boolean canCreateNewAction() {
+        newMethodName = methodField.getText();
         if(newMethodName == null) {
             return false;
         }
@@ -920,5 +1190,9 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         return this.actionPropertiesUpdated;
     }
     
+    
+    public FileObject getSelectedSourceFile() {
+        return selectedSourceFile;
+    }
 }
 

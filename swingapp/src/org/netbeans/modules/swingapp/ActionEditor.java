@@ -67,13 +67,22 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     private Class componentClass;
     private boolean scannedOnce = false;
     private boolean globalMode = false;
+    private boolean globalCreateMode = false;
     private FileObject sourceFile;
+    private String NEW_ACTION = "Create new action...";
+    private String GLOBAL_SUFFIX = "(global)";
 
     
     /** Creates a new instance of ActionEditor */
     public ActionEditor(FileObject sourceFile) {
         this();
         this.sourceFile = sourceFile;
+    }
+    
+    public ActionEditor(FileObject sourceDir, boolean globalCreate) {
+        this();
+        this.sourceFile = sourceDir;
+        globalCreateMode = globalCreate;
     }
     
     public ActionEditor() {
@@ -128,13 +137,14 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
                 }
             });
         }
-        scanForActions();
-        panel.resetFields();
         FileObject srcFile = getSourceFile();
         Map<ProxyAction.Scope, String> scopeMap = new HashMap<ProxyAction.Scope, String>();
-        scopeMap.put(ProxyAction.Scope.Application,
-                     AppFrameworkSupport.getApplicationClassName(srcFile));
-        scopeMap.put(ProxyAction.Scope.Form, AppFrameworkSupport.getClassNameForFile(srcFile));
+        if(!globalCreateMode) {
+            scanForActions();
+            scopeMap.put(ProxyAction.Scope.Application, AppFrameworkSupport.getApplicationClassName(srcFile));
+            scopeMap.put(ProxyAction.Scope.Form, AppFrameworkSupport.getClassNameForFile(srcFile));
+        }
+        panel.resetFields();
         if (action != null) {
             ActionManager.initActionFromSource(action, sourceFile);
         }
@@ -173,12 +183,26 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
             setValue(null);
             return;
         }
+        if(NEW_ACTION.equals(string)) {
+            openNewActionDialog();
+        }
         
         for(List<ProxyAction> acts : actionMap.values()) {
             for(ProxyAction act : acts) {
-                if(act != null && act.getId().equals(string)) {
-                    setValue(act);
-                    return;
+                if(act != null) {
+                    // check for form scope
+                    if(act.getId().equals(string)) {
+                        setValue(act);
+                        return;
+                    }
+                    // check for global scope
+                    if(string != null && string.endsWith(GLOBAL_SUFFIX) && act.isAppWide()) {
+                        String shortname = string.substring(0, string.length() - GLOBAL_SUFFIX.length());
+                        if(act.getId().equals(shortname)) {
+                            setValue(act);
+                            return;
+                        }
+                    }
                 }
             }
         }
@@ -199,6 +223,9 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         if(!isAppFramework()) {
             super.setValue(object);
             return;
+        }
+        if(NEW_ACTION.equals(object)) {
+            openNewActionDialog();
         }
         if(object instanceof ProxyAction) {
             ProxyAction oldAction = action;
@@ -252,8 +279,9 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         for(ProxyAction act : actions) {
             act.setAppWide(true);
             appActions.add(act);
-            actionNames.add(act.getId());
+            actionNames.add(act.getId() + GLOBAL_SUFFIX);
         }
+        actionNames.add(NEW_ACTION);
     }
 
     /**
@@ -269,6 +297,9 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         return ActionManager.getActionManager(getSourceFile()).getActions(appClassName, true);
     }
 
+    public void setSourceFile(FileObject sourceFile) {
+        this.sourceFile = sourceFile;
+    }
     private FileObject getSourceFile() {
         if (sourceFile == null && formModel != null) {
             sourceFile = FormEditor.getFormDataObject(formModel).getPrimaryFile();
@@ -324,10 +355,6 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     }
 
     void confirmChanges() {
-        if(panel.getSelectedAction() == null) {
-            setValue(null);
-            return;
-        }
 
         // if the user created a new action and assigned it to this component
         if(panel.isNewActionCreated()) {
@@ -335,12 +362,17 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
                 throw new IllegalArgumentException("Method Name cannot be empty");
             }
             ProxyAction act = createNewAction();
-            panel.resetFields();
+            panel.setMode(ActionPropertyEditorPanel.Mode.Form);
             setValue(act);
             scanForActions();
             return;
         }
 
+        if(panel.getSelectedAction() == null) {
+            setValue(null);
+            return;
+        }
+        
         // if the user pressed the view source button
         if(panel.isViewSource()) {
             ProxyAction act = panel.getSelectedAction();
@@ -426,7 +458,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         map.addResourceValue(val);
     }
     
-    private ProxyAction createNewAction() {
+    public ProxyAction createNewAction() {
         //start a transaction
         ProxyAction newAction = panel.getNewAction();
         boolean appWide = newAction.getClassname().equals(
@@ -437,8 +469,13 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         }
         return newAction;
     }
+    
+    private void openNewActionDialog() {
+        System.out.println("open new action dialog");
+    }
 
     private boolean isAppFramework() {
+        if(globalCreateMode) { return true; }
         return AppFrameworkSupport.isFrameworkEnabledProject(getSourceFile());
     }
 
