@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -240,6 +241,10 @@ public final class UpdateUnitProviderImpl {
         List<UpdateUnitProvider> providers = getUpdateUnitProviders (true);
         for (UpdateUnitProvider p : providers) {
             p.refresh (handle, force);
+        }
+        if (force) {
+            // store time of the last check
+            AutoupdateSettings.setLastCheck (new Date ());
         }
         UpdateManagerImpl.getInstance().refresh();
     }

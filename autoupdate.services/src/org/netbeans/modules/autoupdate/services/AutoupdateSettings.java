@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,7 +31,6 @@ import java.util.prefs.Preferences;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -42,6 +42,7 @@ public class AutoupdateSettings {
     private static final Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.services.AutoupdateSettings"); // NOI18N
     private static final String PROP_IDE_IDENTITY = "ideIdentity"; // NOI18N
     private static final String PROP_PERIOD = "period"; // NOI18N
+    private static final String PROP_LAST_CHECK = "lastCheck"; // NOI18N
     
     public static final int EVERY_STARTUP = 0;
     public static final int EVERY_DAY = 1;
@@ -51,24 +52,6 @@ public class AutoupdateSettings {
     public static final int EVERY_NEVER = 5;
     
     private AutoupdateSettings () {
-    }
-    
-    public static void register () {
-        getIdeIdentity ();
-        // schedule refresh providers
-        RequestProcessor.getDefault ().post (new Runnable () {
-            public void run () {
-                scheduleRefreshProviders ();
-            }
-        }, 5000);
-    }
-    
-    private static void scheduleRefreshProviders () {
-        try {
-            UpdateUnitProviderImpl.refreshProviders (null, true);
-        } catch (IOException ioe) {
-            err.log (Level.INFO, ioe.getMessage(), ioe);
-        }
     }
     
     public static String getIdeIdentity () {
@@ -90,12 +73,27 @@ public class AutoupdateSettings {
         return tempIdeIdentity;
     }
     
-    public int getPeriod () {
+    public static int getPeriod () {
         return getPreferences ().getInt (PROP_PERIOD, EVERY_WEEK);
     }
 
-    public void setPeriod (int period) {
+    public static void setPeriod (int period) {
         getPreferences ().putInt (PROP_PERIOD, period);
+    }
+    
+    public static Date getLastCheck() {        
+        long t = getPreferences ().getLong (PROP_LAST_CHECK, -1);
+        return (t > 0) ? new Date (t) : null;
+
+    }
+
+    public static void setLastCheck (Date lastCheck) {
+        err.log (Level.FINER, "Set the last check to " + lastCheck);
+        if (lastCheck != null) {
+            getPreferences().putLong (PROP_LAST_CHECK, lastCheck.getTime ());
+        } else {
+            getPreferences().remove (PROP_LAST_CHECK);
+        }
     }
     
     private static Preferences getPreferences () {
