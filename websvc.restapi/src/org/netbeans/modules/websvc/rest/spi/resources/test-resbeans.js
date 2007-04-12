@@ -1,13 +1,16 @@
 /*
 * Supporting js for testing resource beans
 */
-var doc;            
+var wadlDoc;            
 var app;
 var wadlURL = baseURL+"/application.wadl";  
 var wadlErr = 'Cannot access WADL: Please restart your REST application, and refresh this page.';
 var currentUrl;
 var currentValidUrl;
 var breadCrumbs = new Array();
+var currentContainer;
+var treeHook;
+var myTree;
 
 function getHttpRequest() {
     var xmlHttpReq;
@@ -39,8 +42,8 @@ function getHttpRequest() {
         }
     }
     return xmlHttpReq;
- } 
- function open(method, url, mimeType, paramLen) {
+ }
+ function open(method, url, mimeType, paramLen, async) {
     currentUrl = url;
     var xmlHttpReq = getHttpRequest();
     if(xmlHttpReq == null) {
@@ -53,7 +56,7 @@ function getHttpRequest() {
         //alert("Permission UniversalBrowserRead denied.");
     }
     try {
-        xmlHttpReq.open(method, url, true);
+        xmlHttpReq.open(method, url, async);
     } catch( e ) {
         //alert('Error: XMLHttpRequest.open failed for: '+strURL+' Error name: '+e.name+' Error message: '+e.message);
         return null;
@@ -61,7 +64,7 @@ function getHttpRequest() {
     log("mimeType: "+mimeType);
     if (mimeType != null) {
         if(method == 'GET') {
-            //alert("setting accept: "+mimeType);
+            //alert("setting GET accept: "+mimeType);
             xmlHttpReq.setRequestHeader('Accept', mimeType);
         } else if(method == 'POST' || method == 'PUT'){
             //alert("setting content-type: "+mimeType);
@@ -90,41 +93,9 @@ function updateMenu(xmlHttpReq) {
             //alert("[here]");
             setvisibility('main', 'inherit');
             document.getElementById('subheader').innerHTML = '<br/><b>WADL: </b>'+wadlURL;
-            doc = loadXml(rtext);
-            if(doc != null) {
-                app=doc.documentElement;
-                var myTree = new tree();  
-                var rs;
-                if(app != null) {
-                    rs = app.getElementsByTagName('resources')[0];
-                    var context = rs.attributes.getNamedItem('base').nodeValue;
-                    var begin = context.indexOf('/', 7);
-                    if(begin != -1)
-                        context = context.substring(begin, context.length);
-                    var resources = new category(rs.nodeName, context);
-                    myTree.add(resources);
-                    var rarr = rs.getElementsByTagName('resource');
-                    for(i=0;i<rarr.length;i++) {
-                        var r = rarr[i];   
-                        var path = r.attributes.getNamedItem('path');
-                        var start = new category(path.nodeValue,path.nodeValue);                                        
-                        var methods = r.getElementsByTagName('method');
-                        for(j=0;j<methods.length;j++) {
-                            var m = methods[j];                            
-                            var mName = m.attributes.getNamedItem("name").nodeValue;
-                            var response = m.getElementsByTagName('response');
-                            var mediaType = getMediaType(response);
-                            if(mediaType != null)
-                                mName = mName + '(' + mediaType + ')';
-                            var methodst = new item(mName,'showRightSideBar(\''+app.nodeName+'/'+rs.nodeName+'/'+r.nodeName+'\', '+i+', '+j+')');
-                            start.add(methodst);
-                        }
-                        resources.add(start);
-                    }
-                }                            
-                var treeString = myTree.toString();                            
-                document.getElementById('leftSidebar').innerHTML = treeString;
-                showCategory('resources');
+            wadlDoc = loadXml(rtext);
+            if(wadlDoc != null) {                
+                initTree(wadlDoc);
             }
         } else {
             log("state: "+xmlHttpReq.readyState);
@@ -132,6 +103,63 @@ function updateMenu(xmlHttpReq) {
     } catch( e ) {
         alert('Caught Exception; name: ' + e.name + ' message: ' + e.message);
     }
+}
+function initTree(wadlDoc) {
+    var myTree = createTree(wadlDoc);
+    var treeString = myTree.toString();
+    document.getElementById('leftSidebar').innerHTML = treeString;
+    showCategory('resources');
+}
+function refreshTree(wadlDoc) {
+    var myTree = createTree(wadlDoc);
+    var treeString = myTree.toString();                            
+    document.getElementById('leftSidebar').innerHTML = treeString;
+}
+function createTree(wadlDoc) {
+    var app=wadlDoc.documentElement;
+    var myTree = new tree();
+    var rs;
+    if(app != null) {
+        rs = app.getElementsByTagName('resources')[0];
+        var context = rs.attributes.getNamedItem('base').nodeValue;
+        var begin = context.indexOf('/', 7);
+        if(begin != -1)
+            context = context.substring(begin, context.length);
+        var index = context.indexOf('/', 1);
+        if(context.length > 1 && index != -1)
+            context = context.substring(1, index);
+        var resources = new category(rs.nodeName, context);
+        myTree.add(resources);
+        var rarr = rs.getElementsByTagName('resource');
+        for(i=0;i<rarr.length;i++) {
+            var r = rarr[i];   
+            var path = r.attributes.getNamedItem('path');
+            var cName = path.nodeValue;
+            if(cName != null && cName.indexOf('/') != -1)
+                cName = cName.substring(1);
+            var start = new category(path.nodeValue, cName);
+            var methods = r.getElementsByTagName('method');
+            for(j=0;j<methods.length;j++) {
+                var m = methods[j];                            
+                var mName = m.attributes.getNamedItem("name").nodeValue;
+                var response = m.getElementsByTagName('response');
+                var mediaType = getMediaType(response);
+                if(mediaType != null)
+                    mName = mName + '(' + mediaType + ')';
+                var methodst = createItem(mName,'showContent(\''+app.nodeName+'/'+rs.nodeName+'/'+r.nodeName+'\', '+i+', '+j+')');
+                start.add(methodst);
+                treeHook = start;
+            }
+            resources.add(start);
+        }
+    }
+    return myTree;
+}
+function createCategory(id, name) {
+    return new category(id, name);
+}
+function createItem(name, uri) {
+    return new item(name, uri);
 }
 function getMediaType(response) {
     var mediaType = null;                
@@ -166,42 +194,93 @@ function changeMethod()
         }
     }
     document.getElementById("method").value = method;
+    var paramRep = getParamRep(null, method);
+    document.getElementById("paramHook").innerHTML = paramRep;
+    //alert(formSubmittal.innerHTML);
+    updatepage('result', '');
+    updatepage('resultheaders', '');
 };
-function showRightSideBar2(uri) {
-    updatepage('result', 'Loading...');
-    var mName = 'GET';
+function changeMimeType()
+{
+    var mimeNode = document.getElementById("mimeSel");
+    var mime = mimeNode.options[mimeNode.selectedIndex].value;
+    document.getElementById("mimeType").value = mime;
+};
+function showContent(path, ri, mi) {
+    //updatepage('result', 'Loading...');
+    var app1 = wadlDoc.documentElement;
+    var rs = app1.getElementsByTagName('resources')[0];
+    var r = rs.getElementsByTagName('resource')[ri];
+    var m = r.getElementsByTagName('method')[mi];
+    var mName = m.attributes.getNamedItem("name").nodeValue;
+    var qmName = mName;
+    //var req = m.getElementsByTagName('request');
+    var response = m.getElementsByTagName('response');
+    var mediaType = getMediaType(response);
+    var uri = r.attributes.getNamedItem('path').nodeValue;
+    doShowContent(uri, mName, mediaType);     
+}
+function doShowContent(uri) {
+    doShowContent(uri, getDefaultMethod(), 'text/xml');
+}
+function getDefaultMime() {
+    return "application/xml";
+}
+function getDefaultMethod() {
+    return "GET";
+}
+function doShowContent(uri, mName, mediaType) {
+    updatepage('result', '');
+    updatepage('resultheaders', '');
     var qmName = '';
-    var mediaType = null;
     if(mediaType != null)
         qmName = qmName + "("+mediaType+")";
     else
-        mediaType = "application/x-www-form-urlencoded";
+        mediaType = getDefaultMime();
     showBreadCrumbs(uri);
-    var str = "<b>Resource:</b> <a href='"+uri+"' target='_blank'>"+getDisplayUri(uri)+"</a><br/><br/><b>Method: </b>";
+    var str = "<b>Method: </b>";
     str += "<select id='methodSel' name='methodSel' onchange='javascript:changeMethod();'>";
     str += "  <option selected value='GET'>GET</option>";
     str += "  <option value='PUT'>PUT</option>";
+    str += "  <option value='POST'>POST</option>";
     str += "  <option value='DELETE'>DELETE</option>";
     str += "</select>";
-    str += "<br/><br/><div id='formSubmittal'>";
+    str += "&nbsp;&nbsp;<b>MIME: </b>";
+    str += "<select id='mimeSel' name='mimeSel' onchange='javascript:changeMimeType();'>";
+    str += "  <option value='application/xml'>application/xml</option>";
+    str += "  <option value='text/xml'>text/xml</option>";
+    str += "  <option value='text/plain'>text/plain</option>";
+    str += "  <option value='text/html'>text/html</option>";    
+    str += "</select>";
+    str += "<br/><br/>";
+    str += getFormRep(null, uri, mName, mediaType);
+    document.getElementById('testres').innerHTML = str;
+    var req = uri;
+    var disp = getDisplayUri(req);
+    var uriLink = "<a id='"+req+"' href=javascript:doShowContent('"+req+"') >"+disp+"</a>";
+    updatepage('request', '<b>Resource:</b> '+uriLink+' (<a href="'+req+'" target="_blank">'+req+'</a>)');
+    //alert(str);
+    /*try {
+        testResource();
+    } catch(e) { alert(e.name+e.message);}*/
+}
+function getFormRep(req, uri, mName, mediaType) {
+    if(mName == null || mName == 'undefined')
+        mName = getDefaultMethod();
+    if(mediaType == null || mediaType == 'undefined')
+        mediaType = 'text/xml';
+    //alert(req + uri + mName + mediaType);
+    var str = "<div id='formSubmittal'>";
     str += "<form action='' method="+mName+" name='form1'>";
-    str += getParamRep(null, mName, mediaType);
+    str += "<div id='paramHook'></div>";
+    //str += getParamRep(req, mName);
     str += "<input name='path' value='"+uri+"' type='hidden'>";
-    if(mName != null) {
-        str += "<input id='method' name='method' value='"+mName+"' type='hidden'>";
-    }
-    if(mediaType != null) {
-        str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
-        str += "<b>MimeType:</b> "+mediaType+"<br/>";
-    }
+    str += "<input id='method' name='method' value='"+mName+"' type='hidden'>";
+    str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
     str += "<br/><input value='Test...' type='button' onclick='testResource()'>";
     str += "</form>";
     str += "</div>";
-    document.getElementById('testres').innerHTML = str;
-    //alert(str);
-    try {
-        testResource();
-    } catch(e) { alert(e.name+e.message);}       
+    return str;
 }
 function showBreadCrumbs(uri) {
     var nav = document.getElementById('navigation');
@@ -214,60 +293,25 @@ function showBreadCrumbs(uri) {
     }
     if(count == 0) {
         breadCrumbs[breadCrumbs.length+1] = disp;
-        var uriLink = "<a id='"+uri+"' href=javascript:showRightSideBar2('"+uri+"') >"+disp+"</a>";
-        if(nav.innerHTML != '')
-            nav.innerHTML = nav.innerHTML + " , " + "<b>"+uriLink+"</b>";
-        else
-            nav.innerHTML = "<b>"+uriLink+"</b>";
+        var uriLink = "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+disp+"</a>";
+        if(nav.innerHTML != '') {
+            bcCount++;
+            var uriPerLine = 5;
+            //alert(bcCount);
+            //alert(Math.round(bcCount/uriPerLine)+ ' ' + bcCount/uriPerLine);
+            if(Math.round(bcCount/uriPerLine) == bcCount/uriPerLine)
+                nav.innerHTML = nav.innerHTML + " , <br/>" + uriLink;
+            else
+                nav.innerHTML = nav.innerHTML + " , " + uriLink;
+        } else
+            nav.innerHTML = uriLink;
     }
 }
-function showRightSideBar(path, ri, mi) {
-    updatepage('result', 'Loading...');
-    var app1 = doc.documentElement;
-    var rs = app1.getElementsByTagName('resources')[0];
-    var r = rs.getElementsByTagName('resource')[ri];
-    var m = r.getElementsByTagName('method')[mi];
-    var mName = m.attributes.getNamedItem("name").nodeValue;
-    var qmName = mName;
-    var req = m.getElementsByTagName('request');
-    var response = m.getElementsByTagName('response');
-    var mediaType = getMediaType(response);
-    if(mediaType != null)
-        qmName = qmName + "("+mediaType+")";
-    else
-        mediaType = "application/x-www-form-urlencoded";
-    var uri = r.attributes.getNamedItem('path').nodeValue;
-    showBreadCrumbs(uri);
-    var str = "<b>Resource:</b> <a href='"+uri+"' target='_blank'>"+uri+"</a>&nbsp;&nbsp;&nbsp;<b>Method: </b>";
-    str += "<select id='methodSel' name='methodSel' onchange='javascript:changeMethod();'>";
-    str += "  <option selected value='GET'>GET</option>";
-    str += "  <option value='POST'>POST</option>";
-    str += "</select>";
-    str += "<br/><br/><div id='formSubmittal'>";
-    str += "<form action='' method="+mName+" name='form1'>";
-    str += getParamRep(req, mName, mediaType);
-    var path = r.attributes.getNamedItem('path').nodeValue;
-    str += "<input name='path' value='"+path+"' type='hidden'>";
-    if(mName != null) {
-        str += "<input id='method' name='method' value='"+mName+"' type='hidden'>";
-    }
-    if(mediaType != null) {
-        str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
-        str += "<b>MimeType:</b> "+mediaType+"<br/>";
-    }
-    str += "<br/><input value='Test...' type='button' onclick='testResource()'>";
-    str += "</form>";
-    str += "</div>";
-    document.getElementById('testres').innerHTML = str;
-    try {
-        testResource();
-    } catch(e) { alert(e.name+e.message);}       
-}
-function getParamRep(req, mName, mediaType) {
-    //alert(mName+", "+mediaType+", "+pname);
+var bcCount = 0;
+function getParamRep(req, mName) {
     var str = "";
-    if(req == null || mName == 'PUT' || mName == 'POST')
-        str = "<textarea id='params' name='params' rows='8' cols='70'></textarea><br/>";
+    if(mName == 'PUT' || mName == 'POST')
+        str = "<textarea id='blobParam' name='params' rows='8' cols='70'></textarea><br/>";
     else if(mName == 'GET') {
         if(req != null && req.length > 0) {                    
             for(i=0;i<req.length;i++) {
@@ -281,7 +325,7 @@ function getParamRep(req, mName, mediaType) {
                 }
             }
         } else {
-            str = "<textarea id='params' name='params' rows='8' cols='70'></textarea><br/>";
+            str = "";
         }
     }
     else if(mName == 'DELETE')
@@ -292,7 +336,10 @@ function getParamRep(req, mName, mediaType) {
 }
 function testResource() {
     updatepage('result', '');
-    var params = '';
+    var mimetype = getRep();
+    var method = getMethod();
+    //alert('method: '+method+'mimetype: '+mimetype);
+    var p = '';
     var path = document.forms[0].path.value;
     var found = path.indexOf( "{" );
     if (found != -1){
@@ -309,66 +356,112 @@ function testResource() {
             for(j=0;j<len;j++) {
                 var param = document.forms[0].params[j]
                 if(len == 1 || len-j>1)
-                    params += param.name+"="+param.value;
+                    p += param.name+"="+param.value;
                 else
-                    params += param.name+"="+param.value+"&";
+                    p += param.name+"="+param.value+"&";
             }
         }
+    }
+    var params = null;
+    var paramLength = 0;
+    if(method == 'POST' || method == 'PUT'){
+        var blobParam = document.getElementById('blobParam').value;
+        if(blobParam != null && blobParam != undefined)
+            params = blobParam;
+        else if(p != null && p != undefined)
+            params = p;
+        if(params != null)
+            paramLength = params.length;
+    } else if(method == 'GET' || method == 'DELETE') {
+        paramLength = 0;
     }
     var req;
     if(path.indexOf('http:') != -1)
         req = path;
     else
         req = baseURL+path
-    if(method == 'GET' && params.length > 0)
-        req+= "?"+params;
-    var mimetype = getRep();
-    var method = getMethod();   
-    updatepage('request', '<a href="'+req+'" target="_blank">'+getDisplayUri(req)+'</a>');    
-    //alert("mimetype "+mimetype);
+    if(method == 'GET' && p.length > 0)
+        req+= "?"+p;
+    var disp = getDisplayUri(req);
     if (mimetype == 'image/jpg') {//image
         alert('The image/jpg MimeType currently does not work with the MimeType selection method.\nInstead of seeing the image, you will see the image data');
     } else {
-        var xmlHttpReq4 = open(method, req, mimetype, params.length);
-        var p = null;
-        if(method == 'POST' || method == 'PUT' ) {
-            p = params;
-            updatepage('amimetype', 'Content-Type: '+mimetype);
-        } else if(method == 'GET') {
-            updatepage('amimetype', 'Accept: '+mimetype);
-        } else if(method == 'DELETE') {
-            updatepage('amimetype', 'N/A');
-        }
+        //alert('method: '+method+'mimetype: '+mimetype+' length: '+paramLength+'params: '+params);
+        var xmlHttpReq4 = open(method, req, mimetype, paramLength, true);
         xmlHttpReq4.onreadystatechange = function() { updateContent(xmlHttpReq4); };
-        xmlHttpReq4.send(p);
+        xmlHttpReq4.send(params);
     }
 }
 function createIFrame(currentValidUrl) {
-    var c = '<iframe  class="details" src="'+currentValidUrl+'" width="600" height="300" align="left">'+
+    var c = '<iframe src="'+currentValidUrl+'" width="600" height="300" align="left">'+
             '<p>See <a href="'+currentValidUrl+'">"'+currentValidUrl+'"</a>.</p>'+
         '</iframe>';
     return c;
+}
+function showTableView(flag) {
+    var tableNode = document.getElementById('tableContent').style;
+    var rawNode = document.getElementById('rawContent').style;
+    var tabs1 = document.getElementById('tabs1').style;
+    var tabs2 = document.getElementById('tabs2').style;
+    if(flag == 'true') {
+        tableNode.display="block";
+        rawNode.display="none";
+        tabs1.display="block";
+        tabs2.display="none";
+    } else {
+        tableNode.display="none";
+        rawNode.display="block";
+        tabs2.display="block";
+        tabs1.display="none";
+    }        
 }
 function updateContent(xmlHttpReq) {
     try {
         if (xmlHttpReq.readyState == 4) {
             var content = xmlHttpReq.responseText;
+            var ndx = content.indexOf('HTTP Status');            
+            if(ndx != -1)
+                alert(content.substring(ndx, ndx+16));
+            var ndx2 = content.indexOf('Caused by: java.lang.');
+            if(ndx2 != -1)
+                alert('Server returned error: '+content);
+            //alert('result: ['+content+']');
             if(content != null && content != undefined) {
                 try {
+                    var tableContent = '';
+                    //alert(content);
+                    var cErr = '<table border=1><tr><td width=600>Content may not have Container-Containee Relationship.'+
+                            ' See Raw View for content.</td></tr></table>';
                     if(content.indexOf("<?xml ") != -1) {
-                        content = getContainerTable(content);
-                        updatepage('result', content);
+                        tableContent = getContainerTable(content);
+                        if(tableContent == null || tableContent.length <= 594 || 
+                                tableContent.length == content.length)
+                            tableContent = cErr;
                     } else {
-                        var c = createIFrame(currentValidUrl);
-                        updatepage('result', c);
+                        tableContent = cErr;
                     }
+                    var rawContent = createIFrame(currentValidUrl);
+                    updatepage('result', '<b>Content:</b> '+
+                        '<div id="tabs1">'+'<table class="result"><tr>'+
+                        '<td width=100 class="tbs1"><a href="javascript:showTableView(\'true\')"><span style="color: #ffffff;">Tabular View</span></a></td>'+
+                        '<td width=100 class="tbs2"><a href="javascript:showTableView(\'false\')"><span style="color: #000000;">Raw View</span></a></td></tr></table>'+
+                        '</div>'+
+                        '<div id="tabs2" style="display: none;">'+'<table class="result"><tr>'+
+                        '<td width=100 class="tbs2"><a href="javascript:showTableView(\'true\')"><span style="color: #000000;">Tabular View</span></a></td>'+
+                        '<td width=100 class="tbs1"><a href="javascript:showTableView(\'false\')"><span style="color: #ffffff;">Raw View</span></a></td></tr></table>'+
+                        '</div>'+
+                        '<div id="menu_bottom" class="tbs1 tabsbottom"></div>'+
+                        '<div id="tableContent">'+tableContent+'</div>'+
+                        '<div id="rawContent" style="display: none;">'+rawContent+'</div>');
                 } catch( e ) {
                     //alert('upd err '+e.name+e.mesage);
                     var c = createIFrame(currentValidUrl);
-                    updatepage('result', c);
+                    updatepage('result', '<b>Content:</b> '+c);
                 }  
-            }                 
-            updatepage('resultheaders', xmlHttpReq.getAllResponseHeaders());
+            }
+            //alert(xmlHttpReq.getAllResponseHeaders());
+            var hTable = getHeaderAsTable(xmlHttpReq.getAllResponseHeaders());
+            updatepage('resultheaders', '<b>Response Headers:</b> '+hTable);
         } else {
             log("state: "+xmlHttpReq.readyState);
         }
@@ -376,6 +469,37 @@ function updateContent(xmlHttpReq) {
         alert('Caught Exception; name: ' + e.name + ' message: ' + e.message);
     }
 } 
+function getHeaderAsTable(header) {
+    //alert(header);    
+    var str = "<table class='results' border='1'>";
+    str += "<thead class='resultHeader'>";
+    var colNames = new Array()
+    colNames[0] = "header"
+    colNames[1] = "value"
+    var colSizes = new Array()
+    colSizes[0] = "80"
+    colSizes[1] = "250"
+    for (i=0;i<colNames.length;i++) {
+        str += "<th width='"+colSizes[i]+"' align='left'><font color='#FFFFFF'><b>"+colNames[i]+"</b></font></th>";
+    }
+    str += "</thead>";
+    str += "<tbody>";
+    var rows = header.split('\r\n');
+    if(rows.length == 1)
+        rows = header.split('\n');
+    for(i=0;i<rows.length;i++) {
+        //alert(rows[i]);
+        var index = rows[i].indexOf(':');
+        var name = rows[i].substring(0, index);
+        var val = rows[i].substring(index+1);
+        str += "<tr style='font-size: 9px;'>";
+        str += "<td>"+name+"</td>";
+        str += "<td>"+val+"</td>";
+        str += "</tr>";
+    }
+    str += "</tbody></table>";
+    return str;
+}
 function loadXml(xmlStr) {
     var doc2;
     // code for IE
@@ -389,11 +513,12 @@ function loadXml(xmlStr) {
     else
     {
         var parser=new DOMParser();
-        doc2=parser.parseFromString(xmlStr,"text/xml");
+        doc2=parser.parseFromString(xmlStr,getDefaultMime());
     }
     return doc2;
 }
 function getContainerTable(xmlStr) {
+    //alert(xmlStr);
     var ret = '';  
     if(xmlStr != null)
         ret = xmlStr.replace(/~lt~/g, "<");
@@ -408,56 +533,60 @@ function getContainerTable(xmlStr) {
             var container=doc2.documentElement;
             if(container == null || container.nodeName == 'html')
                 return ret;
-            var str = "<h4>"+container.nodeName+"</h4>";
-            str += "<table class='results' border='1'>";
-            str += "<thead class='resultHeader'>";
             var colNames = new Array()
             colNames[0] = "ID"
             colNames[1] = "URI"
             var colSizes = new Array()
-            colSizes[0] = "80"
-            colSizes[1] = "250"
+            colSizes[0] = "100"
+            colSizes[1] = "500"
+            var str = "<table class='results' border='1'>";
+            str += "<thead class='resultHeader'>";
             for (i=0;i<colNames.length;i++) {
                 str += "<th width='"+colSizes[i]+"' align='left'><font color='#FFFFFF'><b>"+colNames[i]+"</b></font></th>";
             }
             str += "</thead>";
             str += "<tbody id='containerTable'>";
-            var refs = container.childNodes;
-            var count = 0;
-            for(i=0;i<refs.length;i++) {
-                var refsChild = refs[i];
-                if(refsChild.nodeValue == null) {//DOM Elements only
-                    var ref = refsChild;
-                    str += "<tr style='font-size: 9px;'>";                
-                    var refChilds = ref.childNodes;
-                    for(j=0;j<refChilds.length;j++) {
-                        var refChild = refChilds[j];
-                        if(refChild.nodeValue == null) {//DOM Elements only
-                            var id = refChild;
-                            if(ref.attributes != null && ref.attributes.length > 0 && 
-                                    ref.attributes.getNamedItem('uri') != null) {
-                                var uri = ref.attributes.getNamedItem('uri').nodeValue;
-                                str += "<td>"+id.childNodes[0].nodeValue+"</td>";
-                                str += "<td>";
-                                var disp = getDisplayUri(uri);
-                                str += "<a id='"+uri+"' href=javascript:showRightSideBar2('"+uri+"') >"+disp+"</a>";
-                                str += "</td>";
-                                str += "</tr>";
-                            }
-                        }
-                    }
-                    count++;
-                }
-            }
-            var cellnum = document.getElementById('cellnum');
-            cellnum.innerHTML = count;
+            str += findUri(container);
             str += "</tbody></table>";
             ret = str;
         } catch(e) {
-            //alert('err: '+e.name+e.message);
+            alert('err: '+e.name+e.message);
         }
     }
     return ret;
+}
+function findUri(container) {
+    var str = '';
+    var refs = container.childNodes;
+    var count = 0;
+    for(i=0;i<refs.length;i++) {
+        var refsChild = refs[i];
+        if(refsChild.nodeValue == null) {//DOM Elements only
+            var ref = refsChild;
+            str += "<tr style='font-size: 9px;'>";                
+            var refChilds = ref.childNodes;
+            for(j=0;j<refChilds.length;j++) {
+                var refChild = refChilds[j];
+                if(refChild.nodeValue == null) {//DOM Elements only
+                    var id = refChild;
+                    if(ref.attributes != null && ref.attributes.length > 0 && 
+                            ref.attributes.getNamedItem('uri') != null) {
+                        var uri = ref.attributes.getNamedItem('uri').nodeValue;
+                        str += "<td>"+id.childNodes[0].nodeValue+"</td>";
+                        str += "<td>";
+                        var disp = getDisplayUri(uri);
+                        str += "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+disp+"</a>";
+                        str += "&nbsp;&nbsp;(<a href='"+uri+"' target='_blank'>"+uri+"</a>)";
+                        str += "</td>";
+                        str += "</tr>";
+                    }
+                    //findUri(str, ref);
+                }
+            }
+            count++;
+        }
+    }
+    return str;
 }
 function getDisplayUri(uri) {
     var disp = uri;
@@ -469,20 +598,26 @@ function updatepage(id, str){
     document.getElementById(id).innerHTML = str;
 }
 function log(msg) {
-    document.getElementById('log').innerHTML = msg;
+    //document.getElementById('log').innerHTML = msg;
 }
 function getRep() {
     var resource = document.getElementById('mimeType');
-    return resource.value;
+    if(resource != null)
+        return resource.value;
+    else
+        return getDefaultMime();
 }
 function getMethod() {
     var resource = document.getElementById('method');
-    return resource.value;
+    if(resource != null)
+        return resource.value;
+    else
+        return getDefaultMethod();
 }
 function init() {
     var params = new Array();
-    var method = 'GET';
-    var xmlHttpReq = open(method, wadlURL, null, 0);
+    var method = getDefaultMethod();
+    var xmlHttpReq = open(method, wadlURL, null, 0, true);
     if(xmlHttpReq != null) {
         xmlHttpReq.onreadystatechange = function() { updateMenu(xmlHttpReq); };
         xmlHttpReq.send(null);
@@ -504,11 +639,16 @@ var expand = new Image();
 expand.src = "expand.gif";
 var collapse = new Image();
 collapse.src = "collapse.gif";
+var og = new Image();
+og.src = "og.gif";
+var cg = new Image();
+cg.src = "cg.gif";
 
 function tree(){
     this.categories = new Array();
     this.add = addCategory;
     this.toString = getTreeString;
+    this.getCategories = listCategories;
 }
 
 function category(id, text){
@@ -517,6 +657,7 @@ function category(id, text){
     this.write = writeCategory;
     this.add = addItem;
     this.items = new Array();
+    this.getItems = listItems;
 }
 
 function item(text, link){
@@ -537,9 +678,16 @@ function addCategory(category){
     this.categories[this.categories.length] = category;
 }
 
+function listCategories(){
+    return this.categories;
+}
+
 function writeCategory(){
-    var categoryString = '<span class="category" onClick="showCategory(\'' + this.id + '\')"';
-    categoryString += '><img src="collapse.gif" id="I' + this.id + '">' + this.text;
+    var uri = baseURL + this.id;
+    var categoryString = '<span class="category"';
+    categoryString += '><img src="cg.gif" id="I1' + this.id + '" onClick="updateTree(\'' + this.id + '\')">';
+    categoryString += '<img src="collapse.gif" id="I' + this.id + '">';
+    categoryString += "<a href=javascript:doShowContent('"+uri+"') >"+ this.text + "</a>";
     categoryString += '</span>';
     categoryString += '<span class="item" id="';
     categoryString += this.id + '">';
@@ -554,8 +702,13 @@ function addItem(item){
     this.items[this.items.length] = item;
 }
 
+function listItems(){
+    return this.items;
+}
+
 function writeItem(){
-    var itemString = '<a href="#" onClick="' + this.link + '">';
+    var itemString = '<img src="cc.gif" border="0">';
+    itemString += '<a href="#" onClick="' + this.link + '">';
     itemString += '<img src="item.gif" border="0">';
     itemString += this.text;
     itemString += '</a><br>';
@@ -568,13 +721,115 @@ function showCategory(category){
         categoryNode.display="none";
     else
         categoryNode.display="block";
-    changeGesture('I' + category);
+    changeGesture(category);
+}
+
+function updateTree(catId){    
+    var myTree = createTree(wadlDoc);
+    document.getElementById('leftSidebar').innerHTML = myTree.toString();
+    childrenContent = '';
+    getChildren(catId);
+    currentCategory = catId;
+    setTimeout("alertIt()",500);
+}
+
+function alertIt(){
+    var catId = currentCategory;
+    var categoryNode = document.getElementById(catId);
+    categoryNode.innerHTML = childrenContent;
+    showCategory('resources');
+    showCategory(catId);
+}
+
+function getChildren(uri) {
+    var xmlHttpReq5 = open('GET', baseURL+uri, 'text/xml', 0, true);
+    xmlHttpReq5.onreadystatechange = function() { getChildrenContent(xmlHttpReq5); };
+    xmlHttpReq5.send(null);
+}
+
+var childrenContent = '';
+
+function getChildrenContent(xmlHttpReq5) {
+    var content = xmlHttpReq5.responseText;
+    //alert(content);
+    if(content.indexOf('HTTP Status') == -1) {
+        var ret = getChildrenAsItems(content);
+        //alert(ret);
+        if(ret == null)
+            childrenContent = '';
+        else
+            childrenContent = ret;
+    } else {
+        childrenContent = '';
+    }
+}
+
+function getChildrenAsItems(xmlStr) {
+    var ret = null;  
+    if(xmlStr != null)
+        ret = xmlStr.replace(/~lt~/g, "<");
+    else
+        return ret;
+    var doc2 = null;
+    try {
+        doc2 = loadXml(ret);
+    } catch(e) { return null;}
+    if(doc2 != null && doc2.documentElement.nodeName != 'parsererror') {
+        try {
+            var container=doc2.documentElement;
+            if(container == null || container.nodeName == 'html')
+                return ret;
+            var str = "";
+            var refs = container.childNodes;
+            var count = 0;
+            for(i=0;i<refs.length;i++) {
+                var refsChild = refs[i];
+                if(refsChild.nodeValue == null) {//DOM Elements only
+                    var ref = refsChild;             
+                    var refChilds = ref.childNodes;
+                    for(j=0;j<refChilds.length;j++) {
+                        var refChild = refChilds[j];
+                        if(refChild.nodeValue == null) {//DOM Elements only
+                            var id = refChild;
+                            if(ref.attributes != null && ref.attributes.length > 0 && 
+                                    ref.attributes.getNamedItem('uri') != null) {
+                                var uri = ref.attributes.getNamedItem('uri').nodeValue;
+                                var idval = id.childNodes[0].nodeValue;
+                                var disp = getDisplayUri(uri);
+                                str += getItemString(idval, uri);
+                                //str += "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+disp+"</a><br/>";
+                            }
+                        }
+                    }
+                    count++;
+                }
+            }
+            ret = str;
+        } catch(e) {
+            //alert('err: '+e.name+e.message);
+            return null;
+        }
+    }
+    return ret;
+}
+
+function getItemString(name, uri){
+    var itemString = '<img src="cc.gif" border="0">';
+    itemString += '<img src="item.gif" border="0">';
+    itemString += '<a href="javascript:doShowContent(\''+uri+'\')">';
+    itemString += name;
+    itemString += '</a><br>';
+    return itemString;
 }
 
 function changeGesture(img){
-    ImageNode = document.getElementById(img);
-    if(ImageNode.src.indexOf('collapse.gif')>-1)
+    ImageNode = document.getElementById('I' + img);
+    ImageNode1 = document.getElementById('I1' + img);
+    if(ImageNode.src.indexOf('collapse.gif')>-1) {
         ImageNode.src = expand.src;
-    else
+        ImageNode1.src = og.src;
+    } else {
         ImageNode.src = collapse.src;
+        ImageNode1.src = cg.src;
+    }
 }
