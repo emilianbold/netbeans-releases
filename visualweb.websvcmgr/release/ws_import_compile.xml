@@ -3,8 +3,10 @@
     <description>
         A script to wscompile and wsimport WSDL files.
         
-        run-wscompile - Compiles and creates JAX-RPC proxy client
-        run-wsimport - Compiles and creates JAX-WS proxy client
+        run-wscompile - runs the wscompile ant task for the JAX-RPC proxy client
+        client-dt-wscompile - Compiles the client/designtime and creates JAX-RPC jars
+        run-wsimport - runs the wsimport ant task for the JAX-WS proxy client
+        client-dt-wscompile - Compiles the client/designtime and creates JAX-WS jars
         
         Creates the directories ${websvc.home}/${serviceName}/jaxrpc.
         Creates build and src directories.
@@ -22,7 +24,7 @@
         
     </description>
     
-    <target name="createWsJars" depends="run-wscompile, run-wsimport" />
+    <target name="create-wsclasses" depends="run-wscompile, run-wsimport" />
     
     <target name="-init-user">
         <property file="${user.properties.file}"/>
@@ -43,7 +45,9 @@
             debug="true"
             config="${config.file}"
             classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}"/>
-        
+    </target>
+    
+    <target name="client-dt-wscompile" depends="-init-wscompile">
         <jar jarfile="${jxrpc.base}/${serviceName}-src.jar">
             <fileset dir="${jxrpc.base}/src">
                 <patternset includes="**/*.java"/>
@@ -61,12 +65,12 @@
              basedir="${jxrpc.base}/build" />
         
         <delete dir="${jxrpc.base}/build"/>
-        <delete dir="${jxrpc.base}/src"/>
+<!--        <delete dir="${jxrpc.base}/src"/> -->
         
-        <!-- create  wrapper proxy client and the corresponding desgn time jar file -->
+        <!-- create wrapper proxy client and the corresponding design time jar file -->
         <mkdir dir="${jxrpc.base}/dt/build"/>
         
-        <echo level="info">Degintime Classpath - ${designtime.classpath}.</echo>
+        <echo level="info">Designtime Classpath - ${designtime.classpath}.</echo>
         
         <!-- Compile the design time files. designtime.jar and dataprovider.jar need to be in the classpath -->
         <javac srcdir="${jxrpc.base}/dt/src" 
@@ -88,10 +92,8 @@
             </fileset>
         </jar>
         
-        <delete dir="${jxrpc.base}/dt"/>    
-        
+ <!--       <delete dir="${jxrpc.base}/dt"/>    -->
     </target>
-    
     
     <target name="-init-wsimport" depends="-init-user">
         <property name="jaxws.base" value="${websvc.home}/${serviceName}/jaxws"/>
@@ -102,7 +104,7 @@
         </taskdef>
     </target>
     
-    <!-- Currently only JAXRC wrapper proxy client and the corresponding desgn time is created
+    <!-- Currently only JAXRPC wrapper proxy client and the corresponding design time is created
     We need to generate for JAX-WS aslo-->
     
     <target name="run-wsimport" depends="-init-wsimport">
@@ -111,7 +113,9 @@
                   package="${packageName}" 
                   destdir="${jaxws.base}/build" 
                   wsdl="${wsdlFileName}"/>
-        
+    </target>
+    
+    <target name="client-dt-wsimport" depends="-init-wsimport">
         <jar jarfile="${jaxws.base}/${serviceName}-src.jar">
             <fileset dir="${jaxws.base}/src">
                 <patternset includes="**/*.java"/>
@@ -122,23 +126,23 @@
              wsimport doesn't compile it -->
         <javac srcdir="${jaxws.base}/src" 
                destdir="${jaxws.base}/build" 
-               classpath="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}" 
+               classpath="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}:${libs.jsf12-support.classpath}" 
                debug="on" source="1.5" />
         
         <jar jarfile="${jaxws.base}/${serviceName}.jar" 
              basedir="${jaxws.base}/build" />
         
         <delete dir="${jaxws.base}/build"/>
-        <delete dir="${jaxws.base}/src"/>
+        <!-- <delete dir="${jaxws.base}/src"/> -->
         
-        <!-- Create the wrapper proxy client and the corresponding desgn time --> 
+        <!-- Create the wrapper proxy client and the corresponding design time --> 
  
         <mkdir dir="${jaxws.base}/dt/build"/>
         
         <!-- Ccompile the design time files. designtime.jar and dataprovider.jar need to be in the classpath -->
         <javac srcdir="${jaxws.base}/dt/src" 
                destdir="${jaxws.base}/dt/build" 
-               classpath="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}:${jaxws.base}/${serviceName}.jar" 
+               classpath="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}:${jaxws.base}/${serviceName}.jar:${designtime.classpath}" 
                debug="on" 
                source="1.5" />
         
@@ -150,5 +154,10 @@
         <jar jarfile="${jaxws.base}/${serviceName}-dt.jar" 
              basedir="${jaxws.base}/dt/build" />
         
+        <jar jarfile="${jaxws.base}/${serviceName}-dt-src.jar">
+            <fileset dir="${jaxws.base}/dt/src">
+                <patternset includes="**/*.java"/>
+            </fileset>                 
+        </jar>
     </target>
 </project>

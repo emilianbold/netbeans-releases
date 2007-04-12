@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.visualweb.websvcmgr.codegen;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import org.netbeans.modules.visualweb.websvcmgr.model.WebServiceData;
 
 import com.sun.tools.ws.processor.model.Port;
@@ -45,12 +48,8 @@ import org.netbeans.modules.visualweb.xml.rpc.processor.model.Operation;
 */
 
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
-
-import java.io.PrintWriter;
 import java.io.Writer;
-import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -79,11 +78,15 @@ public class WrapperClientWriter extends java.io.PrintWriter {
     int indent = 0;
     
     private Set dataProviders = new HashSet();
+    private List<java.lang.reflect.Method> sortedMethods;
+    boolean isJaxRpc = false;
     
     /** Creates a new instance of JavaWriter */
-    public WrapperClientWriter(Writer writer){
+    public WrapperClientWriter(Writer writer, boolean isJaxRpc, List<java.lang.reflect.Method> sortedMethods){
         super(writer);
         
+        this.sortedMethods = sortedMethods;
+        this.isJaxRpc = isJaxRpc;
         // Always implements java.io.Seriazable
         interfaces.add( "java.io.Serializable" );
     }
@@ -138,9 +141,15 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             }
             println();
         }
-        println("import java.rmi.RemoteException;");
-        println("import javax.xml.rpc.Stub;");
-        println("import javax.xml.rpc.ServiceException;");
+        
+        if (isJaxRpc) {
+            println("import java.rmi.RemoteException;");
+            println("import javax.xml.rpc.Stub;");
+            println("import javax.xml.rpc.ServiceException;");
+        }else if (!isJaxRpc) {
+            println("import javax.xml.ws.BindingProvider;");
+        }
+        
         println("import java.beans.Beans;");
         println();
         
@@ -168,7 +177,11 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         // write the class instance variables.
         
         // write a variable for the service implementation.
-        println("  private " + serviceName + " " + serviceVariable + " = " + "new " + serviceName + "_Impl();");
+        if (isJaxRpc) {
+            println("  private " + serviceName + " " + serviceVariable + " = " + "new " + serviceName + "_Impl();");
+        }else {
+            println("  private " + serviceName + " " + serviceVariable + " = " + "new " + serviceName + "();");
+        }
         
         // write a variable for the port
 
@@ -199,15 +212,22 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         println("  private boolean testMode = false;");
             
         // Write the constructor
-        println("  public " + className + "() {");
-        println("    try {");
-        println("      " + portInterfaceVariable + " = " + serviceVariable + ".get" +portImplName +"();");
-        println("    } catch (ServiceException se) {");
-        println("      se.printStackTrace();" );
-        println("    }");
-
-        println("  }");
-        println();
+        if (isJaxRpc) {
+            println("  public " + className + "() {");
+            println("    try {");
+            println("      " + portInterfaceVariable + " = " + serviceVariable + ".get" +portImplName +"();");
+            println("    } catch (ServiceException se) {");
+            println("      se.printStackTrace();" );
+            println("    }");
+            
+            println("  }");
+            println();
+        }else {
+            println("  public " + className + "() {");
+            println("    " + portInterfaceVariable + " = " + serviceVariable + ".get" +portImplName +"();");
+            println("  }");
+            println();
+        }
 
         // Now the methods
         printOperations(port);
@@ -254,7 +274,15 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             
             JavaMethod method = currentOperation.getJavaMethod();
             println();
-            print("  public " + method.getReturnType().getRealName() + " ");
+            
+            /**
+             *  XXX The return types may differ between JAX-RPC and JAX-WS; since
+             *  the model was created for JAX-WS, an alternate method of discovering
+             *  the return values is used (reflection on the port interface methods)
+             */
+            String methodReturnTypeName = (isJaxRpc) ? getJaxRpcReturnType(method) : method.getReturnType().getRealName();
+            
+            print("  public " + methodReturnTypeName + " ");
             print(method.getName() + "(");
             Iterator params = method. getParametersList().iterator();
             String parameterType = "";
@@ -285,13 +313,15 @@ public class WrapperClientWriter extends java.io.PrintWriter {
              *
              */
 
-            /**
-             * We need a "throws" at least for the RemoteException
-             *
-             */
-            print(" throws ");
-
+            boolean firstException = true;
             while (exceptions.hasNext()) {
+                if (firstException == true) {
+                    firstException = false;
+                    print(" throws ");
+                }else {
+                    print(", ");
+                }
+                                
                 /**
                  * Bugid: 4970323 - The return type of an exceptions is a String not a JavaException.  This
                  * can only be know for sure by reading the current JavaException code since the "JavaMethod.getExceptions()"
@@ -310,17 +340,21 @@ public class WrapperClientWriter extends java.io.PrintWriter {
                 currentException instanceof String &&
                 ((String)currentException).length() > 0) {
                     print((String)currentException);
-                    /**
-                     * always print a "," because we have the RemoteException following.
-                     */
-                    print(", ");
                 }
             }
-            println(" RemoteException { ");
+            
+            // only throw RemoteException in jaxrpc
+            if (isJaxRpc && firstException) {
+                println(" throws RemoteException { ");
+            }else if (isJaxRpc) {
+                println(", RemoteException { ");
+            }else {
+                println(" { ");
+            }
 
-            if(!"void".equals(method.getReturnType().getRealName())){
+            if(!"void".equals(methodReturnTypeName)){
                 println( "      if( Beans.isDesignTime() && !testMode )" );
-                println( "        return " + designTimeReturnValue(method) + ";" );
+                println( "        return " + designTimeReturnValue(methodReturnTypeName) + ";" );
                 println( "      else");
                 print("         return " + portInterfaceVariable + "." + method.getName()+ "(");
             }else{
@@ -369,30 +403,48 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         /**
          * Now print out the methods for setting the Stub properties.
          */
-        // Cast the inteface to Stub
-        String stubVar = "((Stub)" + portInterfaceVariable + ")"; 
+        // Cast the inteface to Stub (jaxrpc)
         
-        println("  public void setUsername(String inUserName) {");
-        println("        " + stubVar + "._setProperty(Stub.USERNAME_PROPERTY, inUserName);");
-        println("  }");
-        println();
-        
-        println("  public void setPassword(String inPassword) {");
-        println("        " + stubVar + "._setProperty(Stub.PASSWORD_PROPERTY, inPassword);");
-        println("  }");
-        println();
-        
-        println("  public void setAddress(String inAddress) {");
-        println("        " + stubVar + "._setProperty(Stub.ENDPOINT_ADDRESS_PROPERTY, inAddress);");
-        println("  }");
-        println();
+        if (isJaxRpc) {
+            String stubVar = "((Stub)" + portInterfaceVariable + ")";
+            
+            println("  public void setUsername(String inUserName) {");
+            println("        " + stubVar + "._setProperty(Stub.USERNAME_PROPERTY, inUserName);");
+            println("  }");
+            println();
+            
+            println("  public void setPassword(String inPassword) {");
+            println("        " + stubVar + "._setProperty(Stub.PASSWORD_PROPERTY, inPassword);");
+            println("  }");
+            println();
+            
+            println("  public void setAddress(String inAddress) {");
+            println("        " + stubVar + "._setProperty(Stub.ENDPOINT_ADDRESS_PROPERTY, inAddress);");
+            println("  }");
+            println();
+        }else {
+            String bindingVar = "((BindingProvider)" + portInterfaceVariable + ")";
+            
+            println("  public void setUsername(String inUserName) {");
+            println("        " + bindingVar + ".getRequestContext().put(BindingProvider.USERNAME_PROPERTY, inUserName);");
+            println("  }");
+            println();
+            
+            println("  public void setPassword(String inPassword) {");
+            println("        " + bindingVar + ".getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, inPassword);");
+            println("  }");
+            println();
+            
+            println("  public void setAddress(String inAddress) {");
+            println("        " + bindingVar + ".getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, inAddress);");
+            println("  }");
+            println();
+        }
     }
     
-    private String designTimeReturnValue( JavaMethod method ) {
+    private String designTimeReturnValue( String returnType ) {
         
         String fakeReturn = "null";
-
-        String returnType = method.getReturnType().getRealName();
 
         // Can be one of the following:
         // int, long, double, float, short, byte
@@ -423,6 +475,76 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         else 
             // return null for all object return type
             return null;
+    }
+    
+    private String getJaxRpcReturnType(JavaMethod method) {
+        String modelMethodName = method.getName();
+        int index = doBinarySearch(sortedMethods, modelMethodName);
+                
+        // search forwards and backwards
+        for (int i = index; i < sortedMethods.size() && i >= 0; i++) {
+            java.lang.reflect.Method nextMethod = sortedMethods.get(i);
+            if (methodsEqual(nextMethod, method)) {
+                return nextMethod.getReturnType().getCanonicalName();
+            }else if (!nextMethod.getName().equals(method.getName())) {
+                break;
+            }
+        }
+        
+        for (int i = index; i >= 0; i--) {
+            java.lang.reflect.Method nextMethod = sortedMethods.get(i);
+            if (methodsEqual(nextMethod, method)) {
+                return nextMethod.getReturnType().getCanonicalName();
+            }else if (!nextMethod.getName().equals(method.getName())) {
+                break;
+            }            
+        }
+        
+        return method.getReturnType().getRealName();
+    }
+    
+    private boolean methodsEqual(java.lang.reflect.Method realMethod, JavaMethod modelMethod) {
+        if (!realMethod.getName().equals(modelMethod.getName())) {
+            return false;
+        }else {
+            List<JavaParameter> modelParams = modelMethod.getParametersList();
+            Class<? extends Object>[] realParams = realMethod.getParameterTypes();
+            
+            if (realParams.length != realParams.length) {
+                return false;
+            }
+            
+            for (int i = 0; i < realParams.length; i++) {
+                String modelNext = modelParams.get(i).getType().getRealName();
+                String realNext = realParams[i].getCanonicalName();
+                
+                if (!modelNext.equals(realNext)) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+    }
+    
+    private static int doBinarySearch(List<java.lang.reflect.Method> methods, String name) {
+        int low = 0;
+        int high = methods.size();
+        
+        while (low < high) {
+            int mid = (low + high) / 2;
+            String nextMethod = methods.get(mid).getName();
+            int compare = nextMethod.compareTo(name);
+            if (compare == 0) {
+                return mid;
+            }else if (compare < 0) {
+                low = mid + 1;
+            }else if (compare > 0) {
+                high = mid;
+            }
+        }
+
+        return -1;
     }
     
     public class Method {

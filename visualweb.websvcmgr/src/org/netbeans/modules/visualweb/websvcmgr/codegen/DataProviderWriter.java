@@ -38,10 +38,12 @@ public class DataProviderWriter extends java.io.PrintWriter {
     
     private DataProviderInfo dataProviderInfo;
     private Set imports = new HashSet();
+    private boolean isJ2EE_15;
     
-    public DataProviderWriter(Writer writer, DataProviderInfo dataProviderInfo ){
+    public DataProviderWriter(Writer writer, DataProviderInfo dataProviderInfo, boolean isJ2EE_15 ){
         super(writer);
         this.dataProviderInfo = dataProviderInfo;
+        this.isJ2EE_15 = isJ2EE_15;
     }
     
     public void addImport(String importLine){
@@ -69,6 +71,8 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println( "import com.sun.data.provider.*;" );
         println( "import com.sun.data.provider.impl.*;" );
         println( "import java.lang.reflect.Method;" );
+        println( "import java.lang.reflect.ParameterizedType;" );
+        println( "import java.lang.reflect.Type;" );
         println( "import java.beans.*;" );
         println( "import java.util.ArrayList;" );
         println();
@@ -122,8 +126,27 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println( "        super.setDataClassInstance( " + clientWrapperClassVar + ");" );
         // Call super.setDataMethod() - need to the method name and parameter class types
         println( "        try { " );
-        println( "            super.setDataMethod( " + clientWrapperClassName + ".class.getMethod(" );
-        println( "                \"" + dataProviderInfo.getJavaMethod().getName() + "\", new Class[] {" + getMethodParamTypes() + "} ) );" );
+        println( "            java.lang.reflect.Method dataMethod = " + clientWrapperClassName + ".class.getMethod(" );
+        println( "                \"" + dataProviderInfo.getJavaMethod().getName() + "\", new Class[] {" + getMethodParamTypes() + "} );" );
+        println( "            super.setDataMethod( dataMethod );" );
+        
+        
+        // Call super.setCollectionElementType(Class) - needed to generate correct FieldKeys for List<T> return types (only for JAX-WS)
+        if (isJ2EE_15) {
+            println( "            Class returnClass = dataMethod.getReturnType();");
+            println( "            if (java.util.Collection.class.isAssignableFrom(returnClass)) {" );
+            println( "                Type returnType = dataMethod.getGenericReturnType();" );
+            println( "                if (returnType instanceof ParameterizedType) { " );
+            println( "                    ParameterizedType paramType = (ParameterizedType)returnType;" );
+            println( "                    Type[] actualTypes = paramType.getActualTypeArguments();" );
+            println( "                    if (actualTypes.length == 1 && actualTypes[0] instanceof Class) { " );
+            println( "                        super.setCollectionElementType((Class)actualTypes[0]);" );
+            println( "                    }" );
+            println( "                }" );
+            println( "            }");
+        }
+        
+        
         println( "        } catch( java.lang.NoSuchMethodException ne ) { " );
         println( "            ne.printStackTrace();" );
         println( "        }");

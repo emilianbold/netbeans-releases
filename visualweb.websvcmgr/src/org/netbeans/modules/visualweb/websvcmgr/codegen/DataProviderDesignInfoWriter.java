@@ -266,6 +266,10 @@ public class DataProviderDesignInfoWriter extends java.io.PrintWriter {
         println();
         println( "            return Result.SUCCESS;" );
         println( "        }" );
+        println();
+        println("         public DisplayAction[] getContextItems(DesignBean designBean) {");
+        println("             return new DisplayAction[0];");
+        println("         }" );
         println( "    }" );
     }
 
