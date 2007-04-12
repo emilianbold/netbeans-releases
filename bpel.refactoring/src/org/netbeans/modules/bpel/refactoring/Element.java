@@ -19,6 +19,7 @@
 package org.netbeans.modules.bpel.refactoring;
 
 import javax.swing.Icon;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
@@ -87,7 +88,9 @@ final class Element
     return myComponent;
   }
 
-  public void showPreview() {}
+  public void showPreview() {
+     UI.setComponentForRefactoringPreview(null);
+  }
   public void performChange() {}
 
   private Component myComponent;

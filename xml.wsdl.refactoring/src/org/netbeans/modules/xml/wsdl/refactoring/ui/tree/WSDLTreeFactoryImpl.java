@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.xml.wsdl.refactoring.ui.tree;
 
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
@@ -32,6 +34,8 @@ import org.openide.filesystems.FileObject;
  * @author Sonali Kochar
  */
 public class WSDLTreeFactoryImpl implements TreeElementFactoryImplementation {
+    
+  public Map<Object, TreeElement> map = new WeakHashMap();
 
    public static WSDLTreeFactoryImpl instance;
     {
@@ -39,7 +43,10 @@ public class WSDLTreeFactoryImpl implements TreeElementFactoryImplementation {
     }
     
     public TreeElement getTreeElement(Object o) {
-        TreeElement result = null;
+        TreeElement result = map.get(o);
+        if(result != null)
+            return result;
+                
         if (o instanceof RefactoringElement) {
             Component u = ((RefactoringElement)o).getLookup().lookup(Component.class);
             if (u!=null && u instanceof WSDLComponent) {
@@ -49,10 +56,13 @@ public class WSDLTreeFactoryImpl implements TreeElementFactoryImplementation {
             result = new WSDLTreeElement((WSDLComponent)o);
         }
         
+        if(result != null)
+            map.put(o, result);
+        
         return result;
     }
 
     public void cleanUp() {
-              
+              map.clear();
     }
 }

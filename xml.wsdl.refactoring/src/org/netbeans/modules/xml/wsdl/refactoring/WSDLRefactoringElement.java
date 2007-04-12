@@ -14,6 +14,7 @@ import javax.swing.Action;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
@@ -84,7 +85,7 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
     }
   
      public void showPreview() {
-        //UI.setComponentForRefactoringPreview(null);
+        UI.setComponentForRefactoringPreview(null);
      }
      
    

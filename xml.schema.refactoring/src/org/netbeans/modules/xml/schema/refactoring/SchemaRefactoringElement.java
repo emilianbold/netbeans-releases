@@ -59,7 +59,7 @@ public class SchemaRefactoringElement  extends SimpleRefactoringElementImplement
     }
 
     public void showPreview() {
-        //UI.setComponentForRefactoringPreview(null);
+        UI.setComponentForRefactoringPreview(null);
      }
     
       
@@ -81,7 +81,7 @@ public class SchemaRefactoringElement  extends SimpleRefactoringElementImplement
     
          
      public void openInEditor(){
-         System.out.println("XMLRefactoringElement:: openInEditor called");
+         //System.out.println("XMLRefactoringElement:: openInEditor called");
          Action preferredAction = SystemAction.get(ShowSourceAction.class);
          String command = (String)preferredAction.getValue(Action.ACTION_COMMAND_KEY);
 	 ActionEvent ae = new ActionEvent(node, 0, command);
