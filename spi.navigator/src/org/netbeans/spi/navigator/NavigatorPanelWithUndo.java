@@ -29,6 +29,8 @@ import org.openide.awt.UndoRedo;
  *
  * Implementors of this interface, also registered in layer,
  * will be plugged into Navigator UI.
+ * 
+ * @since 1.5
  *
  * @author Dafe Simonek
  */
