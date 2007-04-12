@@ -32,8 +32,18 @@ import org.openide.filesystems.*;
  * @author Jaroslav Tulach
  */
 final class Copy extends Object {
+     private FileObject sourceRoot;
+     private FileObject targetRoot;
+     private Set thoseToCopy;
+     private PathTransformation transformation;
 
-
+     private Copy(FileObject source, FileObject target, Set thoseToCopy, PathTransformation transformation) {
+         this.sourceRoot = source;
+         this.targetRoot = target;
+         this.thoseToCopy = thoseToCopy;
+         this.transformation = transformation;
+     }
+     
     /** Does a selective copy of one source tree to another.
      * @param source file object to copy from
      * @param target file object to copy to
@@ -43,54 +53,69 @@ final class Copy extends Object {
      */
     public static void copyDeep (FileObject source, FileObject target, Set thoseToCopy) 
     throws IOException {
-        copyDeep (source, target, thoseToCopy, null);
+        copyDeep(source, target, thoseToCopy, null);
     }
     
-    private static void copyDeep ( 
-        FileObject source, FileObject target, Set thoseToCopy, String prefix
-    ) throws IOException {
-        FileObject src = prefix == null ? source : FileUtil.createFolder (source, prefix);
-        
-        FileObject[] arr = src.getChildren();
-        for (int i = 0; i < arr.length; i++) {
-            String fullname;
-            if (prefix == null) {
-                fullname = arr[i].getNameExt ();
-            } else {
-                fullname = prefix + "/" + arr[i].getNameExt ();
-            }
-            if (arr[i].isData ()) {
-                if (!thoseToCopy.contains (fullname)) {
-                    continue;
+    public static void copyDeep (FileObject source, FileObject target, Set thoseToCopy, PathTransformation transformation) 
+    throws IOException {
+        Copy instance = new Copy(source, target, thoseToCopy, transformation);
+        instance.copyFolder (instance.sourceRoot);
+    }
+    
+    
+    private void copyFolder (FileObject sourceFolder) throws IOException {        
+        FileObject[] srcChildren = sourceFolder.getChildren();        
+        for (int i = 0; i < srcChildren.length; i++) {
+            FileObject child = srcChildren[i];
+            if (child.isFolder()) {
+                copyFolder (child);
+                if (thoseToCopy.contains (child.getPath()) && child.getAttributes ().hasMoreElements ()) {                    
+                    copyFolderAttributes(child);
                 }
+            } else {                
+                if (thoseToCopy.contains (child.getPath())) {
+                    copyFile(child);                    
+                }                
             }
-
-            
-            if (arr[i].isFolder()) {
-                copyDeep (source, target, thoseToCopy, fullname);
-                if (thoseToCopy.contains (fullname) && arr[i].getAttributes ().hasMoreElements ()) {
-                    FileObject tg = FileUtil.createFolder (target, fullname);
-                    FileUtil.copyAttributes (arr[i], tg);
-                }
-            } else {
-                FileObject folder = prefix == null ? target : FileUtil.createFolder (target, prefix);
-                FileObject tg = folder.getFileObject (arr[i].getNameExt ());
-                try {
-                    if (tg == null) {
-                        // copy the file otherwise keep old content
-                        tg = FileUtil.copyFile (arr[i], folder, arr[i].getName(), arr[i].getExt ());
-                    }
-                } catch (IOException ex) {
-                    if (arr[i].getNameExt().endsWith("_hidden")) {
-                        continue;
-                    }
-                    throw ex;
-                }
-                FileUtil.copyAttributes (arr[i], tg);
-            }
+        }                
+    }
+    
+    private void copyFolderAttributes(FileObject sourceFolder) throws IOException {
+        FileObject targetFolder = FileUtil.createFolder (targetRoot, sourceFolder.getPath());
+        if (sourceFolder.getAttributes ().hasMoreElements ()) {
+            FileUtil.copyAttributes(sourceFolder, targetFolder);
         }
-        
-        
+    }    
+    
+    private void copyFile(FileObject sourceFile) throws IOException {        
+        String targetPath = (transformation != null) ? transformation.transformPath(sourceFile.getPath()) : sourceFile.getPath();
+        boolean isTransformed = !targetPath.equals(sourceFile.getPath());
+        FileObject tg = targetRoot.getFileObject(targetPath);
+        try {
+            if (tg == null) {
+                // copy the file otherwise keep old content
+                FileObject targetFolder = null;
+                String name = null, ext = null;
+                if (isTransformed) {
+                    FileObject targetFile = FileUtil.createData(targetRoot, targetPath);                
+                    targetFolder = targetFile.getParent();
+                    name = targetFile.getName();
+                    ext = targetFile.getExt();                                        
+                    targetFile.delete();                    
+                } else {
+                    targetFolder = FileUtil.createFolder(targetRoot, sourceFile.getParent().getPath());
+                    name = sourceFile.getName();
+                    ext = sourceFile.getExt();                    
+                }                
+                tg = FileUtil.copyFile(sourceFile, targetFolder, name, ext);
+            }
+        } catch (IOException ex) {
+            if (sourceFile.getNameExt().endsWith("_hidden")) {
+                return;
+            }
+            throw ex;
+        }
+        FileUtil.copyAttributes(sourceFile, tg);        
     }
     
     public static void appendSelectedLines(File sourceFile, File targetFolder, String[] regexForSelection)

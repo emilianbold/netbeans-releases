@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.upgrade;
+import java.beans.PropertyVetoException;
 import java.io.*;
 import java.io.File;
 import java.io.IOException;
@@ -50,12 +51,14 @@ public final class AutoUpgrade {
 
     public static void main (String[] args) throws Exception {
         String[] version = new String[1];
-        File sourceFolder = checkPrevious (version);
+        File sourceFolder = checkPrevious (version, VERSION_TO_CHECK);
         if (sourceFolder != null) {
             if (!showUpgradeDialog (sourceFolder)) {
                 throw new org.openide.util.UserCancelException ();
             }
             doUpgrade (sourceFolder, version[0]);
+            //support for non standard configuration files
+            doNonStandardUpgrade(sourceFolder, version[0]);
             //#75324 NBplatform settings are not imported
             upgradeBuildProperties(sourceFolder, version);
             //migrates SystemOptions, converts them as a Preferences
@@ -65,9 +68,13 @@ public final class AutoUpgrade {
 
     //#75324 NBplatform settings are not imported
     private static void upgradeBuildProperties(final File sourceFolder, final String[] version) throws  IOException {
-        try {
-            float f = Float.parseFloat(version[0]);
-            if (f >= 5.0) {
+        try {   
+            //TODO: review and implement less version specific
+            if (version[0].startsWith("2_")) {//CREATOR
+                File userdir = new File(System.getProperty("netbeans.user", ""));//NOI18N
+                Copy.appendSelectedLines(new File(sourceFolder,"build.properties"), //NOI18N
+                        userdir,new String[] {".*"});                
+            } else if (Float.parseFloat(version[0]) >= 5.0 ) {//NOI18N
                 File userdir = new File(System.getProperty("netbeans.user", ""));//NOI18N
                 String[] regexForSelection = new String[] {
                     "^nbplatform[.](?!default[.]netbeans[.]dest[.]dir).+[.].+=.+$"//NOI18N
@@ -82,19 +89,16 @@ public final class AutoUpgrade {
     
     // the order of VERSION_TO_CHECK here defines the precedence of imports
     // the first one will be choosen for import
-    final static private List VERSION_TO_CHECK = Arrays.asList (new String[] { ".netbeans/5.5",".netbeans/5.0" });
-    
-    static private File checkPrevious (String[] version) {
-        boolean exists;
-        
+    final static private List VERSION_TO_CHECK = 
+            Arrays.asList (new String[] { ".netbeans/5.5",".netbeans/5.0",".Creator/2_1",".Creator/2_0" });//NOI18N
+            
+    static private File checkPrevious (String[] version, final List versionsToCheck) {        
         String userHome = System.getProperty ("user.home"); // NOI18N
         File sourceFolder = null;
         
         if (userHome != null) {
             File userHomeFile = new File (userHome);
-            exists = userHomeFile.isDirectory ();
-
-            Iterator it = VERSION_TO_CHECK.iterator ();
+            Iterator it = versionsToCheck.iterator ();
             String ver;
             while (it.hasNext () && sourceFolder == null) {
                 ver = (String) it.next ();
@@ -160,21 +164,52 @@ public final class AutoUpgrade {
             XMLFileSystem xmlfs = null;
             try {
                 URL url = AutoUpgrade.class.getResource("layer" + oldVersion + ".xml"); // NOI18N
-                xmlfs = new XMLFileSystem(url);
+                xmlfs = (url != null) ? new XMLFileSystem(url) : null;
             } catch (SAXException ex) {
                 IOException e = new IOException ("Cannot import from version: " + oldVersion); // NOI18N
                 e.initCause (ex);
                 throw e;
             }
             
-            old = createLayeredSystem(lfs, xmlfs);
+            old = (xmlfs != null) ? createLayeredSystem(lfs, xmlfs) : lfs;
         }
         org.openide.filesystems.FileSystem mine = Repository.getDefault ().
             getDefaultFileSystem ();
         
-        Copy.copyDeep (old.getRoot (), mine.getRoot (), includeExclude);
+        Copy.copyDeep (old.getRoot (), mine.getRoot (), includeExclude, PathTransformation.getInstance(oldVersion));
         
     }
+    
+    /* copy-pasted method doUpgrade and slightly modified to copy files relative
+     * to userdir.
+     */
+    private static void doNonStandardUpgrade (File source,String oldVersion) 
+            throws IOException, PropertyVetoException {
+        File userdir = new File(System.getProperty("netbeans.user", "")); // NOI18N        
+        java.util.Set includeExclude;
+        try {
+            InputStream is = AutoUpgrade.class.getResourceAsStream("nonstandard" + oldVersion);
+            if (is == null) return;
+            Reader r = new InputStreamReader(is, "utf-8"); // NOI18N
+            includeExclude = IncludeExclude.create(r);
+            r.close();
+        } catch (IOException ex) {
+            IOException e = new IOException("Cannot import from version: " +  oldVersion + "nonstandard");
+            e.initCause(ex);
+            throw e;
+        }        
+        ErrorManager.getDefault ().log (ErrorManager.USER, "Import: Old version: " // NOI18N
+            + oldVersion + "nonstandard"  + ". Importing from " + source + " to " + userdir // NOI18N
+        );        
+        
+        LocalFileSystem  old = new LocalFileSystem();
+        old.setRootDirectory(source);
+        
+        LocalFileSystem nfs = new LocalFileSystem();
+        nfs.setRootDirectory(userdir);                
+        Copy.copyDeep(old.getRoot(), nfs.getRoot(), includeExclude, PathTransformation.getInstance(oldVersion));
+    }    
+    
 
     static MultiFileSystem createLayeredSystem(final LocalFileSystem lfs, final XMLFileSystem xmlfs) {
         MultiFileSystem old;
