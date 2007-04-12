@@ -29,7 +29,9 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-yaml">
-                <file name="language.nbs" url="YAML.nbs"/>
+                <file name="language.nbs" url="YAML.nbs">
+                    <attr name="icon" stringvalue="org/netbeans/modules/languages/yaml/yaml_files_16.png"/>
+                </file>
             </folder>
         </folder>
     </folder>
@@ -40,6 +42,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.yaml.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/yaml/EmptyHamlFileDescription.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/yaml/yaml_files_16.png"/>
             </file>
         </folder>
     </folder>
