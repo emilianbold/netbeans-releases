@@ -46,6 +46,10 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import java.lang.*;
 import java.lang.Object;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 /**
  *
  * @author joelle
@@ -165,33 +169,68 @@ public class MapActionUtility {
                         }
                     }
                     
+                    
+                    Queue<Node> deleteNodesList = new LinkedList<Node>();
                     /* When deleting multiple objects, make sure delete all the links first. */
                     for( Object selectedObj : selectedObjects ){
                         if( objScene.isEdge(selectedObj) ){
-                            delete((Node)selectedObj);
+                            deleteNodesList.add((Node)selectedObj);
                         }
                     }
                     /* The deleted links should not be selected anymore */
                     selectedObjects = new HashSet<Object>(objScene.getSelectedObjects());
                     for( Object selectedObj : selectedObjects ){
                         if( selectedObj instanceof Node ) {
-                            delete((Node)selectedObj);
+                            deleteNodesList.add((Node)selectedObj);
                         }
                     }
+                    delete(deleteNodesList);
                 }
             }
         }
         
-        private void delete( Node node ){
-            if ( node.canDestroy() ){
-                try                 {
-                    node.destroy();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+        public Queue<Node> myDeleteNodes;
+        private void delete( Queue<Node> deleteNodes ){
+            myDeleteNodes = deleteNodes;
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        //This should walk through in order.
+                        for( Node deleteNode : myDeleteNodes ){
+                            if( deleteNode.canDestroy() ){
+                                deleteNode.destroy();
+                            }
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
+            });
+        }
+        
+        
+        public Node myNode;
+        private void delete( Node node ){
+            myNode = node;
+            if ( node.canDestroy() ){
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            myNode.destroy();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+                
             }
         }
     };
+    
+    
+    
+    
+    
     
     /**
      *
@@ -239,27 +278,52 @@ public class MapActionUtility {
                 }
             }
             
+            //            Queue<Node> deleteNodesList  new LinkedList<Node>();
+            Queue<Node> deleteNodesList = new LinkedList<Node>();
             /* When deleting multiple objects, make sure delete all the links first. */
             for( Object selectedObj : selectedObjects ){
                 if( scene.isEdge(selectedObj) ){
-                    delete((Node)selectedObj);
+                    deleteNodesList.add((Node)selectedObj);
+                    //                    delete((Node)selectedObj);
                 }
             }
             /* The deleted links should not be selected anymore */
             selectedObjects = new HashSet<Object>(scene.getSelectedObjects());
             for( Object selectedObj : selectedObjects ){
                 if( selectedObj instanceof Node ) {
-                    delete((Node)selectedObj);
+                    deleteNodesList.add((Node)selectedObj);
+                    //                    delete((Node)selectedObj);
                 }
             }
+            delete(deleteNodesList);
             
         }
+        
+        public Queue<Node> myDeleteNodes;
+        private void delete( Queue<Node> deleteNodes ){
+            myDeleteNodes = deleteNodes;
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        //This should walk through in order.
+                        for( Node deleteNode : myDeleteNodes ){
+                            if( deleteNode.canDestroy() ){
+                                deleteNode.destroy();
+                            }
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        }
+        
         
         public Node myNode;
         private void delete( Node node ){
             myNode = node;
-            if ( node.canDestroy() ){                
-                EventQueue.invokeLater(new Runnable() {     
+            if ( node.canDestroy() ){
+                EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         try {
                             myNode.destroy();
