@@ -60,6 +60,7 @@ import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.impl.ActionsList;
+import org.netbeans.modules.editor.impl.SearchBar;
 import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
@@ -164,7 +165,9 @@ public class NbEditorKit extends ExtKit {
                                        new NbGenerateGoToPopupAction(),
                                        new GenerateFoldPopupAction(),
                                        new NavigationHistoryBackAction(),
-                                       new NavigationHistoryForwardAction()
+                                       new NavigationHistoryForwardAction(),
+                                       new SearchBar.IncrementalSearchForwardAction(),
+                                       new SearchBar.IncrementalSearchBackwardAction(),
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }

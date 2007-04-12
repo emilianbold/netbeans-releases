@@ -187,6 +187,11 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="SideBar">
             <file name="org-netbeans-editor-GlyphGutter.instance"/>
+            <file name="org-netbeans-modules-editor-impl-SearchBar$Factory.instance">
+                <attr name="position" stringvalue="South"/>
+                <attr name="scrollable" boolvalue="false"/>
+            </file>
+            <attr name="org-netbeans-modules-editor-impl-SearchBar$Factory.instance/org-netbeans-editor-StatusBar$StatusBarFactory.instance" boolvalue="true"/>
             <file name="org-netbeans-editor-StatusBar$StatusBarFactory.instance">
                 <attr name="position" stringvalue="South" />
                 <attr name="scrollable" boolvalue="false" />
