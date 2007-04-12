@@ -11,7 +11,9 @@ package Templates.Classes;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import javax.persistence.Query;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,8 +22,8 @@ import java.util.Map;
  * @author __USER__
  */
 public class PersistenceService {
-    private static String DEFAULT_PU = "RESTDBApp5PU";    
-    private static PersistenceService defaultService = new PersistenceService(DEFAULT_PU); 
+    private static String DEFAULT_PU = "RESTDBApp5PU";
+    private static PersistenceService defaultService = new PersistenceService(DEFAULT_PU);
     private EntityManagerFactory emf;
     private Map<Thread, EntityManager> emMap;
     
@@ -46,11 +48,62 @@ public class PersistenceService {
         return em;
     }
     
-    public synchronized void releaseEntityManager() {
+    public synchronized void releaseResources() {
         EntityManager em = emMap.remove(Thread.currentThread());
         
         if (em != null) {
             em.close();
+        }
+    }
+    
+    public void refreshEntity(Object entity) {
+        EntityManager em = getEntityManager();
+        
+        em.flush();
+        em.refresh(entity);
+    }
+    
+    public void mergeEntity(Object entity) {
+        getEntityManager().merge(entity);
+    }
+    
+    public void persistEntity(Object entity) {
+        getEntityManager().persist(entity);
+    }
+    
+    public void removeEntity(Object entity) {
+        getEntityManager().remove(entity);
+    }
+    
+    public Query createNamedQuery(String query) {
+        return getEntityManager().createNamedQuery(query);
+    }
+    
+    public Query createQuery(String query) {
+        return getEntityManager().createQuery(query);
+    }
+    
+    public void beginTx() {
+        EntityTransaction tx = getEntityManager().getTransaction();
+        
+        if (!tx.isActive()) {
+            tx.begin();
+        }
+    }
+    
+    public void commitTx() {
+        EntityTransaction tx = getEntityManager().getTransaction();
+        
+        if (tx.isActive()) {
+            tx.commit();
+        }
+    }
+    
+    public void rollbackTx() {
+        EntityTransaction tx = getEntityManager().getTransaction();
+        
+        if (tx.isActive()) {
+            tx.rollback();
         }
     }
     
