@@ -147,7 +147,7 @@ public class JavaSourceHelper {
                     } else {
                         
                     }
-                   
+                    
                 }
             }, true);
         } catch (IOException ex) {
@@ -231,14 +231,14 @@ public class JavaSourceHelper {
                 if (decl.getKind() != Tree.Kind.CLASS) {
                     continue;
                 }
-
+                
                 ClassTree classTree = (ClassTree) decl;
-
+                
                 if (classTree.getSimpleName().contentEquals(className) &&
                         classTree.getModifiers().getFlags().contains(Modifier.PUBLIC))
                     return classTree;
             }
-        } 
+        }
         return null;
     }
     
@@ -302,7 +302,7 @@ public class JavaSourceHelper {
             } else {
                 attrTrees = Collections.<ExpressionTree>emptyList();
             }
-    
+            
             AnnotationTree newAnnotation = maker.Annotation(
                     maker.Identifier(annotations[i]),
                     attrTrees);
@@ -363,7 +363,7 @@ public class JavaSourceHelper {
         ModifiersTree modifiersTree = createModifiersTree(copy, modifiers, null, null);
         ModifiersTree paramModTree = maker.Modifiers(Collections.<Modifier>emptySet());
         List<VariableTree> paramTrees = new ArrayList<VariableTree>();
-
+        
         if (parameters != null) {
             for (int i = 0; i < parameters.length; i++) {
                 paramTrees.add(maker.Variable(paramModTree,
@@ -383,6 +383,7 @@ public class JavaSourceHelper {
             Modifier[] modifiers, String[] annotations, Object[] annotationAttrs,
             String name, Object returnType,
             String[] parameters, Object[] paramTypes,
+            String[] paramAnnotations, Object[] paramAnnotationAttrs,
             String bodyText) {
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifiersTree = createModifiersTree(copy, modifiers,
@@ -390,12 +391,22 @@ public class JavaSourceHelper {
         
         Tree returnTypeTree = createTypeTree(copy, returnType);
         
-        ModifiersTree paramModTree = maker.Modifiers(
-                Collections.<Modifier>emptySet());
         List<VariableTree> paramTrees = new ArrayList<VariableTree>();
         
         if (parameters != null) {
             for (int i = 0; i < parameters.length; i++) {
+                ModifiersTree paramModTree = maker.Modifiers(Collections.<Modifier>emptySet());
+                
+                if (paramAnnotations != null) {
+                    String annotation = paramAnnotations[i];
+                    Object annotationAttr = paramAnnotationAttrs[i];
+                    
+                    if (annotation != null) {
+                        paramModTree = createModifiersTree(copy, new Modifier[]{},
+                                new String[] {annotation}, new Object[] {annotationAttr});
+                    } 
+                }
+                
                 paramTrees.add(maker.Variable(paramModTree,
                         parameters[i], createTypeTree(copy, paramTypes[i]), null));
             }
@@ -431,7 +442,7 @@ public class JavaSourceHelper {
             return (Tree) type;
         }
     }
-   
+    
     public static Tree createIdentifierTree(WorkingCopy copy, String value) {
         return copy.getTreeMaker().Identifier(value);
     }
@@ -475,6 +486,7 @@ public class JavaSourceHelper {
             
             for (int i = 0; i < annotations.length; i++) {
                 String annotation = annotations[i];
+                
                 List<ExpressionTree> expressionTrees = Collections.<ExpressionTree>emptyList();
                 
                 if (annotationAttrs != null) {

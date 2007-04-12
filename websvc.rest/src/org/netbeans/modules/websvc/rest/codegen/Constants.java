@@ -65,6 +65,8 @@ class Constants {
     
     public static final String URI_TEMPLATE_ANNOTATION = "UriTemplate"; //NOI18N
     
+    public static final String URI_PARAM_ANNOTATION = "UriParam";       //NOI18N
+    
     public static final String HTTP_METHOD_ANNOTATION = "HttpMethod";   //NOI18N
     
     public static final String PRODUCE_MIME_ANNOTATION = "ProduceMime"; //NOI18N
@@ -113,6 +115,7 @@ class Constants {
     
     public static final String[] ITEM_IMPORTS = {
         URI_TEMPLATE,
+        URI_PARAM,
         HTTP_METHOD,
         PRODUCE_MIME,
         WEB_APPLICATION_EXCEPTION,
