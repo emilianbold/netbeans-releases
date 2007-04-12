@@ -477,13 +477,6 @@ public abstract class WizardComponent {
         /**
          * {@inheritDoc}
          */
-        public boolean hasTitle() {
-            return true;
-        }
-        
-        /**
-         * {@inheritDoc}
-         */
         public String getTitle() {
             return component.getProperty(TITLE_PROPERTY);
         }

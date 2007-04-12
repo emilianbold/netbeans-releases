@@ -98,10 +98,10 @@ public class TextPanel extends WizardPanel {
             
             initComponents();
         }
-        
+
         @Override
-        public boolean hasTitle() {
-            return false;
+        public String getTitle() {
+            return null; // text panels do not have a title
         }
         
         @Override
