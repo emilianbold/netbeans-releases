@@ -25,9 +25,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <xsl:template match="/" >
         <atom:feed>
+            <atom:id>urn:netbeans-org:changes</atom:id>
             <atom:title>NetBeans API Changes</atom:title>
             <atom:author><atom:name>netbeans.org</atom:name></atom:author>
             <atom:link rel="alternate" type="text/html" href="apichanges.html"/>
+            <atom:link rel="self" type="application/xml+atom" href="http://deadlock.nbextras.org/hudson/job/javadoc-nbms/javadoc/apichanges.atom"/>
             <atom:updated><xsl:value-of select="$date"/></atom:updated>
             <xsl:apply-templates select="//change">
                 <xsl:sort data-type="number" order="descending" select="date/@year"/>
@@ -39,12 +41,12 @@ Microsystems, Inc. All Rights Reserved.
 
     <xsl:template match="change">
         <atom:entry>
-            <xsl:if test="@id"><atom:id>urn:netbeans.org:<xsl:value-of select="@id"/></atom:id></xsl:if>
+            <xsl:if test="@id"><atom:id>urn:netbeans-org:changes:<xsl:value-of select="@id"/></atom:id></xsl:if>
             <atom:title type="xhtml"><xhtml:div>[<xsl:value-of select="translate(substring-before(@url,'/'), '-', '.')"/>] <xsl:apply-templates select="summary/node()" mode="xhtmlify"/></xhtml:div></atom:title>
             <!-- XXX is the relative URL legal? -->
             <atom:link rel="alternate" type="text/html"><xsl:attribute name="href"><xsl:value-of select="$url-prefix"/><xsl:value-of select="@url"/>#<xsl:value-of select="@id"/></xsl:attribute></atom:link>
-            <xsl:if test="date"><atom:published><xsl:value-of select="date/@year"/>-<xsl:if test="string-length(date/@month) = 1">0</xsl:if><xsl:value-of select="date/@month"/>-<xsl:if test="string-length(date/@day) = 1">0</xsl:if><xsl:value-of select="date/@day"/>T00:00:00Z</atom:published></xsl:if>
-            <xsl:if test="author"><atom:author><atom:email><xsl:value-of select="author/@login"/>@netbeans.org</atom:email></atom:author></xsl:if>
+            <xsl:if test="date"><atom:updated><xsl:value-of select="date/@year"/>-<xsl:if test="string-length(date/@month) = 1">0</xsl:if><xsl:value-of select="date/@month"/>-<xsl:if test="string-length(date/@day) = 1">0</xsl:if><xsl:value-of select="date/@day"/>T00:00:00Z</atom:updated></xsl:if>
+            <xsl:if test="author"><atom:author><atom:name><xsl:value-of select="author/@login"/></atom:name><atom:email><xsl:value-of select="author/@login"/>@netbeans.org</atom:email></atom:author></xsl:if>
             <atom:summary type="xhtml"><xhtml:div><xsl:apply-templates select="description" mode="xhtmlify"/></xhtml:div></atom:summary>
         </atom:entry>
     </xsl:template>
