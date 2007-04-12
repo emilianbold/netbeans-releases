@@ -27,7 +27,8 @@
                 <attr name="SystemFileSystem.icon"
                       urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
--->           
+-->            
+            <file name="UriResolver.java" url="nbres:/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template"/>
         </folder>
     </folder>
     

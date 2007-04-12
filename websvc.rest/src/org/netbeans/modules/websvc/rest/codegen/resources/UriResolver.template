@@ -1,0 +1,61 @@
+/*
+ * UriResolver.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.Classes;
+
+import com.sun.ws.rest.api.WebApplicationException;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+import javax.xml.bind.JAXBContext;
+
+/**
+ *
+ * @author __USER__
+ */
+public class UriResolver {
+    private static boolean inProgress = false;
+    
+    /** Creates a new instance of UriResolver */
+    public UriResolver() {
+    }
+    
+    public synchronized static <T> T resolve(Class<T> type, URI uri) {
+        System.out.println("resolve uri = " + uri);
+        
+        if (inProgress) {
+            System.out.println("skipping");
+            return null;
+        }
+        
+        inProgress = true;
+           
+        try {
+            URL url = uri.toURL();
+            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+            conn.setRequestMethod("GET");
+            
+            int status = conn.getResponseCode();
+            System.out.println("status = " + status);
+            String mediaType = conn.getContentType();
+            
+            JAXBContext context = JAXBContext.newInstance(type);
+            Object obj = context.createUnmarshaller().unmarshal(conn.getInputStream());
+            
+            System.out.println("obj = " + obj);
+        
+            return (T) obj;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new WebApplicationException(ex);
+        } finally {
+            inProgress = false;
+        }
+    }
+}
