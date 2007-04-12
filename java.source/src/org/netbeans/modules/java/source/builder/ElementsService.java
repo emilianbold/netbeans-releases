@@ -45,7 +45,6 @@ import static javax.lang.model.element.ElementKind.*;
  */
 public class ElementsService {
     private com.sun.tools.javac.code.Types jctypes;
-    private ASTService model;
     private Name.Table names;
     private Types types;
     private VariableCharacterization vcCache;
@@ -66,7 +65,6 @@ public class ElementsService {
     protected ElementsService(Context context) {
         context.put(KEY, this);
         jctypes = com.sun.tools.javac.code.Types.instance(context);
-        model = ASTService.instance(context);
         names = Name.Table.instance(context);
         types = TypesService.instance(context);
         trees = JavacTrees.instance(context);
