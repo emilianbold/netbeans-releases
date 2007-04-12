@@ -126,7 +126,8 @@ public abstract class OperationWizardModel {
     // XXX Hack in WizardDescriptor
     public void modifyOptionsForStartWizard (WizardDescriptor wd) {
         removeFinish (wd);
-        Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("InstallUnitWizardModel_Buttons_Next"));
+        Mnemonics.setLocalizedText (getOriginalNext (wd), NbBundle.getMessage (InstallUnitWizardModel.class,
+                "InstallUnitWizardModel_Buttons_MnemonicNext", getBundle ("InstallUnitWizardModel_Buttons_Next")));
     }
     
     // XXX Hack in WizardDescriptor
