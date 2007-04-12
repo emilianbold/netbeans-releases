@@ -336,7 +336,7 @@ public final class  MarkupServiceImpl {
             RaveRenderedText dstText = (RaveRenderedText)dst;
 //            srcText.source = null;
 //            dstText.source = srcText;
-            dstText.setSource(srcText);
+            dstText.linkToSourceText(srcText);
         }
         
         NodeList srcChildren = src.getChildNodes();
@@ -570,7 +570,7 @@ public final class  MarkupServiceImpl {
         if (node instanceof RaveSourceElement) {
             return ((RaveSourceElement)node).getRenderedElement();
         } else if (node instanceof RaveSourceText) {
-            return ((RaveSourceText)node).getRendered();
+            return ((RaveSourceText)node).getRenderedText();
         } else if (node instanceof RaveRenderedElement
         || node instanceof RaveRenderedText) { // XXX
             return node;
@@ -591,7 +591,7 @@ public final class  MarkupServiceImpl {
         if (node instanceof RaveRenderedElement) {
             return ((RaveRenderedElement)node).getSourceElement();
         } else if (node instanceof RaveRenderedText) {
-            return ((RaveRenderedText)node).getSource();
+            return ((RaveRenderedText)node).getSourceText();
         } else if (node instanceof RaveSourceElement
         || node instanceof RaveSourceText) { // XXX
             return node;
@@ -637,7 +637,7 @@ public final class  MarkupServiceImpl {
 //            return ((RaveText)text).getRendered();
 //        }
         if (text instanceof RaveSourceText) {
-            return ((RaveSourceText)text).getRendered();
+            return ((RaveSourceText)text).getRenderedText();
         } else if (text instanceof RaveRenderedText) { // XXX
             return text;
         }
@@ -649,7 +649,7 @@ public final class  MarkupServiceImpl {
 //            return ((RaveText)text).getSource();
 //        }
         if (text instanceof RaveRenderedText) {
-            return ((RaveRenderedText)text).getSource();
+            return ((RaveRenderedText)text).getSourceText();
         } else if (text instanceof RaveSourceText) { // XXX
             return text;
         }
@@ -661,7 +661,7 @@ public final class  MarkupServiceImpl {
 //            ((RaveText)text).setSource((RaveText)sourceText);
 //        }
         if (text instanceof RaveRenderedText) {
-            ((RaveRenderedText)text).setSource((RaveSourceText)sourceText);
+            ((RaveRenderedText)text).linkToSourceText((RaveSourceText)sourceText);
         }
     }
     
