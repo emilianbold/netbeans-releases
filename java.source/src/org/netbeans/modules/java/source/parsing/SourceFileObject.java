@@ -340,18 +340,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
             } finally {
                 in.close();
             }
-            int j=0;
-            for (int i=0; i<red;i++) {
-                if (result[0][i] =='\r') {                                          //NOI18N
-                    if (i+1>=red || result[0][i+1]!='\n') {                         //NOI18N
-                        result[0][j++] = '\n';                                      //NOI18N
-                    }
-                }
-                else {
-                    result[0][j++] = result[0][i];
-                }
-            }
-            length[0] = j;
+            length[0] = red;
         }
         else {            
             doc.render(new Runnable() {

@@ -1320,6 +1320,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 Document doc = ec.getDocument();                
                 if (doc != null) {
                     doc.addDocumentListener(docListener = WeakListeners.create(DocumentListener.class, this, doc));
+                    resetState(true, false);
                 }
             }
         }

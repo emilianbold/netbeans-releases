@@ -134,6 +134,8 @@ public class JavaSourceTest extends NbTestCase {
 
     public static Test suite() {
         TestSuite suite = new NbTestSuite(JavaSourceTest.class);        
+//        TestSuite suite = new NbTestSuite ();
+//        suite.addTest(new JavaSourceTest("testJavaSourceIsReclaimable"));
         return suite;
     }
     
@@ -143,6 +145,10 @@ public class JavaSourceTest extends NbTestCase {
         ClassPath bootPath = createBootPath ();
         ClassPath compilePath = createCompilePath ();        
         JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
+        DataObject dobj = DataObject.find(test);
+        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
+        final StyledDocument doc = ec.openDocument();
+        Thread.sleep(500);
         CountDownLatch[] latches1 = new CountDownLatch[] {
             new CountDownLatch (1),
             new CountDownLatch (1)
@@ -157,11 +163,7 @@ public class JavaSourceTest extends NbTestCase {
         js.addPhaseCompletionTask (task1,Phase.RESOLVED,Priority.HIGH);
         js.addPhaseCompletionTask(task2,Phase.PARSED,Priority.LOW);
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches1[0], latches2[0]}, 15000)); 
-        assertEquals ("Called more times than expected",2,counter.getAndSet(0));
-        
-        DataObject dobj = DataObject.find(test);
-        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
-        final StyledDocument doc = ec.openDocument();
+        assertEquals ("Called more times than expected",2,counter.getAndSet(0));        
         Thread.sleep(500);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
         NbDocument.runAtomic (doc,
             new Runnable () {
@@ -211,6 +213,10 @@ public class JavaSourceTest extends NbTestCase {
         ClassPath compilePath = createCompilePath ();
         JavaSource js1 = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), testFile1);
         JavaSource js2 = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), testFile2);
+        DataObject dobj = DataObject.find(testFile1);
+        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
+        final StyledDocument doc = ec.openDocument();
+        Thread.sleep(500);
         CountDownLatch[] latches1 = new CountDownLatch[] {
             new CountDownLatch (1),
             new CountDownLatch (1),
@@ -233,10 +239,7 @@ public class JavaSourceTest extends NbTestCase {
             assertTrue (String.format("Time out, latches1[0]: %d latches2[0]: %d latches3: %d",latches1[0].getCount(), latches2[0].getCount(), latch3.getCount()), false);
         }        
         assertEquals ("Called more times than expected",2,counter.getAndSet(0));        
-        
-        DataObject dobj = DataObject.find(testFile1);
-        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
-        final StyledDocument doc = ec.openDocument();
+                
         Thread.sleep(500);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
         NbDocument.runAtomic (doc,
             new Runnable () {
@@ -336,6 +339,10 @@ public class JavaSourceTest extends NbTestCase {
         ClassPath bootPath = createBootPath ();
         ClassPath compilePath = createCompilePath ();        
         JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
+        DataObject dobj = DataObject.find(test);
+        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
+        final StyledDocument doc = ec.openDocument();
+        Thread.sleep(500);  //It may happen that the js is invalidated before the dispatch of task is done and the test of timers may fail        
         CountDownLatch[] latches = new CountDownLatch[] {
             new CountDownLatch (1),
             new CountDownLatch (1)
@@ -345,11 +352,7 @@ public class JavaSourceTest extends NbTestCase {
         CancellableTask<CompilationInfo> task = new DiagnosticTask(latches, timers, counter, Phase.PARSED);
         js.addPhaseCompletionTask (task,Phase.PARSED, Priority.HIGH);
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[0]}, 15000));
-        assertEquals ("Called more times than expected",1,counter.getAndSet(0));        
-        Thread.sleep(1000);  //It may happen that the js is invalidated before the dispatch of task is done and the test of timers may fail
-        DataObject dobj = DataObject.find(test);
-        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
-        final StyledDocument doc = ec.openDocument();
+        assertEquals ("Called more times than expected",1,counter.getAndSet(0));                
         long start = System.currentTimeMillis();
         Thread.sleep(500);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
         NbDocument.runAtomic (doc,
@@ -365,8 +368,7 @@ public class JavaSourceTest extends NbTestCase {
                         ble.printStackTrace(System.out);
                     }                 
                 }
-        });
-        
+        });        
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[1]}, 15000)); 
         assertEquals ("Called more times than expected",1,counter.getAndSet(0));
         assertTrue("Took less time than expected time=" + (timers[1] - start), (timers[1] - start) >= JavaSource.REPARSE_DELAY);
@@ -378,6 +380,10 @@ public class JavaSourceTest extends NbTestCase {
         ClassPath bootPath = createBootPath ();
         ClassPath compilePath = createCompilePath ();        
         JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
+        DataObject dobj = DataObject.find(test);
+        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
+        final StyledDocument[] doc = new StyledDocument[] {ec.openDocument()};
+        Thread.sleep(500);
         CountDownLatch[] latches = new CountDownLatch[] {
             new CountDownLatch (1),
             new CountDownLatch (1)
@@ -386,10 +392,7 @@ public class JavaSourceTest extends NbTestCase {
         CancellableTask<CompilationInfo> task = new DiagnosticTask(latches, counter, Phase.PARSED);
         js.addPhaseCompletionTask (task,Phase.PARSED,Priority.HIGH);
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[0]}, 15000));
-        
-        DataObject dobj = DataObject.find(test);
-        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
-        final StyledDocument[] doc = new StyledDocument[] {ec.openDocument()};
+               
         Thread.sleep(500);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
         NbDocument.runAtomic (doc[0],
             new Runnable () {
@@ -500,6 +503,10 @@ public class JavaSourceTest extends NbTestCase {
         ClassPath bootPath = createBootPath ();
         ClassPath compilePath = createCompilePath ();
         JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
+        DataObject dobj = DataObject.find(test);
+        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+        final StyledDocument[] doc = new StyledDocument[] {ec.openDocument()};
+        Thread.sleep (500);
         CountDownLatch[] latches = new CountDownLatch[] {
             new CountDownLatch (1),
             new CountDownLatch (1),
@@ -508,11 +515,7 @@ public class JavaSourceTest extends NbTestCase {
         AtomicInteger counter = new AtomicInteger (0);
         DiagnosticTask task = new DiagnosticTask(latches, counter, Phase.PARSED);
         js.addPhaseCompletionTask (task,Phase.PARSED,Priority.HIGH);
-        assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[0]}, 15000));
-        
-        DataObject dobj = DataObject.find(test);
-        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
-        final StyledDocument[] doc = new StyledDocument[] {ec.openDocument()};
+        assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[0]}, 15000));                
         final int[] index = new int[1];
         Thread.sleep(500);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
         NbDocument.runAtomic (doc[0],
