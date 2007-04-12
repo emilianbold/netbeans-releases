@@ -22,6 +22,8 @@ package org.netbeans.modules.refactoring.java.plugins;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.*;
+import javax.lang.model.util.Elements;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 
 /**
@@ -57,7 +59,10 @@ public class RenameTransformer extends SearchVisitor {
             return;
         
         if (el != null && elementToFind!=null && elementToFind.getKind() == ElementKind.METHOD && el.getKind() == ElementKind.METHOD) {
-            if (el.equals(elementToFind) || workingCopy.getElements().overrides(((ExecutableElement) el), (ExecutableElement) elementToFind, (TypeElement) elementToFind.getEnclosingElement())) {
+            if (el.equals(elementToFind) 
+                    || workingCopy.getElements().overrides(((ExecutableElement) el), (ExecutableElement) elementToFind, (TypeElement) elementToFind.getEnclosingElement())
+                    || workingCopy.getElements().overrides(((ExecutableElement) elementToFind), (ExecutableElement) el, (TypeElement) el.getEnclosingElement())
+                    ) {
                 Tree nju = make.setLabel(tree, newName);
                 workingCopy.rewrite(tree, nju);
             }
@@ -89,7 +94,11 @@ public class RenameTransformer extends SearchVisitor {
         if (workingCopy.getTreeUtilities().isSynthetic(path))
             return;
         Element el = workingCopy.getTrees().getElement(path);
-        if (elementToFind.equals(el)) {
+        Elements elements = workingCopy.getElements();
+        if (elementToFind.equals(el)
+                || ( ((el.getKind() == ElementKind.METHOD) && (elementToFind.getKind() == ElementKind.METHOD)) 
+                    && ((elements.overrides((ExecutableElement) elementToFind, (ExecutableElement) el, SourceUtils.getEnclosingTypeElement(el)))
+                           || (elements.overrides((ExecutableElement)el, (ExecutableElement)elementToFind, SourceUtils.getEnclosingTypeElement(elementToFind)))))) {
             Tree nju = make.setLabel(tree, newName);
             workingCopy.rewrite(tree, nju);
         }

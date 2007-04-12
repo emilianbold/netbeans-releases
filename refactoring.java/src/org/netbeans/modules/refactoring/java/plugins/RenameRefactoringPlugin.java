@@ -118,7 +118,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                                 new Object[] {SourceUtils.getEnclosingTypeElement(el).getSimpleName().toString()});
                         result = createProblem(result, false, msg);
                     }
-                    overridesMethods = RetoucheUtils.getOverridingMethods((ExecutableElement) treePathHandle.resolveElement(info), info);
+                    overridesMethods = RetoucheUtils.getOverridenMethods((ExecutableElement)el, info);
                     fireProgressListenerStep();
                     if (!overridesMethods.isEmpty()) {
                         boolean fatal = false;
@@ -344,12 +344,15 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 if (te==null) {
                     continue;
                 }
-                for (Element e:te.getEnclosedElements()) {
-                    if (e instanceof ExecutableElement) {
-                        if (info.getElements().overrides((ExecutableElement)e, (ExecutableElement)el, te)) {
-                            set.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-                        }
-                    }
+                //add all references of overriding methods
+                for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
+                    set.add(SourceUtils.getFile(e, cpInfo));
+                    set.addAll(idx.getResources(ElementHandle.create(SourceUtils.getEnclosingTypeElement(e)), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));                
+                }
+                //add all references of overriden methods
+                for (ExecutableElement e:RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
+                    set.add(SourceUtils.getFile(e, cpInfo));
+                    set.addAll(idx.getResources(ElementHandle.create(SourceUtils.getEnclosingTypeElement(e)), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));                
                 }
             }
             set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
