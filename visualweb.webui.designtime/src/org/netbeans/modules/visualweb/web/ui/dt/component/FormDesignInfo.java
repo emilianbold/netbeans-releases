@@ -41,6 +41,7 @@ import java.util.ResourceBundle;
 import org.netbeans.modules.visualweb.web.ui.dt.AbstractDesignInfo;
 import javax.faces.component.NamingContainer;
 import javax.faces.component.UIComponent;
+import org.netbeans.modules.visualweb.web.ui.dt.component.vforms.VirtualFormsHelper;
 
 /**
  * DesignInfo for the {@link org.netbeans.modules.visualweb.web.ui.dt.component.Form} component.
@@ -280,8 +281,18 @@ public class FormDesignInfo extends AbstractDesignInfo {
         //    return AjaxTransaction.class;
         //}
 
-        public DisplayAction getContextItem(DesignBean[] arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public DisplayAction[] getDisplayActions(DesignContext dcontext, DesignBean[] dbeans) {
+            DisplayAction virtualFormDisplayAction = null;
+            if (dbeans != null && dbeans.length > 0) {
+                virtualFormDisplayAction = VirtualFormsHelper.getContextItem(dbeans);
+            }
+            if (virtualFormDisplayAction == null && dcontext != null) {
+                virtualFormDisplayAction = VirtualFormsHelper.getContextItem(dcontext);
+            }
+            if (virtualFormDisplayAction != null) {
+                return new DisplayAction[]{virtualFormDisplayAction};
+            }
+            return new DisplayAction[0];
         }
     }
     

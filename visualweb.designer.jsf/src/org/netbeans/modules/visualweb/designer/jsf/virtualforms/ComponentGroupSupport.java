@@ -158,7 +158,7 @@ public class ComponentGroupSupport {
         int maxY = (p.y + d.height) - LEGEND_OFFSET;
         
         DesignBean paintChildrenRootBean = liveUnit.getRootContainer(); //the top bean whose children we will walk when we call paintChildren
-        String paintChildrenRootBeanServerId = String.valueOf(NamingContainer.SEPARATOR_CHAR);
+        String paintChildrenRootBeanServerId = String.valueOf(NamingContainer.SEPARATOR_CHAR) + paintChildrenRootBean.getInstanceName();
         
         //Map colorMap = new HashMap(50);
         ComponentGroupHelper.populateColorGroupArray(liveUnit, holders, groupArr);
@@ -316,70 +316,75 @@ public class ComponentGroupSupport {
                 continue;
             }
             
-            String childFqId = precedingIds + NamingContainer.SEPARATOR_CHAR + child.getInstanceName();
-
-            //paint boxes around this child for each group
+            String childFqId = precedingIds;
+            
             if (childInstance instanceof UIComponent) {
-                int nestingLevel = 0;
-                
-                for (int h = 0; h < holders.length; h++) {
-                    ComponentGroup[] groups = groupArr[h];
-                    
-                    if (groups == null || groups.length == 0) {
-                        continue;
-                    }
+            
+                childFqId = precedingIds + NamingContainer.SEPARATOR_CHAR + child.getInstanceName();
 
-                    for (int g = 0; g < groups.length; g++) {
-                        ComponentGroup group = groups[g];
+                //paint boxes around this child for each group
+                if (childInstance instanceof UIComponent) {
+                    int nestingLevel = 0;
 
-                        if (group == null) {
+                    for (int h = 0; h < holders.length; h++) {
+                        ComponentGroup[] groups = groupArr[h];
+
+                        if (groups == null || groups.length == 0) {
                             continue;
                         }
 
-                        String groupName = group.getName();
+                        for (int g = 0; g < groups.length; g++) {
+                            ComponentGroup group = groups[g];
 
-                        if (groupName == null) {
-                            continue;
-                        }
+                            if (group == null) {
+                                continue;
+                            }
 
-                        Color color = group.getColor();
+                            String groupName = group.getName();
 
-                        if (color == null) {
-                            continue;
-                        }
+                            if (groupName == null) {
+                                continue;
+                            }
 
-                        boolean paintSolid = false;
-                        boolean paintDashed = false;
-                        ComponentSubset[] subsets = group.getComponentSubsets();
-                        if (subsets != null) {
-                            for (int s = 0; s < subsets.length; s++) {
-                                ComponentSubset subset = subsets[s];
-                                ComponentSubset.LineType lineType = subset.getLineType();
-                                if (lineType == ComponentSubset.LineType.NONE) {
-                                    continue;
-                                }
-                                String[] members = subset.getMembers();
-                                if (members != null) {
-                                    for (int m = 0; m < members.length; m++) {
-                                        if (childFqId.endsWith(members[m])) {
-                                            if (lineType == ComponentSubset.LineType.SOLID) {
-                                                paintSolid = true;
-                                                break;
-                                            }
-                                            else if (lineType == ComponentSubset.LineType.DASHED) {
-                                                paintDashed = true;
-                                                break;
+                            Color color = group.getColor();
+
+                            if (color == null) {
+                                continue;
+                            }
+
+                            boolean paintSolid = false;
+                            boolean paintDashed = false;
+                            ComponentSubset[] subsets = group.getComponentSubsets();
+                            if (subsets != null) {
+                                for (int s = 0; s < subsets.length; s++) {
+                                    ComponentSubset subset = subsets[s];
+                                    ComponentSubset.LineType lineType = subset.getLineType();
+                                    if (lineType == ComponentSubset.LineType.NONE) {
+                                        continue;
+                                    }
+                                    String[] members = subset.getMembers();
+                                    if (members != null) {
+                                        for (int m = 0; m < members.length; m++) {
+                                            if (childFqId.endsWith(members[m])) {
+                                                if (lineType == ComponentSubset.LineType.SOLID) {
+                                                    paintSolid = true;
+                                                    break;
+                                                }
+                                                else if (lineType == ComponentSubset.LineType.DASHED) {
+                                                    paintDashed = true;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        if (paintSolid || paintDashed) {
-                            paintHighlight(renderContext, g2d, child, color, paintSolid, paintDashed,
-                                nestingLevel);
-                            nestingLevel++;
+                            if (paintSolid || paintDashed) {
+                                paintHighlight(renderContext, g2d, child, color, paintSolid, paintDashed,
+                                    nestingLevel);
+                                nestingLevel++;
+                            }
                         }
                     }
                 }

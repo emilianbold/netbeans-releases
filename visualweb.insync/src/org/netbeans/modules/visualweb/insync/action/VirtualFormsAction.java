@@ -26,6 +26,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DisplayAction;
+import com.sun.rave.designtime.ext.componentgroup.ComponentGroupHolder;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.util.NbBundle;
@@ -56,7 +59,22 @@ public class VirtualFormsAction extends AbstractDisplayActionAction {
                     if (J2eeModule.JAVA_EE_5.equals(JsfProjectUtils.getJ2eePlatformVersion(project))) {
                         virtualFormDisplayAction = com.sun.webui.jsf.component.vforms.VirtualFormsHelper.getContextItem(designBeans);
                     } else {
-                        virtualFormDisplayAction = org.netbeans.modules.visualweb.web.ui.dt.component.vforms.VirtualFormsHelper.getContextItem(designBeans);
+                        ComponentGroupHolder[] holders = null;
+                        Object dcontextData = designContext.getContextData(ComponentGroupHolder.CONTEXT_DATA_KEY);
+                        if (dcontextData instanceof ComponentGroupHolder[]) {        
+                            holders = (ComponentGroupHolder[])dcontextData;
+                        }
+                        if (holders == null || holders.length == 0) {
+                            return new DisplayAction[0];
+                        }
+                        List<DisplayAction> displayActionList = new ArrayList<DisplayAction>();
+                        for (int h = 0; h < holders.length; h++) {
+                            DisplayAction[] holderDisplayActions = holders[h].getDisplayActions(designContext, designBeans);
+                            for (int d = 0; d < holderDisplayActions.length; d++) {
+                                displayActionList.add(holderDisplayActions[d]);
+                            }
+                        }
+                        return displayActionList.toArray(new DisplayAction[displayActionList.size()]);
                     }
 
 					if (virtualFormDisplayAction != null) {
@@ -65,8 +83,6 @@ public class VirtualFormsAction extends AbstractDisplayActionAction {
 					
 					if (J2eeModule.JAVA_EE_5.equals(JsfProjectUtils.getJ2eePlatformVersion(project))) {
 						virtualFormDisplayAction = com.sun.webui.jsf.component.vforms.VirtualFormsHelper.getContextItem(designContext);
-					} else {
-						virtualFormDisplayAction = org.netbeans.modules.visualweb.web.ui.dt.component.vforms.VirtualFormsHelper.getContextItem(designContext);
 					}
 					
 					if (virtualFormDisplayAction == null) {

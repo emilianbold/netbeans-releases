@@ -38,5 +38,5 @@ public interface ComponentGroupHolder {
    //Class getAssociatedBeanType();
    String getToolTip();
    String getLegendLabel();
-   DisplayAction getContextItem(DesignBean[] beans);
+   DisplayAction[] getDisplayActions(DesignContext dcontext, DesignBean[] dbeans);
 }

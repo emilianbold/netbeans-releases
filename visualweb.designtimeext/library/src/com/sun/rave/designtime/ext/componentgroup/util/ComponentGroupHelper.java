@@ -38,7 +38,7 @@ import java.util.Iterator;
 public class ComponentGroupHelper {
     
     public static String getComponentGroupColorKey(String holderName, String groupName) {
-        return ComponentGroupHolder.COLOR_KEY_PREFIX + ":" + holderName + ":" + groupName; //NOI18N
+        return ComponentGroupHolder.COLOR_KEY_PREFIX + holderName + ":" + groupName; //NOI18N
     }
     
     public static void populateColorGroupArray(DesignContext dcontext, ComponentGroupHolder[] holders, ComponentGroup[][] groupArr) {
