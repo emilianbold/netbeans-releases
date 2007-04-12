@@ -53,16 +53,11 @@ public class DefaultPlanValidator implements TcgComponentValidator, SharedConsta
         TcgComponent inputComp = null;
         TcgComponent outputComp = null;
         TcgComponent operators = null;
-        mLogger.info("The component is " + component.getClass().getName());
-        mLogger.info("The component name is " + component.getName());
-        mLogger.info("The component type is " + component.getType().getName());
+        
         List l = component.getComponentList();
         Iterator iter = l.iterator();
         while(iter.hasNext()){
             TcgComponent comp = (TcgComponent)iter.next();
-            mLogger.info("Comp name="+comp.getName());
-            mLogger.info("Comp type="+comp.getType().getName());
-            
             if(comp.getType().getName().equals(OPERATORS_KEY)) {
                 operators = comp;
             }
@@ -76,8 +71,7 @@ public class DefaultPlanValidator implements TcgComponentValidator, SharedConsta
                 Iterator iterl = ll.iterator();
                 while(iterl.hasNext()){
                     TcgComponent compl = (TcgComponent)iterl.next();
-                    mLogger.info("Comp name="+compl.getName());
-                    mLogger.info("Comp type="+compl.getType().getName());
+                    
                     if(compl.getType().getName().equals(OP_STREAM_INPUT)||
                        compl.getType().getName().equals(OP_TABLE_INPUT)) {
                         inputComp = compl;
