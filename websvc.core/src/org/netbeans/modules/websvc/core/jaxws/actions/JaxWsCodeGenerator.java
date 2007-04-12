@@ -50,6 +50,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import static com.sun.source.tree.Tree.Kind.*;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -431,8 +432,9 @@ public class JaxWsCodeGenerator {
             EditorCookie ec = (EditorCookie)dataObj.getCookie(EditorCookie.class);
             JEditorPane pane = ec.getOpenedPanes()[0];
             int pos = pane.getCaretPosition();
-        
-            JavaSource targetSource = JavaSource.forFileObject(dataObj.getPrimaryFile());
+            
+            final FileObject targetFO = dataObj.getPrimaryFile();
+            JavaSource targetSource = JavaSource.forFileObject(targetFO);
             
             final boolean[] insertServiceDef = {true};
             final String[] printerName = {"System.out"}; // NOI18N
@@ -451,6 +453,18 @@ public class JaxWsCodeGenerator {
                         // find if class is Injection Target
                         TypeElement thisTypeEl = srcUtils.getTypeElement();
                         generateWsRefInjection[0] = InjectionTargetQuery.isInjectionTarget(controller, thisTypeEl);
+                        
+                        // workaround for issue 99214
+                        if (!generateWsRefInjection[0]) {
+                            Project project = FileOwnerQuery.getOwner(targetFO);
+                            if (project!=null) {
+                                ProjectInfo info = new ProjectInfo(project);
+                                if (info.getProjectType()==ProjectInfo.EJB_PROJECT_TYPE) {
+                                    generateWsRefInjection[0]=true;
+                                }
+                            }
+                        }
+                            
                         insertServiceDef[0] = !generateWsRefInjection[0];
                         if (isServletClass(controller, javaClass)) {
                             // PENDING Need to compute pronter name from the method
