@@ -50,7 +50,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         
         // get the list of suitable netbeans ide installations
         List<Dependency> dependencies = 
-                getProduct().getDependencyByUid(IDE_UID);
+                getProduct().getDependencyByUid(BASE_IDE_UID);
         List<Product> sources = 
                 Registry.getInstance().getProducts(dependencies.get(0));
         
@@ -116,7 +116,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         
         // get the list of suitable netbeans ide installations
         List<Dependency> dependencies = 
-                getProduct().getDependencyByUid(IDE_UID);
+                getProduct().getDependencyByUid(BASE_IDE_UID);
         List<Product> sources = 
                 Registry.getInstance().getProducts(dependencies.get(0));
         

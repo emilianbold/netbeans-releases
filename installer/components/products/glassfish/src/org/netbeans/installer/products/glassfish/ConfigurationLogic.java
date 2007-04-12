@@ -307,7 +307,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             progress.setDetail(getString("CL.install.ide.integration")); // NOI18N
             
-            List<Product> ides = Registry.getInstance().getProducts("nb-ide");
+            List<Product> ides = Registry.getInstance().getProducts("nb-base");
             for (Product ide: ides) {
                 if (ide.getStatus() == Status.INSTALLED) {
                     File nbLocation = ide.getInstallationLocation();

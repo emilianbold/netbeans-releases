@@ -47,8 +47,8 @@ import org.netbeans.installer.wizard.components.actions.SetInstallationLocationA
 public abstract class NbClusterConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String IDE_UID =
-            "nb-ide"; // NOI18N
+    public static final String BASE_IDE_UID =
+            "nb-base"; // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -82,7 +82,7 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
     protected NbClusterConfigurationLogic(
             final String clusterName,
             final String productId) throws InitializationException {
-        this(clusterName, productId, IDE_UID);
+        this(clusterName, productId, BASE_IDE_UID);
     }
     
     public void install(
