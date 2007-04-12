@@ -50,6 +50,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -403,8 +404,10 @@ public final class SearchBar extends JToolBar {
             if (target != null) {
                 JComponent comp = Utilities.getEditorUI(target).getExtComponent();
                 if (comp != null) {
-                    SearchBar issb = findComponent(comp,SearchBar.class, 2);
-                    issb.gainFocus();
+                    SearchBar issb = findComponent(comp,SearchBar.class, 5);
+                    if (issb != null) {
+                        issb.gainFocus();
+                    }
                 }
             }
         }
@@ -424,8 +427,10 @@ public final class SearchBar extends JToolBar {
             if (target != null) {
                 JComponent comp = Utilities.getEditorUI(target).getExtComponent();
                 if (comp != null) {
-                    SearchBar issb = findComponent(comp,SearchBar.class, 2);
-                    issb.gainFocus();
+                    SearchBar issb = findComponent(comp,SearchBar.class, 5);
+                    if (issb != null) {
+                        issb.gainFocus();
+                    }
                 }
             }
         }
