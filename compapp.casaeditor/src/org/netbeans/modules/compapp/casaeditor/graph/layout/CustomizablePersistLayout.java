@@ -92,6 +92,11 @@ public abstract class CustomizablePersistLayout implements Layout {
         Dimension widgetSize = widget.getBounds().getSize();
         if (isRightAligned) {
             suggestedX = region.getBounds().width - widgetSize.width;
+            Point currentLocation = widget.getLocation();
+            if (currentLocation.x != suggestedX) {
+                // Do not animate horizontally for right-aligned widgets.
+                widget.setPreferredLocation(new Point(suggestedX, currentLocation.y));
+            }
         } else if (suggestedX + widgetSize.width > region.getBounds().width) {
             suggestedX =
                     region.getBounds().width -
