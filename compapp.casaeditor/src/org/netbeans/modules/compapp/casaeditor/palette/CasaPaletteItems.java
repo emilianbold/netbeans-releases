@@ -91,7 +91,8 @@ public class CasaPaletteItems extends Index.ArrayChildren {
                     childrenNodes.add( new CasaPaletteItemNode(
                             item,
                             bi.getIcon().getFile(),
-                            mLookup) );
+                            mLookup,
+                            true) );
                 }
             }
         }
