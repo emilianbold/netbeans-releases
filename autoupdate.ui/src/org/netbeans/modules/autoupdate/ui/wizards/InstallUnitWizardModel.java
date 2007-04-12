@@ -39,14 +39,14 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     private Installer installer = null;
     private boolean doUpdate;
     private static Set<String> approvedLicences = new HashSet<String> ();
-    private OperationContainer<InstallSupport> installContainer;
+    private OperationContainer installContainer;
     private InstallSupport support;
     
     /** Creates a new instance of InstallUnitWizardModel */
-    public InstallUnitWizardModel (OperationContainer<InstallSupport> container) {
+    public InstallUnitWizardModel (OperationContainer container) {
         this.doUpdate = (container == Containers.forUpdate ()) || (container == Containers.forUpdateNbms());
         installContainer = container;
-        support = installContainer.getSupport();
+        support = (InstallSupport) installContainer.getSupport();
         assert support != null;
         assert doUpdate ? Containers.forUpdate () != null : Containers.forAvailable () != null : "The container must exist!";
     }

@@ -29,7 +29,7 @@ import org.netbeans.api.autoupdate.OperationContainer;
  */
 public class AvailableTableModel extends UnitCategoryTableModel {
     //just prevents from gc, do not delete
-    private OperationContainer<InstallSupport> container = Containers.forAvailable();
+    private OperationContainer container = Containers.forAvailable();
     
     /** Creates a new instance of InstalledTableModel */
     public AvailableTableModel (List<UnitCategory> categories) {
