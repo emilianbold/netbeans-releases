@@ -54,11 +54,6 @@ public final class ActiveViewSupport {
     private ActiveViewSupport () {
         if (topComponentListener == null)
             TopComponent.getRegistry ().addPropertyChangeListener (topComponentListener = new ActiveViewObserver ());
-        addActiveViewListener (new Listener() {
-            public void activeViewChanged (DataEditorView deactivatedView, DataEditorView activatedView) {
-                System.out.println ("!!!! CheckedActivatedView = " + activatedView);
-            }
-        });
     }
 
     /**
