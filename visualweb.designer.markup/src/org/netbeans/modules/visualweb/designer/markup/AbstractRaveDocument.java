@@ -224,7 +224,7 @@ public abstract class AbstractRaveDocument extends DocumentImpl /*implements Par
             
             if (dst instanceof RaveRenderedElement) {
                 //dstElement.source = srcElement.getSourceNode();
-                ((RaveRenderedElement)dst).setSource(srcElement);
+                ((RaveRenderedElement)dst).linkToSourceElement(srcElement);
             }
         } else if (src instanceof RaveSourceText) {
 //            assert dst instanceof RaveRenderedText;
@@ -238,7 +238,7 @@ public abstract class AbstractRaveDocument extends DocumentImpl /*implements Par
             }
         } else if (src instanceof RaveRenderedElement) {
             // XXX Prerendered elements - see doc jsp writer, and inline editing.
-            RaveSourceElement srcElement = ((RaveRenderedElementImpl)src).sourceElement;
+            RaveSourceElement srcElement = ((RaveRenderedElement)src).getSourceElement();
             
             if (srcElement != null) {
                 if (dst instanceof AbstractRaveElement) {
@@ -247,7 +247,7 @@ public abstract class AbstractRaveDocument extends DocumentImpl /*implements Par
 
                 if (dst instanceof RaveRenderedElement) {
                     //dstElement.source = srcElement.getSourceNode();
-                    ((RaveRenderedElement)dst).setSource(srcElement);
+                    ((RaveRenderedElement)dst).linkToSourceElement(srcElement);
                 }
             }
         }
