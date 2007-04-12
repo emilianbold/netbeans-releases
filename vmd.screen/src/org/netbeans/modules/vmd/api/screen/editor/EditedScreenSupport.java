@@ -20,13 +20,14 @@
 
 package org.netbeans.modules.vmd.api.screen.editor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.WeakHashMap;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.WeakHashMap;
 
 /**
  * @author David Kaspar
@@ -36,7 +37,7 @@ public final class EditedScreenSupport {
     private static final WeakHashMap<DesignDocument,EditedScreenSupport> instances = new WeakHashMap<DesignDocument, EditedScreenSupport> ();
     
     private long editedScreenComponentID = -1;
-    private ArrayList<Listener> listeners = new ArrayList<EditedScreenSupport.Listener> ();
+    private final ArrayList<Listener> listeners = new ArrayList<EditedScreenSupport.Listener> ();
     
     private EditedScreenSupport () {
     }
@@ -68,6 +69,7 @@ public final class EditedScreenSupport {
      * This method has to be called from AWT thread and under read or write access on the document.
      * This method must not be called within EditedScreenSupport.Listener.editedScreenChanged method.
      * Also be aware of setting correct component id.
+     * @param editedScreenComponentID the edited screen component id
      */
     public void setEditedScreenComponentID (long editedScreenComponentID) {
         this.editedScreenComponentID = editedScreenComponentID;
@@ -80,7 +82,10 @@ public final class EditedScreenSupport {
     }
 
     /**
+     * Return all editable screens in the document.
      * Call this method within the read or write access only.
+     * @param document the design document
+     * @return the list of all editable screens in the document.
      */
     public static List<DesignComponent> getAllEditableScreensInDocument(DesignDocument document) {
         assert document.getTransactionManager().isAccess();
@@ -97,6 +102,7 @@ public final class EditedScreenSupport {
         /**
          * This method is called within the AWT thread and under read or write access on the document.
          * The EditedScreenSupport.setEditedScreenComponentID method must not be called within this method.
+         * @param editedScreenComponentID the edited screen component id
          */
         void editedScreenChanged (long editedScreenComponentID);
         
