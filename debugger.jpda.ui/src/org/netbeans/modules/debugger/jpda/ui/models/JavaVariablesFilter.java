@@ -315,6 +315,9 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         String columnID
     ) throws UnknownTypeException {
 
+        if (!(variable instanceof ObjectVariable)) {
+            return original.getValueAt (variable, columnID);
+        }
         String type = variable.getType ();
         ObjectVariable ov = (ObjectVariable) variable;
         if ( isMapEntryType (type) &&
