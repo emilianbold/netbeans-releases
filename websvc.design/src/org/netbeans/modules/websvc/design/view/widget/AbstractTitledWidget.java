@@ -24,9 +24,7 @@ import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.geom.Arc2D;
-import java.awt.geom.GeneralPath;
+import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.widget.Widget;
@@ -83,38 +81,27 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
         Rectangle bounds = getBounds();
         Graphics2D g = getGraphics();
         Paint oldPaint = g.getPaint();
+        RoundRectangle2D rect = new RoundRectangle2D.Double(
+                bounds.x, bounds.y, bounds.width - (raised?DEPTH:0),
+                bounds.height - (raised?DEPTH:0), radius, radius);
         if(raised) {
             g.setPaint(borderColor);
             RoundRectangle2D outerRect = new RoundRectangle2D.Double(
                     bounds.x + DEPTH, bounds.y + DEPTH,
                     bounds.width - DEPTH, bounds.height - DEPTH, radius, radius);
-            Shape oldClip = g.getClip();
-            g.setClip(bounds.x + bounds.width - DEPTH, bounds.y,
-                    DEPTH, bounds.height);
-            g.fill(outerRect);
-            g.setClip(bounds.x, bounds.y + bounds.height - DEPTH,
-                    bounds.width, DEPTH);
-            g.fill(outerRect);
-            g.setClip(oldClip);
-            Arc2D arc = new Arc2D.Double(bounds.x + bounds.width - DEPTH - radius,
-                    bounds.y + bounds.height - radius - DEPTH, radius, radius,0,-90,Arc2D.OPEN);
-            GeneralPath gpath = new GeneralPath(arc);
-            gpath.lineTo(bounds.x + bounds.width - DEPTH, bounds.y + bounds.height - DEPTH);
-            gpath.closePath();
-            g.fill(gpath);
+            Area raisedArea = new Area(outerRect);
+            raisedArea.subtract(new Area(rect));
+            g.fill(raisedArea);
         }
-        RoundRectangle2D rect = new RoundRectangle2D.Double(
-                bounds.x, bounds.y, bounds.width - (raised?DEPTH:0),
-                bounds.height - (raised?DEPTH:0), radius, radius);
         if(isExpanded()) {
-            Shape oldClip = g.getClip();
             int titleHeight = radius + headerWidget.getBounds().height + radius/2;
             GradientPaint gp = new GradientPaint(bounds.x, bounds.y, borderColor,
                     bounds.x, bounds.y + titleHeight/2, borderColor.brighter(),true);
-            g.setClip(bounds.x, bounds.y, bounds.width, titleHeight);
             g.setPaint(gp);
-            g.fill(rect);
-            g.setClip(oldClip);
+            Area titleArea = new Area(rect);
+            titleArea.subtract(new Area(new Rectangle(bounds.x, 
+                    bounds.y + titleHeight, bounds.width, bounds.height)));
+            g.fill(titleArea);
         } else {
             GradientPaint gp = new GradientPaint(bounds.x, bounds.y, borderColor,
                     bounds.x, (bounds.y + bounds.height - (raised?DEPTH:0))/2,
