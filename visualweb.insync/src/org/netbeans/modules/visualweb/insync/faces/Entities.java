@@ -178,7 +178,7 @@ Also by the way, instead of creating a brand-new JSPX parser inside Creator, I t
                 }
                 if (end == n || unexpanded.charAt(end) != ';') {
                     if (warn) {
-                        String message = NbBundle.getMessage(Entities.class, "IllegalEntity", unexpanded.substring(begin-1));
+                        String message = NbBundle.getMessage(Entities.class, "LBL_IllegalEntity", unexpanded.substring(begin-1));
                         if (fileObject != null && lineNumber > -1) {
                             InSyncServiceProvider.get().getRaveErrorHandler().displayErrorForFileObject(message, fileObject, lineNumber, 0);
                         } else {
@@ -192,7 +192,7 @@ Also by the way, instead of creating a brand-new JSPX parser inside Creator, I t
                 int e = expand(entity);
                 if (e == -1) {
                     if (warn) {
-                        String message = NbBundle.getMessage(Entities.class, "NoSuchEntity", entity);
+                        String message = NbBundle.getMessage(Entities.class, "LBL_NoSuchEntity", entity);
                         if (fileObject != null && lineNumber > -1) {
                             InSyncServiceProvider.get().getRaveErrorHandler().displayErrorForFileObject(message, fileObject, lineNumber, 0);
                         } else {
