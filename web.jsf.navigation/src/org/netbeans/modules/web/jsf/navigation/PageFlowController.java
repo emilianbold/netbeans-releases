@@ -379,7 +379,6 @@ public class PageFlowController {
             pages.remove(webFileName);
             PageFlowNode node = null;
             try {
-                //                                node = (DataNode)(DataObject.find(webFile)).getNodeDelegate();
                 node = createPageFlowNode((DataObject.find(webFile)).getNodeDelegate());
                 view.createNode(node, null, null);
             } catch ( DataObjectNotFoundException ex ) {
@@ -391,12 +390,13 @@ public class PageFlowController {
         
         //Create any pages that don't actually exist but are defined specified by the config file.
         for( String pageName : pages ){
-            Node tmpNode = new AbstractNode(Children.LEAF);
-            tmpNode.setName(pageName);
-            PageFlowNode node = new PageFlowNode(this,tmpNode);
-            //            Node node = new AbstractNode(Children.LEAF);
-            //            node.setName(pageName);
-            view.createNode(node, null, null);
+            if( pageName != null ){
+                Node tmpNode = new AbstractNode(Children.LEAF);
+                tmpNode.setName(pageName);
+//                PageFlowNode node = new PageFlowNode(this,tmpNode);
+                PageFlowNode node = createPageFlowNode(tmpNode);
+                view.createNode(node, null, null);
+            }
         }
     }
     
@@ -434,7 +434,8 @@ public class PageFlowController {
                         donfe.printStackTrace();
                     }
                 }
-                PageFlowNode node = new PageFlowNode(this, wrapNode);
+//                PageFlowNode node = new PageFlowNode(this, wrapNode);
+                PageFlowNode node = createPageFlowNode(wrapNode);
                 view.createNode(node, null, null);
             }
         }
