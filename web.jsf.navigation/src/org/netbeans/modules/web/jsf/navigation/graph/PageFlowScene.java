@@ -68,6 +68,7 @@ import org.netbeans.modules.web.jsf.navigation.PinNode;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.MapActionUtility;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.MapActionUtility.HandleDeleteAction2;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
+import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowDeleteAction;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
 import org.openide.actions.DeleteAction;
 import org.openide.nodes.Node;
@@ -103,7 +104,6 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     private WidgetAction moveAction = ActionFactory.createMoveAction();
     private WidgetAction dragNdropAction = ActionFactory.createAcceptAction(new PageFlowAcceptProvider());
     private WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
-    //    private WidgetAction deleteAction = new DeleteAction(this);
     private WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     
     private SceneLayout sceneLayout;
@@ -147,8 +147,8 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
         
         ActionMap actionMap = tc.getActionMap();
         CallbackSystemAction a = (CallbackSystemAction)SystemAction.get(DeleteAction.class);
-        Action action = new HandleDeleteAction2(this);
-        actionMap.put(a.getActionMapKey(), new MapActionUtility.HandleDeleteAction2(this));
+//        Action action = new PageFlowDeleteAction(this);
+        actionMap.put(a.getActionMapKey(), new PageFlowDeleteAction(this));
         
         return ActionFactory.createActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());
         
@@ -659,7 +659,6 @@ public class PageFlowScene extends GraphPinScene<PageFlowNode, NavigationCaseNod
     //
     //
     //    }
-    
     
 }
 

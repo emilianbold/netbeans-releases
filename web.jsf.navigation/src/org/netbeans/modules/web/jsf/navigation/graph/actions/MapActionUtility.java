@@ -172,14 +172,15 @@ public class MapActionUtility {
             return super.isEnabled();
         }
         
-        
-        
         public void actionPerformed(ActionEvent event) {
             
             //Workaround: Temporarily Wrapping Collection because of Issue: 100127
-            Set<Object> selectedObjects = new HashSet<Object>(scene.getSelectedObjects());            
+            Set<Object> selectedObjects = new HashSet<Object>(scene.getSelectedObjects());
             
-            /*.When deleteing only one item. */
+            //Workaround - ObjectScene should be notifying listener that that the selection has changed.  I am not sure why it isn't.
+//            scene.setDefaultActivatedNode();
+            
+            /*When deleteing only one item. */
             if (selectedObjects.size() == 1){
                 Object myObj = selectedObjects.toArray()[0];
                 if( myObj instanceof Node ) {
