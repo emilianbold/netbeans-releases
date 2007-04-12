@@ -25,19 +25,31 @@ package org.netbeans.api.languages;
  * @author Jan Jancura
  */
 public class CompletionItem {
+
+    public static enum Type {
+        INTERFACE,
+        CLASS,
+        METHOD,
+        FIELD,
+        CONSTANT,
+        CONSTRUCTOR,
+        PARAMETER,
+        LOCAL,
+        KEYWORD
+    };
     
     public static CompletionItem create (
-        String text
+        String          text
     ) {
         return new CompletionItem (text, null, null, null, 2);
     }
     
     public static CompletionItem create (
-        String text,
-        String description,
-        String library,
-        String type,
-        int    priority
+        String          text,
+        String          description,
+        String          library,
+        Type            type,
+        int             priority
     ) {
         return new CompletionItem (text, description, library, type, priority);
     }
@@ -45,20 +57,20 @@ public class CompletionItem {
     private String      text;
     private String      description;
     private String      library;
-    private String      type;
+    private Type        type;
     private int         priority;
 
     public CompletionItem (
-        String text, 
-        String description, 
-        String library,
-        String type, 
-        int priority
+        String          text, 
+        String          description, 
+        String          library,
+        Type            type, 
+        int             priority
     ) {
-        this.text = text;
+        this.text =     text;
         this.description = description;
-        this.library = library;
-        this.type = type;
+        this.library =  library;
+        this.type =     type;
         this.priority = priority;
     }
 
@@ -74,7 +86,7 @@ public class CompletionItem {
         return library;
     }
 
-    public String getType() {
+    public Type getType() {
         return type;
     }
 

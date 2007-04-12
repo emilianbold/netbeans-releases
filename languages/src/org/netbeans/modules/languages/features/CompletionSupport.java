@@ -93,25 +93,45 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
         priority = item.getPriority ();
         
         String color = "000000";
-        String type = item.getType ();
+        CompletionItem.Type type = item.getType ();
         boolean bold = false;
         String key = item.getText ();
-        if ("keyword".equals (type)) {
+        switch (type) {
+        case KEYWORD:
             color = "000099";
             icon = "/org/netbeans/modules/languages/resources/keyword.jpg";
             bold = true;
-        } else
-        if ("interface".equals (type)) {
+            break;
+        case INTERFACE:
             color = "560000";
-            icon = "/org/netbeans/modules/languages/resources/class.gif";
-        } else
-        if ("attribute".equals (type)) {
-            icon = "/org/netbeans/modules/languages/resources/variable.gif";
-        } else
-        if ("function".equals (type)) {
-            icon = "/org/netbeans/modules/languages/resources/method.gif";
+            icon = "/org/netbeans/modules/editor/resources/completion/interface.png";
+            break;
+        case CLASS:
+            color = "560000";
+            icon = "/org/netbeans/modules/editor/resources/completion/class_16.png ";
+            break;
+        case FIELD:
+            icon = "/org/netbeans/modules/editor/resources/completion/field_16.png";
+            break;
+        case METHOD:
+            icon = "/org/netbeans/modules/editor/resources/completion/method_16.png";
             bold = true;
             key = key + "()";
+            break;
+        case CONSTRUCTOR:
+            icon = "/org/netbeans/modules/editor/resources/completion/constructor_16.png";
+            bold = true;
+            key = key + "()";
+            break;
+        case CONSTANT:
+            icon = "/org/netbeans/modules/editor/resources/completion/field_static_16.png";
+            break;
+        case LOCAL:
+            icon = "/org/netbeans/modules/editor/resources/completion/localVariable.gif";
+            break;
+        case PARAMETER:
+            icon = "/org/netbeans/modules/editor/resources/completion/localVariable.gif";
+            break;
         }
 
         if (item.getDescription () == null)

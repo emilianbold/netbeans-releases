@@ -119,11 +119,39 @@ public abstract class LibrarySupport {
                 Iterator<Map<String,String>> it2 = items2.iterator ();
                 while (it2.hasNext()) {
                     Map<String, String> properties =  it2.next();
+                    CompletionItem.Type type = null;
+                    String stype = properties.get ("type");
+                    if ("class".equals (stype))
+                        type = CompletionItem.Type.CLASS;
+                    else
+                    if ("field".equals (stype))
+                        type = CompletionItem.Type.FIELD;
+                    else
+                    if ("constant".equals (stype))
+                        type = CompletionItem.Type.CONSTANT;
+                    else
+                    if ("constructor".equals (stype))
+                        type = CompletionItem.Type.CONSTRUCTOR;
+                    else
+                    if ("interface".equals (stype))
+                        type = CompletionItem.Type.INTERFACE;
+                    else
+                    if ("keyword".equals (stype))
+                        type = CompletionItem.Type.KEYWORD;
+                    else
+                    if ("local".equals (stype))
+                        type = CompletionItem.Type.LOCAL;
+                    else
+                    if ("method".equals (stype))
+                        type = CompletionItem.Type.METHOD;
+                    else
+                    if ("parameter".equals (stype))
+                        type = CompletionItem.Type.PARAMETER;
                     result.add (CompletionItem.create (
                         name,
                         properties.get ("description"),
                         properties.get ("library"),
-                        properties.get ("type"),
+                        type,
                         2
                     ));
                 }
