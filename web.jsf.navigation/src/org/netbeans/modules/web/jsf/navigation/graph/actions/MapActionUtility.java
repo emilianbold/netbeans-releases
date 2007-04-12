@@ -21,7 +21,6 @@ package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.lang.Object;
 import java.util.HashSet;
@@ -31,10 +30,6 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
-import org.netbeans.api.visual.graph.GraphPinScene;
-import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.web.jsf.navigation.PageFlowController;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.filesystems.FileObject;
@@ -46,9 +41,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import java.lang.*;
 import java.lang.Object;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 /**
  *
@@ -184,7 +177,7 @@ public class MapActionUtility {
         public void actionPerformed(ActionEvent event) {
             
             //Workaround: Temporarily Wrapping Collection because of Issue: 100127
-            Set<Object> selectedObjects = new HashSet<Object>(scene.getSelectedObjects());
+            Set<Object> selectedObjects = new HashSet<Object>(scene.getSelectedObjects());            
             
             /*.When deleteing only one item. */
             if (selectedObjects.size() == 1){
@@ -216,9 +209,9 @@ public class MapActionUtility {
             
         }
         
-        public Queue<Node> myDeleteNodes;
+//        public Queue<Node> myDeleteNodes;
         private void delete( Queue<Node> deleteNodes ){
-            myDeleteNodes = deleteNodes;
+            final Queue<Node> myDeleteNodes = deleteNodes;
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     try {
@@ -236,9 +229,9 @@ public class MapActionUtility {
         }
         
         
-        public Node myNode;
+//        public Node myNode;
         private void delete( Node node ){
-            myNode = node;
+            final Node myNode = node;
             if ( node.canDestroy() ){
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
@@ -287,7 +280,7 @@ public class MapActionUtility {
          * @param name
          * @throws java.io.IOException
          */
-        public void createIndexJSP(FileObject targetFolder, String name ) throws IOException {
+        private void createIndexJSP(FileObject targetFolder, String name ) throws IOException {
             //            FileOwnerQuery.getOwner(webFolder)
             //            FileObject webFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER);
             //            FileObject parentFolder = project.getProjectDirectory();
