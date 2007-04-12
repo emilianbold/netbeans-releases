@@ -42,7 +42,7 @@ public class AutoupdateSettings {
     private static final Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.services.AutoupdateSettings"); // NOI18N
     private static final String PROP_IDE_IDENTITY = "ideIdentity"; // NOI18N
     private static final String PROP_PERIOD = "period"; // NOI18N
-    private static final String PROP_LAST_CHECK = "lastCheck"; // NOI18N
+    private static final String PROP_LAST_CHECK = "lastCheckTime"; // NOI18N
     
     public static final int EVERY_STARTUP = 0;
     public static final int EVERY_DAY = 1;
