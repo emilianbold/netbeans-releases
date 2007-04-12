@@ -53,16 +53,20 @@ public class InterfaceTest extends GeneratorTestMDRCompat {
     public void testAddField() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
-            "import java.util.*;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
             "public interface Test {\n" +
             "}\n"
             );
         String golden =
-            "package hierbas.del.litoral;\n\n" +
-            "import java.util.*;\n\n" +
-            "public interface Test {\n" +
-            "   public static final int CONSTANT = 0;\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "   public interface Test {\n" +
+            "    public static final int CONSTANT = 0;\n" +
             "}\n";
         JavaSource src = getJavaSource(testFile);
         src.runModificationTask(new CancellableTask<WorkingCopy>() {

@@ -1886,7 +1886,7 @@ public class CasualDiff {
             printer.print(aHead.toString());
             for (JCTree item : newList) {
                 if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
-                printer.printExpr(item);
+                printer.print(item);
                 if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
             }
             printer.print(aTail.toString());
