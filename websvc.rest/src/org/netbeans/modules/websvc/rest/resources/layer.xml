@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-       <folder name="Templates">
+    <folder name="Templates">
         <attr name="Classes/RESTServices" boolvalue="true"/>      
         <folder name="RESTServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
@@ -16,7 +16,7 @@
                 <attr name="SystemFileSystem.icon"
                       urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
-<!-- declaring non-existent class will fail commit-validation test             
+            <!-- declaring non-existent class will fail commit-validation test             
             <file name="RESTServicesFromPatterns">
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.RESTServicesFromPatternsIterator" />
@@ -27,7 +27,7 @@
                 <attr name="SystemFileSystem.icon"
                       urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
--->            
+-->           
         </folder>
     </folder>
     

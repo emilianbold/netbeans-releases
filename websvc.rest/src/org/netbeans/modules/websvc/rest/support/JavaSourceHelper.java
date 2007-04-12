@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -250,10 +251,31 @@ public class JavaSourceHelper {
         return (TypeElement) trees.getElement(path);
     }
     
+    public static MethodTree getDefaultConstructor(CompilationController controller) {
+        TypeElement classElement = getTopLevelClassElement(controller);     
+        List<ExecutableElement> constructors = ElementFilter.constructorsIn(classElement.getEnclosedElements());
+        
+        for (ExecutableElement constructor : constructors) {
+            if (constructor.getParameters().size() == 0) {
+                System.out.println("constructor = " + controller.getTrees().getTree(constructor));
+                return controller.getTrees().getTree(constructor);
+            }
+        }
+        
+        return null;
+    }
+    
+    
     public static JavaSource createJavaSource(FileObject targetFolder,
             String packageName, String className) {
+        return createJavaSource(CLASS_TEMPLATE, targetFolder, 
+                packageName, className);
+    }
+    
+    public static JavaSource createJavaSource(String template, FileObject targetFolder,
+            String packageName, String className) {
         try {
-            FileObject fobj = createDataObjectFromTemplate(CLASS_TEMPLATE,
+            FileObject fobj = createDataObjectFromTemplate(template,
                     targetFolder, packageName, className).getPrimaryFile();
             return JavaSource.forFileObject(fobj);
         } catch (IOException ex) {
@@ -379,6 +401,22 @@ public class JavaSourceHelper {
         return maker.addClassMember(tree, methodTree);
     }
     
+    public static void replaceMethodBody(WorkingCopy copy, MethodTree tree,
+            String body) {
+        TreeMaker maker = copy.getTreeMaker();
+        MethodTree modifiedTree = maker.Method(
+            tree.getModifiers(),
+            tree.getName(),
+            tree.getReturnType(),
+            tree.getTypeParameters(),
+            tree.getParameters(),
+            tree.getThrows(),
+            body,
+            null);
+     
+        copy.rewrite(tree, modifiedTree);
+    }
+  
     public static ClassTree addMethod(WorkingCopy copy, ClassTree tree,
             Modifier[] modifiers, String[] annotations, Object[] annotationAttrs,
             String name, Object returnType,
@@ -404,7 +442,7 @@ public class JavaSourceHelper {
                     if (annotation != null) {
                         paramModTree = createModifiersTree(copy, new Modifier[]{},
                                 new String[] {annotation}, new Object[] {annotationAttr});
-                    } 
+                    }
                 }
                 
                 paramTrees.add(maker.Variable(paramModTree,
