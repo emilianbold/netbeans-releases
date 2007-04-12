@@ -109,9 +109,11 @@ DWORD readStringFromBuf(SizedString *rest, SizedString * result, DWORD isUnicode
     return ERROR_INPUTOUPUT;
 }
 
-DWORD readString(HANDLE hFileRead, SizedString *rest, SizedString * result, DWORD bufferSize, DWORD isUnicode) {
+void readString(DWORD * status, HANDLE hFileRead, SizedString *rest, SizedString * result, DWORD bufferSize, DWORD isUnicode) {
+    if(*status != ERROR_OK ) return;
+    
     if(readStringFromBuf(rest, result, isUnicode)==ERROR_OK) {
-        return ERROR_OK; // all OK
+        return;
     }
     
     //we need to read file for more data to find \0 character...
@@ -121,7 +123,6 @@ DWORD readString(HANDLE hFileRead, SizedString *rest, SizedString * result, DWOR
     
     char * resultString = NULL;
     DWORD resultLength = 0;//*restBytesNumber;
-    DWORD status = ERROR_OK;
     
     while (ReadFile(hFileRead, buf, bufferSize, &read, 0) && read) {
         addProgressPosition(read);
@@ -134,34 +135,37 @@ DWORD readString(HANDLE hFileRead, SizedString *rest, SizedString * result, DWOR
         }
         memset(buf, 0, sizeof(char) * bufferSize);
         if(read==0) { // we have nothing to read.. smth wrong
-            status = ERROR_INTEGRITY;
+            *status = ERROR_INTEGRITY;
             break;
         }
     }
     FREE(buf);
-    return status;
+    return;
 }
 
 
 
-DWORD readNumber(HANDLE hFileRead, SizedString *rest, DWORD bufferSize, DWORD * result) {
+void readNumber(DWORD * status, HANDLE hFileRead, SizedString *rest, DWORD bufferSize, DWORD * result) {
+    if(*status!=ERROR_OK) return;
+    
     SizedString * numberString = createSizedString();
-    DWORD status = readString(hFileRead, rest, numberString, bufferSize, 0);
-    if(status!=ERROR_OK) {
+    readString(status, hFileRead, rest, numberString, bufferSize, 0);
+    if(*status!=ERROR_OK) {
         freeSizedString(&numberString);
         writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(),
         "Error!! Can`t read number string. Most probably integrity error.", 1);
-        return status;
+        return;
     }
     if(numberString->bytes==NULL) {
         freeSizedString(&numberString);
         writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(),
         "Error!! Can`t read number string (it can`t be NULL). Most probably integrity error.", 1);
-        return ERROR_INTEGRITY;
+        *status = ERROR_INTEGRITY;
+        return;
     }
     DWORD i =0;
     DWORD number = 0;
-    status = ERROR_OK;
+    
     for(;i<numberString->length;i++) {
         char c = numberString->bytes[i];
         if(c>='0' && c<='9') {
@@ -171,130 +175,129 @@ DWORD readNumber(HANDLE hFileRead, SizedString *rest, DWORD bufferSize, DWORD * 
             writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(),
             "Can`t read number from string (it contains zero character):", 1);
             writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), numberString->bytes, 1);
-            status = ERROR_INTEGRITY;
+            *status = ERROR_INTEGRITY;
             break;
         } else {
             // unexpected...
             writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(),
             "Can`t read number from string (unexpected error):", 1);
             writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), numberString->bytes, 1);
-            status = ERROR_INTEGRITY;
+            *status = ERROR_INTEGRITY;
             break;
         }
     }
     freeSizedString(&numberString);
-    
     *result = number;
-    return status;
+    return;
 }
 
-
-
-DWORD readStringWithDebugW(HANDLE hFileRead, SizedString * rest, DWORD bufferSize, WCHAR ** dest, char * paramName) {
+void readStringWithDebugW(DWORD * status, HANDLE hFileRead, SizedString * rest, DWORD bufferSize, WCHAR ** dest, char * paramName) {
     if(paramName!=NULL) {
         writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Reading ", 0);
         writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), paramName, 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), " ...", 1);
+        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), " : ", 0);
     }
     SizedString *sizedStr = createSizedString();
-    DWORD status = readString(hFileRead, rest, sizedStr, bufferSize, 1);
-    if(status!=ERROR_OK) {
+    readString(status, hFileRead, rest, sizedStr, bufferSize, 1);
+    if(*status!=ERROR_OK) {
         freeSizedString(&sizedStr);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "Can`t read ", 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(),  paramName, 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(),  ". Seems to be integritiy error", 1);
-        return status;
+        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(),
+        "[ERROR] Can`t read string !! Seems to be integrity error", 1);
+        return;
     }
     *dest = createWCHAR(sizedStr);
     freeSizedString(&sizedStr);
     if(paramName!=NULL) {
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "    ", 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), paramName, 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), " : ", 0);
         if((*dest)!=NULL) {
-            writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), *dest, 2);
+            writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), *dest, 1);
         } else {
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "NULL", 2);
+            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "NULL", 1);
         }
     }
-    return status;
+    return;
 }
 
-DWORD readStringWithDebugA(HANDLE hFileRead, SizedString * rest, DWORD bufferSize, char ** dest, char * paramName) {
+void readStringWithDebugA(DWORD * status, HANDLE hFileRead, SizedString * rest, DWORD bufferSize, char ** dest, char * paramName) {
     if(paramName!=NULL) {
         writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Reading ", 0);
         writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), paramName, 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), " ...", 1);
+        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), " : ", 0);
     }
     
     SizedString *sizedStr = createSizedString();
-    DWORD status = readString(hFileRead, rest, sizedStr, bufferSize, 0);
-    if(status!=ERROR_OK) {
+    readString(status, hFileRead, rest, sizedStr, bufferSize, 0);
+    if(*status!=ERROR_OK) {
         freeSizedString(&sizedStr);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(),
-        "Can`t read ", 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(),  paramName, 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(),  ". Seems to be integritiy error", 1);
-        return status;
+        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(),
+        "[ERROR] Can`t read string!!! Seems to be integritiy error", 1);
+        return;
     }
     *dest = appendString(NULL, sizedStr->bytes);
     if(paramName!=NULL) {
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "    ", 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), paramName, 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), " : ", 0);
         if((*dest)==NULL) {
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "NULL", 2);
+            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "NULL", 1);
         } else {
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), *dest, 2);
+            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), *dest, 1);
         }
     }
     freeSizedString(&sizedStr);
-    return status;
+    return;
 }
 
 
-DWORD readNumberWithDebug(HANDLE hFileRead, SizedString * rest, DWORD bufferSize, DWORD * dest, char * paramName) {
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Reading number ", 0);
+void readNumberWithDebug(DWORD *status, HANDLE hFileRead, SizedString * rest, DWORD bufferSize, DWORD * dest, char * paramName) {
+    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Reading ", 0);
     writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), paramName, 0);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), " ...", 1);
+    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), " : ", 0);
     
-    DWORD status = readNumber(hFileRead, rest, bufferSize, dest);
+    readNumber(status, hFileRead, rest, bufferSize, dest);
     
-    if(status!=ERROR_OK) {
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(),
-        "Can`t read number string for ", 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(),  paramName, 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(),  ". Seems to be integritiy error", 1);
-        return status;
+    if(*status!=ERROR_OK) {
+        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(),
+        "[ERROR] Can`t read number !!! Seems to be integrity error", 1);
+        return;
     }
-    char * num = DWORDtoCHAR(*dest);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "    ", 0);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), paramName, 0);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), " = ", 0);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), num, 2);
-    FREE(num);
-    
-    return status;
+    writeDWORD(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), NULL, *dest, 1);
+    return;
 }
-
+void readBigNumberWithDebug(DWORD * status, HANDLE hFileRead, SizedString * rest, DWORD bufferSize, int64t * dest, char * paramName) {
+    DWORD low = 0;
+    DWORD high = 0;
+    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Reading ", 0);
+    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), paramName, 0);
+    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), " : ", 0);
+    
+    readNumber(status, hFileRead, rest, bufferSize, &low);
+    if(*status==ERROR_OK) {
+        readNumber(status, hFileRead, rest, bufferSize, &high);
+    }
+    if(*status!=ERROR_OK) {
+        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(),
+        "[ERROR] Can`t read number !!! Seems to be integrity error", 1);
+        return;
+    }    
+    dest->High = high;
+    dest->Low  = low;
+    writeint64t(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), NULL, dest, 1);
+}
 
 // returns: ERROR_OK, ERROR_INPUTOUPUT, ERROR_INTEGRITY
-DWORD extractDataToFile(HANDLE hFileRead, WCHAR *output, SizedString *rest, DWORD fileSize, DWORD bufferSize ) {
-    DWORD size = fileSize;
+void extractDataToFile(DWORD * status, HANDLE hFileRead, WCHAR *output, SizedString *rest, int64t * fileSize, DWORD bufferSize ) {
+    if(*status!=ERROR_OK) return;
+    int64t * size = fileSize;
     HANDLE hFileWrite = CreateFileW(output, GENERIC_READ | GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, hFileRead);
     
     if (hFileWrite == INVALID_HANDLE_VALUE) {
         WCHAR * err = getErrorDescription(GetLastError());
         showMessageW(2, getI18nProperty(OUTPUT_ERROR_PROP), output, err);
         FREE(err);
-        
-        return ERROR_INPUTOUPUT;
+        *status = ERROR_INPUTOUPUT;
+        return;
     }
     if(rest->length!=0 && rest->bytes!=NULL) {
-        
         //check if the data stored in restBytes is more than we neen
-        // restBytesToWrite = min(*restBytesNumber, size);
-        DWORD restBytesToWrite = (rest->length < size) ? rest->length : size;
+        // rest bytes contains much less than int64t so we operate here only bith low bits of size
+        DWORD restBytesToWrite = (compare(size, rest->length)> 0 ) ? rest->length : size->Low;
         DWORD usedBytes = restBytesToWrite;
         
         char *ptr = rest->bytes;
@@ -306,73 +309,74 @@ DWORD extractDataToFile(HANDLE hFileRead, WCHAR *output, SizedString *rest, DWOR
             ptr +=write;
         }
         modifyRestBytes(rest, usedBytes);
-        size-=usedBytes;
+        minus(size, usedBytes);
+        
     }
-
-    DWORD status = ERROR_OK;
-    if(size>0) {
+    
+    
+    if(compare(size, 0) > 0 ) {
+        
         char * buf = newpChar(bufferSize);
-        DWORD bufsize = (bufferSize < size) ? bufferSize : size;
+        DWORD bufsize = (compare(size, bufferSize) > 0) ? bufferSize : size->Low;
         DWORD read = 0 ;
         //  printf("Using buffer size: %u/%u\n", bufsize, bufferSize);
-        while (ReadFile(hFileRead, buf, bufsize, &read, 0) && read && size) {
+        while (ReadFile(hFileRead, buf, bufsize, &read, 0) && read && compare(size, 0) > 0) {
             addProgressPosition(read);
             WriteFile(hFileWrite, buf, read, &read, 0);
-            size-=read;
-            //  printf("Read bytes = %u, size left= %u, bufsize = %u\n", read, size, bufsize);
-            if(size < bufsize && size>0) {
-                //    printf("buffer size changed to: %u\n", size);
-                bufsize = size;
+            minus(size, read);
+            
+            if((compare(size, bufsize)<0) && (compare(size, 0)>0) ) {
+                bufsize = size->Low;
             }
             memset(buf, 0, sizeof(char) * bufferSize);
-            if(size==0) {
+            if(compare(size, 0)==0) {
                 break;
-            }            
+            }
         }
-        if(size>0 || read==0) {
+        if(compare(size, 0)>0 || read==0) {
             // we could not read requested size
-            status = ERROR_INTEGRITY;
+            * status = ERROR_INTEGRITY;
             writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(),
             "Can`t read data from file : not enought data", 1);
         }
         FREE(buf);
     }
     CloseHandle(hFileWrite);
-    return status;
+    return;
 }
 
 //returns : ERROR_OK, ERROR_INTEGRITY, ERROR_FREE_SPACE
-DWORD extractFileToDir(HANDLE hFileRead, WCHAR *dir, SizedString *rest, DWORD bufferSize, WCHAR ** resultFile) {
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... extracting file ...", 1);
+void extractFileToDir(DWORD * status, HANDLE hFileRead, WCHAR *dir, SizedString *rest, DWORD bufferSize, WCHAR ** resultFile) {
+    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Extracting file ...", 1);
     
     WCHAR * fileName = NULL;
-    DWORD status = readStringWithDebugW(hFileRead, rest, bufferSize, & fileName, "... file name");
+    readStringWithDebugW(status, hFileRead, rest, bufferSize, & fileName, "file name");
     
-    DWORD fileLength;
-    status = readNumberWithDebug(hFileRead, rest, bufferSize, &fileLength, "... length");
+    int64t * fileLength = newint64_t(0, 0);
+    readBigNumberWithDebug(status, hFileRead, rest, bufferSize, fileLength, "file length ");
     
-    if(status!=ERROR_OK) return status;
+    if(*status!=ERROR_OK) return;
     
     if(fileName!=NULL) {
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "      directory = ", 0);
+        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "   ... extract to directory = ", 0);
         writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), dir, 1);
         
         WCHAR * output = appendStringW(appendStringW(appendStringW(NULL, dir), FILE_SEP), fileName);
         free(fileName);
-        double spaceNeed = (double) fileLength;
-        if(checkFreeSpace(dir, spaceNeed)) {
-            status = extractDataToFile(hFileRead, output, rest, fileLength, bufferSize);
-            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "       ... extracted", 1);
+        if(checkFreeSpace(dir, fileLength)) {
+            extractDataToFile(status, hFileRead, output, rest, fileLength, bufferSize);
+            writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "   ... extracted", 1);
             *resultFile = output;
         } else {
-            status = ERROR_FREESPACE;
+            * status = ERROR_FREESPACE;
         }
     } else {
         writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Error! File name can`t be null. Seems to be integrity error!", 1);
         *resultFile = NULL;
-        status = ERROR_INTEGRITY;
+        * status = ERROR_INTEGRITY;
     }
-    return status;
+    free(fileLength);
+    return;
 }
 HANDLE getLauncherHandler(DWORD * status) {
     if(launcherHandle==INVALID_HANDLE_VALUE) {
@@ -386,21 +390,26 @@ HANDLE getLauncherHandler(DWORD * status) {
     return launcherHandle;
 }
 
-DWORD loadI18NStrings(HANDLE hFileRead, SizedString * rest, DWORD bufferSize) {
+void loadI18NStrings(DWORD * status, HANDLE hFileRead, SizedString * rest, DWORD bufferSize) {
     DWORD i=0;
     DWORD j=0;
     //read number of locales
     
     DWORD numberOfLocales = 0;
-    DWORD status;
-    status = readNumberWithDebug(hFileRead, rest, bufferSize, &numberOfLocales, "number of locales");
-    if(status!=ERROR_OK) return status;
-    if(numberOfLocales==0) return ERROR_INTEGRITY;
+    readNumberWithDebug(status, hFileRead, rest, bufferSize, &numberOfLocales, "number of locales");
+    if((*status)!=ERROR_OK) return;
+    if(numberOfLocales==0) {
+        *status = ERROR_INTEGRITY;
+        return ;
+    }
     
     DWORD numberOfProperties;
-    status = readNumberWithDebug(hFileRead, rest, bufferSize, &numberOfProperties, "i18n properties");
-    if(status!=ERROR_OK)         return status;
-    if(numberOfProperties==0) return ERROR_INTEGRITY;
+    readNumberWithDebug(status, hFileRead, rest, bufferSize, &numberOfProperties, "i18n properties");
+    if( (*status) != ERROR_OK)  return;
+    if(numberOfProperties==0) {
+        *status = ERROR_INTEGRITY;
+        return ;
+    }
     
     i18nMessages = (I18NStrings * ) malloc(sizeof(I18NStrings) * numberOfProperties);
     
@@ -408,14 +417,16 @@ DWORD loadI18NStrings(HANDLE hFileRead, SizedString * rest, DWORD bufferSize) {
     i18nMessages->properties = newppChar(I18N_PROPERTIES_NUMBER);
     i18nMessages->strings = newppWCHAR(I18N_PROPERTIES_NUMBER);
     
-    
-    for(i=0; status==ERROR_OK && i<numberOfProperties;i++) {
+    for(i=0; (*status==ERROR_OK) && i<numberOfProperties;i++) {
         // read property name as ASCII
         i18nMessages->properties[i] = NULL;
         i18nMessages->strings[i] = NULL;
-        status = readStringWithDebugA(hFileRead, rest, bufferSize, & (i18nMessages->properties[i]), "property name");
+        char * propName = newpChar(20);
+        sprintf(propName, "property name %2u", i);
+        readStringWithDebugA(status, hFileRead, rest, bufferSize, & (i18nMessages->properties[i]), propName);
+        free(propName);
     }
-    if(status!=ERROR_OK) return status;
+    if(*status!=ERROR_OK) return;
     
     DWORD isLocaleMatches;
     WCHAR * localeName;
@@ -428,8 +439,8 @@ DWORD loadI18NStrings(HANDLE hFileRead, SizedString * rest, DWORD bufferSize) {
         // read locale name as UNICODE ..
         // it should be like en_US or smth like that
         localeName = NULL;
-        status = readStringWithDebugW(hFileRead, rest, bufferSize, &localeName, "locale name");
-        if(status!=ERROR_OK) break;
+        readStringWithDebugW(status, hFileRead, rest, bufferSize, &localeName, "locale name");
+        if(*status!=ERROR_OK) break;
         
         isLocaleMatches = (localeName==NULL) ?  1 :  (wcsstr(currentLocale, localeName)!=-1);
         
@@ -446,10 +457,10 @@ DWORD loadI18NStrings(HANDLE hFileRead, SizedString * rest, DWORD bufferSize) {
             s3 = appendString(s3, s2);
             FREE(s1);
             FREE(s2);
-            status =  readStringWithDebugW(hFileRead, rest, bufferSize, &value, s3);
+            readStringWithDebugW(status, hFileRead, rest, bufferSize, &value, s3);
             
             FREE(s3);
-            if(status!=ERROR_OK) break;
+            if(*status!=ERROR_OK) break;
             if(isLocaleMatches) {
                 //it is a know property
                 FREE(i18nMessages->strings[i]);
@@ -460,7 +471,7 @@ DWORD loadI18NStrings(HANDLE hFileRead, SizedString * rest, DWORD bufferSize) {
         FREE(localeName);
     }
     FREE(currentLocale);
-    return status;
+    return;
 }
 
 DWORD isOnlyLauncher() {
@@ -540,11 +551,11 @@ void freeLauncherResource(LauncherResource ** file) {
 void extractLauncherResource(DWORD * status, HANDLE hFileRead, SizedString * rest, DWORD bufferSize, WCHAR *outputdir, LauncherResource ** file, char * name) {
     * file = newLauncherResource();
     char * typeStr = appendString(appendString(NULL, name), " type");
-    *status = readNumberWithDebug(hFileRead, rest, bufferSize, & ((*file)->type) , typeStr);
+    readNumberWithDebug(status, hFileRead, rest, bufferSize, & ((*file)->type) , typeStr);
     if((*status)==ERROR_OK) {
         free(typeStr);
         if((*file)->type==0) { //bundled
-            *status = extractFileToDir(hFileRead, outputdir, rest, bufferSize, & ((*file)->path));
+            extractFileToDir(status, hFileRead, outputdir, rest, bufferSize, & ((*file)->path));
             if ((*status)!=ERROR_OK) {
                 writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "Error extracting file!", 1);
                 return;
@@ -553,7 +564,7 @@ void extractLauncherResource(DWORD * status, HANDLE hFileRead, SizedString * res
                 writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), (*file)->path, 1);
             }
         } else {
-            *status = readStringWithDebugW(hFileRead, rest, bufferSize, & ((*file)->path), name);
+            readStringWithDebugW(status, hFileRead, rest, bufferSize, & ((*file)->path), name);
             if((*status)!=ERROR_OK) {
                 writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "Error reading ", 1);
                 writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), name, 1);
@@ -571,7 +582,7 @@ void readWCHARList(DWORD * status, HANDLE hFileRead, SizedString * rest, DWORD b
     * list = NULL;
     DWORD i =0;
     char * numberStr = appendString(appendString(NULL, "number of "), name);
-    *status = readNumberWithDebug(hFileRead, rest, bufferSize, &number, numberStr);
+    readNumberWithDebug(status, hFileRead, rest, bufferSize, &number, numberStr);
     FREE(numberStr);
     
     if((*status)!=ERROR_OK) return;
@@ -579,7 +590,7 @@ void readWCHARList(DWORD * status, HANDLE hFileRead, SizedString * rest, DWORD b
     * list = newWCHARList(number);
     for(i=0;i < (*list)->size ;i++) {
         char * nextStr = appendString(appendString(NULL, "next item in "), name);
-        *status = readStringWithDebugW(hFileRead, rest, bufferSize, &((*list)->items[i]), nextStr);
+        readStringWithDebugW(status, hFileRead, rest, bufferSize, &((*list)->items[i]), nextStr);
         FREE(nextStr);
         if((*status)!=ERROR_OK) return;
     }
@@ -588,18 +599,18 @@ void readLauncherResourceList(DWORD * status, HANDLE hFileRead, SizedString * re
     DWORD num = 0;
     DWORD i=0;
     char * numberStr = appendString(appendString(NULL, "number of "), name);
-    *status = readNumberWithDebug(hFileRead, rest, bufferSize, &num, numberStr);
+    readNumberWithDebug(status, hFileRead, rest, bufferSize, &num, numberStr);
     FREE(numberStr);
     if((*status)!=ERROR_OK) return;
     
     * list = newLauncherResourceList(num);
-    for(i=0;i<(*list)->size;i++) {
-        extractLauncherResource(status, hFileRead, rest, bufferSize, outputdir, & ((*list)->items[i]), name);
+    for(i=0;i<(*list)->size;i++) {        
+        extractLauncherResource(status, hFileRead, rest, bufferSize, outputdir, & ((*list)->items[i]), "launcher resource");
         if((*status)!=ERROR_OK) {
             char * str = appendString(appendString(NULL, "Error processing "), name);
             writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), str, 1);
             FREE(str);
-            return;
+            break;
         }
     }
 }
@@ -617,16 +628,16 @@ void extractData(DWORD * status, HANDLE hFileRead, SizedString * rest, DWORD buf
     readWCHARList(status, hFileRead, rest, bufferSize, &(props->appArguments), "app arguments");
     if((*status)!=ERROR_OK) return;
     
-    *status = readStringWithDebugW(hFileRead, rest, bufferSize, &(props->mainClass), "Main Class");
+    readStringWithDebugW(status, hFileRead, rest, bufferSize, &(props->mainClass), "Main Class");
     if((*status)!=ERROR_OK) return;
     
-    *status = readStringWithDebugW(hFileRead, rest, bufferSize, &(props->testJVMClass), "TestJVM Class");
+    readStringWithDebugW(status, hFileRead, rest, bufferSize, &(props->testJVMClass), "TestJVM Class");
     if((*status)!=ERROR_OK) return;
     
     readLauncherResourceList(status, hFileRead, rest, bufferSize, outputdir, &(props->jvms), "JVMs");
     if((*status)!=ERROR_OK) return;
     
-    *status = readNumberWithDebug(hFileRead, rest, bufferSize, &(props->compatibleJavaNumber),
+    readNumberWithDebug(status, hFileRead, rest, bufferSize, &(props->compatibleJavaNumber),
     "compatible java");
     if((*status)!=ERROR_OK) return;
     
@@ -638,7 +649,7 @@ void extractData(DWORD * status, HANDLE hFileRead, SizedString * rest, DWORD buf
             
             props->compatibleJava [i] = newJavaCompatible() ;
             
-            *status = readStringWithDebugA(hFileRead, rest, bufferSize, &str,
+            readStringWithDebugA(status, hFileRead, rest, bufferSize, &str,
             "min java version");
             if((*status)!=ERROR_OK) return;
             props->compatibleJava[i]->minVersion = getJavaVersionFromString(str, status);
@@ -646,22 +657,22 @@ void extractData(DWORD * status, HANDLE hFileRead, SizedString * rest, DWORD buf
             if((*status)!=ERROR_OK) return;
             
             str = NULL;
-            *status = readStringWithDebugA(hFileRead, rest, bufferSize, &str,
+            readStringWithDebugA(status, hFileRead, rest, bufferSize, &str,
             "max java version");
             if((*status)!=ERROR_OK) return;
             props->compatibleJava[i]->maxVersion = getJavaVersionFromString(str, status);
             FREE(str);
             if((*status)!=ERROR_OK) return;
             
-            *status = readStringWithDebugA(hFileRead, rest, bufferSize, &(props->compatibleJava[i]->vendor) ,
+            readStringWithDebugA(status, hFileRead, rest, bufferSize, &(props->compatibleJava[i]->vendor) ,
             "vendor");
             if((*status)!=ERROR_OK) return;
             
-            *status = readStringWithDebugA(hFileRead, rest, bufferSize, &(props->compatibleJava[i]->osName) ,
+            readStringWithDebugA(status, hFileRead, rest, bufferSize, &(props->compatibleJava[i]->osName) ,
             "os name");
             if((*status)!=ERROR_OK) return;
             
-            *status = readStringWithDebugA(hFileRead, rest, bufferSize, &(props->compatibleJava[i]->osArch) ,
+            readStringWithDebugA(status, hFileRead, rest, bufferSize, &(props->compatibleJava[i]->osArch) ,
             "os arch");
             if((*status)!=ERROR_OK) return;
             

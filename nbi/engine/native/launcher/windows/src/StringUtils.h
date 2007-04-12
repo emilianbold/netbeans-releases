@@ -22,6 +22,7 @@
 
 #include <windows.h>
 #include <stdarg.h>
+#include "Types.h"
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -101,8 +102,11 @@ extern "C" {
     
     SizedString * createSizedString();
     
+    char * int64ttoCHAR(int64t*);
+    WCHAR * int64ttoWCHAR(int64t*);
     char * DWORDtoCHAR(DWORD);
     WCHAR * DWORDtoWCHAR(DWORD);
+    
     char * doubleToChar(double dl);
     
     void freeSizedString(SizedString ** s);
@@ -114,7 +118,10 @@ extern "C" {
     
     WCHAR ** newppWCHAR(DWORD length);
     char ** newppChar(DWORD length);
-    
+    int64t * newint64_t(DWORD low, DWORD high);
+    int compare(int64t * size, DWORD value);
+    void plus(int64t * size, DWORD value);
+    void minus(int64t * size, DWORD value);
     DWORD getLineSeparatorNumber(char *str);
     DWORD getLengthA(const char * message);
     DWORD getLengthW(const WCHAR * message);

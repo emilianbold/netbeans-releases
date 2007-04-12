@@ -42,7 +42,7 @@ extern "C" {
     
     DWORD getRunningFileSize ();
     
-    DWORD loadI18NStrings(HANDLE hFileRead, SizedString * rest, DWORD bufferSize);
+    void loadI18NStrings(DWORD * status, HANDLE hFileRead, SizedString * rest, DWORD bufferSize);
     
     WCHARList * newWCHARList(DWORD number) ;
     void freeWCHARList(WCHARList ** plist);

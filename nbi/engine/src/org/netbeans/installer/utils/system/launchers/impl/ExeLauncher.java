@@ -47,6 +47,7 @@ import org.netbeans.installer.utils.system.NativeUtils;
 public class ExeLauncher extends CommonLauncher {
     private static final String EXE_EXT = ".exe"; //NOI18N
     private static final int EXE_STUB_FILL_SIZE = 85000; //NOI18N
+    private static final long MAXDWORD = 4294967296L; // actually it is MAXDWORD + 1
     
     public static final String DEFAULT_WINDOWS_RESOURCE_SUFFIX =
             NativeUtils.NATIVE_LAUNCHER_RESOURCE_SUFFIX +
@@ -259,15 +260,15 @@ public class ExeLauncher extends CommonLauncher {
     private void addJavaCompatibleProperties(FileOutputStream fos) throws IOException {
         LogManager.log("Total compatible java properties : " + compatibleJava.size()); //NOI18N
         LogManager.indent();
-        for(int i=0;i<compatibleJava.size();i++) {            
-            // min and max jvm version            
+        for(int i=0;i<compatibleJava.size();i++) {
+            // min and max jvm version
             JavaCompatibleProperties prop = compatibleJava.get(i);
             LogManager.log("... adding compatible jvm [" + i + "] : " + prop.toString()); //NOI18N
             
-            addData(fos,prop.getMinVersion(), false);            
-            addData(fos,prop.getMaxVersion(), false);            
-            addData(fos,prop.getVendor(), false);            
-            addData(fos,prop.getOsName(), false);            
+            addData(fos,prop.getMinVersion(), false);
+            addData(fos,prop.getMaxVersion(), false);
+            addData(fos,prop.getVendor(), false);
+            addData(fos,prop.getOsName(), false);
             addData(fos,prop.getOsArch(), false);
         }
         LogManager.unindent();
@@ -275,6 +276,14 @@ public class ExeLauncher extends CommonLauncher {
     private void addNumber(FileOutputStream fos, long number) throws IOException {
         fos.write(Long.toString(number).getBytes());
         fos.write(0);
+    }
+    private void addNumber(FileOutputStream fos, long number, boolean separateBits) throws IOException {
+        if(separateBits) {
+            addNumber(fos, number % MAXDWORD);
+            addNumber(fos, (number - (number % MAXDWORD)) / MAXDWORD);
+        } else {
+            addNumber(fos, number);
+        }
     }
     
     private void addData(FileOutputStream fos, boolean isTrue) throws IOException {
@@ -308,7 +317,7 @@ public class ExeLauncher extends CommonLauncher {
     
     private void addFileSection(FileOutputStream fos, File file, Progress progress, long total) throws IOException {
         addData(fos, file.getName(), true);
-        addNumber(fos, file.length());
+        addNumber(fos,  file.length(),true);
         addData(fos, file, progress, total);
     }
     
@@ -324,7 +333,7 @@ public class ExeLauncher extends CommonLauncher {
     private void addFileSection(FileOutputStream fos, String resource, Progress progress) throws IOException {
         addNumber(fos, LauncherResource.Type.BUNDLED.toLong());
         addData(fos, ResourceUtils.getResourceFileName(resource), true);
-        addNumber(fos, ResourceUtils.getResourceSize(resource));
+        addNumber(fos,  ResourceUtils.getResourceSize(resource),true);
         InputStream is = ResourceUtils.getResource(resource);
         addData(fos, is, progress, 0);
         is.close();

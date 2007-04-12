@@ -34,9 +34,6 @@ const WCHAR * FILE_SEP = L"\\";
 DWORD checkForFreeSpace = 1;
 
 char TIME_STRING [30];
-typedef struct int64s {
-    unsigned long Low, High;
-} int64t;
 
 
 void setStdoutHandle(HANDLE hndl) {
@@ -68,7 +65,7 @@ void writeTimeStamp(HANDLE hd, DWORD need) {
 void writeMessageA(DWORD level, HANDLE hd, const char * message, DWORD needEndOfLine) {
     if(level<outputLevel) return;
     writeTimeStamp(hd, newLine);
-    DWORD written;
+    DWORD written;    
     WriteFile(hd, message, sizeof(char) * getLengthA(message), & written, NULL);
     if(needEndOfLine>0) {
         newLine = 0;
@@ -88,12 +85,24 @@ void writeMessageW(DWORD level, HANDLE hd, const WCHAR * message, DWORD needEndO
     writeMessageA(level, hd, msg, needEndOfLine);
     FREE(msg);
 }
+void writeDWORD(DWORD level, HANDLE hd, const char * message, DWORD value, DWORD needEndOfLine) {
+    char * dwordStr = DWORDtoCHAR(value);
+    writeMessageA(level, hd, message, 0);
+    writeMessageA(level, hd, dwordStr, needEndOfLine);
+    FREE(dwordStr);
+}
 
+void writeint64t(DWORD level, HANDLE hd, const char * message, int64t * value, DWORD needEndOfLine) {
+    char * str = int64ttoCHAR(value);
+    writeMessageA(level, hd, message, 0);
+    writeMessageA(level, hd, str, needEndOfLine);
+    FREE(str);
+}
 void writeErrorA(DWORD level, HANDLE hd, const char * message, const WCHAR * param, DWORD errorCode) {
     WCHAR * err = getErrorDescription(errorCode);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), message, 0);
-    writeMessageW(OUTPUT_LEVEL_DEBUG, getStderrHandle(), param, 1);
-    writeMessageW(OUTPUT_LEVEL_DEBUG, getStderrHandle(), err, 1);
+    writeMessageA(level, hd, message, 0);
+    writeMessageW(level, hd, param, 1);
+    writeMessageW(level, hd, err, 1);
     FREE(err);
 }
 
@@ -108,10 +117,9 @@ void closeStdHandles() {
 }
 
 
-double getFreeSpace(WCHAR *path) {
-    const double E32 = 4294967296.;
-    double size = 0.0;
+int64t * getFreeSpace(WCHAR *path) {
     int64t bytes;
+    int64t * result = newint64_t(0, 0);
     WCHAR * dst = appendStringW(NULL, path);
     while(!fileExists(dst)) {
         WCHAR * parent = getParentDirectory(dst);
@@ -119,33 +127,25 @@ double getFreeSpace(WCHAR *path) {
         dst = parent;
         if(dst==NULL) break;
     }
-    if(dst==NULL) return 0.; // no parent ? strange
+    if(dst==NULL) return result; // no parent ? strange
     
     if (GetDiskFreeSpaceExW(dst, (PULARGE_INTEGER) &bytes, NULL, NULL)) {
-        size = ((double) (bytes.High)) * E32 + ((double) bytes.Low);
+        result->High = bytes.High;
+        result->Low  = bytes.Low;
     }
     
     FREE(dst);
-    return size;
+    return result;
 }
 
-DWORD checkFreeSpace(WCHAR *path, DWORD size) {
+DWORD checkFreeSpace(WCHAR *path, int64t * size) {
     if(checkForFreeSpace) {
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... checking free space at ", 0);
-        writeMessageW(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), path, 1);
-        double space = getFreeSpace(path);
-        
-        char * ch = doubleToChar(size);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "...  required : ", 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), ch, 1);
-        FREE(ch);
-        
-        ch = doubleToChar(space);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... available : ", 0);
-        writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), ch, 1);
-        FREE(ch);
-        
-        return ( space >= ((double)size)) ? 1 : 0;
+        int64t * space = getFreeSpace(path);
+        DWORD result = 0;
+        result = ((space->High > size->High) ||
+        (space->High == size->High && space->Low >= size->Low));
+        free(space);
+        return result;
     } else {
         writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... free space checking is disabled", 1);
         return 1;
@@ -230,7 +230,10 @@ DWORD createDirectory(WCHAR * directory) {
         secattr.bInheritHandle = 1;
         writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "... creating directory itself... ", 0);
         writeMessageW(OUTPUT_LEVEL_DEBUG, getStderrHandle(), directory, 1);
-        status = (getFreeSpace(parent)>0.0) ? ERROR_OK : ERROR_FREESPACE;
+        int64t * minSize = newint64_t(0, 0);
+        status = checkFreeSpace(parent, minSize) ? ERROR_OK : ERROR_FREESPACE;
+        free(minSize);
+        
         if(status == ERROR_OK) {
             status = (CreateDirectoryExW(parent, directory, &secattr)) ? ERROR_OK : ERROR_INPUTOUPUT;
             if(status!=ERROR_OK) {

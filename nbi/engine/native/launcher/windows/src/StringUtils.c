@@ -59,7 +59,7 @@ WCHAR * getI18nProperty(char * name) {
         }
     }
     
-    return getDefaultString(name);    
+    return getDefaultString(name);
 }
 
 WCHAR * getDefaultString(char *name) {
@@ -190,6 +190,27 @@ WCHAR * DWORDtoWCHAR(DWORD dw) {
     WCHAR * str = (WCHAR*) malloc(sizeof(WCHAR)*17);
     wsprintfW(str, L"%u", dw);
     return str;
+}
+
+char * int64ttoCHAR(int64t* value) {
+    if(value->High==0) {
+        return DWORDtoCHAR(value->Low);
+    } else {
+        char * str = newpChar(34);
+        double d = ((double) value->High * (MAXDWORD + 1)) + ((double) value->Low);
+        sprintf(str, "%.0lf", d);
+        return str;
+    }
+}
+WCHAR * int64ttoWCHAR(int64t*value) {
+    if(value->High==0) {
+        return DWORDtoWCHAR(value->Low);
+    } else {
+        WCHAR * str = newpWCHAR(34);
+        double d = ((double) value->High * (MAXDWORD + 1)) + ((double) value->Low);
+        wsprintfW(str, L"%.0lf", d);
+        return str;
+    }
 }
 
 
@@ -352,7 +373,39 @@ char ** newppChar(DWORD length) {
     return (char**) malloc(sizeof(char*) * length);
 }
 
+int compare(int64t * size, DWORD value) {
+    if (size->High > 0) return 1;
+    if (size->Low > value)  return 1;
+    if (size->Low == value) return 0;
+    if (size->Low < value)  return -1;
+}
 
+void plus(int64t * size, DWORD value) {
+    if(value!=0) {
+        if((MAXDWORD - size->Low) >= (value - 1)) {
+            size->Low = size->Low + value;
+        } else {
+            size->High = size->High + 1;
+            size->Low  = value - (MAXDWORD - size->Low) - 1;
+        }
+    }
+}
+
+void minus(int64t * size, DWORD value) {
+    if(value!=0) {
+        if(size->Low < value) {
+            size->High = size->High -1;
+            size->Low = size->Low + (MAXDWORD - value) + 1;
+        } else {
+            size->Low = size->Low - value;
+        }}
+}
+int64t * newint64_t(DWORD low, DWORD high) {
+    int64t * res = (int64t *) malloc(sizeof(int64t));
+    res->Low = low;
+    res->High = high;
+    return res;
+}
 WCHAR * getErrorDescription(DWORD dw) {
     WCHAR * lpMsgBuf;
     WCHAR * lpDisplayBuf;
@@ -369,20 +422,20 @@ WCHAR * getErrorDescription(DWORD dw) {
     
 }
 
-WCHAR * formatMessageW(const DWORD varArgsNumber, const WCHAR* message, ...) {    
+WCHAR * formatMessageW(const DWORD varArgsNumber, const WCHAR* message, ...) {
     DWORD totalLength=getLengthW(message);
     va_list ap;
     va_start(ap, message);
     DWORD counter=0;
     while((counter++)<varArgsNumber) {
         WCHAR * arg = va_arg( ap, WCHAR * );
-        totalLength+=getLengthW(arg);        
+        totalLength+=getLengthW(arg);
     }
     va_end(ap);
     
-    WCHAR * result = newpWCHAR(totalLength + 1);    
+    WCHAR * result = newpWCHAR(totalLength + 1);
     va_start(ap, message);
-    wvsprintfW(result, message,ap);
-    va_end(ap);    
+    wvsprintfW(result, message, ap);
+    va_end(ap);
     return result;
 }

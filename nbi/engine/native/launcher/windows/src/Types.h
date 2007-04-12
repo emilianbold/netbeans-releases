@@ -24,7 +24,14 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
-    typedef struct {
+
+typedef struct int64s {
+    DWORD Low;
+    DWORD High;
+} int64t;
+
+    
+typedef struct {
         long major;
         long minor;
         long micro;

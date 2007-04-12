@@ -22,6 +22,7 @@
 
 #include <windows.h>
 #include "Errors.h"
+#include "Types.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -37,8 +38,8 @@ extern "C" {
     extern DWORD outputLevel;
     extern DWORD checkForFreeSpace;
     extern const WCHAR * FILE_SEP;
-    double getFreeSpace(WCHAR *path);
-    DWORD checkFreeSpace(WCHAR *path, DWORD size);    
+    int64t * getFreeSpace(WCHAR *path);
+    DWORD checkFreeSpace(WCHAR *path, int64t * size);    
     WCHAR * getParentDirectory(WCHAR * dir);
     DWORD createDirectory(WCHAR * dir);
     void createTempDirectory(DWORD * status, WCHAR * argTempDir, WCHAR ** resultDir, DWORD createRndSubDir);
@@ -57,7 +58,8 @@ extern "C" {
     void writeMessageW(DWORD level, HANDLE hd, const WCHAR * message, DWORD needEndOfLine);
     void writeMessageA(DWORD level, HANDLE hd, const char * message, DWORD needEndOfLine);
     void writeErrorA(DWORD level, HANDLE hd, const char * message, const WCHAR * param, DWORD errorCode);
-    
+    void writeDWORD(DWORD level, HANDLE hd, const char * message, DWORD value, DWORD needEndOfLine);
+    void writeint64t(DWORD level, HANDLE hd, const char * message, int64t * value, DWORD needEndOfLine);
     void flushHandle(HANDLE hd);
     
   

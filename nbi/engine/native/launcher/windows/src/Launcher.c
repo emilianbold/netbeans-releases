@@ -133,7 +133,7 @@ void loadLocalizationStrings(DWORD * status, HANDLE hFileRead, DWORD bufsize, Si
     
     // load localized messages
     writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "Loading I18N Strings.", 1);
-    *status = loadI18NStrings(hFileRead, restOfBytes, bufsize);
+    loadI18NStrings(status, hFileRead, restOfBytes, bufsize);
     
     if((*status)!=ERROR_OK) {
         writeMessageA(OUTPUT_LEVEL_NORMAL, getStderrHandle(), "Error! Can`t load i18n strings!!", 1);
@@ -515,8 +515,8 @@ DWORD executeMainClass(DWORD * status, LauncherProperties * props) {
     
     writeMessageA(OUTPUT_LEVEL_NORMAL, getStdoutHandle(), "Executing main class", 1);
     DWORD exitCode = ERROR_OK;
-    if(checkFreeSpace(props->tmpDir, 0)) {
-        
+    int64t * minSize = newint64_t(0,0);
+    if(checkFreeSpace(props->tmpDir, minSize)) {        
         HANDLE hErrorRead;
         HANDLE hErrorWrite;
         CreatePipe(&hErrorRead, &hErrorWrite, NULL, 0);
@@ -548,6 +548,7 @@ DWORD executeMainClass(DWORD * status, LauncherProperties * props) {
         exitCode = (*status);
         writeMessageA(OUTPUT_LEVEL_DEBUG, getStderrHandle(), "... there is not enough space in tmp dir to execute main jar", 1);
     }
+    free(minSize);
     return exitCode ;
 }
 
@@ -664,15 +665,15 @@ void freeLauncherProperties(LauncherProperties **props) {
     }
     return;
 }
-void printStatus (DWORD * status, DWORD exitCode) {
+void printStatus(DWORD * status, DWORD exitCode) {
     char * s = DWORDtoCHAR(*status);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... EXIT status : ", 0);    
+    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... EXIT status : ", 0);
     writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), s, 1);
     FREE(s);
     s = DWORDtoCHAR(exitCode);
-    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... EXIT code : ", 0);    
+    writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... EXIT code : ", 0);
     writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), s, 1);
-    FREE(s);    
+    FREE(s);
 }
 DWORD processLauncher(DWORD * status, WCHARList * commandLine) {
     I18N_PROPERTIES_NUMBER = 0;
@@ -749,7 +750,7 @@ DWORD processLauncher(DWORD * status, WCHARList * commandLine) {
         }
         freeSizedString(&restOfBytes);
     }
-    printStatus(status, exitCode);    
+    printStatus(status, exitCode);
     
     writeMessageA(OUTPUT_LEVEL_DEBUG, getStdoutHandle(), "... closing file and std handles", 1);
     CloseHandle(hFileRead);
