@@ -1,9 +1,7 @@
 package org.netbeans.installer.infra.server.client.servlets;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
@@ -19,7 +17,6 @@ import org.netbeans.installer.infra.server.ejb.ManagerException;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.RegistryNode;
-import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.ParseException;
@@ -159,6 +156,8 @@ public class CreateBundle extends HttpServlet {
                 filename += ".sh";
             }
             
+            final OutputStream output = response.getOutputStream();
+            
             response.setContentType(
                     "application/octet-stream");
             response.setHeader(
@@ -171,7 +170,7 @@ public class CreateBundle extends HttpServlet {
                     "Accept-Ranges",
                     "bytes");
             
-            Utils.transfer(request, response, file);
+            Utils.transfer(request, response, output, file);
         } catch (ParseException e) {
             e.printStackTrace(response.getWriter());
         } catch (ManagerException e) {

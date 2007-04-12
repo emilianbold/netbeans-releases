@@ -14,11 +14,10 @@ public final class Utils {
     public static void transfer(
             HttpServletRequest request,
             HttpServletResponse response,
+            OutputStream output,
             File file) throws IOException {
         RandomAccessFile input = null;
-        OutputStream output = null;
         try {
-            output = response.getOutputStream();
             input = new RandomAccessFile(file, "r");
             
             final String range = request.getHeader("Range");
@@ -85,9 +84,6 @@ public final class Utils {
         } finally {
             if (input != null) {
                 input.close();
-            }
-            if (output != null) {
-                output.close();
             }
         }
     }

@@ -3,11 +3,7 @@ package org.netbeans.installer.infra.server.client.servlets;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -15,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.netbeans.installer.infra.server.ejb.Manager;
 import org.netbeans.installer.infra.server.ejb.ManagerException;
-import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 
 /**
@@ -38,6 +33,8 @@ public class GetFile extends HttpServlet {
             final File file = manager.getFile(registry, path);
             final String filename = file.getName();
             
+            final OutputStream output = response.getOutputStream();
+            
             response.setContentType(
                     "application/octet-stream");
             response.setHeader(
@@ -50,7 +47,11 @@ public class GetFile extends HttpServlet {
                     "Accept-Ranges",
                     "bytes");
             
-            Utils.transfer(request, response, file);
+            try {
+                Utils.transfer(request, response, output, file);
+            } finally {
+                output.close();
+            }
         } catch (ManagerException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             e.printStackTrace();
