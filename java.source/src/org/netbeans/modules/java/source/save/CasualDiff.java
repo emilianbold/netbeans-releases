@@ -25,13 +25,11 @@ import static com.sun.source.tree.Tree.*;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
-import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.UndoListService;
 import org.netbeans.modules.java.source.transform.UndoList;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
-import org.netbeans.modules.java.source.engine.ASTModel;
 import org.netbeans.modules.java.source.query.Query;
 import com.sun.tools.javac.code.*;
 import com.sun.tools.javac.tree.JCTree;
@@ -58,7 +56,6 @@ import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 public class CasualDiff {
     protected ListBuffer<Diff> diffs;
     protected CommentHandler comments;
-    protected ASTModel model;
     protected UndoList undo;
     protected JCTree oldParent;
     protected JCTree newParent;
@@ -79,7 +76,6 @@ public class CasualDiff {
     protected CasualDiff(Context context, WorkingCopy workingCopy) {
         diffs = new ListBuffer<Diff>();
         comments = CommentHandlerService.instance(context);
-        model = ASTService.instance(context);
         undo = UndoListService.instance(context);
         this.workingCopy = workingCopy;
         this.tokenSequence = workingCopy.getTokenHierarchy().tokenSequence();
@@ -1426,7 +1422,7 @@ public class CasualDiff {
         JCTree newT = safeNext(newIter);
         while (oldT != null && newT != null) {
             if (oldTopLevel != null) {
-                int endPos = model.getEndPos(oldT, oldTopLevel);
+                int endPos = endPos(oldT);
 
                 if (endPos != Position.NOPOS)
                     lastOldPos = endPos;
@@ -1442,26 +1438,22 @@ public class CasualDiff {
                 newT = safeNext(newIter);
             }
             else if (!listContains(newList, oldT)) {
-                if (!isHidden(oldT, oldParent))
-                    append(Diff.delete(oldT, getOldPos(oldT)));
+                append(Diff.delete(oldT, getOldPos(oldT)));
                 oldT = safeNext(oldIter);
             }
             else {
-                if (!isHidden(newT, newParent))
-                    append(Diff.insert(newT, getOldPos(oldT), newLine, null));
+                append(Diff.insert(newT, getOldPos(oldT), newLine, null));
                 newT = safeNext(newIter);
             }
         }
         while (oldT != null) {
-            if (!isHidden(oldT, oldParent))
-                append(Diff.delete(oldT, getOldPos(oldT)));
+            append(Diff.delete(oldT, getOldPos(oldT)));
             if (oldTopLevel != null)
-                lastOldPos = model.getEndPos(oldT, oldTopLevel);
+                lastOldPos = endPos(oldT);
             oldT = safeNext(oldIter);
         }
         while (newT != null) {
-            if (!isHidden(newT, newParent))
-                append(Diff.insert(newT, lastOldPos, newLine, null));
+            append(Diff.insert(newT, lastOldPos, newLine, null));
             newT = safeNext(newIter);
         }
         return lastPrinted;
@@ -1485,7 +1477,7 @@ public class CasualDiff {
             copyTo(localPointer, localPointer = getOldPos(oldT));
             localPointer = diffTree(oldT, newIter.next(), new int[] { localPointer, endPos(oldT) });
             if (oldTopLevel != null)
-                lastOldPos = model.getEndPos(oldT, oldTopLevel);
+                lastOldPos = endPos(oldT);
         }
         while (oldIter.hasNext()) {
             JCTree oldT = oldIter.next();
@@ -2016,16 +2008,6 @@ public class CasualDiff {
             }
         }
         return localPointer;
-    }
-    
-    private boolean isHidden(JCTree t, JCTree parent) {
-        if (parent == null)
-            return false;
-        //TODO: the test was originaly: t.pos == parent.pos, which caused problems when adding
-        //member into class without non-syntetic constructors. See ConstructorTest.
-        if (t.pos == Query.NOPOS)
-            return true;
-        return model.isSynthetic(t);
     }
     
     protected void diffPrecedingComments(JCTree oldT, JCTree newT) {
