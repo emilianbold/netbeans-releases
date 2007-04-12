@@ -23,6 +23,7 @@ import java.io.*;
 import java.util.Collections;
 import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
@@ -35,7 +36,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Pavel Flaska
  */
-public class CommentsTest extends GeneratorTestMDRCompat {
+public class CommentsTest extends GeneratorTest {
     
     /** Creates a new instance of CommentsTest */
     public CommentsTest(String name) {
@@ -50,6 +51,7 @@ public class CommentsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new CommentsTest("testGetComment1"));
 //        suite.addTest(new CommentsTest("testAddJavaDocToExistingMethod"));
 //        suite.addTest(new CommentsTest("testAddTwoEndLineCommments"));
+//        suite.addTest(new CommentsTest("testCopyMethodWithCommments"));
         return suite;
     }
 
@@ -312,12 +314,78 @@ public class CommentsTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    // issue #100829
+    public void testCopyMethodWithCommments() throws Exception {
+        File originFile = new File(getWorkDir(), "Origin.java");
+        TestUtilities.copyStringToFile(originFile, 
+            "public class Origin {\n" +
+            "    /**\n" +
+            "     * comment\n" +
+            "     * @return 1\n" +
+            "     */\n" +
+            "    int method() {\n" +
+            "        // TODO: Process the button click action. Return value is a navigation\n" +
+            "        // case name where null will return to the same page.\n" +
+            "        return 1;\n" +
+            "    }\n" +
+            "}\n"
+            );
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "import java.io.File;\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "import java.io.File;\n" +
+            "public class Test {\n" +
+            "    /**\n" +
+            "     * comment\n" +
+            "     * @return 1\n" +
+            "     */\n" +
+            "    int method() {\n" +
+            "        // TODO: Process the button click action. Return value is a navigation\n" +
+            "        // case name where null will return to the same page.\n" +
+            "        return 1;\n" +
+            "    }\n" +
+            "\n" +
+            "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy wc) throws IOException {
+                wc.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = wc.getCompilationUnit();
+                TreeMaker make = wc.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                
+                TypeElement originClass = wc.getElements().getTypeElement("Origin");
+                assertNotNull(originClass);
+                
+                ClassTree origClassTree = (ClassTree) SourceUtils.treeFor(wc, originClass);
+                Tree method = origClassTree.getMembers().get(1);
+                assertNotNull(method);
+                
+                wc.rewrite(clazz, make.addClassMember(clazz, method));
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
 
     String getSourcePckg() {
-        return "";
+        return"";
     }
 
 }
