@@ -80,8 +80,6 @@ public class CasaModelGraphUtilities {
             return;
         }
         
-        boolean wasModified = scene.isModified();
-        
         // clean up any pre-existing model widgets
         
         for (CasaComponent ob : new ArrayList<CasaComponent>(scene.getEdges())) {
@@ -129,13 +127,6 @@ public class CasaModelGraphUtilities {
                 scene.getConnectionLayer())));
         scene.updateEdgeRouting();
         scene.validate();
-        
-        
-        if (!wasModified && scene.isModified()) {
-            // Auto-layouts may cause widget positions to fix themselves.
-            // In this case, the modified flag will be true - we need to save.
-            scene.save();
-        }
     }
 
     private static void renderLayout(final CasaModelGraphScene scene) {

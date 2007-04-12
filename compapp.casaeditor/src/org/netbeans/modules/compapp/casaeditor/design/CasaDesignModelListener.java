@@ -141,11 +141,11 @@ public class CasaDesignModelListener implements PropertyChangeListener {
                 casaPort.getX(),
                 casaPort.getY());
         // Force a layout to ensure the widget fits at the suggested location.
-        mScene.progressiveRegionLayout(mScene.getBindingRegion(), true);
+        mScene.progressiveRegionLayout(mScene.getBindingRegion(), false);
         // update selection
-       mScene.updateSelectionAndRequestFocus(casaPort);
-       
-       CasaModelGraphUtilities.ensureVisibity(w);
+        mScene.updateSelectionAndRequestFocus(casaPort);
+        
+        CasaModelGraphUtilities.ensureVisibity(w);
     }
     
     private void removeCasaPort(CasaPort casaPort) {

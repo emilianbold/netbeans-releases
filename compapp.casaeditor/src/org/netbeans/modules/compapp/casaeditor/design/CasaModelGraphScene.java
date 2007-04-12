@@ -35,7 +35,6 @@ import org.netbeans.api.visual.widget.Widget;
 
 import javax.swing.*;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -70,7 +69,6 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
 import org.netbeans.modules.compapp.casaeditor.multiview.CasaGraphMultiViewElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
-import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.Mode;
@@ -674,13 +672,5 @@ implements PropertyChangeListener {
     
     public boolean isModified() {
         return mDataObject.isModified();
-    }
-    
-    public void save() {
-        try {
-            mDataObject.getEditorSupport().saveDocument();
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
     }
 }
