@@ -25,8 +25,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.websvc.core.InvokeOperationActionProvider;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
-import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 
@@ -39,6 +39,8 @@ public class JaxWsInvokeOperationProvider implements InvokeOperationActionProvid
                 (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) ||
                 (projectInfo.isJwsdpSupported())
                 ) {
+            return new JaxWsInvokeOperation(project);
+        } else if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) {
             return new JaxWsInvokeOperation(project);
         }
         // Tomcat on J2EE14 project Case
