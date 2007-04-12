@@ -178,13 +178,7 @@
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>
-            </test-dependencies>
-            <!-- <class-path-extension>
-                <runtime-relative-path>ext/sql/wsdl4j-1_5_2/wsdl4j.jar</runtime-relative-path>
-                <binary-origin>../external/wsdl4j-1_5_2/wsdl4j.jar</binary-origin>
-            </class-path-extension>
-             -->
-           
+            </test-dependencies>       
 			<class-path-extension>
                 <runtime-relative-path>ext/sql/ant.jar</runtime-relative-path>
                 <binary-origin>"${harness.dir}/../ide8/ant/lib/ant.jar"</binary-origin>

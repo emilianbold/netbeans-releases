@@ -51,16 +51,7 @@
             <!-- <fileset dir="antsrc" includes="**/antlib.xml"/> -->
             <fileset dir="antsrc" includes="**/sqlpro.wsdl.template"/>
         </jar>
-
-		<!-- <mkdir dir="${cluster}/ant/nblib"/> -->
-		<!--
-        <copy todir="${cluster}/ant/nblib">
-            <fileset dir="../external/wsdl4j-1_5_2">
-                <include name="wsdl4j.jar"/>
-            </fileset>
-        </copy>
-		-->
-    </target>
+	</target>
 	<target name="netbeans-extra" depends="ant-extra"/>
 
 </project>

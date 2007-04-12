@@ -266,16 +266,26 @@
                         <release-version>3</release-version>
                         <specification-version>3.9.12</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
+				 <dependency>
+                    <code-name-base>javax.wsdl4j</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages/>
 <!--                <package>org.netbeans.modules.sql</package>
             </public-packages>
--->
+
 			<class-path-extension>
                 <runtime-relative-path>ext/sql/wsdl4j-1_5_2/wsdl4j.jar</runtime-relative-path>
                 <binary-origin>../external/wsdl4j-1_5_2/wsdl4j.jar</binary-origin>
             </class-path-extension>
-        </data>
-    </configuration>
+ -->
+		</data>
+ 
+	</configuration>
 </project>
