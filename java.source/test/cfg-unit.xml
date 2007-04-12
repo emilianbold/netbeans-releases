@@ -100,6 +100,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/CommentsTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/OperatorsTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/AnonymousClassTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/TopLevelTest.class"/>
 
                 <include name="org/netbeans/api/java/source/gen/BrokenSourceTest.class"/>
                 
