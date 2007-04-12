@@ -78,102 +78,102 @@ Microsystems, Inc. All Rights Reserved.
     <node key="while"       context="root" type="keyword" library="keyword" documentation="JavaScript keyword."/>
     <node key="with"       context="root" type="keyword" library="keyword" documentation="JavaScript keyword."/>
     
-    <node key="arguments[]"       context="root" library="JS Core" type="attribute"/>
-        <node key="callee"      context="arguments,member" library="JS Core" type="attribute"/>
-        <node key="length"      context="arguments,member" library="JS Core" type="attribute"/>
+    <node key="arguments[]"       context="root" library="JS Core" type="field"/>
+        <node key="callee"      context="arguments,member" library="JS Core" type="field"/>
+        <node key="length"      context="arguments,member" library="JS Core" type="field"/>
     <node key="Array"           context="root" library="JS Core" type="interface"/>
         <node key="Array"       context="constructor" library="JS Core" type="constructor"/>
-        <node key="length"      context="member" library="JS Core" type="attribute"/>
-        <node key="concat"      context="member" library="JS Core" type="function"/>
-        <node key="join"        context="member" library="JS Core" type="function"/>
-        <node key="pop"         context="member" library="JS Core" type="function"/>
-        <node key="push"        context="member" library="JS Core" type="function"/>
-        <node key="reverse"     context="member" library="JS Core" type="function"/>
-        <node key="shift"       context="member" library="JS Core" type="function"/>
-        <node key="slice"       context="member" library="JS Core" type="function"/>
-        <node key="sort"        context="member" library="JS Core" type="function"/>
-        <node key="splice"      context="member" library="JS Core" type="function"/>
-        <node key="unshift"     context="member" library="JS Core" type="function"/>
+        <node key="length"      context="member" library="JS Core" type="field"/>
+        <node key="concat"      context="member" library="JS Core" type="method"/>
+        <node key="join"        context="member" library="JS Core" type="method"/>
+        <node key="pop"         context="member" library="JS Core" type="method"/>
+        <node key="push"        context="member" library="JS Core" type="method"/>
+        <node key="reverse"     context="member" library="JS Core" type="method"/>
+        <node key="shift"       context="member" library="JS Core" type="method"/>
+        <node key="slice"       context="member" library="JS Core" type="method"/>
+        <node key="sort"        context="member" library="JS Core" type="method"/>
+        <node key="splice"      context="member" library="JS Core" type="method"/>
+        <node key="unshift"     context="member" library="JS Core" type="method"/>
     <node key="Boolean"         context="root" library="JS Core" type="interface"/>
         <node key="Boolean"     context="constructor" library="JS Core" type="constructor"/>
-        <node key="toString"     context="member" library="JS Core" type="function"/>
-        <node key="valueOf"     context="member" library="JS Core" type="function"/>
+        <node key="toString"     context="member" library="JS Core" type="method"/>
+        <node key="valueOf"     context="member" library="JS Core" type="method"/>
     <node key="Date"            context="root" library="JS Core" type="interface"/>
         <node key="Date"     context="constructor" library="JS Core" type="constructor"/>
         
-        <node key="parse"       context="Date" library="JS Core" type="function"/>
-        <node key="UTC"         context="Date" library="JS Core" type="function"/>
+        <node key="parse"       context="Date" library="JS Core" type="method"/>
+        <node key="UTC"         context="Date" library="JS Core" type="method"/>
         
-        <node key="getDate"     context="member" library="JS Core" type="function"/>
-        <node key="getDay"      context="member" library="JS Core" type="function"/>
-        <node key="getFullYear" context="member" library="JS Core" type="function"/>
-        <node key="getHours"    context="member" library="JS Core" type="function"/>
-        <node key="getMilliseconds" context="member" library="JS Core" type="function"/>
-        <node key="getMinutes"  context="member" library="JS Core" type="function"/>
-        <node key="getMonth"    context="member" library="JS Core" type="function"/>
-        <node key="getSeconds"  context="member" library="JS Core" type="function"/>
-        <node key="getUTCDate"  context="member" library="JS Core" type="function"/>
-        <node key="getUTCDay"   context="member" library="JS Core" type="function"/>
-        <node key="getUTCFullYear" context="member" library="JS Core" type="function"/>
-        <node key="getUTCHours" context="member" library="JS Core" type="function"/>
-        <node key="getUTCMilliseconds" context="member" library="JS Core" type="function"/>
-        <node key="getUTCMinutes"   context="member" library="JS Core" type="function"/>
-        <node key="getUTCMonth" context="member" library="JS Core" type="function"/>
-        <node key="getUTCSeconds" context="member" library="JS Core" type="function"/>
-        <node key="getTime"     context="member" library="JS Core" type="function"/>
-        <node key="getTimezoneOffset" context="member" library="JS Core" type="function"/>
-        <node key="getYear"     context="member" library="JS Core" type="function"/>        
-        <node key="setDate"     context="member" library="JS Core" type="function"/>
-        <node key="setFullYear" context="member" library="JS Core" type="function"/>
-        <node key="setHours"    context="member" library="JS Core" type="function"/>
-        <node key="setMilliseconds" context="member" library="JS Core" type="function"/>
-        <node key="setMinutes"  context="member" library="JS Core" type="function"/>
-        <node key="setMonth"    context="member" library="JS Core" type="function"/>
-        <node key="setSeconds"  context="member" library="JS Core" type="function"/>
-        <node key="setUTCDate"  context="member" library="JS Core" type="function"/>
-        <node key="setUTCFullYear" context="member" library="JS Core" type="function"/>
-        <node key="setUTCHours" context="member" library="JS Core" type="function"/>
-        <node key="setUTCMilliseconds"  context="member" library="JS Core" type="function"/>
-        <node key="setUTCMinutes"   context="member" library="JS Core" type="function"/>
-        <node key="setUTCMonth" context="member" library="JS Core" type="function"/>
-        <node key="setUTCSeconds"   context="member" library="JS Core" type="function"/>
-        <node key="setTime"     context="member" library="JS Core" type="function"/>
-        <node key="setYear"     context="member" library="JS Core" type="function"/>
-        <node key="toDateString" context="member" library="JS Core" type="function"/>
-        <node key="toGMTString" context="member" library="JS Core" type="function"/>
-        <node key="toLocaleDateString" context="member" library="JS Core" type="function"/>
-        <node key="toLocaleTimeString" context="member" library="JS Core" type="function"/>
-        <node key="toString"     context="member" library="JS Core" type="function"/>
-        <node key="toTimeString" context="member" library="JS Core" type="function"/>
-        <node key="toUTCString" context="member" library="JS Core" type="function"/>
-    <node key="decodeURI"       context="root" library="JS Core" type="function"/>
-    <node key="decodeURIComponent" context="root" library="JS Core" type="function"/>
-    <node key="encodeURI"       context="root" library="JS Core" type="function"/>
-    <node key="encodeURIComponent" context="root" library="JS Core" type="function"/>
+        <node key="getDate"     context="member" library="JS Core" type="method"/>
+        <node key="getDay"      context="member" library="JS Core" type="method"/>
+        <node key="getFullYear" context="member" library="JS Core" type="method"/>
+        <node key="getHours"    context="member" library="JS Core" type="method"/>
+        <node key="getMilliseconds" context="member" library="JS Core" type="method"/>
+        <node key="getMinutes"  context="member" library="JS Core" type="method"/>
+        <node key="getMonth"    context="member" library="JS Core" type="method"/>
+        <node key="getSeconds"  context="member" library="JS Core" type="method"/>
+        <node key="getUTCDate"  context="member" library="JS Core" type="method"/>
+        <node key="getUTCDay"   context="member" library="JS Core" type="method"/>
+        <node key="getUTCFullYear" context="member" library="JS Core" type="method"/>
+        <node key="getUTCHours" context="member" library="JS Core" type="method"/>
+        <node key="getUTCMilliseconds" context="member" library="JS Core" type="method"/>
+        <node key="getUTCMinutes"   context="member" library="JS Core" type="method"/>
+        <node key="getUTCMonth" context="member" library="JS Core" type="method"/>
+        <node key="getUTCSeconds" context="member" library="JS Core" type="method"/>
+        <node key="getTime"     context="member" library="JS Core" type="method"/>
+        <node key="getTimezoneOffset" context="member" library="JS Core" type="method"/>
+        <node key="getYear"     context="member" library="JS Core" type="method"/>        
+        <node key="setDate"     context="member" library="JS Core" type="method"/>
+        <node key="setFullYear" context="member" library="JS Core" type="method"/>
+        <node key="setHours"    context="member" library="JS Core" type="method"/>
+        <node key="setMilliseconds" context="member" library="JS Core" type="method"/>
+        <node key="setMinutes"  context="member" library="JS Core" type="method"/>
+        <node key="setMonth"    context="member" library="JS Core" type="method"/>
+        <node key="setSeconds"  context="member" library="JS Core" type="method"/>
+        <node key="setUTCDate"  context="member" library="JS Core" type="method"/>
+        <node key="setUTCFullYear" context="member" library="JS Core" type="method"/>
+        <node key="setUTCHours" context="member" library="JS Core" type="method"/>
+        <node key="setUTCMilliseconds"  context="member" library="JS Core" type="method"/>
+        <node key="setUTCMinutes"   context="member" library="JS Core" type="method"/>
+        <node key="setUTCMonth" context="member" library="JS Core" type="method"/>
+        <node key="setUTCSeconds"   context="member" library="JS Core" type="method"/>
+        <node key="setTime"     context="member" library="JS Core" type="method"/>
+        <node key="setYear"     context="member" library="JS Core" type="method"/>
+        <node key="toDateString" context="member" library="JS Core" type="method"/>
+        <node key="toGMTString" context="member" library="JS Core" type="method"/>
+        <node key="toLocaleDateString" context="member" library="JS Core" type="method"/>
+        <node key="toLocaleTimeString" context="member" library="JS Core" type="method"/>
+        <node key="toString"     context="member" library="JS Core" type="method"/>
+        <node key="toTimeString" context="member" library="JS Core" type="method"/>
+        <node key="toUTCString" context="member" library="JS Core" type="method"/>
+    <node key="decodeURI"       context="root" library="JS Core" type="method"/>
+    <node key="decodeURIComponent" context="root" library="JS Core" type="method"/>
+    <node key="encodeURI"       context="root" library="JS Core" type="method"/>
+    <node key="encodeURIComponent" context="root" library="JS Core" type="method"/>
     <node key="Error"           context="root" library="JS Core" type="interface"/>
         <node key="Error"       context="constructor" library="JS Core" type="constructor"/>
-        <node key="message"     context="member" library="JS Core" type="attribute"/>
-        <node key="name"        context="member" library="JS Core" type="attribute"/>
-        <node key="toString"    context="member" library="JS Core" type="function"/>
-    <node key="escape"          context="root" library="JS Core" type="function"/>
-    <node key="eval"            context="root" library="JS Core" type="function"/>
+        <node key="message"     context="member" library="JS Core" type="field"/>
+        <node key="name"        context="member" library="JS Core" type="field"/>
+        <node key="toString"    context="member" library="JS Core" type="method"/>
+    <node key="escape"          context="root" library="JS Core" type="method"/>
+    <node key="eval"            context="root" library="JS Core" type="method"/>
     <node key="EvalError"       context="root" library="JS Core" type="interface"/>
         <node key="EvalError"   context="constructor" library="JS Core" type="constructor"/>
-        <node key="message"     context="member" library="JS Core" type="attribute"/>
-        <node key="name"        context="member" library="JS Core" type="attribute"/>
+        <node key="message"     context="member" library="JS Core" type="field"/>
+        <node key="name"        context="member" library="JS Core" type="field"/>
     <node key="Function"        context="root" library="JS Core" type="interface"/>
         <node key="Function"    context="constructor" library="JS Core" type="constructor"/>
-        <node key="arguments"   context="member" library="JS Core" type="attribute"/>
-        <node key="caller"      context="member" library="JS Core" type="attribute"/>
-        <node key="length"      context="member" library="JS Core" type="attribute"/>
-        <node key="prototype"   context="member" library="JS Core" type="attribute"/>
+        <node key="arguments"   context="member" library="JS Core" type="field"/>
+        <node key="caller"      context="member" library="JS Core" type="field"/>
+        <node key="length"      context="member" library="JS Core" type="field"/>
+        <node key="prototype"   context="member" library="JS Core" type="field"/>
         
-        <node key="apply"       context="member" library="JS Core" type="function"/>
-        <node key="call"        context="member" library="JS Core" type="function"/>
-        <node key="toString"    context="member" library="JS Core" type="function"/>
+        <node key="apply"       context="member" library="JS Core" type="method"/>
+        <node key="call"        context="member" library="JS Core" type="method"/>
+        <node key="toString"    context="member" library="JS Core" type="method"/>
     <node key="Infinity"        context="root" library="JS Core" type="constant"/>
-    <node key="isFinite"        context="root" library="JS Core" type="function"/>
-    <node key="isNaN"           context="root" library="JS Core" type="function"/>
+    <node key="isFinite"        context="root" library="JS Core" type="method"/>
+    <node key="isNaN"           context="root" library="JS Core" type="method"/>
     <node key="Math"            context="root" library="JS Core" type="interface"/>
         <node key="E"           context="Math" library="JS Core" type="constant"/>
         <node key="LN10"        context="Math" library="JS Core" type="constant"/>
@@ -184,24 +184,24 @@ Microsystems, Inc. All Rights Reserved.
         <node key="SQRT1_2"     context="Math" library="JS Core" type="constant"/>
         <node key="SQRT2"       context="Math" library="JS Core" type="constant"/>
         
-        <node key="abs"         context="Math" library="JS Core" type="function"/>
-        <node key="acos"        context="Math" library="JS Core" type="function"/>
-        <node key="asin"        context="Math" library="JS Core" type="function"/>
-        <node key="atan"        context="Math" library="JS Core" type="function"/>
-        <node key="atan2"       context="Math" library="JS Core" type="function"/>
-        <node key="ceil"        context="Math" library="JS Core" type="function"/>
-        <node key="cos"         context="Math" library="JS Core" type="function"/>
-        <node key="exp"         context="Math" library="JS Core" type="function"/>
-        <node key="floor"       context="Math" library="JS Core" type="function"/>
-        <node key="log"         context="Math" library="JS Core" type="function"/>
-        <node key="max"         context="Math" library="JS Core" type="function"/>
-        <node key="min"         context="Math" library="JS Core" type="function"/>
-        <node key="pow"         context="Math" library="JS Core" type="function"/>
-        <node key="random"      context="Math" library="JS Core" type="function"/>
-        <node key="round"       context="Math" library="JS Core" type="function"/>
-        <node key="sin"         context="Math" library="JS Core" type="function"/>
-        <node key="sqrt"        context="Math" library="JS Core" type="function"/>
-        <node key="tan"         context="Math" library="JS Core" type="function"/>
+        <node key="abs"         context="Math" library="JS Core" type="method"/>
+        <node key="acos"        context="Math" library="JS Core" type="method"/>
+        <node key="asin"        context="Math" library="JS Core" type="method"/>
+        <node key="atan"        context="Math" library="JS Core" type="method"/>
+        <node key="atan2"       context="Math" library="JS Core" type="method"/>
+        <node key="ceil"        context="Math" library="JS Core" type="method"/>
+        <node key="cos"         context="Math" library="JS Core" type="method"/>
+        <node key="exp"         context="Math" library="JS Core" type="method"/>
+        <node key="floor"       context="Math" library="JS Core" type="method"/>
+        <node key="log"         context="Math" library="JS Core" type="method"/>
+        <node key="max"         context="Math" library="JS Core" type="method"/>
+        <node key="min"         context="Math" library="JS Core" type="method"/>
+        <node key="pow"         context="Math" library="JS Core" type="method"/>
+        <node key="random"      context="Math" library="JS Core" type="method"/>
+        <node key="round"       context="Math" library="JS Core" type="method"/>
+        <node key="sin"         context="Math" library="JS Core" type="method"/>
+        <node key="sqrt"        context="Math" library="JS Core" type="method"/>
+        <node key="tan"         context="Math" library="JS Core" type="method"/>
     <node key="NaN"             context="root" library="JS Core" type="constant"/>
     <node key="Number"          context="root" library="JS Core" type="interface"/>
         <node key="Number"      context="constructor" library="JS Core" type="constructor"/>
@@ -211,89 +211,89 @@ Microsystems, Inc. All Rights Reserved.
         <node key="NEGATIVE_INFINITY" context="Number" library="JS Core" type="constant"/>
         <node key="POSITIVE_INFINITY" context="Number" library="JS Core" type="constant"/>
         
-        <node key="toString"    context="member" library="JS Core" type="function"/>
-        <node key="toLocaleString" context="member" library="JS Core" type="function"/>
-        <node key="toFixed"     context="member" library="JS Core" type="function"/>
-        <node key="toExponential" context="member" library="JS Core" type="function"/>
-        <node key="toPrecision" context="member" library="JS Core" type="function"/>
+        <node key="toString"    context="member" library="JS Core" type="method"/>
+        <node key="toLocaleString" context="member" library="JS Core" type="method"/>
+        <node key="toFixed"     context="member" library="JS Core" type="method"/>
+        <node key="toExponential" context="member" library="JS Core" type="method"/>
+        <node key="toPrecision" context="member" library="JS Core" type="method"/>
     <node key="Object"          context="root" library="JS Core" type="interface"/>
         <node key="Object"      context="constructor" library="JS Core" type="constructor"/>
-        <node key="constructor" context="member" library="JS Core" type="attribute"/>
+        <node key="constructor" context="member" library="JS Core" type="field"/>
         
-        <node key="hasOwnProperty" context="member" library="JS Core" type="function"/>
-        <node key="isPrototypeOf" context="member" library="JS Core" type="function"/>
-        <node key="propertyIsEnumerable" context="member" library="JS Core" type="function"/>
-        <node key="toLocaleString" context="member" library="JS Core" type="function"/>
-        <node key="toString"    context="member" library="JS Core" type="function"/>
-        <node key="valueOf"     context="member" library="JS Core" type="function"/>
-    <node key="parseFloat"      context="root" library="JS Core" type="function"/>
-    <node key="parseInt"        context="root" library="JS Core" type="function"/>
+        <node key="hasOwnProperty" context="member" library="JS Core" type="method"/>
+        <node key="isPrototypeOf" context="member" library="JS Core" type="method"/>
+        <node key="propertyIsEnumerable" context="member" library="JS Core" type="method"/>
+        <node key="toLocaleString" context="member" library="JS Core" type="method"/>
+        <node key="toString"    context="member" library="JS Core" type="method"/>
+        <node key="valueOf"     context="member" library="JS Core" type="method"/>
+    <node key="parseFloat"      context="root" library="JS Core" type="method"/>
+    <node key="parseInt"        context="root" library="JS Core" type="method"/>
     <node key="RangeError"      context="root" library="JS Core" type="interface"/>
         <node key="RangeError"  context="constructor" library="JS Core" type="constructor"/>
-        <node key="message"     context="member" library="JS Core" type="attribute"/>
-        <node key="name"        context="member" library="JS Core" type="attribute"/>
+        <node key="message"     context="member" library="JS Core" type="field"/>
+        <node key="name"        context="member" library="JS Core" type="field"/>
     <node key="ReferenceError"  context="root" library="JS Core" type="interface"/>
         <node key="ReferenceError" context="constructor" library="JS Core" type="constructor"/>
-        <node key="message"     context="member" library="JS Core" type="attribute"/>
-        <node key="name"        context="member" library="JS Core" type="attribute"/>
+        <node key="message"     context="member" library="JS Core" type="field"/>
+        <node key="name"        context="member" library="JS Core" type="field"/>
     <node key="RegExp"          context="root" library="JS Core" type="interface"/>
         <node key="RegExp"      context="constructor" library="JS Core" type="constructor"/>
-        <node key="global"      context="member" library="JS Core" type="attribute"/>
-        <node key="ignoreCase"  context="member" library="JS Core" type="attribute"/>
-        <node key="lastIndex"   context="member" library="JS Core" type="attribute"/>
-        <node key="multiline"   context="member" library="JS Core" type="attribute"/>
-        <node key="source"      context="member" library="JS Core" type="attribute"/>
+        <node key="global"      context="member" library="JS Core" type="field"/>
+        <node key="ignoreCase"  context="member" library="JS Core" type="field"/>
+        <node key="lastIndex"   context="member" library="JS Core" type="field"/>
+        <node key="multiline"   context="member" library="JS Core" type="field"/>
+        <node key="source"      context="member" library="JS Core" type="field"/>
         
-        <node key="exec"        context="member" library="JS Core" type="function"/>
-        <node key="test"        context="member" library="JS Core" type="function"/>
+        <node key="exec"        context="member" library="JS Core" type="method"/>
+        <node key="test"        context="member" library="JS Core" type="method"/>
     <node key="String"          context="root" library="JS Core" type="interface"/>
         <node key="String"      context="constructor" library="JS Core" type="constructor"/>
-        <node key="length"      context="member" library="JS Core" type="attribute"/>
+        <node key="length"      context="member" library="JS Core" type="field"/>
         
-        <node key="fromCharCode" context="String" library="JS Core" type="function"/>
+        <node key="fromCharCode" context="String" library="JS Core" type="method"/>
         
-        <node key="charAt"      context="member" library="JS Core" type="function"/>
-        <node key="charCodeAt"  context="member" library="JS Core" type="function"/>
-        <node key="oncat"     context="member" library="JS Core" type="function"/>
-        <node key="indexOf"     context="member" library="JS Core" type="function"/>
-        <node key="lastIndexOf" context="member" library="JS Core" type="function"/>
-        <node key="match"       context="member" library="JS Core" type="function"/>
-        <node key="replace"     context="member" library="JS Core" type="function"/>
-        <node key="search"      context="member" library="JS Core" type="function"/>
-        <node key="slice"       context="member" library="JS Core" type="function"/>
-        <node key="split"       context="member" library="JS Core" type="function"/>
-        <node key="substring"   context="member" library="JS Core" type="function"/>
-        <node key="substr"      context="member" library="JS Core" type="function"/>
-        <node key="toLowerCase" context="member" library="JS Core" type="function"/>
-        <node key="toString"    context="member" library="JS Core" type="function"/>
-        <node key="toUpperCase" context="member" library="JS Core" type="function"/>
-        <node key="valueOf"     context="member" library="JS Core" type="function"/>
+        <node key="charAt"      context="member" library="JS Core" type="method"/>
+        <node key="charCodeAt"  context="member" library="JS Core" type="method"/>
+        <node key="oncat"     context="member" library="JS Core" type="method"/>
+        <node key="indexOf"     context="member" library="JS Core" type="method"/>
+        <node key="lastIndexOf" context="member" library="JS Core" type="method"/>
+        <node key="match"       context="member" library="JS Core" type="method"/>
+        <node key="replace"     context="member" library="JS Core" type="method"/>
+        <node key="search"      context="member" library="JS Core" type="method"/>
+        <node key="slice"       context="member" library="JS Core" type="method"/>
+        <node key="split"       context="member" library="JS Core" type="method"/>
+        <node key="substring"   context="member" library="JS Core" type="method"/>
+        <node key="substr"      context="member" library="JS Core" type="method"/>
+        <node key="toLowerCase" context="member" library="JS Core" type="method"/>
+        <node key="toString"    context="member" library="JS Core" type="method"/>
+        <node key="toUpperCase" context="member" library="JS Core" type="method"/>
+        <node key="valueOf"     context="member" library="JS Core" type="method"/>
 
-        <node key="anchor"      context="member" library="JS Core" type="function"/>
-        <node key="big"         context="member" library="JS Core" type="function"/>
-        <node key="blink"       context="member" library="JS Core" type="function"/>
-        <node key="bold"        context="member" library="JS Core" type="function"/>
-        <node key="fixed"       context="member" library="JS Core" type="function"/>
-        <node key="fontcolor"   context="member" library="JS Core" type="function"/>
-        <node key="fontsize"    context="member" library="JS Core" type="function"/>
-        <node key="italics"     context="member" library="JS Core" type="function"/>
-        <node key="link"        context="member" library="JS Core" type="function"/>
-        <node key="small"       context="member" library="JS Core" type="function"/>
-        <node key="strike"      context="member" library="JS Core" type="function"/>
-        <node key="sub"         context="member" library="JS Core" type="function"/>
-        <node key="sup"         context="member" library="JS Core" type="function"/>
+        <node key="anchor"      context="member" library="JS Core" type="method"/>
+        <node key="big"         context="member" library="JS Core" type="method"/>
+        <node key="blink"       context="member" library="JS Core" type="method"/>
+        <node key="bold"        context="member" library="JS Core" type="method"/>
+        <node key="fixed"       context="member" library="JS Core" type="method"/>
+        <node key="fontcolor"   context="member" library="JS Core" type="method"/>
+        <node key="fontsize"    context="member" library="JS Core" type="method"/>
+        <node key="italics"     context="member" library="JS Core" type="method"/>
+        <node key="link"        context="member" library="JS Core" type="method"/>
+        <node key="small"       context="member" library="JS Core" type="method"/>
+        <node key="strike"      context="member" library="JS Core" type="method"/>
+        <node key="sub"         context="member" library="JS Core" type="method"/>
+        <node key="sup"         context="member" library="JS Core" type="method"/>
     <node key="SyntaxError"     context="root" library="JS Core" type="interface"/>
         <node key="SyntaxError" context="constructor" library="JS Core" type="constructor"/>
-        <node key="message"     context="member" library="JS Core" type="attribute"/>
-        <node key="name"        context="member" library="JS Core" type="attribute"/>
+        <node key="message"     context="member" library="JS Core" type="field"/>
+        <node key="name"        context="member" library="JS Core" type="field"/>
     <node key="TypeError"       context="root" library="JS Core" type="interface"/>
         <node key="TypeError"   context="constructor" library="JS Core" type="constructor"/>
-        <node key="message"     context="member" library="JS Core" type="attribute"/>
-        <node key="name"        context="member" library="JS Core" type="attribute"/>
-    <node key="undefined"       context="root" library="JS Core" type="attribute"/>
-    <node key="unescape"        context="root" library="JS Core" type="function"/>
+        <node key="message"     context="member" library="JS Core" type="field"/>
+        <node key="name"        context="member" library="JS Core" type="field"/>
+    <node key="undefined"       context="root" library="JS Core" type="field"/>
+    <node key="unescape"        context="root" library="JS Core" type="method"/>
     <node key="URIError"        context="root" library="JS Core" type="interface"/>
         <node key="URIError"    context="constructor" library="JS Core" type="constructor"/>
-        <node key="message"     context="member" library="JS Core" type="attribute"/>
-        <node key="name"        context="member" library="JS Core" type="attribute"/>
+        <node key="message"     context="member" library="JS Core" type="field"/>
+        <node key="name"        context="member" library="JS Core" type="field"/>
 </documentation>

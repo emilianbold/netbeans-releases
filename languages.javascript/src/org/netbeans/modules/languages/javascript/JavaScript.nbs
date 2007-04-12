@@ -408,20 +408,20 @@ COMPLETION:js_comment: {
     doNotUsePrefix:"true";
 }
 
-STORE:VariableDeclaration: {
-    context:"Folder,Block";
-    name:"$js_identifier$";
-}
+#STORE:VariableDeclaration: {
+#    context:"Folder,Block";
+#    name:"$js_identifier$";
+#}
 
-STORE:FunctionDeclaration: {
-    context:"Folder,Block";
-    name:"$js_identifier$";
-}
+#STORE:FunctionDeclaration: {
+#    context:"Folder,Block";
+#    name:"$js_identifier$";
+#}
 
-STORE:PropertyNameAndValue: {
-    context:"Folder,Block";
-    name:"$PropertyName$";
-}
+#STORE:PropertyNameAndValue: {
+#    context:"Folder,Block";
+#    name:"$PropertyName$";
+#}
 
 HYPERLINK:js_identifier: org.netbeans.modules.languages.javascript.JavaScript.hyperlink
 
