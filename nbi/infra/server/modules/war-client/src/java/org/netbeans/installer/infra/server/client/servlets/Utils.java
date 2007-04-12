@@ -3,6 +3,7 @@ package org.netbeans.installer.infra.server.client.servlets;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,7 +81,7 @@ public final class Utils {
         } catch (IOException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             e.printStackTrace();
-            e.printStackTrace(response.getWriter());
+            e.printStackTrace(new PrintStream(output));
         } finally {
             if (input != null) {
                 input.close();
