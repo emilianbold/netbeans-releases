@@ -84,7 +84,7 @@ public class MapActionUtility {
         //        actionMap.put("handleAddCommandLink", handleAddCommandLink);
         //        actionMap.put("handleAddImageHyperLink", handleAddImageHyperLink);
         //        actionMap.put("handlePopupMenu", handlePopupMenu);
-        actionMap.put("handleDeleteKey", handleDeleteKey);
+//        actionMap.put("handleDeleteKey", handleDeleteKey);
         return actionMap;
     }
     
@@ -144,89 +144,6 @@ public class MapActionUtility {
         //        inputMap.put(KeyStroke.getKeyStroke( KeyEvent.VK_DELETE , 0), "handleDeleteKey");
         return inputMap;
     }
-    
-    
-    public static Action handleDeleteKey = new AbstractAction() {
-        
-        public void actionPerformed(ActionEvent event) {
-            //            System.out.println("Action Event: " + event);
-            Object obj = event.getSource();
-            
-            if ( obj instanceof Widget ){
-                Widget widget = ((Widget)obj);
-                Scene scene = widget.getScene();
-                if( scene instanceof GraphPinScene ) {
-                    GraphPinScene objScene = (GraphPinScene)scene;
-                    
-                    //Workaround: Temporarily Wrapping Collection because of Issue: 100127
-                    Set<Object> selectedObjects = new HashSet<Object>(objScene.getSelectedObjects());
-                    
-                    /*.When deleteing only one item. */
-                    if (selectedObjects.size() == 1){
-                        Object myObj = selectedObjects.toArray()[0];
-                        if( myObj instanceof Node ) {
-                            delete((Node)myObj);
-                        }
-                    }
-                    
-                    
-                    Queue<Node> deleteNodesList = new LinkedList<Node>();
-                    /* When deleting multiple objects, make sure delete all the links first. */
-                    for( Object selectedObj : selectedObjects ){
-                        if( objScene.isEdge(selectedObj) ){
-                            deleteNodesList.add((Node)selectedObj);
-                        }
-                    }
-                    /* The deleted links should not be selected anymore */
-                    selectedObjects = new HashSet<Object>(objScene.getSelectedObjects());
-                    for( Object selectedObj : selectedObjects ){
-                        if( selectedObj instanceof Node ) {
-                            deleteNodesList.add((Node)selectedObj);
-                        }
-                    }
-                    delete(deleteNodesList);
-                }
-            }
-        }
-        
-        public Queue<Node> myDeleteNodes;
-        private void delete( Queue<Node> deleteNodes ){
-            myDeleteNodes = deleteNodes;
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    try {
-                        //This should walk through in order.
-                        for( Node deleteNode : myDeleteNodes ){
-                            if( deleteNode.canDestroy() ){
-                                deleteNode.destroy();
-                            }
-                        }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            });
-        }
-        
-        
-        public Node myNode;
-        private void delete( Node node ){
-            myNode = node;
-            if ( node.canDestroy() ){
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        try {
-                            myNode.destroy();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-                
-            }
-        }
-    };
-    
     
     
     
