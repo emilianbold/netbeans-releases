@@ -668,6 +668,13 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
                     l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
                     WebProjectProperties.storeLibrariesLocations(l.iterator(), ep);
+                    
+                    //add webinf.dir required by 6.0 projects
+                    if (props.getProperty(WebProjectProperties.WEBINF_DIR) == null) {
+                        //we can do this because in previous versions WEB-INF was expected under docbase
+                        props.setProperty(WebProjectProperties.WEBINF_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/WEB-INF"); //NOI18N
+                    }
+                    
                     updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                     

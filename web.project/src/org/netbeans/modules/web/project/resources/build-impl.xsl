@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!--
@@ -830,7 +830,7 @@ introduced by support for multiple source roots. -jglick
                              classpath="${{wsclientuptodate.classpath}}"/>
                     
                     <mkdir dir="${{build.web.dir.real}}/WEB-INF/wsdl"/>
-                    <mkdir dir="${{web.docbase.dir}}/WEB-INF/wsdl"/>
+                    <mkdir dir="${{webinf.dir}}/wsdl"/>
                     <mkdir dir="${{build.classes.dir.real}}"/>
                     <mkdir dir="${{build.generated.dir}}/wsclient"/>
                     <mkdir dir="${{build.generated.dir}}/wsservice"/>
@@ -842,7 +842,7 @@ introduced by support for multiple source roots. -jglick
                         </xsl:variable>
                         
                         <wsclientuptodate property="wscompile.client.{$wsclientname}.notrequired"
-                                          sourcewsdl="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}.wsdl"
+                                          sourcewsdl="${{webinf.dir}}/wsdl/{$wsclientname}.wsdl"
                                           targetdir="${{build.generated.dir}}/wsclient"/>
                     </xsl:for-each>
                 </target>
@@ -862,7 +862,7 @@ introduced by support for multiple source roots. -jglick
                             <wscompile import="true"
                                        config="${{{$wsname}.config.name}}"
                                        features="${{wscompile.service.{$wsname}.features}}"
-                                       mapping="${{web.docbase.dir}}/WEB-INF/${{{$wsname}.mapping}}"
+                                       mapping="${{webinf.dir}}/${{{$wsname}.mapping}}"
                                        classpath="${{wscompile.classpath}}:${{javac.classpath}}"
                                        nonClassDir="${{build.web.dir.real}}/WEB-INF/wsdl"
                                        verbose="true"
@@ -916,8 +916,8 @@ introduced by support for multiple source roots. -jglick
                 </xsl:variable>
                 
                 <target name="{$wsclientname}-client-wscompile" depends="wscompile-init" unless="wscompile.client.{$wsclientname}.notrequired">
-                    <property name="config_target" location="${{web.docbase.dir}}/WEB-INF/wsdl"/>
-                    <copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
+                    <property name="config_target" location="${{webinf.dir}}/wsdl"/>
+                    <copy file="${{webinf.dir}}/wsdl/{$wsclientname}-config.xml"
                           tofile="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml" filtering="on" encoding="UTF-8">
                         <filterset>
                             <!-- replace token with reference to WSDL file in source tree, not build tree, since the
@@ -987,11 +987,21 @@ introduced by support for multiple source roots. -jglick
                         </xsl:if>
                     </fileset>
                 </copy>
+                <copy todir="${{build.web.dir.real}}/WEB-INF">
+                    <fileset excludes="${{build.web.excludes}}" dir="${{webinf.dir}}">
+                        <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service">
+                            <xsl:attribute name="excludes">classes/** web.xml sun-web.xml</xsl:attribute>
+                        </xsl:if>
+                    </fileset>
+                </copy>
                 
                 <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service">
                     <xsl:comment>For web services, refresh web.xml and sun-web.xml</xsl:comment>
                     <copy todir="${{build.web.dir.real}}" overwrite="true">
                         <fileset includes="WEB-INF/web.xml WEB-INF/sun-web.xml" dir="${{web.docbase.dir}}"/>
+                    </copy>
+                    <copy todir="${{build.web.dir.real}}/WEB-INF" overwrite="true">
+                        <fileset includes="web.xml sun-web.xml" dir="${{webinf.dir}}"/>
                     </copy>
                 </xsl:if>
             </target>

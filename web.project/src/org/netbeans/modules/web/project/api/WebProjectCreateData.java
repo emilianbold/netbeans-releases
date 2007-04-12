@@ -50,7 +50,8 @@ public class WebProjectCreateData {
     private File[] testFolders;
     private FileObject docBase;
     private FileObject libFolder;
-    private String buildfile;  
+    private String buildfile;
+    private FileObject webInfFolder;
     private boolean javaSourceBased = true;
     
     /**
@@ -235,6 +236,22 @@ public class WebProjectCreateData {
      */    
     public void setLibFolder(FileObject libFolder) {
         this.libFolder = libFolder;
+    }
+
+    /**
+     * Gets the WEB-INF folder
+     * @return the WEB-INF folder
+     */    
+    public FileObject getWebInfFolder() {
+        return webInfFolder;
+    }
+
+    /**
+     * Sets the WEB-INF folder
+     * @param webInfFolder the WEB-INF folder
+     */    
+    public void setWebInfFolder(FileObject webInfFolder) {
+        this.webInfFolder = webInfFolder;
     }
 
     /**

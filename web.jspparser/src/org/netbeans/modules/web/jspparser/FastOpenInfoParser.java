@@ -88,7 +88,7 @@ public class FastOpenInfoParser {
                 //find deployment descriptor
                 FileObject documentBase = wm.getDocumentBase();
                 if(documentBase != null) {
-                    FileObject dd = documentBase.getFileObject("WEB-INF/web.xml"); //NOI18N
+                    FileObject dd = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(documentBase).getWebInf().getFileObject("web.xml"); //NOI18N
                     
                     //test whether the DD exists, if not parse the JSP file
                     if(dd != null) {

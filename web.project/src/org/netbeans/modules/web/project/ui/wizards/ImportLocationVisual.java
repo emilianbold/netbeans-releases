@@ -290,9 +290,9 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                 else if ("build".equals(childName)) {    //NOI18N
                     file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_BuildFolder");
                 }
-                else if ("WEB-INF".equals(childName)) {    //NOI18N
-                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_WebInfFolder");
-                }
+//                else if ("WEB-INF".equals(childName)) {    //NOI18N
+//                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_WebInfFolder");
+//                }
                 else if ("dist".equals(childName)) {   //NOI18N
                     file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_DistFolder");
                 }

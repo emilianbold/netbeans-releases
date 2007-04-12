@@ -40,8 +40,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -57,11 +55,11 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
 import org.netbeans.modules.web.project.ui.customizer.PlatformUiSupport;
+import org.netbeans.modules.web.project.ui.wizards.FileSearchUtility;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.modules.SpecificationVersion;
 import org.w3c.dom.NodeList;
 
-import org.netbeans.modules.web.project.ui.wizards.FileSearchUtility;
 
 /**
  * Create a fresh WebProject from scratch or by importing and exisitng web module 
@@ -236,8 +234,10 @@ public class WebProjectUtilities {
         }
         
         ep.setProperty(WebProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
-        ep.setProperty(WebProjectProperties.LIBRARIES_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/WEB-INF/lib"); //NOI18N
+        ep.setProperty(WebProjectProperties.LIBRARIES_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/" + WEB_INF + "/lib"); //NOI18N
         
+        ep.setProperty(WebProjectProperties.WEBINF_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/" + WEB_INF);
+
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory ());
         UpdateHelper updateHelper = ((WebProject) p).getUpdateHelper();
         
@@ -325,6 +325,7 @@ public class WebProjectUtilities {
         String javaPlatformName = createData.getJavaPlatformName();
         String sourceLevel = createData.getSourceLevel();
         boolean javaSourceBased = createData.getJavaSourceBased();
+        FileObject webInfFolder = createData.getWebInfFolder();
         
         assert dir != null: "Project folder can't be null"; //NOI18N
         assert name != null: "Project name can't be null"; //NOI18N
@@ -458,10 +459,13 @@ public class WebProjectUtilities {
             ep.setProperty(WebProjectProperties.CONF_DIR, DEFAULT_CONF_FOLDER);
         } else
             ep.setProperty(WebProjectProperties.CONF_DIR, confDir); //NOI18N
-        
+
         //create resource.dir property, by default set to "setup"
         //(it would be nice to have a possibily to set this property in the wizard)
         ep.setProperty(WebProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
+
+        String webInfDir = FileUtil.getRelativePath(fo, webInfFolder);
+        ep.setProperty(WebProjectProperties.WEBINF_DIR, webInfDir);
         
         ep.setProperty(WebProjectProperties.JAVA_SOURCE_BASED,javaSourceBased+"");
 

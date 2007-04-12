@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,8 +32,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.web.project.ProjectWebModule;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -47,13 +45,15 @@ import org.openide.util.NbBundle;
 
 //XXX There should be a way how to add nonexistent test dir
 
+//XXX There should be a way how to add nonexistent test dir
+
 /**
  * Sets up name and location for new Java project from existing sources.
  * @author Tomas Zezula et al.
  */
 public class PanelSourceFolders extends SettingsPanel implements PropertyChangeListener {
 
-    private Panel firer;
+    private final Panel firer;
     private WizardDescriptor wizardDescriptor;
 
     /** Creates new form PanelSourceFolders */
@@ -83,7 +83,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             }
         };
         jTextFieldWebPages.getDocument().addDocumentListener(pl);
-
+        jTextFieldWebInf.getDocument().addDocumentListener(pl);
     }
 
     public void initValues(FileObject fo) {        
@@ -134,11 +134,11 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
     void read (WizardDescriptor settings) {
         this.wizardDescriptor = settings;
-        File[] srcRoot = (File[]) settings.getProperty (WizardProperties.JAVA_ROOT);      //NOI18N
+        File[] srcRoot = (File[]) settings.getProperty (WizardProperties.JAVA_ROOT);
         if (srcRoot!=null) {
             ((FolderList)this.sourcePanel).setFiles(srcRoot);
         }
-        File[] testRoot = (File[]) settings.getProperty (WizardProperties.TEST_ROOT);       //NOI18N
+        File[] testRoot = (File[]) settings.getProperty (WizardProperties.TEST_ROOT);
         if (testRoot != null) {
             ((FolderList)this.testsPanel).setFiles (testRoot);
         }
@@ -152,10 +152,11 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     void store (WizardDescriptor settings) {
         File[] sourceRoots = ((FolderList)this.sourcePanel).getFiles();
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
-        settings.putProperty (WizardProperties.JAVA_ROOT,sourceRoots);    //NOI18N
-        settings.putProperty(WizardProperties.TEST_ROOT,testRoots);      //NOI18N
+        settings.putProperty (WizardProperties.JAVA_ROOT,sourceRoots);
+        settings.putProperty(WizardProperties.TEST_ROOT,testRoots);
         settings.putProperty(WizardProperties.DOC_BASE, jTextFieldWebPages.getText().trim());
         settings.putProperty(WizardProperties.LIB_FOLDER, jTextFieldLibraries.getText().trim());
+        settings.putProperty(WizardProperties.WEBINF_FOLDER, jTextFieldWebInf.getText().trim());
     }
     
     boolean valid (WizardDescriptor settings) {
@@ -165,7 +166,12 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class, "MSG_WebPagesMandatory")); //NOI18N
 	    return false;
 	}
-	
+        
+	if (jTextFieldWebInf.getText().trim().length() == 0) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class, "MSG_WebInfMandatory")); //NOI18N
+	    return false;
+	}
+        
 	File webPages = getWebPages();
         File[] sourceRoots = ((FolderList)this.sourcePanel).getFiles();
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
@@ -189,21 +195,21 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 	if (!webPages.exists() || !webPages.isDirectory())
 	    return NbBundle.getMessage(PanelSourceFolders.class, "MSG_WebPagesFolderDoesNotExist"); //NOI18N
 	
-        FileObject webInf = FileUtil.toFileObject(webPages).getFileObject(ProjectWebModule.FOLDER_WEB_INF);
-	if (webInf == null)
-	    return NbBundle.getMessage(PanelSourceFolders.class, "MSG_WebInfCorrupted", webPages.getPath()); //NOI18N
-        else {
-            FileObject webXml = webInf.getFileObject(ProjectWebModule.FILE_DD);
-            
-            //#74837 - filesystem is probably not refreshed and file object for non-existing file is found
-            //rather setting to null that refreshing filesystem from a performance reason
-            if (webXml != null && !webXml.isValid())
-                webXml = null;
-            
-            String j2eeLevel = (String) wizardDescriptor.getProperty(WizardProperties.J2EE_LEVEL);
-            if (webXml == null && (j2eeLevel.equals(J2eeModule.J2EE_13) || j2eeLevel.equals(J2eeModule.J2EE_14)))
-                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_FileNotFound", webPages.getPath()); //NOI18N
-        }        
+//        FileObject webInf = FileUtil.toFileObject(webPages).getFileObject(ProjectWebModule.FOLDER_WEB_INF);
+//	if (webInf == null)
+//	    return NbBundle.getMessage(PanelSourceFolders.class, "MSG_WebInfCorrupted", webPages.getPath()); //NOI18N
+//        else {
+//            FileObject webXml = webInf.getFileObject(ProjectWebModule.FILE_DD);
+//            
+//            //#74837 - filesystem is probably not refreshed and file object for non-existing file is found
+//            //rather setting to null that refreshing filesystem from a performance reason
+//            if (webXml != null && !webXml.isValid())
+//                webXml = null;
+//            
+//            String j2eeLevel = (String) wizardDescriptor.getProperty(WizardProperties.J2EE_LEVEL);
+//            if (webXml == null && (j2eeLevel.equals(J2eeModule.J2EE_13) || j2eeLevel.equals(J2eeModule.J2EE_14)))
+//                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_FileNotFound", webPages.getPath()); //NOI18N
+//        }        
         
         for (int i=0; i<sources.length;i++) {
             if (!sources[i].isDirectory() || !sources[i].canRead()) {
@@ -303,6 +309,9 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         jLabelWebPages = new javax.swing.JLabel();
         jTextFieldWebPages = new javax.swing.JTextField();
         jButtonWebpagesLocation = new javax.swing.JButton();
+        jLabelWebInf = new javax.swing.JLabel();
+        jTextFieldWebInf = new javax.swing.JTextField();
+        jButtonWebInf = new javax.swing.JButton();
         jLabelLibraries = new javax.swing.JLabel();
         jTextFieldLibraries = new javax.swing.JTextField();
         jButtonLibraries = new javax.swing.JButton();
@@ -316,10 +325,9 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LocationDesc_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jLabel3, gridBagConstraints);
         jLabel3.getAccessibleContext().setAccessibleName(null);
@@ -331,15 +339,15 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         add(jLabelWebPages, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 11);
         add(jTextFieldWebPages, gridBagConstraints);
         jTextFieldWebPages.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_WebPagesFolder")); // NOI18N
 
@@ -358,21 +366,49 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         add(jButtonWebpagesLocation, gridBagConstraints);
         jButtonWebpagesLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_BrowseWebPageFolder")); // NOI18N
 
+        jLabelWebInf.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("MNE_DeploymentDescriptorFolder").charAt(0));
+        jLabelWebInf.setText(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_DeploymentDescriptorFolder_Label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(jLabelWebInf, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 11);
+        add(jTextFieldWebInf, gridBagConstraints);
+
+        jButtonWebInf.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("MNE_BrowseWebInfLocation").charAt(0));
+        jButtonWebInf.setText(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_BrowseLocation_Button")); // NOI18N
+        jButtonWebInf.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonWebInfActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        add(jButtonWebInf, gridBagConstraints);
+
         jLabelLibraries.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LibrariesLocation_LabelMnemonic").charAt(0));
         jLabelLibraries.setLabelFor(jTextFieldLibraries);
         jLabelLibraries.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LibrariesLocation_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelLibraries, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 11);
         add(jTextFieldLibraries, gridBagConstraints);
         jTextFieldLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_LibrariesFolder")); // NOI18N
 
@@ -385,35 +421,47 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonLibraries, gridBagConstraints);
         jButtonLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_BrowseLibrariesFolder")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.45;
+        gridBagConstraints.weighty = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(sourcePanel, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.45;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(testsPanel, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(null);
         getAccessibleContext().setAccessibleDescription(null);
     }// </editor-fold>//GEN-END:initComponents
+
+private void jButtonWebInfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonWebInfActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+        if (jTextFieldWebInf.getText().length() > 0 && getWebInfDir().exists()) {
+            chooser.setSelectedFile(getWebInfDir());
+        } else {
+            chooser.setCurrentDirectory((File) wizardDescriptor.getProperty(WizardProperties.SOURCE_ROOT));
+        }
+        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            File webInfDir = FileUtil.normalizeFile(chooser.getSelectedFile());
+            jTextFieldWebInf.setText(webInfDir.getAbsolutePath());
+        }
+}//GEN-LAST:event_jButtonWebInfActionPerformed
 
     private void jButtonLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLibrariesActionPerformed
         JFileChooser chooser = new JFileChooser();
@@ -449,11 +497,14 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonLibraries;
+    private javax.swing.JButton jButtonWebInf;
     private javax.swing.JButton jButtonWebpagesLocation;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabelLibraries;
+    private javax.swing.JLabel jLabelWebInf;
     private javax.swing.JLabel jLabelWebPages;
     private javax.swing.JTextField jTextFieldLibraries;
+    private javax.swing.JTextField jTextFieldWebInf;
     private javax.swing.JTextField jTextFieldWebPages;
     private javax.swing.JPanel sourcePanel;
     private javax.swing.JPanel testsPanel;
@@ -525,4 +576,9 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     public File getLibraries() {
         return getAsFile(jTextFieldLibraries.getText());
     }
+    
+    private File getWebInfDir() {
+        return getAsFile(jTextFieldWebInf.getText());
+    }
+    
 }

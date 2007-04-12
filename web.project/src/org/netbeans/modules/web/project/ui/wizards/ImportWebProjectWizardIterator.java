@@ -111,7 +111,8 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         String libName = (String) wiz.getProperty(WizardProperties.LIB_FOLDER);
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
-
+        String webInfFolder = (String) wiz.getProperty(WizardProperties.WEBINF_FOLDER);
+        
         FileObject wmFO = FileUtil.toFileObject (dirSrcF);
         assert wmFO != null : "No such dir on disk: " + dirSrcF;
         assert wmFO.isFolder() : "Not really a dir: " + dirSrcF;
@@ -155,7 +156,9 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         createData.setServerInstanceID(serverInstanceID);
         createData.setBuildfile(buildfile);
         createData.setJavaPlatformName((String) wiz.getProperty(WizardProperties.JAVA_PLATFORM));
-        createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));
+        createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));       
+        createData.setWebInfFolder(FileUtil.toFileObject(new File(webInfFolder)));
+        
         WebProjectUtilities.importProject(createData);       
         handle.progress(2);
         

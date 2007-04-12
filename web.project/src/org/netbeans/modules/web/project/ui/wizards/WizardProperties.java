@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -34,6 +34,7 @@ public class WizardProperties {
     public static final String JAVA_ROOT = "javaRoot"; //NOI18N
     public static final String LIB_FOLDER = "libFolder"; //NOI18N
     public static final String TEST_ROOT = "testRoot"; //NOI18N
+    public static final String WEBINF_FOLDER = "webInfFolder"; //NOI18N
     
     public static final String EAR_APPLICATION = "earApplication"; //NOI18N
     

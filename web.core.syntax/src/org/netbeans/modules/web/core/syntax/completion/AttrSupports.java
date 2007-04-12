@@ -26,6 +26,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.ImageIcon;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -317,8 +318,9 @@ public class AttrSupports extends Object {
             List l = new ArrayList();
             FileObject orig = sup.getFileObject();
             FileObject documentBase = JspUtils.guessWebModuleRoot(sup.getDocument(), orig);
+            FileObject webInfDir = WebModule.getWebModule(documentBase).getWebInf();
             if (documentBase != null) {
-                FileObject webInfTags = JspUtils.findRelativeFileObject(documentBase, "WEB-INF/tags");
+                FileObject webInfTags = JspUtils.findRelativeFileObject(webInfDir, "tags");
                 if (webInfTags != null) {
                     // WEB-INF/tags itself
                     if (isValidTagDir(webInfTags)) {

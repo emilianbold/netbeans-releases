@@ -334,11 +334,13 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
     }
     
     public FileObject getWebInf() {
-        FileObject documentBase = getDocumentBase();
-        if (documentBase != null)
-            return documentBase.getFileObject(ProjectWebModule.FOLDER_WEB_INF);
-        else
-            return null;
+        return getFileObject("webinf.dir"); // NOI18N
+        
+//        FileObject documentBase = getDocumentBase();
+//        if (documentBase != null)
+//            return documentBase.getFileObject(ProjectWebModule.FOLDER_WEB_INF);
+//        else
+//            return null;
     }
     
     public FileObject getDocumentBase() {

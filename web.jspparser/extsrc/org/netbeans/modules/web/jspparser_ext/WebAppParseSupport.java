@@ -206,7 +206,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         clRootsTimeStamps.clear();
         
         //web.xml
-        FileObject webxml = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF/web.xml"); //NOI18N
+        FileObject webInf = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(wmRoot).getWebInf();
+        FileObject webxml = ContextUtil.findRelativeFileObject(webInf, "web.xml"); //NOI18N
         if (webxml !=null ){
             registerTimeStamp(webxml, false);
         }
@@ -472,7 +473,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     private Map getImplicitLocation(){
         Map returnMap = new HashMap();
         // Obtain all tld files under WEB-INF folder
-        FileObject webInf = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF");
+        FileObject webInf = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(wmRoot).getWebInf();
         FileObject fo;
         File file;
         if (webInf != null && webInf.isFolder()){
@@ -519,7 +520,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
         
         // Obtain all tld files under WEB-INF folder
-        FileObject webInf = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF"); //NOI18N
+        FileObject webInf = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(wmRoot).getWebInf();
         if (webInf != null && webInf.isFolder()){
             Enumeration en = webInf.getChildren(true);
             while (en.hasMoreElements()){
@@ -532,7 +533,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
         
         // all file under WEB-INF
-        fo = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF");                //NOI18N 
+        fo = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(wmRoot).getWebInf();
         if (fo != null){
             file = FileUtil.toFile(fo);
             registerTimeStamp(checkedFiles, file, true);
@@ -647,7 +648,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 }
                 
                 // Add all files under WEB-INF. The most interesting files are web.xml and tag files.
-                fo = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF");
+                fo = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(wmRoot).getWebInf();
                 if (fo != null){
                     file = FileUtil.toFile(fo);
                     registerTimeStamp(mappingFiles, file, true);

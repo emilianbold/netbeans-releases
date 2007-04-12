@@ -1074,11 +1074,18 @@ class WebActionProvider implements ActionProvider {
     }
     
     private boolean isDDServlet(Lookup context, FileObject javaClass) {
-        FileObject webDir = project.getWebModule ().getDocumentBase ();
-        if (webDir==null) return false;
-        FileObject fo = webDir.getFileObject("WEB-INF/web.xml"); //NOI18N
+//        FileObject webDir = project.getWebModule ().getDocumentBase ();
+//        if (webDir==null) return false;
+//        FileObject fo = webDir.getFileObject("WEB-INF/web.xml"); //NOI18N
+        
+        FileObject webInfDir = project.getWebModule().getWebInf();
+        if (webInfDir == null)
+            return false;
+        FileObject fo = webInfDir.getFileObject(ProjectWebModule.FILE_DD);
+        if (fo == null)
+            return false;
+        
         String className = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(), javaClass), javaClass);
-        if (fo==null) return false;
         try {
             WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
             Servlet servlet = (Servlet)webApp.findBeanByName("Servlet","ServletClass",className); //NOI18N

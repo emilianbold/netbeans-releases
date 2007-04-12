@@ -25,14 +25,13 @@ import org.openide.util.actions.NodeAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.api.java.classpath.ClassPath;
-
+import org.netbeans.modules.web.project.ProjectWebModule;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -117,11 +116,21 @@ public final class SetExecutionUriAction extends NodeAction {
     }
     
     public static String[] getServletMappings(WebModule webModule, FileObject javaClass) {
-        if (webModule==null) return null;
-        FileObject webDir = webModule.getDocumentBase ();
-        if (webDir==null) return null;
-        FileObject fo = webDir.getFileObject("WEB-INF/web.xml"); //NOI18N
-        if (fo==null) return null;
+        if (webModule == null)
+            return null;
+        
+//        FileObject webDir = webModule.getDocumentBase ();
+//        if (webDir==null) return null;
+//        FileObject fo = webDir.getFileObject("WEB-INF/web.xml"); //NOI18N
+        
+        FileObject webInf = webModule.getWebInf();
+        if (webInf == null)
+            return null;
+        
+        FileObject fo = webInf.getFileObject(ProjectWebModule.FILE_DD);
+        if (fo == null)
+            return null;
+        
         ClassPath classPath = ClassPath.getClassPath (javaClass, ClassPath.SOURCE);
         String className = classPath.getResourceName(javaClass,'.',false);
         try {

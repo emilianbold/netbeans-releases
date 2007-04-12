@@ -68,8 +68,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
   EjbChangeDescriptor, PropertyChangeListener {
       
     public static final String FOLDER_WEB_INF = "WEB-INF";//NOI18N
-    public static final String FOLDER_CLASSES = "classes";//NOI18N
-    public static final String FOLDER_LIB     = "lib";//NOI18N
+//    public static final String FOLDER_CLASSES = "classes";//NOI18N
+//    public static final String FOLDER_LIB     = "lib";//NOI18N
     public static final String FILE_DD        = "web.xml";//NOI18N
 
     private WebProject project;
@@ -205,14 +205,19 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public FileObject getWebInf (boolean silent) {
-        FileObject documentBase = getDocumentBase(silent);
-        if (documentBase == null) {
-            return null;
+        FileObject webInf = getFileObject(WebProjectProperties.WEBINF_DIR);
+        
+        //temporary solution for < 6.0 projects
+        if (webInf == null) {
+            FileObject documentBase = getDocumentBase(silent);
+            if (documentBase == null) {
+                return null;
+            }
+            webInf = documentBase.getFileObject (FOLDER_WEB_INF);        
         }
-        FileObject webInf = documentBase.getFileObject (FOLDER_WEB_INF);
+        
         if (webInf == null && !silent) {
-                showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted", //NOI18N
-                        documentBase.getPath()));
+            showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted2")); //NOI18N
         }
         return webInf;
     }
@@ -262,6 +267,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return this;
     }
 
+    //is this method somewhere used???
     public FileObject findDeploymentConfigurationFile(String name) {
         if (name == null) {
             return null;
@@ -270,26 +276,48 @@ public final class ProjectWebModule extends J2eeModuleProvider
         if (name == null) {
             return null;
         }
-        FileObject documentBase = getDocumentBase();
-        if (documentBase == null) {
-            return null;
+      
+        if (name.startsWith("WEB-INF/")) { //NOI18N
+            name = name.substring(8); //removing "WEB-INF/"            
+            FileObject webInf = getWebInf();
+            if (webInf == null) {
+                return null;
+            }
+            return webInf.getFileObject(name);
+        } else {
+            FileObject documentBase = getDocumentBase();
+            if (documentBase == null) {
+                return null;
+            }
+            return documentBase.getFileObject(name);
         }
-        return documentBase.getFileObject(name);
     }
 
     public File getDeploymentConfigurationFile(String name) {
         assert name != null : "File name of the deployement configuration file can't be null"; //NOI18N
-
+        
         String path = getConfigSupport().getContentRelativePath(name);
         if (path == null) {
             path = name;
         }
-        FileObject documentBase = getDocumentBase();
-        if (documentBase == null) {
-            //in case that docbase is null ... but normally it should not be
-            return new File(getConfDirAsFile(), name);
-        }
-        return new File(FileUtil.toFile(documentBase), path);
+        
+        if (path.startsWith("WEB-INF/")) { //NOI18N
+            path = path.substring(8); //removing "WEB-INF/"
+
+            FileObject webInf = getWebInf();
+            if (webInf == null) {
+                //in case that docbase is null ... but normally it should not be
+                return new File(getConfDirAsFile(), name);
+            }
+            return new File(FileUtil.toFile(webInf), path);
+        } else {
+            FileObject documentBase = getDocumentBase();
+            if (documentBase == null) {
+                //in case that docbase is null ... but normally it should not be
+                return new File(getConfDirAsFile(), name);
+            }
+            return new File(FileUtil.toFile(documentBase), path);
+        }        
     }
 
     public FileObject getModuleFolder () {
