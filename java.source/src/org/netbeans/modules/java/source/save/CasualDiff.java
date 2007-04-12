@@ -737,7 +737,7 @@ public class CasualDiff {
         if (oldT.elsepart == null && newT.elsepart != null ||
             oldT.elsepart != null && newT.elsepart == null) {
             // mark the whole if statement to be reformatted, which Commit will refine.
-            append(Diff.modify(oldT, getOldPos(oldT), newT));
+            // append(Diff.modify(oldT, getOldPos(oldT), newT));
         } else {
             int[] condBounds = getBounds(oldT.cond);
             copyTo(localPointer, condBounds[0]);
@@ -1427,27 +1427,27 @@ public class CasualDiff {
                 newT = safeNext(newIter);
             }
             else if (!listContains(newList, oldT) && !listContains(oldList, newT)) {
-                append(Diff.modify(oldT, getOldPos(oldT), newT));
+                //append(Diff.modify(oldT, getOldPos(oldT), newT));
                 oldT = safeNext(oldIter);
                 newT = safeNext(newIter);
             }
             else if (!listContains(newList, oldT)) {
-                append(Diff.delete(oldT, getOldPos(oldT)));
+                append(Diff.delete(getOldPos(oldT), endPos(oldT)));
                 oldT = safeNext(oldIter);
             }
             else {
-                append(Diff.insert(newT, getOldPos(oldT), newLine, null));
+                // append(Diff.insert(newT, getOldPos(oldT), newLine, null));
                 newT = safeNext(newIter);
             }
         }
         while (oldT != null) {
-            append(Diff.delete(oldT, getOldPos(oldT)));
+            append(Diff.delete(getOldPos(oldT), endPos(oldT)));
             if (oldTopLevel != null)
                 lastOldPos = endPos(oldT);
             oldT = safeNext(oldIter);
         }
         while (newT != null) {
-            append(Diff.insert(newT, lastOldPos, newLine, null));
+            //append(Diff.insert(newT, lastOldPos, newLine, null));
             newT = safeNext(newIter);
         }
         return lastPrinted;
@@ -1475,10 +1475,10 @@ public class CasualDiff {
         }
         while (oldIter.hasNext()) {
             JCTree oldT = oldIter.next();
-            append(Diff.delete(oldT, getOldPos(oldT)));
+            append(Diff.delete(getOldPos(oldT), endPos(oldT)));
         }
         while (newIter.hasNext()) {
-            append(Diff.insert(newIter.next(), lastOldPos, LineInsertionType.BEFORE));
+            // append(Diff.insert(newIter.next(), lastOldPos, LineInsertionType.BEFORE));
         }
         return localPointer;
     }
@@ -2748,22 +2748,6 @@ public class CasualDiff {
         protected Comment newComment;
         protected boolean trailing;
         protected Name owningClassName;
-        
-        static Diff delete(JCTree oldTree, int pos) {
-            return new Diff(DiffTypes.DELETE, pos, oldTree, null);
-        }
-
-        static Diff insert(JCTree newTree, int pos, LineInsertionType newLine) {
-            return new Diff(DiffTypes.INSERT, pos, null, newTree, newLine);
-        }
-        
-        static Diff insert(JCTree newTree, int pos, LineInsertionType newLine, Name owningClassName) {
-            return new Diff(DiffTypes.INSERT, pos, null, newTree, newLine, null, null, false, owningClassName);
-        }
-        
-        static Diff modify(JCTree oldTree, int oldPos, JCTree newTree) {
-            return new Diff(DiffTypes.MODIFY, oldPos, oldTree, newTree);
-        }
 
         static Diff delete(JCTree oldTree, JCTree newTree, Comment oldC) {
             return new Diff(DiffTypes.DELETE_COMMENT, oldC.pos(), oldTree, newTree, LineInsertionType.BEFORE, oldC, null, false, null);
