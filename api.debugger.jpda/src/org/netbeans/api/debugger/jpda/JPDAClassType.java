@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,19 +35,7 @@ import java.util.List;
  *
  * @author Martin Entlicher
  */
-public interface JPDAClassType {
-    
-    /*
-    List<ObjectVariable> instances(long maxInstances);
-    
-    long instanceCount();
-     */
-    
-    /**
-     * Get the name of this type.
-     * @return fully qualified name of this type.
-     */
-    String getName();
+public interface JPDAClassType extends VariableType {
     
     /**
      * Get the source name of this type.
@@ -62,10 +50,40 @@ public interface JPDAClassType {
     ClassVariable classObject();
     
     /**
+     * Gets the classloader object which loaded the class corresponding to this type.
+     * @return an object variable representing the classloader, or <code>null</code>
+     *         if the class was loaded through the bootstrap class loader.
+     */
+    ObjectVariable getClassLoader();
+    
+    /**
+     * Gets the superclass of this class.
+     * @return the superclass of this class in the debuggee, or <code>null</code>
+     *         if no such class exists.
+     */
+    Super getSuperClass();
+    
+    /**
      * Provide a list of static fields declared in this type.
      * @return the list of {@link org.netbeans.api.debugger.jpda.Field} objects
      *         representing static fields.
      */
     List<Field> staticFields();
+    
+    /**
+     * Retrieves the number of instances this class.
+     * Use {@link JPDADebugger#canGetInstanceInfo} to determine if this operation is supported.
+     * @return the number of instances.
+     */
+    long getInstanceCount() throws UnsupportedOperationException;
+    
+    /**
+     * Returns instances of this class type. Only instances that are reachable
+     * for the purposes of garbage collection are returned.
+     * Use {@link JPDADebugger#canGetInstanceInfo} to determine if this operation is supported.
+     * @param maxInstances the maximum number of instances to return. Must be non-negative. If zero, all instances are returned.
+     * @return a List of object variables.
+     */
+    List<ObjectVariable> getInstances(long maxInstances) throws UnsupportedOperationException;
     
 }

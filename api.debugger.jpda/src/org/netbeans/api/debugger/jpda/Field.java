@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -48,6 +48,12 @@ public interface Field extends Variable {
      * @return name of enclosing class
      */
     public abstract String getClassName ();
+    
+    /**
+     * Get the class type in which this field was declared.
+     * @return the class type
+     */
+    public abstract JPDAClassType getDeclaringClass();
 
     /**
      * Declared type of this field.

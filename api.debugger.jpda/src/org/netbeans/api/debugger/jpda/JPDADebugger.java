@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,6 +30,7 @@ import com.sun.jdi.request.EventRequest;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -431,4 +432,45 @@ public abstract class JPDADebugger {
     public JPDAStep createJPDAStep(int size, int depth) {
         throw new UnsupportedOperationException("This method must be overridden."); 
     } 
+    
+    /**
+     * Test whether the debuggee supports accessing of class instances, instance counts, and referring objects.
+     * 
+     * @see #getInstanceCounts
+     * @see JPDAClassType#getInstanceCount
+     * @see JPDAClassType#getInstances
+     * @see ObjectVariable#getReferringObjects
+     * 
+     * @return <code>true</code> when the feature is supported, <code>false</code> otherwise.
+     */
+    public boolean canGetInstanceInfo() {
+        return false;
+    }
+    
+    /**
+     * Get the list of all classes in the debuggee.
+     * @return The list of all classes.
+     */
+    public List<JPDAClassType> getAllClasses() {
+        return Collections.emptyList();
+    }
+    
+    /**
+     * Get the list of all classes mathing the given name in the debuggee.
+     * @return The list of classes.
+     */
+    public List<JPDAClassType> getClassesByName(String name) {
+        return Collections.emptyList();
+    }
+    
+    /**
+     * Retrieves the number of instances of each class in the list.
+     * Use {@link #canGetInstanceInfo} to determine if this operation is supported.
+     * @return an array of <code>long</code> containing one instance counts for
+     *         each respective element in the <code>classTypes</code> list.
+     */
+    public long[] getInstanceCounts(List<JPDAClassType> classTypes) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
 }

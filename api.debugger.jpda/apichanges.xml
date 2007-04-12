@@ -489,6 +489,47 @@ Microsystems, Inc. All Rights Reserved.
         <class package="org.netbeans.spi.debugger.jpda" name="EditorContext" />
         <issue number="99257"/>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Support for heap walking.</summary>
+        <version major="2" minor="11"/>
+        <date day="5" month="4" year="2007"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <p>
+                In order to be able to provide heap walking functionality,
+                we need methods for retrieval of class instances and
+                back references.
+            </p>
+            <p>
+                Added methods:<br/>
+                <code>Field.getDeclaringClass()</code>,
+                <code>JPDAClassType.getClassLoader()</code>,
+                <code>JPDAClassType.getSuperClass()</code>,
+                <code>JPDAClassType.getInstanceCount()</code>,
+                <code>JPDAClassType.getInstances()</code>,
+                <code>JPDADebugger.canGetInstanceInfo()</code>,
+                <code>JPDADebugger.getAllClasses()</code>,
+                <code>JPDADebugger.getClassesByName()</code>,
+                <code>JPDADebugger.getInstanceCounts()</code>,
+                <code>ObjectVariable.getReferringObjects()</code>,
+                <code>ObjectVariable.getClassType()</code>,
+                <code>ObjectVariable.getUniqueID()</code>.
+            </p>
+            <p>
+                Added classes:<br/>
+                <code>VariableType</code>,
+                <code>JPDAArrayType</code>.
+            </p>
+        </description>
+        <class package="org.netbeans.spi.debugger.jpda" name="JPDADebugger" />
+        <class package="org.netbeans.spi.debugger.jpda" name="JPDAClassType" />
+        <class package="org.netbeans.spi.debugger.jpda" name="ObjectVariable" />
+        <class package="org.netbeans.spi.debugger.jpda" name="VariableType" />
+        <class package="org.netbeans.spi.debugger.jpda" name="JPDAArrayType" />
+        <issue number="100047"/>
+    </change>
 
 
 </changes>

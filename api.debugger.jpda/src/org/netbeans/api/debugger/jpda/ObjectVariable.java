@@ -13,11 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.debugger.jpda;
+
+import java.util.List;
 
 
 /**
@@ -107,9 +109,30 @@ public interface ObjectVariable extends Variable {
     public abstract Field[] getInheritedFields (int from, int to);
     
     /**
+     * Returns variables that directly reference this variable.
+     * Use {@link JPDADebugger#canGetInstanceInfo} to determine if this operation is supported.
+     * @param maxReferrers The maximum number of referring variables to return. Must be non-negative. If zero, all referring variables are returned.
+     * @return A list of referring variables.
+     */
+    List<ObjectVariable> getReferringObjects(long maxReferrers) throws UnsupportedOperationException;
+    
+    /**
      * Returns representation of super class of this object.
      *
      * @return representation of super class of this object
      */
     public abstract Super getSuper ();
+    
+    /**
+     * Get the run-time class type of this object variable.
+     * @return The variable class type.
+     */
+    JPDAClassType getClassType();
+    
+    /**
+     * Returns a unique identifier for this object variable.
+     * It is guaranteed to be unique among all object variables from the same debuggee that have not yet been disposed.
+     * @return a long unique ID
+     */
+    long getUniqueID();
 }
