@@ -55,9 +55,13 @@ class Constants {
     
     public static final String XML_TRANSIENT = "javax.xml.bind.annotation.XmlTransient";                 //NOI18N
     
-    public static final String VOID = "void";
+    public static final String VOID = "void";           //NOI18N
     
-    public static final String COLLECTION_TYPE = "java.util.Collection";
+    public static final String COLLECTION_TYPE = "java.util.Collection"; //NOI18N
+    
+    public static final String COLLECTIONS_TYPE = "java.util.Collections";  //NOI18N
+    
+    public static final String ARRAY_LIST_TYPE = "java.util.ArrayList"; //NOI18N
     
     public static final String RESOURCE_ANNOTATION = "Resource";        //NOI18N
     
@@ -123,13 +127,21 @@ class Constants {
         CONSUME_MIME
     };
     
-    public static final String[] CONVERTER_ANNOTATION_IMPORTS = {
+    public static final String[] CONTAINER_CONVERTER_IMPORTS = {
+        XML_ROOT_ELEMENT,
+        XML_ELEMENT,
+        XML_TRANSIENT,
+        COLLECTIONS_TYPE,
+        ARRAY_LIST_TYPE
+    };
+    
+    public static final String[] ITEM_CONVERTER_IMPORTS = {
         XML_ROOT_ELEMENT,
         XML_ELEMENT,
         XML_TRANSIENT
     };
     
-    public static final String[] REF_CONVERTER_ANNOTATION_IMPORTS = {
+    public static final String[] REF_CONVERTER_IMPORTS = {
         XML_ROOT_ELEMENT,
         XML_ELEMENT,
         XML_TRANSIENT,

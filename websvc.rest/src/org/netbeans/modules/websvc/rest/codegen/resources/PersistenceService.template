@@ -20,27 +20,17 @@ import java.util.Map;
  * @author __USER__
  */
 public class PersistenceService {
-    private static String DEFAULT_PU = "DefaultPU";
-    private static PersistenceService defaultService;
-    private String puName;    
+    private static String DEFAULT_PU = "RESTDBApp5PU";    
+    private static PersistenceService defaultService = new PersistenceService(DEFAULT_PU); 
     private EntityManagerFactory emf;
     private Map<Thread, EntityManager> emMap;
     
-    
-    /** Creates a new instance of PersistenceService */
-    public PersistenceService() {
-    }
-    
     public PersistenceService(String puName) {
-        this.puName = puName;
+        this.emf = Persistence.createEntityManagerFactory(puName);
         this.emMap = new HashMap<Thread, EntityManager>();
     }
     
     public static PersistenceService getDefault() {
-        if (defaultService == null) {
-            defaultService = new PersistenceService(DEFAULT_PU);
-        }
-
         return defaultService;
     }
     
@@ -49,10 +39,10 @@ public class PersistenceService {
         EntityManager em = emMap.get(currentThread);
         
         if (em == null) {
-            em = getEntityManagerFactory().createEntityManager();
+            em = emf.createEntityManager();
             emMap.put(currentThread, em);
         }
-   
+        
         return em;
     }
     
@@ -61,14 +51,10 @@ public class PersistenceService {
         
         if (em != null) {
             em.close();
-        }       
-    }
-
-    private EntityManagerFactory getEntityManagerFactory() {
-        if (emf == null) {
-            emf = Persistence.createEntityManagerFactory(puName);
         }
-
-        return emf;
-    }   
+    }
+    
+    protected void finalize() {
+        emf.close();
+    }
 }
