@@ -29,6 +29,7 @@
             </file>
 -->            
             <file name="UriResolver.java" url="nbres:/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template"/>
+            <file name="PersistenceService.java" url="nbres:/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceService.template"/>
         </folder>
     </folder>
     

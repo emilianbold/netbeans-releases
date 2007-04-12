@@ -222,6 +222,8 @@ public class JavaSourceHelper {
         return fieldName[0];
     }
     
+    
+    
     public static ClassTree getTopLevelClassTree(CompilationController controller) {
         String className = controller.getFileObject().getName();
         
@@ -252,7 +254,7 @@ public class JavaSourceHelper {
     }
     
     public static MethodTree getDefaultConstructor(CompilationController controller) {
-        TypeElement classElement = getTopLevelClassElement(controller);     
+        TypeElement classElement = getTopLevelClassElement(controller);
         List<ExecutableElement> constructors = ElementFilter.constructorsIn(classElement.getEnclosedElements());
         
         for (ExecutableElement constructor : constructors) {
@@ -265,10 +267,22 @@ public class JavaSourceHelper {
         return null;
     }
     
+    public static VariableTree getField(CompilationController controller, String fieldName) {
+        TypeElement classElement = getTopLevelClassElement(controller);
+        List<VariableElement> fields = ElementFilter.fieldsIn(classElement.getEnclosedElements());
+        
+        for (VariableElement field : fields) {
+            if (field.getSimpleName().toString().equals(fieldName)) {
+                return (VariableTree) controller.getTrees().getTree(field);
+            }
+        }
+        
+        return null;
+    }
     
     public static JavaSource createJavaSource(FileObject targetFolder,
             String packageName, String className) {
-        return createJavaSource(CLASS_TEMPLATE, targetFolder, 
+        return createJavaSource(CLASS_TEMPLATE, targetFolder,
                 packageName, className);
     }
     
@@ -401,22 +415,35 @@ public class JavaSourceHelper {
         return maker.addClassMember(tree, methodTree);
     }
     
+    public static void replaceFieldValue(WorkingCopy copy, VariableTree tree,
+            String value) {
+        TreeMaker maker = copy.getTreeMaker();
+        
+        VariableTree modifiedTree = maker.Variable( 
+                tree.getModifiers(),
+                tree.getName(),
+                tree.getType(),
+                maker.Literal(value));
+        
+        copy.rewrite(tree, modifiedTree);
+    }
+    
     public static void replaceMethodBody(WorkingCopy copy, MethodTree tree,
             String body) {
         TreeMaker maker = copy.getTreeMaker();
         MethodTree modifiedTree = maker.Method(
-            tree.getModifiers(),
-            tree.getName(),
-            tree.getReturnType(),
-            tree.getTypeParameters(),
-            tree.getParameters(),
-            tree.getThrows(),
-            body,
-            null);
-     
+                tree.getModifiers(),
+                tree.getName(),
+                tree.getReturnType(),
+                tree.getTypeParameters(),
+                tree.getParameters(),
+                tree.getThrows(),
+                body,
+                null);
+        
         copy.rewrite(tree, modifiedTree);
     }
-  
+    
     public static ClassTree addMethod(WorkingCopy copy, ClassTree tree,
             Modifier[] modifiers, String[] annotations, Object[] annotationAttrs,
             String name, Object returnType,

@@ -1,0 +1,74 @@
+/*
+ * PersistenceService.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.Classes;
+
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityManager;
+import javax.persistence.Persistence;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ *
+ * @author __USER__
+ */
+public class PersistenceService {
+    private static String DEFAULT_PU = "DefaultPU";
+    private static PersistenceService defaultService;
+    private String puName;    
+    private EntityManagerFactory emf;
+    private Map<Thread, EntityManager> emMap;
+    
+    
+    /** Creates a new instance of PersistenceService */
+    public PersistenceService() {
+    }
+    
+    public PersistenceService(String puName) {
+        this.puName = puName;
+        this.emMap = new HashMap<Thread, EntityManager>();
+    }
+    
+    public static PersistenceService getDefault() {
+        if (defaultService == null) {
+            defaultService = new PersistenceService(DEFAULT_PU);
+        }
+
+        return defaultService;
+    }
+    
+    public synchronized EntityManager getEntityManager() {
+        Thread currentThread = Thread.currentThread();
+        EntityManager em = emMap.get(currentThread);
+        
+        if (em == null) {
+            em = getEntityManagerFactory().createEntityManager();
+            emMap.put(currentThread, em);
+        }
+   
+        return em;
+    }
+    
+    public synchronized void releaseEntityManager() {
+        EntityManager em = emMap.remove(Thread.currentThread());
+        
+        if (em != null) {
+            em.close();
+        }       
+    }
+
+    private EntityManagerFactory getEntityManagerFactory() {
+        if (emf == null) {
+            emf = Persistence.createEntityManagerFactory(puName);
+        }
+
+        return emf;
+    }   
+}
