@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="bootstrap" default="all" basedir=".">
+    <property file="${basedir}/build.properties"/>
+    
+    <target name="init" depends="-checkout,-init,-init-properties"/>
+        
+    <target name="build" depends="init,-deploy-server,-build,-undeploy-server,-delete-data"/>
+    
+    <target name="-checkout">
+        <delete dir="${nbi.core.dir}"/>
+        <delete dir="${nbi.netbeans.dir}"/>
+        
+        <cvs 
+            command="checkout -P"
+            cvsroot="${cvs.root}" 
+            package="nbi"
+            dest="${nbi.all.dir}"
+            failonerror="true"
+        />
+        <cvs 
+            command="checkout -P"
+            cvsroot="${cvs.root}" 
+            package="installer/components installer/engine installer/infra"
+            dest="${nbi.all.dir}"
+            failonerror="true"
+        />
+        
+        <!--
+        <copy todir="${nbi.core.dir}">
+            <fileset dir="D:/work/nbi">
+                <exclude name="infra/server/**/build/**/*.*"/>
+                <exclude name="infra/server/**/dist/**/*.*"/>
+                <exclude name="infra/server/**/private/**/*.*"/>
+            </fileset>
+        </copy>
+        <copy todir="${nbi.netbeans.dir}">
+            <fileset dir="D:/work/installer">
+                <exclude name="infra/server/**/build/**/*.*"/>
+                <exclude name="infra/server/**/dist/**/*.*"/>
+                <exclude name="infra/server/**/private/**/*.*"/>
+            </fileset>
+        </copy>
+        -->
+    </target>
+    
+    <target name="-init">
+        <delete dir="${custom.tasks.cls}"/>
+        <mkdir dir="${custom.tasks.cls}"/>
+        
+        <javac 
+            srcdir="${custom.tasks.src.1}" 
+            destdir="${custom.tasks.cls}"
+            debug="true"/>
+        <javac 
+            srcdir="${custom.tasks.src.2}" 
+            destdir="${custom.tasks.cls}"
+            debug="true"/>
+        
+        <taskdef 
+            name="glassfish-buildnumber" 
+            classpath="${custom.tasks.cls}" 
+            classname="org.netbeans.installer.infra.build.ant.BuildNumberGlassFish"/>
+        <taskdef 
+            name="openesb-buildnumber" 
+            classpath="${custom.tasks.cls}" 
+            classname="org.netbeans.installer.infra.build.ant.BuildNumberOpenEsb"/>
+        <taskdef 
+            name="sjsam-buildnumber" 
+            classpath="${custom.tasks.cls}" 
+            classname="org.netbeans.installer.infra.build.ant.BuildNumberSjsam"/>
+        <taskdef 
+            name="if" 
+            classpath="${custom.tasks.cls}" 
+            classname="org.netbeans.installer.infra.build.ant.If"/>
+        <taskdef 
+            name="set" 
+            classpath="${custom.tasks.cls}" 
+            classname="org.netbeans.installer.infra.build.ant.SetProperty"/>
+        
+        <get
+            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/latest/latest/bundles/"
+            dest="${temp.file}"/>
+        <glassfish-buildnumber 
+            file="${temp.file}" 
+            prefix="glassfish"/>
+        
+        <get
+            src="${openesb.builds.host}/kits/openesb/openesb_as9_beta2/latest/log/"
+            dest="${temp.file}"/>
+        <openesb-buildnumber 
+            file="${temp.file}" 
+            prefix="openesb"/>
+        
+        <get
+            src="${sjsam.builds.host}/projects/am-javaee/update3beta/"
+            dest="${temp.file}"/>
+        <sjsam-buildnumber 
+            file="${temp.file}" 
+            prefix="sjsam"/>
+            
+        <delete file="${temp.file}"/>
+    </target>
+    
+    <target name="-init-properties">
+        <echo file="${environment.properties}">
+cvs.root=${cvs.root}
+cvs.branch=
+cvs.module=installer
+
+checkout.sources=false
+sources.dir=${nbi.all.dir}
+
+build.number=${build.number}
+
+glassfish.milestone.number=${glassfish.milestone.number}
+glassfish.milestone.number.real=${glassfish.milestone.number.real}
+glassfish.build.type=${glassfish.build.type}
+glassfish.build.number=${glassfish.build.number}
+
+openesb.build.number=${openesb.build.number}
+openesb.build.number.real=${openesb.build.number.real}
+
+sjsam.milestone.number=${sjsam.milestone.number}
+sjsam.build.number=${sjsam.build.number}
+
+dont.build.custom.tasks=true
+custom.tasks.cls=${custom.tasks.cls}
+
+build.engine=false
+
+engine.dist.file.name=nbi-engine.jar
+engine.dist.file=${nbi.netbeans.dir}/infra/build/engine/dist/nbi-engine.jar
+
+release.url=http://${glassfish.host}:${glassfish.http.port}${context.path}/admin
+release.registry=NetBeans
+
+packaged.data.dir=${basedir}/cache/packaged
+downloads.cache.dir=${basedir}/cache/raw
+
+binary.cache.host=${binary.cache.host}
+nb.builds.host=${nb.builds.host}
+glassfish.builds.host=${glassfish.builds.host}
+openesb.builds.host=${openesb.builds.host}
+sjsam.builds.host=${sjsam.builds.host}
+
+remote.work.dir=~/.netbeans-trunk-nightly-${build.number}
+
+remote.host.windows=${remote.host.windows}
+remote.port.windows=${remote.port.windows}
+remote.user.windows=${remote.user.windows}
+
+remote.host.linux=${remote.host.linux}
+remote.port.linux=${remote.port.linux}
+remote.user.linux=${remote.user.linux}
+
+remote.host.solaris-x86=${remote.host.solaris-x86}
+remote.port.solaris-x86=${remote.port.solaris-x86}
+remote.user.solaris-x86=${remote.user.solaris-x86}
+
+remote.host.solaris-sparc=${remote.host.solaris-sparc}
+remote.port.solaris-sparc=${remote.port.solaris-sparc}
+remote.user.solaris-sparc=${remote.user.solaris-sparc}
+
+remote.host.macosx=${remote.host.macosx}
+remote.port.macosx=${remote.port.macosx}
+remote.user.macosx=${remote.user.macosx}
+
+jarsigner.keystore=${jarsigner.keystore}
+jarsigner.alias=${jarsigner.alias}
+jarsigner.storepass=${jarsigner.storepass}
+        </echo>
+        <replace file="${environment.properties}" token="\" value="/"/>
+    </target>
+    
+    <target name="-deploy-server">
+        <replace 
+            dir="${nbi.core.dir}/infra/server" 
+            token="${context.path.token}" 
+            value="${context.path.replacement}"/>
+        <replaceregexp 
+            match="${context.dir.token}" 
+            replace="${context.dir.replacement}">
+            <fileset dir="${nbi.core.dir}/infra/server"/>
+        </replaceregexp>
+        
+        <subant buildpath="${nbi.core.dir}/infra/server" 
+                target="dist" 
+                failonerror="true">
+            <property name="platforms.JDK_1.5.home" value="${jdk.home}"/>
+            <property name="j2ee.platform.classpath" value="${glassfish.j2ee.jar}"/>
+        </subant>
+        
+        <echo file="${temp.file}" message="${glassfish.password.line}"/>
+        <exec executable="${glassfish.asadmin}" failonerror="true">
+            <arg value="deploy"/>
+            
+            <arg value="--interactive=false"/>
+            <arg value="--force=true"/>
+            
+            <arg value="--host"/>
+            <arg value="${glassfish.host}"/>
+            
+            <arg value="--port"/>
+            <arg value="${glassfish.admin.port}"/>
+            
+            <arg value="--user"/>
+            <arg value="${glassfish.user}"/>
+            
+            <arg value="--passwordfile"/>
+            <arg value="${temp.file}"/>
+            
+            <arg value="--name"/>
+            <arg value="${app.name}"/>
+            
+            <arg value="${nbi.core.dir}/infra/server/dist/nbi-server.ear"/>
+        </exec>
+            
+        <delete file="${temp.file}"/>
+    </target>
+    
+    <target name="-build">
+        <property name="engine.dist.file.name" value="nbi-engine.jar"/>
+        
+        <echo message="BUILDING CORE ENGINE ======================================"/>
+        <ant dir="${nbi.core.dir}/infra/build/engine" target="build-all">
+            <property 
+                name="basedir" 
+                value="${nbi.core.dir}/infra/build/engine"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="build.native"
+                value="false"/>
+            <property 
+                name="cvs.module" 
+                value="${core.module.name}"/>
+        </ant>
+        
+        <echo message="BUILDING NETBEANS ENGINE =================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/engine" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/engine"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property 
+                name="core.engine.dist.file" 
+                value="${nbi.core.dir}/infra/build/engine/dist/${engine.dist.file.name}"/>
+        </ant>
+        
+        <echo message="BUILDING NB-IDE-GROUP ====================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/groups/nb-ide-group" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/groups/nb-ide-group"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value=""/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        
+        <echo message="BUILDING NB-BASE =========================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-base" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/nb-base"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value="nb-ide-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        
+        <echo message="BUILDING NB-ADDONS-GROUP =================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/groups/nb-addons-group" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/groups/nb-addons-group"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value="nb-ide-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        
+        <echo message="BUILDING NB-JAVA-EE ======================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-javaee" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/nb-javaee"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value="nb-addons-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        
+        <echo message="BUILDING NB-JAVA-ME ======================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-javame" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/nb-javame"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value="nb-addons-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        
+        <echo message="BUILDING NB-SOA ==========================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-soa" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/nb-soa"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value="nb-addons-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        
+        <echo message="BUILDING NB-UML ==========================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-uml" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/nb-uml"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value="nb-addons-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        
+        <echo message="BUILDING NB-RUBY =========================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-ruby" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/nb-ruby"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value="nb-addons-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        
+        <echo message="BUILDING RUNTIMES-GROUP ==================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/groups/runtimes-group" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/groups/runtimes-group"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value=""/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        
+        <echo message="BUILDING GLASSFISH ========================================"/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/glassfish" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/glassfish"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        
+        <echo message="BUILDING OPENESB =========================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/openesb" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/openesb"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        
+        <echo message="BUILDING SJSAM ============================================"/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/sjsam" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/sjsam"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        
+        <delete dir="${output.dir}"/>
+        <mkdir dir="${output.dir}"/>
+        
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;platform=windows"
+            dest="${output.dir}/netbeans-6.0-basic-${build.number}-windows.exe"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;platform=linux"
+            dest="${output.dir}/netbeans-6.0-basic-${build.number}-linux.sh"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;platform=solaris-x86"
+            dest="${output.dir}/netbeans-6.0-basic-${build.number}-solaris-x86.sh"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;platform=solaris-sparc"
+            dest="${output.dir}/netbeans-6.0-basic-${build.number}-solaris-sparc.sh"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;platform=macosx-x86"
+            dest="${output.dir}/netbeans-6.0-basic-${build.number}-macosx-x86.command"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;platform=macosx-ppc"
+            dest="${output.dir}/netbeans-6.0-basic-${build.number}-macosx-ppc.command"/>
+        
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-javame,6.0.0.0.${build.number}&amp;component=glassfish,2.0.0.${glassfish.milestone.number}.${glassfish.build.number}&amp;platform=windows"
+            dest="${output.dir}/netbeans-6.0-standard-${build.number}-windows.exe"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-javame,6.0.0.0.${build.number}&amp;component=glassfish,2.0.0.${glassfish.milestone.number}.${glassfish.build.number}&amp;platform=linux"
+            dest="${output.dir}/netbeans-6.0-standard-${build.number}-linux.sh"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=glassfish,2.0.0.${glassfish.milestone.number}.${glassfish.build.number}&amp;platform=solaris-x86"
+            dest="${output.dir}/netbeans-6.0-standard-${build.number}-solaris-x86.sh"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=glassfish,2.0.0.${glassfish.milestone.number}.${glassfish.build.number}&amp;platform=solaris-sparc"
+            dest="${output.dir}/netbeans-6.0-standard-${build.number}-solaris-sparc.sh"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=glassfish,2.0.0.${glassfish.milestone.number}.${glassfish.build.number}&amp;platform=macosx-x86"
+            dest="${output.dir}/netbeans-6.0-standard-${build.number}-macosx-x86.command"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=glassfish,2.0.0.${glassfish.milestone.number}.${glassfish.build.number}&amp;platform=macosx-ppc"
+            dest="${output.dir}/netbeans-6.0-standard-${build.number}-macosx-ppc.command"/>
+        
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-javame,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=glassfish,2.0.0.${glassfish.milestone.number}.${glassfish.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;platform=windows"
+            dest="${output.dir}/netbeans-6.0-full-${build.number}-windows.exe"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-javame,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=glassfish,2.0.0.${glassfish.milestone.number}.${glassfish.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;platform=linux"
+            dest="${output.dir}/netbeans-6.0-full-${build.number}-linux.sh"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=glassfish,2.0.0.${glassfish.milestone.number}.${glassfish.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;platform=solaris-x86"
+            dest="${output.dir}/netbeans-6.0-full-${build.number}-solaris-x86.sh"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=glassfish,2.0.0.${glassfish.milestone.number}.${glassfish.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;platform=solaris-sparc"
+            dest="${output.dir}/netbeans-6.0-full-${build.number}-solaris-sparc.sh"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=glassfish,2.0.0.${glassfish.milestone.number}.${glassfish.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;platform=macosx-x86"
+            dest="${output.dir}/netbeans-6.0-full-${build.number}-macosx-x86.command"/>
+        <get 
+            src="http://${glassfish.host}:${glassfish.http.port}${context.path}/create-bundle?registry=NetBeans&amp;component=nb-base,6.0.0.0.${build.number}&amp;component=nb-javaee,6.0.0.0.${build.number}&amp;component=nb-soa,6.0.0.0.${build.number}&amp;component=nb-uml,6.0.0.0.${build.number}&amp;component=nb-ruby,6.0.0.0.${build.number}&amp;component=glassfish,2.0.0.${glassfish.milestone.number}.${glassfish.build.number}&amp;component=openesb,5.0.3.0.${openesb.build.number}&amp;component=sjsam,5.0.3.${sjsam.milestone.number}.${sjsam.build.number}&amp;platform=macosx-ppc"
+            dest="${output.dir}/netbeans-6.0-full-${build.number}-macosx-ppc.command"/>
+    </target>
+    
+    <target name="-undeploy-server">
+        <echo file="${temp.file}" message="${glassfish.password.line}"/>
+        <exec executable="${glassfish.asadmin}" failonerror="true">
+            <arg value="undeploy"/>
+            
+            <arg value="--host"/>
+            <arg value="${glassfish.host}"/>
+            
+            <arg value="--port"/>
+            <arg value="${glassfish.admin.port}"/>
+            
+            <arg value="--user"/>
+            <arg value="${glassfish.user}"/>
+            
+            <arg value="--passwordfile"/>
+            <arg value="${temp.file}"/>
+            
+            <arg value="${app.name}"/>
+        </exec>
+            
+        <delete file="${temp.file}"/>
+    </target>
+    
+    <target name="-delete-data">
+        <delete dir="${context.dir}"/>
+    </target>
+    
+    <target name="replace">
+        <property file="${token.file}"/>
+        <replaceregexp file="${file.to.replace}" flags="mg">
+            <regexp pattern="${regexp.token}"/>
+            <substitution expression="${regexp.replacement}"/>
+        </replaceregexp>
+    </target>
+</project>

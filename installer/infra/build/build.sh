@@ -1,0 +1,125 @@
+#!/bin/sh
+
+################################################################################
+# build-private.sh should define the following properties
+################################################################################
+#BUILD_NUMBER=
+#
+#OUTPUT_DIR=
+#
+#ANT_OPTS=
+#
+#BINARY_CACHE_HOST=
+#NB_BUILDS_HOST=
+#GLASSFISH_BUILDS_HOST=
+#OPENESB_BUILDS_HOST=
+#SJSAM_BUILDS_HOST=
+#
+#JDK_HOME=
+#
+#CVS_ROOT=
+#
+#GLASSFISH_HOME=
+#GLASSFISH_ASADMIN=
+#GLASSFISH_HTTP_PORT=
+#GLASSFISH_ADMIN_PORT=
+#GLASSFISH_HOST=
+#GLASSFISH_USER=
+#GLASSFISH_PASSWORD=
+#
+#REGISTRIES_HOME=
+#
+#JARSIGNER_KEYSTORE=
+#JARSIGNER_ALIAS=
+#JARSIGNER_STOREPASS=
+#
+#REMOTE_HOST_WINDOWS=
+#REMOTE_PORT_WINDOWS=
+#REMOTE_USER_WINDOWS=
+#
+#REMOTE_HOST_LINUX=
+#REMOTE_PORT_LINUX=
+#REMOTE_USER_LINUX=
+#
+#REMOTE_HOST_SOLARIS_X86=
+#REMOTE_PORT_SOLARIS_X86=
+#REMOTE_USER_SOLARIS_X86=
+#
+#REMOTE_HOST_SOLARIS_SPARC=
+#REMOTE_PORT_SOLARIS_SPARC=
+#REMOTE_USER_SOLARIS_SPARC=
+#
+#REMOTE_HOST_MACOSX=
+#REMOTE_PORT_MACOSX=
+#REMOTE_USER_MACOSX=
+################################################################################
+
+################################################################################
+# get the path to the current directory and change to it
+DIRNAME=`dirname $0`
+cd ${DIRNAME}
+
+################################################################################
+# load the properties
+. ./build-private.sh
+
+################################################################################
+# define the working directory location and create it
+WORK_DIR=nbi_all
+[ ! -d ${WORK_DIR} ] && mkdir ${WORK_DIR}
+
+################################################################################
+# define the temp file location
+TEMP_FILE=${WORK_DIR}/temp.sh.tmp
+
+################################################################################
+# define the log file location and create the directory for logs
+LOGS_DIR=${DIRNAME}/logs
+LOG_FILE=logs/${BUILD_NUMBER}.log
+[ ! -d ${LOGS_DIR} ] && mkdir -p ${LOGS_DIR}
+
+################################################################################
+# define the environment for running ant
+export ANT_OPTS
+
+################################################################################
+# run the build
+ant build \
+        \"-Dbuild.number=${BUILD_NUMBER}\" \
+        \"-Doutput.dir=${OUTPUT_DIR}\" \
+        \"-Dbinary.cache.host=${BINARY_CACHE_HOST}\" \
+        \"-Dnb.builds.host=${NB_BUILDS_HOST}\" \
+        \"-Dglassfish.builds.host=${GLASSFISH_BUILDS_HOST}\" \
+        \"-Dopenesb.builds.host=${OPENESB_BUILDS_HOST}\" \
+        \"-Dsjsam.builds.host=${SJSAM_BUILDS_HOST}\" \
+        \"-Djdk.home=${JDK_HOME}\" \
+        \"-Dcvs.root=${CVS_ROOT}\" \
+        \"-Dglassfish.home=${GLASSFISH_HOME}\" \
+        \"-Dglassfish.asadmin=${GLASSFISH_ASADMIN}\" \
+        \"-Dglassfish.http.port=${GLASSFISH_HTTP_PORT}\" \
+        \"-Dglassfish.admin.port=${GLASSFISH_ADMIN_PORT}\" \
+        \"-Dglassfish.host=${GLASSFISH_HOST}\" \
+        \"-Dglassfish.user=${GLASSFISH_USER}\" \
+        \"-Dglassfish.password=${GLASSFISH_PASSWORD}\" \
+        \"-Dregistries.home=${REGISTRIES_HOME}\" \
+        \"-Djarsigner.keystore=${JARSIGNER_KEYSTORE}\" \
+        \"-Djarsigner.alias=${JARSIGNER_ALIAS}\" \
+        \"-Djarsigner.storepass=${JARSIGNER_STOREPASS}\" \
+        \"-Dremote.host.windows=${REMOTE_HOST_WINDOWS}\" \
+        \"-Dremote.port.windows=${REMOTE_PORT_WINDOWS}\" \
+        \"-Dremote.user.windows=${REMOTE_USER_WINDOWS}\" \
+        \"-Dremote.host.linux=${REMOTE_HOST_LINUX}\" \
+        \"-Dremote.port.linux=${REMOTE_PORT_LINUX}\" \
+        \"-Dremote.user.linux=${REMOTE_USER_LINUX}\" \
+        \"-Dremote.host.solaris-x86=${REMOTE_HOST_SOLARIS_X86}\" \
+        \"-Dremote.port.solaris-x86=${REMOTE_PORT_SOLARIS_X86}\" \
+        \"-Dremote.user.solaris-x86=${REMOTE_USER_SOLARIS_X86}\" \
+        \"-Dremote.host.solaris-sparc=${REMOTE_HOST_SOLARIS_SPARC}\" \
+        \"-Dremote.port.solaris-sparc=${REMOTE_PORT_SOLARIS_SPARC}\" \
+        \"-Dremote.user.solaris-sparc=${REMOTE_USER_SOLARIS_SPARC}\" \
+        \"-Dremote.host.macosx=${REMOTE_HOST_MACOSX}\" \
+        \"-Dremote.port.macosx=${REMOTE_PORT_MACOSX}\" \
+        \"-Dremote.user.macosx=${REMOTE_USER_MACOSX}\" \
+        $* 2>&1 |tee ${LOG_FILE}
+
+################################################################################
