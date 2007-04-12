@@ -13,10 +13,10 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="spUnitDetails" alignment="0" pref="616" max="32767" attributes="1"/>
+                  <Component id="spUnitDetails" alignment="0" pref="622" max="32767" attributes="1"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="lTabActionDescription" pref="410" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -24,12 +24,17 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="tfSearch" min="-2" pref="145" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="spUnitTable" alignment="0" pref="616" max="32767" attributes="1"/>
+                  <Component id="spUnitTable" alignment="0" pref="622" max="32767" attributes="1"/>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="bRefresh" min="-2" pref="105" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Component id="bRefresh" min="-2" pref="105" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="bAddLocallyDownloads" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="pProgress" alignment="0" pref="264" max="32767" attributes="0"/>
+                      </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="bAddLocallyDownloads" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="41" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="1" max="-2" attributes="0">
                           <Component id="lHowManyDownload" alignment="0" pref="223" max="32767" attributes="1"/>
                           <Component id="lHowManySelected" alignment="0" max="32767" attributes="1"/>
@@ -38,7 +43,7 @@
                       <Component id="bTabAction" min="-2" pref="111" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -52,7 +57,7 @@
                   <Component id="lTabActionDescription" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="spUnitTable" pref="232" max="32767" attributes="0"/>
+              <Component id="spUnitTable" pref="215" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="103" alignment="0" groupAlignment="3" attributes="0">
@@ -62,10 +67,14 @@
                   </Group>
                   <Component id="bTabAction" min="-2" pref="25" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="lHowManyDownload" min="-2" pref="23" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="lHowManyDownload" min="-2" pref="23" max="-2" attributes="0"/>
+                  <Component id="pProgress" pref="26" max="32767" attributes="2"/>
+              </Group>
               <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-              <Component id="spUnitDetails" pref="126" max="32767" attributes="0"/>
+              <Component id="spUnitDetails" min="-2" pref="135" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -124,5 +133,9 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bAddLocallyDownloadsActionPerformed"/>
       </Events>
     </Component>
+    <Container class="javax.swing.JPanel" name="pProgress">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+    </Container>
   </SubComponents>
 </Form>

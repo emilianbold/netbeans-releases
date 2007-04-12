@@ -19,10 +19,15 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
@@ -43,9 +48,11 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
     private UnitTable availableTable;
     private UnitTable updateTable;
     private UnitTable localTable;
+    private JButton closeButton;
     
     /** Creates new form PluginManagerUI */
-    public PluginManagerUI () {
+    public PluginManagerUI (JButton closeButton) {
+        this.closeButton = closeButton;
         initComponents();
         postInitComponents();
         RequestProcessor.getDefault().post(new Runnable () {
@@ -61,6 +68,48 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         });        
     }
     
+    void setProgressComponent (final JLabel title, final JComponent progressComponent) {
+        if (SwingUtilities.isEventDispatchThread ()) {
+            setProgressComponentInAwt (title, progressComponent);
+        } else {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    setProgressComponentInAwt (title, progressComponent);
+                }
+            });
+        }
+    }
+    
+    private void setProgressComponentInAwt (JLabel title, JComponent progressComponent) {
+        assert pProgress != null;
+        assert SwingUtilities.isEventDispatchThread () : "Must be called in EQ.";
+        pProgress.setVisible (true);
+        pProgress.add (title, BorderLayout.WEST);
+        pProgress.add (progressComponent, BorderLayout.CENTER);
+        revalidate ();
+    }
+    
+    void unsetProgressComponent (final JLabel title, final JComponent progressComponent) {
+        if (SwingUtilities.isEventDispatchThread ()) {
+            unsetProgressComponentInAwt (title, progressComponent);
+        } else {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    unsetProgressComponentInAwt (title, progressComponent);
+                }
+            });
+        }
+    }
+    
+    private void unsetProgressComponentInAwt (JLabel title, JComponent progressComponent) {
+        assert pProgress != null;
+        assert SwingUtilities.isEventDispatchThread () : "Must be called in EQ.";
+        pProgress.remove (title);
+        pProgress.remove (progressComponent);
+        pProgress.setVisible (false);
+        revalidate ();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -70,6 +119,12 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
     private void initComponents() {
 
         tpTabs = new javax.swing.JTabbedPane();
+        pProgress = new javax.swing.JPanel();
+        bClose = closeButton;
+
+        pProgress.setLayout(new java.awt.BorderLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(bClose, org.openide.util.NbBundle.getMessage(PluginManagerUI.class, "UnitTab_bClose_Text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -77,20 +132,31 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 730, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(pProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 359, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 324, Short.MAX_VALUE)
+                        .add(bClose))
+                    .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 730, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
+                .add(tpTabs, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 471, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(bClose)
+                    .add(pProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton bClose;
+    private javax.swing.JPanel pProgress;
     private javax.swing.JTabbedPane tpTabs;
     // End of variables declaration//GEN-END:variables
     
@@ -104,19 +170,19 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         selectFirstRow(updateTable);
         selectFirstRow(availableTable);
 
-        UnitTab updateTab = new UnitTab (updateTable, new UnitDetails ());
+        UnitTab updateTab = new UnitTab (updateTable, new UnitDetails (), this);
         updateTab.addUpdateUnitListener (this);
         tpTabs.add (NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"), updateTab);
         
-        UnitTab availableTab = new UnitTab (availableTable, new UnitDetails ());
+        UnitTab availableTab = new UnitTab (availableTable, new UnitDetails (), this);
         availableTab.addUpdateUnitListener (this);
         tpTabs.add (NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"), availableTab);
                 
-        UnitTab localTab = new UnitTab (localTable, new UnitDetails ());
+        UnitTab localTab = new UnitTab (localTable, new UnitDetails (), this);
         localTab.addUpdateUnitListener (this);
         tpTabs.add (NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Local_Title"), localTab);
         
-        UnitTab installedTab = new UnitTab (installedTable, new UnitDetails ());
+        UnitTab installedTab = new UnitTab (installedTable, new UnitDetails (), this);
         installedTab.addUpdateUnitListener (this);
         tpTabs.add (NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"), installedTab);
         SettingsTab st = new SettingsTab();

@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -39,6 +43,8 @@ import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -53,6 +59,7 @@ public class UnitTab extends javax.swing.JPanel {
     private UnitCategoryTableModel model = null;
     private DocumentListener dlForSearch;
     private String filter = "";
+    private PluginManagerUI manager = null;
     private static final RequestProcessor RP = new RequestProcessor();
     private final RequestProcessor.Task searchTask = RP.create(new Runnable(){
         public void run() {
@@ -64,9 +71,10 @@ public class UnitTab extends javax.swing.JPanel {
     private final Logger log = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.UnitTab");
     
     /** Creates new form UnitTab */
-    public UnitTab(UnitTable table, UnitDetails details) {
+    public UnitTab(UnitTable table, UnitDetails details, PluginManagerUI manager) {
         this.table = table;
         this.details = details;
+        this.manager = manager;
         TableModel m = table.getModel();
         assert m instanceof UnitCategoryTableModel : m + " instanceof UnitCategoryTableModel.";
         this.model = (UnitCategoryTableModel) m;
@@ -296,6 +304,7 @@ public class UnitTab extends javax.swing.JPanel {
         bTabAction = new javax.swing.JButton();
         spUnitDetails = new javax.swing.JScrollPane();
         bAddLocallyDownloads = new javax.swing.JButton();
+        pProgress = new javax.swing.JPanel();
 
         org.openide.awt.Mnemonics.setLocalizedText(lSearch, org.openide.util.NbBundle.getMessage(UnitTab.class, "UnitTab_lSearch_Text")); // NOI18N
 
@@ -321,6 +330,8 @@ public class UnitTab extends javax.swing.JPanel {
             }
         });
 
+        pProgress.setLayout(new java.awt.BorderLayout());
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -328,19 +339,22 @@ public class UnitTab extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(spUnitDetails, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 616, Short.MAX_VALUE)
+                    .add(spUnitDetails, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 622, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(lTabActionDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lSearch)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(tfSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 145, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(spUnitTable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 616, Short.MAX_VALUE)
+                    .add(spUnitTable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 622, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(bRefresh, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(bRefresh, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(bAddLocallyDownloads))
+                            .add(pProgress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(bAddLocallyDownloads)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 41, Short.MAX_VALUE)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, lHowManyDownload, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, lHowManySelected, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -357,7 +371,7 @@ public class UnitTab extends javax.swing.JPanel {
                     .add(lSearch)
                     .add(lTabActionDescription))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(spUnitTable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
+                .add(spUnitTable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -366,9 +380,12 @@ public class UnitTab extends javax.swing.JPanel {
                         .add(bAddLocallyDownloads))
                     .add(bTabAction, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(lHowManyDownload, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(lHowManyDownload, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(pProgress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE))
                 .add(8, 8, 8)
-                .add(spUnitDetails, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE))
+                .add(spUnitDetails, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -451,7 +468,7 @@ private void bTabActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 }                
             }            
             model.setData (categories);            
-            refresh();
+            refresh (false);
             //fireUpdataUnitChange();
         }
     }
@@ -459,10 +476,10 @@ private void bTabActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
 
 private void bRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRefreshActionPerformed
-    refresh();
+    refresh (true);
 }//GEN-LAST:event_bRefreshActionPerformed
 
-private void refresh() {
+private void refresh (final boolean force) {
     table.setEnabled(false);
     bRefresh.setEnabled(false);
     bTabAction.setEnabled(false);
@@ -470,7 +487,12 @@ private void refresh() {
     final Runnable checkUpdates = new Runnable(){
         public void run() {
             try {
-                UpdateUnitProviderFactory.getDefault().refreshProviders();
+                ProgressHandle handle = ProgressHandleFactory.createHandle ("refresh-providers-handle");
+                JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
+                JLabel progressLabel = new JLabel (NbBundle.getMessage (UnitTab.class, "UnitTab_CheckingForUpdates"));
+                manager.setProgressComponent (progressLabel, progressComp);
+                UpdateUnitProviderFactory.getDefault ().refreshProviders (handle, force);
+                manager.unsetProgressComponent (progressLabel, progressComp);
             } catch (IOException ioe) {
                 log.log(Level.FINE, ioe.getMessage(), ioe);
                 NetworkProblemPanel.showNetworkProblemDialog();
@@ -499,6 +521,7 @@ private void refresh() {
     private javax.swing.JLabel lHowManySelected;
     private javax.swing.JLabel lSearch;
     private javax.swing.JLabel lTabActionDescription;
+    private javax.swing.JPanel pProgress;
     private javax.swing.JScrollPane spUnitDetails;
     private javax.swing.JScrollPane spUnitTable;
     private javax.swing.JTextField tfSearch;

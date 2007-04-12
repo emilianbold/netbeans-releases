@@ -34,12 +34,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog;
+import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogCache;
 import org.netbeans.modules.autoupdate.updateprovider.LocalNBMsProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 
@@ -100,8 +104,19 @@ public final class UpdateUnitProviderImpl {
      * @return true if refresh succeed
      * @throws java.io.IOException when any network problem appreared
      */
-    public boolean refresh (boolean force) throws IOException {
-        return getUpdateProvider ().refresh (force);
+    public boolean refresh (ProgressHandle handle, boolean force) throws IOException {
+        boolean res = false;
+        if (handle == null) {
+            handle = ProgressHandleFactory.createHandle (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_CheckingForUpdates"));
+        }
+        handle.setInitialDelay (0);
+        handle.start ();
+        try {
+            getUpdateProvider ().refresh (force);
+        } finally {
+            handle.finish ();
+        }
+        return res;
     }
     
     public void setEnable (boolean state) {
@@ -221,10 +236,10 @@ public final class UpdateUnitProviderImpl {
         return unitProviders;
     }
     
-    public static void refresh () throws IOException {
+    public static void refreshProviders (ProgressHandle handle, boolean force) throws IOException {
         List<UpdateUnitProvider> providers = getUpdateUnitProviders (true);
         for (UpdateUnitProvider p : providers) {
-            p.refresh (true);
+            p.refresh (handle, force);
         }
         UpdateManagerImpl.getInstance().refresh();
     }

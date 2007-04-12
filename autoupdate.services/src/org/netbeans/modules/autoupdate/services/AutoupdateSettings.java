@@ -65,7 +65,7 @@ public class AutoupdateSettings {
     
     private static void scheduleRefreshProviders () {
         try {
-            UpdateUnitProviderImpl.refresh ();
+            UpdateUnitProviderImpl.refreshProviders (null, true);
         } catch (IOException ioe) {
             err.log (Level.INFO, ioe.getMessage(), ioe);
         }

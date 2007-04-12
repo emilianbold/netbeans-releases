@@ -36,7 +36,7 @@ public final class PluginManagerAction extends CallableSystemAction {
         close.setDefaultCapable(false);
         Mnemonics.setLocalizedText (close,NbBundle.getMessage (PluginManagerAction.class, "PluginManager_CloseButton_Name"));
         DialogDescriptor dd = new DialogDescriptor (
-                                    new PluginManagerUI (),
+                                    new PluginManagerUI (close),
                                     NbBundle.getMessage (PluginManagerAction.class, "PluginManager_Panel_Name"),
                                     true, 
                                     new JButton[] { close },
@@ -44,6 +44,7 @@ public final class PluginManagerAction extends CallableSystemAction {
                                     DialogDescriptor.DEFAULT_ALIGN,
                                     null,
                                     null /*final ActionListener bl*/);
+        dd.setOptions (new Object [0]);
         
         Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
         d.setVisible (true);

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.autoupdate.services.UpdateUnitProviderImpl;
 
 /** The factory handles <code>UpdateUnitProvider</code>, allow to create or removed them,
@@ -85,17 +86,20 @@ public final class UpdateUnitProviderFactory {
     
     /** Removes the <code>UpdateUnitProvider</code> from the infrastucture.
      * 
-     * @param UpdateUnitProvider
+     * @param unitProvider 
      */
     public void remove(UpdateUnitProvider unitProvider) {
         UpdateUnitProviderImpl.remove(unitProvider);
     }
     
-    /** Re-read list of <code>UpdateUnitProvider</code> from infrastucture.
+    /** Re-read list of <code>UpdateUnitProvider</code> from infrastucture and refresh its content
+     * if <code>force</code> parameter is <code>true</code>.
      * 
+     * @param handle started ProgressHandle or null
+     * @param force if true then <code>refresh(true)</code> is called on all <code>UpdateUnitProvider</code>
      * @throws java.io.IOException 
      */
-    public void refreshProviders () throws IOException {
-        UpdateUnitProviderImpl.refresh ();
+    public void refreshProviders (ProgressHandle handle, boolean force) throws IOException {
+        UpdateUnitProviderImpl.refreshProviders (handle, force);
     }
 }

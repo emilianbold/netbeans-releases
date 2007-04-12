@@ -23,6 +23,7 @@ import org.netbeans.spi.autoupdate.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.autoupdate.services.UpdateUnitProviderImpl;
 
 
@@ -95,12 +96,13 @@ public final class UpdateUnitProvider {
      * a cache. The <code>force</code> parameter forces reading content from
      * remote server.
      * 
+     * @param handle started ProgressHandle or null
      * @param force if true then forces to reread the content from server
      * @return true if refresh succeed
      * @throws java.io.IOException when any network problem appreared
      */
-    public boolean refresh (boolean force) throws IOException {
-        return impl.refresh(force);
+    public boolean refresh (ProgressHandle handle, boolean force) throws IOException {
+        return impl.refresh (handle, force);
     }
     
     /** Returns <code>true</code> if the provider is automatically checked and its <code>UpdateUnit</code> are

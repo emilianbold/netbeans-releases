@@ -82,25 +82,17 @@ public class AutoupdateCatalogCache {
     }
     
     public URL writeCatalogToCache (String codeName, URL original) throws IOException {
-        ProgressHandle handle = ProgressHandleFactory.createHandle (NbBundle.getMessage (AutoupdateCatalogCache.class, "AutoupdateCatalogCache_CheckingForUpdates"));
-        handle.setInitialDelay (0);
-        handle.start ();
         URL url = null;
+        File dir = getCatalogCache ();
+        assert dir != null && dir.exists () : "Cache directory must exist.";
+        File cache = new File (dir, codeName);
+
+        copy (original, cache);
+
         try {
-            File dir = getCatalogCache ();
-            assert dir != null && dir.exists () : "Cache directory must exist.";
-            File cache = new File (dir, codeName);
-
-            copy (original, cache, handle);
-
-            handle.finish ();
-            try {
-                url = cache.toURI ().toURL ();
-            } catch (MalformedURLException ex) {
-                assert false : ex;
-            }
-        } finally {
-            handle.finish ();
+            url = cache.toURI ().toURL ();
+        } catch (MalformedURLException ex) {
+            assert false : ex;
         }
         return url;
     }
@@ -123,7 +115,7 @@ public class AutoupdateCatalogCache {
         }
     }
     
-    private void copy (URL sourceUrl, File dest, ProgressHandle handle) throws IOException {
+    private void copy (URL sourceUrl, File dest) throws IOException {
         err.log(Level.INFO, "Processing URL: " + sourceUrl); // NOI18N
 
         URL urlToGZip = null;
@@ -162,7 +154,6 @@ public class AutoupdateCatalogCache {
             writer = new BufferedWriter (new FileWriter (dest));
             while ((read = reader.read ()) != -1) {
                 writer.write (read);
-                //handle.progress (read++);
             }
         } catch (IOException ioe) {
             err.log (Level.INFO, "Writing content of URL " + sourceUrl + " failed.", ioe);
