@@ -120,11 +120,8 @@ public class CasualDiff {
         diffs.append(diff);
     }
     
-    // todo (#pf): Is this really needed? -- Seems it duplicates the work
-    // in SourcePositions, but in different way. Uses map of endPositions.
-    // Look into the implementation and try to use SourcePositions!
     public int endPos(JCTree t) {
-        return model.getEndPos(t, oldTopLevel);
+        return TreeInfo.getEndPos(t, oldTopLevel.endPositions);
     }
     
     private int endPos(com.sun.tools.javac.util.List<? extends JCTree> trees) {
@@ -1869,11 +1866,6 @@ public class CasualDiff {
         return result;
     }
     
-    
-    /**
-     * Used for diffing lists which does not contain any separator, currently
-     * just for imports.
-     */
     private int diffListImports(
             List<? extends JCTree> oldList, 
             List<? extends JCTree> newList,
@@ -2178,22 +2170,8 @@ public class CasualDiff {
         return tree;
     }
     
-    private int getOldPos(JCTree oldT) {
-        return getOldPos(oldT, model, undo);
-    }
-    
-    static int getOldPos(JCTree oldT, ASTModel model, UndoList undo) {
-        int oldPos = model.getStartPos(oldT);
-        if (oldPos == Query.NOPOS) {
-            // see if original tree is available for position
-            JCTree t = (JCTree)undo.getOld(leftMostTree(oldT));
-            if (t != null && t != oldT)
-                // recurse in case there are multiple changes to this tree
-                oldPos = getOldPos(t, model, undo);
-        }
-        if (oldPos == Query.NOPOS)
-            oldPos = oldT.pos == Query.NOPOS ? leftMostTree(oldT).pos : oldT.pos;
-        return oldPos;
+    private static int getOldPos(JCTree oldT) {
+        return TreeInfo.getStartPos(oldT);
     }
     
     /**
