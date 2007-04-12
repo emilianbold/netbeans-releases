@@ -277,15 +277,6 @@
                 </dependency>
             </module-dependencies>
             <public-packages/>
-<!--                <package>org.netbeans.modules.sql</package>
-            </public-packages>
-
-			<class-path-extension>
-                <runtime-relative-path>ext/sql/wsdl4j-1_5_2/wsdl4j.jar</runtime-relative-path>
-                <binary-origin>../external/wsdl4j-1_5_2/wsdl4j.jar</binary-origin>
-            </class-path-extension>
- -->
-		</data>
- 
+		</data> 
 	</configuration>
 </project>
