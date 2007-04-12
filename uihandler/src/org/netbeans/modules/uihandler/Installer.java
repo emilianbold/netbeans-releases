@@ -408,7 +408,7 @@ public class Installer extends ModuleInstall {
                         continue;
                     }
                     
-
+                    
                     if ("hidden".equals(type)) { // NOI18N
                         JButton b = new JButton();
                         Mnemonics.setLocalizedText(b, value);
@@ -690,24 +690,16 @@ public class Installer extends ModuleInstall {
                 } catch (SAXException ex) {
                     LOG.log(Level.WARNING, url.toExternalForm(), ex);
                 } catch (java.net.SocketTimeoutException ex) {
-                    LOG.log(Level.INFO, url.toExternalForm(), ex);
-                    url = getUnknownHostExceptionURL();
-                    msg = null;
+                    catchConnectionProblem(ex);
                     continue;
                 } catch (UnknownHostException ex) {
-                    LOG.log(Level.INFO, url.toExternalForm(), ex);
-                    url = getUnknownHostExceptionURL();
-                    msg = null;
+                    catchConnectionProblem(ex);
                     continue;
                 } catch (NoRouteToHostException ex) {
-                    LOG.log(Level.INFO, url.toExternalForm(), ex);
-                    url = getUnknownHostExceptionURL();
-                    msg = null;
+                    catchConnectionProblem(ex);
                     continue;
                 }catch (ConnectException ex){
-                    LOG.log(Level.INFO, url.toExternalForm(), ex);
-                    url = getUnknownHostExceptionURL();
-                    msg = null;
+                    catchConnectionProblem(ex);
                     continue;
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, url.toExternalForm(), ex);
@@ -729,6 +721,13 @@ public class Installer extends ModuleInstall {
                 }
             }
             
+        }
+        
+        private void catchConnectionProblem(Exception exception){
+            LOG.log(Level.INFO, url.toExternalForm(), exception);
+            url = getUnknownHostExceptionURL();
+            report = false;
+            msg = null;
         }
         
         private URL getUnknownHostExceptionURL() {
