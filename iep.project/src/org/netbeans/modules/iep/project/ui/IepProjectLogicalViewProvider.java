@@ -128,6 +128,9 @@ public class IepProjectLogicalViewProvider implements LogicalViewProvider {
         public boolean canRename() {
             return false;
         }
+          public HelpCtx getHelpCtx() {
+            return new HelpCtx("org.netbeans.modules.iep.project.ui.MyLogicalViewRootNode");
+        }
 
         // Private methods -------------------------------------------------
 

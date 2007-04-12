@@ -33,6 +33,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import org.openide.util.HelpCtx;
 
 /**
  * A SimpleNode has an icon, a label, and up to two ports.
@@ -46,7 +47,7 @@ import java.awt.Rectangle;
  * not the label or the ports.  Furthermore, resizing the icon now
  * maintains its original aspect ratio.
  */
-public class SimpleNode extends JGoNode {
+public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
     /** Create an empty SimpleNode.  Call initialize() before using it. */
     public SimpleNode() {
         super();
@@ -266,6 +267,9 @@ public class SimpleNode extends JGoNode {
             }
         }
         return false;
+    }
+     public HelpCtx getHelpCtx() {
+	return new HelpCtx("org.netbeans.modules.iep.editor.designer.SimpleNode");
     }
     
     public JGoText getLabel() { return mLabel; }

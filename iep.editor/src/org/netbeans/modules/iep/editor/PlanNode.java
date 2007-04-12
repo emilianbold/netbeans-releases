@@ -23,6 +23,7 @@ import javax.swing.Action;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.actions.OpenAction;
+import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.OutputWriter;
 import org.openide.windows.IOProvider;
@@ -51,7 +52,11 @@ public class PlanNode extends DataNode {
     public Action getPreferredAction () {
 	    return SystemAction.get (OpenAction.class);
     }
-    
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.iep.editor.PlanNode");   
+    }
+
    
     public void updateNode() {
     }

@@ -39,10 +39,10 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
@@ -257,6 +257,11 @@ class IepProjectViews {
 	    return false;
 	}
 
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("org.netbeans.modules.iep.project.ui.RootNode");
+        }
+
+
     }
 
     private static final class DocBaseNode extends FilterNode {
@@ -282,6 +287,9 @@ class IepProjectViews {
 
         public String getDisplayName () {
             return NbBundle.getMessage(IcanproLogicalViewProvider.class, "LBL_Node_DocBase"); //NOI18N
+        }
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("org.netbeans.modules.iep.project.ui.DocBaseNode");
         }
     }
     static final class NoFoldersDataFilter implements ChangeListener, ChangeableDataFilter {
@@ -316,6 +324,9 @@ class IepProjectViews {
                         
         public void removeChangeListener( ChangeListener listener ) {
             ell.remove( ChangeListener.class, listener );
+        }
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("org.netbeans.modules.iep.project.ui.NoFoldersDataFilter");
         }
         
     }

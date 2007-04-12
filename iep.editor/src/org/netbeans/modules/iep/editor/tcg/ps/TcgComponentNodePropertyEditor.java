@@ -31,12 +31,13 @@ import java.util.Vector;
 import java.util.logging.Logger;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.util.HelpCtx;
 
 /**
  *
  * @author Bing Lu
  */
-public abstract class TcgComponentNodePropertyEditor implements PropertyEditor, ExPropertyEditor {
+public abstract class TcgComponentNodePropertyEditor implements PropertyEditor, ExPropertyEditor,HelpCtx.Provider {
     private static final Logger mLogger = Logger.getLogger(TcgComponentNodePropertyEditor.class.getName());
    
     protected TcgComponentNodeProperty mProperty;
@@ -58,7 +59,9 @@ public abstract class TcgComponentNodePropertyEditor implements PropertyEditor, 
      * @since 1.5
      */
     public TcgComponentNodePropertyEditor() {
+        
     }
+    
     
     // Must be called right after instance creation
     public void setProperty(TcgComponentNodeProperty property) {
@@ -331,6 +334,10 @@ public abstract class TcgComponentNodePropertyEditor implements PropertyEditor, 
     
     public void attachCustomizerState(TcgComponentNodePropertyCustomizerState customizerState) {
         mCustomizerState = customizerState;
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyEditor");   
     }
 
  }
