@@ -53,7 +53,7 @@ public class InitializeRegistryAction extends WizardAction {
     }
     
     @Override
-    public boolean isCancellable() {
+    public boolean isCancelable() {
         return false;
     }
     

@@ -20,21 +20,51 @@
 package org.netbeans.installer.wizard.components;
 
 import org.netbeans.installer.utils.helper.UiMode;
-import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.containers.SwingContainer;
+import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
 
 /**
- *
+ * This class is a specialization of the {@link WizardComponent} which defines 
+ * behavior specific to panels.
+ * 
+ * <p>
+ * A panel is the most typical wizard component. It's behavioral capabilities are 
+ * extremely limited and hence the only thing that a anel can do is to display a 
+ * bunch of input fields requiing to enter some data. On the other hand a panel can 
+ * be used to inform the user about an event and require him to perform some action 
+ * before the wizard proceeds.
+ * 
  * @author Kirill Sorokin
+ * @since 1.0
  */
 public abstract class WizardPanel extends WizardComponent {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    /**
+     * UI of the panel.
+     */
     protected WizardUi wizardUi;
     
+    /**
+     * Creates a new instance of {@link WizardPanel}. This is the default 
+     * <code>protected</code> constructor which must be called by the concrete
+     * implementations.
+     */
     protected WizardPanel() {
         // does nothing
     }
     
+    /**
+     * Executes the panel when it is read via a call to 
+     * {@link org.netbeans.installer.wizard.Wizard#next()}. When the wizard is run 
+     * in a GUI mode, no action is taken as all the functionality of a panel is 
+     * contained in its UI. When the wizard is run in a silent mode, running this 
+     * method automatically calls 
+     * {@link org.netbeans.installer.wizard.Wizard#next()}.
+     * 
+     * @see WizardComponent#executeForward()
+     */
     public final void executeForward() {
         // since silent mode does not assume any user interaction we just move 
         // forward
@@ -43,14 +73,32 @@ public abstract class WizardPanel extends WizardComponent {
         }
     }
     
+    /**
+     * Executes the panel when it is read via a call to 
+     * {@link org.netbeans.installer.wizard.Wizard#previous()}. When the wizard is 
+     * run in a GUI mode, no action is taken as all the functionality of a panel is 
+     * contained in its UI.
+     * 
+     * @see WizardComponent#executeForward()
+     */
     public final void executeBackward() {
         // does nothing
     }
     
+    /**
+     * The default implementation of this method for {@link WizardPanel} has an 
+     * empty body. Concrete implementations are expected to override this method
+     * if they require any custom initialization.
+     * 
+     * @see WizardComponent#initialize()
+     */
     public void initialize() {
         // does nothing
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public WizardUi getWizardUi() {
         if (wizardUi == null) {
             wizardUi = new WizardPanelUi(this);
@@ -61,15 +109,35 @@ public abstract class WizardPanel extends WizardComponent {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
+    /**
+     * Implementation of the {@link WizardUi} for {@link WizardPanel}.
+     * 
+     * @author Kirill Sorokin
+     * @since 1.0
+     */
     public static class WizardPanelUi extends WizardComponentUi {
+        /**
+         * Current {@link WizardPanel} for this UI.
+         */
         protected WizardPanel panel;
         
-        public WizardPanelUi(final WizardPanel component) {
-            super(component);
+        /**
+         * Creates a new instance of {@link WizardPanelUi}, initializing it with
+         * the specified instance of {@link WizardPanel}.
+         * 
+         * @param panel Instance of {@link WizardPanel} which should be used 
+         *      by this UI.
+         */
+        public WizardPanelUi(final WizardPanel panel) {
+            super(panel);
             
-            this.panel = component;
+            this.panel = panel;
         }
         
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public SwingUi getSwingUi(final SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new WizardPanelSwingUi(panel, container);
@@ -79,15 +147,34 @@ public abstract class WizardPanel extends WizardComponent {
         }
     }
     
+    /**
+     * Implementation of {@link SwingUi} for {@link WizardPanel}.
+     * 
+     * @author Kirill Sorokin
+     * @since 1.0
+     */
     public static class WizardPanelSwingUi extends WizardComponentSwingUi {
+        /**
+         * Current {@link WizardPanel} for this UI.
+         */
         protected WizardPanel panel;
         
+        /**
+         * Creates a new instance of {@link WizardPanelSwingUi}, initializing it 
+         * with the specified instances of {@link WizardPanel} and 
+         * {@link SwingContainer}.
+         * 
+         * @param panel Instance of {@link WizardPanel} which should be used 
+         *      by this UI.
+         * @param container Instance of {@link SwingContainer} which should be used 
+         *      by this UI.
+         */
         public WizardPanelSwingUi(
-                final WizardPanel component,
+                final WizardPanel panel,
                 final SwingContainer container) {
-            super(component, container);
+            super(panel, container);
             
-            this.panel = component;
+            this.panel = panel;
         }
     }
 }

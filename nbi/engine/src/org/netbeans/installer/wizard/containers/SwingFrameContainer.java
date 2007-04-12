@@ -50,21 +50,58 @@ import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
 
 /**
+ * This class is a conscrete implementation of the {@link SwingContainer} interface.
+ * In this case the container is an {@link NbiFrame}.
  *
  * @author Kirill Sorokin
+ * @sicne 1.0
  */
 public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
+    /**
+     * Instance of {@link SwingUi} that is currently shown by the container.
+     */
     private SwingUi currentUi;
+    
+    /**
+     * Content pane used by the container.
+     */
     private WizardFrameContentPane contentPane;
     
+    /**
+     * Width of the container frame.
+     */
     private int frameWidth;
+    
+    /**
+     * Height of the container frame.
+     */
     private int frameHeight;
+    
+    /**
+     * Container frame's icon.
+     */
     private File frameIcon;
+    
+    /**
+     * Prefix of the container frame title.
+     */
     private String frameTitlePrefix;
+    
+    /**
+     * Pattern which should be used to combine the container frame's title prefix
+     * and the title of the current UI.
+     */
     private String frameTitlePattern;
     
+    /**
+     * Creates a new instance of {@link SwingFrameContainer}. The constructor calls
+     * the initialization routine of the parent class and searches the system
+     * properties for settings which may be releavant to this type of container.
+     * Additionally it initializes and lays out the core swing components of the
+     * container.
+     */
     public SwingFrameContainer() {
         super();
         
@@ -130,6 +167,14 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         initComponents();
     }
     
+    /**
+     * This method overrides {@link NbiFrame#setVisible()} and at the same time
+     * implements {@link WizardContainer#setVisible()}. It is responsible for
+     * showing and hiding the wizard container frame.
+     *
+     * @param visible Whether to show the frame - <code>true</code>, or to hide
+     *      it - <code>false</code>.
+     */
     @Override
     public void setVisible(final boolean visible) {
         super.setVisible(visible);
@@ -139,6 +184,9 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         }
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public void updateWizardUi(final WizardUi wizardUi) {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -153,7 +201,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         currentUi = wizardUi.getSwingUi(this);
         
         // update the frame title
-        if (currentUi.hasTitle()) {
+        if (currentUi.getTitle() != null) {
             setTitle(StringUtils.format(
                     frameTitlePattern,
                     frameTitlePrefix,
@@ -202,22 +250,40 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         getAccessibleContext().setAccessibleDescription(currentUi.getDescription());
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public NbiButton getHelpButton() {
         return contentPane.getHelpButton();
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public NbiButton getBackButton() {
         return contentPane.getBackButton();
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public NbiButton getNextButton() {
         return contentPane.getNextButton();
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public NbiButton getCancelButton() {
         return contentPane.getCancelButton();
     }
     
+    // private //////////////////////////////////////////////////////////////////////
+    /**
+     * Initializes and lays out the Swing components for the container frame. This
+     * method also sets some frame properties which will be required at runtime,
+     * such as size, position, etc.
+     */
     private void initComponents() {
         setDefaultCloseOperation(NbiFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -270,34 +336,94 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
+    /**
+     * This class is an extension of {@link NbiFrameContentPane} which adds some
+     * functionality specific to the wizard container's needs. It is used as the
+     * content pane for the wizard frame.
+     *
+     * @author Kirill Sorokin
+     * @since 1.0
+     */
     public static class WizardFrameContentPane extends NbiFrameContentPane {
+        /**
+         * {@link NbiLabel} which would be used to display the
+         * {@link WizardComponent}'s title.
+         */
         private NbiLabel titleLabel;
+        
+        /**
+         * {@link NbiTextPane} which would be used to display the
+         * {@link WizardComponent}'s description.
+         */
         private NbiTextPane descriptionPane;
+        
+        /**
+         * Container for the title and description components.
+         */
         private NbiPanel titlePanel;
         
+        /**
+         * Separator between the wizard page header (title and description) and the
+         * main wizard page contents.
+         */
         private NbiSeparator topSeparator;
         
+        /**
+         * Separator between the wizard page footer (standard wizard container
+         * buttons) and the main wizard page contents.
+         */
         private NbiSeparator bottomSeparator;
         
+        /**
+         * The standard <code>Help</code> button.
+         */
         private NbiButton helpButton;
+        
+        /**
+         * The standard <code>Back</code> button.
+         */
         private NbiButton backButton;
+        
+        /**
+         * The standard <code>Next</code> button.
+         */
         private NbiButton nextButton;
+        
+        /**
+         * The standard <code>Cancel</code> button.
+         */
         private NbiButton cancelButton;
+        
+        /**
+         * Container for the standard buttons swing components.
+         */
         private NbiPanel buttonsPanel;
         
+        /**
+         * Reference to the {@link SwingUi} being currently displayed.
+         */
         private NbiPanel currentPanel;
         
+        /**
+         * Creates a new instance of {@link WizardFrameContentPane}. The default
+         * constructor simply initializes and lays out the swing components
+         * required by the content pane.
+         */
         public WizardFrameContentPane() {
             initComponents();
         }
         
+        /**
+         *
+         * @param panel
+         */
         public void updatePanel(final SwingUi panel) {
             if (currentPanel != null) {
                 remove(currentPanel);
             }
             currentPanel = panel;
             
-            if (panel.hasTitle()) {
+            if (panel.getTitle() != null) {
                 titleLabel.setText(panel.getTitle());
                 descriptionPane.setText(panel.getDescription());
                 
@@ -326,23 +452,59 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             repaint();
         }
         
+        /**
+         * Returns the Swing implementation of the standard <code>Help</code> 
+         * button. This method is called by the {@link SwingFrameContainer} when it 
+         * needs to get the handle of the button.
+         *
+         * @return <code>Help</code> button instance.
+         * @see SwingFrameContainer#getHelpButton.
+         */
         public NbiButton getHelpButton() {
             return helpButton;
         }
         
+        /**
+         * Returns the Swing implementation of the standard <code>Back</code> 
+         * button. This method is called by the {@link SwingFrameContainer} when it 
+         * needs to get the handle of the button.
+         *
+         * @return <code>Back</code> button instance.
+         * @see SwingFrameContainer#getBackButton.
+         */
         public NbiButton getBackButton() {
             return backButton;
         }
         
+        /**
+         * Returns the Swing implementation of the standard <code>Next</code> 
+         * button. This method is called by the {@link SwingFrameContainer} when it 
+         * needs to get the handle of the button.
+         *
+         * @return <code>Next</code> button instance.
+         * @see SwingFrameContainer#getNextButton.
+         */
         public NbiButton getNextButton() {
             return nextButton;
         }
         
+        /**
+         * Returns the Swing implementation of the standard <code>Cancel</code> 
+         * button. This method is called by the {@link SwingFrameContainer} when it 
+         * needs to get the handle of the button.
+         *
+         * @return <code>Cancel</code> button instance.
+         * @see SwingFrameContainer#getCancelButton.
+         */
         public NbiButton getCancelButton() {
             return cancelButton;
         }
         
         // private //////////////////////////////////////////////////////////////////
+        /**
+         * Initializes and lays out the swing components required by the content
+         * pane.
+         */
         private void initComponents() {
             // titleLabel ///////////////////////////////////////////////////////////
             titleLabel = new NbiLabel();
@@ -493,37 +655,98 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
+    /**
+     * Name of the system property which is expected to contain the desired value 
+     * for the width of the wizard frame.
+     */
     public static final String WIZARD_FRAME_WIDTH_PROPERTY =
             "nbi.wizard.ui.swing.frame.width"; // NOI18N
+    
+    /**
+     * Name of the system property which is expected to contain the desired value 
+     * for the height of the wizard frame.
+     */
     public static final String WIZARD_FRAME_HEIGHT_PROPERTY =
             "nbi.wizard.ui.swing.frame.height"; // NOI18N
+    
+    /**
+     * Name of the system property which is expected to contain the desired value 
+     * for the URI of the wizard frame icon.
+     */
     public static final String WIZARD_FRAME_ICON_URI_PROPERTY =
             "nbi.wizard.ui.swing.frame.icon"; // NOI18N
+    
+    /**
+     * Name of the system property which is expected to contain the desired value 
+     * for the standard prefix of the wizard frame's title.
+     */
     public static final String WIZARD_FRAME_TITLE_PREFIX_PROPERTY =
             "nbi.wizard.ui.swing.frame.title.prefix"; // NOI18N
+    
+    /**
+     * Name of the system property which is expected to contain the desired value 
+     * for the pattern for merging the standard title prefix with the component's 
+     * title.
+     */
     public static final String WIZARD_FRAME_TITLE_PATTERN_PROPERTY =
             "nbi.wizard.ui.swing.frame.title.pattern"; // NOI18N
     
+    /**
+     * Default value for the wizard frame's width.
+     */
     public static final int DEFAULT_WIZARD_FRAME_WIDTH =
             NbiFrame.DEFAULT_FRAME_WIDTH;
+    
+    /**
+     * Default value for the wizard frame's height.
+     */
     public static final int DEFAULT_WIZARD_FRAME_HEIGHT =
             NbiFrame.DEFAULT_FRAME_HEIGHT;
+    
+    /**
+     * Default value for the wizard frame's icon's URI.
+     */
     public static final String DEFAULT_WIZARD_FRAME_ICON_URI =
             NbiFrame.DEFAULT_FRAME_ICON_URI;
+    
+    /**
+     * Default value for the wizard frame's standard title prefix.
+     */
     public static final String DEFAULT_WIZARD_FRAME_TITLE_PREFIX =
             ResourceUtils.getString(SwingFrameContainer.class,
             "SFC.frame.title.prefix"); // NOI18N
+    
+    /**
+     * Default value for the pattern for merging the standard title prefix with the 
+     * component's title.
+     */
     public static final String DEFAULT_WIZARD_FRAME_TITLE_PATTERN =
             ResourceUtils.getString(SwingFrameContainer.class,
             "SFC.frame.title.pattern"); // NOI18N
     
-    public static final String RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY =
+    // private //////////////////////////////////////////////////////////////////////
+    /**
+     * Name of a resource bundle entry.
+     */
+    private static final String RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY =
             "SFC.error.failed.to.parse.property"; // NOI18N
-    public static final String RESOURCE_FAILED_TO_DOWNLOAD_WIZARD_ICON =
+    
+    /**
+     * Name of a resource bundle entry.
+     */
+    private static final String RESOURCE_FAILED_TO_DOWNLOAD_WIZARD_ICON =
             "SFC.error.failed.to.download.icon"; // NOI18N
-    public static final String RESOURCE_FAILED_TO_SET_WIZARD_ICON =
+    
+    /**
+     * Name of a resource bundle entry.
+     */
+    private static final String RESOURCE_FAILED_TO_SET_WIZARD_ICON =
             "SFC.error.failed.to.set.wizard.icon"; // NOI18N
     
-    public static final String CANCEL_ACTION_NAME =
+    /**
+     * Name of the {@link AbstractAction} which is invoked when the user presses the
+     * <code>Escape</code> button.
+     */
+    private static final String CANCEL_ACTION_NAME =
             "evaluate.cancel"; // NOI18N
 }

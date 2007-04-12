@@ -22,15 +22,39 @@ package org.netbeans.installer.wizard.containers;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 
 /**
- *
+ * This is the specialization of the {@link WizardContainer} interface with regard 
+ * to Swing UI mode - {@link UiMode#SWING}. It defines several methods which are
+ * specific to the Swing-based containers.
+ * 
  * @author Kirill Sorokin
+ * @since 1.0
  */
 public interface SwingContainer extends WizardContainer {
+    /**
+     * Returns the Swing implementation of the standard <code>Help</code> button.
+     * 
+     * @return <code>Help</code> button instance.
+     */
     NbiButton getHelpButton();
     
+    /**
+     * Returns the Swing implementation of the standard <code>Back</code> button.
+     * 
+     * @return <code>Back</code> button instance.
+     */
     NbiButton getBackButton();
     
+    /**
+     * Returns the Swing implementation of the standard <code>Next</code> button.
+     * 
+     * @return <code>Next</code> button instance.
+     */
     NbiButton getNextButton();
     
+    /**
+     * Returns the Swing implementation of the standard <code>Cancel</code> button.
+     * 
+     * @return <code>Cancel</code> button instance.
+     */
     NbiButton getCancelButton();
 }

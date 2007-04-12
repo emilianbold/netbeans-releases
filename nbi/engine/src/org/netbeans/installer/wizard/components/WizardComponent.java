@@ -36,53 +36,54 @@ import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.ui.WizardUi;
 
 /**
- * This class represents a single unit of a {@link Wizard} sequence. It is a logical 
- * abstraction of a wizard step, should normally be accompanied by a 
+ * This class represents a single unit of a {@link Wizard} sequence. It is a logical
+ * abstraction of a wizard step, should normally be accompanied by a
  * {@link WizardUi} instance.
- * 
+ *
  * <p>
  * This class provides a bunch of methods which are used by the wizard in order to
- * execute the component, devise whether is can be executed or can be skipped, 
+ * execute the component, devise whether is can be executed or can be skipped,
  * whether the user is allowed to skip the component, etc.
- * 
+ *
  * <p>
- * The basic infrastructure used by the concrete implementations of the 
+ * The basic infrastructure used by the concrete implementations of the
  * {@link WizardComponent} class is also defined here: support for child components
  * and properties.
- * 
+ *
  * @author Kirill Sorokin
+ * @since 1.0
  */
 public abstract class WizardComponent {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     /**
-     * {@link Wizard} which currently executes this component. This field is 
-     * populated at the moment the component is executed, thus it is unsafe to 
-     * assume that it holds a correct value unless it is known that the component 
+     * {@link Wizard} which currently executes this component. This field is
+     * populated at the moment the component is executed, thus it is unsafe to
+     * assume that it holds a correct value unless it is known that the component
      * is active.
      */
     private Wizard wizard;
     
     /**
-     * List of child components. It is not expected that all implementations will 
-     * make use of this field, thus the presence of  children may simply be ignored 
+     * List of child components. It is not expected that all implementations will
+     * make use of this field, thus the presence of  children may simply be ignored
      * by some.
      */
     private List<WizardComponent> children;
     
     /**
-     * Component's properties. These should not be mixed up with the properties 
-     * available through {@link Wizard#getProperty(String)} and 
-     * {@link Wizard#setProperty(String,String)} - these are internal to the 
+     * Component's properties. These should not be mixed up with the properties
+     * available through {@link Wizard#getProperty(String)} and
+     * {@link Wizard#setProperty(String,String)} - these are internal to the
      * component, while the wizard's ones are expected to keep the user input.
      */
     private Properties properties;
     
     // constructor //////////////////////////////////////////////////////////////////
     /**
-     * Creates a new instance of {@link WizardComponent}. This is the default 
+     * Creates a new instance of {@link WizardComponent}. This is the default
      * <code>protected</code> constructor which must be called by the concrete
-     * implementations. It initializes the fields above and sets some default 
+     * implementations. It initializes the fields above and sets some default
      * properties.
      */
     protected WizardComponent() {
@@ -108,52 +109,52 @@ public abstract class WizardComponent {
     
     // execution flow ///////////////////////////////////////////////////////////////
     /**
-     * This method is called when the component was reached with the 
-     * {@link Wizard#next()} method. It is meant to perform the operations required 
+     * This method is called when the component was reached with the
+     * {@link Wizard#next()} method. It is meant to perform the operations required
      * by the concrete component, such as perform a search of some sort, etc.
-     * 
+     *
      * <p>
-     * This method is called after {@link #setWizard(Wizard)}, {@link #initialize()} 
-     * and {@link #getWizardUi()}, thus it is safe to assume that the wizard field 
+     * This method is called after {@link #setWizard(Wizard)}, {@link #initialize()}
+     * and {@link #getWizardUi()}, thus it is safe to assume that the wizard field
      * has been correctly initialized and the UI (if it exists) was shown.
      */
     public abstract void executeForward();
     
     /**
-     * This method is called when the component was reached with the 
-     * {@link Wizard#previous()} method. It is meant to perform the operations 
-     * required by the concrete component, such as perform a search of some sort, 
+     * This method is called when the component was reached with the
+     * {@link Wizard#previous()} method. It is meant to perform the operations
+     * required by the concrete component, such as perform a search of some sort,
      * etc.
-     * 
+     *
      * <p>
-     * This method is called after {@link #setWizard(Wizard)}, {@link #initialize()} 
-     * and {@link #getWizardUi()}, thus it is safe to assume that the wizard field 
+     * This method is called after {@link #setWizard(Wizard)}, {@link #initialize()}
+     * and {@link #getWizardUi()}, thus it is safe to assume that the wizard field
      * has been correctly initialized and the UI (if it exists) was shown.
      */
     public abstract void executeBackward();
     
     /**
      * This method is called every time a wizard reaches this component. Unlike the
-     * {@link #executeForward()} and {@link #executeBackward()} methods this one is 
-     * called <b>before</b> the UI is shown and thus is intended to be used to 
+     * {@link #executeForward()} and {@link #executeBackward()} methods this one is
+     * called <b>before</b> the UI is shown and thus is intended to be used to
      * prepare the model or data for use by the UI.
-     * 
+     *
      * <p>
-     * This method is called after {@link #setWizard(Wizard)}, thus it is safe to 
+     * This method is called after {@link #setWizard(Wizard)}, thus it is safe to
      * assume that the wizard field has been correctly initialized.
      */
     public abstract void initialize();
     
     /**
-     * This method is called by the wizard in order to find out whether this 
-     * component can be reached via {@link Wizard#next()}. 
-     * 
+     * This method is called by the wizard in order to find out whether this
+     * component can be reached via {@link Wizard#next()}.
+     *
      * <p>
-     * It's important to note that if this method returns <code>false</code>, the 
-     * wizard will not assume that it cannot proceed, but will <b>skip</b> this 
+     * It's important to note that if this method returns <code>false</code>, the
+     * wizard will not assume that it cannot proceed, but will <b>skip</b> this
      * component altogether.
-     * 
-     * @return <code>true</code> if the component can be executed, 
+     *
+     * @return <code>true</code> if the component can be executed,
      *      <code>false</code> if the component should be skipped.
      */
     public boolean canExecuteForward() {
@@ -161,15 +162,15 @@ public abstract class WizardComponent {
     }
     
     /**
-     * This method is called by the wizard in order to find out whether this 
-     * component can be reached via {@link Wizard#previous()}. 
-     * 
+     * This method is called by the wizard in order to find out whether this
+     * component can be reached via {@link Wizard#previous()}.
+     *
      * <p>
-     * It's important to note that if this method returns <code>false</code>, the 
-     * wizard will not assume that it cannot proceed, but will <b>skip</b> this 
+     * It's important to note that if this method returns <code>false</code>, the
+     * wizard will not assume that it cannot proceed, but will <b>skip</b> this
      * component altogether.
-     * 
-     * @return <code>true</code> if the component can be executed, 
+     *
+     * @return <code>true</code> if the component can be executed,
      *      <code>false</code> if the component should be skipped.
      */
     public boolean canExecuteBackward() {
@@ -177,13 +178,13 @@ public abstract class WizardComponent {
     }
     
     /**
-     * This method is called by the wizard in order to find out whether it is 
-     * allowed to execute any components before this via the 
-     * {@link Wizard#previous()} method. If this method returns <code>true</code> it 
-     * will be illegal to call {@link Wizard#previous()} if the current component 
+     * This method is called by the wizard in order to find out whether it is
+     * allowed to execute any components before this via the
+     * {@link Wizard#previous()} method. If this method returns <code>true</code> it
+     * will be illegal to call {@link Wizard#previous()} if the current component
      * is active.
-     * 
-     * @return <code>true</code> is the component is the point of no return, 
+     *
+     * @return <code>true</code> is the component is the point of no return,
      *      <code>false</code> otherwise.
      */
     public boolean isPointOfNoReturn() {
@@ -193,7 +194,7 @@ public abstract class WizardComponent {
     // ui ///////////////////////////////////////////////////////////////////////////
     /**
      * Returns the {@link WizardUi} object for this component.
-     * 
+     *
      * @return {@link WizardUi} object for this component.
      */
     public abstract WizardUi getWizardUi();
@@ -201,7 +202,7 @@ public abstract class WizardComponent {
     // wizard ///////////////////////////////////////////////////////////////////////
     /**
      * Returns the {@link Wizard} which currently executes this component.
-     * 
+     *
      * @return {@link Wizard} which currently executes this component.
      */
     public final Wizard getWizard() {
@@ -210,7 +211,7 @@ public abstract class WizardComponent {
     
     /**
      * Sets the {@link Wizard} which currently executes this component.
-     * 
+     *
      * @param wizard {@link Wizard} which currently executes this component.
      */
     public final void setWizard(final Wizard wizard) {
@@ -220,7 +221,7 @@ public abstract class WizardComponent {
     // children /////////////////////////////////////////////////////////////////////
     /**
      * Registers a new child for this component.
-     * 
+     *
      * @param component New child component which should be registered.
      */
     public final void addChild(final WizardComponent component) {
@@ -228,9 +229,9 @@ public abstract class WizardComponent {
     }
     
     /**
-     * Unregisters a child component. If it was not previously registered, no action 
+     * Unregisters a child component. If it was not previously registered, no action
      * is taken.
-     * 
+     *
      * @param component Child component which should be unregistered.
      */
     public final void removeChild(final WizardComponent component) {
@@ -239,8 +240,8 @@ public abstract class WizardComponent {
     
     /**
      * Registers several children for this component.
-     * 
-     * @param components {@link List} of child components which should be 
+     *
+     * @param components {@link List} of child components which should be
      *      registered.
      */
     public final void addChildren(final List<WizardComponent> components) {
@@ -248,10 +249,10 @@ public abstract class WizardComponent {
     }
     
     /**
-     * Returns the list of currently registered child components. It is not 
-     * guaranteed that operating on this list directly will affect the actual 
+     * Returns the list of currently registered child components. It is not
+     * guaranteed that operating on this list directly will affect the actual
      * children.
-     * 
+     *
      * @return {@link List} of the registered child components.
      */
     public final List<WizardComponent> getChildren() {
@@ -260,13 +261,13 @@ public abstract class WizardComponent {
     
     // properties ///////////////////////////////////////////////////////////////////
     /**
-     * Returns the value of the component's property with the specified name. This 
-     * method attempts to parse the property value using the 
-     * {@link SystemUtils#parseString(String,ClassLoader)} method and supplying 
+     * Returns the value of the component's property with the specified name. This
+     * method attempts to parse the property value using the
+     * {@link SystemUtils#parseString(String,ClassLoader)} method and supplying
      * {@link Wizard#getClassLoader()} as the class loader value.
-     * 
+     *
      * @param name Name of the property whose value should be returned.
-     * @return Value of the specified property, parsed via 
+     * @return Value of the specified property, parsed via
      *      {@link SystemUtils#parseString(String,ClassLoader)}.
      */
     public final String getProperty(final String name) {
@@ -274,9 +275,9 @@ public abstract class WizardComponent {
     }
     
     /**
-     * Returns the value of the component's property with the specified name. This 
+     * Returns the value of the component's property with the specified name. This
      * method does not attempt to parse the property's value.
-     * 
+     *
      * @param name Name of the property whose value should be returned.
      * @return Value of the specified property.
      */
@@ -287,7 +288,7 @@ public abstract class WizardComponent {
     /**
      * Sets the specified property to the specified value. If such property does not
      * exist - it is created.
-     * 
+     *
      * @param name Name of the property whose value needs to be set.
      * @param value Value of the property.
      */
@@ -296,10 +297,10 @@ public abstract class WizardComponent {
     }
     
     /**
-     * Returns the properties of this component. The values of the properties will 
-     * not be parsed. It is not guaranteed that operating on the return value of 
+     * Returns the properties of this component. The values of the properties will
+     * not be parsed. It is not guaranteed that operating on the return value of
      * this method will affect the actual properties of the component.
-     * 
+     *
      * @return Component's properties.
      */
     public final Properties getProperties() {
@@ -308,9 +309,9 @@ public abstract class WizardComponent {
     
     // helpers //////////////////////////////////////////////////////////////////////
     /**
-     * A helper method - calls {@link SystemUtils#parseString(String,ClassLoader)} 
+     * A helper method - calls {@link SystemUtils#parseString(String,ClassLoader)}
      * supplying {@link Wizard#getClassLoader()} as the class loader value.
-     * 
+     *
      * @param string String to be parsed.
      * @return Parsed string.
      */
@@ -319,9 +320,9 @@ public abstract class WizardComponent {
     }
     
     /**
-     * A helper method - calls {@link SystemUtils#parsePath(String,ClassLoader)} 
+     * A helper method - calls {@link SystemUtils#parsePath(String,ClassLoader)}
      * supplying {@link Wizard#getClassLoader()} as the class loader value.
-     * 
+     *
      * @param path Path to be parsed as a {@link String}.
      * @return Parsed path as a {@link File}.
      */
@@ -330,10 +331,10 @@ public abstract class WizardComponent {
     }
     
     /**
-     * A helper method - calls 
-     * {@link ResourceUtils#getString(String,String,ClassLoader)}, supplying 
+     * A helper method - calls
+     * {@link ResourceUtils#getString(String,String,ClassLoader)}, supplying
      * {@link Wizard#getClassLoader()} as the class loader value.
-     * 
+     *
      * @param baseName Resource bundle base name.
      * @param key Name of the key whose value needs to be obtained.
      * @return Value of the specified key from the specified bundle.
@@ -343,15 +344,15 @@ public abstract class WizardComponent {
     }
     
     /**
-     * A helper method - calls 
-     * {@link ResourceUtils#getString(String,String,ClassLoader,Object[])}, 
+     * A helper method - calls
+     * {@link ResourceUtils#getString(String,String,ClassLoader,Object[])},
      * supplying {@link Wizard#getClassLoader()} as the class loader value.
-     * 
+     *
      * @param baseName Resource bundle base name.
      * @param key Name of the key whose value needs to be obtained.
      * @param arguments Objects which should be used to substitute wildcards in the
      *      key value.
-     * @return Value of the specified key from the specified bundle with its 
+     * @return Value of the specified key from the specified bundle with its
      *      wildcards resolved using the supplied arguments.
      */
     protected final String getString(
@@ -364,9 +365,9 @@ public abstract class WizardComponent {
     /**
      * A helper method - calls {@link ResourceUtils#getResource(String,ClassLoader)}
      * supplying {@link Wizard#getClassLoader()} as the class loader value.
-     * 
+     *
      * @param path Path to the resource which should be obtained.
-     * @return {@link InputStream} from the resource, or <code>null</code> if it was 
+     * @return {@link InputStream} from the resource, or <code>null</code> if it was
      *      not found.
      */
     protected final InputStream getResource(final String path) {
@@ -375,9 +376,9 @@ public abstract class WizardComponent {
     
     // private //////////////////////////////////////////////////////////////////////
     /**
-     * Returns the value of the specified property. Thsi method can either attempt 
+     * Returns the value of the specified property. Thsi method can either attempt
      * to parse the value, or return it as is.
-     * 
+     *
      * @param name Name of the property whose value needs to be returned.
      * @param parse Whether to parse the property value or not.
      * @return Value of the specified property, either parsed or not.
@@ -396,6 +397,9 @@ public abstract class WizardComponent {
     // Inner Classes
     /**
      * Implementation of the {@link WizardUi} for {@link WizardComponent}.
+     *
+     * @author Kirill Sorokin
+     * @since 1.0
      */
     public static class WizardComponentUi implements WizardUi {
         /**
@@ -405,7 +409,7 @@ public abstract class WizardComponent {
         
         /**
          * UI implementation for Swing environment. This is initialized lazily, i.e.
-         * the value of this field will be null, unless the accessor method has been 
+         * the value of this field will be null, unless the accessor method has been
          * called - {@link #getSwingUi(SwingContainer)}.
          */
         protected WizardComponentSwingUi swingUi;
@@ -413,8 +417,8 @@ public abstract class WizardComponent {
         /**
          * Creates a new instance of {@link WizardComponentUi}, initializing it with
          * the specified instance of {@link WizardComponent}.
-         * 
-         * @param component Instance of {@link WizardComponent} which should be used 
+         *
+         * @param component Instance of {@link WizardComponent} which should be used
          *      by this UI.
          */
         protected WizardComponentUi(final WizardComponent component) {
@@ -438,6 +442,9 @@ public abstract class WizardComponent {
     
     /**
      * Implementation of {@link SwingUi} for {@link WizardComponent}.
+     *
+     * @author Kirill Sorokin
+     * @since 1.0
      */
     public static class WizardComponentSwingUi extends SwingUi {
         /**
@@ -451,13 +458,13 @@ public abstract class WizardComponent {
         protected SwingContainer container;
         
         /**
-         * Creates a new instance of {@link WizardComponentSwingUi}, initializing it 
-         * with the specified instances of {@link WizardComponent} and 
+         * Creates a new instance of {@link WizardComponentSwingUi}, initializing it
+         * with the specified instances of {@link WizardComponent} and
          * {@link SwingContainer}.
-         * 
-         * @param component Instance of {@link WizardComponent} which should be used 
+         *
+         * @param component Instance of {@link WizardComponent} which should be used
          *      by this UI.
-         * @param container Instance of {@link SwingContainer} which should be used 
+         * @param container Instance of {@link SwingContainer} which should be used
          *      by this UI.
          */
         protected WizardComponentSwingUi(
@@ -565,10 +572,10 @@ public abstract class WizardComponent {
         
         // protected ////////////////////////////////////////////////////////////////
         /**
-         * Initializes the container. This method sets the appropriate texts on the 
+         * Initializes the container. This method sets the appropriate texts on the
          * buttons, enables/disables them according to the current position in the
          * wizard, etc.
-         * 
+         *
          * <p>
          * This method is called right before the UI is shown.
          */
@@ -612,9 +619,9 @@ public abstract class WizardComponent {
         }
         
         /**
-         * Initializes the UI. This methods sets the correct texts for the labels, 
-         * textfields, and initializes other controls. 
-         * 
+         * Initializes the UI. This methods sets the correct texts for the labels,
+         * textfields, and initializes other controls.
+         *
          * <p>
          * This method is called right before the UI is shown.
          */
@@ -623,8 +630,8 @@ public abstract class WizardComponent {
         }
         
         /**
-         * Saves the user input to the wizard's property container. This method does 
-         * not perform any additional validation of the input as it will be 
+         * Saves the user input to the wizard's property container. This method does
+         * not perform any additional validation of the input as it will be
          * validated prior to calling this method - in {@link #validateInput()}
          */
         protected void saveInput() {
@@ -632,12 +639,12 @@ public abstract class WizardComponent {
         }
         
         /**
-         * Validates the user input. This method performs the validatation of the 
-         * data input by the user on this panel. It either passed the input data to 
-         * the component for validation, or takes the risk and validates the data 
+         * Validates the user input. This method performs the validatation of the
+         * data input by the user on this panel. It either passed the input data to
+         * the component for validation, or takes the risk and validates the data
          * itself.
-         * 
-         * @return Error message which describes what is incorrect with the user 
+         *
+         * @return Error message which describes what is incorrect with the user
          *      input, or <code>null</code> if the user input is correct.
          */
         protected String validateInput() {
@@ -660,35 +667,35 @@ public abstract class WizardComponent {
             "description"; // NOI18N
     
     /**
-     * Name of the property, which contains the text for the standard 'Help' 
+     * Name of the property, which contains the text for the standard 'Help'
      * button.
      */
     public static final String HELP_BUTTON_TEXT_PROPERTY =
             "help.button.text"; // NOI18N
     
     /**
-     * Name of the property, which contains the text for the standard 'Back' 
+     * Name of the property, which contains the text for the standard 'Back'
      * button.
      */
     public static final String BACK_BUTTON_TEXT_PROPERTY =
             "back.button.text"; // NOI18N
     
     /**
-     * Name of the property, which contains the text for the standard 'Next' 
+     * Name of the property, which contains the text for the standard 'Next'
      * button.
      */
     public static final String NEXT_BUTTON_TEXT_PROPERTY =
             "next.button.text"; // NOI18N
     
     /**
-     * Name of the property, which contains the text for the standard 'Cancel' 
+     * Name of the property, which contains the text for the standard 'Cancel'
      * button.
      */
     public static final String CANCEL_BUTTON_TEXT_PROPERTY =
             "cancel.button.text"; // NOI18N
     
     /**
-     * Name of the property, which contains the text for the standard 'Finish' 
+     * Name of the property, which contains the text for the standard 'Finish'
      * button.
      */
     public static final String FINISH_BUTTON_TEXT_PROPERTY =

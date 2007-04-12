@@ -67,7 +67,7 @@ import org.xml.sax.SAXException;
  * The wizard operates over a list of {@link WizardComponent}s. In order to add
  * "depth", the user needs to create sub-wizards which would have their own
  * sequences of components, but will appear as a single component to the parent
- * wizard. This effect can be obtained via the 
+ * wizard. This effect can be obtained via the
  * {@link org.netbeans.installer.wizard.components.WizardSequence} component.
  *
  * <p>
@@ -81,7 +81,7 @@ import org.xml.sax.SAXException;
  * <p>
  * Property container. Since the princial use case for a wizard is collecting some
  * user input, the values entered by the user need to be stored somewhere. For this
- * purpose a wizard has an associated {@link PropertyContainer}. It serves as a 
+ * purpose a wizard has an associated {@link PropertyContainer}. It serves as a
  * storage for the user-entered strings.
  *
  * <p>
@@ -89,11 +89,12 @@ import org.xml.sax.SAXException;
  * the system property {@link #COMPONENTS_INSTANCE_URI_PROPERTY}, if the property is
  * not set, then it falls back to the {@link #DEFAULT_COMPONENTS_INSTANCE_URI}. For
  * child wizards, created with one of the
- * {@link #createSubWizard(List,int)} methods, expect that their lists of components 
- * will be passed in directly. The list of components can be constructed using the 
+ * {@link #createSubWizard(List,int)} methods, expect that their lists of components
+ * will be passed in directly. The list of components can be constructed using the
  * {@link #loadWizardComponents(String)} method.
  *
  * @author Kirill Sorokin
+ * @since 1.0
  */
 public class Wizard {
     /////////////////////////////////////////////////////////////////////////////////
@@ -690,7 +691,7 @@ public class Wizard {
      * Returns the {@link WizardContainer} which is used by this {@link Wizard}
      * instance.
      *
-     * @return {@link WizardContainer} which is used by this {@link Wizard} 
+     * @return {@link WizardContainer} which is used by this {@link Wizard}
      *      instance.
      */
     public WizardContainer getContainer() {
@@ -724,7 +725,7 @@ public class Wizard {
     
     /**
      * Returns the {@link Context} of this {@link Wizard} instance.
-     * 
+     *
      * @return {@link Context} of this {@link Wizard} instance.
      */
     public Context getContext() {
@@ -733,7 +734,7 @@ public class Wizard {
     
     /**
      * Returns the {@link ClassLoader} used by this {@link Wizard} instance.
-     * 
+     *
      * @return {@link ClassLoader} used by this {@link Wizard} instance.
      */
     public ClassLoader getClassLoader() {
@@ -742,7 +743,7 @@ public class Wizard {
     
     /**
      * Returns the {@link FinishHandler} used by this {@link Wizard} instance.
-     * 
+     *
      * @return {@link FinishHandler} used by this {@link Wizard} instance.
      */
     public FinishHandler getFinishHandler() {
@@ -750,10 +751,10 @@ public class Wizard {
     }
     
     /**
-     * Sets the {@link FinishHandler} which should be used by this {@link Wizard} 
+     * Sets the {@link FinishHandler} which should be used by this {@link Wizard}
      * instance.
-     * 
-     * @param finishHandler {@link FinishHandler} which should be used by this 
+     *
+     * @param finishHandler {@link FinishHandler} which should be used by this
      *      {@link Wizard} instance.
      */
     public void setFinishHandler(final FinishHandler finishHandler) {
@@ -762,10 +763,10 @@ public class Wizard {
     
     // factory methods for children /////////////////////////////////////////////////
     /**
-     * Creates a new child (or sub-) wizard with the given list of 
+     * Creates a new child (or sub-) wizard with the given list of
      * {@link WizardComponent}s and the initial index of the active component.
-     * 
-     * @param components List of {@link WizardComponent}s over which the child 
+     *
+     * @param components List of {@link WizardComponent}s over which the child
      *      wizard should iterate.
      * @param index Initial index of the active component.
      * @return New child (sub-) wizard.
@@ -777,16 +778,16 @@ public class Wizard {
     }
     
     /**
-     * Creates a new child (or sub-) wizard with the given list of 
-     * {@link WizardComponent}s, initial index of the active component, property 
+     * Creates a new child (or sub-) wizard with the given list of
+     * {@link WizardComponent}s, initial index of the active component, property
      * container and class loader.
-     * 
-     * @param components List of {@link WizardComponent}s over which the child 
+     *
+     * @param components List of {@link WizardComponent}s over which the child
      *      wizard should iterate.
      * @param index Initial index of the active component.
      * @param propertyContainer {@link PropertyContainer} which should be used by
      *      the child wizard.
-     * @param classLoader {@link ClassLoader} which should be used by the child 
+     * @param classLoader {@link ClassLoader} which should be used by the child
      *      wizard.
      * @return New child (sub-) wizard.
      */
@@ -801,7 +802,7 @@ public class Wizard {
     // private //////////////////////////////////////////////////////////////////////
     /**
      * Returns the currently active {@link WizardComponent}.
-     * 
+     *
      * @return Currently active {@link WizardComponent}, or <code>null</code> if the
      *      index of the active component is outside the list size.
      */
@@ -814,9 +815,9 @@ public class Wizard {
     }
     
     /**
-     * Returns the previous component in the <b>current</b> wizard's components 
+     * Returns the previous component in the <b>current</b> wizard's components
      * list.
-     * 
+     *
      * @return Previous {@link WizardComponent} or <code>null</code> if there is no
      *      previous component.
      */
@@ -849,9 +850,9 @@ public class Wizard {
     }
     
     /**
-     * Returns the next component in the <b>current</b> wizard's components 
+     * Returns the next component in the <b>current</b> wizard's components
      * list.
-     * 
+     *
      * @return Next {@link WizardComponent} or <code>null</code> if there is no
      *      next component.
      */
@@ -880,7 +881,7 @@ public class Wizard {
             "nbi.wizard.components.instance.uri"; // NOI18N
     
     /**
-     * Default URI which points to the XML file with the list of components for the 
+     * Default URI which points to the XML file with the list of components for the
      * root wizard.
      */
     public static final String DEFAULT_COMPONENTS_INSTANCE_URI =
@@ -888,7 +889,7 @@ public class Wizard {
             "org/netbeans/installer/wizard/wizard-components.xml"; // NOI18N
     
     /**
-     * Name of the system property which is expected to contain the URI which points 
+     * Name of the system property which is expected to contain the URI which points
      * to the XML schema which defines the format for the serialized list of wizard
      * components.
      */
@@ -896,8 +897,8 @@ public class Wizard {
             "nbi.wizard.components.schema.uri"; // NOI18N
     
     /**
-     * Default URI which points to the XML schema which defines the format for the 
-     * serialized list of wizard components. 
+     * Default URI which points to the XML schema which defines the format for the
+     * serialized list of wizard components.
      */
     public static final String DEFAULT_COMPONENTS_SCHEMA_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX +

@@ -100,15 +100,18 @@ public class UninstallAction extends WizardAction {
         }
     }
     
+    @Override
     public boolean canExecuteForward() {
         return Registry.getInstance().getProductsToUninstall().size() > 0;
     }
     
+    @Override
     public boolean isPointOfNoReturn() {
         return true;
     }
     
-    public boolean isCancellable() {
+    @Override
+    public boolean isCancelable() {
         return false;
     }
 }

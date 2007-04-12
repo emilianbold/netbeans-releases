@@ -43,7 +43,8 @@ public class FinalizeRegistryAction extends WizardAction {
         return null; // this action does not have a ui
     }
     
-    public boolean isCancellable() {
+    @Override
+    public boolean isCancelable() {
         return false;
     }
 }
