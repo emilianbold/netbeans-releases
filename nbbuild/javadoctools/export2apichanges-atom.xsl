@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <xsl:template match="/" >
         <atom:feed>
-            <atom:id>urn:netbeans-org:changes</atom:id>
+            <atom:id>urn:netbeans-org:apichanges</atom:id>
             <atom:title>NetBeans API Changes</atom:title>
             <atom:author><atom:name>netbeans.org</atom:name></atom:author>
             <atom:link rel="alternate" type="text/html" href="apichanges.html"/>
@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <xsl:template match="change">
         <atom:entry>
-            <xsl:if test="@id"><atom:id>urn:netbeans-org:changes:<xsl:value-of select="@id"/></atom:id></xsl:if>
+            <xsl:if test="@id"><atom:id>urn:netbeans-org:apichanges:<xsl:value-of select="@id"/></atom:id></xsl:if>
             <atom:title type="xhtml"><xhtml:div>[<xsl:value-of select="translate(substring-before(@url,'/'), '-', '.')"/>] <xsl:apply-templates select="summary/node()" mode="xhtmlify"/></xhtml:div></atom:title>
             <!-- XXX is the relative URL legal? -->
             <atom:link rel="alternate" type="text/html"><xsl:attribute name="href"><xsl:value-of select="$url-prefix"/><xsl:value-of select="@url"/>#<xsl:value-of select="@id"/></xsl:attribute></atom:link>
