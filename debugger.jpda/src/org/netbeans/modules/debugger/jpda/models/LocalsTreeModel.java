@@ -511,7 +511,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     
     public Variable getVariable (Value v) {
         if (v instanceof ObjectReference)
-            return new AbstractVariable (
+            return new AbstractObjectVariable (
                 debugger,
                 (ObjectReference) v,
                 null
