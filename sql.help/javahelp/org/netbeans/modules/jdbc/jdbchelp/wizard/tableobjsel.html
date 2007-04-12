@@ -16,7 +16,8 @@
 <h2>JDBC Database Wizard: Select DataSource and Table Objects Page</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>The JDBC Database wizard enables you to create a WSDL file for accessing tables in a database.</p>
+<p>The JDBC Database wizard allows you to quickly create a WSDL file for access to a table in a data source. 
+The wizard also generates a corresponding XML Schema file that defines the elements for the table and columns referenced in the WSDL file.</p>
 
 <p>The Select DataSource and Table Objects page contains the following fields:</p>
 
@@ -25,10 +26,14 @@
 <li><b>Data Source.</b> A drop-down list of all currently available data sources. Select a data source from the list to display the available tables from the data source.</li>
 
 <ul class="note">
-  <li>Even if there is only one data source listed, you must select it to display the available tables.</li>
+  <li>Even if only one data source is listed, you must select it to display the available tables.</li>
 </ul>
 
-<li><b>Available Tables and Selected Tables.</b> Select one or more tables from the list of displayed tables and move them to the Selected Tables list.</li>
+<li><b>Available Tables and Selected Tables.</b> Select a table from the list of displayed tables and move it to the Selected Tables list.</li>
+
+<ul class="note">
+  <li>You cannot select multiple tables. The JDBC Database wizard only supports the selection of a single table.</li>
+</ul>
 
 </ul>
 

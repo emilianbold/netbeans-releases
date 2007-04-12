@@ -16,23 +16,31 @@
 <h2>JDBC Database Wizard: Select Operation Specific Attributes Page</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>The JDBC Database wizard enables you to create a WSDL file for accessing tables in a database. 
-The wizard generates default WSDL elements for the following database operations:</p>
+<p>The JDBC Database wizard allows you to quickly create a WSDL file for access to a table in a data source. 
+The wizard also generates a corresponding XML Schema file that defines the elements for the table and columns referenced in the WSDL file.</p>
+
+<p>The wizard generates default WSDL elements for the following database operations:</p>
 
 <ul>
 <li>Insert</li>
 <li>Update</li>
+<li>Delete</li>
 <li>Select</li>
 <li>Poll</li>
 </ul>
 
 <p>The Select Operation Specific Attributes page allows you to select the columns to include in the generated WSDL file. 
-For each column selected, you can also specify which database operations to include in the generated file.</p>
+For each column selected, the wizard generates a SQL query to access the data in that column. 
+For each database operation (select, update, insert, poll), you specify the column with the data that you want to access.</p>
+
+<p>By default all columns and all available database operations are selected. 
+Use the Advanced button to modify the default selection.</p>
 
 <ul>
-<li><b>Select.</b> Select the tables to include in the generated WSDL file.</li>
-<li><b>Advanced.</b> Opens a window that allows you to select specific columns and database operations to include in the generated WSDL file. 
-By default, all columns and database operations are selected.</li>
+<li><b>Select.</b> Select the table to include in the generated WSDL file.</li>
+<li><b>Advanced.</b> Opens a window that allows you to select specific columns for the data you want to access. 
+For each column selected, the wizard generates a SQL query to access the data in that column. 
+By default, all columns for all database operations are selected.</li>
 </ul>
 
 <dl>
