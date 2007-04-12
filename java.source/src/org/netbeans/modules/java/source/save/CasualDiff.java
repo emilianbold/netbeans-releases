@@ -240,7 +240,7 @@ public class CasualDiff {
     private Name origClassName = null;
     
     protected int diffClassDef(JCClassDecl oldT, JCClassDecl newT, int[] bounds) {
-        int localPointer =  bounds[0];
+        int localPointer = bounds[0];
         int insertHint = localPointer;
         JCTree opar = oldParent;
         oldParent = oldT;
@@ -2815,10 +2815,12 @@ public class CasualDiff {
                 for (int i = addStart; i <= addEnd; i++) {
                     builder.append(lines2[i].data);
                 }
-                append(Diff.insert(delEnd == Difference.NONE ? lines1[delStart].start : lines1[delEnd].end,
+                append(Diff.insert(delEnd == Difference.NONE ? 
+                        delStart < lines1.length ? lines1[delStart].start : lines1[lines1.length-1].end
+                        : lines1[delEnd].end,
                         builder.toString(), null, "", LineInsertionType.NONE));
             }
-            
+
             // deletion
             else if (type == 'd') {
                 append(Diff.delete(lines1[delStart].start, lines1[delEnd].end));
@@ -2894,7 +2896,9 @@ public class CasualDiff {
                 for (int i = addStart; i <= addEnd; i++) {
                     builder.append(lines2[i].data);
                 }
-                append(Diff.insert(currentPos + (delEnd == Difference.NONE ? lines1[delStart].start : lines1[delEnd].end),
+                append(Diff.insert(currentPos + (delEnd == Difference.NONE ?
+                        delStart < lines1.length ? lines1[delStart].start : lines1[lines1.length-1].end
+                        : lines1[delEnd].end),
                         builder.toString(), null, "", LineInsertionType.NONE));
             }
             
