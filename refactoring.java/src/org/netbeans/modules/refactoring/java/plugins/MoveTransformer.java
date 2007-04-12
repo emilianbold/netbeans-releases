@@ -40,6 +40,7 @@ public class MoveTransformer extends SearchVisitor {
     private Set<Element> elementsToImport = new HashSet();
     private boolean isThisFileMoving;
     private boolean isThisFileReferencingOldPackage = false;
+    private Set<Element> elementsAlreadyImported = new HashSet();
     
 
     public MoveTransformer(WorkingCopy workingCopy, MoveRefactoringPlugin move) {
@@ -55,6 +56,7 @@ public class MoveTransformer extends SearchVisitor {
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (el!=null) {
                 if (isElementMoving(el)) {
+                    elementsAlreadyImported.add(el);
                     Tree nju = make.MemberSelect(make.Identifier(move.getTargetPackageName(move.filesToMove.get(index))), el);
                     workingCopy.rewrite(node, nju);
                 }
@@ -71,7 +73,8 @@ public class MoveTransformer extends SearchVisitor {
             if (el!=null) {
                 if (!isThisFileMoving) {
                     if (isElementMoving(el)) {
-                        elementsToImport.add(el);
+                        if (!elementsAlreadyImported.contains(el))
+                            elementsToImport.add(el);
                     }
                 } else {
                     if (!isThisFileReferencingOldPackage && (!isElementMoving(el) && isTopLevelClass(el)) && getPackageOf(el).toString().equals(RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent()))) {
