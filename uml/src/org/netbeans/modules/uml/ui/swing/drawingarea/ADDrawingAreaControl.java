@@ -341,6 +341,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /*
  * Main Display Control for all UML Diagram Types.
@@ -9566,9 +9567,16 @@ public class ADDrawingAreaControl extends ApplicationView
                TSEObject contextObj = null;
                if ((hitTest != null) && (eventPoint != null))
                {
-                   TSConstPoint pt = graphWindow.getNonalignedWorldPoint(eventPoint);
-                   contextObj = hitTest.getGraphObjectAt(pt, graphWindow.getGraph(), true);
-                   m_ContextMenuManager.setContextObject(contextObj);
+                  TSConstPoint pt = graphWindow.getNonalignedWorldPoint(eventPoint);
+                  contextObj = hitTest.getGraphObjectAt(pt, graphWindow.getGraph(), true);
+                  if ( contextObj != null)
+                  {
+                     m_ContextMenuManager.setContextObject(contextObj);
+                     if (Utilities.isUnix() || Utilities.isMac())
+                     {
+                        selectAndFireEvents(((TSGraphObject)contextObj), true, true);
+                     }
+                  }
                }
                else if((e == null) && (selected != null))
                {
@@ -9683,17 +9691,17 @@ public class ADDrawingAreaControl extends ApplicationView
       {
          //if I was editing something on drawing area, need to commit that
          saveEditCompartment();
-
+         
          requestFocus();
-         showPopupMenu(event);
+         showPopupMenu(event);        
       }
       
-      public void mouseReleased(MouseEvent e)
+      public void mouseReleased(MouseEvent event)
       {
          // Some Operating Systems will show the popupmenu on the mouse
          // down and some will show it on the mouse up.
-         showPopupMenu(e);
-      }      
+         showPopupMenu(event);
+      }    
       
 //      public boolean showAccessiblePopupMenu()
 //      {
