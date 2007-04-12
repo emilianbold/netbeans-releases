@@ -180,8 +180,11 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../apisupport/samples/feedreader-sample-ui</project>
                 <project>../apisupport/timers</project>
                 <project>../autoupdate</project>
+                <project>../autoupdate/services</project>
+                <project>../autoupdate/ui</project>
                 <project>../classfile</project>
                 <project>../core</project>
+                <project>../core/applemenu</project>
                 <project>../core/bootstrap</project>
                 <project>../core/execution</project>
                 <project>../core/favorites</project>
@@ -190,6 +193,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../core/multiview</project>
                 <project>../core/navigator</project>
                 <project>../core/options</project>
+                <project>../core/options/keymap</project>
                 <project>../core/output2</project>
                 <project>../core/palette</project>
                 <project>../core/progress</project>
@@ -238,6 +242,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor/util</project>
                 <project>../extbrowser</project>
                 <project>../form</project>
+                <project>../form/swingapp</project>
                 <project>../graph/lib</project>
                 <project>../html</project>
                 <project>../html/editor</project>
@@ -247,7 +252,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../httpserver/servletapi</project>
                 <project>../i18n</project>
                 <project>../i18n/form</project>
-                <project>../ide/applemenu</project>
                 <project>../ide/branding</project>
                 <project>../ide/defaults</project>
                 <project>../ide/launcher/upgrade</project>
@@ -379,7 +383,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../web/servletjspapi</project>
                 <project>../web/struts</project>
                 <project>../web/webapi</project>
-                <project>../web/webrest</project>
                 <project>../websvc/clientapi</project>
                 <project>../websvc/core</project>
                 <project>../websvc/customization</project>
@@ -395,9 +398,10 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../websvc/serviceapi</project>
                 <project>../websvc/websvcapi</project>
                 <project>../websvc/websvcddapi</project>
-                <project>../websvc/wsitmodelext</project>
                 <project>../websvc/wsitconf</project>
+                <project>../websvc/wsitmodelext</project>
                 <project>../xml/api</project>
+                <project>../xml/axi</project>
                 <project>../xml/catalog</project>
                 <project>../xml/core</project>
                 <project>../xml/css</project>
@@ -406,6 +410,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../xml/retriever</project>
                 <project>../xml/schema</project>
                 <project>../xml/schema/api</project>
+                <project>../xml/schema/completion</project>
                 <project>../xml/tageditorsupport</project>
                 <project>../xml/tax</project>
                 <project>../xml/text-edit</project>
