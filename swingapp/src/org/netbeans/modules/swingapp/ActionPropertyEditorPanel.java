@@ -93,14 +93,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         }
         parsedActions = new HashMap<ProxyAction.Scope, List<ProxyAction>>();
         
-        /*
-        Object[] vals = new Object[] {
-            ProxyAction.Scope.Application,
-            ProxyAction.Scope.Form };
-        DefaultComboBoxModel model = new DefaultComboBoxModel(vals);
-        scopeCombo.setModel(model);
-        scopeCombo.setSelectedItem(ProxyAction.Scope.Form);*/
-        
         Object[] vals = new Object[] {
             ProxyAction.BlockingType.NONE,
             ProxyAction.BlockingType.ACTION,
@@ -110,7 +102,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         blockingType.setModel(new DefaultComboBoxModel(vals));
         blockingType.setSelectedItem(ProxyAction.BlockingType.NONE);
         
-        newActionButton.addActionListener(new ShowCreateNewActionDialog());
         DocumentListener dirtyListener = new DirtyDocumentListener();
         textField.getDocument().addDocumentListener(dirtyListener);
         tooltipField.getDocument().addDocumentListener(dirtyListener);
@@ -201,6 +192,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             actionsLabel.setVisible(true);
             classLabel.setVisible(true);
             classField.setVisible(false);
+            targetClassButton.setVisible(false);
             methodLabel.setVisible(true);
             methodField.setVisible(false);
             backgroundTaskLabel.setVisible(true);
@@ -227,7 +219,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             iconButtonSmall.setEnabled(true);
             selectedTextfield.setEnabled(true);
             enabledTextfield.setEnabled(true);
-            viewSourceButton.setEnabled(true);
         }
         
         setFromActionProperty(textField,act,Action.NAME);
@@ -246,15 +237,11 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         sig.append("()"); // NOI18N
         
         if(act == null) {
-            methodNameField.setText("< none >");
-            methodSigLabel.setText(""); // NOI18N
             methodLabel.setText(""); // NOI18N
             classLabel.setText(""); // NOI18N
             backgroundTaskLabel.setText(""); // NOI18N
         } else {
             actionsLabel.setText(act.getId());
-            methodNameField.setText(sig.toString());
-            methodSigLabel.setText(act.getClassname()+"."+act.getId()+"()"); // NOI18N
             methodLabel.setText(sig.toString());
             classLabel.setText(act.getClassname());
             backgroundTaskLabel.setText(act.isTaskEnabled() ? "yes" : "no");
@@ -320,11 +307,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        componentNameLabel = new javax.swing.JLabel();
-        methodSigLabel = new javax.swing.JLabel();
-        methodNameField = new javax.swing.JLabel();
-        newActionButton = new javax.swing.JButton();
-        viewSourceButton = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -366,25 +348,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         jPanel6 = new javax.swing.JPanel();
         actionsCombo = new javax.swing.JComboBox();
         actionsLabel = new javax.swing.JLabel();
-
-        componentNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
-        componentNameLabel.setText("fooButton");
-
-        methodSigLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
-        methodSigLabel.setText("main.MainPanel.doStuff()");
-
-        methodNameField.setText("methodName");
-        methodNameField.setEnabled(false);
-
-        newActionButton.setText("New Action");
-
-        viewSourceButton.setText("View Source");
-        viewSourceButton.setOpaque(false);
-        viewSourceButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                viewSourceButtonActionPerformed(evt);
-            }
-        });
 
         jPanel2.setOpaque(false);
 
@@ -750,12 +713,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     }//GEN-LAST:event_clearAccelButtonActionPerformed
     
     
-    
-    private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewSourceButtonActionPerformed
-        viewSource = true;
-        doViewSource();
-    }//GEN-LAST:event_viewSourceButtonActionPerformed
-    
+        
     private void actionsComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionsComboActionPerformed
         if(actionsCombo.getSelectedItem() == NEW_ACTION) {
             setMode(Mode.NewActionForm);
@@ -876,7 +834,6 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         setParsedActions(actionMap);
         setSelectedAction(selectedAction);
         this.scopeClasses = scopeClasses;
-        componentNameLabel.setText(componentName);
         this.sourceFile = sourceFile;
         isChanging = false;
     }
@@ -922,7 +879,6 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     private javax.swing.JTextField classField;
     private javax.swing.JLabel classLabel;
     private javax.swing.JButton clearAccelButton;
-    private javax.swing.JLabel componentNameLabel;
     private javax.swing.JTextField enabledTextfield;
     private javax.swing.JButton iconButtonLarge;
     private javax.swing.JButton iconButtonSmall;
@@ -949,14 +905,10 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField methodField;
     private javax.swing.JLabel methodLabel;
-    private javax.swing.JLabel methodNameField;
-    private javax.swing.JLabel methodSigLabel;
-    private javax.swing.JButton newActionButton;
     private javax.swing.JTextField selectedTextfield;
     private javax.swing.JButton targetClassButton;
     private javax.swing.JTextField textField;
     private javax.swing.JTextField tooltipField;
-    private javax.swing.JButton viewSourceButton;
     // End of variables declaration//GEN-END:variables
     
     
@@ -964,7 +916,6 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         textField.setText(""); // NOI18N
         acceleratorText.setText(""); // NOI18N
         tooltipField.setText(""); // NOI18N
-        methodNameField.setText(""); // NOI18N
         newMethodName = ""; // NOI18N
         iconButtonSmall.setIcon(null);
         iconButtonLarge.setIcon(null);
@@ -978,7 +929,6 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         iconButtonSmall.setEnabled(false);
         selectedTextfield.setEnabled(false);
         enabledTextfield.setEnabled(false);
-        viewSourceButton.setEnabled(false);
     }
     
     private void clearFieldsForNewAction() {
@@ -991,11 +941,9 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         enabledTextfield.setEnabled(true);
         actionsCombo.setEnabled(false);
         //scopeCombo.setEnabled(false);
-        viewSourceButton.setEnabled(false);
         textField.setText(""); // NOI18N
         acceleratorText.setText(""); // NOI18N
         tooltipField.setText(""); // NOI18N
-        methodNameField.setText(""); // NOI18N
         newMethodName = ""; // NOI18N
         iconButtonSmall.setIcon(null);
         iconButtonLarge.setIcon(null);
@@ -1022,7 +970,6 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         this.setNewActionCreated(false);
         this.viewSource = false;
         this.actionPropertiesUpdated = false;
-        this.viewSourceButton.setEnabled(true);
     }
     
     public void setNewActionCreated(boolean newActionCreated) {
@@ -1113,12 +1060,6 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
             }
         }
     }
-
-    private void doViewSource() {
-        ProxyAction act = getSelectedAction();
-        ActionManager am = ActionManager.getActionManager(this.sourceFile);
-        am.jumpToActionSource(act);
-    }
     
     private void setupAccelField() {
         // turn off foucs keys
@@ -1127,56 +1068,6 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         acceleratorText.addKeyListener(new AcceleratorKeyListener());
     }
     
-    private class ShowCreateNewActionDialog implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            final CreateNewActionPanel panel = new CreateNewActionPanel(sourceFile, scopeClasses);
-            final DialogDescriptor dd = new DialogDescriptor(panel,"Create New Action");
-            dd.setOptions(new String[] {"Cancel","Create"});
-            dd.setValue("Create");
-            dd.setModal(true);
-            dd.setOptionsAlign(DialogDescriptor.BOTTOM_ALIGN);
-            dd.setClosingOptions(new String[0]);
-            dd.setLeaf(false);
-            dd.setValue("Create");
-            final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-            dd.setButtonListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if(dd.getValue().equals("Cancel") || panel.validateFields()) {
-                        dialog.setVisible(false);
-                    } else {
-                    }
-                }
-            });
-            panel.setDialog(dialog);
-            dialog.pack();
-            dialog.setVisible(true);
-            
-            if(panel.isInputIsValid()) {
-                clearFields();
-
-                newAction = new ProxyAction(panel.getSelectedClassName(),
-                                            panel.getMethodText());
-                StringBuffer sig = new StringBuffer();
-                sig.append("@Action"); // NOI18N
-                if(panel.isAsynchronous()) {
-                    returnsTask = true;
-                    newAction.setTaskEnabled(true);
-                    sig.append(" Task"); // NOI18N
-                } else {
-                    returnsTask = false;
-                    newAction.setTaskEnabled(false);
-                    sig.append(" void"); // NOI18N
-                }
-                sig.append(" " + panel.getMethodText()); // NOI18N
-                sig.append("()"); // NOI18N
-                methodNameField.setText(sig.toString());
-                methodSigLabel.setText(panel.getMethodText()+"()"); // NOI18N
-                newActionScope = panel.getSelectedScope();
-                setNewActionCreated(true);
-                newMethodName = panel.getMethodText();
-            }
-        }
-    }
     
     public boolean isNewActionCreated() {
         return newActionCreated;

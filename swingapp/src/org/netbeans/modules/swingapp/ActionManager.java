@@ -469,6 +469,10 @@ public class ActionManager {
             if (ec == null) {
                 return;
             }
+            // make sure it's open before we access it
+            if(ec.getDocument() == null) {
+                ec.openDocument();
+            }
             Document doc = ec.getDocument();
             int startPos = positions[0];
             int endPos = positions[1];

@@ -399,6 +399,11 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         );
 
         viewSourceButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.viewSourceButton.text")); // NOI18N
+        viewSourceButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                viewSourceButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -448,6 +453,11 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     
+private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewSourceButtonActionPerformed
+    // TODO add your handling code here:
+    viewsourceSelectedAction();
+}//GEN-LAST:event_viewSourceButtonActionPerformed
+
     private void projectComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectComboActionPerformed
         if(projectCombo.getSelectedItem() != null) {
             setSelectedProject((Project)projectCombo.getSelectedItem());
@@ -494,6 +504,11 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         }
     }
     
+    private void viewsourceSelectedAction() {
+        ProxyAction act = getSelectedAction();
+        if(act == null) return;
+        actionManager.jumpToActionSource(act);
+    }
     private ProxyAction getSelectedAction() {
         int row = actionTable.getSelectedRow();
         if(row < 0) {
@@ -565,7 +580,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                     panel.getMethodText());
             act.setTaskEnabled(panel.isAsynchronous());
             act.setAppWide(false); // joshy: hack. make it properly be app wide if in the app class
-            
+         
             actionManager.createActionMethod(act);
             actionManager.addNewAction(act);
             reloadTable();
