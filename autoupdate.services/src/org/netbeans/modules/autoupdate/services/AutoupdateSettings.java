@@ -103,14 +103,21 @@ public class AutoupdateSettings {
     // helper methods
     private static String modifyIdeIdentityIfNeeded (String oldIdeIdentity) {
         int idx = oldIdeIdentity.indexOf ('0');
-        assert idx != -1 : oldIdeIdentity + " must contain delimeter 0.";
+        String [] ideIdentityArr = oldIdeIdentity.split ("\\d"); // NOI18N
         String id = null;
         String oldPrefix = null;
-        if (idx == 0) {
+        
+        // easy way -> no need to modify
+        if (ideIdentityArr.length == 0 || idx == 0) {
             id = oldIdeIdentity;
             oldPrefix = "";
-        } else {
+        // a way for UUID    
+        } else if (idx != -1 && oldIdeIdentity.substring (ideIdentityArr [0].length ()).startsWith ("0")) {
             oldPrefix = oldIdeIdentity.substring (0, idx);
+            id = oldIdeIdentity.substring (oldPrefix.length ());
+        // old way for stored IDs Random.nextInt()
+        } else {
+            oldPrefix = ideIdentityArr [0];
             id = oldIdeIdentity.substring (oldPrefix.length ());
         }
         err.log (Level.FINER, "Old IDE Identity Prefix: " + oldPrefix); // NOI18N
