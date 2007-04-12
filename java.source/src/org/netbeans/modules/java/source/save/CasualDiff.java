@@ -25,8 +25,6 @@ import static com.sun.source.tree.Tree.*;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
-import org.netbeans.modules.java.source.builder.UndoListService;
-import org.netbeans.modules.java.source.transform.UndoList;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
@@ -56,7 +54,6 @@ import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 public class CasualDiff {
     protected ListBuffer<Diff> diffs;
     protected CommentHandler comments;
-    protected UndoList undo;
     protected JCTree oldParent;
     protected JCTree newParent;
     protected JCCompilationUnit oldTopLevel;
@@ -76,7 +73,6 @@ public class CasualDiff {
     protected CasualDiff(Context context, WorkingCopy workingCopy) {
         diffs = new ListBuffer<Diff>();
         comments = CommentHandlerService.instance(context);
-        undo = UndoListService.instance(context);
         this.workingCopy = workingCopy;
         this.tokenSequence = workingCopy.getTokenHierarchy().tokenSequence();
         this.origText = workingCopy.getText();
