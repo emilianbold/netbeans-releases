@@ -65,6 +65,7 @@ Microsystems, Inc. All Rights Reserved.
 
                 <exclude name="org/netbeans/api/java/source/gen/BrokenSourceTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/AddMethodToIntfcTemplate.class"/>
+                <!--issue 100796--><exclude name="org/netbeans/api/java/source/gen/InterfaceTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -86,6 +87,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/ImportFormatTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/ClassImplementsTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/InterfaceExtendsTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/InterfaceTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/ClassExtendsTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/FieldTest1.class"/>
                 <include name="org/netbeans/api/java/source/gen/VarArgsTest.class"/>
