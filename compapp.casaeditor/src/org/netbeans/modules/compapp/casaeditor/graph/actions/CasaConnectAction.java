@@ -60,6 +60,7 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
     private ConnectionWidget dragConnectionWidget;
     private Widget connectionSourceWidget;
     private Widget connectionTargetWidget;
+    private Widget mLastHoverWidget;
     private Point startingPoint;
     
     private CasaModelGraphScene mScene;
@@ -120,16 +121,7 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
 
             public ConnectorState isTargetWidget(Widget sourceWidget, Widget targetWidget) {
                 if (targetWidget instanceof CasaPinWidget && sourceWidget != targetWidget) {
-                    ConsumesProvides info = new ConsumesProvides(mScene, sourceWidget, targetWidget);
-                    if (
-                            info.mConsumes == null ||
-                            info.mProvides == null ||
-                            !mScene.getModel().canConnect(info.mConsumes, info.mProvides))
-                    {
-                        return ConnectorState.REJECT;
-                    } else {
-                        return ConnectorState.ACCEPT;
-                    }
+                    return ConnectorState.ACCEPT;
                 }
                 return ConnectorState.REJECT;
             }
@@ -178,7 +170,7 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
             return State.REJECTED;
         }
         Point point = event.getPoint ();
-        move(widget, point);
+        move((CasaPinWidget) widget, point);
         if (
                 Math.abs (startingPoint.x - point.x) >= MIN_DIFFERENCE  ||  
                 Math.abs (startingPoint.y - point.y) >= MIN_DIFFERENCE) {
@@ -205,6 +197,8 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
         mIsCommitted = false;
         
         updateConnectionHints();
+        
+        ConnectionHintManager.sharedInstance().cleanup();
     }
     
     public WidgetAction.State mouseDragged (Widget widget, WidgetAction.WidgetMouseEvent event) {
@@ -220,14 +214,14 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
             mIsCommitted = true;
         }
         
-        move(widget, event.getPoint ());
+        move((CasaPinWidget) widget, event.getPoint ());
         
         updateConnectionHints();
         
         return State.createLocked (widget, this);
     }
 
-    private void move (Widget widget, Point point) {
+    private void move (CasaPinWidget widget, Point point) {
         Point targetSceneLocation = widget.convertLocalToScene (point);
         // Do not allow the rectangle to extend into negative scene space.
         if (targetSceneLocation.x < 0) {
@@ -236,7 +230,9 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
         if (targetSceneLocation.y < 0) {
             targetSceneLocation.y = 0;
         }
-        connectionTargetWidget = resolveTargetWidgetCore (interractionLayer.getScene (), targetSceneLocation);
+        
+        connectionTargetWidget = findTargetWidget(widget, targetSceneLocation);
+        
         Anchor targetAnchor = null;
         if (connectionTargetWidget != null)
             targetAnchor = decorator.createTargetAnchor (connectionTargetWidget);
@@ -245,6 +241,43 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
         dragConnectionWidget.setTargetAnchor (targetAnchor);
     }
 
+    // For the given mouse scene location and drag source widget, determine
+    // if we are hovering over a valid widget and if so, determine if we can
+    // connect to such a widget. Show any connection hints if present.
+    private Widget findTargetWidget(CasaPinWidget widget, Point targetSceneLocation) {
+        CasaPinWidget hoverTargetWidget = (CasaPinWidget) resolveTargetWidgetCore(
+                interractionLayer.getScene(),
+                targetSceneLocation);
+        
+        // Handle connection hints.
+        if (hoverTargetWidget != mLastHoverWidget) {
+            if (mLastHoverWidget != null) {
+                ConnectionHintManager.sharedInstance().widgetExited();
+            }
+            if (hoverTargetWidget != null) {
+                ConnectionHintManager.sharedInstance().widgetEntered(widget, hoverTargetWidget);
+            }
+        }
+        if (hoverTargetWidget != null) {
+            ConnectionHintManager.sharedInstance().widgetMovedOver(widget, hoverTargetWidget);
+        }
+        mLastHoverWidget = hoverTargetWidget;
+        
+        // Determine if the connection is valid.
+        if (hoverTargetWidget != null) {
+            ConsumesProvides info = new ConsumesProvides(mScene, widget, hoverTargetWidget);
+            if (
+                    info.mConsumes != null && 
+                    info.mProvides != null && 
+                    mScene.getModel().canConnect(info.mConsumes, info.mProvides))
+            {
+                return hoverTargetWidget;
+            }
+        }
+        
+        return null;
+    }
+    
     private Widget resolveTargetWidgetCore (Scene scene, Point sceneLocation) {
         if (provider != null)
             if (provider.hasCustomTargetWidgetResolver (scene))
