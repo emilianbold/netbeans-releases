@@ -80,11 +80,6 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
-        if ((dob instanceof DataFolder) && 
-                RetoucheUtils.isFileInOpenProject(fo) && 
-                RetoucheUtils.isOnSourceClasspath(fo) &&
-                !RetoucheUtils.isClasspathRoot(fo))
-            return true;
         return false;
     }
     
@@ -125,11 +120,6 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
-        if ((dob instanceof DataFolder) && 
-                RetoucheUtils.isFileInOpenProject(fo) && 
-                RetoucheUtils.isOnSourceClasspath(fo) &&
-                !RetoucheUtils.isClasspathRoot(fo))
-            return true;
         return false;
     }
     
@@ -170,11 +160,6 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
-        if ((dob instanceof DataFolder) && 
-                RetoucheUtils.isFileInOpenProject(fo) && 
-                RetoucheUtils.isOnSourceClasspath(fo) &&
-                !RetoucheUtils.isClasspathRoot(fo))
-            return true;
         return false;
     }    
 
