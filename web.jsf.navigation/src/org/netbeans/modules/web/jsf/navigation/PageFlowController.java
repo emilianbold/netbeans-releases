@@ -337,6 +337,9 @@ public class PageFlowController {
         String fromPage = caseNode.getFromViewId();
         
         if( toPage != null && fromPage != null ) {
+            assert pageName2Node.get(fromPage) != null;
+            assert pageName2Node.get(toPage) != null;
+            
             view.createEdge(caseNode, pageName2Node.get(fromPage), pageName2Node.get(toPage));
         }
     }
