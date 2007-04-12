@@ -112,6 +112,18 @@ public class JavaKit extends NbEditorKit {
     
     public static final String selectPreviousElementAction = "select-element-previous"; //NOI18N
     
+    /* package */ static final String previousCamelCasePosition = "previous-camel-case-position"; //NOI18N
+    
+    /* package */ static final String nextCamelCasePosition = "next-camel-case-position"; //NOI18N
+    
+    /* package */ static final String selectPreviousCamelCasePosition = "select-previous-camel-case-position"; //NOI18N
+    
+    /* package */ static final String selectNextCamelCasePosition = "select-next-camel-case-position"; //NOI18N
+    
+    /* package */ static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
+    
+    /* package */ static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
+    
     static final long serialVersionUID =-5445829962533684922L;
     
 
@@ -212,6 +224,12 @@ public class JavaKit extends NbEditorKit {
                                    new GenerateCodeAction(),
                                    new SelectCodeElementAction(selectNextElementAction, true),
                                    new SelectCodeElementAction(selectPreviousElementAction, false),
+                                   new NextCamelCasePosition(),
+                                   new PreviousCamelCasePosition(),
+                                   new SelectNextCamelCasePosition(),
+                                   new SelectPreviousCamelCasePosition(),
+                                   new DeleteToNextCamelCasePosition(),
+                                   new DeleteToPreviousCamelCasePosition(),
                                    new FastImportAction(),
                                    new GoToSuperTypeAction(),
                                };
