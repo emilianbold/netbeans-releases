@@ -77,9 +77,11 @@ public class IndentAction extends InsertBreakAction {
             if (indentValue == null) return;
             if (indentValue instanceof Object[]) {
                 Object[] params = (Object[]) indentValue;
+                int length = doc.getLength();
                 int ln = NbDocument.findLineNumber ((StyledDocument) doc, caret.getDot () - 1);
+                int endLine = NbDocument.findLineNumber ((StyledDocument) doc, length - 1);
                 int start = NbDocument.findLineOffset ((StyledDocument) doc, ln);
-                int end = NbDocument.findLineOffset ((StyledDocument) doc, ln + 1);
+                int end = ln < endLine ? NbDocument.findLineOffset ((StyledDocument) doc, ln + 1) : length;
                 String line = doc.getText (start, end - start);
                 int indent = getIndent (line);
                 ts.move (start);
