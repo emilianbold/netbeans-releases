@@ -72,6 +72,7 @@ public class GotoTest extends NbTestCase {
                 "Menu/GoTo"),
                 Bundle.getStringTrimmed("org.netbeans.modules.junit.Bundle",
                 "LBL_Action_GoToTest")};
+        Utilities.takeANap(Utilities.ACTION_TIMEOUT);        
         jbo.pushMenu(sf[0]);
         JMenuItemOperator jmio = new JMenuItemOperator(new JMenuOperator(jbo, sf[0]).getItem(0));
         //Check if goto test is enabled inside menu
@@ -104,6 +105,7 @@ public class GotoTest extends NbTestCase {
                 "Menu/GoTo"),
                 Bundle.getStringTrimmed("org.netbeans.modules.junit.Bundle",
                 "LBL_Action_GoToTest")};
+        Utilities.takeANap(Utilities.ACTION_TIMEOUT);        
         jbo.pushMenu(sf[0]);
         JMenuItemOperator jmio = new JMenuItemOperator(new JMenuOperator(jbo, sf[0]).getItem(0));
         //Check if goto test is enabled inside menu
@@ -136,6 +138,7 @@ public class GotoTest extends NbTestCase {
                 "Menu/GoTo"),
                 Bundle.getStringTrimmed("org.netbeans.modules.junit.Bundle",
                 "LBL_Action_GoToTest")};
+        Utilities.takeANap(Utilities.ACTION_TIMEOUT);        
         jbo.pushMenu(sf[0]);
         JMenuItemOperator jmio = new JMenuItemOperator(new JMenuOperator(jbo, sf[0]).getItem(0));
         //Check if goto test is enabled inside menu
