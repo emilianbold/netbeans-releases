@@ -1127,26 +1127,31 @@ public abstract class PositionEstimator {
         public LineInsertionType lineInsertType() {
             return LineInsertionType.AFTER;
         }
-        
+
+        @Override()
         public int prepare(int startPos, StringBuilder aHead,
                            StringBuilder aTail) {
-            seq.move(startPos);
-            seq.moveNext();
-            moveToSrcRelevant(seq, Direction.BACKWARD);
-            while (seq.moveNext() && nonRelevant.contains(seq.token().id())) {
+            seq.moveEnd();
+            if (seq.movePrevious()) {
                 if (JavaTokenId.WHITESPACE == seq.token().id()) {
-                    int newlineInToken = seq.token().text().toString().indexOf('\n');
-                    if (newlineInToken > -1) {
-                        return seq.offset() + newlineInToken + 1;
+                    int firstNewLineIndex = -1;
+                    String tokenText = seq.token().text().toString();
+                    if ((firstNewLineIndex = tokenText.indexOf('\n')) > -1) {
+                        if (tokenText.lastIndexOf('\n') == firstNewLineIndex) {
+                            aHead.append('\n');
+                        }
+                    } else {
+                        aHead.append("\n\n");
                     }
-                } else if (JavaTokenId.LINE_COMMENT == seq.token().id()) {
-                    return seq.offset() + seq.token().text().length();
+                } else if (JavaTokenId.LINE_COMMENT != seq.token().id()) {
+                    aHead.append("\n\n");
                 }
+                return seq.offset() + seq.token().text().length();
             }
             return startPos;
         }
         
-        @Override
+        @Override()
         public String toString() {
             if (!initialized) initialize();
             String result = "";
