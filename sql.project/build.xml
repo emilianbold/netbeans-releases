@@ -24,12 +24,14 @@
     <description>Builds, tests, and runs the project org.netbeans.modules.sql.project.</description>
     <import file="nbproject/build-impl.xml"/>
 	<property name="sql.external" location="../external"/>
-    
+
     <target name="init" depends="harness.init">
-        <ant dir="${sql.external}" target="unzip"/>
+      <!--  <ant dir="${sql.external}" target="unzip"/> -->
     </target>
-        <target name="ant-extra" depends="init">
-        <mkdir dir="build/antclasses"/>
+    <target name="ant-extra" depends="init">
+     <echo message="hellloooooo------------------------------------------"/>
+
+		<mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true" includes="**">
             <classpath>
                 <path refid="cp"/>
@@ -51,19 +53,14 @@
         </jar>
 
 		<!-- <mkdir dir="${cluster}/ant/nblib"/> -->
+		<!--
         <copy todir="${cluster}/ant/nblib">
             <fileset dir="../external/wsdl4j-1_5_2">
                 <include name="wsdl4j.jar"/>
             </fileset>
         </copy>
+		-->
     </target>
-	 <target name="ext-extra" depends="init">
-        <mkdir dir="${cluster}/modules/ext/sql"/>
-        <copy todir="${cluster}/modules/ext/sql">
-            <fileset dir="${sql.external}"
-                     includes="*.jar, wsdl4j-1_5_2/*.jar"/>
-        </copy>
-    </target>
-    <target name="netbeans-extra" depends="ant-extra,ext-extra"/>
+	<target name="netbeans-extra" depends="ant-extra"/>
 
 </project>
