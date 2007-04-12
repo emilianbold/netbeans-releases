@@ -96,7 +96,7 @@ public class FolderTreeElement implements TreeElement {
         
         SourceGroup[] allgroups =  new SourceGroup[javagroups.length + xmlgroups.length];
         System.arraycopy(javagroups,0,allgroups,0,javagroups.length);
-        System.arraycopy(xmlgroups,0,allgroups,allgroups.length,xmlgroups.length);
+        System.arraycopy(xmlgroups,0,allgroups,allgroups.length-1,xmlgroups.length);
         for(int i=0; i<allgroups.length; i++) {
             if (allgroups[i].getRootFolder().equals(file) || FileUtil.isParentOf(allgroups[i].getRootFolder(), file))
                 return allgroups[i];
