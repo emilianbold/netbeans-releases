@@ -1892,9 +1892,9 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         if(loadGraph) {
             if(masterRoot != null) {
                 refreshGraphFromContentMap(masterRoot);
-            } else {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                        new IllegalStateException("Loaded configuration data from disk but master DConfigBeanRoot is null.")); // NOI18N
+//            } else {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+//                        new IllegalStateException("Loaded configuration data from disk but master DConfigBeanRoot is null.")); // NOI18N
             }
         }
         
