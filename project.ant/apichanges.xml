@@ -82,7 +82,7 @@ is the proper place.
 
     <changes>
         
-        <change id="includes-excludes">
+        <change id="includes-excludes.ant">
             <api name="general"/>
             <summary>Support for source root includes and excludes</summary>
             <version major="1" minor="15"/>

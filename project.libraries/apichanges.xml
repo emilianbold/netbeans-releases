@@ -81,7 +81,7 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
     
-    <change>
+    <change id="LibraryManager.add-remove">
             <api name="general"/>
             <summary>Added methods for adding and removing libraries into/from library manager</summary>
             <version major="1" minor="14"/>

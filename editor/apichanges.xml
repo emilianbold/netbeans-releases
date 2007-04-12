@@ -82,7 +82,7 @@ is the proper place.
 
     <changes>
 
-        <change>
+        <change id="Editors-Toolbars-Default">
             <api name="editor"/>
             <summary>Deprecating Editors/text/base/Toolbars/Default</summary>
             <version major="1" minor="32"/>
@@ -100,7 +100,7 @@ is the proper place.
             </description>
         </change>
 
-        <change>
+        <change id="CustomizableSideBar-CustomizableSideBarClass2LayerFolder">
             <api name="editor"/>
             <summary>Moving CustomizableSideBar and CustomizableSideBarClass2LayerFolder to a private package</summary>
             <version major="1" minor="31"/>
@@ -118,7 +118,7 @@ is the proper place.
             </description>
         </change>
 
-        <change>
+        <change id="PopupActions-PopupInitializer">
             <api name="editor"/>
             <summary>Moving PopupActions and PopupInitializer to a private package</summary>
             <version major="1" minor="30"/>
@@ -136,7 +136,7 @@ is the proper place.
             </description>
         </change>
         
-        <change>
+        <change id="NbEditorUtilities.getMimeType">
             <api name="editor"/>
             <summary>Adding NbEditorUtilities.getMimeType(JTextComponent)</summary>
             <version major="1" minor="29"/>
@@ -153,7 +153,7 @@ is the proper place.
             </description>
         </change>
         
-        <change>
+        <change id="AllOptionsFolder.loadMimeOption">
             <api name="editor"/>
             <summary>Deprecating AllOptionsFolder.loadMimeOption methods</summary>
             <version major="1" minor="28"/>
@@ -171,7 +171,7 @@ is the proper place.
             </description>
         </change>
         
-        <change>
+        <change id="text-base">
             <api name="editor"/>
             <summary>Fake MIME type <code>text/base</code> was removed</summary>
             <version major="1" minor="24"/>

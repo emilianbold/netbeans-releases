@@ -149,7 +149,7 @@ is the proper place.
             <issue number="64491"/>
         </change>
         
-        <change id="lookup-provider">
+        <change id="lookup-provider.ui">
             <api name="general"/>
             <summary>Added LookupMerger implementations for PrivilegedTemplates and RecommendedTemplates</summary>
             <version major="1" minor="19"/>

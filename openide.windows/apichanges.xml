@@ -151,7 +151,7 @@ Microsystems, Inc. All Rights Reserved.
     <issue number="65431"/>
 </change>
     
-<change id="ExternalDragAndDrop">
+<change id="ExternalDragAndDrop.windows">
     <api name="winsys"/>
     <summary>Added <code>ExternalDropHandler</code> abstract class.</summary>
     <version major="6" minor="7"/>

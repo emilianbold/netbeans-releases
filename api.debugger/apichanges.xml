@@ -49,16 +49,12 @@ Microsystems, Inc. All Rights Reserved.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
-    <change>
+    <change id="debugger-dual-actions">
         <api name="DebuggerCoreAPI"/>
         <summary>Support for "dual" actions added.</summary>
         <date day="29" month="4" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Incompatile changes (additions / removals).
-            </p>
-        </compatibility>
+        <compatibility binary="incompatible" source="incompatible" addition="yes" deletion="yes" modification="yes"/>
         <description>
             According to Debugger UI Specification there are some actions that have two different 
             meanings. for example Step Into action. When some Java Debugger session is running it steps
@@ -89,16 +85,12 @@ Microsystems, Inc. All Rights Reserved.
             </ul>
         </description>
     </change>
-    <change>
+    <change id="DebuggerEngine-synch-start">
         <api name="DebuggerCoreAPI"/>
         <summary>Support for synchronouous start of DebuggerEngines added.</summary>
         <date day="3" month="5" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility binary="incompatible" source="compatible" modification="yes"/>
         <description>
             <p>
                 <code>void DebuggerManager.startDebugging (DebuggerInfo)</code> has been changed to <code>DebuggerEngine[] 
@@ -107,16 +99,12 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
-    <change>
+    <change id="ToggleBreakpointAction-etc.">
         <api name="DebuggerCoreAPI"/>
         <summary>Support for ToggleBreakpointAction added, and some bugfix of Debugger Actions support API.</summary>
         <date day="9" month="5" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Incompatile change.
-            </p>
-        </compatibility>
+        <compatibility binary="incompatible" source="incompatible" modification="yes"/>
         <description>
             <p>
                 <code>ActionsManager.doAction (...)</code>, 
@@ -127,16 +115,12 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
-    <change>
+    <change id="Breakpoint.group.name">
         <api name="DebuggerCoreAPI"/>
         <summary>Support for Breakpoints Group added.</summary>
         <date day="13" month="5" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
         <description>
             <p>
                 Breakpoint.getGroupName (), Breakpoint.setGroupName () methods were added.
@@ -144,34 +128,26 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
-    <change>
+    <change id="ActionsProviderSupport.isEnabled-nonfinal">
         <api name="DebuggerCoreAPI"/>
         <summary>final modifier removed from ActionsProviderSupport.isEnabled.</summary>
         <version major="1" minor="3"/>
         <date day="23" month="11" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility binary="compatible" source="compatible" modification="yes"/>
         <description>
             <p>
                 Having final modifier for this method can be too obstructive in some cases. I had a problem writing tests.
             </p>
         </description>
     </change>
-    <change>
+    <change id="ActionsManager-ActionsProvider.postAction">
         <api name="DebuggerCoreAPI"/>
         <summary>Debugger actions can be posted asynchronously.</summary>
         <version major="1" minor="5"/>
         <date day="24" month="8" year="2005"/>
         <author login="mentlicher"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
         <description>
             <p>
                 Added methods:
@@ -181,17 +157,13 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
-    <change>
+    <change id="ActionsManager.ACTION_STEP_OPERATION">
         <api name="DebuggerCoreAPI"/>
         <summary>Support for stepping over operations.</summary>
         <version major="1" minor="9"/>
         <date day="1" month="2" year="2007"/>
         <author login="mentlicher"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
         <description>
             <p>
                 Added fields:
@@ -200,17 +172,13 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
-    <change>
+    <change id="Breakpoint.validity">
         <api name="DebuggerCoreAPI"/>
         <summary>Support for breakpoint validity.</summary>
         <version major="1" minor="10"/>
         <date day="21" month="2" year="2007"/>
         <author login="mentlicher"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
         <description>
             <p>
                 Added fields:

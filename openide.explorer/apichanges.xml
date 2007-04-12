@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
         <issue number="88769"/>
     </change>
     
-    <change id="ExternalDragAndDrop">
+    <change id="ExternalDragAndDrop.explorer">
         <api name="explorer"/>
         <summary>When an external object(s) is dragged over the Explorer, the drag
         events are passed to Nodes under the cursor.</summary>
