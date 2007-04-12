@@ -108,7 +108,7 @@ public class Components extends HttpServlet {
                 }
                 
                 long size = (long) Math.ceil(
-                        ((double) product.getDownloadSize()) / 1024. / 1024.);
+                        ((double) product.getDownloadSize()) / 1024. );
                 productUids.add(product.getUid());
                 productVersions.add(product.getVersion().toString());
                 productDisplayNames.add(product.getDisplayName());
