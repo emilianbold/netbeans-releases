@@ -127,7 +127,7 @@ public class AutoupdateCatalogCache {
         err.log(Level.INFO, "Processing URL: " + sourceUrl); // NOI18N
 
         URL urlToGZip = null;
-        InputStream stream = null;
+        Reader reader = null;
         try {
             
             String gzipFile = sourceUrl.getPath () + GZIP_EXTENSION;
@@ -137,15 +137,22 @@ public class AutoupdateCatalogCache {
             }
             urlToGZip = new URL (sourceUrl.getProtocol (), sourceUrl.getHost (), sourceUrl.getPort (), gzipFile);
             
-            stream = new BufferedInputStream (new GZIPInputStream (urlToGZip.openStream ()));
+            reader = new BufferedReader (new InputStreamReader (new GZIPInputStream (urlToGZip.openStream ())));
             err.log(Level.FINE, "Successfully read URL " + urlToGZip); // NOI18N
             
         } catch (IOException ioe) {
-            err.log(Level.FINE,
-                    "Reading GZIP URL " + urlToGZip + " failed (" + ioe +
-                    "). Try read XML directly " + sourceUrl);
-            stream = new BufferedInputStream (sourceUrl.openStream ());
-            err.log(Level.FINE, "Successfully read URL " + sourceUrl);
+            try {
+                err.log(Level.FINE,
+                        "Reading GZIP URL " + urlToGZip + " failed (" + ioe +
+                        "). Try read XML directly " + sourceUrl);
+                reader = new BufferedReader (new InputStreamReader (sourceUrl.openStream ()));
+                err.log(Level.FINE, "Successfully read URI " + sourceUrl);
+            } catch (IOException ex) {
+                err.log(Level.FINE,
+                        "Reading URL " + sourceUrl + " failed (" + ioe +
+                        ")");
+                throw ex;
+            }
         }
         
         Writer writer = null;
@@ -153,7 +160,7 @@ public class AutoupdateCatalogCache {
         
         try {
             writer = new BufferedWriter (new FileWriter (dest));
-            while ((read = stream.read ()) != -1) {
+            while ((read = reader.read ()) != -1) {
                 writer.write (read);
                 //handle.progress (read++);
             }
@@ -161,7 +168,7 @@ public class AutoupdateCatalogCache {
             err.log (Level.INFO, "Writing content of URL " + sourceUrl + " failed.", ioe);
         } finally {
             try {
-                if (stream != null) stream.close ();
+                if (reader != null) reader.close ();
                 if (writer != null) writer.flush ();
                 if (writer != null) writer.close ();
             } catch (IOException ioe) {
