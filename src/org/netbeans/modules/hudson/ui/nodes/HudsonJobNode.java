@@ -21,8 +21,10 @@ package org.netbeans.modules.hudson.ui.nodes;
 
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
+import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
+import org.netbeans.modules.hudson.ui.actions.StartJobAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.actions.SystemAction;
@@ -48,7 +50,7 @@ public class HudsonJobNode extends AbstractNode {
     private Color color;
     
     public HudsonJobNode(HudsonJobImpl job) {
-        super(Children.LEAF, Lookups.singleton(job));
+        super(Children.LEAF, Lookups.fixed(job));
         
         setShortDescription(job.getUrl());
         
@@ -96,6 +98,7 @@ public class HudsonJobNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         return new Action [] {
+            SystemAction.get(StartJobAction.class),
             SystemAction.get(OpenUrlAction.class)
         };
     }

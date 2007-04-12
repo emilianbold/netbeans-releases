@@ -61,4 +61,9 @@ public interface HudsonJob extends Comparable<HudsonJob> {
      * @return id of the last build
      */
     public int getLastBuild();
+    
+    /**
+     * Starts Hudson job
+     */
+    public void start();
 }

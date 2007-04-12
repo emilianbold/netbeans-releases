@@ -99,7 +99,9 @@ public class HudsonInstanceNode extends AbstractNode {
         return new Action[] {
             SystemAction.get(SynchronizeAction.class),
             SystemAction.get(OpenUrlAction.class),
+            null,
             SystemAction.get(RemoveInstanceAction.class),
+            null,
             SystemAction.get(PropertiesAction.class)
         };
     }
@@ -116,10 +118,15 @@ public class HudsonInstanceNode extends AbstractNode {
     }
     
     private void refreshState() {
+        // Get HTML Display Name
+        String oldHtmlName = getHtmlDisplayName();
+        
+        // Clear state flags
         warn = false;
         run = false;
         alive = false;
         
+        // Refresh state flags
         for (Node n : getChildren().getNodes()) {
             if (n instanceof HudsonJobNode) {
                 Color c = ((HudsonJobNode) n).getColor();
@@ -135,7 +142,8 @@ public class HudsonInstanceNode extends AbstractNode {
         
         alive = instance.isConnected();
         
-        setDisplayName(getHtmlDisplayName());
+        // Fire changes if any
+        fireDisplayNameChange(oldHtmlName, getHtmlDisplayName());
     }
     
     private static class InstanceNodeChildren extends Children.Keys<HudsonJobImpl> implements ChangeListener {
