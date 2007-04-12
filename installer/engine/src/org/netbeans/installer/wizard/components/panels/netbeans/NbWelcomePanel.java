@@ -215,10 +215,10 @@ public class NbWelcomePanel extends WizardPanel {
             
             initComponents();
         }
-        
+
         @Override
-        public boolean hasTitle() {
-            return false;
+        public String getTitle() {
+            return null; // the welcome page does not have a title
         }
         
         // protected ////////////////////////////////////////////////////////////////
