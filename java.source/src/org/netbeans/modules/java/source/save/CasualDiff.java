@@ -515,8 +515,8 @@ public class CasualDiff {
 
     protected int diffBlock(JCBlock oldT, JCBlock newT, int[] blockBounds) {
         int localPointer = blockBounds[0];
-        if (oldT.flags != newT.flags)
-            append(Diff.flags(oldT.pos, endPos(oldT), oldT.flags, newT.flags));
+//        if (oldT.flags != newT.flags)
+//            append(Diff.flags(oldT.pos, endPos(oldT), oldT.flags, newT.flags));
         VeryPretty bodyPrinter = new VeryPretty(context, JavaFormatOptions.getDefault());
         int oldIndent = printer.indent();
         bodyPrinter.reset(oldIndent);
