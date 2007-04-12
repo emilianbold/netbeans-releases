@@ -87,6 +87,8 @@ public final class FreeformProject implements Project {
 
     private Lookup initLookup() throws IOException {
         aux = helper().createAuxiliaryConfiguration(); // AuxiliaryConfiguration
+        FreeformFileEncodingQueryImpl FEQImpl = new FreeformFileEncodingQueryImpl(helper());
+        helper().addAntProjectListener(FEQImpl);
         Lookup baseLookup = Lookups.fixed(
             this,
             new Info(), // ProjectInformation
@@ -103,7 +105,8 @@ public final class FreeformProject implements Project {
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             new FreeformProjectOperations(this),
 	    new FreeformSharabilityQuery(helper()), //SharabilityQueryImplementation
-            Accessor.DEFAULT.createProjectAccessor(this) //Access to AntProjectHelper and PropertyEvaluator
+            Accessor.DEFAULT.createProjectAccessor(this), //Access to AntProjectHelper and PropertyEvaluator
+            FEQImpl // FileEncodingQueryImplementation
         );
         return LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-ant-freeform/Lookup"); //NOI18N
     }

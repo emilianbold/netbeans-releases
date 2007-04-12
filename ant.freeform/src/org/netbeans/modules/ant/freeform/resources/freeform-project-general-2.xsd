@@ -107,6 +107,7 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
             <xsd:element name="location" type="substitutable-text"/>
             <xsd:element name="includes" type="substitutable-text" minOccurs="0"/>
             <xsd:element name="excludes" type="substitutable-text" minOccurs="0"/>
+            <xsd:element name="encoding" type="substitutable-text" minOccurs="0"/>
         </xsd:sequence>
     </xsd:complexType>
 

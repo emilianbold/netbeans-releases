@@ -24,10 +24,12 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -48,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.JavaProjectGenerator;
@@ -156,6 +159,10 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         }
     }
     
+    private void updateEncodingCombo() {
+        encodingComboBox.setModel(new EncodingModel());
+    }
+    
     private String getSourceLevelValue(int index) {
         switch (index) {
             case 0: return "1.3"; // NOI18N
@@ -198,6 +205,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         contentFolder = new javax.swing.JTextField();
         buildScript = new javax.swing.JTextField();
         includesExcludesButton = new javax.swing.JButton();
+        encodingLabel = new javax.swing.JLabel();
+        encodingComboBox = new javax.swing.JComboBox();
 
         setMinimumSize(new java.awt.Dimension(200, 100));
         setPreferredSize(new java.awt.Dimension(247, 251));
@@ -482,7 +491,40 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 14;
         add(includesExcludesButton, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_Encoding")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 6);
+        add(encodingLabel, gridBagConstraints);
+
+        encodingComboBox.setRenderer(new EncodingRenderer());
+        encodingComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                encodingComboBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
+        add(encodingComboBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+private void encodingComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encodingComboBoxActionPerformed
+        Object selItem = encodingComboBox.getModel().getSelectedItem();
+        if (selItem instanceof Charset) {
+            model.setEncoding(((Charset) selItem).name());
+            // XXX Should we set this here?
+            FileEncodingQuery.setDefaultEncoding((Charset) selItem);
+        } else {
+            model.setEncoding(selItem.toString());
+        }
+}//GEN-LAST:event_encodingComboBoxActionPerformed
 
 private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includesExcludesButtonActionPerformed
         // Assumes they all use the same include/exclude patterns. Close enough.
@@ -639,6 +681,7 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
         chooser.setMultiSelectionEnabled(true);
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File files[] = chooser.getSelectedFiles();
+            model.setEncoding(encodingComboBox.getModel().getSelectedItem().toString());
             Set<File> invalidRoots = processRoots(model, files, isTests, isWizard);
             if (isTests) {
                 testFoldersModel.fireTableDataChanged();
@@ -686,6 +729,7 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
                     sf.includes = prototype.includes;
                     sf.excludes = prototype.excludes;
                 }
+                sf.encoding = model.getEncoding();
                 model.addSourceFolder(sf, isTests);
             }
         }
@@ -792,6 +836,8 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
     private javax.swing.JTextField contentFolder;
     private javax.swing.JButton downFolder;
     private javax.swing.JButton downTestFolder;
+    private javax.swing.JComboBox encodingComboBox;
+    private javax.swing.JLabel encodingLabel;
     private javax.swing.JButton includesExcludesButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -814,6 +860,7 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
     public void setModel(ProjectModel model, AntProjectHelper projectHelper) {
         this.model = model;
         updateSourceLevelCombo(model.getSourceLevel());
+        updateEncodingCombo();
         updateButtons();
         sourceFoldersModel.fireTableDataChanged();
         if (!isWizard) {
@@ -909,6 +956,43 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
             }
         }
         
+    }
+    
+    private class EncodingModel extends DefaultComboBoxModel {
+        public EncodingModel() {
+            Object selEnc = null;
+            if (model.getEncoding() == null) {
+                addElement(ProjectModel.NO_ENCODING);
+                selEnc = ProjectModel.NO_ENCODING;
+            }
+            for (Charset cset : Charset.availableCharsets().values()) {
+                if (cset.name().equals(model.getEncoding())) {
+                    selEnc = cset;
+                }
+                addElement(cset);
+            }
+            if (isWizard) {
+                setSelectedItem(FileEncodingQuery.getDefaultEncoding());
+            } else {
+                if (selEnc != null) {
+                    setSelectedItem(selEnc);
+                }
+            }
+        }
+    }
+    
+    private static class EncodingRenderer extends DefaultListCellRenderer {
+        public Component getListCellRendererComponent(JList list, Object value, 
+                int index, boolean isSelected, boolean cellHasFocus) {
+            String dispName = null;
+            if (value instanceof Charset) {
+                dispName = ((Charset) value).displayName();
+            } else {
+                dispName = value.toString();
+            }
+            return super.getListCellRendererComponent(list, dispName,
+                    index, isSelected, cellHasFocus);
+        }
     }
     
     private class ToolTipRenderer extends DefaultTableCellRenderer { 

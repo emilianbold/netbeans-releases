@@ -21,6 +21,7 @@ package org.netbeans.modules.java.freeform.ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -42,6 +43,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 
 /**
  * Memory model of project. Used for creation or customization of project.
@@ -59,6 +61,11 @@ public class ProjectModel  {
     private PropertyEvaluator evaluator;
     
     private String sourceLevel;
+    
+    private String encoding;
+    
+    public static final String NO_ENCODING = 
+            NbBundle.getBundle(org.netbeans.modules.java.freeform.ui.ProjectModel.class).getString("No_Encoding");
     
     /** List of JavaProjectGenerator.SourceFolders instances of type "java". */
     private List<JavaProjectGenerator.SourceFolder> sourceFolders;
@@ -85,6 +92,10 @@ public class ProjectModel  {
         }
         if (sourceLevel == null) {
             setSourceLevel(getDefaultSourceLevel());
+        }
+        if (sourceFolders.size() > 0) {
+            JavaProjectGenerator.SourceFolder sf = sourceFolders.get(0);
+            encoding = sf.encoding == null ? null : Charset.forName(sf.encoding).name();
         }
         resetState();
     }
@@ -383,6 +394,21 @@ public class ProjectModel  {
         this.sourceLevel = sourceLevel;
         for (JavaProjectGenerator.JavaCompilationUnit cu : javaCompilationUnitsList) {
             cu.sourceLevel = sourceLevel;
+        }
+    }
+    
+    public String getEncoding() {
+        return encoding;
+    }
+    
+    public void setEncoding(String enc) {
+        if (enc == null || enc.equals(NO_ENCODING)) {
+            encoding = null;
+        } else {
+            encoding = enc;
+        }
+        for (JavaProjectGenerator.SourceFolder sf : sourceFolders) {
+            sf.encoding = encoding;
         }
     }
     

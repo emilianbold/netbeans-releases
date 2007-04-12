@@ -70,8 +70,9 @@ public class JavaProjectGenerator {
         public String style;
         public String includes;
         public String excludes;
+        public String encoding;
         public String toString() {
-            return "FPG.SF[label=" + label + ",type=" + type + ",location=" + location + ",style=" + style + ",includes=" + includes + ",excludes=" + excludes + "]"; // NOI18N
+            return "FPG.SF[label=" + label + ",type=" + type + ",location=" + location + ",style=" + style + ",includes=" + includes + ",excludes=" + excludes + ",encoding=" + encoding + "]"; // NOI18N
         }
     }
 
@@ -115,6 +116,10 @@ public class JavaProjectGenerator {
             el = Util.findElement(sourceFolderEl, "excludes", Util.NAMESPACE); // NOI18N
             if (el != null) {
                 sf.excludes = Util.findText(el);
+            }
+            el = Util.findElement(sourceFolderEl, "encoding", Util.NAMESPACE); // NOI18N
+            if (el != null) {
+                sf.encoding = Util.findText(el);
             }
             if (type == null || type.equals(sf.type)) {
                 if (sf.label == null || sf.label.length() == 0) {
@@ -195,6 +200,11 @@ public class JavaProjectGenerator {
             if (sf.excludes != null) {
                 el = doc.createElementNS(Util.NAMESPACE, "excludes"); // NOI18N
                 el.appendChild(doc.createTextNode(sf.excludes)); // NOI18N
+                sourceFolderEl.appendChild(el);
+            }
+            if (sf.encoding != null) {
+                el = doc.createElementNS(Util.NAMESPACE, "encoding"); // NOI18N
+                el.appendChild(doc.createTextNode(sf.encoding)); // NOI18N
                 sourceFolderEl.appendChild(el);
             }
             Util.appendChildElement(foldersEl, sourceFolderEl, folderElementsOrder);
