@@ -107,8 +107,12 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         return instance;
     }
     
+    public HudsonConnector getConnector() {
+        return connector;
+    }
+    
     public boolean isConnected() {
-        return connector.isConnected();
+        return getConnector().isConnected();
     }
     
     public HudsonInstanceProperties getProperties() {
@@ -139,7 +143,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {                    
-                    List<HudsonJob> retrieved = connector.getAllJobs();
+                    List<HudsonJob> retrieved = getConnector().getAllJobs();
                     
                     if (jobs.equals(retrieved))
                         return;

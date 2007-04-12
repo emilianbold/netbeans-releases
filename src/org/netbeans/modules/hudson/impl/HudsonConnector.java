@@ -30,11 +30,15 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -42,17 +46,18 @@ import org.xml.sax.SAXException;
 
 /**
  * Hudson Server Connector
- * 
+ *
  * @author pblaha
  */
 public class HudsonConnector {
     
-    static final String XML_API_URL ="/api/xml";
+    private static final String XML_API_URL ="/api/xml";
     private static final String JOB_ELEMENT_NAME = "job";
     private static final String NAME_ELEMENT_NAME = "name";
     private static final String URL_ELEMENT_NAME = "url";
     private static final String LAST_BUILD_ELEMENT_NAME = "lastBuild";
     private static final String COLOR_ELEMENT_NAME = "color";
+    private static final String BUILD_URL = "build";
     
     private DocumentBuilder builder;
     private HudsonInstanceImpl instance;
@@ -112,11 +117,46 @@ public class HudsonConnector {
                 }
             }
             
-            if (null != name && null != url && null != color)                    
-                jobsArray.add(new HudsonJobImpl(name, url, color, lastBuild));
+            if (null != name && null != url && null != color)
+                jobsArray.add(new HudsonJobImpl(name, url, color, lastBuild, instance));
         }
         
         return jobsArray;
+    }
+    
+    public synchronized boolean startJob(HudsonJob job) {
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Starting", job.getName()));
+        
+        // Start progress
+        handle.start();
+        
+        try {
+            final URL url = new URL(job.getUrl() + "/" + BUILD_URL);
+            
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        // Start job
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        
+                        if(conn.getResponseCode() != 200)
+                            ErrorManager.getDefault().log("Can't start build HTTP error: " + conn.getResponseMessage());
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    } finally {
+                        // Stop progress
+                        handle.finish();
+                    }
+                }
+            });
+            
+            return true;
+        } catch (MalformedURLException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        
+        return false;
     }
     
     private synchronized Document getDocument() {
@@ -145,5 +185,5 @@ public class HudsonConnector {
         }
         
         return doc;
-    }  
+    }
 }

@@ -24,7 +24,7 @@ import org.netbeans.modules.hudson.ui.nodes.OpenableInBrowser;
 
 /**
  * Implementation of the HudsonJob
- * 
+ *
  * @author pblaha
  */
 public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
@@ -33,50 +33,42 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     private String url;
     private Color color;
     private int lastBuild;
-        
-    /** Creates a new instance of Job 
-     * @param name 
-     * @param url 
-     * @param color 
-     * @param lastBuild 
+    
+    private HudsonInstanceImpl instance;
+    
+    /** Creates a new instance of Job
+     * @param name
+     * @param url
+     * @param color
+     * @param lastBuild
      */
-    public HudsonJobImpl(String name, String url, Color color, int lastBuild) {
+    public HudsonJobImpl(String name, String url, Color color, int lastBuild, HudsonInstanceImpl instance) {
         this.name = name;
         this.url = url;
         this.color = color;
         this.lastBuild = lastBuild;
-    }  
+        
+        this.instance = instance;
+    }
     
-    /**
-     * 
-     * @return 
-     */
     public String getName() {
         return name;
     }
     
-    /**
-     * 
-     * @return 
-     */
     public String getUrl() {
         return url;
     }
     
-    /**
-     * 
-     * @return 
-     */
     public Color getColor() {
         return color;
     }
     
-    /**
-     * 
-     * @return 
-     */
     public int getLastBuild() {
         return lastBuild;
+    }
+    
+    public void start() {
+        instance.getConnector().startJob(this);
     }
     
     public boolean equals(Object obj) {
@@ -110,7 +102,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         
         return hash;
     }
-
+    
     public int compareTo(HudsonJob o) {
         return getName().compareTo(o.getName());
     }

@@ -90,6 +90,9 @@ public class HudsonInstanceProperties extends Properties {
         if (null == set) {
             set = Sheet.createPropertiesSet();
             
+            // Set display name
+            set.setDisplayName(getProperty(PROP_NAME));
+            
             // Put properties in
             set.put(new PropertySupport[] {
                 new HudsonInstanceProperty(PROP_NAME,
