@@ -54,7 +54,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
-import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -135,7 +134,7 @@ public class JavaSourceTest extends NbTestCase {
     public static Test suite() {
         TestSuite suite = new NbTestSuite(JavaSourceTest.class);        
 //        TestSuite suite = new NbTestSuite ();
-//        suite.addTest(new JavaSourceTest("testJavaSourceIsReclaimable"));
+//        suite.addTest(new JavaSourceTest("testMultiJavaSource"));
         return suite;
     }
     
@@ -635,6 +634,7 @@ public class JavaSourceTest extends NbTestCase {
         final JavaSource js = JavaSource.create(cpInfo,testFile1, testFile2, testFile3);
         CountDownLatch latch = new CountDownLatch (3);
         CompileControlJob ccj = new CompileControlJob (latch);
+        ccj.multiSource = true;
         js.runUserActionTask(ccj,true);
         assertTrue(waitForMultipleObjects(new CountDownLatch[] {latch},10000));
         
@@ -1150,6 +1150,7 @@ public class JavaSourceTest extends NbTestCase {
     private static class CompileControlJob implements CancellableTask<CompilationController> {
         
         private final CountDownLatch latch;
+        boolean multiSource;
         
         public CompileControlJob (CountDownLatch latch) {
             this.latch = latch;
@@ -1164,7 +1165,12 @@ public class JavaSourceTest extends NbTestCase {
                 if (!controler.delegate.needsRestart) {
                     assertTrue (Phase.PARSED.compareTo(controler.getPhase())<=0);
                     assertNotNull("No ComplationUnitTrees after parse",controler.getCompilationUnit());
-                    controler.toPhase(Phase.RESOLVED);           
+                    controler.toPhase(Phase.RESOLVED);     
+                    if (multiSource) {
+                        if (controler.delegate.needsRestart) {
+                            return;
+                        }
+                    }
                     assertTrue (Phase.RESOLVED.compareTo(controler.getPhase())<=0);
 
                     //all elements should be resolved now:
