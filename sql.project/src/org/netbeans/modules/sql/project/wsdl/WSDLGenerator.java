@@ -691,6 +691,12 @@ public class WSDLGenerator {
     private void generateCreateSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
+        	if(dbmeta.getErrPrepStmtMetaData()) {
+				JOptionPane.showMessageDialog(frame,
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE);
+			}
         	if (requestElement != null) {
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
                 if (sequenceElement != null) {
@@ -719,13 +725,22 @@ public class WSDLGenerator {
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage());
-            throw e;
+            JOptionPane.showMessageDialog(frame,
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE);
         }
     }
     
     private void generateAlterSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
+        	if(dbmeta.getErrPrepStmtMetaData()) {
+				JOptionPane.showMessageDialog(frame,
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE);
+			}
             if (requestElement != null) {
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
                 if (sequenceElement != null) {
@@ -761,6 +776,12 @@ public class WSDLGenerator {
     private void generateDropSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
+        	if(dbmeta.getErrPrepStmtMetaData()) {
+				JOptionPane.showMessageDialog(frame,
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE);
+			}
             if (requestElement != null) {
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
                 if (sequenceElement != null) {
@@ -796,6 +817,12 @@ public class WSDLGenerator {
     private void generateTruncateSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
+        	if(dbmeta.getErrPrepStmtMetaData()) {
+				JOptionPane.showMessageDialog(frame,
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE);
+			}
             if (requestElement != null) {
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
                 if (sequenceElement != null) {
@@ -830,7 +857,13 @@ public class WSDLGenerator {
     
     private void generateInsertSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
-        	PrepStmt prep = dbmeta.getPrepStmtMetaData();
+			PrepStmt prep = dbmeta.getPrepStmtMetaData();
+			if(dbmeta.getErrPrepStmtMetaData()) {
+				JOptionPane.showMessageDialog(frame,
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE);
+			}
             if (requestElement != null) {
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
                 if (sequenceElement != null) {
@@ -871,7 +904,14 @@ public class WSDLGenerator {
      */
     private void generateSelectSchemaElements(Element requestElement, Element responseElement) throws Exception {
         try {
-            PrepStmt prep = dbmeta.getPrepStmtMetaData();
+			PrepStmt prep = dbmeta.getPrepStmtMetaData();				
+			if(dbmeta.getErrPrepStmtMetaData()) {
+				JOptionPane.showMessageDialog(frame,
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE);
+			}
+
             if (requestElement != null) {
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
                 if (sequenceElement != null) {
@@ -918,7 +958,13 @@ public class WSDLGenerator {
             if (catalog == null) {
         		catalog = "";
         	}
-        	Procedure proc = dbmeta.getProcedureMetaData(catalog, schema, procName,"Procedure");
+			Procedure proc = dbmeta.getProcedureMetaData(catalog, schema, procName,"Procedure");
+			if(dbmeta.getErrProcMetaData()) {
+				JOptionPane.showMessageDialog(frame,
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE);
+			}
         	if(proc.getHasReturn()) {
         		//dbmeta.getProcResultSetColumns(catalog, schema, procName, "Procedure", proc);
         	}

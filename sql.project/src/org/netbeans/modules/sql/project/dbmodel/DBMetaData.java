@@ -229,10 +229,13 @@ public class DBMetaData {
     private boolean checkPrepStmtMetaData = true;    // indicates driver does not
     // fully support finding prepared
     // statement metadata
+    private boolean checkProcMetaData = true;    // indicates driver does not
+    // fully support finding prepared
+    // statement metadata
     private boolean errPrepStmtParameters = false;   // error getting prep. stmt. parameters
     private boolean errPrepStmtResultSetColumns = false; // error getting prep. stmt. resultset columns
     
-    private String sqlText;
+	private String sqlText;
     
     /**
      * Gets the primary keys for a table.
@@ -384,7 +387,7 @@ public class DBMetaData {
         } catch (SQLException e) {
             e.printStackTrace();
             errMsg = e.getLocalizedMessage();
-            throw e;
+            //throw e;
         }
     }
     
@@ -677,9 +680,8 @@ public class DBMetaData {
         
         errMsg = "";
         checkPrepStmtMetaData = false;
-        
-        try {
-            PrepStmt newPrepStmt = null;
+        PrepStmt newPrepStmt = null;
+        try {            
             
             // make sure there is some sql text for the prepared statement
             if ((sqlText == null) || (sqlText.equals(""))) {
@@ -719,23 +721,24 @@ public class DBMetaData {
             checkPrepStmtMetaData = errPrepStmtParameters && errPrepStmtResultSetColumns;
             
             pstmt.close();
-            
-            return newPrepStmt;
+                        
         } catch (Exception e) {
             e.printStackTrace();
             errMsg = e.getLocalizedMessage();
-            throw e;
+            //throw e;
         }
+		return newPrepStmt;
     }
     
     public PrepStmt getPrepStmtMetaData() throws Exception{
-        try {
-        return getPrepStmtMetaData(null,null,null,sqlText);
+        PrepStmt newPrepStmt = null;
+		try {
+        newPrepStmt = getPrepStmtMetaData(null,null,null,sqlText);
         } catch(Exception e) {
             errMsg = e.getLocalizedMessage();
-            throw e;
+            //throw e;
         }
-                
+        return newPrepStmt;        
     }
     
     /**
@@ -751,6 +754,7 @@ public class DBMetaData {
             String procedurePattern)
             throws Exception {
         errMsg = "";
+        String[][] procedures = null; // array of procedure structures: Name, Catalog, Schema, Type
         try {
             if (catalog.equals("")) {
                 catalog = null;
@@ -767,7 +771,6 @@ public class DBMetaData {
             }
             
             Vector v = new Vector();
-            String[][] procedures = null; // array of procedure structures: Name, Catalog, Schema, Type
             
             ResultSet rs = dbmeta.getProcedures(catalog, schemaPattern, procedurePattern);
             while (rs.next()) {
@@ -800,12 +803,12 @@ public class DBMetaData {
                 v.copyInto(procedures);
             }
             rs.close();
-            return procedures;
-        } catch (Exception e) {
+            } catch (Exception e) {
             e.printStackTrace();
             errMsg = e.getLocalizedMessage();
-            throw e;
+            //throw e;
         }
+		return procedures;
     }
     
     /**
@@ -920,9 +923,10 @@ public class DBMetaData {
     public Procedure getProcedureMetaData(String pcatalog, String pschema, 
             String pname, String ptype) 
 	throws Exception {
-		try {
+    	Procedure newProcedure = new Procedure(pname, pcatalog, pschema, ptype);
+		
+    	try {
 		// create a new procedure object
-		Procedure newProcedure = new Procedure(pname, pcatalog, pschema, ptype);
 		Vector v = new Vector();
 		
 		if (pcatalog.equals("")) {
@@ -1033,6 +1037,7 @@ public class DBMetaData {
 			} catch(SQLException e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
+			checkProcMetaData = true;
 			//throw e;
 			}
 			}
@@ -1049,6 +1054,7 @@ public class DBMetaData {
 			} catch(SQLException e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
+			checkProcMetaData = true;
 			//throw e;
 			}
 			}
@@ -1091,6 +1097,7 @@ public class DBMetaData {
 			rsmd = paramRS.getMetaData();
 			} catch(SQLException e) {
 			rsmd = null;
+			checkProcMetaData = true;
 			}
 			
 			int rsmdColCount=0;
@@ -1130,12 +1137,14 @@ public class DBMetaData {
 		System.out.println("\nException occurred: " + e.getClass().getName()+ ", "+ e.getMessage());
 		e.printStackTrace();
 		errMsg = e.getLocalizedMessage();
+		checkProcMetaData = true;
 		//throw e;
 		}
 		catch (NullPointerException npe) {
 		System.out.println("\nException occurred: " + npe.getClass().getName()+ ", " + npe.getMessage());
 		npe.printStackTrace();
 		errMsg = npe.getLocalizedMessage();
+		checkProcMetaData = true;
 		//throw npe;
 		}
 		catch (Exception e) {
@@ -1143,20 +1152,21 @@ public class DBMetaData {
 		System.out.println("\nException occurred: " + e.getClass().getName()+ ", " + e.getMessage());
 		e.printStackTrace();
 		errMsg = e.getLocalizedMessage();
+		checkProcMetaData = true;
 		}
 		
 		// add the arraylist object to the Procedure object
 		newProcedure.setResultSetColumns(result);
-		
-
-		
+				
 		
 		///////////////////////////////////////////////////
-		return newProcedure;
 		} catch (Exception e) {
 		e.printStackTrace();
-		throw e;
+		checkProcMetaData = true;
+		//throw e;
 		}
+		return newProcedure;
+		
 	}
     
     /**
@@ -1752,7 +1762,7 @@ public class DBMetaData {
                             errPrepStmtParameters = true;
                             e.printStackTrace();
                             errMsg = e.getLocalizedMessage();
-                            throw e;
+                            //throw e;
                         }
                         
                         // try to get the java type info - default to String
@@ -1772,7 +1782,7 @@ public class DBMetaData {
                             errPrepStmtParameters = true;
                             e.printStackTrace();
                             errMsg = e.getLocalizedMessage();
-                            throw e;
+                            //throw e;
                         }
                         
                         // try to get the numeric scale, default to 0
@@ -1783,7 +1793,7 @@ public class DBMetaData {
                             errPrepStmtParameters = true;
                             e.printStackTrace();
                             errMsg = e.getLocalizedMessage();
-                            throw e;
+                            //throw e;
                         }
                         
                         // try to get the param type, default to IN
@@ -1812,7 +1822,7 @@ public class DBMetaData {
                             errPrepStmtParameters = true;
                             e.printStackTrace();
                             errMsg = e.getLocalizedMessage();
-                            throw e;
+                            //throw e;
                         }
                         
                         currParam.setJavaType(javatype);
@@ -1833,7 +1843,7 @@ public class DBMetaData {
             errPrepStmtParameters = true;
             e.printStackTrace();
             errMsg = e.getLocalizedMessage();
-            throw e;
+            //throw e;
         }
         
         return parameters;
@@ -2219,7 +2229,7 @@ public class DBMetaData {
             Procedure procResult)
 		throws SQLException, NullPointerException {
 		
-		String errMsg = "";
+		checkProcMetaData = false;
 		int colCount = 0;
 		boolean isFunction = false;
 		boolean hasParameters = true;
@@ -2298,7 +2308,8 @@ public class DBMetaData {
 		} catch(SQLException e) {
 		System.out.println(e.getMessage());
 		e.printStackTrace();
-		throw e;
+		checkProcMetaData = true;
+		//throw e;
 		}
 		}
 		
@@ -2314,7 +2325,8 @@ public class DBMetaData {
 		} catch(SQLException e) {
 		System.out.println(e.getMessage());
 		e.printStackTrace();
-		throw e;
+		//throw e;
+		checkProcMetaData = true;
 		}
 		}
 		}
@@ -2378,24 +2390,36 @@ public class DBMetaData {
 		System.out.println("\nException occurred: " + e.getClass().getName()+ ", "+ e.getMessage());
 		e.printStackTrace();
 		errMsg = e.getLocalizedMessage();
-		throw e;
+		checkProcMetaData = true;
+		//throw e;
 		}
 		catch (NullPointerException npe) {
 		System.out.println("\nException occurred: " + npe.getClass().getName()+ ", " + npe.getMessage());
 		npe.printStackTrace();
 		errMsg = npe.getLocalizedMessage();
-		throw npe;
+		checkProcMetaData = true;
+		//throw npe;
 		}
 		catch (Exception e) {
 		// resultset column metadata not supported
 		System.out.println("\nException occurred: " + e.getClass().getName()+ ", " + e.getMessage());
 		e.printStackTrace();
 		errMsg = e.getLocalizedMessage();
+		checkProcMetaData = true;
 		}
 		
 		// add the arraylist object to the Procedure object
 		procResult.setResultSetColumns(result);
 		return procResult;
 	}
+	
+	public boolean getErrPrepStmtMetaData() {
+		return this.checkPrepStmtMetaData;		
+	}
+	public boolean getErrProcMetaData() {
+		return this.checkProcMetaData;		
+	}
+
+
     
 }
