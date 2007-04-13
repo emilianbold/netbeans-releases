@@ -80,8 +80,7 @@ public class UnitTab extends javax.swing.JPanel {
         this.model = (UnitCategoryTableModel) m;
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         initComponents();
-        spUnitTable.setViewportView(table);
-        spUnitDetails.setViewportView(details);
+        spUnitTable.setViewportView(table);        
         initTab();
         listenOnSelection();
     }
@@ -302,7 +301,6 @@ public class UnitTab extends javax.swing.JPanel {
         lHowManySelected = new javax.swing.JLabel();
         lHowManyDownload = new javax.swing.JLabel();
         bTabAction = new javax.swing.JButton();
-        spUnitDetails = new javax.swing.JScrollPane();
         bAddLocallyDownloads = new javax.swing.JButton();
         pProgress = new javax.swing.JPanel();
 
@@ -339,9 +337,8 @@ public class UnitTab extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(spUnitDetails, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 622, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(lTabActionDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
+                        .add(lTabActionDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lSearch)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -371,7 +368,7 @@ public class UnitTab extends javax.swing.JPanel {
                     .add(lSearch)
                     .add(lTabActionDescription))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(spUnitTable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
+                .add(spUnitTable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -382,9 +379,7 @@ public class UnitTab extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(lHowManyDownload, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(pProgress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE))
-                .add(8, 8, 8)
-                .add(spUnitDetails, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(pProgress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -522,7 +517,6 @@ private void refresh (final boolean force) {
     private javax.swing.JLabel lSearch;
     private javax.swing.JLabel lTabActionDescription;
     private javax.swing.JPanel pProgress;
-    private javax.swing.JScrollPane spUnitDetails;
     private javax.swing.JScrollPane spUnitTable;
     private javax.swing.JTextField tfSearch;
     // End of variables declaration//GEN-END:variables

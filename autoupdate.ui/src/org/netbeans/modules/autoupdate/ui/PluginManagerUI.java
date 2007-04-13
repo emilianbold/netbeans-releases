@@ -21,7 +21,6 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -170,19 +169,19 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         selectFirstRow(updateTable);
         selectFirstRow(availableTable);
 
-        UnitTab updateTab = new UnitTab (updateTable, new UnitDetails (), this);
+        SplittedUnitTab updateTab = new SplittedUnitTab(updateTable, new UnitDetails (), this);
         updateTab.addUpdateUnitListener (this);
         tpTabs.add (NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"), updateTab);
         
-        UnitTab availableTab = new UnitTab (availableTable, new UnitDetails (), this);
+        SplittedUnitTab availableTab = new SplittedUnitTab(availableTable, new UnitDetails (), this);
         availableTab.addUpdateUnitListener (this);
         tpTabs.add (NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"), availableTab);
                 
-        UnitTab localTab = new UnitTab (localTable, new UnitDetails (), this);
+        SplittedUnitTab localTab = new SplittedUnitTab(localTable, new UnitDetails (), this);
         localTab.addUpdateUnitListener (this);
         tpTabs.add (NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Local_Title"), localTab);
         
-        UnitTab installedTab = new UnitTab (installedTable, new UnitDetails (), this);
+        SplittedUnitTab installedTab = new SplittedUnitTab(installedTable, new UnitDetails (), this);
         installedTab.addUpdateUnitListener (this);
         tpTabs.add (NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"), installedTab);
         SettingsTab st = new SettingsTab();
