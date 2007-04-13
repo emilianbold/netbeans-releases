@@ -54,12 +54,12 @@ import org.openide.text.NbDocument;
  */
 public class Method {
     final static String CTOR = "<init>";
-    protected ElementHandle<ExecutableElement> execElementHandle;
+    protected ElementHandle<ExecutableElement> execElementHandle;    
     protected JavaClass javaClass;    //Enclosing java class
     protected String name;
     
     public Method(ExecutableElement element, JavaClass javaClass) {
-        execElementHandle = ElementHandle.create(element);
+        execElementHandle = ElementHandle.create(element);        
         this.javaClass = javaClass;
         this.name = element.getSimpleName().toString();
     }
@@ -77,6 +77,10 @@ public class Method {
     public String getName() {
         return name;
     }    
+    
+    public ElementHandle<ExecutableElement> getElementHandle() {
+        return execElementHandle;
+    }
     
     /*
      * Looks for a expression statement of the form a.b(arg1, ..); where a and b are the passed

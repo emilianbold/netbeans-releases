@@ -19,74 +19,81 @@
 
 package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
-import java.lang.reflect.Field;
-import java.util.Collection;
-
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+
+import com.sun.source.tree.Tree;
 
 /**
- * 
+ * <p>This is a factory for refactoring plugins that participate in Insync supported refactoring.</p>
+ * <p>This factory responds to the following objects in the refactoring source lookup.
+ * <ul>
+ * <li>FileObject
+ * <ul>
+ * <li>VW Jsp file
+ * <li>LifeCycle managed bean Java file
+ * </ul>
+ * <li>DataFolder - folder under web/
+ * </ul>
+ * </p> 
  */
 public class FacesRefactoringsPluginFactory implements RefactoringPluginFactory {
     
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        // Disable for M8
-        if (true) {
-            return null;
-        }
-        boolean userInvokedRefactoring = isUserInvokedRefactoring(refactoring);
-        if (refactoring instanceof RenameRefactoring) {
-            RenameRefactoring renameRefactoring = (RenameRefactoring) refactoring;
-            return newRenamePlugin(renameRefactoring, userInvokedRefactoring);
-        } else if (refactoring instanceof MoveRefactoring) { 
-            MoveRefactoring moveRefactoring = (MoveRefactoring) refactoring;
-            return newMovePlugin(moveRefactoring, userInvokedRefactoring);
+        Lookup refactoringSource = refactoring.getRefactoringSource();
+        // Is this refactoring for a FileObject
+        FileObject refactoredFileObject = refactoringSource.lookup(FileObject.class);
+        if (refactoredFileObject != null) {
+            if (FacesRefactoringUtils.isVisualWebJspFile(refactoredFileObject)) {
+                // Ensure the modelling has happened
+                FacesModelSet.getInstance(refactoredFileObject);
+                if (refactoring instanceof RenameRefactoring) {
+                    return new FacesJspFileRenameRefactoringPlugin((RenameRefactoring)refactoring);
+                } else if (refactoring instanceof MoveRefactoring) { 
+                    // Temporarily disabled
+                    if (true) {
+                        return null;
+                    }
+                    return new FacesJspFileMoveRefactoringPlugin((MoveRefactoring)refactoring);
+                }
+            } else if (FacesRefactoringUtils.isJavaFileObjectOfInterest(refactoredFileObject)) {
+                TreePathHandle treePathHandle = refactoringSource.lookup(TreePathHandle.class);
+                if (treePathHandle == null || treePathHandle.getKind() == Tree.Kind.CLASS) {
+                    // Ensure the modelling has happened
+                    FacesModelSet.getInstance(refactoredFileObject);
+                    if (refactoring instanceof RenameRefactoring) {
+                        return new FacesJavaFileRenameRefactoringPlugin((RenameRefactoring)refactoring);
+                    } else if (refactoring instanceof MoveRefactoring) {
+                        // Temporarily disabled
+                        if (true) {
+                            return null;
+                        }
+                        return new FacesJavaFileMoveRefactoringPlugin((MoveRefactoring)refactoring);
+                    }
+                }
+            }
+        } else {
+            // Is this refactoring for a package
+            NonRecursiveFolder refactoredNonRecursiveFolder = refactoringSource.lookup(NonRecursiveFolder.class);
+            if (refactoredNonRecursiveFolder != null) {
+                
+            } else {
+                
+            }
         }
         return null;
     }
     
-    protected FacesRenameRefactoringPlugin newRenamePlugin(RenameRefactoring refactoring, boolean userInvokedRefactoring) {        
-        FacesRenameRefactoringPlugin plugin = new FacesRenameRefactoringPlugin(refactoring, userInvokedRefactoring);        
-        return plugin;
-    }
-
-    protected FacesMoveRefactoringPlugin newMovePlugin(MoveRefactoring refactoring, boolean userInvokedRefactoring) {
-        FacesMoveRefactoringPlugin plugin = new FacesMoveRefactoringPlugin(refactoring, userInvokedRefactoring);
-        // TODO Check if we should participate
-        return plugin;
-    }
-    
-    // Hacky way to get at the private state of RefactoringPlugin to determine if it
-    // was invoked by the user
-    private static Field currStateField;
-    
-    static {
-        try {
-            currStateField = AbstractRefactoring.class.getDeclaredField("currentState"); // NOI18N
-            currStateField.setAccessible(true);
-        } catch (SecurityException e) {
-            Exceptions.printStackTrace(e);
-        } catch (NoSuchFieldException e) {
-            Exceptions.printStackTrace(e);
-        }
-    }
-    
-    private static boolean isUserInvokedRefactoring(AbstractRefactoring refactoring) {
-        if (currStateField != null) {
-            try {
-                return currStateField.getInt(refactoring) == AbstractRefactoring.INIT;
-            } catch (IllegalArgumentException e) {
-                Exceptions.printStackTrace(e);
-            } catch (IllegalAccessException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        
-        return false;
-    }
+    // An of this class is put in the delegate AbstractRefactoring's context
+    // to indicate delegation.
+    static class DelegatedRefactoring {}   
+    static final DelegatedRefactoring DELEGATED_REFACTORING = new DelegatedRefactoring();
 }

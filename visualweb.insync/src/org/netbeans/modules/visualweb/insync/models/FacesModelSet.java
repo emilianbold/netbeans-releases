@@ -100,6 +100,7 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     FacesConfigModel facesConfigModel;
 
     private ProjectBuiltQuery.Status projectBuiltQueryStatus;
+    private ChangeListener projectBuiltQueryStatusChangeListener;
 
     // Listener to monitor file system changes. This is used to keep the folder structure under the
     // document root folder synchronized with the folder structure under the page bean root folder.
@@ -344,17 +345,18 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
         saveAll();
         
         projectBuiltQueryStatus = ProjectBuiltQuery.getStatus(project);
-        projectBuiltQueryStatus.addChangeListener(new ChangeListener() {
+        projectBuiltQueryStatusChangeListener  = new ChangeListener() {
             public void stateChanged(ChangeEvent changeEvent) {
                 try {
-                    if (projectBuiltQueryStatus.isBuilt()) {
+                    if (projectBuiltQueryStatus != null && projectBuiltQueryStatus.isBuilt()) {
                         classPathChanged();
                     }
                 } catch (IllegalStateException ise) {
                     ErrorManager.getDefault().notify(ise);
                 }               
-            }           
-        });
+            }
+        };
+        projectBuiltQueryStatus.addChangeListener(projectBuiltQueryStatusChangeListener);
     }
 
     /**
@@ -362,6 +364,10 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
      */
     public void destroy() {
         facesContainer.destroy();
+        if (projectBuiltQueryStatus != null) {
+            projectBuiltQueryStatus.removeChangeListener(projectBuiltQueryStatusChangeListener);
+        }
+        projectBuiltQueryStatusChangeListener = null;
         projectBuiltQueryStatus = null;
         super.destroy();
     }

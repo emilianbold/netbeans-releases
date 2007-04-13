@@ -26,6 +26,7 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.visualweb.insync.faces.refactoring.FacesRefactoringsPluginFactory.DelegatedRefactoring;
 
 /**
  * This a base class for Faces refactoring plugins.
@@ -34,12 +35,10 @@ import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
  */
 abstract class FacesRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
     private AbstractRefactoring abstractRefactoring;
-    private boolean userInvokedRefactoring;
     private boolean requestCancelled;
     
-    protected FacesRefactoringPlugin(AbstractRefactoring abstractRefactoring, boolean userInvokedRefactoring) {
+    protected FacesRefactoringPlugin(AbstractRefactoring abstractRefactoring) {
         this.abstractRefactoring = abstractRefactoring;
-        this.userInvokedRefactoring = userInvokedRefactoring;
     }
     
     protected Context getContext() {
@@ -49,17 +48,13 @@ abstract class FacesRefactoringPlugin extends ProgressProviderAdapter implements
     protected AbstractRefactoring getRefactoring() {
         return abstractRefactoring;
     }
-    
+
     public Problem preCheck() {
         return null;
     }
     
     public void cancelRequest() {
         requestCancelled = true;
-    }
-    
-    protected boolean isUserInvokedRefactoring() {
-        return userInvokedRefactoring;
     }
 
     protected boolean isRequestCancelled() {
@@ -108,4 +103,8 @@ abstract class FacesRefactoringPlugin extends ProgressProviderAdapter implements
             return result;
         }
     }
+        
+    protected static boolean isDelegatedRefactoring(AbstractRefactoring abstractRefactoring) {
+        return abstractRefactoring.getContext().lookup(DelegatedRefactoring.class) != null;
+    }    
 }

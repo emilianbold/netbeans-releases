@@ -38,12 +38,11 @@ public class FacesRenamePanel extends JPanel implements CustomRefactoringPanel {
     private final transient String oldName;
     
     /** Creates new form FacesRenamePanelName */
-    public FacesRenamePanel(ChangeListener parent, String oldName, String title, boolean editable, boolean showUpdateReferences) {
+    public FacesRenamePanel(ChangeListener parent, String oldName, String title, boolean editable) {
         this.oldName = oldName;
         this.parent = parent;
         setName(title);
-        initComponents();
-        updateReferencesCheckBox.setVisible(showUpdateReferences);
+        initComponents();        
         nameField.setEnabled(editable);
         //parent.setPreviewEnabled(false);
         nameField.requestFocus();

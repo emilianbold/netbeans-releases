@@ -21,34 +21,30 @@ package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
 import java.awt.datatransfer.Transferable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Dictionary;
 import java.util.List;
 
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
-import org.netbeans.modules.visualweb.api.insync.JsfJspDataObjectMarker;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.PasteType;
-import org.openide.windows.TopComponent;
 
+/**
+ * <p>This deals with handling of refactoring actions on the VW JSP files.</p>
+ */
 public class FacesRefactoringActionsProvider extends ActionsImplementationProvider {
 
+    /**
+     * <p>This returns true for VW JSP files indicating that Refactor:Rename 
+     * operation is supported.</p>
+     */
     @Override
     public boolean canRename(Lookup lookup) {
-        // Disable for M8
-        if (true) {
-            return false;
-        }
         // Get the Node being renamed
         Node node = lookup.lookup(Node.class);
         if (node != null) {
@@ -57,22 +53,19 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
             if (dataObject != null) {
                 // Get the primary FileObject
                 FileObject fileObject = dataObject.getPrimaryFile();
-                if (dataObject instanceof DataFolder) { // Is this a DataFolder
-                    if (FacesRefactoringUtils.isFileUnderDocumentRoot(fileObject)) {
-                        return true;
-                    }
-                } else if (dataObject instanceof JsfJspDataObjectMarker) {
-                    // Is this a VW Page?
-                    if (FacesRefactoringUtils.isVisualWebJspFile(fileObject)) {
-                        // Yes. It can be Renamed 
-                        return true;
-                    }
+                // Is this a VW Page?
+                if (FacesRefactoringUtils.isVisualWebJspFile(fileObject)) {
+                    // Yes. It can be Renamed 
+                    return true;
                 }
             }
         }
         return false;
     }
-
+    
+    /**
+     * <p>This implements the invocation of Rename refactoring for VW JSP files.</p>
+     */
     @Override
     public void doRename(final Lookup lookup) {
         // First check can rename
@@ -88,9 +81,13 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
         }
     }
     
+    /**
+     * <p>This returns true for VW JSP files indicating that Refactor:Move 
+     * operation is supported.</p>
+     */
     @Override
     public boolean canMove(Lookup lookup) {
-        // Disable for M8
+        // Temporarily disabled
         if (true) {
             return false;
         }
@@ -102,22 +99,19 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
             if (dataObject != null) {
                 // Get the primary FileObject
                 FileObject fileObject = dataObject.getPrimaryFile();
-                if (dataObject instanceof DataFolder) { // Is this a DataFolder
-                    if (FacesRefactoringUtils.isFileUnderDocumentRoot(fileObject)) {
-                        return true;
-                    }
-                } else if (dataObject instanceof JsfJspDataObjectMarker) {
-                    // Is this a VW Page?
-                    if (FacesRefactoringUtils.isVisualWebJspFile(fileObject)) {
-                        return true;
-                    }
+                // Is this a VW Page?
+                if (FacesRefactoringUtils.isVisualWebJspFile(fileObject)) {
+                    return true;
                 }
             }
         }
         
         return false;
     }
-
+    
+    /**
+     * <p>This implements the invocation of Move refactoring for VW JSP files.</p>
+     */
     @Override
     public void doMove(Lookup lookup) {
         // First check can move
@@ -133,7 +127,7 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
                         return new FacesMoveRefactoringUI(fileObjects[0], targetFolder, pasteType);
                     } else {
                         // TODO handle multiple
-                        throw new UnsupportedOperationException("Cannot move multiple files/folders!"); // NOI18N TODO 
+                        throw new UnsupportedOperationException("Cannot move multiple files/folders yet!"); // NOI18N TODO 
                     }
                 }
                 

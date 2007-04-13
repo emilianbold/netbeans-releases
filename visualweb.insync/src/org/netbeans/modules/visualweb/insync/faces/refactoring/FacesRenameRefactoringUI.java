@@ -44,7 +44,7 @@ final class FacesRenameRefactoringUI implements RefactoringUI, RefactoringUIBypa
     private String dispOldName;
     private String newName;
     private FacesRenamePanel panel;
-    private boolean fromListener;
+    private boolean newNameSpecified;
     private FileObject byPassFolder;
     private boolean byPassPakageRename;
 
@@ -55,7 +55,7 @@ final class FacesRenameRefactoringUI implements RefactoringUI, RefactoringUIBypa
             dispOldName = oldName = jspFileObject.getName();
         } else {
             dispOldName = oldName = newName;
-            fromListener = true;
+            newNameSpecified = true;
         }
     }
     
@@ -77,8 +77,7 @@ final class FacesRenameRefactoringUI implements RefactoringUI, RefactoringUIBypa
                             parent,
                             oldName,
                             NbBundle.getMessage(FacesRenamePanel.class, "LBL_RenamePageNamed", originalName),
-                            !fromListener,
-                            fromListener && !byPassPakageRename);
+                            !newNameSpecified);
         }
         return panel;
     }

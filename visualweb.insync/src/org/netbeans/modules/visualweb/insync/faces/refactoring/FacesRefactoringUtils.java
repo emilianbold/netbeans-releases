@@ -19,10 +19,16 @@
 
 package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
+import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
+
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Position.Bias;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -30,12 +36,30 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.TokenItem;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import org.netbeans.modules.visualweb.insync.java.JavaUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionBounds;
+import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.Task;
 
 final class FacesRefactoringUtils {
     
@@ -179,5 +203,341 @@ final class FacesRefactoringUtils {
         if (dict==null) 
             return null;
         return (String) dict.get("name"); //NOI18N
+    }
+    
+    /**
+     * Method that allows to find its
+     * CloneableEditorSupport from given DataObject
+     * @return the support or null if the CloneableEditorSupport 
+     * was not found
+     * This method is hot fix for issue #53309
+     * this methd was copy/pasted from OpenSupport.Env class
+     * @param dob an instance of DataObject
+     */
+    public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
+        Node.Cookie obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
+        if (obj instanceof CloneableEditorSupport) {
+            return (CloneableEditorSupport)obj;
+        }
+        obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+        if (obj instanceof CloneableEditorSupport) {
+            return (CloneableEditorSupport)obj;
+        }
+        return null;
+    }
+    
+    /** This method returns a BaseDocument for the configuration file. If the configuration
+     *  file is not opened, then the document is not created yet and this method push to load 
+     *  the document to the memory. 
+     */
+    public static BaseDocument getBaseDocument(DataObject dataObject){
+        BaseDocument document = null;
+        
+        if (dataObject != null){
+            synchronized (dataObject){
+                EditorCookie editor = dataObject.getLookup().lookup(EditorCookie.class);
+                if (editor != null){
+                    document = (BaseDocument)editor.getDocument();
+                    if (document == null){
+                        Task preparing = editor.prepareDocument();
+                        preparing.waitFinished();
+                        document = (BaseDocument)editor.getDocument();
+                    }
+                }
+            }
+        }
+        return document;
+    }
+    
+    /** The constant from XML editor
+     */
+    // The constant are taken from class org.netbeans.modules.xml.text.syntax.XMLTokenIDs
+    protected final static int XML_ELEMENT = 4;
+    protected final static int XML_TEXT = 1;
+    
+    /* Returns offset, where starts the definition of the manage bean
+     **/
+    public static int[] getManagedBeanDefinition(BaseDocument doc, String beanName){
+        try{
+            String text = doc.getText(0, doc.getLength());
+            int offset = text.indexOf(beanName);
+            int start = 0;
+            int end = 0;
+            ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
+            TokenItem token;
+            
+            while (offset != -1){
+                token = sup.getTokenChain(offset, offset+1);
+                if (token != null && token.getTokenID().getNumericID() == XML_TEXT){
+                    while (token!=null 
+                            && !(token.getTokenID().getNumericID() == XML_ELEMENT
+                            && !token.getImage().equals(">")))
+                        token = token.getPrevious();
+                    if (token != null && token.getImage().equals("<managed-bean-name")){    //NOI18N
+                        while (token != null
+                                && !(token.getTokenID().getNumericID() ==  XML_ELEMENT
+                                && token.getImage().equals("<managed-bean")))
+                            token = token.getPrevious();
+                        if(token != null && token.getImage().equals("<managed-bean")){
+                            start = token.getOffset();
+                            token = sup.getTokenChain(offset, offset+1);
+                            while (token != null
+                                    && !(token.getTokenID().getNumericID() ==  XML_ELEMENT
+                                    && token.getImage().equals("</managed-bean")))
+                                token = token.getNext();
+                            if (token!=null && token.getImage().equals("</managed-bean")){
+                                while (token != null
+                                        && !(token.getTokenID().getNumericID() ==  XML_ELEMENT
+                                        && token.getImage().equals(">")))
+                                    token = token.getNext();
+                                if (token!=null && token.getImage().equals(">")){
+                                    end = token.getOffset()+1;
+                                    return new int[]{start, end};
+                                }
+                            }
+                            return new int[]{start, text.length()};
+                        }
+                    }
+                }
+                offset = text.indexOf(beanName, offset+beanName.length());
+            }
+        }
+        catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(e);
+        } 
+        return new int []{-1,-1};
+    }
+    
+    private static final Logger LOGGER = Logger.getLogger(FacesRefactoringUtils.class.getName());
+    
+    public static abstract class OccurrenceItem {
+        // the faces configuration file
+        protected FileObject config;
+        protected String newValue;
+        protected String oldValue;
+        
+        public OccurrenceItem(FileObject config, String newValue, String oldValue){
+            this.config = config;
+            this.newValue = newValue;
+            this.oldValue = oldValue;
+        }
+        
+        public FileObject getFacesConfig() {
+            return config;
+        }
+        
+        public String getElementText(){
+            StringBuffer stringBuffer = new StringBuffer();
+            stringBuffer.append("<font color=\"#0000FF\">");
+            stringBuffer.append("&lt;").append(getXMLElementName()).append("&gt;</font><b>");
+            stringBuffer.append(oldValue).append("</b><font color=\"#0000FF\">&lt;/").append(getXMLElementName());
+            stringBuffer.append("&gt;</font>");
+            return stringBuffer.toString();
+        }
+        
+        protected abstract String getXMLElementName();
+        
+        public abstract void performRename();
+        public abstract void undoRename();
+        public abstract String getRenameMessage();
+        
+        protected PositionBounds createPosition(int startOffset, int endOffset) {
+            try{
+                DataObject dataObject = DataObject.find(config);
+                    CloneableEditorSupport editor
+                            = FacesRefactoringUtils.findCloneableEditorSupport(dataObject);
+                    if (editor != null){
+                        PositionRef start=editor.createPositionRef(startOffset, Bias.Forward);
+                        PositionRef end=editor.createPositionRef(endOffset, Bias.Backward);
+                        return new PositionBounds(start,end);
+                    }
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex); // TODO
+            }
+            return null;
+        }
+        
+        public PositionBounds getClassDefinitionPosition() {
+            return createPosition(0, 0);
+        };
+        
+        public PositionBounds getElementDefinitionPosition() {
+            return createPosition(0, 0);
+        };
+    }
+    
+    public static class ManagedBeanNameItem extends OccurrenceItem {
+        private final ManagedBean bean;
+        
+        public ManagedBeanNameItem(FileObject config, ManagedBean bean, String newValue){
+            super(config, newValue, bean.getManagedBeanName());
+            this.bean = bean;
+        }
+        
+        protected String getXMLElementName(){
+            return "managed-bean-name"; //NOI18N
+        }
+        
+        public void performRename(){
+            changeBeanName(newValue);
+        }
+        
+        public void undoRename(){
+            changeBeanName(oldValue);
+        }        
+        
+        public String getRenameMessage(){
+            return NbBundle.getMessage(FacesRefactoringUtils.class, "MSG_ManagedBeanName_Rename",  //NOI18N
+                    new Object[] { bean.getManagedBeanName(), getElementText()});
+        }
+        
+        private void changeBeanName(String beanName){
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            List <ManagedBean> beans = facesConfig.getManagedBeans();
+            for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
+                ManagedBean managedBean = it.next();
+                if (bean.getManagedBeanName().equals(managedBean.getManagedBeanName())){
+                    facesConfig.getModel().startTransaction();
+                    managedBean.setManagedBeanName(beanName);
+                    facesConfig.getModel().endTransaction();
+                    continue;
+                }
+                
+            }
+        }
+        
+        public PositionBounds getClassDefinitionPosition() {
+            PositionBounds position = null;
+            try{
+                DataObject dataObject = DataObject.find(config);
+                BaseDocument document = FacesRefactoringUtils.getBaseDocument(dataObject);
+                int [] offsets = FacesRefactoringUtils.getManagedBeanDefinition(document, bean.getManagedBeanName());
+                String text = document.getText(offsets);
+                int offset = offsets[0] + text.indexOf(oldValue);
+                position =  createPosition(offset, offset + oldValue.length());
+            } catch (BadLocationException ex) {
+                ErrorManager.getDefault().notify(ex);
+            } catch (DataObjectNotFoundException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                        ex.getMessage(),
+                        ex);
+            }
+            return position;
+        };
+        
+        public PositionBounds getElementDefinitionPosition() {
+            PositionBounds position = null;
+            try {
+                DataObject dataObject = DataObject.find(config);
+                BaseDocument document = FacesRefactoringUtils.getBaseDocument(dataObject);
+                int [] offsets = FacesRefactoringUtils.getManagedBeanDefinition(document, bean.getManagedBeanName());
+                position =  createPosition(offsets[0], offsets[1]);
+            } catch (DataObjectNotFoundException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                        ex.getMessage(),
+                        ex);
+            }
+            return position;
+        };
+    }
+
+    public static List <OccurrenceItem> getAllOccurrences(WebModule webModule, String oldName, String newName){
+        List result = new ArrayList();
+        assert webModule != null;
+        assert oldName != null;
+        assert newName != null;
+        
+        LOGGER.fine("getAllOccurences("+ webModule.getDocumentBase().getPath() + ", " + oldName + ", " + newName + ")");
+        if (webModule != null){
+            // find all jsf configuration files in the web module
+            FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
+            
+            if (configs != null){
+                for (int i = 0; i < configs.length; i++) {
+                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(configs[i], true).getRootComponent();                    
+                    List<ManagedBean> managedBeans = facesConfig.getManagedBeans();
+                    for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
+                        ManagedBean managedBean = it.next();
+                        if (oldName.equals(managedBean.getManagedBeanName())) {
+                            result.add(new ManagedBeanNameItem(configs[i], managedBean, newName));
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * @return true if given str is null or empty.
+     */
+    static boolean isEmpty(String str){
+        return str == null || "".equals(str.trim());
+    }
+    
+    //
+    // File Path utilities
+    //
+    
+    // !EAT TODO: Cloned from com.sun.rave.xhtml.FragmentPanel
+    public static String computePathFromTo(FileObject fromFile, FileObject toFile) {
+        ArrayList fromPathList = getPathList(fromFile);
+        ArrayList toPathList = getPathList(toFile);
+        StringBuffer stringBuffer = new StringBuffer(computePathFromTo(fromPathList, toPathList));
+        if (toFile.isData()) {
+            stringBuffer.append(toFile.getNameExt());
+        }
+        return stringBuffer.toString();
+    }
+    
+    // !EAT TODO: Cloned from com.sun.rave.xhtml.FragmentPanel
+    // this assume toPathList is for a directory
+    public static String computePathFromTo(ArrayList fromPathList, ArrayList toPathList) {
+        int index = 0;
+        // find the first non matching sub dir
+        for (; index < fromPathList.size() && index < toPathList.size();
+        index++) {
+            if (!fromPathList.get(index).equals(toPathList.get(index))) {
+                break;
+            }
+        }
+        StringBuffer stringBuffer = new StringBuffer();
+        // create a file that goes up to match found
+        for (int i = index; i < fromPathList.size(); i++) {
+            stringBuffer.append("../"); // NOI18N
+        }
+        // create a file that goes down from match found
+        for (int i = index; i < toPathList.size(); i++) {
+            stringBuffer.append(toPathList.get(i));
+            stringBuffer.append("/"); // NOI18N
+        }        
+        return stringBuffer.toString();
+    }
+
+    // !EAT TODO: Cloned from com.sun.rave.xhtml.FragmentPanel
+    public static ArrayList getPathList(FileObject file) {
+        if (!file.isFolder()) {
+            file = file.getParent();
+        }
+        ArrayList result = new ArrayList(4);
+        while (file != null) {
+            result.add(file.getName());
+            file = file.getParent();
+        }
+        Collections.reverse(result);
+        return result;
+    }
+    
+    // 
+    public static ArrayList getPathList(String fileName) {
+        if (fileName.length() == 0) {
+            return new ArrayList();
+        }
+        String[] fileNameParts = fileName.replace('\\','/').split("/");
+        ArrayList result = new ArrayList(fileNameParts.length);
+        for (int i = 0; i < fileNameParts.length; i++) {
+            result.add(fileNameParts[i]);
+        }        
+        return result;
     }
 }
