@@ -481,17 +481,22 @@ private void refresh (final boolean force) {
     
     final Runnable checkUpdates = new Runnable(){
         public void run() {
+            ProgressHandle handle = null;
             try {
-                ProgressHandle handle = ProgressHandleFactory.createHandle ("refresh-providers-handle");
+                handle = ProgressHandleFactory.createHandle ("refresh-providers-handle");
                 JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
                 JLabel progressLabel = new JLabel (NbBundle.getMessage (UnitTab.class, "UnitTab_CheckingForUpdates"));
                 manager.setProgressComponent (progressLabel, progressComp);
+                handle.start ();
                 UpdateUnitProviderFactory.getDefault ().refreshProviders (handle, force);
                 manager.unsetProgressComponent (progressLabel, progressComp);
             } catch (IOException ioe) {
                 log.log(Level.FINE, ioe.getMessage(), ioe);
                 NetworkProblemPanel.showNetworkProblemDialog();
             } finally {
+                if (handle != null) {
+                    handle.finish ();
+                }
                 SwingUtilities.invokeLater(new Runnable(){
                     public void run() {
                         fireUpdataUnitChange();

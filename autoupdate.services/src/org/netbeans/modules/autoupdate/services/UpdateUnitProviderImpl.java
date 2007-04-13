@@ -107,15 +107,21 @@ public final class UpdateUnitProviderImpl {
      */
     public boolean refresh (ProgressHandle handle, boolean force) throws IOException {
         boolean res = false;
+        ProgressHandle ownHandle = null;
         if (handle == null) {
-            handle = ProgressHandleFactory.createHandle (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_CheckingForUpdates"));
+            ownHandle = ProgressHandleFactory.createHandle (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_CheckingForUpdates"));
+            ownHandle.setInitialDelay (0);
+            ownHandle.start ();
         }
-        handle.setInitialDelay (0);
-        handle.start ();
         try {
             getUpdateProvider ().refresh (force);
         } finally {
-            handle.finish ();
+            if (ownHandle != null) {
+                ownHandle.finish ();
+            }
+            if (handle != null) {
+                handle.progress (getDisplayName ());
+            }
         }
         return res;
     }
