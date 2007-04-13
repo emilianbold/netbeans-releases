@@ -45,7 +45,7 @@ public class LanguagesDataNode extends DataNode {
             findResource ("Editors/" + mimeType + "/language.nbs");
         String icon = (String) fo.getAttribute ("icon");
         if (icon == null)
-            icon = "org/netbeans/modules/languages/resources/defaultIcon.jpg";
+            icon = "org/netbeans/modules/languages/resources/defaultIcon.png";
         setIconBaseWithExtension (icon);
     }
 
