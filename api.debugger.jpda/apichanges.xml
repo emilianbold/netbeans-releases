@@ -523,11 +523,11 @@ Microsystems, Inc. All Rights Reserved.
                 <code>JPDAArrayType</code>.
             </p>
         </description>
-        <class package="org.netbeans.spi.debugger.jpda" name="JPDADebugger" />
-        <class package="org.netbeans.spi.debugger.jpda" name="JPDAClassType" />
-        <class package="org.netbeans.spi.debugger.jpda" name="ObjectVariable" />
-        <class package="org.netbeans.spi.debugger.jpda" name="VariableType" />
-        <class package="org.netbeans.spi.debugger.jpda" name="JPDAArrayType" />
+        <class package="org.netbeans.api.debugger.jpda" name="JPDADebugger" />
+        <class package="org.netbeans.api.debugger.jpda" name="JPDAClassType" />
+        <class package="org.netbeans.api.debugger.jpda" name="ObjectVariable" />
+        <class package="org.netbeans.api.debugger.jpda" name="VariableType" />
+        <class package="org.netbeans.api.debugger.jpda" name="JPDAArrayType" />
         <issue number="100047"/>
     </change>
 
