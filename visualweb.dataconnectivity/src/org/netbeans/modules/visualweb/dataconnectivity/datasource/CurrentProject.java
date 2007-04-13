@@ -100,11 +100,13 @@ public class CurrentProject   {
     }
     
     public static Project getOpenedProject() {
-        Lookup lookup = TopComponent.getRegistry().getActivated().getLookup();
-        DataObject obj = (DataObject)lookup.lookup(DataObject.class);
-        if (obj != null) {
-            FileObject fileObject = obj.getPrimaryFile();
-            project = FileOwnerQuery.getOwner(fileObject);                                
+        if (TopComponent.getRegistry().getActivated() != null) {
+            Lookup lookup = TopComponent.getRegistry().getActivated().getLookup();
+            DataObject obj = (DataObject)lookup.lookup(DataObject.class);  
+            if (obj != null){
+                FileObject fileObject = obj.getPrimaryFile();
+                project = FileOwnerQuery.getOwner(fileObject);
+            }
         } else
             project = OpenProjects.getDefault().getMainProject();
         
