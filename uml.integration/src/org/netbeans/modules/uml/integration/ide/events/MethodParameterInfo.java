@@ -240,7 +240,13 @@ public class MethodParameterInfo implements Cloneable
     }
     
     
+    
     public String getCodeGenType()
+    {
+	return getCodeGenType(false);
+    }
+
+    public String getCodeGenType(boolean fullyQualified)
     {
         // if no return param, probably a Constructor; return empty string
         if (getParameterElement() == null)
@@ -262,12 +268,13 @@ public class MethodParameterInfo implements Cloneable
         return GenCodeUtil.getCodeGenType(
             getParameterElement().getType(), 
 	    GenCodeUtil.getCollectionOverrideDataTypes
-	        (getParameterElement().getMultiplicity(), true),
+	        (getParameterElement().getMultiplicity(), fullyQualified),
             isUseGenerics(),
 //            getParameterElement().getMultiplicity().getRangeCount());
 //            GenCodeUtil.getMultiplicityMaxUpperRange(
 //                getParameterElement().getMultiplicity().getRanges()));
-            getParameterElement().getMultiplicity());
+            getParameterElement().getMultiplicity(),
+	    fullyQualified);
     }
     
     
@@ -276,6 +283,7 @@ public class MethodParameterInfo implements Cloneable
         return numberOfDimensions;
     }
     
+    /*
     public String getCollectionOverrideDataType() 
     {
         // TODO: when Collection Override Data Type property is added at the 
@@ -283,12 +291,14 @@ public class MethodParameterInfo implements Cloneable
         
         return UMLSupport.getUMLSupport().getCollectionOverride();
     }
+    
 
     public boolean isCollectionType() 
     {
         return Util.isValidCollectionDataType(getFullyQualifiedType());
     }
-
+    
+    
     public boolean isUseCollectionOverride()
     {
         // TODO: conover - change this to use attribute level property
@@ -296,6 +306,7 @@ public class MethodParameterInfo implements Cloneable
         return getParameterElement().getMultiplicity().getRangeCount() > 0 &&
             Util.isValidCollectionDataType(getCollectionOverrideDataType());
     }
+    */
 
     public boolean isUseGenerics()
     {
@@ -338,7 +349,7 @@ public class MethodParameterInfo implements Cloneable
 	return GenCodeUtil
 	    .getReferredCodeGenTypes(getParameterElement().getType(), 
 				     GenCodeUtil.getCollectionOverrideDataTypes
-				         (getParameterElement().getMultiplicity(), false),
+				         (getParameterElement().getMultiplicity(), true),
 				     isUseGenerics(),
 				     getParameterElement().getMultiplicity());
     }

@@ -477,18 +477,24 @@ public class MemberInfo extends ElementInfo
     
     public String getCodeGenType()
     {
+	return getCodeGenType(false);
+    }
+
+    public String getCodeGenType(boolean fullyQualified)
+    {
         // if no return param, probably a Constructor; return empty string
         if (getAttribute() == null)
             return ""; // NOI18N
         
         return GenCodeUtil.getCodeGenType(
             getAttribute().getType(), 
-	    GenCodeUtil.getCollectionOverrideDataTypes(getAttribute().getMultiplicity(), true),
+	    GenCodeUtil.getCollectionOverrideDataTypes(getAttribute().getMultiplicity(), fullyQualified),
             isUseGenerics(),
             // getAttribute().getMultiplicity().getRangeCount());
 //            GenCodeUtil.getMultiplicityMaxUpperRange(
 //                getAttribute().getMultiplicity().getRanges()));
-            getAttribute().getMultiplicity());
+            getAttribute().getMultiplicity(),
+	    fullyQualified);
     }
     
 
@@ -887,7 +893,7 @@ public class MemberInfo extends ElementInfo
 	return GenCodeUtil
 	    .getReferredCodeGenTypes(getAttribute().getType(), 
 				     GenCodeUtil.getCollectionOverrideDataTypes
-				         (getAttribute().getMultiplicity(), false),
+				         (getAttribute().getMultiplicity(), true),
 				     isUseGenerics(),
 				     getAttribute().getMultiplicity());
 

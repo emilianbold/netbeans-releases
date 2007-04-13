@@ -765,24 +765,12 @@ methodHunt:
 	if (methodName == null) 
 	    return null;
         MethodParameterInfo[] paraminfo = method.getParameters();
-        final List<String> typeList=new ArrayList<String>();
+        final List<String> typeList_FullyQualified = new ArrayList<String>();
+        final List<String> typeList = new ArrayList<String>();
         for (int i = 0; i < paraminfo.length; i++)
         {
-            String umlType = paraminfo[i].getFullyQualifiedType();
-            if(umlType.length() <= 0)
-            {
-                umlType = paraminfo[i].getType();
-            }
-            
-            for(int curRange = 0; curRange < paraminfo[i].getNumberOfDimensions(); curRange++)
-            {
-                umlType += "[]";
-            }
-            
-            String paramTypeName = umlTypeToType(umlType);
-	    if (paramTypeName == null) 
-		return null;
-	    typeList.add(paramTypeName);
+	    typeList_FullyQualified.add(paraminfo[i].getCodeGenType(true));
+	    typeList.add(paraminfo[i].getCodeGenType(false));
         }
 
         ClassInfo clazz = method.getContainingClass();
@@ -795,6 +783,23 @@ methodHunt:
 	JavaSource src = JavaSource.forFileObject(javaClazz.getFileObject());
 	if (src == null) 
 	    return null;
+
+	ElementAndFile retVal = getMethod(methodName, typeList_FullyQualified, isConstructor, src, javaClazz, true);
+	if (retVal == null) {
+	    retVal = getMethod(methodName, typeList, isConstructor, src, javaClazz, false);
+	}
+	return retVal;
+    }
+
+
+    public static ElementAndFile getMethod(final String methodName, 
+					   final List<String> typeList, 
+					   final boolean isConstructor,
+					   JavaSource src, 
+					   final ElementAndFile javaClazz,
+					   final boolean fullyQualified) 
+    {
+	
 	final ElementAndFile[] retVal = new ElementAndFile[1];
 	try {
 	    src.runUserActionTask(new CancellableTask<CompilationController>() {
@@ -830,7 +835,7 @@ methodHunt:
 			while(listIter.hasNext() && tparmIter.hasNext()) {
 			    VariableElement tparm = tparmIter.next();
 			    String listName =  listIter.next();
-			    if ( ! listName.contentEquals(Utilities.getTypeName(tparm.asType(), true))) {
+			    if ( ! listName.contentEquals(Utilities.getTypeName(tparm.asType(), fullyQualified))) {
 				paramsMatch = false;
 				break;
 			    }

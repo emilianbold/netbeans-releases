@@ -64,7 +64,8 @@ public final class GenCodeUtil
         IClassifier classType, 
         String[] collectionTypes, 
         boolean useGenerics, 
-        IMultiplicity mult)
+        IMultiplicity mult,
+	boolean fullyQualified)
     {
 
 	  String fullClassName = "";
@@ -83,29 +84,44 @@ public final class GenCodeUtil
 //        if (mult != null && mult.getRangeCount() > 0)
         if (mult != null && isMultiDim(mult))
         {
-	    return assembleMultiDimDataType(fullClassName, 
+	    return assembleMultiDimDataType(packAndName, 
 					    collectionTypes, 
 					    useGenerics, 
-					    mult.getRangeCount());
+					    mult.getRangeCount(),
+					    fullyQualified);
 	}        
         else
 	{
-            return fullClassName;
+	    if (fullyQualified) 
+		return packAndName[0] + "." + packAndName[1];
+	    else 
+		return packAndName[1];
+	
 	}
 
     }
     
     
     public static String assembleMultiDimDataType(
-        String coreType, 
+        String[] coreType, 
         String[] collectionTypes, 
         boolean useGenerics, 
-        long dimCount)
+        long dimCount,
+	boolean fullyQualified)
     {
-        if (dimCount == 0)
-            return coreType;
-        
-	boolean isPrimitive = JavaClassUtils.isPrimitive(coreType);
+	boolean isPrimitive = true;
+
+	String coreTypeName = null;
+	if (coreType != null && coreType.length == 2) {
+	    isPrimitive = JavaClassUtils.isPrimitive(coreType[1]);
+	    if (fullyQualified) 
+		coreTypeName = coreType[0] + "." + coreType[1];
+	    else
+		coreTypeName = coreType[1];
+	}
+
+        if (dimCount == 0)	    
+	    return coreTypeName;
 
 	String leftPart = "";
 	String rightPart = "";
@@ -127,7 +143,7 @@ public final class GenCodeUtil
 		rightPart += "[]";
 	    }
 	}
-	return leftPart + coreType + rightPart;
+	return leftPart + coreTypeName + rightPart;
     }
 
 
@@ -334,7 +350,7 @@ public final class GenCodeUtil
     }
 
 
-    public static String[] getCollectionOverrideDataTypes(IMultiplicity multiplicity, boolean shortNames){
+    public static String[] getCollectionOverrideDataTypes(IMultiplicity multiplicity, boolean fullyQualified){
 	
 	if (multiplicity == null) {
 	    return null;
@@ -343,7 +359,7 @@ public final class GenCodeUtil
 	if (ranges == null) {
 	    return null;
 	}
-	// should be the same, yet
+
 	String[] res = new String[(int)multiplicity.getRangeCount()];
 	Iterator<IMultiplicityRange> iter = ranges.iterator();
 	for(int i = 0 ; i < res.length; i++) {
@@ -357,7 +373,7 @@ public final class GenCodeUtil
 	    if (type == null || type.trim().equals("") ) {
 		type = UMLSupport.getUMLSupport().getCollectionOverride();		
 	    }
-	    if (shortNames) {
+	    if (! fullyQualified) {
 		type = JavaClassUtils.getShortClassName(type);
 	    }
 	    res[i] = type;

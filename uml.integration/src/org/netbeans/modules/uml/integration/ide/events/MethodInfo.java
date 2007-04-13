@@ -408,11 +408,12 @@ public class MethodInfo extends ConstructorInfo
         MethodParameterInfo param = getReturnParameter();
         IParameter element = param.getParameterElement();
         String[] shortNames = GenCodeUtil
-	    .getCollectionOverrideDataTypes(element.getMultiplicity(), true);
+	    .getCollectionOverrideDataTypes(element.getMultiplicity(), false);
         return GenCodeUtil.getCodeGenType(element.getType(), 
                                           shortNames,
-                                          param.isUseCollectionOverride(),
-                                          element.getMultiplicity());
+                                          param.isUseGenerics(),
+                                          element.getMultiplicity(),
+					  false);
     }
 
     /**
