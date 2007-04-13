@@ -52,7 +52,7 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private String clusterName;
+    private String[] clusterNames;
     private String productId;
     private String sourceUid;
     
@@ -60,10 +60,10 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
             new LinkedList<WizardComponent>();
     
     protected NbClusterConfigurationLogic(
-            final String clusterName,
+            final String[] clusterNames,
             final String productId,
             final String sourceUid) throws InitializationException {
-        this.clusterName = clusterName;
+        this.clusterNames = clusterNames;
         this.productId = productId;
         this.sourceUid = sourceUid;
         
@@ -73,90 +73,96 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
         action.setProperty(
                 SetInstallationLocationAction.SOURCE_UID_PROPERTY,
                 sourceUid);
-        action.setProperty(
-                SetInstallationLocationAction.RELATIVE_LOCATION_PROPERTY,
-                clusterName);
         wizardComponents.add(action);
     }
     
     protected NbClusterConfigurationLogic(
-            final String clusterName,
+            final String[] clusterNames,
             final String productId) throws InitializationException {
-        this(clusterName, productId, BASE_IDE_UID);
+        this(clusterNames, productId, BASE_IDE_UID);
     }
     
     public void install(
             final Progress progress) throws InstallationException {
         final File installLocation = getProduct().getInstallationLocation();
-        final File cluster         = new File(installLocation, clusterName);
         
         // get the list of suitable netbeans ide installations
-        final List<Dependency> dependencies = 
+        final List<Dependency> dependencies =
                 getProduct().getDependencyByUid(sourceUid);
-        final List<Product> sources = 
+        final List<Product> sources =
                 Registry.getInstance().getProducts(dependencies.get(0));
         
         // pick the first one and integrate with it
         final File nbLocation = sources.get(0).getInstallationLocation();
         
         // add the cluster to the active clusters list //////////////////////////////
-        try {
-            progress.setDetail(ResourceUtils.getString(
-                    NbClusterConfigurationLogic.class, 
-                    "NCCL.install.netbeans.clusters", // NOI18N
-                    clusterName));
-            
-            NetBeansUtils.addCluster(nbLocation, clusterName);
-        } catch (IOException e) {
-            throw new InstallationException(ResourceUtils.getString(
-                    NbClusterConfigurationLogic.class, 
-                    "NCCL.install.error.netbeans.clusters", // NOI18N
-                    clusterName), 
-                    e);
+        for (String clusterName: clusterNames) {
+            try {
+                progress.setDetail(ResourceUtils.getString(
+                        NbClusterConfigurationLogic.class,
+                        "NCCL.install.netbeans.clusters", // NOI18N
+                        clusterName));
+                
+                NetBeansUtils.addCluster(nbLocation, clusterName);
+            } catch (IOException e) {
+                throw new InstallationException(ResourceUtils.getString(
+                        NbClusterConfigurationLogic.class,
+                        "NCCL.install.error.netbeans.clusters", // NOI18N
+                        clusterName),
+                        e);
+            }
         }
         
         // add the product id to the productid file /////////////////////////////////
         try {
             progress.setDetail(ResourceUtils.getString(
-                    NbClusterConfigurationLogic.class, 
+                    NbClusterConfigurationLogic.class,
                     "NCCL.install.productid",  // NOI18N
                     productId));
             
             NetBeansUtils.addPackId(nbLocation, productId);
         } catch (IOException e) {
             throw new InstallationException(ResourceUtils.getString(
-                    NbClusterConfigurationLogic.class, 
+                    NbClusterConfigurationLogic.class,
                     "NCCL.install.error.productid",  // NOI18N
                     productId),
                     e);
         }
         
         // remove files that are not suited for the current platform ////////////////
-        try {
-            progress.setDetail(ResourceUtils.getString(
-                    NbClusterConfigurationLogic.class, 
-                    "NCCL.install.irrelevant.files")); // NOI18N
+        for (String clusterName: clusterNames) {
+            final File cluster = new File(installLocation, clusterName);
             
-            SystemUtils.removeIrrelevantFiles(cluster);
-        } catch (IOException e) {
-            throw new InstallationException(ResourceUtils.getString(
-                    NbClusterConfigurationLogic.class, 
-                    "NCCL.install.error.irrelevant.files"), // NOI18N
-                    e);
+            try {
+                progress.setDetail(ResourceUtils.getString(
+                        NbClusterConfigurationLogic.class,
+                        "NCCL.install.irrelevant.files")); // NOI18N
+                
+                SystemUtils.removeIrrelevantFiles(cluster);
+            } catch (IOException e) {
+                throw new InstallationException(ResourceUtils.getString(
+                        NbClusterConfigurationLogic.class,
+                        "NCCL.install.error.irrelevant.files"), // NOI18N
+                        e);
+            }
         }
         
         // corrent permisions on executable files ///////////////////////////////////
-        try {
-            progress.setDetail(ResourceUtils.getString(
-                    NbClusterConfigurationLogic.class, 
-                    "NCCL.install.files.permissions")); // NOI18N
+        for (String clusterName: clusterNames) {
+            final File cluster = new File(installLocation, clusterName);
             
-            SystemUtils.correctFilesPermissions(cluster);
-        } catch (IOException e) {
-            throw new InstallationException(ResourceUtils.getString(
-                    NbClusterConfigurationLogic.class, 
-                    "NCCL.install.error.files.permissions"), // NOI18N
-                    e);
+            try {
+                progress.setDetail(ResourceUtils.getString(
+                        NbClusterConfigurationLogic.class,
+                        "NCCL.install.files.permissions")); // NOI18N
+                
+                SystemUtils.correctFilesPermissions(cluster);
+            } catch (IOException e) {
+                throw new InstallationException(ResourceUtils.getString(
+                        NbClusterConfigurationLogic.class,
+                        "NCCL.install.error.files.permissions"), // NOI18N
+                        e);
+            }
         }
         
         /////////////////////////////////////////////////////////////////////////////
@@ -168,9 +174,9 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
         final File installLocation = getProduct().getInstallationLocation();
         
         // get the list of suitable netbeans ide installations
-        final List<Dependency> dependencies = 
+        final List<Dependency> dependencies =
                 getProduct().getDependencyByUid(sourceUid);
-        final List<Product> sources = 
+        final List<Product> sources =
                 Registry.getInstance().getProducts(dependencies.get(0));
         
         // pick the first one and assume that we're integrated with it
@@ -179,35 +185,36 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
         // remove the cluster from the active clusters list /////////////////////////
         try {
             progress.setDetail(ResourceUtils.getString(
-                    NbClusterConfigurationLogic.class, 
+                    NbClusterConfigurationLogic.class,
                     "NCCL.uninstall.productid", // NOI18N
                     productId));
             
             NetBeansUtils.removePackId(nbLocation, productId);
         } catch (IOException e) {
             throw new UninstallationException(ResourceUtils.getString(
-                    NbClusterConfigurationLogic.class, 
+                    NbClusterConfigurationLogic.class,
                     "NCCL.uninstall.error.productid",  // NOI18N
                     productId),
                     e);
         }
         
         // remove the product id from the productid file ////////////////////////////
-        try {
-            progress.setDetail(ResourceUtils.getString(
-                    NbClusterConfigurationLogic.class, 
-                    "NCCL.uninstall.netbeans.clusters",  // NOI18N
-                    clusterName));
-            
-            NetBeansUtils.removeCluster(nbLocation, clusterName);
-        } catch (IOException e) {
-            throw new UninstallationException(ResourceUtils.getString(
-                    NbClusterConfigurationLogic.class, 
-                    "NCCL.uninstall.error.netbeans.clusters",  // NOI18N
-                    clusterName),
-                    e);
+        for (String clusterName: clusterNames) {
+            try {
+                progress.setDetail(ResourceUtils.getString(
+                        NbClusterConfigurationLogic.class,
+                        "NCCL.uninstall.netbeans.clusters",  // NOI18N
+                        clusterName));
+                
+                NetBeansUtils.removeCluster(nbLocation, clusterName);
+            } catch (IOException e) {
+                throw new UninstallationException(ResourceUtils.getString(
+                        NbClusterConfigurationLogic.class,
+                        "NCCL.uninstall.error.netbeans.clusters",  // NOI18N
+                        clusterName),
+                        e);
+            }
         }
-        
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }

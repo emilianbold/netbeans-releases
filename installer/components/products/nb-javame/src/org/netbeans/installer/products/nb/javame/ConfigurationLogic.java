@@ -29,14 +29,15 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    private static final String CLUSTER = 
-            "javame{javame-cluster-version}"; // NOI18N
+    private static final String MOBILITY_CLUSTER = 
+            "{mobility-cluster}"; // NOI18N
     private static final String ID = 
             "JAVAME"; // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ConfigurationLogic() throws InitializationException {
-        super(CLUSTER, ID);
+        super(new String[]{
+            MOBILITY_CLUSTER}, ID);
     }
 }

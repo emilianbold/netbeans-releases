@@ -52,7 +52,7 @@ public class Components2 extends HttpServlet {
                 "tomcat");
         final List<String> hidden = Arrays.asList(
                 "nb-platform",
-//                "nb-base",
+                "nb-base",
                 "openesb",
                 "sjsam");
         

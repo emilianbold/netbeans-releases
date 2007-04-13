@@ -29,14 +29,18 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    private static final String CLUSTER = 
-            "javaee{javaee-cluster-version}"; // NOI18N
+    private static final String ENTERPRISE_CLUSTER = 
+            "{enterprise-cluster}"; // NOI18N
+    private static final String VISUALWEB_CLUSTER = 
+            "{visualweb-cluster}"; // NOI18N
     private static final String ID = 
             "JAVAEE"; // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ConfigurationLogic() throws InitializationException {
-        super(CLUSTER, ID);
+        super(new String[]{
+            ENTERPRISE_CLUSTER, 
+            VISUALWEB_CLUSTER}, ID);
     }
 }

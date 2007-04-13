@@ -41,7 +41,8 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ConfigurationLogic() throws InitializationException {
-        super(CLUSTER, ID);
+        super(new String[]{
+            SOA_CLUSTER}, ID);
     }
     
     @Override
@@ -141,8 +142,8 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String CLUSTER =
-            "soa{soa-cluster-version}"; // NOI18N
+    public static final String SOA_CLUSTER =
+            "{soa-cluster}"; // NOI18N
     public static final String ID =
             "SOA"; // NOI18N
     

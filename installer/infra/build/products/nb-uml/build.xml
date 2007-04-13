@@ -44,26 +44,6 @@
       Overrides the '-pre-package' target in product.xml.
     -->
     <target name="-pre-package">
-        <delete includeemptydirs="true">
-            <fileset dir="${data.directory}">
-                <exclude name="uml4"/>
-                <exclude name="uml4/**"/>
-            </fileset>
-        </delete>
-        
-        <move todir="${data.directory}">
-            <fileset dir="${data.directory}/uml4">
-                <include name="**/*"/>
-            </fileset>
-        </move>
-        
-        <delete includeemptydirs="true">
-            <fileset dir="${data.directory}">
-                <include name="uml4"/>
-                <include name="uml4/**"/>
-            </fileset>
-        </delete>
-        
         <if property="instrument.jars" value="true">
             <exec executable="bash.exe" failonerror="true" dir="${data.directory}">
                 <arg value="${emma.sh.file}"/>

@@ -29,14 +29,21 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    private static final String CLUSTER = 
-            "javase{javase-cluster-version}"; // NOI18N
+    private static final String JAVA_CLUSTER = 
+            "{java-cluster}"; // NOI18N
+    private static final String APISUPPORT_CLUSTER = 
+            "{apisupport-cluster}"; // NOI18N
+    private static final String HARNESS_CLUSTER = 
+            "{harness-cluster}"; // NOI18N
     private static final String ID = 
             "JAVASE"; // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ConfigurationLogic() throws InitializationException {
-        super(CLUSTER, ID);
+        super(new String[]{
+            JAVA_CLUSTER, 
+            APISUPPORT_CLUSTER, 
+            HARNESS_CLUSTER}, ID);
     }
 }

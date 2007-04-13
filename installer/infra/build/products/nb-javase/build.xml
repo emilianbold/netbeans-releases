@@ -44,50 +44,6 @@
       Overrides the '-pre-package' target in product.xml.
     -->
     <target name="-pre-package">
-        <if property="i" value="1">
-            <delete includeemptydirs="true">
-                <fileset dir="${data.directory}">
-                    <exclude name="ide8"/>
-                    <exclude name="ide8/**"/>
-                </fileset>
-            </delete>
-            
-            <move todir="${data.directory}">
-                <fileset dir="${data.directory}/ide8">
-                    <include name="**/*"/>
-                </fileset>
-            </move>
-            
-            <delete includeemptydirs="true">
-                <fileset dir="${data.directory}">
-                    <include name="ide8"/>
-                    <include name="ide8/**"/>
-                </fileset>
-            </delete>
-        </if>
-        
-        <if property="i" value="2">
-            <delete includeemptydirs="true">
-                <fileset dir="${data.directory}">
-                    <exclude name="profiler2"/>
-                    <exclude name="profiler2/**"/>
-                </fileset>
-            </delete>
-            
-            <move todir="${data.directory}">
-                <fileset dir="${data.directory}/profiler2">
-                    <include name="**/*"/>
-                </fileset>
-            </move>
-            
-            <delete includeemptydirs="true">
-                <fileset dir="${data.directory}">
-                    <include name="profiler2"/>
-                    <include name="profiler2/**"/>
-                </fileset>
-            </delete>
-        </if>
-        
         <if property="instrument.jars" value="true">
             <exec executable="bash.exe" failonerror="true" dir="${data.directory}">
                 <arg value="${emma.sh.file}"/>

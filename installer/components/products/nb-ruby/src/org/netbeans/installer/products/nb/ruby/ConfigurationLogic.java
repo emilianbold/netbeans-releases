@@ -29,14 +29,15 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    private static final String CLUSTER = 
-            "ruby{ruby-cluster-version}"; // NOI18N
+    private static final String RUBY_CLUSTER = 
+            "{ruby-cluster}"; // NOI18N
     private static final String ID = 
             "RUBY"; // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ConfigurationLogic() throws InitializationException {
-        super(CLUSTER, ID);
+        super(new String[]{
+            RUBY_CLUSTER}, ID);
     }
 }

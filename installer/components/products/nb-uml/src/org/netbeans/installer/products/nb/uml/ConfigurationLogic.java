@@ -47,8 +47,8 @@ import org.netbeans.installer.utils.system.windows.WindowsRegistry;
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String CLUSTER =
-            "uml{uml-cluster-version}"; // NOI18N
+    public static final String UML_CLUSTER =
+            "{uml-cluster}"; // NOI18N
     public static final String ID =
             "UML"; // NOI18N
     private static final long XMX_VALUE_REQUIRED = 512 * NetBeansUtils.M;
@@ -73,7 +73,8 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ConfigurationLogic() throws InitializationException {
-        super(CLUSTER, ID);
+        super(new String[]{
+            UML_CLUSTER}, ID);
     }
     
     public void install(final Progress progress) throws InstallationException {

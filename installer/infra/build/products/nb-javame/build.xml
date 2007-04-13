@@ -126,33 +126,10 @@
       Overrides the '-pre-package' target in product.xml.
     -->
     <target name="-pre-package">
-        <if property="i" value="1">
-            <delete includeemptydirs="true">
-                <fileset dir="${data.directory}">
-                    <exclude name="mobility8"/>
-                    <exclude name="mobility8/**"/>
-                </fileset>
-            </delete>
-            
-            <move todir="${data.directory}">
-                <fileset dir="${data.directory}/mobility8">
-                    <include name="**/*"/>
-                </fileset>
-            </move>
-            
-            <delete includeemptydirs="true">
-                <fileset dir="${data.directory}">
-                    <include name="mobility8"/>
-                    <include name="mobility8/**"/>
-                </fileset>
-            </delete>
-            
-        </if>
-        
         <if property="i" value="2">
-            <mkdir dir="${data.directory}/emulators-inst"/>
+            <mkdir dir="${data.directory}/${sources.params.2.value}/emulators-inst"/>
             
-            <move todir="${data.directory}/emulators-inst">
+            <move todir="${data.directory}/${sources.params.2.value}/emulators-inst">
                 <fileset dir="${data.directory}">
                     <include name="wtk22_*.zip"/>
                 </fileset>

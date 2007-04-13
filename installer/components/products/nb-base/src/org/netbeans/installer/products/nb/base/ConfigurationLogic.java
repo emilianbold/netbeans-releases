@@ -62,11 +62,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final Product product = getProduct();
         final File installLocation = product.getInstallationLocation();
         final FilesList filesList = product.getInstalledFiles();
-        final File ideCluster = new File(installLocation, IDE_CLUSTER);
-        final File nbCluster = new File(installLocation, NB_CLUSTER);
-        final File profCluster = new File(installLocation, PROFILER_CLUSTER);
         final File binSubdir = new File(installLocation, BIN_SUBDIR);
         final File etcSubdir = new File(installLocation, ETC_SUBDIR);
+        final File platformCluster = new File(installLocation, PLATFORM_CLUSTER);
+        final File nbCluster = new File(installLocation, NB_CLUSTER);
+        final File ideCluster = new File(installLocation, IDE_CLUSTER);
         
         /////////////////////////////////////////////////////////////////////////////
         final File jdkHome = new File(
@@ -85,9 +85,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             progress.setDetail(getString("CL.install.netbeans.clusters")); // NOI18N
             
-            NetBeansUtils.addCluster(installLocation, IDE_CLUSTER);
+            NetBeansUtils.addCluster(installLocation, PLATFORM_CLUSTER);
             NetBeansUtils.addCluster(installLocation, NB_CLUSTER);
-            NetBeansUtils.addCluster(installLocation, PROFILER_CLUSTER);
+            NetBeansUtils.addCluster(installLocation, IDE_CLUSTER);
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.netbeans.clusters"),  // NOI18N
@@ -121,11 +121,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             progress.setDetail(getString("CL.install.irrelevant.files")); // NOI18N
             
-            SystemUtils.removeIrrelevantFiles(ideCluster);
-            SystemUtils.removeIrrelevantFiles(nbCluster);
-            SystemUtils.removeIrrelevantFiles(profCluster);
             SystemUtils.removeIrrelevantFiles(binSubdir);
             SystemUtils.removeIrrelevantFiles(etcSubdir);
+            SystemUtils.removeIrrelevantFiles(platformCluster);
+            SystemUtils.removeIrrelevantFiles(nbCluster);
+            SystemUtils.removeIrrelevantFiles(ideCluster);
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.irrelevant.files"),  // NOI18N
@@ -136,11 +136,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             progress.setDetail(getString("CL.install.files.permissions")); // NOI18N
             
-            SystemUtils.correctFilesPermissions(ideCluster);
-            SystemUtils.correctFilesPermissions(nbCluster);
-            SystemUtils.correctFilesPermissions(profCluster);
             SystemUtils.correctFilesPermissions(binSubdir);
             SystemUtils.correctFilesPermissions(etcSubdir);
+            SystemUtils.correctFilesPermissions(platformCluster);
+            SystemUtils.correctFilesPermissions(nbCluster);
+            SystemUtils.correctFilesPermissions(ideCluster);
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.files.permissions"),  // NOI18N
@@ -340,12 +340,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String ETC_SUBDIR =
             "etc"; // NOI18N
     
-    public static final String IDE_CLUSTER =
-            "ide{ide-cluster-version}"; // NOI18N
+    public static final String PLATFORM_CLUSTER =
+            "{platform-cluster}"; // NOI18N
     public static final String NB_CLUSTER  =
-            "nb{nb-cluster-version}"; // NOI18N
-    public static final String PROFILER_CLUSTER =
-            "profiler{profiler-cluster-version}"; // NOI18N
+            "{nb-cluster}"; // NOI18N
+    public static final String IDE_CLUSTER =
+            "{ide-cluster}"; // NOI18N
     
     public static final String PLATFORM_UID =
             "nb-platform"; // NOI18N
