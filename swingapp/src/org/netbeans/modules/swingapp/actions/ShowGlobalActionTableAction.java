@@ -46,11 +46,11 @@ public class ShowGlobalActionTableAction extends AbstractAction {
     
     public void actionPerformed(ActionEvent e) {
         GlobalActionTable gat = GlobalActionTable.getInstance();
-        /*
+        
         Mode outputMode = WindowManager.getDefault().findMode("output");
         if(outputMode != null) {
             outputMode.dockInto(gat);
-        }*/
+        }
         gat.open();
         gat.requestActive();
         

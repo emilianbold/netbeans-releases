@@ -45,10 +45,12 @@ public class GlobalActionTable extends TopComponent {
     public static synchronized GlobalActionTable getInstance() {
         if (instance == null) {
             TopComponent tc = WindowManager.getDefault().findTopComponent("GlobalActionTable"); // NOI18N
-            if (instance == null) {
+            if(! (tc instanceof GlobalActionTable)) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
                         "Can not find GlobalActionTable component for its ID. Returned " + tc)); // NOI18N
                 instance = new GlobalActionTable();
+            } else {
+                instance = (GlobalActionTable) tc;
             }
         }
         return instance;
