@@ -283,7 +283,6 @@ public class ADDrawingAreaBundle extends ADDrawingAreaResourceBundle
 			//"main.layout.relayout.tooltip", mBundle.getString("main.layout.relayout.tooltip") }, {
 			//"main.layout.relayout.command", ADDrawingAreaConstants.APPLY_LAYOUT }, {
 
-                        "main.layout.incrementalLayout.group", "layout" }, {
 			"main.layout.incrementalLayout.text", mBundle.getString("main.layout.incrementalLayout.text") }, {
 			"main.layout.incrementalLayout.icon", "toolbar_images/IncrementalLayout.png" }, {
 			"main.layout.incrementalLayout.tooltip", mBundle.getString("main.layout.incrementalLayout.tooltip") }, {
