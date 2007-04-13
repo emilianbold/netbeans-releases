@@ -10,6 +10,7 @@
 package Templates.Classes;
 
 import com.sun.ws.rest.api.WebApplicationException;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -47,13 +48,8 @@ public class UriResolver {
     }
     
     public <T> T resolve(Class<T> type, URI uri) {
-        System.out.println("resolve uri = " + uri);
-        
-        if (inProgress) {
-            System.out.println("skipping");
-            return null;
-        }
-        
+        if (inProgress) return null;
+
         inProgress = true;
            
         try {
@@ -61,21 +57,32 @@ public class UriResolver {
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             conn.setRequestMethod("GET");
             
-            int status = conn.getResponseCode();
-            System.out.println("status = " + status);
-            String mediaType = conn.getContentType();
+            if (conn.getResponseCode() == 200) {
+                JAXBContext context = JAXBContext.newInstance(type);
+                Object obj = context.createUnmarshaller().unmarshal(conn.getInputStream());
+                refresh(obj);
             
-            JAXBContext context = JAXBContext.newInstance(type);
-            Object obj = context.createUnmarshaller().unmarshal(conn.getInputStream());
-            
-            System.out.println("obj = " + obj);
-        
-            return (T) obj;
+                return (T) obj;
+            }
+
+            return null;
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new WebApplicationException(ex);
         } finally {
             removeInstance();
+        }
+    }
+
+    private void refresh(Object obj) {
+        try {
+            Method method = obj.getClass().getMethod("getEntity");
+            Object entity = method.invoke(obj);
+            entity = PersistenceService.getInstance().refreshEntity(entity);
+            method = obj.getClass().getMethod("setEntity", Object.class);
+            method.invoke(obj, entity);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 }

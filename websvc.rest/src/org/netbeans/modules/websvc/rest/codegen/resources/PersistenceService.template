@@ -50,9 +50,11 @@ public class PersistenceService {
         serviceMap.remove(Thread.currentThread());
     }
   
-    public void refreshEntity(Object entity) {
-        em.flush();
+    public Object refreshEntity(Object entity) {
+        entity = em.merge(entity);
         em.refresh(entity);
+
+        return entity;
     }
     
     public void mergeEntity(Object entity) {

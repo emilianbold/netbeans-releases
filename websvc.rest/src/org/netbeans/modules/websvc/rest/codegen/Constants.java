@@ -138,7 +138,6 @@ class Constants {
         XML_ROOT_ELEMENT,
         XML_ELEMENT,
         XML_TRANSIENT,
-        COLLECTIONS_TYPE,
         ARRAY_LIST_TYPE
     };
     
