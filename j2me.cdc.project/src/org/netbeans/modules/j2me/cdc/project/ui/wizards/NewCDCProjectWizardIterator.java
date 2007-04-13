@@ -74,8 +74,7 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
     static final int TYPE_SAMPLE = 3;
     
     static final String PROP_NAME_INDEX = "nameIndex";      //NOI18N
-
-    private static final String MANIFEST_FILE = "manifest.mf"; // NOI18N
+    static final String MANIFEST_FILE = "manifest.mf"; // NOI18N
 
     private static final long serialVersionUID = 1L;
     
@@ -183,7 +182,7 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
                 }
                 sbootcp.append(normalizePath(root, jdkHome, "platform.home"));
             }
-            props.setProperty("platform.fat.jar", Boolean.toString(platform.isFatJar()));
+            props.setProperty(CDCPropertiesDescriptor.PLATFORM_FAT_JAR, Boolean.toString(platform.isFatJar()));
             props.setProperty("platform.bootclasspath",sbootcp.toString());   //NOI18N
             props.setProperty("javac.source", platform.getClassVersion());
             props.setProperty("javac.target",  platform.getClassVersion());
@@ -205,69 +204,57 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
         final String activeDevice   = (String)wiz.getProperty("activeDevice");         //NOI18N
         final String activeProfile  = (String)wiz.getProperty("activeProfile");        //NOI18N
         Properties props = (Properties) wiz.getProperty("additionalProperties"); //NOI18N               
-/*
-        if (this.type == TYPE_EXT) {
-            //File[] sourceFolders = (File[])wiz.getProperty("sourceRoot");        //NOI18N
-            //File[] testFolders = (File[])wiz.getProperty("testRoot");            //NOI18N
-            J2MEProjectGenerator.createProject(dirF, name, activePlatform, );
-            for (File sf : sourceFolders) {
-                FileObject srcFo = FileUtil.toFileObject(sf);
-                if (srcFo != null) {
-                    resultSet.add (srcFo);
+
+            
+        PlatformSelectionPanel.PlatformDescription pd=(PlatformSelectionPanel.PlatformDescription) wiz.getProperty(PlatformSelectionPanel.PLATFORM_DESCRIPTION);
+        AntProjectHelper h =J2MEProjectGenerator.createProject(dirF, name, pd,new J2MEProjectGenerator.ProjectGeneratorCallback() {
+        public void doPostGeneration(Project project, AntProjectHelper helper, FileObject projectLocation, File projectLocationFile, ArrayList<String> configurations) throws IOException {
+            final FileObject src = projectLocation.createFolder("src");
+            JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms (activePlatform, new Specification(CDCPlatform.PLATFORM_CDC,null));    //NOI18N
+            if (platforms.length != 0){
+                CDCPlatform cdcplatform = (CDCPlatform)platforms[0];
+                final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                if (mainClass != null)
+                {
+                    String templateType = createMainClass(mainClass, src, cdcplatform.getType());
+                    ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS, mainClass);
+                    if (templateType != null) {
+                        ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS_CLASS, templateType);
+                    }
                 }
+                ep.setProperty(CDCPropertiesDescriptor.APPLICATION_NAME, project.getProjectDirectory().getNameExt());
+                ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_ACTIVE, cdcplatform.getAntName()); // NOI18N        
+                ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_ACTIVE_DESCRIPTION, cdcplatform.getDisplayName()); // NOI18N        
+                ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_TRIGGER, "CDC"); // NOI18N        
+                ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_TYPE, cdcplatform.getType()); // NOI18N        
+                String classVersion = cdcplatform.getClassVersion();
+                ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_DEVICE, activeDevice); // NOI18N
+                ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_PROFILE, activeProfile); // NOI18N
+                //add bootclasspath
+                generatePlatformProperties(cdcplatform, activeDevice, activeProfile, ep); // NOI18N
+                ep.setProperty(DefaultPropertiesDescriptor.JAVAC_SOURCE, classVersion != null ? classVersion : "1.2"); // NOI18N
+                ep.setProperty(DefaultPropertiesDescriptor.JAVAC_TARGET, classVersion != null ? classVersion : "1.2"); // NOI18N
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+            } else {
+                throw new IllegalArgumentException("No CDC platform installed");// NOI18N
+            } 
+        }
+        });
+        if (mainClass != null && mainClass.length () > 0) {
+            try {
+                FileObject sourcesRoot = h.getProjectDirectory ().getFileObject ("src");        //NOI18N
+                FileObject mainClassFo = getMainClassFO (sourcesRoot, mainClass);
+                assert mainClassFo != null : "sourcesRoot: " + sourcesRoot + ", mainClass: " + mainClass;        //NOI18N
+                // Returning FileObject of main class, will be called its preferred action
+                resultSet.add (DataObject.find(mainClassFo));
+            } catch (Exception x) {
+                ErrorManager.getDefault().notify(x);
             }
         }
-        else { */
-            
-            PlatformSelectionPanel.PlatformDescription pd=(PlatformSelectionPanel.PlatformDescription) wiz.getProperty(PlatformSelectionPanel.PLATFORM_DESCRIPTION);
-            AntProjectHelper h =J2MEProjectGenerator.createProject(dirF, name, pd,new J2MEProjectGenerator.ProjectGeneratorCallback() {
-            public void doPostGeneration(Project project, AntProjectHelper helper, FileObject projectLocation, File projectLocationFile, ArrayList<String> configurations) throws IOException {
-                final FileObject src = projectLocation.createFolder("src");
-                JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms (activePlatform, new Specification(CDCPlatform.PLATFORM_CDC,null));    //NOI18N
-                if (platforms.length != 0){
-                    CDCPlatform cdcplatform = (CDCPlatform)platforms[0];
-                    final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    if (mainClass != null)
-                    {
-                        String templateType = createMainClass(mainClass, src, cdcplatform.getType());
-                        ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS, mainClass);
-                        if (templateType != null) {
-                            ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS_CLASS, templateType);
-                        }
-                    }
-                    ep.setProperty(CDCPropertiesDescriptor.APPLICATION_NAME, project.getProjectDirectory().getNameExt());
-                    ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_ACTIVE, cdcplatform.getAntName()); // NOI18N        
-                    ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_ACTIVE_DESCRIPTION, cdcplatform.getDisplayName()); // NOI18N        
-                    ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_TRIGGER, "CDC"); // NOI18N        
-                    ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_TYPE, cdcplatform.getType()); // NOI18N        
-                    String classVersion = cdcplatform.getClassVersion();
-                    ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_DEVICE, activeDevice); // NOI18N
-                    ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_PROFILE, activeProfile); // NOI18N
-                    //add bootclasspath
-                    generatePlatformProperties(cdcplatform, activeDevice, activeProfile, ep); // NOI18N
-                    ep.setProperty(DefaultPropertiesDescriptor.JAVAC_SOURCE, classVersion != null ? classVersion : "1.2"); // NOI18N
-                    ep.setProperty(DefaultPropertiesDescriptor.JAVAC_TARGET, classVersion != null ? classVersion : "1.2"); // NOI18N
-                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                } else {
-                    throw new IllegalArgumentException("No CDC platform installed");// NOI18N
-                } 
-            }
-            });
-            if (mainClass != null && mainClass.length () > 0) {
-                try {
-                    FileObject sourcesRoot = h.getProjectDirectory ().getFileObject ("src");        //NOI18N
-                    FileObject mainClassFo = getMainClassFO (sourcesRoot, mainClass);
-                    assert mainClassFo != null : "sourcesRoot: " + sourcesRoot + ", mainClass: " + mainClass;        //NOI18N
-                    // Returning FileObject of main class, will be called its preferred action
-                    resultSet.add (DataObject.find(mainClassFo));
-                } catch (Exception x) {
-                    ErrorManager.getDefault().notify(x);
-                }
-            }
-            
-            FileObject dir = FileUtil.toFileObject(dirF);
-            if (type == TYPE_APP || type == TYPE_EXT) {
-                createManifest(dir, MANIFEST_FILE);
+
+        FileObject dir = FileUtil.toFileObject(dirF);
+        if (type == TYPE_APP || type == TYPE_EXT) {
+            createManifest(dir, MANIFEST_FILE);
         }
 
         // Returning FileObject of project diretory. 
@@ -398,7 +385,7 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
      * @param path the relative path of the file
      * @throws IOException in case of problems
      */
-    private static void createManifest(FileObject dir, String path) throws IOException {
+    static void createManifest(FileObject dir, String path) throws IOException {
         FileObject manifest = dir.createData(MANIFEST_FILE);
         FileLock lock = manifest.lock();
         try {

@@ -83,7 +83,9 @@
             <attr name="J2ME/Samples" boolvalue="true"/>
             
             <folder name="J2ME">
-                <file name="emptyCDC.xml">
+                
+                <attr name="MobileLibrary/emptyCDC" boolvalue="true"/>
+                <file name="emptyCDC">
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.NewCDCProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
@@ -92,15 +94,33 @@
                 </file>
 
         
-                <attr name="emptyCDC.xml/emptyCDClibrary.xml" boolvalue="true"/>
-
-                <file name="emptyCDClibrary.xml">
+                <attr name="emptyCDC/emptyCDClibrary" boolvalue="true"/>
+                <file name="emptyCDClibrary">
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.NewCDCProjectWizardIterator.library"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/mobile-project.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/emptyLibrary.html"/>
-                </file>                
+                </file>
+                
+                <attr name="emptyCDClibrary/CDCimport" boolvalue="true"/>
+                <file name="CDCimport">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.ImportCDCProjectWizardIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/mobile-project.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/importProject.html"/>
+                </file>
+                
+                <attr name="CDCimport/CDCToolkitimport" boolvalue="true"/>
+                <file name="CDCToolkitimport">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.ImportCDCProjectWizardIterator.toolkit"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/mobile-project.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/importToolkitProject.html"/>
+                </file>
+                
 <!--
                 <attr name="emptyCDClibrary.xml/existingCDC.xml" boolvalue="true"/>
                 <file name="existingCDC.xml">

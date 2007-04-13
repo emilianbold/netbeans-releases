@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2me.cdc.project;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,7 +48,6 @@ import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.modules.j2me.cdc.platform.CDCDevice;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Miscellaneous utilities for the cdcproject module.
