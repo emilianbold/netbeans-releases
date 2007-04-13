@@ -24,11 +24,11 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import javax.swing.*;
-
 import com.tomsawyer.util.TSSystem;
 import com.tomsawyer.editor.TSELocalization;
 import com.tomsawyer.editor.TSEImage;
 import com.tomsawyer.editor.TSEGraphWindow;
+import javax.swing.border.Border;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramEnums;
 import org.netbeans.modules.uml.resources.ToolBarResource;
 
@@ -44,6 +44,7 @@ public abstract class ADDrawingAreaResourceBundle extends ListResourceBundle
     Hashtable radioControllers = new Hashtable(11, 0.9f);
     
     private AbstractButton defaultButton;
+    private HashMap layoutButtonMap = new HashMap<String, AbstractButton>();
     
     public void setDrawingArea(ADDrawingAreaControl pDrawingArea)
     {
@@ -212,7 +213,8 @@ public abstract class ADDrawingAreaResourceBundle extends ListResourceBundle
         
         // set the floatable property of the toolbar
         toolbar.setFloatable("true".equals(this.getStringResource(name + ".floatable")));
-        
+        Border b = (Border)UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
+        toolbar.setBorder(b);
         // set the orientation of the toolbar: either vertical or horizontal
         String orientation = this.getStringResource(name + ".orientation");
         if ("vertical".equals(orientation))
@@ -271,6 +273,8 @@ public abstract class ADDrawingAreaResourceBundle extends ListResourceBundle
                         String checked = this.getStringResource(name + ".checked");
                         if ("true".equals(checked))
                             button.setSelected(true);
+                        
+                        
                     }
                     else
                     {
@@ -352,7 +356,13 @@ public abstract class ADDrawingAreaResourceBundle extends ListResourceBundle
                     }
                     
                     item = button;
+                    if ("layout".equals(group)) // NOI18N
+                    {
+                        layoutButtonMap.put(command, button);
+                    }
                 }
+                
+                
                 
                 if (item != null)
                 {
@@ -436,5 +446,13 @@ public abstract class ADDrawingAreaResourceBundle extends ListResourceBundle
     {
         if (defaultButton != null)
             defaultButton.setSelected(true);
+    }
+    
+    public void setLayoutStyle(int style)
+    {
+        String command = ADDrawingAreaConstants.APPLY_LAYOUT + "." + style;
+        AbstractButton button = (AbstractButton)layoutButtonMap.get(command);
+        if (button != null && !button.isSelected())
+            button.setSelected(true);
     }
 }
