@@ -44,6 +44,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.editors.ClassPathFileChooser;
 import org.netbeans.modules.form.editors.IconEditor;
+import org.netbeans.modules.swingapp.ProxyAction.Scope;
 import org.netbeans.modules.swingapp.actions.AcceleratorKeyListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -123,20 +124,22 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         ((IconButton)iconButtonSmall).setIconText("small");
         iconButtonSmall.addActionListener(new IconButtonListener(property,iconButtonSmall, Action.SMALL_ICON));
         iconButtonLarge.addActionListener(new IconButtonListener(property,iconButtonLarge, LARGE_ICON_KEY));
-        /*
+        
+        scopeCombo.setModel(new DefaultComboBoxModel(new ProxyAction.Scope[] { ProxyAction.Scope.Form, ProxyAction.Scope.Application}));
+        
         scopeCombo.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component comp = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
                 ProxyAction.Scope scope = (ProxyAction.Scope)value;
                 String className = scopeClasses.get(scope);
                 if(className != null) {
-                    ((JLabel)comp).setText(className);
+                    ((JLabel)comp).setText(scope.toString() + ": " + className);
                 } else {
                     ((JLabel)comp).setText(scope.toString());
                 }
                 return comp;
             }
-        });*/
+        });
         
         actionsCombo.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -175,6 +178,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             classLabel.setVisible(true);
             classField.setVisible(false);
             targetClassButton.setVisible(false);
+            scopeCombo.setVisible(false);
             methodLabel.setVisible(true);
             methodField.setVisible(false);
             backgroundTaskLabel.setVisible(true);
@@ -183,9 +187,10 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         }
         if(mode == Mode.NewActionForm) {
             newAction =  new ProxyAction();
-            //classField.getText(), methodField.getText());
             setNewActionCreated(true);
             classField.setText(scopeClasses.get(ProxyAction.Scope.Form));
+            classField.setVisible(false);
+            scopeCombo.setVisible(true);
         }
         if(mode == Mode.Global) {
             actionsCombo.setVisible(false);
@@ -193,6 +198,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             classLabel.setVisible(true);
             classField.setVisible(false);
             targetClassButton.setVisible(false);
+            scopeCombo.setVisible(false);
             methodLabel.setVisible(true);
             methodField.setVisible(false);
             backgroundTaskLabel.setVisible(true);
@@ -202,9 +208,10 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             newAction = new ProxyAction();
             setNewActionCreated(true);
             classField.setText("");
-            classLabel.setVisible(false);
-            classField.setVisible(true);
+            classField.setVisible(false);
+            classLabel.setVisible(true);
             targetClassButton.setVisible(true);
+            scopeCombo.setVisible(false);
         }
     }
     
@@ -339,6 +346,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         classLabel = new javax.swing.JLabel();
         classField = new javax.swing.JTextField();
         targetClassButton = new javax.swing.JButton();
+        scopeCombo = new javax.swing.JComboBox();
         jPanel4 = new javax.swing.JPanel();
         methodLabel = new javax.swing.JLabel();
         methodField = new javax.swing.JTextField();
@@ -389,8 +397,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel2)
                     .add(jLabel4)
-                    .add(jLabel5)
-                    .add(jLabel7))
+                    .add(jLabel7)
+                    .add(jLabel5))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel2Layout.createSequentialGroup()
@@ -427,10 +435,10 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                     .add(acceleratorText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel5)
                     .add(iconButtonSmall, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(iconButtonLarge, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(66, Short.MAX_VALUE))
+                    .add(iconButtonLarge, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel5))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Basic", jPanel2);
@@ -508,7 +516,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel6)
                     .add(blockingDialogText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(74, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced", jPanel3);
@@ -556,6 +564,15 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel1.add(targetClassButton, gridBagConstraints);
+
+        scopeCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(scopeCombo, gridBagConstraints);
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
@@ -636,35 +653,35 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel14)
                     .add(jLabel17)
-                    .add(jLabel9)
                     .add(jLabel12)
-                    .add(jLabel16))
+                    .add(jLabel16)
+                    .add(jLabel9))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
-                    .add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
                     .add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                    .add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
                     .add(jPanel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 143, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(63, 63, 63)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel16))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel9)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(4, 4, 4)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel9))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel12)
                     .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -672,10 +689,10 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel14)
                     .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(10, 10, 10)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel17)
-                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE))
+                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -693,6 +710,7 @@ private void targetClassButtonActionPerformed(java.awt.event.ActionEvent evt) {/
         selectedSourceFile = cp.getSelectedFile();
         String selectedClass = AppFrameworkSupport.getClassNameForFile(cp.getSelectedFile());
         classField.setText(selectedClass);
+        classLabel.setText(selectedClass);
         //validate();
         //SwingUtilities.getWindowAncestor(this).pack();
     }
@@ -774,7 +792,14 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     ProxyAction getNewAction() {
         //ProxyAction act = new ProxyAction(classField.getText(), methodField.getText());
         ProxyAction act = newAction;
-        act.setClassname(classField.getText());
+        //act.setClassname(classField.getText());
+        if(mode == Mode.NewActionForm) {
+            ProxyAction.Scope scope = (Scope) scopeCombo.getSelectedItem();
+            act.setClassname(scopeClasses.get(scope));
+        }
+        if(mode == Mode.NewActionGlobal) {
+            act.setClassname(classLabel.getText());
+        }
         //act.setMethodname(methodField.getText());
         act.setId(methodField.getText());
         act.putValue(Action.NAME,textField.getText());
@@ -905,6 +930,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField methodField;
     private javax.swing.JLabel methodLabel;
+    private javax.swing.JComboBox scopeCombo;
     private javax.swing.JTextField selectedTextfield;
     private javax.swing.JButton targetClassButton;
     private javax.swing.JTextField textField;
@@ -1085,5 +1111,11 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     public FileObject getSelectedSourceFile() {
         return selectedSourceFile;
     }
+    
+/*    
+    public static void p(String s) {
+        System.out.println(s);
+    }
+ */
 }
 
