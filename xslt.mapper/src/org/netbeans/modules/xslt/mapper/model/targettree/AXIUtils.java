@@ -32,6 +32,7 @@ import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
 import org.netbeans.modules.xslt.model.AttributeValueTemplate;
+import org.netbeans.modules.xslt.model.Instruction;
 import org.netbeans.modules.xslt.model.Template;
 import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslVisitorAdapter;
@@ -185,7 +186,9 @@ public class AXIUtils {
             return null;
         }
         XslComponent xsl_parent = xslc.getParent();
-        if (xsl_parent instanceof Template){ //no declaration nodes fond downtree
+        if (xsl_parent instanceof Instruction) {
+            return getType(xsl_parent, mapper);
+        } else if (xsl_parent instanceof Template){ //no declaration nodes fond downtree
             AXIComponent axi_root =
                     mapper.getContext().getTargetType();
             if( axi_root == null){
@@ -195,7 +198,6 @@ public class AXIUtils {
             if (AXIUtils.isSameSchemaType(xslc, axi_root)) {
                 return axi_root;
             }
-            
         } else if (xsl_parent != null) {
             AXIComponent axi_parent = getType(xsl_parent, mapper);
             if (axi_parent != null){
@@ -207,8 +209,6 @@ public class AXIUtils {
             }
         }
         return null;
-        
     }
-
     
 }
