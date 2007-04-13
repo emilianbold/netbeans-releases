@@ -48,6 +48,7 @@ public enum JspTokenId implements TokenId {
     SCRIPTLET("scriptlet"),
     ERROR("error"),
     TAG("tag-directive"),
+    ENDTAG("endtag"),
     SYMBOL("symbol"),
     SYMBOL2("scriptlet-delimiter"),
     COMMENT("comment"),

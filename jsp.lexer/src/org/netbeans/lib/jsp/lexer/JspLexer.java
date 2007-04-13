@@ -516,7 +516,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             ) { // not alpha
                         lexerState = ISP_TAG;
                         input.backup(1);
-                        return token(JspTokenId.TAG);
+                        return token(JspTokenId.ENDTAG);
                     }
                     break;
                     

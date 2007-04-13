@@ -79,8 +79,12 @@ public class HTMLOptions extends BaseOptions {
                                         
     static final long serialVersionUID = 75289734362748537L;
    
+    public HTMLOptions(Class kitClass, String typeName) {
+        super(kitClass, typeName);
+    }
+    
     public HTMLOptions() {
-        super(HTMLKit.class, HTML);
+        this(HTMLKit.class, HTML);
     }
 
     public boolean getCompletionAutoPopup() {

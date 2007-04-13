@@ -1,0 +1,209 @@
+# The contents of this file are subject to the terms of the Common Development
+# and Distribution License (the License). You may not use this file except in
+# compliance with the License.
+#
+# You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+# or http://www.netbeans.org/cddl.txt.
+#
+# When distributing Covered Code, include this CDDL Header Notice in each file
+# and include the License file at http://www.netbeans.org/cddl.txt.
+# If applicable, add the following below the CDDL Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyrighted [year] [name of copyright owner]"
+#
+# The Original Software is NetBeans. The Initial Developer of the Original
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+# Microsystems, Inc. All Rights Reserved.
+
+
+
+########### no token definition - the tokens are created by handcoded HTML Lexer
+
+########### grammar ############################################################
+
+SKIP:BLOCK_COMMENT
+SKIP:WS
+SKIP:DECLARATION
+
+S = tags;
+tags = ( tag | etext )*;
+
+etext = <TEXT> | <CHARACTER>;
+
+tag = <TAG_OPEN_SYMBOL> ( startTag | endTag );
+startTag = <TAG_OPEN> (attribute)* <TAG_CLOSE_SYMBOL>;
+endTag = <TAG_CLOSE> <TAG_CLOSE_SYMBOL>;
+
+attribute = <ARGUMENT>;
+attribute = <VALUE>;
+attribute = <ARGUMENT> <OPERATOR,'='> <VALUE>;
+
+# AST generator
+AST {
+    process:org.netbeans.modules.html.editor.HTML.process;
+}
+
+########### indentation ########################################################
+
+REFORMAT:startTag:"i++"
+REFORMAT:endTag:"--i"
+REFORMAT:simpleTag:"i"
+REFORMAT:etext:"i"
+REFORMAT:text:" "
+#REFORMAT:element:"i"
+REFORMAT:html_comment:"i"
+REFORMAT:unpairedStartTag:"i"
+#REFORMAT:html_attribute_name:" "
+REFORMAT:html_operator:""
+REFORMAT:html_attribute_value:""
+REFORMAT:html_element_end:""
+REFORMAT:attributes:">b "
+REFORMAT:attribute:"b"
+
+
+########### colors #############################################################
+
+
+#HACK: IT LOOK LIKE HANZ NEEDS TO HAVE SOME OF THE COLORING TO BE THE SCHLIEMANN ONES
+#OTHERWISE THE NAVIGATOR DOESN'T SHOW NODES?!?!?!?
+
+COLOR:TAG_OPEN_SYMBOL: {
+    foreground_color:"blue";
+}
+COLOR:TAG_OPEN: {
+    foreground_color:"blue";
+}
+COLOR:TAG_CLOSE: {
+    foreground_color:"blue";
+}
+COLOR:TAG_CLOSE_SYMBOL: {
+    foreground_color:"blue";
+}
+
+
+#COLOR:element: {
+#    default_coloring:"keyword";
+#}
+#COLOR:html_end_element_start: {
+#    foreground_color:"blue";
+#}
+#COLOR:html_element_end: {
+#    default_coloring:"keyword";
+#}
+#COLOR:html_end_element_end: {
+#    default_coloring:"keyword";
+#}
+#COLOR:html_attribute_value: {
+#    default_coloring:"string";
+#
+COLOR:attribute: {
+    strike_through_color:"black";
+    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedAttribute;
+}
+COLOR:tag: {
+    strike_through_color:"blue";
+    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
+}
+
+
+########### code folding #######################################################
+
+FOLD:tag: {
+    fold_display_name:"<$startTag.TAG_OPEN$>...</$startTag.TAG_OPEN$>";
+    expand_type_action_name:"Expand HTML Tag";
+    collapse_type_action_name:"Collapse HTML Tag";
+}
+
+
+########### navigator ##########################################################
+
+NAVIGATOR:tag: {
+    display_name: "$startTag.TAG_OPEN$";
+    tooltip: "$$";
+    icon: "/org/netbeans/modules/html/editor/resources/htmlTag.png";
+}
+NAVIGATOR:simpleTag: {
+    display_name: "$TAG_OPEN$";
+    tooltip: "$$";
+    icon: "/org/netbeans/modules/html/editor/resources/htmlTag.png";
+}
+
+NAVIGATOR:unpairedStartTag: {
+    display_name: "$TAG_OPEN$";
+    tooltip: "$$";
+    icon: "/org/netbeans/modules/html/editor/resources/htmlTag.png";
+}
+NAVIGATOR:unpairedEndTag: {
+    display_name: "$TAG_CLOSE$";
+    tooltip: "$$";
+    icon: "/org/netbeans/modules/html/editor/resources/htmlTag.png";
+}
+
+
+########### other ##############################################################
+
+COMPLETE "\":\""
+COMPLETE "':'"
+COMPLETE org.netbeans.modules.html.editor.HTML.complete
+
+INDENT org.netbeans.modules.html.editor.HTML.indent
+
+#HYPERLINK:attribute_value: org.netbeans.modules.html.editor.HTML.hyperlink
+
+MARK:unsupportedTag: {
+    type:"Warning";
+    message:"Unsupported tag.";
+}
+
+MARK:unpairedStartTag: {
+    type:"Warning";
+    message:"Unfinished tag.";
+}
+MARK:unpairedEndTag: {
+    type:"Error";
+    message:"Unpaired end tag.";
+}
+MARK:html_ERROR: {
+    type:"Error";
+    message:"Unpaired end tag.";
+}
+MARK:error: {
+    type:"Error";
+    message:"Unexpected character.";
+}
+
+MARK:html_element_name: {
+    type:"Deprecation2";
+    message:"Deprecated tag.";
+    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
+}
+MARK:html_attribute_name: {
+    type:"Deprecation2";
+    message:"Deprecated attribute.";
+    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedAttribute;
+}
+#COMPLETION:TAG_OPEN: {
+#    text1:org.netbeans.modules.html.editor.HTML.tags; 
+#}
+#COMPLETION:TAG_CLOSE: {
+#    text1:org.netbeans.modules.html.editor.HTML.tags; 
+#}
+#COMPLETION:TAG_OPEN_SYMBOL: {
+#    text1:org.netbeans.modules.html.editor.HTML.tags; 
+#}
+#COMPLETION:ARGUMENT: {
+#    text1:org.netbeans.modules.html.editor.HTML.attributes; 
+#}
+#COMPLETION:WS: {
+#    text1:org.netbeans.modules.html.editor.HTML.attributes; 
+#}
+
+#PROPERTIES {
+#    ignoreCase:"true";
+#}
+
+
+#PROPERTIES {
+#    printFirst: "true";
+#    printRules: "true";
+#}

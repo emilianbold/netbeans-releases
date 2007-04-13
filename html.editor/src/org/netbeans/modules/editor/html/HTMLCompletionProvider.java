@@ -142,11 +142,11 @@ public class HTMLCompletionProvider implements CompletionProvider {
         protected void preQueryUpdate(JTextComponent component) {
             int caretOffset = component.getCaretPosition();
             Document doc = component.getDocument();
-            checkHideCompletion((BaseDocument)doc, caretOffset);
+//            checkHideCompletion((BaseDocument)doc, caretOffset);
         }
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            checkHideCompletion((BaseDocument)doc, caretOffset);
+//            checkHideCompletion((BaseDocument)doc, caretOffset);
             doQuery(resultSet, doc, caretOffset);
             resultSet.finish();
         }

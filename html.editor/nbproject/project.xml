@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>1.18</specification-version>
+                        <specification-version>1.19</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -81,6 +81,15 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.languages</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <implementation-version/>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -195,8 +204,11 @@ Microsystems, Inc. All Rights Reserved.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <package>org.netbeans.modules.editor.html</package>
+                <package>org.netbeans.modules.html.editor.coloring</package>
+                <package>org.netbeans.modules.html.editor.options</package>
             </friend-packages>
         </data>
     </configuration>

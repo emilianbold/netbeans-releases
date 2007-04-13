@@ -22,6 +22,10 @@ package org.netbeans.modules.web.core.syntax;
 
 import java.util.Map;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
+import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import org.netbeans.modules.web.core.syntax.formatting.JspFormatter;
@@ -75,6 +79,7 @@ import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorKit.GenerateFoldPopupAction;
+import org.netbeans.spi.lexer.LanguageEmbedding;
 
 /**
  * Editor kit implementation for JSP content type
@@ -83,7 +88,7 @@ import org.netbeans.modules.editor.NbEditorKit.GenerateFoldPopupAction;
  * @author Marek.Fukala@Sun.COM
  * @version 1.5
  */
-public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider{
+public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpCtx.Provider{
     
     public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
@@ -103,11 +108,15 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     
     /** Default constructor */
     public JSPKit() {
-        super();
+        super(JSP_MIME_TYPE);
     }
     
     public String getContentType() {
         return JSP_MIME_TYPE;
+    }
+    
+    public Object clone() {
+        return new JSPKit();
     }
     
     /** Creates a new instance of the syntax coloring parser */
@@ -156,6 +165,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             new JspInsertBreakAction(),
             new JspDefaultKeyTypedAction(),
             new JspDeleteCharAction(deletePrevCharAction, false),
+            new DumpTokensAction()
         };
         
         return TextAction.augmentList(super.createActions(), javaActions);
@@ -279,6 +289,9 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         doc.addLayer(new ELDrawLayerFactory.ELLayer(),
                 ELDrawLayerFactory.EL_LAYER_VISIBILITY);
         doc.addDocumentListener(new ELDrawLayerFactory.LParenWatcher());
+        
+        //listen on the HTML parser and recolor after changes
+        SyntaxParser.get(doc).addSyntaxParserListener(new EmbeddingUpdater(doc));
     }
     
     private void initLexerColoringListener(Document doc) {
@@ -314,6 +327,44 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     // Implement HelpCtx.Provider to provide help for CloneableEditor
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(JSPKit.class);
+    }
+
+    public static class DumpTokensAction extends BaseAction {
+        public DumpTokensAction(){
+            super("dump-tokens");
+            putValue(SHORT_DESCRIPTION, "Dumps lexer tokens."); //NOI18N
+            putValue(BaseAction.POPUP_MENU_TEXT, "Dump Lexer Tokens"); //NOI18N
+        }
+        
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            TokenHierarchy th = TokenHierarchy.get(target.getDocument());
+            TokenSequence ts = th.tokenSequence();
+            System.out.println("========================================================");
+            dumpTokens(th, ts, "");
+            System.out.println("========================================================");
+        }
+        
+        private void dumpTokens(TokenHierarchy th, TokenSequence ts, String indent) {
+            System.out.println("Tokens of language " + ts.language().mimeType() + ":");
+            while(ts.moveNext()) {
+                Token t = ts.token();
+                System.out.println(indent + "[" + t.offset(th) + " - " + (t.offset(th) + t.length()) + "; '" + removeEOLs(t.text().toString()) + "'; id=" + t.id().name() + "]");
+                TokenSequence embedded = ts.embedded();
+                if(embedded != null) {
+                    dumpTokens(th, embedded, indent + "\t");
+                }
+            }
+        }
+        
+        private String removeEOLs(String s) {
+            StringBuffer sb = new StringBuffer(s);
+            for(int i = 0; i < sb.length(); i++) {
+                if(sb.charAt(i) == '\n') {
+                    sb.setCharAt(i, '#');
+                }
+            }
+            return sb.toString();
+        }
     }
     
     

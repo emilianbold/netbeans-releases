@@ -11,7 +11,7 @@
     <h1>JSP Scriptlets Code Completion Page</h1>
 
 <%-- Java completion for TestBean class --%>
-<%--
+<%--CC
 <% TESTBe|
 ...
 <% TESTBean
@@ -37,7 +37,7 @@
 <%--CC
 <% "Hello World !".o|
 ...
-<% "Hello World !".offsetByCodePoints(index, codePointOffset)
+<% "Hello World !".offsetByCodePoints(arg0, arg1)
 --%>
 
     </body>

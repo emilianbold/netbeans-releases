@@ -48,7 +48,9 @@ import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.*;
 import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.*;
@@ -56,10 +58,10 @@ import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorKit.GenerateFoldPopupAction;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.html.editor.folding.HTMLFoldTypes;
+import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,7 +71,7 @@ import org.openide.util.NbBundle;
  * @version 1.00
  */
 
-public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider {
+public class HTMLKit extends LanguagesEditorKit implements org.openide.util.HelpCtx.Provider {
     
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(HTMLKit.class);
@@ -90,11 +92,20 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     
     private static boolean setupReadersInitialized = false;
     
-    public HTMLKit(){
+    public HTMLKit() {
+        this(HTML_MIME_TYPE);
+    }
+    
+    public HTMLKit(String mimeType){
+        super(mimeType);
         if (!setupReadersInitialized){
             NbReaderProvider.setupReaders();
             setupReadersInitialized = true;
         }
+    }
+    
+    public Object clone() {
+        return new HTMLKit();
     }
     
     public String getContentType() {
@@ -155,7 +166,8 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
             new HTMLGenerateFoldPopupAction(),
             new CollapseAllCommentsFolds(),
-            new ExpandAllCommentsFolds()
+            new ExpandAllCommentsFolds(),
+            new DumpTokensAction()
         };
         return TextAction.augmentList(super.createActions(), HTMLActions);
     }
@@ -285,8 +297,43 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
     }
     
-    
-    
+public static class DumpTokensAction extends BaseAction {
+        public DumpTokensAction(){
+            super("dump-tokens");
+            putValue(SHORT_DESCRIPTION, "Dumps lexer tokens."); //NOI18N
+            putValue(BaseAction.POPUP_MENU_TEXT, "Dump Lexer Tokens"); //NOI18N
+        }
+        
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            TokenHierarchy th = TokenHierarchy.get(target.getDocument());
+            TokenSequence ts = th.tokenSequence();
+            System.out.println("========================================================");
+            dumpTokens(th, ts, "");
+            System.out.println("========================================================");
+        }
+        
+        private void dumpTokens(TokenHierarchy th, TokenSequence ts, String indent) {
+            System.out.println("Tokens of language " + ts.language().mimeType() + ":");
+            while(ts.moveNext()) {
+                Token t = ts.token();
+                System.out.println(indent + "[" + t.offset(th) + " - " + (t.offset(th) + t.length()) + "; '" + removeEOLs(t.text().toString()) + "'; id=" + t.id().name() + "]");
+                TokenSequence embedded = ts.embedded();
+                if(embedded != null) {
+                    dumpTokens(th, embedded, indent + "\t");
+                }
+            }
+        }
+        
+        private String removeEOLs(String s) {
+            StringBuffer sb = new StringBuffer(s);
+            for(int i = 0; i < sb.length(); i++) {
+                if(sb.charAt(i) == '\n') {
+                    sb.setCharAt(i, '#');
+                }
+            }
+            return sb.toString();
+        }
+    }    
     
     
     /* !!!!!!!!!!!!!!!!!!!!!

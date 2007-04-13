@@ -211,7 +211,7 @@ public class JspCompletionProvider implements CompletionProvider {
                 }
                 
                 Token tokenItem = tokenSequence.token();
-                if(tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
+                if(tokenSequence.embedded() == null && tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
                     hideCompletion();
                 }
             }

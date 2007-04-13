@@ -33,6 +33,8 @@ import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -82,6 +84,16 @@ public final class SyntaxParser {
         this.doc = doc;
         this.hi = TokenHierarchy.get(doc);
         
+        if(hi == null) {
+            String mimeType = (String)doc.getProperty("mimeType"); //NOI18N
+            if(mimeType == null) {
+                mimeType = "unknown";
+            }
+            throw new IllegalStateException("Cannot obtain TokenHierarchy instance for document " + doc + " with " + mimeType + " mimetype."); //NOI18N
+        }
+        
+        parsedElements = null; //null states the data are not available yet
+        
         parserTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 parse();
@@ -91,7 +103,6 @@ public final class SyntaxParser {
         //add itself as token hierarchy listener
         hi.addTokenHierarchyListener(tokenHierarchyListener);
         
-        parsedElements = null; //null states the data are not available yet
     }
     
     //---------------------------- public methods -------------------------------
@@ -195,9 +206,30 @@ public final class SyntaxParser {
         try {
             TokenSequence ts = tokenSequence(hi, offset);
             if(ts == null) {
-                return null;
+                //we are out of html - go back and try to find an html element
+                TokenSequence tseq = hi.tokenSequence();
+                tseq.move(offset);
+                if(!tseq.movePrevious() && !tseq.moveNext()) {
+                    //no token on the position
+                    return null;
+                }
+                int nonHtmlBlockStart = 0;
+                //go back until we find an html code
+                while(tseq.movePrevious()) {
+                    //XXX - just one level embedding
+                    TokenSequence htmlTS = tseq.embedded(HTMLTokenId.language());
+                    if(htmlTS != null) {
+                        if(htmlTS.moveNext() || htmlTS.movePrevious()) {
+                            //found html piece
+                            nonHtmlBlockStart = htmlTS.offset() + htmlTS.token().length();
+                            break;
+                        }
+                    }
+                }
+                return getNextElement( nonHtmlBlockStart );
             }
             
+            //html token found
             ts.move(offset);
             if(!ts.moveNext() && !ts.movePrevious()) return null; //no token found
             
@@ -285,7 +317,26 @@ public final class SyntaxParser {
         try {
             TokenSequence ts = tokenSequence(hi, offset);
             if(ts == null) {
-                return null;
+                //we are out of html - go back and try to find an html element
+                TokenSequence tseq = hi.tokenSequence();
+                tseq.move(offset);
+                if(!tseq.movePrevious() && !tseq.moveNext()) {
+                    //no token on the position
+                    return  null;
+                }
+                int nonHtmlBlockEnd = doc.getLength();
+                //find end of the non-html block
+                while(tseq.moveNext()) {
+                    //XXX - just one level embedding
+                    TokenSequence htmlTS = tseq.embedded(HTMLTokenId.language());
+                    if(htmlTS != null) {
+                        //found html piece
+                        htmlTS.moveNext();
+                        nonHtmlBlockEnd = htmlTS.offset();
+                        break;
+                    }
+                }
+                return new SyntaxElement(this, offset, nonHtmlBlockEnd, SyntaxElement.TYPE_UNKNOWN);
             }
             
             ts.move(offset);
@@ -451,7 +502,7 @@ public final class SyntaxParser {
                         attrNameToken = item;
                     } else if (item.id() == HTMLTokenId.VALUE && attrNameToken != null) {
                         //found attribute value after attribute name
-                        SyntaxElement.TagAttribute tagAttr = 
+                        SyntaxElement.TagAttribute tagAttr =
                                 new SyntaxElement.TagAttribute(attrNameToken.text().toString(),
                                 item.text().toString(),
                                 attrNameToken.offset(hi),
