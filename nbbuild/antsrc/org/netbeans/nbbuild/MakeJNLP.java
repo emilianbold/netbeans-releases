@@ -115,7 +115,7 @@ public class MakeJNLP extends Task {
     private String permissions = "<all-permissions/>";
     /**
      * XML fragment pasted into the security part of the .jnlp file.
-     * Should deafult to "&lt;all-permissions/&gt;"
+     * Should default to "&lt;all-permissions/&gt;"
      */
     public void setPermissions(String s) {
         permissions = s;
@@ -132,6 +132,31 @@ public class MakeJNLP extends Task {
      */
     public void addIndirectJars(FileSet fs) {
         indirectJars = fs;
+    }
+    
+    private boolean signJars = true;
+    /**
+     * Whether the final jars should be signed or not. Defaults to true
+     * (if not supplied).
+     */
+    public void setSignJars(boolean s) {
+        this.signJars = s;
+    }
+
+    /**
+     * Signs or copies the given files according to the signJars variable value.
+     */
+    private void signOrCopy(File from, File to) {
+        if (signJars) {
+            getSignTask().setJar(from);
+            getSignTask().setSignedjar(to);
+            getSignTask().execute();
+        } else {
+            Copy copy = (Copy)getProject().createTask("copy");
+            copy.setFile(from);
+            copy.setTofile(to);
+            copy.execute();
+        }
     }
     
     public void execute() throws BuildException {
@@ -238,11 +263,8 @@ public class MakeJNLP extends Task {
                             name = absname.substring(clusterRootPrefix.length()).replace('/', '-');
                         }
                         File t = new File(new File(target, dashcnb), name);
-                        
-                        getSignTask().setJar(n);
-                        getSignTask().setSignedjar(t);
-                        getSignTask().execute();
-                        
+
+                        signOrCopy(n, t);
                         writeJNLP.write("    <jar href='" + dashcnb + '/' + name + "'/>\n");
                     }
 
@@ -259,11 +281,7 @@ public class MakeJNLP extends Task {
             w.write(writeJNLP.toString());
             w.close();
 
-            getSignTask().setJar(jar);
-            getSignTask().setSignedjar(signed);
-            getSignTask().execute();
-                
-                
+            signOrCopy(jar, signed);
             theJar.close();
         }
         
@@ -446,9 +464,7 @@ public class MakeJNLP extends Task {
                 
                 fileWriter.write("    <jar href='" + dashcnb + '/' + ext.getName() + "'/>\n");
 
-                getSignTask().setJar(e);
-                getSignTask().setSignedjar(ext);
-                getSignTask().execute();
+                signOrCopy(e, ext);
             }
         }
     }

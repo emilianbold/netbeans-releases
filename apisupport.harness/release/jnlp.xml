@@ -42,6 +42,9 @@ Microsystems, Inc. All Rights Reserved.
   </information>
   <security><all-permissions/></security>
   <resources>
+    <!-- The following property is needed when running with unsigned jars: -->
+    <property name="netbeans.jnlp.fixPolicy" value="$${netbeans.jnlp.fixPolicy}"/>
+    <extension name='branding' href='branding.jnlp' />
 <!-- The following line will be replaced with an automatically generated list of resources: -->    
 <!--$${jnlp.resources}-->
   </resources>
@@ -52,6 +55,21 @@ Microsystems, Inc. All Rights Reserved.
     <argument>--branding</argument>
     <argument>$${branding.token}</argument>
   </application-desc>
+</jnlp>  
+]]></echo>
+        <echo file="branding.jnlp"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="${jnlp.codebase}">
+  <information>
+      <title>$${app.title}</title>
+      <vendor>$${app.title} vendor</vendor>
+      <description>$${app.name} application</description>
+      <icon href="$${app.icon}"/>
+  </information>
+  <security>$${jnlp.permissions}</security>
+  <resources>
+    $${jnlp.branding.jars}
+  </resources>
+  <component-desc/>
 </jnlp>  
 ]]></echo>
     </target>
@@ -105,7 +123,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="jnlp-generate-platform" depends="jnlp-generate-platform-repository,jnlp-generate-platform-master"/>
     
-    <target name="jnlp-generate-platform-repository" depends="jnlp-generate-keystore,jnlp-init" unless="jnlp.platform.codebase">
+    <target name="jnlp-generate-platform-repository" depends="jnlp-generate-keystore,jnlp-init,set-all-permissions,set-empty-permissions" unless="jnlp.platform.codebase">
         <condition property="jnlp.platform.codebase.own" value="${jnlp.codebase}netbeans/" >
             <not>
                 <equals arg1="${jnlp.codebase}" arg2="$$$$codebase" />
@@ -113,7 +131,6 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
         <property name="jnlp.platform.codebase.own" value="$$$$codebase"/>
         <property name="jnlp.platform.codebase" value="netbeans/"/>
-        <property name="jnlp.permissions" value="&lt;security&gt;&lt;all-permissions/&gt;&lt;/security&gt;"/>
         
         <mkdir dir="${jnlp.dest.dir}/netbeans"/>
         
@@ -126,9 +143,23 @@ Microsystems, Inc. All Rights Reserved.
             verify="true"
             verifyexcludes="lib/nbexec.cmd,lib/nbexec,lib/nbexec.exe,core/ide.ks,LICENSE.txt,DISTRIBUTION.txt,THIRDPARTYLICENSEREADME.txt,docs/swing-layout-1.0-doc.zip,docs/swing-layout-1.0.1-doc.zip,docs/html40.zip,core/org-netbeans-modules-utilities-cli.jar,docs/org/netbeans/modules/usersguide/ide.css"
             permissions="${jnlp.permissions}"
+            signjars="${jnlp.sign.jars}"
         >
             <modules refid="jnlp.included.modules"/>
         </makejnlp>
+    </target>
+
+    <target name="set-all-permissions" depends="check-signjars" if="unsign-the-jars">
+        <property name="jnlp.permissions" value="&lt;security/&gt;"/>
+    </target>
+    <target name="set-empty-permissions" depends="check-signjars" unless="unsign-the-jars">
+        <property name="jnlp.permissions" value="&lt;security&gt;&lt;all-permissions/&gt;&lt;/security&gt;"/>
+    </target>
+    
+    <target name="check-signjars">
+        <condition property="unsign-the-jars">
+            <isfalse value="jnlp.sign.jars"/>
+        </condition>
     </target>
     
     <target name="jnlp-generate-platform-master" depends="jnlp-generate-platform-repository">
@@ -219,25 +250,11 @@ Microsystems, Inc. All Rights Reserved.
             <property name="jnlp.signjar.alias" value="${jnlp.signjar.alias}"/>
             <property name="jnlp.signjar.keystore" location="${jnlp.signjar.keystore}"/>
             <property name="jnlp.signjar.password" value="${jnlp.signjar.password}"/>
+            <property name="jnlp.sign.jars" value="${jnlp.sign.jars}"/>
+            <property name="jnlp.permissions" value="${jnlp.permissions}"/>
         </subant>
 
-        <mkdir dir="${jnlp.dest.dir}/branding"/>
-        <copy todir="${jnlp.dest.dir}/branding" flatten="true">
-            <fileset dir="${cluster}">
-                <include name="**/locale/*.jar"/>
-            </fileset>
-        </copy>
-        
-        <signjar
-            alias="${jnlp.signjar.alias}" 
-            keystore="${jnlp.signjar.keystore}" 
-            storepass="${jnlp.signjar.password}" 
-        >
-            <fileset dir="${jnlp.dest.dir}/branding">
-                <include name="*_${branding.token}.jar"/>
-            </fileset>
-        </signjar>
-        
+        <antcall target="copy-branding"/>
         
         <signjar 
             alias="${jnlp.signjar.alias}" 
@@ -260,7 +277,6 @@ Microsystems, Inc. All Rights Reserved.
     <j2se version="1.4+"/>
     <jar href="startup.jar"/>
     <property name="netbeans.user" value="$${user.home}/.nbapp-${app.name}"/>
-    ${jnlp.branding.jars}
 ]]></echo>
         <concat append="true" destfile="${jnlp.master.dir}/resources.xml">
             <fileset dir="${jnlp.master.dir}">
@@ -269,6 +285,14 @@ Microsystems, Inc. All Rights Reserved.
         </concat>
         
         <loadfile property="jnlp.resources" srcfile="${jnlp.master.dir}/resources.xml"/>
+
+        <condition property="netbeans.jnlp.fixPolicy">
+            <isfalse value="jnlp.sign.jars"/>
+        </condition>
+        <!-- Anyone knows a better way to negate a property value? -->
+        <condition property="netbeans.jnlp.fixPolicy" value="false">
+            <istrue value="jnlp.sign.jars"/>
+        </condition>
         
         <copy file="${app.icon}" tofile="${jnlp.dest.dir}/master.png" failonerror="false"/>
         <copy file="master.jnlp" tofile="${jnlp.dest.dir}/master.jnlp">
@@ -279,11 +303,44 @@ Microsystems, Inc. All Rights Reserved.
                 <replacestring from="$${app.title}" to="${app.title}"/>
                 <replacestring from="$${app.icon}" to="master.png"/>
                 <replacestring from="$${branding.token}" to="${branding.token}"/>
+                <replacestring from="$${netbeans.jnlp.fixPolicy}" to="${netbeans.jnlp.fixPolicy}"/>
             </filterchain>
         </copy>
         <echo>Your JNLP file is generated at ${jnlp.dest.dir}/master.jnlp</echo>
+        <copy file="branding.jnlp" tofile="${jnlp.dest.dir}/branding.jnlp">
+            <filterchain>
+                <replacestring from="$${jnlp.branding.jars}" to="${jnlp.branding.jars}"/>
+                <replacestring from="$${app.name}" to="${app.name}"/>
+                <replacestring from="$${app.title}" to="${app.title}"/>
+                <replacestring from="$${app.icon}" to="master.png"/>
+                <replacestring from="$${jnlp.permissions}" to="${jnlp.permissions}"/>
+            </filterchain>
+        </copy>
     </target>
     
+    <target name="sign-branding-jars" unless="unsign-the-jars" depends="copy-branding-jars">
+        <signjar
+            alias="${jnlp.signjar.alias}" 
+            keystore="${jnlp.signjar.keystore}" 
+            storepass="${jnlp.signjar.password}" 
+        >
+            <fileset dir="${jnlp.dest.dir}/branding">
+                <include name="*_${branding.token}.jar"/>
+            </fileset>
+        </signjar>
+    </target>
+
+    <target name="copy-branding" depends="copy-branding-jars, sign-branding-jars"/>
+
+    <target name="copy-branding-jars">
+        <mkdir dir="${jnlp.dest.dir}/branding"/>
+        <copy todir="${jnlp.dest.dir}/branding" flatten="true">
+            <fileset dir="${cluster}">
+                <include name="**/locale/*.jar"/>
+            </fileset>
+        </copy>
+    </target>
+
     <target name="run" depends="build-jnlp-local" description="Executes this suite as JNLP application">
         <condition property="run.javaws" value="${nbjdk.home}/jre/javaws/javaws">
             <available file="${nbjdk.home}/jre/javaws/javaws"/>

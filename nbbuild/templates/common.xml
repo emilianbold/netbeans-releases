@@ -260,6 +260,7 @@ Microsystems, Inc. All Rights Reserved.
             verify="true"
             verifyexcludes="${jnlp.verify.excludes}"
             permissions="${jnlp.permissions}"
+            signjars="${jnlp.sign.jars}"
         >
             <modules dir="${cluster}" >
                 <include name="${module.jar}" />

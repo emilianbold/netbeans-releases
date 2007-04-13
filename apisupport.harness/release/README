@@ -832,9 +832,14 @@ jnlp.verify.excludes - the default implementation of "jnlp" task in common.xml
 
 jnlp.permissions - allows altering of the fragment in the resulting .jnlp file
   that sets the permissions for individual modules. The default value is
-  &lt;security&gt;&lt;all-permissions/&gt;&lt;/security&gt;
+  &lt;security&gt;&lt;all-permissions/&gt;&lt;/security&gt; when jnlp.sign.jars
+  is true, &lt;security/&gt; when jnlp.sign.jars is false.
   If you want to change the default to something else please define the value
   of the property.
+
+jnlp.sign.jars [since 6.0] - defaults to true. If set to false the jars 
+  will not be signed, only the main (startup) jar. This should allow for 
+  faster startup but might compromise JNLP security. Use with extreme care.
 
 [XXX some of the above should be listed in "Suite Properties"]
 
