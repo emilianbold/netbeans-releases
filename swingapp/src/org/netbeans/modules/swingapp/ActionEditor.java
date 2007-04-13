@@ -284,7 +284,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
             appActions.add(act);
             actionNames.add(act.getId() + GLOBAL_SUFFIX);
         }
-        actionNames.add(NEW_ACTION);
+        //josh: disabling for now. actionNames.add(NEW_ACTION);
     }
 
     /**
