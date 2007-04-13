@@ -19,8 +19,10 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -29,7 +31,9 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.util.List;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -57,6 +61,7 @@ public class TwoModificationsTest extends GeneratorTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(TwoModificationsTest.class);
+//        suite.addTest(new TwoModificationsTest("testModifySetter"));
         return suite;
     }
     
@@ -166,6 +171,88 @@ public class TwoModificationsTest extends GeneratorTest {
                 }
             }
 
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testModifySetter() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(Class o) {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public String getText() {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public void setText() {\n" +
+            "        System.out.println(\"Text\");\n" +
+            "    }\n" +
+            "    \n" +
+            "    public Object method2(Class o) {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n");
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    private int i;\n" +
+            "    public Object method(Class o) {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public String getText() {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public void setText() {" +
+            "System.out.println(\"Test\");\n" +
+            "System.out.println(\"Text\");\n" +
+            "    System.out.println(\"Test\");\n" +
+            "}\n" +
+            "    \n" +
+            "    public Object method2(Class o) {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree)clazz.getMembers().get(3);
+                BlockTree block = method.getBody();
+                VariableTree var = make.Variable(make.Modifiers(EnumSet.of(Modifier.PRIVATE)), "i", make.Type(workingCopy.getTypes().getPrimitiveType(TypeKind.INT)), null);
+                ClassTree clazzCopy = make.insertClassMember(clazz, 0, var);
+                workingCopy.rewrite(clazz, clazzCopy);
+                ExpressionStatementTree est = make.ExpressionStatement(
+                    make.MethodInvocation(
+                        Collections.<ExpressionTree>emptyList(),
+                        make.MemberSelect(
+                            make.MemberSelect(
+                                make.Identifier("System"),
+                                "out"
+                            ),
+                            "println"
+                        ),
+                        Collections.<ExpressionTree>singletonList(
+                            make.Literal("Test")
+                        )
+                    )
+                );
+                BlockTree bt = make.addBlockStatement(block, est);
+                bt = make.insertBlockStatement(bt, 0, est);
+                workingCopy.rewrite(block, bt);
+            }
+            
             public void cancel() {
             }
         };

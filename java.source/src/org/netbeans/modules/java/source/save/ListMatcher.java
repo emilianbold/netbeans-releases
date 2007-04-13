@@ -236,7 +236,7 @@ public final class ListMatcher<E> {
             } else if (R[ii][jj] == UP_AND_LEFT_MOD) {
                 ii--;
                 jj--;
-                E element = newL[ii];
+                E element = newL[jj];
                 result.push(new ResultItem(element, Operation.MODIFY));
             } else if (R[ii][jj] == UP) {
                 ii--;
