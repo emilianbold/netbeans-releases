@@ -234,7 +234,8 @@ public abstract class AbstractRaveDocument extends DocumentImpl /*implements Par
                 ((AbstractRaveText)dst).copyFrom((AbstractRaveText)srcText);
             }
             if (dst instanceof RaveRenderedText) {
-                ((RaveRenderedText)dst).linkToSourceText(srcText);
+//                ((RaveRenderedText)dst).linkToSourceText(srcText);
+                MarkupServiceImpl.linkToSourceText((Text)dst, srcText);
             }
         } else if (src instanceof RaveRenderedElement) {
             // XXX Prerendered elements - see doc jsp writer, and inline editing.

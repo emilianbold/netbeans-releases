@@ -58,6 +58,11 @@ public final class  MarkupServiceImpl {
 
     private static final String KEY_STYLE_PARENT = "vwpStyleParent"; // NOI18N
     
+    private static final String KEY_RENDERED_TEXT = "vwpRenderedText"; // NOI18N
+    
+    private static final String KEY_SOURCE_TEXT = "vwpSourceText"; // NOI18N
+
+    
     
     private MarkupServiceImpl() {
     }
@@ -348,7 +353,8 @@ public final class  MarkupServiceImpl {
             RaveRenderedText dstText = (RaveRenderedText)dst;
 //            srcText.source = null;
 //            dstText.source = srcText;
-            dstText.linkToSourceText(srcText);
+//            dstText.linkToSourceText(srcText);
+            linkToSourceText(dstText, srcText);
         }
         
         NodeList srcChildren = src.getChildNodes();
@@ -594,7 +600,8 @@ public final class  MarkupServiceImpl {
         if (node instanceof RaveSourceElement) {
             return ((RaveSourceElement)node).getRenderedElement();
         } else if (node instanceof RaveSourceText) {
-            return ((RaveSourceText)node).getRenderedText();
+//            return ((RaveSourceText)node).getRenderedText();
+            return getRenderedText((Text)node);
         } else if (node instanceof RaveRenderedElement
         || node instanceof RaveRenderedText) { // XXX
             return node;
@@ -615,7 +622,8 @@ public final class  MarkupServiceImpl {
         if (node instanceof RaveRenderedElement) {
             return ((RaveRenderedElement)node).getSourceElement();
         } else if (node instanceof RaveRenderedText) {
-            return ((RaveRenderedText)node).getSourceText();
+//            return ((RaveRenderedText)node).getSourceText();
+            return getSourceText((Text)node);
         } else if (node instanceof RaveSourceElement
         || node instanceof RaveSourceText) { // XXX
             return node;
@@ -661,7 +669,8 @@ public final class  MarkupServiceImpl {
 //            return ((RaveText)text).getRendered();
 //        }
         if (text instanceof RaveSourceText) {
-            return ((RaveSourceText)text).getRenderedText();
+//            return ((RaveSourceText)text).getRenderedText();
+            return getRenderedText(text);
         } else if (text instanceof RaveRenderedText) { // XXX
             return text;
         }
@@ -673,7 +682,8 @@ public final class  MarkupServiceImpl {
 //            return ((RaveText)text).getSource();
 //        }
         if (text instanceof RaveRenderedText) {
-            return ((RaveRenderedText)text).getSourceText();
+//            return ((RaveRenderedText)text).getSourceText();
+            return getSourceText(text);
         } else if (text instanceof RaveSourceText) { // XXX
             return text;
         }
@@ -685,7 +695,8 @@ public final class  MarkupServiceImpl {
 //            ((RaveText)text).setSource((RaveText)sourceText);
 //        }
         if (text instanceof RaveRenderedText) {
-            ((RaveRenderedText)text).linkToSourceText((RaveSourceText)sourceText);
+//            ((RaveRenderedText)text).linkToSourceText((RaveSourceText)sourceText);
+            linkToSourceText(text, sourceText);
         }
     }
     
@@ -759,7 +770,45 @@ public final class  MarkupServiceImpl {
 
         return false;
     }
+
+    static void setRenderedText(Text text, Text renderedText) {
+        if (text == null) {
+            return;
+        }
+        text.setUserData(KEY_RENDERED_TEXT, renderedText, RenderedTextDataHandler.getDefault());
+    }
     
+    static Text getRenderedText(Text text) {
+        if (text == null) {
+            return null;
+        }
+        return (Text)text.getUserData(KEY_RENDERED_TEXT);
+    }
+    
+    static void setSourceText(Text text, Text sourceText) {
+        if (text == null) {
+            return;
+        }
+        text.setUserData(KEY_SOURCE_TEXT, sourceText, SourceTextDataHandler.getDefault());
+    }
+    
+    static Text getSourceText(Text text) {
+        if (text == null) {
+            return null;
+        }
+        return (Text)text.getUserData(KEY_SOURCE_TEXT);
+    }
+    
+    static void linkToSourceText(Text text, Text sourceText) {
+        setSourceText(text, sourceText);
+
+        if (sourceText != null) {
+//            ((RaveTextImpl) alternate).rendered = false;
+//            ((RaveTextImpl) alternate).alternate = this;
+//            ((RaveSourceTextImpl)sourceText).setRenderedText(this);
+            setRenderedText(sourceText, text);
+        }
+    }
     
     
     private static class JspxDataHandler implements UserDataHandler {
@@ -798,5 +847,32 @@ public final class  MarkupServiceImpl {
         public void handle(short operation, String key, Object data, Node src, Node dst) {
             // No op.
         }
-     } // End of StyleParentDataHandler.
+    } // End of StyleParentDataHandler.
+    
+    
+    private static class RenderedTextDataHandler implements UserDataHandler {
+        private static final RenderedTextDataHandler INSTANCE = new RenderedTextDataHandler();
+        
+        public static RenderedTextDataHandler getDefault() {
+            return INSTANCE;
+        }
+
+        public void handle(short operation, String key, Object data, Node src, Node dst) {
+            // No op.
+        }
+    } // End of RenderedTextDataHandler.
+
+    
+    private static class SourceTextDataHandler implements UserDataHandler {
+        private static final SourceTextDataHandler INSTANCE = new SourceTextDataHandler();
+
+        public static SourceTextDataHandler getDefault() {
+            return INSTANCE;
+        }
+        
+        public void handle(short operation, String key, Object data, Node src, Node dst) {
+            // No op.
+        }
+        
+    } // End of SourceTextDataHandler.
 }
