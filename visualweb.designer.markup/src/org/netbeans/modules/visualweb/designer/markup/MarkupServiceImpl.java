@@ -26,6 +26,7 @@ import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.io.StringWriter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.batik.css.engine.StyleMap;
 import org.apache.xerces.dom.DocumentImpl;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -50,7 +51,9 @@ public final class  MarkupServiceImpl {
     
     private static final String KEY_JSPX = "vwpJspx"; // NOI18N
     
-
+    private static final String KEY_STYLE_MAP = "vwpStyleMap"; // NOI18N
+    
+    
     private MarkupServiceImpl() {
     }
 
@@ -690,6 +693,19 @@ public final class  MarkupServiceImpl {
         return null;
     }
 
+    static void setElementStyleMap(Element element, StyleMap styleMap) {
+        if (element == null) {
+            return;
+        }
+        element.setUserData(KEY_STYLE_MAP, styleMap, StyleMapDataHandler.getDefault());
+    }
+    
+    static StyleMap getElementStyleMap(Element element) {
+        if (element == null) {
+            return null;
+        }
+        return (StyleMap)element.getUserData(KEY_STYLE_MAP);
+    }
     
     private static class JspxDataHandler implements UserDataHandler {
         private static final JspxDataHandler INSTANCE = new JspxDataHandler();
@@ -702,5 +718,17 @@ public final class  MarkupServiceImpl {
             // No op.
         }
     } // End of JspxDataHandler.
+
     
+    private static class StyleMapDataHandler implements UserDataHandler {
+        private static final StyleMapDataHandler INSTANCE = new StyleMapDataHandler();
+        
+        public static StyleMapDataHandler getDefault() {
+            return INSTANCE;
+        }
+
+        public void handle(short operation, String key, Object data, Node src, Node dst) {
+            // No op.
+        }
+    } // End of StyleMapDataHandler.
 }
