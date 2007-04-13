@@ -19,22 +19,29 @@
 <p>The JDBC Database wizard allows you to quickly create a WSDL file for access to a table in a data source. 
 The wizard also generates a corresponding XML Schema file that defines the elements for the table and columns referenced in the WSDL file.</p>
 
-<p>The wizard generates default WSDL elements for the following database operations:</p>
+<!--
+<p>The generated WSDL file contains port type elements and binding elements for the following database operations:</p>
 
 <ul>
 <li>Insert</li>
 <li>Update</li>
 <li>Delete</li>
-<li>Select</li>
-<li>Poll</li>
+<li>Find</li>
+<li>Poll Records</li>
 </ul>
+-->
 
 <p>The Select Operation Specific Attributes page allows you to select the columns to include in the generated WSDL file. 
 For each column selected, the wizard generates a SQL query to access the data in that column. 
-For each database operation (select, update, insert, poll), you specify the column with the data that you want to access.</p>
+For each database operation (select, update, insert, poll records), you specify the column with the data that you want to access.</p>
+
+<ul class="note">
+  <li>The Delete database operation is not listed in the Select Operation Specific Attributes page because the Delete operation operates on a complete row in the database, not on specific columns.</li>
+</ul>
 
 <p>By default all columns and all available database operations are selected. 
 Use the Advanced button to modify the default selection.</p>
+
 
 <ul>
 <li><b>Select.</b> Select the table to include in the generated WSDL file.</li>
