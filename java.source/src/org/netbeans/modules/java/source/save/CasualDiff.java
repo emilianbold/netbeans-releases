@@ -1836,6 +1836,11 @@ public class CasualDiff {
                     fieldGroup.add(var);
                     continue;
                 }
+            } else if (Kind.BLOCK == tree.getKind()) {
+                JCBlock block = (JCBlock) tree;
+                if (block.stats.isEmpty() && block.pos == -1 && block.flags == 0) 
+                    // I believe this is an sythetic block
+                    continue;
             }
             if (!fieldGroup.isEmpty()) {
                 result.add(new FieldGroupTree(fieldGroup, this));
