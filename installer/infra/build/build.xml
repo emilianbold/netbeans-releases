@@ -78,7 +78,7 @@
             classname="org.netbeans.installer.infra.build.ant.SetProperty"/>
         
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/latest/latest/bundles/"
+            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/beta2_branch/latest/"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
