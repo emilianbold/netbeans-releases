@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="org-netbeans-modules-tasklist-ui-TaskListAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Window">
+            <file name="org-netbeans-modules-tasklist-ui-TaskListAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-tasklist-ui-TaskListAction.instance"/>
+            </file>
+            
+            <attr name="oldRootsEnd.txt/org-netbeans-modules-tasklist-ui-TaskListAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-tasklist-ui-TaskListAction.shadow/Form" boolvalue="true" />
+        </folder>
+    </folder>
+
+    <folder name="Shortcuts">
+        <file name="D-6.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-tasklist-ui-TaskListAction.instance"/>
+        </file>
+    </folder>
+
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="TaskListTopComponent.settings" url="resources/TaskListTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="output">
+                <file name="TaskListTopComponent.wstcref" url="resources/TaskListTopComponentWstcref.xml"/>
+            </folder>
+        </folder>
+    </folder>    
+
+    <folder name="TaskList">
+        
+        <folder name="Groups">
+            <file name="error.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
+                
+                <attr name="localizingBundle" stringvalue="org.netbeans.modules.tasklist.ui.resources.Bundle"/>
+                <attr name="groupName" stringvalue="nb-tasklist-error"/>
+                <attr name="diplayNameKey" stringvalue="LBL_error_group"/>
+                <attr name="descriptionKey" stringvalue="HINT_error_group"/>
+                <attr name="iconKey" stringvalue="ICON_error"/>
+            </file>
+            
+            <file name="warning.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
+                
+                <attr name="localizingBundle" stringvalue="org.netbeans.modules.tasklist.ui.resources.Bundle"/>
+                <attr name="groupName" stringvalue="nb-tasklist-warning"/>
+                <attr name="diplayNameKey" stringvalue="LBL_warning_group"/>
+                <attr name="descriptionKey" stringvalue="HINT_warning_group"/>
+                <attr name="iconKey" stringvalue="ICON_warning"/>
+            </file>
+            <attr name="error.instance/warning.instance" boolvalue="true"/>
+        </folder>
+        
+        <folder name="ScanningScopes">
+            <file name="DefaultScope.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.tasklist.impl.CurrentEditorScanningScope.create"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.TaskScanningScope"/>
+            </file>
+        </folder>
+    </folder>
+    
+</filesystem>

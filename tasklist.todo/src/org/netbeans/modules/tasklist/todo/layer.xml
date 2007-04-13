@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="TaskList">
+        <folder name="Groups">
+            <file name="todo.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
+                
+                <attr name="localizingBundle" stringvalue="org.netbeans.modules.tasklist.todo.Bundle"/>
+                <attr name="groupName" stringvalue="nb-tasklist-todo"/>
+                <attr name="diplayNameKey" stringvalue="LBL_todo_group"/>
+                <attr name="descriptionKey" stringvalue="HINT_todo_group"/>
+                <attr name="iconKey" stringvalue="ICON_todo"/>
+            </file>
+            
+            <attr name="warning.instance/todo.instance" boolvalue="true"/>
+        </folder>
+        
+        <folder name="Scanners">
+            <file name="TodoScanner.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.FileTaskScanner"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.tasklist.todo.TodoTaskScanner.create"/>
+            </file>
+            
+            <!--<attr name="WarningsProvider.instance/TodoProvider.instance" boolvalue="true"/> -->
+        </folder>
+    </folder>
+</filesystem>

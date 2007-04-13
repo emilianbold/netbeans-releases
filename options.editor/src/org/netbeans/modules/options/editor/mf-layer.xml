@@ -555,8 +555,8 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Versioning.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.instance"/>
                 </file>
-                <file name="To Do.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-tasklist-docscan-SourceTasksAction.instance"/>
+                <file name="Task List.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-tasklist-ui-TaskListAction.instance"/>
                 </file>
                 <file name="Navigator.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>

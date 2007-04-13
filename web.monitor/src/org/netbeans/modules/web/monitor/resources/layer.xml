@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-web-monitor-client-MonitorAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-web-monitor-client-MonitorAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-tasklist-docscan-SourceTasksAction.instance/org-netbeans-modules-web-monitor-client-MonitorAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-tasklist-ui-TaskListAction.shadow/org-netbeans-modules-web-monitor-client-MonitorAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-web-monitor-client-MonitorAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow" boolvalue="true" />
         </folder>
     </folder>

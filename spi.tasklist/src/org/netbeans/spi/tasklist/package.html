@@ -1,0 +1,39 @@
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<html>
+  <head>
+    <title>Task List API</title>
+  </head>
+
+<body>
+<p>Task List is a window that shows problems or tasks - error/warnings/todos etc - associated with 
+files and folder under selected scope. The scope is either currently edited file, main project
+or all opened projects.</p>
+
+<p>The tasks are produced by task scanners. There are two types of scanners:
+    <ul>
+        <li><a href="@TOP@/org/netbeans/spi/tasklist/FileTaskScanner.html"/>FileTaskScanner</a> - creates tasks when polled by the Task List framework.</li>
+        <li><a href="@TOP@/org/netbeans/spi/tasklist/PushTaskScanner.html"/>PushTaskScanner</a> - can push new tasks into the Task List framework whenever necessary. It should be 
+            used when the tasks are calculated asynchronously or when the computation of tasks may be too long.</li>
+    </ul>
+</p>
+
+</body>
+</html>

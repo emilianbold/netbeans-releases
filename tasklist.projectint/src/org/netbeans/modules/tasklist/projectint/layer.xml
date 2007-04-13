@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="TaskList">
+        <folder name="ScanningScopes">
+            <file name="MainProjectScope.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.tasklist.projectint.MainProjectScanningScope.create"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.TaskScanningScope"/>
+            </file>
+            <file name="OpenedProjectsScope.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.tasklist.projectint.OpenedProjectsScanningScope.create"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.TaskScanningScope"/>
+            </file>
+            <attr name="DefaultScope.instance/MainProjectScope.instance" boolvalue="true"/>
+            <attr name="MainProjectScope.instance/OpenedProjectsScope.instance" boolvalue="true"/>
+        </folder>
+    </folder>
+</filesystem>
