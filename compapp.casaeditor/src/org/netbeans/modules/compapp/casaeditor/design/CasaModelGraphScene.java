@@ -117,7 +117,7 @@ implements PropertyChangeListener {
     private CasaNodeFactory mNodeFactory;
     private boolean mIsInternalNodeChange;
     
-    private boolean mIsLayoutFinalized = false;
+    private boolean mIsModelPositionsFinalized = false;
     private boolean mIsAdjusting = false;
     
     
@@ -158,45 +158,50 @@ implements PropertyChangeListener {
 
     
     // Our layout is finalized if every node widget's location matches its model location.
-    public boolean isLayoutFinalized() {
-        return mIsLayoutFinalized;
+    public boolean isModelPositionsFinalized() {
+        return mIsModelPositionsFinalized;
     }
     
     // Our layout is finalized if every node widget's location matches its model location.
-    public void setLayoutFinalized(boolean isFinalized) {
-        mIsLayoutFinalized = isFinalized;
+    public void setModelPositionsFinalized(boolean isFinalized) {
+        mIsModelPositionsFinalized = isFinalized;
     }
     
     public void persistLocation(CasaNodeWidget widget, Point location) {
         if (location != null && widget.getBounds() != null) {
             if (!isAdjusting()) {
-                if (!mIsLayoutFinalized) {
-                    for (CasaComponent component : getNodes()) {
-                        CasaNodeWidget nodeWidget = (CasaNodeWidget) findWidget(component);
-                        if (nodeWidget != null) {
-                            updateModelPosition(component, nodeWidget.getPreferredLocation());
-                        }
-                    }
-                    mIsLayoutFinalized = true;
+                if (!mIsModelPositionsFinalized) {
+                    finalizeModelPositions();
                 } else {
-                    updateModelPosition((CasaComponent) findObject(widget), location);
+                    CasaModelGraphUtilities.updateModelPosition(
+                            this,
+                            (CasaComponent) findObject(widget), 
+                            location);
                 }
             }
         }
     }
     
-    private void updateModelPosition(CasaComponent component, Point location) {
-        if (component instanceof CasaServiceEngineServiceUnit) {
-            CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) component;
-            if (su.getX() != location.x || su.getY() != location.y) {
-                getModel().setServiceEngineServiceUnitLocation(su, location.x, location.y);
+    public void persistWidth(CasaRegionWidget widget) {
+        if (!isAdjusting()) {
+            if (!mIsModelPositionsFinalized) {
+                finalizeModelPositions();
             }
-        } else if (component instanceof CasaPort) {
-            CasaPort port = (CasaPort) component;
-            if (port.getX() != location.x || port.getY() != location.y) {
-                getModel().setCasaPortLocation(port, location.x, location.y);
+            CasaModelGraphUtilities.updateWidth(this, widget);
+        }
+    }
+    
+    private void finalizeModelPositions() {
+        for (CasaComponent component : getNodes()) {
+            CasaNodeWidget nodeWidget = (CasaNodeWidget) findWidget(component);
+            if (nodeWidget != null) {
+                CasaModelGraphUtilities.updateModelPosition(
+                        this,
+                        component, 
+                        nodeWidget.getPreferredLocation());
             }
         }
+        mIsModelPositionsFinalized = true;
     }
     
     public void setIsAdjusting(boolean isAdjusting) {

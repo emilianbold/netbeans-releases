@@ -21,11 +21,7 @@ package org.netbeans.modules.compapp.casaeditor.design;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.lang.Thread.State;
 import java.util.ArrayList;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
@@ -104,7 +100,7 @@ public class CasaModelGraphUtilities {
         
         // Initially the empty graph should be finalized, we later set this to
         // false if any node widget we add has an invalid model location.
-        scene.setLayoutFinalized(true);
+        scene.setModelPositionsFinalized(true);
         
         // add JBIComponent objects to scene
         
@@ -246,7 +242,7 @@ public class CasaModelGraphUtilities {
         if (x > 0 && y > 0) {
             widget.setPreferredLocation(new Point(x, y));
         } else {
-            scene.setLayoutFinalized(false);
+            scene.setModelPositionsFinalized(false);
         }
         
         return widget;
@@ -273,7 +269,7 @@ public class CasaModelGraphUtilities {
         if (x > 0 && y > 0) {
             widget.setPreferredLocation(new Point(x, y));
         } else {
-            scene.setLayoutFinalized(false);
+            scene.setModelPositionsFinalized(false);
         }
         
         return widget;
@@ -398,6 +394,33 @@ public class CasaModelGraphUtilities {
     public static void ensureVisibity(Widget w) {
         w.getScene().getView().scrollRectToVisible(w.convertLocalToScene(w.getBounds()));
     }
+    
+        
+    public static void updateModelPosition(CasaModelGraphScene scene, CasaComponent component, Point location) {
+        if (component instanceof CasaServiceEngineServiceUnit) {
+            CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) component;
+            if (su.getX() != location.x || su.getY() != location.y) {
+                scene.getModel().setServiceEngineServiceUnitLocation(su, location.x, location.y);
+            }
+        } else if (component instanceof CasaPort) {
+            CasaPort port = (CasaPort) component;
+            if (port.getX() != location.x || port.getY() != location.y) {
+                scene.getModel().setCasaPortLocation(port, location.x, location.y);
+            }
+        }
+    }
+    
+    public static void updateWidth(CasaModelGraphScene scene, CasaRegionWidget widget) {
+        CasaRegion region = (CasaRegion) scene.findObject(widget);
+        Rectangle bounds = widget.getPreferredBounds();
+        if (bounds == null) {
+            bounds = widget.getBounds();
+        }
+        if (region.getWidth() != bounds.width) {
+            scene.getModel().setCasaRegionWidth(region, bounds.width);
+        }
+    }
+    
     
     
     private static class DisablingAction extends WidgetAction.LockedAdapter {

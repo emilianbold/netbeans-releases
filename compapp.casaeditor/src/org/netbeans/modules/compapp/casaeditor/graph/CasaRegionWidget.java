@@ -198,15 +198,7 @@ public class CasaRegionWidget extends LayerWidget {
     
     public void persistWidth() {
         CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
-        CasaComponent component = (CasaComponent) scene.findObject(this);
-        Rectangle bounds = getPreferredBounds();
-        if (bounds == null) {
-            bounds = getBounds();
-        }
-        CasaRegion region = (CasaRegion) component;
-        if (region.getWidth() != bounds.width) {
-            scene.getModel().setCasaRegionWidth(region, bounds.width);
-        }
+        scene.persistWidth(this);
     }
     
     public void setCOLOR_REGION_TITLE(Color color) {

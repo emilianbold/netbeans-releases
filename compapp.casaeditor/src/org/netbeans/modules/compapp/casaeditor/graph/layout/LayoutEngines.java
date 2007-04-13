@@ -70,9 +70,9 @@ public final class LayoutEngines extends CustomizablePersistLayout {
         }
         Map<CasaNodeWidget, Rectangle> widgetMap = new HashMap<CasaNodeWidget, Rectangle>();
         layout.positionWidgets(
+                
                 ((CasaRegionWidget) widget).getTitleYOffset() + getYSpacing(),
-                widgetMap,
-                isAdjustingForOverlapOnly() && scene.isLayoutFinalized());
+                widgetMap,isAdjustingForOverlapOnly() && scene.isModelPositionsFinalized());
         for (CasaNodeWidget iterWidget : widgetMap.keySet()) {
             moveWidget(iterWidget, widgetMap.get(iterWidget).getLocation(), false);
         }
