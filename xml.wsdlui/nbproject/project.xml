@@ -357,20 +357,21 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.wsdlextensions.file</friend>
-                <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
-                <friend>org.netbeans.modules.xml.wsdlextui</friend>
+                <friend>com.gestalt.netbeans.modules.wsdlextensions.uddi</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
+                <friend>org.netbeans.modules.wsdlextensions.file</friend>
+                <friend>org.netbeans.modules.wsdlextensions.ftp</friend>
+                <friend>org.netbeans.modules.wsdlextensions.hl7</friend>
+                <friend>org.netbeans.modules.wsdlextensions.jdbc</friend>
                 <friend>org.netbeans.modules.wsdlextensions.jms</friend>
                 <friend>org.netbeans.modules.wsdlextensions.mq</friend>
-                <friend>org.netbeans.modules.wsdlextensions.sag</friend>
-                <friend>org.netbeans.modules.wsdlextensions.ftp</friend>
-                <friend>org.netbeans.modules.wsdlextensions.sap</friend>
-                <friend>org.netbeans.modules.wsdlextensions.jdbc</friend>
                 <friend>org.netbeans.modules.wsdlextensions.msmq</friend>
-                <friend>org.netbeans.modules.wsdlextensions.hl7</friend>
+                <friend>org.netbeans.modules.wsdlextensions.sag</friend>
+                <friend>org.netbeans.modules.wsdlextensions.sap</friend>
                 <friend>org.netbeans.modules.wsdlextensions.smtp</friend>
                 <friend>org.netbeans.modules.wsdlextensions.snmp</friend>
+                <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
+                <friend>org.netbeans.modules.xml.wsdlextui</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
                 <package>org.netbeans.modules.xml.wsdl.ui.actions</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.api.property</package>
