@@ -23,60 +23,68 @@ import java.util.Map;
  */
 public class PersistenceService {
     private static String DEFAULT_PU = "RESTDBApp5PU";
-    private static Map<Thread, PersistenceService> serviceMap = new HashMap<Thread, PersistenceService>();
-
+    private static PersistenceService defaultService = new PersistenceService(DEFAULT_PU);
     private EntityManagerFactory emf;
-    private EntityManager em;
- 
-    private PersistenceService(String puName) {
+    private Map<Thread, EntityManager> emMap;
+    
+    public PersistenceService(String puName) {
         this.emf = Persistence.createEntityManagerFactory(puName);
-        this.em = emf.createEntityManager();
+        this.emMap = new HashMap<Thread, EntityManager>();
     }
     
-    public static synchronized PersistenceService getInstance() {
-        Thread thread = Thread.currentThread();
-
-        PersistenceService service = serviceMap.get(thread);
-
-        if (service == null) {
-            service = new PersistenceService(DEFAULT_PU);
-            serviceMap.put(thread, service);
+    public static PersistenceService getDefault() {
+        return defaultService;
+    }
+    
+    public synchronized EntityManager getEntityManager() {
+        Thread currentThread = Thread.currentThread();
+        EntityManager em = emMap.get(currentThread);
+        
+        if (em == null) {
+            em = emf.createEntityManager();
+            emMap.put(currentThread, em);
         }
-
-        return service;
+        
+        return em;
     }
-
-    private static synchronized void removeInstance() {
-        serviceMap.remove(Thread.currentThread());
+    
+    public synchronized void releaseResources() {
+        EntityManager em = emMap.remove(Thread.currentThread());
+        
+        if (em != null) {
+            em.close();
+        }
     }
-  
+    
     public void refreshEntity(Object entity) {
+        EntityManager em = getEntityManager();
+        
         em.flush();
         em.refresh(entity);
     }
     
     public void mergeEntity(Object entity) {
-        em.merge(entity);
+        getEntityManager().merge(entity);
     }
     
     public void persistEntity(Object entity) {
-        em.persist(entity);
+        getEntityManager().persist(entity);
     }
     
     public void removeEntity(Object entity) {
-        em.remove(entity);
+        getEntityManager().remove(entity);
     }
     
     public Query createNamedQuery(String query) {
-        return em.createNamedQuery(query);
+        return getEntityManager().createNamedQuery(query);
     }
     
     public Query createQuery(String query) {
-        return em.createQuery(query);
+        return getEntityManager().createQuery(query);
     }
     
     public void beginTx() {
-        EntityTransaction tx = em.getTransaction();
+        EntityTransaction tx = getEntityManager().getTransaction();
         
         if (!tx.isActive()) {
             tx.begin();
@@ -84,7 +92,7 @@ public class PersistenceService {
     }
     
     public void commitTx() {
-        EntityTransaction tx = em.getTransaction();
+        EntityTransaction tx = getEntityManager().getTransaction();
         
         if (tx.isActive()) {
             tx.commit();
@@ -92,17 +100,14 @@ public class PersistenceService {
     }
     
     public void rollbackTx() {
-        EntityTransaction tx = em.getTransaction();
+        EntityTransaction tx = getEntityManager().getTransaction();
         
         if (tx.isActive()) {
             tx.rollback();
         }
     }
-   
-    public void close() {
-        em.close();
+    
+    protected void finalize() {
         emf.close();
-
-        removeInstance();
     }
 }

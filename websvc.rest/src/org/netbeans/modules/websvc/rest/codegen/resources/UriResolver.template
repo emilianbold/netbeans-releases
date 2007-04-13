@@ -13,6 +13,8 @@ import com.sun.ws.rest.api.WebApplicationException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import javax.xml.bind.JAXBContext;
 
 /**
@@ -20,13 +22,31 @@ import javax.xml.bind.JAXBContext;
  * @author __USER__
  */
 public class UriResolver {
-    private static boolean inProgress = false;
+    private static Map<Thread, UriResolver> resolverMap = new HashMap<Thread, UriResolver>();
+
+    private boolean inProgress = false;
     
     /** Creates a new instance of UriResolver */
-    public UriResolver() {
+    private UriResolver() {
     }
     
-    public synchronized static <T> T resolve(Class<T> type, URI uri) {
+    public static synchronized UriResolver getInstance() {
+        Thread thread = Thread.currentThread();
+        UriResolver resolver = resolverMap.get(thread);
+
+        if (resolver == null) {
+            resolver = new UriResolver();
+            resolverMap.put(thread, resolver);
+        }
+
+        return resolver;
+    }
+
+    private static synchronized void removeInstance() {
+        resolverMap.remove(Thread.currentThread());
+    }
+    
+    public <T> T resolve(Class<T> type, URI uri) {
         System.out.println("resolve uri = " + uri);
         
         if (inProgress) {
@@ -55,7 +75,7 @@ public class UriResolver {
             ex.printStackTrace();
             throw new WebApplicationException(ex);
         } finally {
-            inProgress = false;
+            removeInstance();
         }
     }
 }
