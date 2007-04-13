@@ -221,7 +221,7 @@ public class Utils {
         // Return type
         if (!methodModel.isOneWay()) {
             // set default result name
-            if (!resultNameFound) resultModel.setName(methodModel.getOperationName()+"Response"); //NOI18N
+            if (!resultNameFound) resultModel.setName("return"); //NOI18N
             // set result type
             TypeMirror returnType = methodEl.getReturnType();
             if (returnType.getKind() == TypeKind.DECLARED) {
