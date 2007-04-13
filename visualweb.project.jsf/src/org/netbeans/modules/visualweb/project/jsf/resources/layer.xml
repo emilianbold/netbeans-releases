@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
+    <!-- Import HTML is not available yet, may replace it by context menu
     <folder name="Menu">
         <folder name="File">
             <attr name="org-netbeans-modules-project-ui-CustomizeProject.shadow/raveSeparator1.instance" boolvalue="true"/>
@@ -32,6 +33,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-visualweb-project-jsf-actions-ImportAction.instance/Separator2.instance" boolvalue="true"/>
         </folder>
     </folder>
+    -->
 
     <folder name="j2ee">
         <folder name="webtier">
