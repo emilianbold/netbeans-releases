@@ -63,7 +63,6 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/netbeans/modules/java/source/parsing/CachingZipArchiveTest.class" />
 		<exclude name="org/netbeans/modules/java/source/parsing/FileManagerTest.class" />
 
-                <exclude name="org/netbeans/api/java/source/gen/BrokenSourceTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/AddMethodToIntfcTemplate.class"/>
             </patternset>
         </testset>
@@ -102,8 +101,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/OperatorsTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/AnonymousClassTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/TopLevelTest.class"/>
-
                 <include name="org/netbeans/api/java/source/gen/BrokenSourceTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/SyntetickejTest.class"/>
                 
                 <!--
                 Makes many operation on field declaration.
