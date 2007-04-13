@@ -124,5 +124,8 @@ public abstract class Constants {
     /** File name whose InstanceCookie can contain custom status line component.*/
     public static final String CUSTOM_STATUS_LINE_PATH = System.getProperty("netbeans.winsys.status_line.path"); // NOI18N
 
+    /** If set to true the help button will not be shown in the dialogs.*/
+    public static final boolean DO_NOT_SHOW_HELP_IN_DIALOGS = Boolean.getBoolean("netbeans.winsys.no_help_in_dialogs"); // NOI18N
+    
     private Constants() {}
 }

@@ -61,6 +61,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicLookAndFeel;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import org.netbeans.core.windows.Constants;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -451,7 +452,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         
         Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getFocusOwner ();
 
-        boolean dontShowHelp = ( descriptor instanceof WizardDescriptor && ( Boolean.FALSE.equals (((WizardDescriptor)descriptor).getProperty ("WizardPanel_helpDisplayed")) )); // NOI18N
+        boolean dontShowHelp = Constants.DO_NOT_SHOW_HELP_IN_DIALOGS ||
+                ( descriptor instanceof WizardDescriptor && ( Boolean.FALSE.equals (((WizardDescriptor)descriptor).getProperty ("WizardPanel_helpDisplayed")) )); // NOI18N
         boolean helpButtonShown =
             stdHelpButton.isShowing() || ( descriptor instanceof WizardDescriptor && !dontShowHelp );
         
