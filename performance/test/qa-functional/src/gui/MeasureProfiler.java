@@ -40,6 +40,7 @@ public class MeasureProfiler  {
         suite.addTest(new SelectProfilingTaskDialog("measureTime", "Select Profiling Task dialog open"));
         suite.addTest(new ProfilerAboutDialog("doMeasurement","Profiler About Dialog"));
         suite.addTest(new AddProfilingPointWizard("doMeasurement","Add Profiling point Wizard"));
+        suite.addTest(new CompareMemorySnapshotsDialog("doMeasurement","Compare memory Snapshots dialog"));
         // Windows
         suite.addTest(new ProfilerWindows("testProfilerControlPanel","Open Profiler Control Panel Window"));
         suite.addTest(new ProfilerWindows("testProfilerTelemetryOverview","Open Profiler VM Telemetry Overview Window"));
