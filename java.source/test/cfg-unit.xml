@@ -62,8 +62,6 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/netbeans/modules/java/source/parsing/CachingFolderArchiveTest.class" />
 		<exclude name="org/netbeans/modules/java/source/parsing/CachingZipArchiveTest.class" />
 		<exclude name="org/netbeans/modules/java/source/parsing/FileManagerTest.class" />
-
-                <exclude name="org/netbeans/api/java/source/gen/AddMethodToIntfcTemplate.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -120,7 +118,6 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="single" executor="unit-executor" name="modifying sources">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/api/java/source/gen/AddMethodToIntfcTemplate.class"/>
             </patternset>
         </testset>
     </testbag>
