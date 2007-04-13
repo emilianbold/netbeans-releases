@@ -86,7 +86,7 @@ ${classInfo.getModifierText(classInfo.getModifiers())}
 </#assign> 	
 <#-- -->
 <#if ((templatesList?trim)?length > 0 ) >
-< ${generatedList} >
+< ${templatesList} >
 </#if>
 </#if> 	
 </#if> 
