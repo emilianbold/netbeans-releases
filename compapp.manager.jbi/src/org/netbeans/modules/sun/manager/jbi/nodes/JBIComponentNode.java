@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -73,7 +73,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
         
-        // Augment the general property sheet   
+        // Augment the general property sheet
         try {
             Sheet.Set sheetSet = createSheetSet("Identification", // NOI18N
                     "LBL_IDENTIFICATION_PROPERTIES", // NOI18N
@@ -94,22 +94,12 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             e.printStackTrace();
         }
         
-        try {
-            Sheet.Set sheetSet = createSheetSet("Loggers", // NOI18N
-                    "LBL_LOGGERS_PROPERTIES", // NOI18N
-                    "DSC_LOGGERS_PROPERTIES", // NOI18N
-                    getLoggerProperties());
-            sheet.put(sheetSet);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
         return sheet;
     }
-        
+    
     protected Map<Attribute, MBeanAttributeInfo> getSheetProperties() {
         JBIComponentStatus jbiComponent = getJBIComponentStatus();
-        return Utils.getIntrospectedPropertyMap(jbiComponent, true);        
+        return Utils.getIntrospectedPropertyMap(jbiComponent, true);
     }
     
     /**
@@ -117,7 +107,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      * @return A java.util.Map containing all identification properties.
      */
-    private Map<Attribute, MBeanAttributeInfo> getIdentificationProperties() 
+    private Map<Attribute, MBeanAttributeInfo> getIdentificationProperties()
     throws Exception {
         AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
         return getIdentificationProperties(controller, true);
@@ -128,24 +118,25 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      * @return A java.util.Map containing all configuration properties.
      */
-    private Map<Attribute, MBeanAttributeInfo> getConfigurationProperties() 
+    private Map<Attribute, MBeanAttributeInfo> getConfigurationProperties()
     throws Exception {
         AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
         String containerType = getContainerType();
         String name = getName();
         return controller.getJBIComponentConfigProperties(
                 containerType, name, true);
-    }   
+    }
+    
     /**
      * Return the logger properties to be displayed for this JBIComponent.
      *
      * @return A java.util.Map containing all logger properties.
      */
-    private Map<Attribute, MBeanAttributeInfo> getLoggerProperties() 
+    protected Map<Attribute, MBeanAttributeInfo> getLoggerProperties()
     throws Exception {
         AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
         return controller.getJBIComponentLoggerProperties(getName(), true);
-    }   
+    }
     
     /**
      * Sets the property as an attribute to the underlying AMX mbeans. It
@@ -187,7 +178,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         try {
             AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
             controller.setJBIComponentLoggerProperty(getName(), attrName, value);
-        
+            
             
 //            // Get the new value
 //            Object newValue = controller.getJBIComponentConfigPropertyValue(
@@ -334,7 +325,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                     setBusy(false);
                     updatePropertySheet();
                 }
-            });            
+            });
         }
     }
     
@@ -381,7 +372,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                     setBusy(false);
                     updatePropertySheet();
                 }
-            });            
+            });
         }
     }
     
@@ -433,7 +424,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                     setBusy(false);
                     updatePropertySheet();
                 }
-            });            
+            });
         }
     }
     
@@ -467,7 +458,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                     NotifyDescriptor.OK_CANCEL_OPTION);
             if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
                 return;
-            }            
+            }
             
             String progressLabel = getUninstallProgressLabel();
             String title =
@@ -491,7 +482,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                             componentName, result);
                     //updatePropertySheet();
                 }
-            });            
+            });
         }
     }
     
@@ -525,12 +516,12 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      * Node class for a Service Engine.
      */
     public static class ServiceEngine extends JBIComponentNode {
-                
+        
         public ServiceEngine(final AppserverJBIMgmtController controller,
                 String name, String description) {
-            super(controller, 
+            super(controller,
                     JBIComponentStatus.ENGINE_TYPE,
-                    NodeTypes.SERVICE_ENGINE, 
+                    NodeTypes.SERVICE_ENGINE,
                     name, description);
         }
         
@@ -546,6 +537,22 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 null,
                 SystemAction.get(PropertiesAction.class),
             };
+        }
+        
+        protected Sheet createSheet() {
+            Sheet sheet = super.createSheet();
+            
+            try {
+                Sheet.Set sheetSet = createSheetSet("Loggers", // NOI18N
+                        "LBL_LOGGERS_PROPERTIES", // NOI18N
+                        "DSC_LOGGERS_PROPERTIES", // NOI18N
+                        getLoggerProperties());
+                sheet.put(sheetSet);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
+            return sheet;
         }
         
         protected String uninstallComponent(
@@ -590,12 +597,12 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      * Node class for a Binding Component.
      */
     public static class BindingComponent extends JBIComponentNode {
-                
+        
         public BindingComponent(final AppserverJBIMgmtController controller,
                 String name, String description) {
-            super(controller, 
-                    JBIComponentStatus.BINDING_TYPE, 
-                    NodeTypes.BINDING_COMPONENT, 
+            super(controller,
+                    JBIComponentStatus.BINDING_TYPE,
+                    NodeTypes.BINDING_COMPONENT,
                     name, description);
         }
         
@@ -608,9 +615,25 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 null,
                 //SystemAction.get(ShutdownAction.Force.class),
                 SystemAction.get(UninstallAction.Force.class),
-                null,                
+                null,
                 SystemAction.get(PropertiesAction.class),
             };
+        }        
+        
+        protected Sheet createSheet() {
+            Sheet sheet = super.createSheet();
+            
+            try {
+                Sheet.Set sheetSet = createSheetSet("Loggers", // NOI18N
+                        "LBL_LOGGERS_PROPERTIES", // NOI18N
+                        "DSC_LOGGERS_PROPERTIES", // NOI18N
+                        getLoggerProperties());
+                sheet.put(sheetSet);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
+            return sheet;
         }
         
         protected String uninstallComponent(
@@ -658,9 +681,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         
         public SharedLibrary(final AppserverJBIMgmtController controller,
                 String name, String description) {
-            super(controller, 
+            super(controller,
                     JBIComponentStatus.NAMESPACE_TYPE,
-                    NodeTypes.SHARED_LIBRARY, 
+                    NodeTypes.SHARED_LIBRARY,
                     name, description);
         }
         
