@@ -20,7 +20,7 @@ import javax.persistence.Query;
  * @author __USER__
  */
 public class PersistenceService {
-    private static String DEFAULT_PU = "RESTDBApp5PU";
+    private static String DEFAULT_PU = "DefaultPU";
     
     private static ThreadLocal<PersistenceService> instance = new ThreadLocal<PersistenceService>() {
         protected PersistenceService initialValue() {
@@ -48,8 +48,8 @@ public class PersistenceService {
         em.refresh(entity);
     }
     
-    public Object mergeEntity(Object entity) {
-        return em.merge(entity);
+    public <T> T mergeEntity(T entity) {
+        return (T) em.merge(entity);
     }
     
     public void persistEntity(Object entity) {
@@ -60,13 +60,13 @@ public class PersistenceService {
         em.remove(entity);
     }
     
-    public Object resolveEntity(Object entity) {
-        entity = em.merge(entity);
+    public <T> T resolveEntity(T entity) {
+        entity = mergeEntity(entity);
         em.refresh(entity);
         
         return entity;
     }
-
+    
     public Query createNamedQuery(String query) {
         return em.createNamedQuery(query);
     }
