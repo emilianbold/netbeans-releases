@@ -55,8 +55,10 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-
-// import com.ddtek.jdbc.extensions.ExtEmbeddedConnection;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
 
 /**
  * DataSource adapter for java.sql.Driver classes.  Used at designtime for all datasources.
@@ -84,6 +86,9 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
     private ArrayList    objectChangeListeners;
     private Driver       driver;
 
+    private DatabaseConnection dbConn;    
+    private static URL[]  urls;
+    
     private static final String alphabet = "abcdefghijklmnopqrstuvwxyz"; // NOI18N
 
     private static final String SELECT_PHRASE = "select * from " ;
@@ -220,6 +225,18 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
         Log.getLogger().entering(getClass().getName(), toString()+".getConnection()", new Object[] {username, password});
         checkLastConnectFail() ;
       
+        DatabaseConnection[] dbConns = ConnectionManager.getDefault().getConnections();
+        
+        for (int i=0; i<dbConns.length; i++)
+            if (url.equals(dbConns[i].getDatabaseURL())) {
+                dbConn = dbConns[i];
+                break;
+            }
+
+        JDBCDriver jdbcDriver = DataSourceResolver.getInstance().findMatchingDriver(dbConn.getDriverClass());               
+        urls = jdbcDriver.getURLs();
+
+        driverClassName = dbConn.getDriverClass();
         loadDriver();
         
         Properties props = new Properties();
@@ -723,31 +740,6 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
     private static URLClassLoader getDriverClassLoader(ClassLoader parent) {
 
         Log.getLogger().entering("DesignTimeDataSource", "getDriverClassLoader()"); //NOI18N
-
-        File libDir = new File(System.getProperty("netbeans.user"), "jdbc-drivers"); // NOI18N
-
-        File[] files = libDir.listFiles(new FileFilter() {
-            public boolean accept(File f) {
-                return f.isDirectory() || f.getName().toLowerCase().endsWith("jar") // NOI18N
-                    || f.getName().toLowerCase().endsWith("zip"); // NOI18N
-            }
-        });
-
-        //         if (Log.getLogger().isLoggable(java.util.logging.Level.FINEST))
-	//             for (int i=0; i<files.length; i++)
-	//                 System.out.println("File " + i + ": " + files[i]);
-
-	int len = (files == null)? 0: files.length;
-
-        URL[] urls = new URL[len];
-
-        for (int i = 0; i < len; i++) {
-            try {
-                urls[i] = files[i].toURL();
-            } catch (MalformedURLException e) {
-                // ignore
-            }
-        }
         return URLClassLoader.newInstance(urls, parent);
     }
 

@@ -233,7 +233,7 @@ public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInf
     
     
     // Find a matching driver registered with the IDE
-    private JDBCDriver findMatchingDriver(DataSourceInfo dsInfo) {
+    public JDBCDriver findMatchingDriver(String driverClass) {
         int i = 0;
         
         JDBCDriver[] newDrivers;
@@ -241,18 +241,18 @@ public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInf
         newDrivers = JDBCDriverManager.getDefault().getDrivers();
         boolean found = false;
         
-        if (dsInfo != null) {
+//        if (dsInfo != null) {
             if (newDrivers.length == 0)
                 newDrivers = (JDBCDriver[]) theDriver.toArray(NULL_JDBC_DRIVER_ARRAY);
             
             if (newDrivers != null) {
                 for (i=0; i<newDrivers.length; i++) {
-                    if (newDrivers[i].getClassName().equals(dsInfo.getDriverClassName())) {
+                    if (newDrivers[i].getClassName().equals(driverClass)) {
                         found = true;
                         break;
                     }
                 }
-            }
+//            }
         }
         
         if (!found)  {
@@ -288,7 +288,7 @@ public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInf
             NoSelectedServerWarning.getSelectedServerDialog().dispose();
             
             // next check to see if the driver has been added
-            JDBCDriver matchingDriver = findMatchingDriver(dsInfo);
+            JDBCDriver matchingDriver = findMatchingDriver(dsInfo.getDriverClassName());
             if (matchingDriver != null)
                 jdbcDriverName = matchingDriver.getName();
             
@@ -307,7 +307,7 @@ public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInf
 //        } else {
         if (dsInfo != null) {
             // make sure the driver has been added before adding the connection
-            if (findMatchingDriver(dsInfo) == null)
+            if (findMatchingDriver(dsInfo.getDriverClassName()) == null)
                 addDriver(dsInfo);
             else {
                 
@@ -317,7 +317,7 @@ public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInf
                     dsInfo = DataSourceInfoManager.getInstance().getDataSourceInfoByName(itemSelected);
                     String username = dsInfo.getUsername();
                     String password = dsInfo.getPassword();
-                    JDBCDriver drvs = findMatchingDriver(dsInfo);
+                    JDBCDriver drvs = findMatchingDriver(dsInfo.getDriverClassName());
                     DatabaseConnection dbconn = DatabaseConnection.create(drvs, dsInfo.getUrl(), username,  username.toUpperCase(), password,  true); // NOI18N
                     ConnectionManager.getDefault().addConnection(dbconn);
                     updateProject(project, dsInfo);

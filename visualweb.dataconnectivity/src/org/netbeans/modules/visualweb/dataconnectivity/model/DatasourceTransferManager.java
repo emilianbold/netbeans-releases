@@ -153,35 +153,11 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             
             // Add the data sources to the project
             projectDataSourceManager.addDataSource(dataSourceInfo);
-                        
-            // no need to do this once the switch is made to use NetBeans connections
-            addJdbcDriver(jdbcDriver);
-                        
+                                    
             // create the rowset 
             setDataSourceInfo(dataSourceInfo);
             return super.beansCreatedSetup(designBeans);
-        }
-        
-       /* Get the JDBCDriver driver info and add the driver jar to Design time driver list
-        * This is needed for design time datasource connection to work
-        * TODO make sure duplicate drivers are not added
-        * Possibly check against the driver jar names and its size
-        */
-        private void addJdbcDriver(JDBCDriver jdbcDriver){
-            // Get the driver jar urls copy them and then add the jar names
-            URL[] driverJarUrls = jdbcDriver.getURLs();
-            for(int i=0; i< driverJarUrls.length; i++){
-                JdbcDriverConfigUtil driverUtil = new JdbcDriverConfigUtil();
-                
-                try {
-                    String urlPath = driverJarUrls[i].toURI().getPath();
-                    if (urlPath != null)  // test if urlPath is undefined
-                        driverUtil.copyJarNoConfirm(urlPath);
-                } catch (URISyntaxException urie) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, urie);
-                }
-            }
-        }
+        }        
         
         private String getUniqueName(String name){
             if(name.indexOf('_') != -1){

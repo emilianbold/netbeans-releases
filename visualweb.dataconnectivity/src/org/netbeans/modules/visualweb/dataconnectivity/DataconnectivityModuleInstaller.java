@@ -71,12 +71,6 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
     private static final String installPropsReef = "system/install.properties"; //NOI18N
     private static final String installPropsThresher = "config/com-sun-rave-install.properties"; //NOI18N
 
-    public String dsConfPath = userDir + "/jdbc-drivers/" + XmlUtil.DS_CONFIG_FILE; //NOI18N
-
-    // String origDsConfPath = ideHome + "/startup/" + XmlUtil.DS_CONFIG_FILE; //NOI18N
-    String origDsConfPath = "startup/" + XmlUtil.DS_CONFIG_FILE; //NOI18N
-    String oldDsConfPath = userDir + "/jdbc-drivers/" + XmlUtil.DS_CONFIG_FILE.replaceFirst("[.]", "-2_0.");; //NOI18N
-
     public void restored() {
 
         Log.err.log("Entering DataconnectivityModuleInstaller.restored()");
@@ -90,11 +84,6 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
         // Load the bundled database info
         String bundledDBFile = System.getProperty("rave.bundled.database") ;
         BundledDatabaseHelper.getInfo(bundledDBFile) ;
-
-        // Load the Data Source Config information
-        File dsInfoFile = new File(dsConfPath);
-        if ( !dsInfoFile.exists() )
-            copyJdbcDriverInfoFile(dsInfoFile) ;
 
         //!JK Temporary place to register the rowset customizer.  This call may change.
         //!JK See Carl for details.
@@ -124,14 +113,6 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
         //!JK polluted by jars being loaded by deployment
         DesignTimeInitialContextFactory.setInitialContextFactoryBuilder();
         
-        // Disabled, because we defer this until the information is needed
-        // Load and fill the DataSource
-        // DataSourceInfoManager.getInstance().initModel();
-
-        // Disabled, since we no longer bundle the DataDirect drivers
-        // create definitions for the bundled JDBC drivers, if they don't already exist
-        // checkDrivers();
-
 //         time2 = System.currentTimeMillis();
 //         System.err.println("DataconnectivityModuleInstaller.restored() t2 dt=" + (time2 - time1));
 //        time1 = time2;
@@ -148,11 +129,7 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
 //         time2 = System.currentTimeMillis();
 //         System.err.println("DataconnectivityModuleInstaller.restored() t3 dt=" + (time2 - time1) + "  Total: " + (time2 - start));
     }
-    
-    public void close(){
-        JdbcDriverInfoManager.getInstance().save();
-        BundledDatabaseHelper.save() ;
-    }
+       
     
     public static void init() {
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
@@ -164,66 +141,7 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
     }
     
     // public static String compString = "jdbc:pointbase:server://localhost:9092/"; //NOI18N
-    public static String compString = "jdbc:derby://localhost:1527/"; //NOI18N
-    public void copyJdbcDriverInfoFile(File dsConfFile){
-        
-        String derbyPort = System.getProperty(DBPORT_property);
-
-        if(!dsConfFile.getParentFile().exists())
-            dsConfFile.getParentFile().mkdirs();
-        
-        // Location of datasourceconfig in application bundle
-        File originalDsConfFile = InstalledFileLocator.getDefault().locate( origDsConfPath, null, false );
-        
-        //System.out.println("Original Config File - " + originalDsConfFile.getAbsolutePath());
-        //System.out.println("User Config File - " + dsConfFile.getAbsolutePath());
-        try{
-            
-            //System.out.println("PB Port Number has Changed");
-            Log.log("Copying datasourceconfig.xml from application");
-            BufferedReader in = new BufferedReader(new FileReader(originalDsConfFile));
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(dsConfFile)));
-            String line = null;
-            while ( (line = in.readLine()) != null ) {
-                // Check if the string has the pointbase urltemplate string
-                if((derbyPort != null) && (!derbyPort.equals("1527"))){ //NOI18N
-                    if(line.indexOf(compString) != -1){
-                        line = line.replaceAll("1527", derbyPort); //NOI18N
-                    }
-                }
-                if ( line.indexOf("</DataSourceConfigList>") != -1)
-                    break;
-                out.println(line);
-            }
-            in.close();
-
-            // Copy any user-defined Database Server types from the previous version, if there is one
-            File oldDsConfFile = new File (oldDsConfPath);
-            if ( oldDsConfFile.exists() ) {
-                Log.log("Merging user-defined Database Server types from Creator 2.0");
-                in = new BufferedReader(new FileReader(oldDsConfFile));
-                while( (line = in.readLine()) != null) {
-                    if ( line.indexOf("UserDefined") != -1 ) {
-                        // Found a user-defined DB Server type; copy the definition over 
-                        out.println(line);
-                        while ( (line = in.readLine()).indexOf("</DataSourceConfig>") == -1 ) {
-                            out.println(line);
-                        }
-                        out.println(line);
-                    }
-                }
-                in.close();
-                oldDsConfFile.delete();
-            }
-
-            out.println("</DataSourceConfigList>");
-            out.close();
-
-        }catch(IOException exc){
-            exc.printStackTrace();
-        }
-
-    }
+    public static String compString = "jdbc:derby://localhost:1527/"; //NOI18N   
     
     /***
      * determine the bundled database port.
