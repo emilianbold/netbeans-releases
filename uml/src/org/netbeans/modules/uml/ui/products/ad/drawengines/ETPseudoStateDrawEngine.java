@@ -622,12 +622,24 @@ public class ETPseudoStateDrawEngine extends ETNodeDrawEngine
                String newInitStr = "";
                if (oldInitStr != null && oldInitStr.length() > 0)
                {
-                  int strHorizontalIndex = oldInitStr.lastIndexOf(HORIZONTAL);
-                  
-                  newInitStr = (strHorizontalIndex > -1 ?
-                     (oldInitStr.substring(0, strHorizontalIndex)).trim() :
-                     oldInitStr.concat(" " + HORIZONTAL));
-                  
+                  int joinIndex = oldInitStr.lastIndexOf(JOIN);
+                  if (joinIndex != -1)
+                  {
+                     int strHorizontalIndex = oldInitStr.lastIndexOf(HORIZONTAL);
+                     
+                     newInitStr = (strHorizontalIndex > -1 ?
+                        oldInitStr.replaceFirst(JOIN_HORIZONTAL, JOIN) :
+                        oldInitStr.replaceFirst(JOIN, JOIN_HORIZONTAL));
+                  }
+                  // When a join node dragged from the project tree to a diagram, its
+                  // initString value does not contain "join". Need to investigate the root cause.
+                  // For now, the else logic takes care of the new intitString of the node.
+                  else 
+                  {
+                     newInitStr = (id.equals("MBK_SHOW_HORIZONTAL_FORK") ? 
+                        oldInitStr.replaceFirst(PSEUDOSTATE, JOIN_HORIZONTAL) : 
+                        oldInitStr.replaceFirst(PSEUDOSTATE, JOIN));
+                  }
                   nodeUI.setInitStringValue(newInitStr);
                }
             }
