@@ -296,7 +296,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="run-pack" depends="compile-pack" description="Pack jars">
         <java classname="org.netbeans.installer.PackJars" fork="true" failonerror="true">
-            <jvmarg value="-Xmx256m" />
+            <jvmarg value="-Xmx512m" />
+            <jvmarg value="-XX:MaxPermSize=128m" />
             <arg value="${nb.dir.tmp}" />
             <arg value="${basedir}/build/netbeans/_uninst/packedjars.xml" />
             <classpath>
@@ -307,7 +308,8 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="run-unpack" depends="compile-pack" description="Unpack jars">
       <java classname="org.netbeans.installer.UnpackJars" fork="true" failonerror="true">
-        <jvmarg value="-Xmx256m" />
+        <jvmarg value="-Xmx512m" />
+        <jvmarg value="-XX:MaxPermSize=128m" />
         <arg value="${nb.dir.test}" />
         <classpath>
           <pathelement path="../lib/packjars/classes"/>
@@ -317,8 +319,8 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="run-verify" depends="compile-pack" description="Verify jars">
       <java classname="org.netbeans.installer.VerifyJars" fork="true" failonerror="true">
-        <jvmarg value="-Xmx256m" />
-        <jvmarg value="-XX:PermSize=128m" />
+        <jvmarg value="-Xmx512m" />
+        <jvmarg value="-XX:MaxPermSize=128m" />
         <arg value="${nb.dir.test}" />
         <arg value="0" />
         <classpath>
@@ -326,8 +328,8 @@ Microsystems, Inc. All Rights Reserved.
         </classpath>
       </java>
       <java classname="org.netbeans.installer.VerifyJars" fork="true" failonerror="true">
-        <jvmarg value="-Xmx256m" />
-        <jvmarg value="-XX:PermSize=128m" />
+        <jvmarg value="-Xmx512m" />
+        <jvmarg value="-XX:MaxPermSize=128m" />
         <arg value="${nb.dir.test}" />
         <arg value="1" />
         <classpath>

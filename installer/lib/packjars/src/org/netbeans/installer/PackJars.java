@@ -152,11 +152,11 @@ public class PackJars {
                         unpackFile(f);
                         String md5 = generateKey(arr[i]);
                         f = packFile(arr[i]);
-                        arr[i].deleteOnExit();
                         sb.append(" packed-size=\"" + f.length() + "\"");
                         sb.append(" md5=\"" + md5 + "\"");
                         totalPackedSize += f.length();
                         sb.append(" />\n");
+                        arr[i].delete();
                     }
                 }
             }
