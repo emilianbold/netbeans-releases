@@ -144,12 +144,19 @@ public class ActionManager {
     }
     
     
+    // a map of all actions by classname
     private Map<String,List<ProxyAction>> actions;
+    // a list of all actions
     private List<ProxyAction> actionList;
+    
+    // maps actions (by id) to rad components with action properties set to that action
     private Map<String,List<RADComponent>> boundComponents =
             new HashMap<String,List<RADComponent>>();
+    // the property change listeners for monitoring changes to the list of actions
     private List<PropertyChangeListener> pcls;
+    // the listener for changes to individual actions (their own properties)
     private List<ActionChangedListener> acls;
+    // the root object of this ActionManager's project
     private FileObject root;
     
     public Project getProject() {
@@ -299,7 +306,10 @@ public class ActionManager {
             if (ec == null) {
                 return false;
             }
-            ec.open(); //josh: we fail if the document isn't opened yet. is there a better way to do this?
+            if(ec.getDocument() == null) {
+                ec.openDocument();
+            }
+            //ec.open(); //josh: we fail if the document isn't opened yet. is there a better way to do this?
             Document doc = ec.getDocument();
             int pos;
             if (ec instanceof FormEditorSupport) {
@@ -420,14 +430,28 @@ public class ActionManager {
         }
         list.add(act);
         actionList.add(act);
+        fireStructureChanged();
+    }
+    
+    private void safeRemove(List<ProxyAction> actions, ProxyAction act) {
+        ProxyAction found = null;
+        for(ProxyAction a : actionList) {
+            if(actionsMatch(a, act)) {
+                found = a;
+            }
+        }
+        if(found != null) {
+            actions.remove(found);
+        }
     }
     
     public void updateAction(ProxyAction action) {
         List<ProxyAction> actions = getActions(action.getClassname(), false);
         for(ProxyAction a : actions) {
-            if(a.getId() == action.getId()) {
+            if(a.getId().equals(action.getId())) {
                 actions.remove(a);
-                actionList.remove(a);
+                // do a special search remove because remove(a) isn't working
+                safeRemove(actionList,a);
                 break;
             }
         }
@@ -893,7 +917,7 @@ public class ActionManager {
         return javaFile.getParent().getFileObject(javaFile.getName()+".form");
     }
     
-    private boolean actionsMatch(ProxyAction pact, ProxyAction action) {
+    public boolean actionsMatch(ProxyAction pact, ProxyAction action) {
         if(pact == null || action == null) {
             return false;
         }

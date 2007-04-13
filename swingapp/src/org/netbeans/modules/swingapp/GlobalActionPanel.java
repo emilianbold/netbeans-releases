@@ -605,7 +605,8 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             realModel = new ActionTableModel(actionManager.getActions(filterClass, false));
         }
         
-        actionTable.setModel(new TableSorter(new FilteredTableModel(realModel),actionTable.getTableHeader()));
+        //actionTable.setModel(new TableSorter(new FilteredTableModel(realModel),actionTable.getTableHeader()));
+        actionTable.setModel(realModel);
         filterTable();
         // set the icon and task widths
         actionTable.getColumnModel().getColumn(ActionTableModel.ICON_COLUMN).setPreferredWidth(30);

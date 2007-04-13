@@ -111,6 +111,7 @@ public class ActionTableModel extends AbstractTableModel {
             ProxyAction a = actions.get(i);
             if( a == action) {
                 fireTableRowsUpdated(i,i);
+                break;
             }
         }
     }

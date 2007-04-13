@@ -230,11 +230,14 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         if(object instanceof ProxyAction) {
             ProxyAction oldAction = action;
             action = (ProxyAction)object;
+            ActionManager am = ActionManager.getActionManager(getSourceFile());
             action.setResourceMap(ResourceUtils.getDesignResourceMap(getSourceFile()));
-            if (oldAction != null) {
-                ActionManager.getActionManager(getSourceFile()).removeRADComponent(oldAction, radComponent);
+            if(!am.actionsMatch(oldAction,action)){
+                if (oldAction != null) {
+                    am.removeRADComponent(oldAction, radComponent);
+                }
+                am.addRADComponent(action, radComponent);
             }
-            ActionManager.getActionManager(getSourceFile()).addRADComponent(action, radComponent);
         } else {
             ProxyAction oldAction = action;
             action = null;
@@ -465,6 +468,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
                 AppFrameworkSupport.getApplicationClassName(getSourceFile()));
         newAction.setAppWide(appWide);
         if (ActionManager.getActionManager(getSourceFile()).createActionMethod(newAction)) {
+            ActionManager.getActionManager(getSourceFile()).addNewAction(newAction);
             saveChangedActionProperties(newAction);
         }
         return newAction;
