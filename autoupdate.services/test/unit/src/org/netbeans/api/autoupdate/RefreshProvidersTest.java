@@ -38,7 +38,7 @@ public class RefreshProvidersTest extends DefaultTestCase {
        
         int updateUnitsCount = UpdateManager.getDefault().getUpdateUnits().size();
         populateCatalog(TestUtils.class.getResourceAsStream("data/updates-subset.xml"));
-        UpdateUnitProviderFactory.getDefault ().refreshProviders();
+        UpdateUnitProviderFactory.getDefault ().refreshProviders(null, true);
         assertEquals(UpdateManager.getDefault().getUpdateUnits().toString(), 
                 updateUnitsCount-1, UpdateManager.getDefault().getUpdateUnits().size());
     }

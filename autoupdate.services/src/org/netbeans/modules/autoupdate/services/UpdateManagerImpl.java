@@ -60,7 +60,12 @@ public class UpdateManagerImpl extends Object {
         return units;
     }
             
-    public UpdateUnit getUpdateUnit(final String moduleCodeName) {
+    public UpdateUnit getUpdateUnit (String moduleCodeName) {
+        // trim release impl.
+        if (moduleCodeName.indexOf('/') != -1) {
+            int to = moduleCodeName.indexOf('/');
+            moduleCodeName = moduleCodeName.substring(0, to);
+        }
         if (updateUnits == null) {getUpdateUnits ();}
         assert updateUnits != null : "updateUnits must be initialized.";        
         return updateUnits.get(moduleCodeName);

@@ -37,7 +37,7 @@ class DependencyChecker extends Object {
             err.log(Level.FINE, "Dependency[" + dep.getType () + "]: " + dep);
             switch (dep.getType ()) {
                 case (Dependency.TYPE_REQUIRES) :
-                    if (matchDependencyRequires (dep, modules)) {
+                    if (findModuleMatchesDependencyRequires (dep, modules) != null) {
                         // ok
                     } else {
                         // bad, report missing module
@@ -71,13 +71,13 @@ class DependencyChecker extends Object {
         return res;
     }
     
-    private static boolean matchDependencyRequires (Dependency dep, Collection<ModuleInfo> modules) {
+    static ModuleInfo findModuleMatchesDependencyRequires (Dependency dep, Collection<ModuleInfo> modules) {
         for (ModuleInfo info : modules) {
             if (Arrays.asList (info.getProvides ()).contains (dep.getName ())) {
-                return true;
+                return info;
             }
         }
-        return false;
+        return null;
     }
     
     private static boolean matchDependencyModule (Dependency dep, Collection<ModuleInfo> modules) {
