@@ -2255,7 +2255,8 @@ public class ADCoreEngine extends DiagramEngine
 					//insertMenu.add(createMenuAction(loadString("IDS_POPUP_LAYOUT_TREE"), "MBK_POPUP_LAYOUT_TREE", BaseAction.AS_CHECK_BOX));  //$NON-NLS-2$
 //					addSeparatorMenuItem(insertMenu);
 					//insertMenu.add(createMenuAction(loadString("IDS_LAYOUT_RELAYOUT"), "MBK_POPUP_LAYOUT_RELAYOUT", BaseAction.AS_CHECK_BOX));  //$NON-NLS-2$
-					insertMenu.add(createMenuAction(loadString("IDS_LAYOUT_INCREMENTAL"), "MBK_POPUP_LAYOUT_INCREMENTAL", BaseAction.AS_CHECK_BOX, IDrawingAreaAcceleratorKind.DAVK_LAYOUT_INCREMENTAL_LAYOUT));  //$NON-NLS-2$
+					addSeparatorMenuItem(insertMenu);
+                                        insertMenu.add(createMenuAction(loadString("IDS_LAYOUT_INCREMENTAL"), "MBK_POPUP_LAYOUT_INCREMENTAL", BaseAction.AS_CHECK_BOX, IDrawingAreaAcceleratorKind.DAVK_LAYOUT_INCREMENTAL_LAYOUT));  //$NON-NLS-2$
 					addSeparatorMenuItem(insertMenu);
 					insertMenu.add(createMenuAction(loadString("IDS_LAYOUT_PROPERTIES"), "MBK_POPUP_LAYOUT_PROPERTIES"));  //$NON-NLS-2$
 				}
