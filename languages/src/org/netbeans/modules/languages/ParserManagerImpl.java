@@ -42,6 +42,7 @@ import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -142,8 +143,7 @@ public class ParserManagerImpl extends ParserManager {
         if (parsingTask != null) {
             String mimeType = (String) doc.getProperty ("mimeType");
             try {
-                Language l = LanguagesManager.getDefault ().
-                    getLanguage (mimeType);
+                Language l = getLanguage (mimeType);
                 LLSyntaxAnalyser a = l.getAnalyser ();
                 a.cancel ();
             } catch (ParseException ex) {
@@ -265,8 +265,7 @@ public class ParserManagerImpl extends ParserManager {
     private ASTNode process (ASTNode root) {
         try {
             String mimeType = (String) doc.getProperty ("mimeType");
-            Language l = LanguagesManager.getDefault ().
-                getLanguage (mimeType);
+            Language l = getLanguage (mimeType);
             Feature astProperties = l.getFeature ("AST");
             if (astProperties != null && ast != null) {
                 ASTNode nn = (ASTNode) astProperties.getValue (
@@ -285,8 +284,7 @@ public class ParserManagerImpl extends ParserManager {
     
     private ASTNode parse () throws ParseException {
         String mimeType = (String) doc.getProperty ("mimeType");
-        Language l = LanguagesManager.getDefault ().
-            getLanguage (mimeType);
+        Language l = getLanguage (mimeType);
         LLSyntaxAnalyser a = l.getAnalyser ();
         long start = System.currentTimeMillis ();
 
@@ -392,6 +390,23 @@ public class ParserManagerImpl extends ParserManager {
         return tokens;
     }
     
+    private Language getLanguage(String mimeType) throws LanguageDefinitionNotFoundException {
+        // [PENDING] workaround for internal mime type set by options for coloring preview
+        if (mimeType.startsWith("test")) { // NOI18N
+            int length = mimeType.length();
+            for (int x = 4; x < length; x++) {
+                char c = mimeType.charAt(x);
+                if (!(c >= '0' && c <= '9')) {
+                    if (x > 4 && c == '_' && x < length -1) {
+                        mimeType = mimeType.substring(x + 1);
+                    }
+                    break;
+                } // if
+            } // for
+        } // if
+        // end of workaround
+        return LanguagesManager.getDefault().getLanguage(mimeType);
+    }
     
     // innerclasses ............................................................
     
