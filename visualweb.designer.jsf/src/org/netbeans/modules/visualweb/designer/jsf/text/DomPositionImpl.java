@@ -48,6 +48,7 @@ import org.w3c.dom.Text;
      */
 //    public static final Position NONE = new Position(null, -1, Bias.FORWARD);
     
+    private final DomDocumentImpl domDocumentImpl;
     private final Node node;
     private final int offset;
     private final Bias bias;
@@ -57,11 +58,12 @@ import org.w3c.dom.Text;
      * referenced at the top of this class' javadoc. Text nodes are special handled;
      * in this case the node points to the text node and the offset to a character
      * within the text node. */
-    public static DomPositionImpl create(Node node, int offset, Bias bias) {
-        return new DomPositionImpl(node, offset, bias);
+    public static DomPositionImpl create(DomDocumentImpl domDocumentImpl, Node node, int offset, Bias bias) {
+        return new DomPositionImpl(domDocumentImpl, node, offset, bias);
     }
     
-    private /*public*/ DomPositionImpl(Node node, int offset, Bias bias) {
+    private /*public*/ DomPositionImpl(DomDocumentImpl domDocumentImpl, Node node, int offset, Bias bias) {
+        this.domDocumentImpl = domDocumentImpl;
         this.node = node;
         this.offset = offset;
         this.bias = bias;
@@ -87,14 +89,14 @@ import org.w3c.dom.Text;
      * this element.
      */
 //    public static Position create(Node node, boolean after) {
-    public static DomPosition create(Node node, boolean after) {
+    public static DomPosition create(DomDocumentImpl domDocumentImpl, Node node, boolean after) {
         if (node == null) {
 //            return NONE;
             return DomPosition.NONE;
         }
 
         if (node.getNodeType() == Node.TEXT_NODE) {
-            return new DomPositionImpl(node, after ? node.getNodeValue().length() : 0,
+            return new DomPositionImpl(domDocumentImpl, node, after ? node.getNodeValue().length() : 0,
                 after ? Bias.BACKWARD : Bias.FORWARD);
         } else {
             Node parent = node.getParentNode();
@@ -109,7 +111,7 @@ import org.w3c.dom.Text;
                 index++;
             }
 
-            return new DomPositionImpl(parent, index, after ? Bias.BACKWARD : Bias.FORWARD);
+            return new DomPositionImpl(domDocumentImpl, parent, index, after ? Bias.BACKWARD : Bias.FORWARD);
         }
     }
 
@@ -443,7 +445,8 @@ import org.w3c.dom.Text;
             String before = str.substring(0, offset);
             String after = str.substring(offset);
 
-            return "Position-" + type + "(rendered=" + MarkupService.isRenderedNode(node) + ",[#text:" + offset +
+//            return "Position-" + type + "(rendered=" + MarkupService.isRenderedNode(node) + ",[#text:" + offset +
+            return "Position-" + type + "(rendered=" + domDocumentImpl.isRenderedNode(node) + ",[#text:" + offset +
             ": Bias=" + bias + "; " + before + "^" + after + "])";
         } else {
             NodeList nl = node.getChildNodes();
@@ -459,7 +462,8 @@ import org.w3c.dom.Text;
                 description = " (after " + nl.item(offset - 1) + ")";
             }
 
-            return "Position-" + type + "(rendered=" + MarkupService.isRenderedNode(node) + "," + getNode() + "," +
+//            return "Position-" + type + "(rendered=" + MarkupService.isRenderedNode(node) + "," + getNode() + "," +
+            return "Position-" + type + "(rendered=" + domDocumentImpl.isRenderedNode(node) + "," + getNode() + "," +
             getOffset() + "):" + bias + "; " + description;
         }
     }
@@ -511,7 +515,8 @@ import org.w3c.dom.Text;
             return false;
         }
         
-        return MarkupService.isRenderedNode(node);
+//        return MarkupService.isRenderedNode(node);
+        return domDocumentImpl.isRenderedNode(node);
     }
     
     /** Gets whether it is source position. Note: <code>NONE</code> is not considered source position.
@@ -539,7 +544,8 @@ import org.w3c.dom.Text;
 //        }
 
 //        assert !isRendered() : this;
-        if (MarkupService.isRenderedNode(node)) {
+//        if (MarkupService.isRenderedNode(node)) {
+        if (domDocumentImpl.isRenderedNode(node)) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalStateException("Node is expected not rendered, node=" + node)); // NOI18N
         }
@@ -559,7 +565,7 @@ import org.w3c.dom.Text;
                 Node n = MarkupService.getRenderedNodeForNode(node);
 
                 if (n != null) {
-                    return new DomPositionImpl(n, 0, Bias.FORWARD);
+                    return new DomPositionImpl(domDocumentImpl, n, 0, Bias.FORWARD);
                 } else {
 //                    return NONE;
                     return DomPosition.NONE;
@@ -569,19 +575,19 @@ import org.w3c.dom.Text;
                 node = node.getChildNodes().item(offset - 1);
 
 //                return Position.create(((RaveRenderNode)node).getRenderedNode(), true);
-                return DomPositionImpl.create(MarkupService.getRenderedNodeForNode(node), true);
+                return DomPositionImpl.create(domDocumentImpl, MarkupService.getRenderedNodeForNode(node), true);
             } else if (offset < children.getLength()) {
                 node = node.getChildNodes().item(offset);
 
 //                return Position.create(((RaveRenderNode)node).getRenderedNode(), false);
-                return DomPositionImpl.create(MarkupService.getRenderedNodeForNode(node), false);
+                return DomPositionImpl.create(domDocumentImpl, MarkupService.getRenderedNodeForNode(node), false);
             } else {
                 // The offset is larger than or equal to the number of children.
                 // Use the last child.
                 node = node.getChildNodes().item(children.getLength() - 1);
 
 //                return Position.create(((RaveRenderNode)node).getRenderedNode(), true);
-                return DomPositionImpl.create(MarkupService.getRenderedNodeForNode(node), true);
+                return DomPositionImpl.create(domDocumentImpl, MarkupService.getRenderedNodeForNode(node), true);
             }
 
             //      } else if (node.getNodeType() == Node.TEXT_NODE) {
@@ -590,7 +596,8 @@ import org.w3c.dom.Text;
 
             Text xs = (Text)node;
 //            assert !xs.isRendered();
-            if (MarkupService.isRenderedNode(xs)) {
+//            if (MarkupService.isRenderedNode(xs)) {
+            if (domDocumentImpl.isRenderedNode(xs)) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                         new IllegalStateException("Node is expected to be not rendered, node=" + xs)); // NOI18N
             }
@@ -647,7 +654,7 @@ import org.w3c.dom.Text;
                 renderOffset = max;
             }
 
-            return new DomPositionImpl(xr, renderOffset, bias);
+            return new DomPositionImpl(domDocumentImpl, xr, renderOffset, bias);
         } else {
             // Not sure how to handle this one
             ErrorManager.getDefault().log("Unexpected node type in getRendered: " + node);
@@ -666,7 +673,8 @@ import org.w3c.dom.Text;
 //        assert this != Position.NONE;
 
 //        assert isRendered() : this;
-        if (!MarkupService.isRenderedNode(node)) {
+//        if (!MarkupService.isRenderedNode(node)) {
+        if (!domDocumentImpl.isRenderedNode(node)) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalStateException("Node is expected to be rendered, node=" + node)); // NOI18N
         }
@@ -686,7 +694,7 @@ import org.w3c.dom.Text;
                 Node n = MarkupService.getSourceNodeForNode(node);
 
                 if (n != null) {
-                    return new DomPositionImpl(n, 0, Bias.FORWARD);
+                    return new DomPositionImpl(domDocumentImpl, n, 0, Bias.FORWARD);
                 } else {
 //                    return NONE;
                     return DomPosition.NONE;
@@ -703,7 +711,7 @@ import org.w3c.dom.Text;
                     Node source = MarkupService.getSourceNodeForNode(curr);
 
                     if (source != null) {
-                        return DomPositionImpl.create(source, true);
+                        return DomPositionImpl.create(domDocumentImpl, source, true);
                     }
 
                     curr = curr.getParentNode();
@@ -722,7 +730,7 @@ import org.w3c.dom.Text;
                     Node source = MarkupService.getSourceNodeForNode(curr);
 
                     if (source != null) {
-                        return DomPositionImpl.create(source, false);
+                        return DomPositionImpl.create(domDocumentImpl, source, false);
                     }
 
                     curr = curr.getParentNode();
@@ -742,7 +750,7 @@ import org.w3c.dom.Text;
                     Node source = MarkupService.getSourceNodeForNode(curr);
 
                     if (source != null) {
-                        return DomPositionImpl.create(source, true);
+                        return DomPositionImpl.create(domDocumentImpl, source, true);
                     }
 
                     curr = curr.getParentNode();
@@ -757,7 +765,8 @@ import org.w3c.dom.Text;
 
             Text xr = (Text)node;
 //            assert xr.isRendered();
-            if (!MarkupService.isRenderedNode(xr)) {
+//            if (!MarkupService.isRenderedNode(xr)) {
+            if (!domDocumentImpl.isRenderedNode(xr)) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                         new IllegalStateException("Node is expected to be rendered, node=" + node)); // NOI18N
             }
@@ -807,7 +816,7 @@ import org.w3c.dom.Text;
                 sourceOffset = max;
             }
 
-            return new DomPositionImpl(xs, sourceOffset, bias);
+            return new DomPositionImpl(domDocumentImpl, xs, sourceOffset, bias);
         } else {
             // Not sure how to handle this one
             ErrorManager.getDefault().log("Unexpected node type in getSource: " + node);

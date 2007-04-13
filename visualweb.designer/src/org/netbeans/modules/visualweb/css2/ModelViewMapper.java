@@ -2503,7 +2503,8 @@ public final class ModelViewMapper {
 //            RaveElement target = pos.getTargetElement();
 //            if ((target != null) && target.isRendered()) {
             Element target = pos.getTargetElement();
-            if (MarkupService.isRenderedNode(target)) {
+//            if (MarkupService.isRenderedNode(target)) {
+            if (webForm.isRenderedNode(target)) {
 //                Value val = CssLookup.getValue(target, XhtmlCss.POSITION_INDEX);
                 CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(target, XhtmlCss.POSITION_INDEX);
                 
@@ -2523,7 +2524,8 @@ public final class ModelViewMapper {
 //            if (node instanceof RaveRenderNode) {
 //                RaveRenderNode rn = (RaveRenderNode)node;
 //                if (rn.isRendered() && (rn.getSourceNode() == null)) {
-            if (MarkupService.isRenderedNode(node) && MarkupService.getSourceNodeForNode(node) == null) {
+//            if (MarkupService.isRenderedNode(node) && MarkupService.getSourceNodeForNode(node) == null) {
+            if (webForm.isRenderedNode(node) && MarkupService.getSourceNodeForNode(node) == null) {
                     if (adjust) {
                         Node curr = node;
                         

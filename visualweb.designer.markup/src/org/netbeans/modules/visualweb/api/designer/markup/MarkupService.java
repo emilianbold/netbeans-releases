@@ -255,9 +255,9 @@ public final class  MarkupService {
         return MarkupServiceImpl.getCorrespondingSourceElement(element);
     }
     
-    public static boolean isRenderedNode(Node node) {
-        return MarkupServiceImpl.isRenderedNode(node);
-    }
+//    public static boolean isRenderedNode(Node node) {
+//        return MarkupServiceImpl.isRenderedNode(node);
+//    }
     
     public static Node getRenderedNodeForNode(Node node) {
         return MarkupServiceImpl.getRenderedNodeForNode(node);

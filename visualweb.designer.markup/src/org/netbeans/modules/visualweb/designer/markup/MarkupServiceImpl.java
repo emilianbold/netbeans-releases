@@ -504,31 +504,31 @@ public final class  MarkupServiceImpl {
         return element.getSourceElement();
     }
     
-    /** Returns true if the node is rendered.
-     * By "is rendered" I mean that the position points to a node
-     * in a renderer-hierarchy DOM (such as HTML rendered from JSF components).
-     */
-    public static boolean isRenderedNode(Node node) {
-//        if (node instanceof RaveRenderNode) {
-//            return ((RaveRenderNode)node).isRendered();
+//    /** Returns true if the node is rendered.
+//     * By "is rendered" I mean that the position points to a node
+//     * in a renderer-hierarchy DOM (such as HTML rendered from JSF components).
+//     */
+//    public static boolean isRenderedNode(Node node) {
+////        if (node instanceof RaveRenderNode) {
+////            return ((RaveRenderNode)node).isRendered();
+////        }
+////        if (node instanceof RaveElementImpl) {
+////            return ((RaveElementImpl)node).isRendered();
+////        } else if (node instanceof RaveTextImpl) {
+////            return ((RaveTextImpl)node).isRendered();
+////        }
+////        if (node instanceof AbstractRaveElement) {
+////            return ((AbstractRaveElement)node).isRendered();
+////        } else if (node instanceof AbstractRaveText) {
+////            return ((AbstractRaveText)node).isRendered();
+////        }
+//        if (node instanceof RaveRenderedElement) {
+//            return true;
+//        } else if (node instanceof RaveRenderedText) {
+//            return true;
 //        }
-//        if (node instanceof RaveElementImpl) {
-//            return ((RaveElementImpl)node).isRendered();
-//        } else if (node instanceof RaveTextImpl) {
-//            return ((RaveTextImpl)node).isRendered();
-//        }
-//        if (node instanceof AbstractRaveElement) {
-//            return ((AbstractRaveElement)node).isRendered();
-//        } else if (node instanceof AbstractRaveText) {
-//            return ((AbstractRaveText)node).isRendered();
-//        }
-        if (node instanceof RaveRenderedElement) {
-            return true;
-        } else if (node instanceof RaveRenderedText) {
-            return true;
-        }
-        return false;
-    }
+//        return false;
+//    }
     
     public static boolean isJspxNode(Node node) {
 //        if (node instanceof RaveRenderNode) {

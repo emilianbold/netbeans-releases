@@ -718,9 +718,11 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
 //        if (b.isRendered()) {
 //            b = b.getSource();
 //        }
-        if (MarkupService.isRenderedNode(b)) {
+        
+        // It is the rendered element (retrieved from #getHtmlBody).
+//        if (MarkupService.isRenderedNode(b)) {
             b = MarkupService.getSourceElementForElement(b);
-        }
+//        }
 
         NodeList list = b.getChildNodes();
         int len = list.getLength();

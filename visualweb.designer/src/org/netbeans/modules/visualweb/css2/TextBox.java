@@ -274,7 +274,8 @@ public final class TextBox extends CssBox {
 //        if (!renderNode.isRendered()) {
 //            renderNode = renderNode.getRendered();
 //        }
-        if (!MarkupService.isRenderedNode(renderNode)) {
+//        if (!MarkupService.isRenderedNode(renderNode)) {
+        if (!webform.isRenderedNode(renderNode)) {
             renderNode = MarkupService.getRenderedTextForText(renderNode);
         }
 

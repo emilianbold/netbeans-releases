@@ -2841,7 +2841,8 @@ public class WebForm implements Designer {
         }
 
 //        assert !pos.isRendered() : pos;
-        if (MarkupService.isRenderedNode(pos.getNode())) {
+//        if (MarkupService.isRenderedNode(pos.getNode())) {
+        if (isRenderedNode(pos.getNode())) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalStateException("Node is expected to be not rendered, node=" + pos.getNode()));
         }
@@ -3005,6 +3006,11 @@ public class WebForm implements Designer {
         getManager().getMouseHandler().escape();
     }
 
+    
+    // XXX
+    public boolean isRenderedNode(Node node) {
+        return domProvider.isRenderedNode(node);
+    }
     
     // XXX
     public void tcEnableCutCopyDelete() {

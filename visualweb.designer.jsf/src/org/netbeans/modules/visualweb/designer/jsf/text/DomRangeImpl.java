@@ -57,7 +57,8 @@ import org.w3c.dom.ranges.DocumentRange;
  */
 /*public*/ class DomRangeImpl implements DomProvider.DomRange {
 //    private WebForm webform;
-    private final JsfForm jsfForm;
+//    private final JsfForm jsfForm;
+    private final DomDocumentImpl domDocumentImpl;
 
     /** Associated DOM range. Will be null for e.g. document
      * ranges.
@@ -76,19 +77,20 @@ import org.w3c.dom.ranges.DocumentRange;
 //    private /* static */ Position cachedMark = new Position(null, 0, Bias.FORWARD);
 //    private /* static */ Position cachedDot = Position.create(null, 0, Bias.FORWARD);
 //    private /* static */ Position cachedMark = Position.create(null, 0, Bias.FORWARD);
-    private DomPosition cachedDot = DomPositionImpl.create(null, 0, Bias.FORWARD);
-    private DomPosition cachedMark = DomPositionImpl.create(null, 0, Bias.FORWARD);
+    private DomPosition cachedDot = DomPositionImpl.create(null, null, 0, Bias.FORWARD);
+    private DomPosition cachedMark = DomPositionImpl.create(null, null, 0, Bias.FORWARD);
     
     private Bias dotBias = Bias.FORWARD;
     private Bias markBias = Bias.FORWARD;
 
-    public static DomRangeImpl create(/*WebForm webForm,*/ JsfForm jsfForm, Node dotNode, int dotOffset, Node markNode, int markOffset) {
-        return new DomRangeImpl(/*webForm,*/ jsfForm, dotNode, dotOffset, markNode, markOffset);
+    public static DomRangeImpl create(DomDocumentImpl domDocumentImpl, Node dotNode, int dotOffset, Node markNode, int markOffset) {
+        return new DomRangeImpl(domDocumentImpl, dotNode, dotOffset, markNode, markOffset);
     }
     
-    private DomRangeImpl(/*WebForm webform,*/ JsfForm jsfForm, Node dotNode, int dotOffset, Node markNode, int markOffset) {
+    private DomRangeImpl(DomDocumentImpl domDocumentImpl, Node dotNode, int dotOffset, Node markNode, int markOffset) {
 //        this.webform = webform;
-        this.jsfForm = jsfForm;
+//        this.jsfForm = jsfForm;
+        this.domDocumentImpl = domDocumentImpl;
 
         // Determine if this node is in a DocumentFragment which means
         // it's read only
@@ -99,17 +101,17 @@ import org.w3c.dom.ranges.DocumentRange;
         }
 
 //        if (curr == webform.getJspDom()) {
-        if (curr == jsfForm.getJspDom()) {
+        if (curr == domDocumentImpl.getJsfForm().getJspDom()) {
             // It's below the main document dom node so it's part of
             // the writable document portion
 //            DocumentRange dom = (DocumentRange)webform.getJspDom();
-            DocumentRange dom = (DocumentRange)jsfForm.getJspDom();
+            DocumentRange dom = (DocumentRange)domDocumentImpl.getJsfForm().getJspDom();
             
             domRange = dom.createRange();
             domRange.setStart(markNode, markOffset);
             domRange.setEnd(dotNode, dotOffset);
 //        } else if (webform.getManager().isInlineEditing()) {
-        } else if (jsfForm.isInlineEditing()) {
+        } else if (domDocumentImpl.getJsfForm().isInlineEditing()) {
             // Handle regions in generated dom
             assert curr instanceof DocumentFragment;
 
@@ -122,7 +124,7 @@ import org.w3c.dom.ranges.DocumentRange;
 //            assert false : dotNode + "; " + curr + "; " + webform.getJspDom(); // NOI18N
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
 //                    new IllegalStateException("dotNode=" + dotNode + ", curr=" + curr + ", jsp dom=" + webform.getJspDom())); // NOI18N
-                    new IllegalStateException("dotNode=" + dotNode + ", curr=" + curr + ", jsp dom=" + jsfForm.getJspDom())); // NOI18N
+                    new IllegalStateException("dotNode=" + dotNode + ", curr=" + curr + ", jsp dom=" + domDocumentImpl.getJsfForm().getJspDom())); // NOI18N
         }
 
         dotIsFirst = false;
@@ -151,7 +153,7 @@ import org.w3c.dom.ranges.DocumentRange;
             domRange.detach();
 
 //            DocumentRange dom = (DocumentRange)webform.getJspDom();
-            DocumentRange dom = (DocumentRange)jsfForm.getJspDom();
+            DocumentRange dom = (DocumentRange)domDocumentImpl.getJsfForm().getJspDom();
             domRange = dom.createRange();
             domRange.setStart(end, endOffset);
             domRange.setEnd(start, startOffset);
@@ -247,11 +249,11 @@ import org.w3c.dom.ranges.DocumentRange;
         if (dotIsFirst) {
 //            cachedDot.setLocation(domRange.getStartContainer(), domRange.getStartOffset(),
 //                empty ? dotBias : Bias.FORWARD);
-            cachedDot = DomPositionImpl.create(domRange.getStartContainer(), domRange.getStartOffset(), empty ? dotBias : Bias.FORWARD);
+            cachedDot = DomPositionImpl.create(domDocumentImpl, domRange.getStartContainer(), domRange.getStartOffset(), empty ? dotBias : Bias.FORWARD);
         } else {
 //            cachedDot.setLocation(domRange.getEndContainer(), domRange.getEndOffset(),
 //                empty ? dotBias : Bias.BACKWARD);
-            cachedDot = DomPositionImpl.create(domRange.getEndContainer(), domRange.getEndOffset(), empty ? dotBias : Bias.FORWARD);
+            cachedDot = DomPositionImpl.create(domDocumentImpl, domRange.getEndContainer(), domRange.getEndOffset(), empty ? dotBias : Bias.FORWARD);
         }
 
         return cachedDot;
@@ -290,11 +292,11 @@ import org.w3c.dom.ranges.DocumentRange;
         if (dotIsFirst) {
 //            cachedMark.setLocation(domRange.getEndContainer(), domRange.getEndOffset(),
 //                empty ? markBias : Bias.BACKWARD);
-            cachedMark = DomPositionImpl.create(domRange.getEndContainer(), domRange.getEndOffset(), empty ? markBias : Bias.FORWARD);
+            cachedMark = DomPositionImpl.create(domDocumentImpl, domRange.getEndContainer(), domRange.getEndOffset(), empty ? markBias : Bias.FORWARD);
         } else {
 //            cachedMark.setLocation(domRange.getStartContainer(), domRange.getStartOffset(),
 //                empty ? markBias : Bias.FORWARD);
-            cachedMark = DomPositionImpl.create(domRange.getStartContainer(), domRange.getStartOffset(), empty ? markBias : Bias.FORWARD);
+            cachedMark = DomPositionImpl.create(domDocumentImpl, domRange.getStartContainer(), domRange.getStartOffset(), empty ? markBias : Bias.FORWARD);
         }
 
         return cachedMark;

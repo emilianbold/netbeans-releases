@@ -820,7 +820,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         }
 
 //        if (pos.isRendered()) {
-        if (MarkupService.isRenderedNode(pos.getNode())) {
+//        if (MarkupService.isRenderedNode(pos.getNode())) {
+        if (webform.isRenderedNode(pos.getNode())) {
             pos = pos.getSourcePosition();
             node = pos.getNode();
         }

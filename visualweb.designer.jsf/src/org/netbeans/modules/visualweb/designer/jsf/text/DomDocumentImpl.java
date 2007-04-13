@@ -208,7 +208,8 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
         if (!designer.isInlineEditing()) {
 //            assert (pos == Position.NONE) || !pos.isRendered();
 //            if (pos != Position.NONE && MarkupService.isRenderedNode(pos.getNode())) {
-            if (pos != DomPosition.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+//            if (pos != DomPosition.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+            if (pos != DomPosition.NONE && isRenderedNode(pos.getNode())) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                         new IllegalStateException("Node is expected to be not rendered, node=" + pos.getNode())); // NOI18N
                 return false;
@@ -254,7 +255,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
             
 //            pos.setLocation(p, 0, Bias.FORWARD);
 //            caret.setDot(new Position(p, 0, Bias.FORWARD));
-            fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(p, 0, Bias.FORWARD)));
+            fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, p, 0, Bias.FORWARD)));
         }
 
         if (str.equals("\n") || str.equals("\r\n")) {
@@ -292,7 +293,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
             }
 
 //            caret.setDot(new Position(targetNode, targetOffset, pos.getBias()));
-            fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(targetNode, targetOffset, pos.getBias())));
+            fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, targetNode, targetOffset, pos.getBias())));
         } else if ((node.getNodeType() == Node.ELEMENT_NODE) ||
                 (node.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)) {
             NodeList list = node.getChildNodes();
@@ -319,7 +320,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
                 node.appendChild(text);
                 
 //                caret.setDot(new Position(text, str.length(), Bias.FORWARD));
-                fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(text, str.length(), Bias.FORWARD)));
+                fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, text, str.length(), Bias.FORWARD)));
 
                 return true;
             } else if (offset < len) {
@@ -332,7 +333,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
                     text.appendData(str);
                     
 //                    caret.setDot(new Position(text, text.getLength(), pos.getBias()));
-                    fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(text, text.getLength(), pos.getBias())));
+                    fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, text, text.getLength(), pos.getBias())));
 
                     return true;
                 } else {
@@ -350,7 +351,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
                     node.insertBefore(text, before);
                     
 //                    caret.setDot(new Position(text, str.length(), Bias.FORWARD));
-                    fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(text, str.length(), Bias.FORWARD)));
+                    fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, text, str.length(), Bias.FORWARD)));
 
                     return true;
                 }
@@ -377,7 +378,8 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
             DomPosition lastPosition = domRangeImpl.getLastPosition();
             // XXX For now it works only over the source nodes. That has to be changes.
             if (!jsfForm.isInlineEditing()
-            && (MarkupService.isRenderedNode(firstPosition.getNode()) || MarkupService.isRenderedNode(lastPosition.getNode()))) {
+//            && (MarkupService.isRenderedNode(firstPosition.getNode()) || MarkupService.isRenderedNode(lastPosition.getNode()))) {
+            && (isRenderedNode(firstPosition.getNode()) || isRenderedNode(lastPosition.getNode()))) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                         new IllegalStateException("It is not inline editing, nor both positions are source ones," // NOI18N
                             + "\nstartPosition=" + firstPosition // NOI18N
@@ -418,7 +420,8 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 //        if (element.isRendered()) {
 //            return true;
 //        }
-        if (MarkupService.isRenderedNode(node)) {
+//        if (MarkupService.isRenderedNode(node)) {
+        if (jsfForm.isRenderedNode(node)) {
             return true;
         }
 
@@ -512,7 +515,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 
             // Locate end of the current list item
 //            Position listItemEnd = Position.create(list, true);
-            DomPosition listItemEnd = DomPositionImpl.create(list, true);
+            DomPosition listItemEnd = DomPositionImpl.create(this, list, true);
             domRange.setEnd(listItemEnd.getNode(), listItemEnd.getOffset());
 
             DocumentFragment df = domRange.extractContents();
@@ -556,7 +559,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
             }
 
 //            caret.setDot(new Position(li, 0, Bias.FORWARD));
-            fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(li, 0, Bias.FORWARD)));
+            fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, li, 0, Bias.FORWARD)));
         } else {
             // TODO - if the offset is 0, or end, we don't have
             // to split!
@@ -594,10 +597,10 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 
                 if (next instanceof Element) {
 //                    caret.setDot(Position.create((Element)next, false));
-                    fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create((Element)next, false)));
+                    fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, (Element)next, false)));
                 } else {
 //                    caret.setDot(Position.create(br, after));
-                    fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(br, after)));
+                    fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, br, after)));
                 }
             } else if (offset == 0) {
                 // Insert before our text node
@@ -607,7 +610,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
                         parent, text);
                 
 //                caret.setDot(new Position(text, 0, Bias.FORWARD));
-                fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(text, 0, Bias.FORWARD)));
+                fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, text, 0, Bias.FORWARD)));
             } else {
                 // Insert in the middle of the text node; split it
                 org.w3c.dom.Text secondHalf = text.splitText(offset);
@@ -630,7 +633,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
                                 text.getParentNode(), secondHalf.getNextSibling());
                         
 //                        caret.setDot(Position.create(br, false));
-                        fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(br, false)));
+                        fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, br, false)));
 
                         return;
                     }
@@ -638,7 +641,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 
                 //caret.setDot(Position.create(br, true));
 //                caret.setDot(new Position(secondHalf, 0, Bias.FORWARD));
-                fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(secondHalf, 0, Bias.FORWARD)));
+                fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, secondHalf, 0, Bias.FORWARD)));
             }
         }
     }
@@ -700,7 +703,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
             parent.insertBefore(text, next);
             
 //            caret.setDot(new Position(text, str.length(), Bias.FORWARD));
-            fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(text, str.length(), Bias.FORWARD)));
+            fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, text, str.length(), Bias.FORWARD)));
 
             return;
         }
@@ -796,7 +799,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
         // XXX check that this works on Windows too - or do they
         // use \r\n ?
 //        caret.setDot(new Position(targetNode, targetOffset, Bias.FORWARD));
-        fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(targetNode, targetOffset, Bias.FORWARD)));
+        fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, targetNode, targetOffset, Bias.FORWARD)));
     }
 
 //    /** XXX Copy also in insync/FacesDnDSupport
@@ -1483,15 +1486,15 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 
     
     public DomProvider.DomPosition createDomPosition(Node node, int offset, DomPosition.Bias bias) {
-        return DomPositionImpl.create(node, offset, bias);
+        return DomPositionImpl.create(this, node, offset, bias);
     }
 
     public DomProvider.DomPosition createDomPosition(Node node, boolean after) {
-        return DomPositionImpl.create(node, after);
+        return DomPositionImpl.create(this, node, after);
     }
 
     public DomProvider.DomRange createRange(Node dotNode, int dotOffset, Node markNode, int markOffset) {
-        return DomRangeImpl.create(jsfForm, dotNode, dotOffset, markNode, markOffset);
+        return DomRangeImpl.create(this, dotNode, dotOffset, markNode, markOffset);
     }
 
     public int compareBoudaryPoints(Node endPointA, int offsetA, Node endPointB, int offsetB) {
@@ -1546,7 +1549,8 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
         }
 
 //        if (pos.isRendered()) {
-        if (MarkupService.isRenderedNode(pos.getNode())) {
+//        if (MarkupService.isRenderedNode(pos.getNode())) {
+        if (isRenderedNode(pos.getNode())) {
             pos = pos.getSourcePosition();
         }
 
@@ -2842,4 +2846,12 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
         }
     }
     
+    // XXX
+    boolean isRenderedNode(Node node) {
+        return jsfForm.isRenderedNode(node);
+    }
+
+    JsfForm getJsfForm() {
+        return jsfForm;
+    }
 }

@@ -484,7 +484,7 @@ public interface DomProvider {
         public Element getTargetElement();
         public boolean isInside(Element targetSourceElement);
         
-        // XXX
+        // XXX Get rid of this, there should be rendered positions only.
         public boolean isRenderedPosition();
         public DomPosition getRenderedPosition();
         public boolean isSourcePosition();
@@ -533,6 +533,9 @@ public interface DomProvider {
     ///////////////////
 
     public void reuseCssStyle(DomProvider domProvider);
+
+    // XXX Get rid of this. There should be only rendered nodes here.
+    public boolean isRenderedNode(Node node);
     
     // XXX Temp till the TopComp move is cleaned up.
 //    public void tcUpdateErrors(Designer designer);

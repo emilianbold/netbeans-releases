@@ -626,7 +626,9 @@ final class DesignBeanNodeHelper {
 //                        RaveElement xlink = (RaveElement)element;
                         
 //                        if (xlink.isRendered() && (xlink.getSource() == null)) {
-                        if (MarkupService.isRenderedNode(element) && MarkupService.getSourceNodeForNode(element) == null) {
+//                        if (MarkupService.isRenderedNode(element) && MarkupService.getSourceNodeForNode(element) == null) {
+                        // It is the rendered node (got from #getHtmlDomFragment).
+                        if (MarkupService.getSourceNodeForNode(element) == null) {
                             // Don't return "derived" links such as theme links
                             // automatically rendered for themes for example
                             continue;
@@ -848,7 +850,8 @@ final class DesignBeanNodeHelper {
 //                RaveElement h = (RaveElement)head;
                 
 //                if (h.isRendered() && (h.getDesignBean() != null)) {
-                if (MarkupService.isRenderedNode(head)) {
+                // It is the rendered node.
+//                if (MarkupService.isRenderedNode(head)) {
 //                    MarkupDesignBean b = h.getDesignBean();
                     com.sun.rave.designtime.markup.MarkupDesignBean b = InSyncServiceProvider.get().getMarkupDesignBeanForElement(head);
                     if (b != null) {
@@ -866,7 +869,7 @@ final class DesignBeanNodeHelper {
                             return;
                         }
                     }
-                }
+//                }
             }
             
             FacesModel facesModel = findFacesModel(designBean);

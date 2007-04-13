@@ -1405,4 +1405,8 @@ class DomProviderImpl implements DomProvider {
         }
     }
 
+    public boolean isRenderedNode(Node node) {
+        return jsfForm.isRenderedNode(node);
+    }
+
 }

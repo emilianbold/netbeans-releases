@@ -860,7 +860,8 @@ import org.w3c.dom.Node;
 //    void handleMoveDot(Position dot) {
     void handleMoveDot(DomPosition dot) {
 //        assert !dot.isRendered();
-        if (MarkupService.isRenderedNode(dot.getNode())) {
+//        if (MarkupService.isRenderedNode(dot.getNode())) {
+        if (component.getWebForm().isRenderedNode(dot.getNode())) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalArgumentException("The node is expected not rendered" + dot.getNode())); // NOI18N
         }
@@ -908,7 +909,8 @@ import org.w3c.dom.Node;
 
 //        assert !dot.isRendered() ||
 //        component.getDocument().getWebForm().getManager().isInlineEditing() : dot;
-        if (MarkupService.isRenderedNode(dot.getNode())
+//        if (MarkupService.isRenderedNode(dot.getNode())
+        if (component.getWebForm().isRenderedNode(dot.getNode())
 //        && !component.getDocument().getWebForm().getManager().isInlineEditing()) {
         && !component.getWebForm().getManager().isInlineEditing()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,

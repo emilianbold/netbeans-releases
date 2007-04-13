@@ -2330,5 +2330,13 @@ public class JsfForm {
             designers.add(designer);
         }
     }
+    
+    public boolean isRenderedNode(Node node) {
+        if (node == null) {
+            return false;
+        }
+        
+        return node.getOwnerDocument() == getHtmlDom();
+    }
 }
 
