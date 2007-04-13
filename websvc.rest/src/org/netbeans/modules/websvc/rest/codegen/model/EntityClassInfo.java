@@ -63,10 +63,6 @@ public class EntityClassInfo {
                         
                         TypeMirror fieldType = field.asType();
                         
-                        System.out.println("field name = " + fieldInfo.getName() +
-                                " type = " + fieldType +
-                                " kind = " + fieldType.getKind());
-                        
                         if (fieldType.getKind() == TypeKind.DECLARED) {
                             DeclaredType declType = (DeclaredType) fieldType;
                             

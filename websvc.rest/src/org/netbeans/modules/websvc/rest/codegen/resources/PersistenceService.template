@@ -14,8 +14,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -23,42 +21,35 @@ import java.util.Map;
  */
 public class PersistenceService {
     private static String DEFAULT_PU = "RESTDBApp5PU";
-    private static Map<Thread, PersistenceService> serviceMap = new HashMap<Thread, PersistenceService>();
-
+    
+    private static ThreadLocal<PersistenceService> instance = new ThreadLocal<PersistenceService>() {
+        protected PersistenceService initialValue() {
+            return new PersistenceService(DEFAULT_PU);
+        }
+    };
+    
     private EntityManagerFactory emf;
     private EntityManager em;
- 
+    
     private PersistenceService(String puName) {
         this.emf = Persistence.createEntityManagerFactory(puName);
         this.em = emf.createEntityManager();
     }
     
-    public static synchronized PersistenceService getInstance() {
-        Thread thread = Thread.currentThread();
-
-        PersistenceService service = serviceMap.get(thread);
-
-        if (service == null) {
-            service = new PersistenceService(DEFAULT_PU);
-            serviceMap.put(thread, service);
-        }
-
-        return service;
-    }
-
-    private static synchronized void removeInstance() {
-        serviceMap.remove(Thread.currentThread());
-    }
-  
-    public Object refreshEntity(Object entity) {
-        entity = em.merge(entity);
-        em.refresh(entity);
-
-        return entity;
+    public static PersistenceService getInstance() {
+        return instance.get();
     }
     
-    public void mergeEntity(Object entity) {
-        em.merge(entity);
+    private static void removeInstance() {
+        instance.remove();
+    }
+    
+    public void refreshEntity(Object entity) {
+        em.refresh(entity);
+    }
+    
+    public Object mergeEntity(Object entity) {
+        return em.merge(entity);
     }
     
     public void persistEntity(Object entity) {
@@ -69,6 +60,13 @@ public class PersistenceService {
         em.remove(entity);
     }
     
+    public Object resolveEntity(Object entity) {
+        entity = em.merge(entity);
+        em.refresh(entity);
+        
+        return entity;
+    }
+
     public Query createNamedQuery(String query) {
         return em.createNamedQuery(query);
     }
@@ -100,11 +98,11 @@ public class PersistenceService {
             tx.rollback();
         }
     }
-   
+    
     public void close() {
         em.close();
         emf.close();
-
+        
         removeInstance();
     }
 }

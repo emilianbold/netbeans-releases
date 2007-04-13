@@ -99,7 +99,6 @@ public class JavaSourceHelper {
     public static boolean isEntity(JavaSource source) {
         final boolean[] isBoolean = new boolean[1];
         
-        System.out.println("isEntity called on source = " + source);
         try {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller)
@@ -108,20 +107,16 @@ public class JavaSourceHelper {
                     
                     TypeElement classElement = getTopLevelClassElement(controller);
                     
-                    if (classElement == null) {
-                        System.out.println("Cannot resolve class!");
-                    } else {
-                        List<? extends AnnotationMirror> annotations =
-                                controller.getElements().getAllAnnotationMirrors(classElement);
-                        
-                        for (AnnotationMirror annotation : annotations) {
-                            if (annotation.toString().equals("@javax.persistence.Entity")) {    //NOI18N
-                                isBoolean[0] = true;
-                                
-                                break;
-                            }
+                    List<? extends AnnotationMirror> annotations =
+                            controller.getElements().getAllAnnotationMirrors(classElement);
+                    
+                    for (AnnotationMirror annotation : annotations) {
+                        if (annotation.toString().equals("@javax.persistence.Entity")) {    //NOI18N
+                            isBoolean[0] = true;
+                            
+                            break;
                         }
-                    }
+                    }           
                 }
             }, true);
         } catch (IOException ex) {
@@ -259,7 +254,6 @@ public class JavaSourceHelper {
         
         for (ExecutableElement constructor : constructors) {
             if (constructor.getParameters().size() == 0) {
-                System.out.println("constructor = " + controller.getTrees().getTree(constructor));
                 return controller.getTrees().getTree(constructor);
             }
         }
@@ -419,7 +413,7 @@ public class JavaSourceHelper {
             String value) {
         TreeMaker maker = copy.getTreeMaker();
         
-        VariableTree modifiedTree = maker.Variable( 
+        VariableTree modifiedTree = maker.Variable(
                 tree.getModifiers(),
                 tree.getName(),
                 tree.getType(),
