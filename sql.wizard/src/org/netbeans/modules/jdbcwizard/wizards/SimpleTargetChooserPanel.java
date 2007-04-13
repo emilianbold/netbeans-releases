@@ -122,16 +122,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
      * @return DOCUMENT ME!
      */
     public HelpCtx getHelp() {
-        if (this.bottomPanel != null) {
-            final HelpCtx bottomHelp = this.bottomPanel.getHelp();
-
-            if (bottomHelp != null) {
-                return bottomHelp;
-            }
-        }
-
-        // XXX
-        return null;
+		return new HelpCtx(SimpleTargetChooserPanel.class);
     }
 
     /**

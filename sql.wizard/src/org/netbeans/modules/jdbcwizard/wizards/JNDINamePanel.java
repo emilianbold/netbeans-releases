@@ -128,7 +128,7 @@ public class JNDINamePanel extends javax.swing.JPanel implements WizardDescripto
      */
     public HelpCtx getHelp() {
         // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
+       return new HelpCtx(JNDINamePanel.class);
     }
 
     /**

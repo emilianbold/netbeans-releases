@@ -221,7 +221,7 @@ public class JDBCWizardNamePanel extends JPanel implements WizardDescriptor.Pane
      */
     public HelpCtx getHelp() {
         // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx(JDBCWizardNamePanel.class);
 
     }
 
