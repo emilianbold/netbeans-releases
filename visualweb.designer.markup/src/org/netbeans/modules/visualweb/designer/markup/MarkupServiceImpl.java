@@ -29,6 +29,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.batik.css.engine.CSSStylableElement;
 import org.apache.batik.css.engine.StyleMap;
 import org.apache.xerces.dom.DocumentImpl;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -723,6 +725,41 @@ public final class  MarkupServiceImpl {
         }
         return (CSSStylableElement)element.getUserData(KEY_STYLE_PARENT);
     }
+    
+    static boolean isElementPseudoInstanceOf(Element element, String pseudoClass) {
+        if (element == null) {
+            return false;
+        }
+        
+        if (pseudoClass.equals("first-child")) {
+            Node n = element.getPreviousSibling();
+
+            while ((n != null) && (n.getNodeType() != Node.ELEMENT_NODE)) {
+                n = n.getPreviousSibling();
+            }
+
+            return n == null;
+        } else if (pseudoClass.equals("link")) {
+            Node n = element;
+            String a = HtmlTag.A.toString();
+
+            while (n != null) {
+                if ((n.getNodeType() == Node.ELEMENT_NODE) && n.getNodeName().equals(a)) {
+                    // Only a link if the href attribute is set!
+                    if (((Element)n).hasAttribute(HtmlAttribute.HREF)) {
+                        return true;
+                    }
+                }
+
+                n = n.getParentNode();
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+    
     
     
     private static class JspxDataHandler implements UserDataHandler {
