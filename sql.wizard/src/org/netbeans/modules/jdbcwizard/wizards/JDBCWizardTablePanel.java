@@ -482,8 +482,8 @@ public class JDBCWizardTablePanel extends JPanel {
             this.columnDisplayDialog.setTitle(this.title);
             this.correspInsertCol.setName("Insert");
             this.correspUpdateCol.setName("Update");
-            this.correspChosenCol.setName("Select");
-            this.correspPolledCol.setName("Poll");
+            this.correspChosenCol.setName("Find");//
+            this.correspPolledCol.setName("PollRecords");
             
             this.myTabpane = new JTabbedPane();
             this.myTabpane.add(this.correspInsertCol);
