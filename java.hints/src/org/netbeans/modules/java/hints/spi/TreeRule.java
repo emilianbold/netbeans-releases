@@ -31,7 +31,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  * @author Petr Hrebejk
  */
 public interface TreeRule extends Rule {
-
+    
     /** Get the treekinds this rule should run on
      */
     public Set<Tree.Kind> getTreeKinds();
@@ -41,6 +41,5 @@ public interface TreeRule extends Rule {
      */
     public List<ErrorDescription> run( CompilationInfo compilationInfo, TreePath treePath );
 
-    
-    
+  
 }

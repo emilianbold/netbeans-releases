@@ -227,4 +227,13 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
+    <folder name="org.netbeans.modules.java.source">
+      <folder name="options">
+          <file name="MarkOccurences.instance">
+              <attr name="Formating.instance/MarkOccurences.instance" boolvalue="true"/>
+              <attr name="instanceClass" stringvalue="org.netbeans.modules.java.editor.options.MarkOccurencesAdvancedOption"/>              
+          </file>
+      </folder>
+  </folder>
+    
 </filesystem>

@@ -40,4 +40,13 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    
+    <folder name="org.netbeans.modules.java.source">
+      <folder name="options">
+          <file name="Hints.instance">
+              <attr name="instanceClass" stringvalue="org.netbeans.modules.java.hints.options.HintsAdvancedOption"/>
+          </file>
+      </folder>
+  </folder>
+    
 </filesystem>

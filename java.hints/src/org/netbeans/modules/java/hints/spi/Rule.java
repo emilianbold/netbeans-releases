@@ -27,19 +27,20 @@ package org.netbeans.modules.java.hints.spi;
  */
 public interface Rule {
     
-    /** Gets unique ID of the rule
+    /** Gets unique ID of the rule.
+     * @return Unique ID of this rule.
      */
     public String getId();
 
     /** Get's UI usable name of the rule
+     * XXX think of pushing this to subclasses
      */
     public String getDisplayName();
 
     /** Gets longer description of the rule
+     * XXX think of pushing this to subclasses
      */
     public String getDescription();
-
-    // XXX Add Others
-    // public JPanel getCustomizer() or Hash map getParameters()
+    
 
 }
