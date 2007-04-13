@@ -20,24 +20,24 @@
 package gui.window;
 
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.WizardOperator;
 
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 
 /**
  * Test of Proxy Configuration.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class ProxyConfiguration extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+public class ProxyConfiguration extends UpdateCenter {
 
-    JButtonOperator openProxyButton;
-    WizardOperator wizard;
-    private String BUNDLE, BUTTON, MENU, TITLE_1;
+    private JButtonOperator openProxyButton;
+    protected String BUTTON, TAB;
+    private WizardOperator wizard;
+    
     
     /** Creates a new instance of ProxyConfiguration */
     public ProxyConfiguration(String testName) {
@@ -52,15 +52,16 @@ public class ProxyConfiguration extends org.netbeans.performance.test.utilities.
     }
     
     public void initialize() {
-        BUNDLE = "org.netbeans.modules.autoupdate.Bundle";
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"CTL_Update");
-        TITLE_1 = Bundle.getStringTrimmed(BUNDLE,"CTL_Wizard");
-        BUTTON = Bundle.getStringTrimmed(BUNDLE,"BNT_Proxy");
+        super.initialize();
+        String BUNDLE2 =  "org.netbeans.modules.autoupdate.ui.Bundle";
         
-        // open the Update Center wizard
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        TAB = Bundle.getStringTrimmed(BUNDLE2,"SettingsTab_displayName");
+        BUTTON = Bundle.getStringTrimmed(BUNDLE2,"SettingsTab.bProxy.text");
         
-        wizard = new WizardOperator(TITLE_1);
+        wizard = (WizardOperator) super.open();
+        
+        new JTabbedPaneOperator(wizard, 0).selectPage(TAB);
+        
         openProxyButton = new JButtonOperator(wizard, BUTTON);
     }
     
@@ -85,5 +86,4 @@ public class ProxyConfiguration extends org.netbeans.performance.test.utilities.
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new ProxyConfiguration("measureTime"));
     }
-    
 }
