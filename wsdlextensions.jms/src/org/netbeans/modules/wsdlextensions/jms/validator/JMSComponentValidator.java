@@ -139,6 +139,19 @@ public class JMSComponentValidator
                 Iterator<Port> ports = services.next().getPorts().iterator();
                 while (ports.hasNext()) {
                     Port port = ports.next();
+                    
+                    // ensure that jms:jndienv is not child elemnt of port
+                    List <JMSJNDIEnv> jmsJndiEnvList = port.getExtensibilityElements(JMSJNDIEnv.class);
+                    if (jmsJndiEnvList.size() > 0) {
+                        results.add(
+                                new Validator.ResultItem(this,
+                                Validator.ResultType.ERROR,
+                                port,
+                                getMessage("JMSBindingValidation.INVALID_USAGE_OF_JMS_JNDIENV_ELEM",
+                                           new Object[]{port.getName(), 
+                                                        new Integer(jmsJndiEnvList.size())})));                        
+                    }
+                    
                     if(port.getBinding() != null) {
                         Binding binding = port.getBinding().get();
                         if(binding != null) {
@@ -213,6 +226,19 @@ public class JMSComponentValidator
                     Iterator<JMSOperation> jmsOps =
                             jmsOpsList.iterator();
                     
+                    // there should only be one jms:operation for the binding operation
+                    if (jmsOpsList.size() > 1) {
+                        results.add(
+                                new Validator.ResultItem(this,
+                                Validator.ResultType.ERROR,
+                                bindingOp,
+                                getMessage("JMSBindingValidation.ONLY_ONE_JMS_OPERATION_ALLOWED",
+                                           new Object[]{binding.getName(),
+                                                        bindingOp.getName(),
+                                                        new Integer(jmsOpsList.size())})));                        
+                    }
+                    
+                    // validate all anyways if more than one is found
                     while (jmsOps.hasNext()) {
                         validate(bindingOp, jmsOps.next());
                     }
@@ -265,7 +291,31 @@ public class JMSComponentValidator
                                         getMessage("JMSBindingValidation.NO_MESSAGE_FOUND_IN_INPUT",
                                                   new Object [] {bindingOp.getName(),
                                                                  bindingInput.getName()})));
-                            }                            
+                            }
+                            
+                            // invalidate if jms:mapmessage and/or jms:properties is found as child elment(s) of input
+                            List<JMSProperties> jmsProperites =
+                                    bindingInput.getExtensibilityElements(JMSProperties.class);
+                            if (jmsProperites != null && jmsProperites.size() > 0) {
+                                results.add(
+                                        new Validator.ResultItem(this,
+                                        Validator.ResultType.ERROR,
+                                        bindingInput,
+                                        getMessage("JMSBindingValidation.INVALID_USAGE_OF_JMS_PROPERITES_ELEM",
+                                                  new Object [] {bindingOp.getName(),
+                                                                 bindingInput.getName()})));                                
+                            }
+                            List<JMSMapMessage> jmsMapMessage =
+                                    bindingInput.getExtensibilityElements(JMSMapMessage.class);
+                            if (jmsMapMessage != null && jmsMapMessage.size() > 0) {
+                                results.add(
+                                        new Validator.ResultItem(this,
+                                        Validator.ResultType.ERROR,
+                                        bindingInput,
+                                        getMessage("JMSBindingValidation.INVALID_USAGE_OF_JMS_MAPMESSAGE_ELEM",
+                                                  new Object [] {bindingOp.getName(),
+                                                                 bindingInput.getName()})));                                
+                            }
                         }
                                                     
                         BindingOutput bindingOutput = bindingOp.getBindingOutput();
@@ -301,7 +351,31 @@ public class JMSComponentValidator
                                         getMessage("JMSBindingValidation.NO_MESSAGE_FOUND_IN_OUTPUT",
                                                   new Object [] {bindingOp.getName(),
                                                                  bindingOutput.getName()})));
-                            }                        
+                            }
+                            
+                            // invalidate if jms:mapmessage and/or jms:properties is found as child elment(s) of input
+                            List<JMSProperties> jmsProperites =
+                                    bindingOutput.getExtensibilityElements(JMSProperties.class);
+                            if (jmsProperites != null && jmsProperites.size() > 0) {
+                                results.add(
+                                        new Validator.ResultItem(this,
+                                        Validator.ResultType.ERROR,
+                                        bindingOutput,
+                                        getMessage("JMSBindingValidation.INVALID_USAGE_OF_JMS_PROPERITES_ELEM",
+                                                  new Object [] {bindingOp.getName(),
+                                                                 bindingOutput.getName()})));                                
+                            }
+                            List<JMSMapMessage> jmsMapMessage =
+                                    bindingOutput.getExtensibilityElements(JMSMapMessage.class);
+                            if (jmsMapMessage != null && jmsMapMessage.size() > 0) {
+                                results.add(
+                                        new Validator.ResultItem(this,
+                                        Validator.ResultType.ERROR,
+                                        bindingOutput,
+                                        getMessage("JMSBindingValidation.INVALID_USAGE_OF_JMS_MAPMESSAGE_ELEM",
+                                                  new Object [] {bindingOp.getName(),
+                                                                 bindingOutput.getName()})));                                
+                            }                            
                         }                        
                     }
                     
@@ -337,45 +411,6 @@ public class JMSComponentValidator
                                        new Object[]{binding.getName()})));
                 }
             }
-
-            /*
-            Iterator<Service> services = defs.getServices().iterator();
-            while (services.hasNext()) {
-                Iterator<Port> ports = services.next().getPorts().iterator();
-                while (ports.hasNext()) {
-                    Port port = ports.next();
-                    if(port.getBinding() != null) {
-                        Binding binding = port.getBinding().get();
-                        if(binding != null) {
-                            int numRelatedJMSBindings = binding.getExtensibilityElements(JMSBinding.class).size();
-                            List <JMSAddress> jmsAddressList = port.getExtensibilityElements(JMSAddress.class);
-                            Iterator<JMSAddress> jmsAddresses = jmsAddressList.iterator();
-                            if((numRelatedJMSBindings > 0) && (jmsAddressList.size()==0)){
-                                results.add(
-                                        new Validator.ResultItem(this,
-                                        Validator.ResultType.ERROR,
-                                        port,
-                                        getMessage("JMSAddressValidation.MISSING_JMS_ADDRESS",
-                                                   new Object[]{port.getName(), 
-                                                                new Integer(numRelatedJMSBindings)})));                                        
-                            }
-                            
-                            if(jmsAddressList.size() > 1){
-                                results.add(
-                                        new Validator.ResultItem(this,
-                                        Validator.ResultType.ERROR,
-                                        port,
-                                        getMessage("JMSAddressValidation.ONLY_ONE_JMS_ADDRESS_ALLOWED",
-                                                   new Object[]{port.getName(), 
-                                                                new Integer(jmsAddressList.size())})));
-                            }
-                            while (jmsAddresses.hasNext()) {
-                                validate(jmsAddresses.next());
-                            }
-                        }
-                    }
-                }
-            } */
         }
         // Clear out our state
         mValidation = null;
