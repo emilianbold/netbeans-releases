@@ -91,13 +91,13 @@ done
 ###################################################################
 
 #nbbuild module is required for the list of modules
-cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D '$CVS_STAMP' nbbuild > $CVS_CHECKOUT_LOG 2>&1
+cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D "$CVS_STAMP" nbbuild > $CVS_CHECKOUT_LOG 2>&1
 
 #Checkout the rest of required modules for the NB IDE itself
 ant -f nbbuild/build.xml checkout >> $CVS_CHECKOUT_LOG 2>&1
 
 #Checkout modules for the components
-cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D '$CVS_STAMP' mobility uml visualweb scripting enterprise print identity  >> $CVS_CHECKOUT_LOG 2>&1
+cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D "$CVS_STAMP" mobility uml visualweb scripting enterprise print identity  >> $CVS_CHECKOUT_LOG 2>&1
 
 
 ###################################################################
