@@ -59,24 +59,15 @@ public class BinaryExpression  extends ExpressionStateHandler
         /* (non-Javadoc)
          * @see org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression.IBinaryExpression#createSubStateHandler(java.lang.String, java.lang.String)
          */
-    public StateHandler createSubStateHandler(String stateName,String language)
-    {
+    public StateHandler createSubStateHandler(String stateName,String language) {
         StateHandler retVal = null;
         retVal = super.createSubStateHandler(stateName, language);
         
         if(retVal == null)
-        {
             retVal = this;
-        }
         else
-        {
             m_leftSideFound = true;
-            if(m_rightSidePrecedence != null)
-            {
-                retVal.processToken(m_rightSidePrecedence,language);
-                m_rightSidePrecedence = null;
-            }
-        }
+        
         
         return retVal;
     }
@@ -169,14 +160,12 @@ public class BinaryExpression  extends ExpressionStateHandler
     public void processToken(ITokenDescriptor pToken, String language)
     {
         String value = pToken.getType();
-        String text =  pToken.getValue();
+        
         if("Operator".equals(value))
         {
             if(m_pOperator == null)
-            {
                 m_pOperator = pToken;
-                String value1 = pToken.getValue();
-            }
+            
         }
         else if("Precedence Start".equals(value))
         {
@@ -313,6 +302,7 @@ public class BinaryExpression  extends ExpressionStateHandler
     {
         StringBuffer retVal = new StringBuffer("");
         
+        //Deal with the left side of the expression
         if(m_precedenceStart != null)
         {
             retVal.append(m_precedenceStart.getValue());
@@ -325,8 +315,21 @@ public class BinaryExpression  extends ExpressionStateHandler
             retVal.append(m_precedenceEnd.getValue());
         }
         
+        //append the operator
         retVal.append(getOperatorAsString());
+        
+        //Deal with the right side of the expression
+        if(m_rightSidePrecedence != null)
+        {
+            retVal.append(m_rightSidePrecedence.getValue());
+        }
+        
         retVal.append(getRightHandSideString());
+        
+        if(m_rightSidePrecedenceEnd != null)
+        {
+            retVal.append(m_rightSidePrecedenceEnd.getValue());
+        }
         
         if( (m_precedenceEnd != null) && (m_precedenceEndAfterLeft == false) )
         {
