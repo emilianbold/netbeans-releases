@@ -229,7 +229,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                             MemberInfo element = (MemberInfo) members[i][1];
                             // for methods the makeAbstract is always set to true if the
                             // target type is an interface
-                            element.setUserData(Lookups.singleton(targetIsInterface || ((Boolean) members[i][2]==null?Boolean.FALSE:(Boolean)members[i][2])));
+                            element.setUserData(Lookups.singleton(((element.getKind() == ElementKind.METHOD) && targetIsInterface) || ((Boolean) members[i][2]==null?Boolean.FALSE:(Boolean)members[i][2])));
                             list.add(element);
                         }
                     }
