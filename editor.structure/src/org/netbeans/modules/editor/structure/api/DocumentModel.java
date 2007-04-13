@@ -130,9 +130,6 @@ public final class DocumentModel {
     //when the elements are resorted.
     boolean documentDirty = true;
     
-    private Hashtable<DocumentElement, List<DocumentElement>> childrenCache = null;
-    private Hashtable<DocumentElement, DocumentElement> parentsCache = null;
-    
     //model synchronization
     private int numReaders = 0;
     private int numWriters = 0;
@@ -151,9 +148,6 @@ public final class DocumentModel {
     DocumentModel(Document doc, DocumentModelProvider provider) throws DocumentModelException {
         this.doc = (BaseDocument)doc; //type changed in DocumentModel.getDocumentModel(document);
         this.provider = provider;
-        
-        this.childrenCache = new Hashtable<DocumentElement, List<DocumentElement>>();
-        this.parentsCache = new Hashtable<DocumentElement, DocumentElement>();
         
         //init RP & RP task
         requestProcessor = new RequestProcessor(DocumentModel.class.getName());
