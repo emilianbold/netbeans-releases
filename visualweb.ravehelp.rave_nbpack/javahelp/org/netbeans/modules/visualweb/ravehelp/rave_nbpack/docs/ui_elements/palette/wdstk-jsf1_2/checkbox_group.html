@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -26,15 +26,15 @@
           "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">
           <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>
       </li>
-    </ul>
+</ul>
 
 <p>The checkboxes are rendered in rows and columns in an HTML <code>&lt;table&gt;</code> element. The number of rows is defined by the number of checkboxes. The number of columns is defined by the <code>columns</code> property. The default layout is a single vertical column. If you want the checkboxes laid out in a single row, you can set the <code>columns</code> property to the number of checkboxes. </p>
 <p>The <code>items</code> property is bound to an array, a list, or a collection of <code>com.sun.webui.jsf.model.Option</code> objects that populate the list. Right-click the component and choose Bind to Data to set this property. In the  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
     <param name="content" value="../app_outline_win_graphic.html">
     <param name="viewerActivator" value="javax.help.LinkLabel">
     <param name="viewerStyle" value="javax.help.Popup">
-    <param name="viewerSize" value="300,400">
-    <param name="text" value="Outline window"></object> you can see the default object that populates the list, which has a name similar to <code>checkboxGroup1DefaultOptions</code>. The option labels become the checkbox labels. When the user selects 
+    <param name="viewerSize" value="300,415">
+    <param name="text" value="Outline window"></object>&nbsp;you can see the default object that populates the list, which has a name similar to <code>checkboxGroup1DefaultOptions</code>. The option labels become the checkbox labels. When the user selects 
 one or more checkboxes, the component's  <code>selected</code> property contains  an array of the selected values.</p>
 <p>You set the <code>selected</code> property to associate the component with a model object that picks up the items selected by the user. The model object must be an array of objects whose values represent the values of the <code>com.sun.webui.jsf.model.Option</code> objects in the list. The first time the component is rendered, the options that correspond to the value of the <code>selected</code> property, if there are any, are marked as selected.</p>
 <p>For information on binding the component to an object to set up the list, see Bind to Data below. </p>

@@ -137,6 +137,7 @@
 	<mapID target="projrave_projects_howtoprojects_modify_library" url="projects/howtoprojects/modify_library.html"/>
 	<mapID target="projrave_projects_howtoprojects_open_project" url="projects/howtoprojects/open_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_proj_main" url="projects/howtoprojects/proj_main.html"/>
+	<mapID target="projrave_projects_howtoprojects_rename_page" url="projects/howtoprojects/rename_page.html"/>
 	<mapID target="projrave_projects_howtoprojects_run_project" url="projects/howtoprojects/run_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_save_project" url="projects/howtoprojects/save_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_set_project_properties" url="projects/howtoprojects/set_project_properties.html"/>

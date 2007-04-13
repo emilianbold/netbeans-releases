@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -40,13 +40,13 @@ items from a list.</p>
     <param name="content" value="../app_outline_win_graphic.html">
     <param name="viewerActivator" value="javax.help.LinkLabel">
     <param name="viewerStyle" value="javax.help.Popup">
-    <param name="viewerSize" value="300,400">
+    <param name="viewerSize" value="300,415">
     <param name="text" value="Outline window">
-  </object>
+  </object>&nbsp;
 you can see the default object that populates the list, which has a name similar to <code>dropDown1DefaultOptions</code>. For  information on the default setting for this property, see 
 <a href="#defaultdisplay">Default Display of Drop Down Items</a> later in this topic.</p>
-<p>You use the <code>selected</code> property to associate the component with a model object that represents the current choice, by setting the value to an expression that corresponds to a property of a managed bean. You can right-click the component and choose Property Bindings to bind the <code>selected</code> property. </p>
-<p>The first time the component is rendered, the option that corresponds to the value of the <code>selected</code> model object property is marked as selected by using the equals method on the model object. </p>
+<p>You use the <code>selected</code> property to associate the component with a model object that represents the current choice. To do so, you set the value to an expression that corresponds to a property of a managed bean. You can right-click the component and choose Property Bindings to bind the <code>selected</code> property in the <a href="../../dialogs/property_binding_db.html">Property Bindings Dialog Box</a>. </p>
+<p>The first time the component is rendered, the option that corresponds to the value of the <code>selected</code> model object property is marked as selected by using the <code>equals</code> method on the model object. </p>
 <p>Here are some things you can do with the component: </p>
 <ul>
   <li>  
@@ -83,13 +83,22 @@ you can see the default object that populates the list, which has a name similar
   </li>
 </ul>
 <h3>Default Display of Drop Down Items<a name="defaultdisplay"></a> </h3>
-<p>By default, a Drop Down List displays its list items by using an object of type <code>SingleSelectOptionsList</code> with a name based on the default component ID. For example, the first drop-down list you drop on a page is initially named <code>dropDown1</code> and has an associated <code>dropDown1DefaultOptions</code> array object associated with it that you can see in the <a href="../../project_nav/about_app_outline.html">Outline window</a>. </p>
+<p>By default, a Drop Down List displays its list items by using an object of type <code>SingleSelectOptionsList</code> with a name based on the default component ID. For example, the first drop-down list you drop on a page is initially named <code>dropDown1</code> and has an associated <code>dropDown1DefaultOptions</code> array object associated with it that you can see in the  
+  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../app_outline_win_graphic.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="300,415">
+    <param name="text" value="Outline window.">
+  </object></p>
 <p>You can set the values of this array object by right-clicking the drop-down list component and choosing Configure Default Options to open the Options Customizer dialog box. In this dialog box you can add new items or delete existing ones, and for each item you can set the displayed value (Display) and the value of the item (Value), and you can select which item is displayed by default (Selected). The <code>dropDown#DefaultOptions</code> object is an array that stores its Display values in <code>label</code> fields and its Value values in <code>value</code> fields. </p>
 <p>The following code sample shows how you might use this object and the <code>select</code> property of the drop-down list to determine which item is currently selected, and then write its Display and Value values, its <code>label</code> and <code>value</code>, to two static text fields for display. If you add a drop-down list and two static text components to the page, and then put this code in the drop-down list's <code>processValueChange</code> method as described above and select Auto-submit on Change for the component, when the user selects an item in the list, its Display and Value values display in  the two static text fields.</p>
 <pre>   String myvalue = (String)dropDown1.getSelected();<br>   int numOptions = dropDown1DefaultOptions.getOptions().length;<br>   int i = 0;<br>   for (i = 0; i &lt; numOptions; i++) {<br>       if (myvalue.equals(dropDown1DefaultOptions.getOptions()[i].getValue()))<br>           break;<br>   }<br>   if (i &lt; numOptions) {<br>       staticText1.setText(dropDown1DefaultOptions.getOptions()[i].getLabel());<br>       staticText2.setText(dropDown1DefaultOptions.getOptions()[i].getValue());<br>   } else {<br>       staticText1.setText(&quot;not found&quot;);  // should not get here<br>   }</pre>
 <dl>
   <dt><a name="seealso">See Also</a></dt>
-  <dd><a href="propsheets/dropdown_list_props.html">Drop Down List Properties Window</a></dd>  <dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>
+  <dd><a href="propsheets/dropdown_list_props.html">Drop Down List Properties Window</a></dd>  
+    <dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>
+<dd><a href="../../dialogs/property_binding_db.html">Property Bindings Dialog Box</a></dd>
   <dd><a href="../../../components/component_process.html">Working 
     With Components</a></dd>
   <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 

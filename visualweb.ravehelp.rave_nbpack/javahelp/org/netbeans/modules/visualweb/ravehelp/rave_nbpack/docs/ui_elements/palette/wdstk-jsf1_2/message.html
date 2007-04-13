@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -28,21 +28,27 @@ component. </p>
           "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">
           <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>
       </li>
-    </ul>
+</ul>
 
 <p>The two message 
     components, Message and <a href="message_group.html">Message Group</a>, display error messages for component rendering and 
     validation. The Message component displays error messages for a specific 
   component. </p>
 <ul>
-  <li>Dragging a message component from the palette  to the page results in a message item with the <code>summary</code> property set to <code>true</code> and the <code>detail</code> property set to <code>false</code>.
-  <li>You can press Ctrl-Shift and drag the Message component to another component to link the <code>for</code> property to the other component and display messages for that component.
+  <li>Dragging a message component from the palette  to the page results in a message item with the <code>showSummary</code> property set to <code>true</code> and the <code>showDetail</code> property set to <code>false</code>.
+  <li>You can press Ctrl-Shift and drag the cursor from the Message component to another component to link the <code>for</code> property to the other component and display messages for that component.
 </ul>
 <ul>
-  <li>Messages are automatically shown as the result of a validation or other component related error. </li>
+  <li>Messages are automatically shown as the result of a validation error or other component related error. </li>
 </ul>
-<p>You can send your own error text to a Message component by calling the corresponding Java  object's <code>info, error</code><code>,</code><code> fatal,</code> or <code>warn</code> method. The component displays an appropriate icon for the type of method called. </p>
-<p>You can also write your own input validation methods, which can write text to the Message component by throwing <code>ValidatorException(new FacesMessage (String))</code>. If you do not want to throw an exception, you can have the validation method call the Java  object's <code>info, error</code><code>,</code><code> fatal,</code> or <code>warn</code> method instead.</p>
+<p>You can  write your own input validation methods, which can write text to the Message component by throwing <code>ValidatorException(new FacesMessage (String))</code>. To send your own validation message to a component, throw one of the following exceptions:</p>
+<ul>
+  <li><code>ValidatorException(new FacesMessage(summary))</code></li>
+  <li><code>ValidatorException(new FacesMessage(summary, detail))</code></li>
+  <li><code>ValidatorException(new FacesMessage(severity, summary, detail))</code>
+    <p>For the severity argument, you can pass <code>FacesMessage.SEVERITY_INFO</code>, <code>FacesMessage.SEVERITY_WARN</code>, <code>FacesMessage.SEVERITY_ERROR</code>, or <code>FacesMessage.SEVERITY_FATAL</code>. </p></li>
+</ul>
+With the JavaServer Faces 1.2 set of components, you can override the standard error messages by calling the component's <code>setRequiredMessage</code>, <code>setConverterMessage</code>, and <code>setValidatorMessage</code> methods to specify custom messages.
 <dl>
   <dt><a name="seealso">See Also</a></dt>
 <dd> <a href="propsheets/message_props.html">Message Component Properties 

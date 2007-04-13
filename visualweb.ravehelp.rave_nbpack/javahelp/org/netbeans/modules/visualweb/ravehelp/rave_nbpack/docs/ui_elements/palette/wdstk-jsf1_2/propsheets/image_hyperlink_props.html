@@ -20,7 +20,7 @@
         <param name="content" value="../../app_outline_win_graphic.html">
         <param name="viewerActivator" value="javax.help.LinkLabel">
         <param name="viewerStyle" value="javax.help.Popup">
-        <param name="viewerSize" value="300,400">
+        <param name="viewerSize" value="300,415">
     <param name="text" value="Outline window.">
       </object>
 </p>
@@ -70,17 +70,7 @@ property depends on the client browser </li>
   <li><b>width.</b><code> Type: int </code><br>
 Sets the width of the image in pixels if you want to override the actual width of the displayed image. In HTML, the equivalent is the <code>width</code> attribute of the <code>&lt;img&gt;</code> tag. Not all browsers respond to this setting.</li>
 </ul>
-<h3>Events</h3>
-<ul>
-  <li><b>action.</b><code> Type: MethodBinding </code><br>
-    The action method to invoke when this component is activated by the user. If you set the <code>action</code> property, the page is submitted when this component is activated.
-The JSP tag for this property is <code>actionExpression</code>.
-<ul class="note">
-      <li> If you specified a value for the <code>url</code> property, the action will not take place. The <code>url</code> property takes precedence over the <code>action</code> property.</li>
-      </ul>
-      <p>If you right-click the component, you can choose Edit action Event Handler to define an action method for the hyperlink and set this property's value automatically to this method. The action method determines which page to open based on certain conditions. The action method typically processes mouse clicks and returns a <code>String</code> indicating the name of a page navigation case (the page in your application to display next). The default name for the method is <i><code>hyperlink-id</code></i><code>_action</code>, where <i>hyperlink-id</i> is the value of the hyperllink's <code>id</code> property. </p>
-  </li>
-</ul>
+
 <h3>Behavior</h3>
 <ul>
   <li><b>disabled.</b><code> Type: boolean</code><br>
@@ -183,6 +173,17 @@ non-zero size. </li>
   </li>
   <li><b>vspace.</b><code> Type: int </code><br>
 Specifies the amount of white space in pixels to be inserted above and below the image. The default value is not specified but is generally a small, non-zero size. </li>
+</ul>
+<h3>Events</h3>
+<ul>
+  <li><b>action.</b><code> Type: MethodBinding </code><br>
+    The action method to invoke when this component is activated by the user. If you set the <code>action</code> property, the page is submitted when this component is activated.
+The JSP tag for this property is <code>actionExpression</code>.
+<ul class="note">
+      <li> If you specified a value for the <code>url</code> property, the action will not take place. The <code>url</code> property takes precedence over the <code>action</code> property.</li>
+      </ul>
+      <p>If you right-click the component, you can choose Edit action Event Handler to define an action method for the hyperlink and set this property's value automatically to this method. The action method determines which page to open based on certain conditions. The action method typically processes mouse clicks and returns a <code>String</code> indicating the name of a page navigation case (the page in your application to display next). The default name for the method is <i><code>hyperlink-id</code></i><code>_action</code>, where <i>hyperlink-id</i> is the value of the hyperllink's <code>id</code> property. </p>
+  </li>
 </ul>
 <dl>
 	<dt><a name="seealso">See Also</a></dt>

@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -27,7 +27,11 @@
 <h3>Appearance</h3>
 <ul>
 	<li><b>for.</b><code> Type: String</code><br>
-		The component for which this Label provides a label. Click the drop-down list to see which components can be associated with the label. </li>
+		The component for which this Label provides a label. Click the drop-down list to see which components can be associated with the label.  Setting this property does not position the label close to the component&#8212;you must do that by dragging and positioning the components&#8212;but it does provide the following benefits.
+        <ul class="note">
+          <li>When you associate a Label component with an input component, like a <a href="../text_field.html">Text Field component</a>, the Label component responds to settings and changes in the associated component. Specifically, if the input component's <code>required</code> property is <code>true</code>, the Label component displays an asterisk. If the server rejects the page submission because the input is invalid, the page displays the Label component's text in red.</li>
+        </ul>
+	</li>
 	<li><b>labelLevel.</b><code> Type: int </code><br>
 A number that affects the appearance of the label. 1 (Strong) is larger and bold. 2 (Medium), the default, is smaller and bold. 3 (Weak) is smaller and normal (not bold). This property takes effect only if the label property is set. </li>
 	<li><b>requiredIndicator.</b><code> Type: boolean </code><br> 
@@ -51,23 +55,7 @@ A number that affects the appearance of the label. 1 (Strong) is larger and bold
 	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
       <ul class="note">
         <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
-       <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.
-                <p>The defaulttheme CSS style classes for this component are: </p>
-                
-                  <pre><b><font size="-1">css_master.css</font></b>
-<font size="-1">.LblLev1Txt{color:#000000}
-.LblLev2Txt, .LblLev3Txt, 
-.LblLev2smTxt {color:#333333}
-.LblRqdDiv {color:#000}
-a.HlpFldLnk:link, a.HlpFldLnk:visited, 
-a.HlpFldLnk:hover {font-size:11px}
-.LblLev1Txt {font-size:16px}
-.LblLev2smTxt {font-size:11px}
-.LblLev1Txt, .LblLev2Txt, 
-.LblLev2smTxt {font-weight:bold}</font>
-</pre>
-                
-        </li>
+       <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.</li>
      </ul>
 </li>
       

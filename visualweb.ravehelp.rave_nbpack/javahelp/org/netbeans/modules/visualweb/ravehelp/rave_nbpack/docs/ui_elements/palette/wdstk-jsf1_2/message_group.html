@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -16,7 +16,7 @@
 <p>You can drag the Message Group component <img src="../../../images/bh_msg_group_icon.gif" alt="message group icon">&nbsp;from 
   the Palette's Basic category to the Visual Designer to create a  list of global messages 
 for a page, such as system runtime errors, or a list of messages related to components. To show individual component errors, such as 
-validation and conversion errors, deselect 
+validation and conversion errors, clear 
 the <code>showGlobalOnly</code> property in the Message Group Properties Window. </p>
    <ul class="note">
       <li>
@@ -41,12 +41,11 @@ the <code>showGlobalOnly</code> property in the Message Group Properties Window.
   <li>The <a href="message.html">Message</a> component 
     reports errors for a single component. Use  Message 
     if you want to provide your users with messages related to a specific component, like validation errors when they enter invalid data in a field. Message Group also reports validation errors, but it reports them for all components, not just one. </li>
-  <li>
-    <p>You can send your own error text to a Message Group component by calling the corresponding Java object's <code>info, error</code><code>,</code><code> fatal,</code> or <code>warn</code> method. The component displays an appropriate icon for the type of method called. </p>
-    <p>You can also write your own input validation methods, which can write text to the Message Group component by throwing <code>ValidatorException(new FacesMessage (String))</code>. If you do not want to throw an exception, you can have the validation method call the Java object's <code>info, error</code><code>,</code><code> fatal,</code> or <code>warn</code> method instead.</p>
-  </li>
 </ul>
-<dl>
+    <p> To write your own text to this component, call <code>info(String summary)</code>, <code>warn(String summary)</code>, <code>error(String summary)</code>, or <code>fatal(String summary)</code>. The web application applies different styles to the text, depending on the method's severity level.</p>
+    <p>To write both a summary message and a detail message, use <code> FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(summary, detail))</code> or <code>ValidatorException(new FacesMessage(severity, summary, detail))</code>. </p>
+    You must set the component's <code>showDetail</code> property  for detail messages to appear.
+    <dl>
   <dt><a name="seealso">See Also</a></dt>
 <dd>
 <a href="propsheets/message_group_props.html">Message Group Properties Window</a>

@@ -43,6 +43,7 @@
 			<tocitem text="Working Inside a Visual Web Application Project">
 				<tocitem text="Finding Files or Items in a Project" target="projrave_projects_howtoprojects_find_files" />
 				<tocitem text="Setting the Start Page in a Project" target="projrave_projects_howtoprojects_set_start_page" />
+				<tocitem text="Renaming a Page" target="projrave_projects_howtoprojects_rename_page" />
 				<tocitem text="Adding a Project Item" target="projrave_projects_howtoprojects_add_object" />
 				<tocitem text="Adding an Image File to a Visual Web Application Project" target="projrave_projects_howtoprojects_add_image" />
 				<tocitem text="Adding a CSS File to a Project" target="projrave_projects_howtoprojects_add_css_file" />

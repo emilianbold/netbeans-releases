@@ -15,7 +15,7 @@
 <h1>Checkbox Component Properties Window </h1>
 <p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
 
-<p>You see the Properties window for a Checkbox component <img src="../../../../images/bh_checkbox_icon.gif" alt="checkbox component icon">&nbsp;when you select the checkbox on a page that you are editing in the Visual Designer, after the component has been added to the page. Most of the component's properties are both JSP attributes and properties of the <code>Checkbox</code> Java component in the page bean.</p>
+<p>You see the Properties window for a Checkbox component <img src="../../../../images/bh_checkbox_icon.gif" alt="checkbox component icon">&nbsp;when you select the checkbox on a page that you are editing in the Visual Designer. Most of the component's properties are both JSP attributes and properties of the <code>Checkbox</code> Java component in the page bean.</p>
 <p>This JavaServer Faces 1.2 component has the following properties.</p>
 
 <h3>General</h3>
@@ -56,23 +56,7 @@ A number that affects the appearance of the label. 1 (Strong) is larger and bold
 	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
       <ul class="note">
         <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
-            <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.
-                <p>The defaulttheme CSS style classes for this component are: </p>
-                
-                  <pre><b><font size="-1">css_master.css</font></b>
-<font size="-1">.CbDis, .RbDis {background-color:#E1E4E5;color:#848687}
-.Cb {}
-.Rb {}
-.RbSpn input {vertical-align: 1px}
-.CbSpn input {vertical-align: -1px}
-.CbGrp td, .RbGrp td {text-align: left}
-.CbGrp label, .RbGrp label {vertical-align: 6px}
-
-<b>css_ie55up.css</b>
-/* ADDITIONAL CSS FOR IE5.5+ SUPPORT */
-.RbSpn input, .CbSpn input {vertical-align: 3px;}</font></pre>
-        
-        </li>
+            <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.</li>
      </ul>
 </li>
 </ul>
@@ -170,6 +154,8 @@ Use this property when the component does apply but must not be changed.
 		JavaScript to be executed when the user moves the mouse cursor onto the component.</li>
 	<li><b>onMouseUp.</b><code> Type: String</code><br>
 		JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li>
+<li><b>onSelect.</b><code> Type: String</code><br>
+JavaScript to be executed when the user selects text in the component.</li>
 </ul>
 
 <h3>Advanced</h3>

@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -109,8 +109,8 @@ This property enables the auto-completion feature of the Microsoft Internet Expl
 	<li><b>internalVirtualForms.</b><code> Type: Form$VirtualFormDescriptor</code><br>
 		The virtual forms used internally to components in the form, such as a table component. Component authors can manipulate this set of virtual forms independently of the set exposed to developers. This set is consulted only after consulting the set exposed to developers. To indicate descendants, use <code>:*</code> after the component ID. For example, <code>tabel1:*</code> indicates all descendants of the <code>table1</code> component. </li>
 	<li><b>rendered.</b><code> Type: boolean</code><br>
-	    If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component, and its Output Text component does not appear either. If this property is not selected (false), it overrides the rendered property of its child component.
-        <p>You can bind this property to a JavaBeans property that determines when the component gets rendered. For example, an airline reservation form might show a Form for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p>
+	    If selected, the form is to be rendered and processed on any subsequent page submission. If not selected, the form does not appear on the page at all, not even as a hidden component, and any components on the form do not appear either.
+	      <p>You can bind this property to a JavaBeans property that determines when the form gets rendered. For example, an airline reservation page might show a form for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p>
   </li>
     <li><b>virtualFormsConfig.</b><code> Type: String</code><br>
 The configuration of the <a href="../../../../components/aboutvirtualforms.html">virtual forms</a> in this form. Each virtual form is represented as a <code>String</code> and is described by three parts, separated with pipe (|) characters: the virtual form name, a space-separated list of component ids that participate in the virtual form, and a space-separated list of component ids that submit the virtual form. Multiple virtual forms are separated by commas. </li>

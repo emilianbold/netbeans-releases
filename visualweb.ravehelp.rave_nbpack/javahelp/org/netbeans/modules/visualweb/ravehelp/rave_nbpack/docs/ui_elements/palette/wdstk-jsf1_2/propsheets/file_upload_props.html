@@ -76,20 +76,6 @@ that the correct value is entered by a user. If the conditions defined by the va
   </li>
 </ul>
 
-<h3>Events</h3>
-<p>Set the event properties by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; <i>eventname</i>.</p>
-<ul>
-  <li><b>validate.</b> Indicates the name of the method that is called to validate the value of the component, if any. If you want to code a validate method rather than choosing a JavaServer Faces validator for the <code>validatorExpression</code> property, right-click the component and choose Edit Event Handler &gt; validate. The default name for the method is <code><i>component-id</i>_validate</code>, where <i>component-id</i> is the value of the component's <code>id</code> property. When you define this method in this way, the <code>validator</code> and <code>validate</code> properties are automatically set for you. If you define a validator, you might also want to select the <code>required</code> property to ensure that the user enters a value.<p></p>
-      <ul class="note">
-        <li>Setting this property also sets the value of the <code>validatorExpression</code> property. If you define your own validate method, do not separately change the value of the <code>validatorExpression</code> property, or you will lose the connection to your validate method.</li>
-      </ul>
-  </li>
-  <li><b>valueChange.</b> Indicates the name of the component value change listener method that is called when the value of the component changes. You typically define this method in the page bean by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; processValueChange. The default name for the method is <code><i>component-id</i>_processValueChange</code>, where <i>component-id</i> is the value of the component's <code>id</code> property.
-      <ul class="note">
-        <li>Use this method rather than the action method if you have set the Auto-Submit on Change item in the component's pop-up menu.</li>
-      </ul>
-  </li>
-</ul>
 <h3>Behavior</h3>
 <ul>
   <li><b>disabled.</b><code> Type: boolean</code><br>
@@ -159,7 +145,25 @@ A simpler way of getting this functionality is to associate the component with a
 <p>The most common example of an immediate action is a Cancel button. You make it immediate so that the normal validation and update steps can be skipped, but the action handler can still do whatever is necessary. Typically, the action handler will navigate back to some previous page. In some designs the action handler might also enqueue an informational message like &quot;Transaction cancelled&quot;. It is possible to do more: for example, an application might record the fact that the user cancelled the current operation.</p></li>
 	<li><b>rendered.</b><code> Type: boolean</code><br>
 		If selected, the file upload is to be rendered and processed on any subsequent page submission. If not selected, the file upload does not appear on the page at all, not even as a hidden component.
-		<p>You can bind this property to a JavaBeans property that determines when the file upload does get rendered. For example, an airline reservation form might show a file upload for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p></li>
+		<p>You can bind this property to a JavaBeans property that determines when the file upload does get rendered. For example, an airline reservation form might show a file upload for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p>
+</li></ul>
+		<h3>Events</h3>
+		<p>Set the event properties by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; <i>eventname</i>.</p>
+		<ul>
+          <li><b>validate.</b> Indicates the name of the method that is called to validate the value of the component, if any. If you want to code a validate method rather than choosing a JavaServer Faces validator for the <code>validatorExpression</code> property, right-click the component and choose Edit Event Handler &gt; validate. The default name for the method is <code><i>component-id</i>_validate</code>, where <i>component-id</i> is the value of the component's <code>id</code> property. When you define this method in this way, the <code>validator</code> and <code>validate</code> properties are automatically set for you. If you define a validator, you might also want to select the <code>required</code> property to ensure that the user enters a value.
+            
+              <ul class="note">
+                <li>Setting this property also sets the value of the <code>validatorExpression</code> property. If you define your own validate method, do not separately change the value of the <code>validatorExpression</code> property, or you will lose the connection to your validate method.</li>
+              </ul>
+          </li>
+          <li><b>valueChange.</b> Indicates the name of the component value change listener method that is called when the value of the component changes. You typically define this method in the page bean by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; processValueChange. The default name for the method is <code><i>component-id</i>_processValueChange</code>, where <i>component-id</i> is the value of the component's <code>id</code> property.
+              <ul class="note">
+                <li>Use this method rather than the action method if you have set the Auto-Submit on Change item in the component's pop-up menu.</li>
+              </ul>
+          </li>
+	  </ul>
+		
+	</li>
 </ul>
 
 <dl>

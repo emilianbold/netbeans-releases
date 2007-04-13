@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -42,12 +42,12 @@ component. </p>
 <p>After dropping a label on your page, some typical things you might do are:</p>
 <ul>
   <li>Start typing the text of the label. When you press Enter or click outside the label, the label's <code>text</code> property is updated with the text you entered. </li>
-  <li>Set the <code>for</code> property to associate the label with a component. If you are unable to set the <code>for</code> property, there are no components on the page that will accept a label. 
+  <li>Set the <code>for</code> property to associate the label with a component. If you are unable to set the <code>for</code> property, there are no components on the page that will accept a label. Setting this property does not position the label close to the component&#8212;you must do that by dragging and positioning the components&#8212;but it does provide the following benefits.
     <ul class="note">
       <li>When you associate a Label component with an input component, like a <a href="text_field.html">Text Field component</a>, the Label component responds to settings and changes in the associated component. Specifically, if the input component's <code>required</code> property is <code>true</code>, the Label component displays an asterisk. If the server rejects the page submission because the input is invalid, the page displays the Label component's text in red.</li>
     </ul>
   </li>
-  <li>Drag the label to the place  that you want it to display, probably near the associated component.</li>
+  <li>Drag the label to the place  that you want it to display, probably near the associated component. When the two components are  positioned, you can select both components and align them as described in <a href="../../../components/howtocomponents/align_components.html">Aligning Components</a>.</li>
   <li>Right-click the component in the <a href="../../project_nav/about_app_outline.html">Outline window</a> and choose one of the following pop-up menu items:
     <ul>
       <li><b>Bind to Data</b>. Opens a dialog box that enables you to bind the component's <code>text</code> property to a data provider or an object that dynamically sets the displayed text of the label. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>.</li>

@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -14,12 +14,12 @@
 <h1>Tab Component</h1>
 <p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
 <p>A Tab <img src="../../../images/bh_tab_icon.gif" alt="Tab icon">&nbsp;component 
-is part of a <a href="tab_set.html">Tab Set component</a>. You can add a new tab to a tab set in two ways, by right-clicking the Tab Set component  and choosing Add Tab or by dragging a new Tab component from the Layout category of the Palette and dropping it on the Tab Set or on another Tab component. You can also drag  from the Palette and drop the tab on the tab set's nodes in the 
+is part of a <a href="tab_set.html">Tab Set component</a>. You can add a new tab to a tab set in two ways, by right-clicking the Tab Set component or a Tab component and choosing Add Tab or by dragging a new Tab component from the Layout category of the Palette and dropping it on the Tab Set or on another Tab component. You can also drag  from the Palette and drop the tab on the tab set's nodes in the 
       <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
         <param name="content" value="../app_outline_win_graphic.html">
         <param name="viewerActivator" value="javax.help.LinkLabel">
         <param name="viewerStyle" value="javax.help.Popup">
-        <param name="viewerSize" value="300,400">
+        <param name="viewerSize" value="300,415">
     <param name="text" value="Outline window.">
       </object></p>
    <ul class="note">
@@ -48,7 +48,7 @@ is part of a <a href="tab_set.html">Tab Set component</a>. You can add a new tab
         <param name="content" value="../app_outline_win_graphic.html">
         <param name="viewerActivator" value="javax.help.LinkLabel">
         <param name="viewerStyle" value="javax.help.Popup">
-        <param name="viewerSize" value="300,400">
+        <param name="viewerSize" value="300,415">
     <param name="text" value="Outline window.">
       </object>&nbsp; 
 To select the whole tab set, either click the border of the Tab Set component on the page or select the tab set's node in the Outline window. Alternatively, you can select a Tab component and either press Escape or right-click and choose Select Parent to select its parent component. </p>
@@ -61,9 +61,10 @@ To select the whole tab set, either click the border of the Tab Set component on
     <li>You can drop components on the Layout Panel component below a tab to enable a set of components to be displayed below each tab. When the user selects a tab, they see only the components that are associated with the tab, without having to change pages. </li>
     <li>You can use a tab set to navigate among a set of pages. Each tab  component links to a page in your web application.  You would use the <a href="../../editors/about_navigation_editor.html">Page Navigation editor</a> to define each tab to display a page in the application, with the current page's tab set as the selected tab. If you want to use the tab set for page navigation, be sure to delete each tab component's Layout Panel.</li>
   </ul>
-  <p>You can also right-click the Tab component and choose one of the following options: </p>
+  <p>You can also right-click the Tab component and choose a number of options, including the following: </p>
 <ul>
-  <li><b>Edit action Event Handler.</b> Code the action event handler, the method that is called when the user clicks the tab. This method determines which page or resource to open based on specified conditions. The action method typically processes mouse clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). The default name for the method is <i><code>tab-id</code></i><code>_action</code>, where <i>tab-id</i> is the value of the tab's <code>id</code> property. </li>
+  <li><b>Edit Text.</b> Type the text that will appear on the tab and press Enter. The new text will be set in the <code>text</code> property.</li>
+  <li><b>Edit action Event Handler.</b> Code the action event handler, the method that is called when the user clicks the tab. This method determines which page or resource to open based on specified conditions. The action method typically processes mouse clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). The default name for the method is <i><code>tab-id</code></i><code>_action</code>, where <i>tab-id</i> is the name of the tab, the value of the tab's <code>id</code> property. </li>
   <li><b>Bind to Data. </b>Dynamically set the text that appears on the tab. You can bind the component's <code>text</code> property to an object or a data provider, as described in the topic <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>
   <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>text</code> property to other objects or bean properties that update this component's properties automatically.</li>
 </ul>

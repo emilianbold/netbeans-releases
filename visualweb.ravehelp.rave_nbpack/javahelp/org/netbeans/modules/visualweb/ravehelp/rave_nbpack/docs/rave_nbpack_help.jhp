@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="C:/Documents and Settings/James Branam/CVS/NBVisualWeb/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
+		<directory title="C:/HelpProjects/Rave/cvstree/shortfin5-5-1/ravehelp/rave_nbpack/javahelp/com/sun/rave/modules/rave_nbpack/docs">
 			<directory title="a11y">
 				<file title="abouta11y.html"/>
 				<file title="component_palette_shortcuts.html"/>
@@ -334,6 +334,7 @@
 					<file title="open_project.html"/>
 					<file title="proj_main.html"/>
 					<file title="projects_quickref.html"/>
+					<file title="rename_page.html"/>
 					<file title="run_project.html"/>
 					<file title="save_project.html"/>
 					<file title="set_project_properties.html"/>

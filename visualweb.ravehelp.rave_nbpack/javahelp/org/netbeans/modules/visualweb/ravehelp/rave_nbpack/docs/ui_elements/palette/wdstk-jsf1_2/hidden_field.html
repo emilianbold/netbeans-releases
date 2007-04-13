@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -32,7 +32,7 @@ row back to the same&nbsp; page, instead of saving and restoring it in session s
 </ul>
 
 <p>A Hidden Field component is equivalent to the HTML tag <code>&lt;input 
-    type='hidden'&gt;</code>. The value of the field is the 
+    type='hidden'&gt;</code>. The <code>text</code> property holds the value of the field, which is a Java <code>Object</code> that is the 
     data the field stores and passes back to the server when the 
     form is submitted. </p>
 <p>Since the field is hidden, the component does not appear on 
@@ -41,7 +41,7 @@ row back to the same&nbsp; page, instead of saving and restoring it in session s
         <param name="content" value="../app_outline_win_graphic.html">
         <param name="viewerActivator" value="javax.help.LinkLabel">
         <param name="viewerStyle" value="javax.help.Popup">
-        <param name="viewerSize" value="300,400">
+        <param name="viewerSize" value="300,415">
     <param name="text" value="Outline window.">
       </object>&nbsp;
  
@@ -57,18 +57,17 @@ row back to the same&nbsp; page, instead of saving and restoring it in session s
         this name is the value of the component's <code>id</code> 
         attribute. In the page bean, this property's value is 
         the name of the <code>HiddenField</code> object.</li>
-      <li><b>value.</b> The value that will be sent to the server.</li>
+      <li><b>text.</b> The value that will be sent to the server.</li>
     </ul>
   </li>
   <li>Right-click the component in the Outline window and choose one of the following 
     pop-up menu items: 
     <ul>
-      <li><b>Edit processValueChange Event Handler. </b> Opens the Java Editor 
-            with the cursor positioned in the component's <code>processValueChange</code> 
-            method so you can insert code that executes when the 
-            value of this component changes. For example, the 
-            user changes the value of another component that is 
-          controlling the value of this component.</li>
+      <li><b>Edit Event Handler. </b>Write code for one of the following event handlers.
+        <ul>
+          <li><b>validate. </b>Opens the Java Editor with the cursor positioned in the component's <code>validate</code> method so you can insert code to validate the value of the component.</li>
+          <li><b>processValueChange.</b> Opens the Java Editor with the cursor positioned in the component's <code>processValueChange</code> method so you can insert code that executes when the value of this component changes. This method executes when you have selected Auto-submit on Change from the component's pop-up menu, which submits the page when the value of the component changes. This technique is useful if the component is part of a virtual form.</li>
+        </ul></li>
       <li><b>Bind to Data</b>. Opens a dialog box that enables 
         you to bind the component's <code>value</code> property to a data provider or an object so you can evaluate the component's value when the page is submitted. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>.</li>
       <li><b>Property Bindings</b>. Opens a dialog box that enables 

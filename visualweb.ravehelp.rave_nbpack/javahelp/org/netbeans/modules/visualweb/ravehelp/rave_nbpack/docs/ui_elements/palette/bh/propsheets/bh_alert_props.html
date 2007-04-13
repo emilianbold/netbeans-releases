@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -48,10 +48,11 @@ Text that provides more detailed information about the alert and possibly what t
       <ul class="note">
         <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
         <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.
-                <p>The defaulttheme CSS style classes for this component are: </p>
-                
-                  <pre><b><font size="-1">css_master.css</font></b>
-<font size="-1">.AlrtErrTxt, .AlrtWrnTxt, 
+<p>
+The defaulttheme CSS style classes for this component are:
+<pre>
+<b>css_master.css</b>
+.AlrtErrTxt, .AlrtWrnTxt, 
 .AlrtInfTxt, .AlrtMsgTxt {color:#000}
 a.AlrtLnk:link, a.AlrtLnk:visited 
    {color:#035899;text-decoration:none}
@@ -73,15 +74,15 @@ a.AlrtLnk:hover
 .logErr .AlrtTbl 
    {padding:7px 15px;
     margin-left:15px;
-    text-align:left}</font>
+    text-align:left}
 
-<b><font size="-1">css_ie55up.css</font></b>
-<font size="-1">/* ADDITIONAL CSS FOR IE5.5+ SUPPORT */
+<b>css_ie55up.css</b>
+/* ADDITIONAL CSS FOR IE5.5+ SUPPORT */
 .AlrtErrTxt img, .AlrtWrnTxt img, 
 .AlrtInfTxt img {margin-right:5px}
-.AlrtInfTxt img {vertical-align:text-bottom}</font></pre>
-                
-        </li>
+.AlrtInfTxt img {vertical-align:text-bottom}</pre>
+</p>
+</li>
      </ul>
   <li><b>summary.</b><code> Type: String</code><br>
 	  Brief text that tells the user why the alert was displayed. This text appears to the right of the alert icon. You can provide more information about the alert in the <code>detail</code> property.</li>

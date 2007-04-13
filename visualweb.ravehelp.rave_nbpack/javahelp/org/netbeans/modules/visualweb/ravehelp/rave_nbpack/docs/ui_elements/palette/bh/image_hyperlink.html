@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -22,11 +22,37 @@ from the Palette's Basic category to the Visual Designer to create an image that
       </li>
     </ul>
 
-<p>You can  right-click the component and choose Set Image to set the image to a file or an icon.  Specifying the image in this dialog sets the appropriate properties for you. The <code>imageURL</code> property specifies an image in a file or at a URL on the Web.The <code>icon</code> property specifies an icon in the default <a href="../../../components/aboutthemes.html">theme</a>.</p>
+<p>To set the image for the Image Hyperlink component, you can right-click the component and choose Set Image. You then see a dialog box that you can use to specify the image in three ways:</p>
+<ul>
+  <li><b>Choose File.</b> You can navigate to a file in your filesystem and click OK. The image file is copied to the project, and you can see it in the <a href="../../project_nav/projectlogical.html">Projects window</a> under <i>project-name</i> &gt; Web Pages &gt; resources. Choosing this option sets the Image component's <code>url</code> property to <code>/resources/<i>image-file</i></code>.</li>
+  <li><b>Enter URL. </b>Enter a URL to a web location for the file. For example, enter the following URL:<br>
+      <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://forum.java.sun.com/im/logo_java_grey.gif">
+        <param name="text" value="http://forum.java.sun.com/im/logo_java_grey.gif">
+      </object>
+    . <br>
+    Choosing this option sets the Image component's <code>url</code> property to the URL you entered.</li>
+  <li><b>Set Theme Icon.</b> Displays a list of icons that are in the theme associated with your application. Select an icon name in the list to see it displayed in the dialog box. Choosing this option sets the Image component's <code>icon</code> property to the icon name you chose.
 <ul class="note">
-  <li>You can drop an Image component or a Static Text component or both on the Image Hyperlink if you want to customize the appearance of the link. 
-    <p>If you drop a component on the Image Hyperlink, you  embed the component in the hyperlink, and you must work with the embedded  component's properties rather than the properties of the Image Hyperlink. Select the embedded  component in the <a href="../../project_nav/about_app_outline.html">Outline window</a> to set the embedded component's properties.</p>
-  </li>
+<li>
+If the <code>url</code> property has already been set, choosing an icon does not change the appearance of the component, because the <code>url</code> property takes precedence over the <code>icon</code> property. For the icon to be visible, the <code>url</code> property must not be set.
+</li>
+</ul>
+
+</li>
+</ul>
+
+  <p>You can drop an Image component or a Static Text component or both on the Image Hyperlink if you want to customize the appearance of the link.</p>
+<ul class="note"> 
+    <li>If you drop a component on the Image Hyperlink, you embed the component in the hyperlink, and you must work with the embedded component's properties rather than the properties of the Image Hyperlink. Select the embedded component in the
+      <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+        <param name="content" value="../app_outline_win_graphic.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="300,415">
+        <param name="text" value="Outline window">
+      </object>
+&nbsp; to set the embedded component's properties. </li>
 </ul>
 <p>Other than the extra support for an image, an Image Hyperlink is essentially the same as a <a href="hyperlink.html">Hyperlink component</a>. As with the Hyperlink component, if you set the <code>action</code> property and do not set the <code>url</code> property, the page is submitted. If instead you set the <code>url</code> property, the link is a normal hyperlink that sends the browser to a new location, does not submit the page, and ignores any <code>action</code> property setting. You set the component's properties in its Properties window. </p>
 <dl>
