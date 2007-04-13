@@ -3,42 +3,32 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-	<tocitem text="Intelligent Event Processing Module Projects ">
-		<tocitem text="About Intelligent Event Processing Module Projects ">
-			<tocitem text="About  Event Processors" target="iep_aboutprojects" />
-			<tocitem text="Understanding Intelligent Event Processor Projects" target="iep_understandprojects" />
-		</tocitem>
-		<tocitem text="CQL">
-			<tocitem text="About CQL" target="iep_aboutcql" />
+	<tocitem text="Intelligent Event Processing">
+		<tocitem text="About Intelligent Event Processing Module Projects" target="iep_aboutprojects" />
+		<tocitem text="Working with Intelligent Event Processing Module Projects">
+			<tocitem text="About Intelligent Event Processing Projects" target="iep_aboutprojects" />
+			<tocitem text="Saving an IEP Process" target="iep_saveiepprocess" />
+			<tocitem text="Deleting Intelligent Event Processors" target="iep_deleteprocess" />
+			<tocitem text="Working with IEP Operators" target="iep_work_iepops" />
+			<tocitem text="Deploying Intelligent Event Processing Module Projects" target="iep_deployiep" />
 		</tocitem>
 		<tocitem text="About the IEP Runtime">
 			<tocitem text="Receiving and Sending Events" target="iep_receivesend" />
 		</tocitem>
 		<tocitem text="Creating an IEP Process">
-			<tocitem text="Understanding an IEP Process" target="iep_iepprocess" />
-			<tocitem text="Understanding WSDL Creation" target="iep_wsdlcreate" />
+			<tocitem text="Understanding an IEP Process" target="iep_understandprojects" />
 			<tocitem text="About IEP Datatypes" target="iep_aboutdatatypes" />
+			<tocitem text="About Operator Types" target="iep_about_ops" />
+			<tocitem text="About the Operator Environment" target="iep_about_openv" />
+			<tocitem text="Understanding WSDL Creation" target="iep_wsdlcreate" />
 		</tocitem>
-		<tocitem text="Using  the IEP Palette and Canvas">
-			<tocitem text="About the IEP Palette and Canvas" target="iep_aboutpalettecan" />
-			<tocitem text="Dragging and Dropping IEP Operators" target="iep_dragdrop" />
-			<tocitem text="Customizing IEP Operators">
-				<tocitem text="About Customizing IEP Operators" target="iep_aboutcust" />
-				<tocitem text="About Using Customizers to Customize IEP Projects" target="iep_usingcust" />
-				<tocitem text="Using Property Editors to Customze IEP Operators" target="iep_usingprop" />
-			</tocitem>
+		<tocitem text="Working with the IEP Editor">
+			<tocitem text="About the IEP Editor" target="iep_aboutpalettecan" />
+			<tocitem text="About IEP Datatypes" target="iep_aboutdatatypes" />
+			<tocitem text="Adding Operators to an IEP Processor" target="iep_dragdrop" />
+			<tocitem text="Editing IEP Operators" target="iep_editprojects" />
+			<tocitem text="Using Property Editors to Customze IEP Operators" target="iep_usingprop" />
 		</tocitem>
-		<tocitem text="Saving an IEP Process">
-			<tocitem text="About Saving an IEP Process" target="iep_saveiepprocess" />
-		</tocitem>
-		<tocitem text="Deleting an IEP Process">
-			<tocitem text="About Deleting an IEP Process" target="iep_deleteprocess" />
-		</tocitem>
-		<tocitem text="Deploying an IEP Project">
-			<tocitem text="About Deploying an IEP Project" target="iep_deployiep" />
-		</tocitem>
-		<tocitem text="Testing an IEP Project">
-			<tocitem text="About Testing an IEP Project" target="iep_testiep" />
-		</tocitem>
+		<tocitem text="Deleting an IEP Process" target="iep_deleteprocess" />
 	</tocitem>
 </toc>

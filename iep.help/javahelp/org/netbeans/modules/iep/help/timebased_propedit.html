@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Time Based AggregatorProperty Editor</title>
+</head>
+<body>
+<h2>Using the Time Based Aggregator Property Editor </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Time Based Aggregator operator performs statistical analysis within a specified amount of time which you provide as an increment. You can  do simple or complex SQL manipulation within the time frame you specify, by using the Select, From and Where clauses, as indicated in the property editor. </p>
+<ul>
+  <li>Take existing attributes and add  additional attributes.</li>
+  <li>Join a static table to an existing set of events to obtain additional attributes or the result. For example, you have information relating to an existing stock and its price, but you want to join a static securities table to provide CEO and company size information. </li>
+  <li>Add or remove dimensions to an event; that is, provide filtering capability on attributes to add or remove attributes. For example, you have input information on a company that includes stock symbol and price but you want to filter out the price. </li>
+</ul>
+<p><strong>To create a Time Based Aggregator operator:</strong></p>
+<ol>
+  <li>Drag a Time Based Aggregation operator to the Design area.</li>
+  <li>Click the Time Based Aggregation operator  icon.The Property Window opens. </li>
+  <li>In the Start field, enter the time to start calculating the tasks that are to be performed by the Time Based Aggregator within the process.</li>
+  <li>In the Increment field, enter the  time increment for the time based aggregator to perform the analysis.</li>
+  <li>In the Size field, enter the time range  within for the time based aggregator to perform the analysis.</li></ol>
+    <p><strong>To define the SQL statements to use with  a Time Based Aggregator operator:</strong></p>
+    <ol>
+      <li>In the Expression box, enter the expression for the SQL Select statement which is used to specify the input attribute upon which the Select is performed. Add atrribute names, data types. and sizes, as applicable. </li>
+      <li>In the From box, define the  input on which to perform the selection. <span class="bold"></span></li>
+      <li>In the Where clause box, provide additional filtering on records, for example, <tt>WHERE price &gt; 30.00 AND stockDate &lt; '2006-01-01' </tt>; </li>
+      <li>In the Group by box, group a result into subsets that have matching values for one or more columns of the database by specifying a comma separated list of qualified attribute names.</li>
+    </ol>
+   
+    <dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="tuplebased_propedit.html">Using the Tuple Based Operator Property Window </a></dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

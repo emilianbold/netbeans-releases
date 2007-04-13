@@ -1,10 +1,27 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
-<!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
-*     Use is subject to license terms.
---> 
 <!DOCTYPE index PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Index Version 2.0//EN"
                        "http://java.sun.com/products/javahelp/index_2_0.dtd">
 
 <index version="2.0">
+	<indexitem text="aggregator" target="iep_about_ops" />
+	<indexitem text="IEP deployment" target="iep_deployiep" />
+	<indexitem text="IEP design area" target="iep_aboutpalettecan" />
+	<indexitem text="IEP Events" target="iep_receivesend" />
+	<indexitem text="IEP palette" target="iep_aboutpalettecan" />
+	<indexitem text="input" target="iep_about_ops" />
+	<indexitem text="Intersect" target="iep_intersect_propedit" />
+	<indexitem text="operator " target="iep_about_openv" />
+	<indexitem text="output" target="iep_about_ops" />
+	<indexitem text="Partitioned Window" target="iep_partitionwindow_propedit" />
+	<indexitem text="relation converter" target="iep_about_ops" />
+	<indexitem text="relation operator" target="iep_about_ops" />
+	<indexitem text="relation to relation" target="iep_about_ops" />
+	<indexitem text="relation to relation" target="iep_about_ops" />
+	<indexitem text="relation to stream" target="iep_about_ops" />
+	<indexitem text="relation to table" target="iep_about_ops" />
+	<indexitem text="stream converter" target="iep_about_ops" />
+	<indexitem text=" Stream Output Operator" target="iep_streamout_propedit" />
+	<indexitem text="Stream to relation" target="iep_about_ops" />
+	<indexitem text="table" target="iep_about_openv" />
+	<indexitem text="Time Based Aggregator " target="iep_timebased_propedit" />
 </index>
