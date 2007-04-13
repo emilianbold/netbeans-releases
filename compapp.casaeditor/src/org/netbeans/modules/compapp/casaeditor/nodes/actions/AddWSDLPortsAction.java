@@ -25,16 +25,16 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBindingInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
+import org.netbeans.modules.xml.wsdl.ui.view.wizard.ExtensibilityElementTemplateFactory;
+import org.netbeans.modules.xml.wsdl.ui.view.wizard.TemplateGroup;
+import org.netbeans.modules.xml.wsdl.ui.view.wizard.localized.LocalizedTemplateGroup;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -70,7 +70,21 @@ public class AddWSDLPortsAction extends AbstractAction {
         }
     }
 
-    
+    private HashMap getWsdlTemplates() {
+        ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
+        Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
+        Vector<LocalizedTemplateGroup> protocols = new Vector<LocalizedTemplateGroup>();
+        LocalizedTemplateGroup ltg = null;
+        HashMap temps = new HashMap();
+        for (TemplateGroup group : groups) {
+            ltg = factory.getLocalizedTemplateGroup(group);
+            protocols.add(ltg);
+            temps.put(ltg.getName(), ltg);
+        }
+
+        return temps;
+    }
+
     public void performAction(final Point location) {
         
         CasaDataObject dataObject = mReference.get();
@@ -84,9 +98,13 @@ public class AddWSDLPortsAction extends AbstractAction {
 
         JbiDefaultComponentInfo bcinfo = JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
         if (bcinfo != null) {
+            HashMap bcTemplates = getWsdlTemplates();
             List<JbiBindingInfo> bclist = bcinfo.getBindingInfoList();
             for (JbiBindingInfo bi : bclist) {
-                portMap.put(bi.getBindingName(), bi);
+                String biName = bi.getBindingName().toUpperCase();
+                if (bcTemplates.get(biName) != null) {
+                    portMap.put(bi.getBindingName(), bi);
+                }
             }
         }
         String[] ports = portMap.keySet().toArray(new String[0]);
