@@ -563,7 +563,7 @@ Tag:
     <zip destfile="NetBeans-${buildnum}.zip" update="true" duplicate="preserve">
       <zipfileset file="${netbeans.dest.dir}/bin/netbeans" filemode="755" prefix="${netbeans.dest}/bin"/>
       <zipfileset file="${netbeans.dest.dir}/${nb.cluster.platform.dir}/lib/nbexec" filemode="755" prefix="${netbeans.dest}/${nb.cluster.platform.dir}/lib"/>
-      <zipfileset dir="${netbeans.dest.dir}/${nb.cluster.ide.dir}/ant/bin" filemode="755" prefix="${netbeans.dest}/${nb.cluster.ide.dir}/ant/bin">
+      <zipfileset dir="${netbeans.dest.dir}/${nb.cluster.java.dir}/ant/bin" filemode="755" prefix="${netbeans.dest}/${nb.cluster.java.dir}/ant/bin">
         <exclude name="*.bat"/>
         <exclude name="*.cmd"/>
       </zipfileset>
@@ -1384,6 +1384,16 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <include name="${nb.cluster.ide.dir}/**/*.jar" />
         </jars>
       </input>
+      <input name="java" >
+        <jars dir="${netbeans.dest.dir}" >
+          <include name="${nb.cluster.java.dir}/**/*.jar" />
+        </jars>
+      </input>
+      <input name="apisupport" >
+        <jars dir="${netbeans.dest.dir}" >
+          <include name="${nb.cluster.apisupport.dir}/**/*.jar" />
+        </jars>
+      </input>
       <input name="j2ee" >
         <jars dir="${netbeans.dest.dir}" >
           <include name="${nb.cluster.j2ee.dir}/**/*.jar" />
@@ -1786,6 +1796,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <fileset id="check-file-layout" dir="${check-file-layout-root}" casesensitive="yes" >
         <include name="platform*/**" />
         <include name="ide*/**" />
+        <include name="java*/**" />
+        <include name="apisupport*/**" />
         <include name="enterprise*/**" />
         <include name="nb*/**" />
         <include name="harness*/**" />

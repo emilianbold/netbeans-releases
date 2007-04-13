@@ -17,8 +17,12 @@ init()
    export ANT_OPTS="-Xmx512m"
    export JAVA_HOME=$JDK_HOME
 
-   DATESTAMP=`date -u +%Y%m%d`
+   DATESTAMP=`date -u +%Y%m%d%%H%M`
    BUILDNUM=trunk-nightly-$DATESTAMP
+
+   if [ -z $CVS_STAMP ]; then
+       CVS_STAMP="00:00UTC today"
+   fi
    
    if [ -z $BASE_DIR ]; then
        echo BASE_DIR variable not defined, using the default one: /space/NB-IDE
@@ -181,6 +185,12 @@ rm -rf enterprise*
 
 pack_component $DIST $BASENAME soa "soa*"
 rm -rf soa*
+
+pack_component $DIST $BASENAME apisupport "apisupport*"
+rm -rf apisupport*
+
+pack_component $DIST $BASENAME java "java*"
+rm -rf java*
 
 pack_component $DIST $BASENAME nb6.0-etc "*"
 

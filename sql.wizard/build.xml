@@ -25,9 +25,9 @@
     <import file="nbproject/build-impl.xml"/>	 
 	 <target name="init" depends="harness.init">
         <mkdir dir="${cluster}/modules/ext/sql/"/>
-       <echo message="my classpath to ant ${harness.dir}/../ide8/ant/lib"/>
+       <echo message="my classpath to ant ${harness.dir}/../java1/ant/lib"/>
 		<copy todir="${cluster}/modules/ext/sql">
-           <fileset dir="${harness.dir}/../ide8/ant/lib">
+           <fileset dir="${harness.dir}/../java1/ant/lib">
                 <include name="ant.jar"/>
             </fileset>
         </copy>
