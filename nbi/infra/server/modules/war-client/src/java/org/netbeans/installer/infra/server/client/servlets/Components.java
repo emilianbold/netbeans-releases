@@ -311,15 +311,4 @@ public class Components extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         processRequest(request, response);
     }
-    
-    //            group_products = new Array(
-    //                new Array(0, 1, 2),
-    //                new Array(3, 4)
-    //            );
-    //
-    //            group_display_names = new Array(
-    //                "",
-    //                "Runtimes"
-    //            );
-    
 }

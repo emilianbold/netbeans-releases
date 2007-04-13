@@ -32,6 +32,10 @@
         <servlet-name>Components</servlet-name>
         <servlet-class>org.netbeans.installer.infra.server.client.servlets.Components</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>Components2</servlet-name>
+        <servlet-class>org.netbeans.installer.infra.server.client.servlets.Components2</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>get-registry</servlet-name>
         <url-pattern>/get-registry</url-pattern>
@@ -63,6 +67,10 @@
     <servlet-mapping>
         <servlet-name>Components</servlet-name>
         <url-pattern>/js/components.js</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Components2</servlet-name>
+        <url-pattern>/download-2/js/components.js</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
