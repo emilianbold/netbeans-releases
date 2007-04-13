@@ -58,6 +58,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
@@ -80,14 +81,21 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (isFromEditor(ec)) {
             new TextComponentRunnable(ec) {
                 @Override
-                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
+                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, final CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
                     if (selected==null)
                         return null;
                     if (selected.getKind() == ElementKind.CONSTRUCTOR) {
                         selected = selected.getEnclosingElement();
-                    }
-                    if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
+                    } 
+                    if (selected.getKind() == ElementKind.PACKAGE) {
+                        NonRecursiveFolder folder = new NonRecursiveFolder() {
+                            public FileObject getFolder() {
+                                return info.getFileObject().getParent();
+                            }
+                        };
+                        return new RenameRefactoringUI(folder);
+                    } else if (selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
                         FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
                         if (selected.getSimpleName().toString().equals(f.getName())) {
                             return new RenameRefactoringUI(f==null?info.getFileObject():f, selectedElement, info);
@@ -550,8 +558,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                                 public void run(CompilationController info) throws Exception {
                                     info.toPhase(Phase.ELEMENTS_RESOLVED);
                                     CompilationUnitTree unit = info.getCompilationUnit();
-                                    TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit, unit.getTypeDecls().get(0)),info);
-                                    handles.add(representedObject);
+                                    for (Tree t: unit.getTypeDecls()) {
+                                        Element e = info.getTrees().getElement(TreePath.getPath(unit, t));
+                                        if (e.getSimpleName().toString().equals(info.getFileObject().getName())) {
+                                            TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit,t),info);
+                                            handles.add(representedObject);
+                                            break;
+                                        }
+                                    }
                                     cinfo=new WeakReference<CompilationInfo>(info);
                                 }
                                 

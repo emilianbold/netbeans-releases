@@ -19,6 +19,7 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -76,8 +77,14 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     public void run(CompilationController co) throws Exception {
                         co.toPhase(JavaSource.Phase.RESOLVED);
                         CompilationUnitTree cut = co.getCompilationUnit();
-                        treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
-                        refactoring.getContext().add(co);
+                        for (Tree t: cut.getTypeDecls()) {
+                            Element e = co.getTrees().getElement(TreePath.getPath(cut, t));
+                            if (e.getSimpleName().toString().equals(co.getFileObject().getName())) {
+                                treePathHandle = TreePathHandle.create(TreePath.getPath(cut, t), co);
+                                refactoring.getContext().add(co);
+                                break;
+                            }
+                        }
                     }
                 }, false);
             } catch (IllegalArgumentException ex) {
@@ -89,6 +96,8 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     public Problem preCheck() {
+        if (treePathHandle == null)
+            return null;
         CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
         Element el = treePathHandle.resolveElement(info);
         
@@ -175,6 +184,8 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     public Problem fastCheckParameters() {
+        if (treePathHandle == null)
+            return null;
         CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
         Element el = treePathHandle.resolveElement(info);
         ElementKind kind = el.getKind();
@@ -260,6 +271,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     public Problem checkParameters() {
+        if (treePathHandle == null)
+            return null;
+        
         int steps = 0;
         if (overriddenByMethods != null)
             steps += overriddenByMethods.size();
@@ -369,6 +383,8 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     public Problem prepare(RefactoringElementsBag elements) {
+        if (treePathHandle == null)
+            return null;
         ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
         final CompilationInfo mainInfo = refactoring.getContext().lookup(CompilationInfo.class);
         final Element element = treePathHandle.resolveElement(mainInfo);
