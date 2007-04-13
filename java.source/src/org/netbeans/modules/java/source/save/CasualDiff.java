@@ -1860,7 +1860,7 @@ public class CasualDiff {
             Measure measure, 
             VeryPretty printer)
     {
-        if (oldList == newList) {
+        if (oldList == newList || oldList.equals(newList)) {
             return localPointer;
         }
         assert oldList != null && newList != null;
