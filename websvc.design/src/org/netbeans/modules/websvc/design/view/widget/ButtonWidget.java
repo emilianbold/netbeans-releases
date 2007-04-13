@@ -196,7 +196,8 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
 
     private static ImageLabelWidget createImageLabelWidget(Scene scene, Action action) {
         String label = (String)action.getValue(Action.NAME);
-        Image image = ((ImageIcon)action.getValue(Action.SMALL_ICON)).getImage();
+        Object icon = action.getValue(Action.SMALL_ICON);
+        Image image = icon instanceof ImageIcon ? ((ImageIcon)icon).getImage(): null;
         return new ImageLabelWidget(scene,image,label);
     }
 

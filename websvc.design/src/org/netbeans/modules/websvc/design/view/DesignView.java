@@ -31,8 +31,8 @@ import javax.swing.JToolBar;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LayerWidget;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
@@ -52,7 +52,7 @@ public class DesignView extends JPanel  {
     private Service service;
     private ServiceModel serviceModel;
     /** Manages the state of the widgets and corresponding objects. */
-    private Scene scene;
+    private ObjectScene scene;
     /** Manages the zoom level. */
     private ZoomManager zoomer;
     private Widget mMainLayer;
@@ -70,7 +70,7 @@ public class DesignView extends JPanel  {
         this.implementationClass = implementationClass;
         this.serviceModel = ServiceModel.getServiceModel(implementationClass);
         
-        scene = new Scene();
+        scene = new ObjectScene();
         zoomer = new ZoomManager(scene);
         // add actions
         scene.getActions().addAction(ActionFactory.createZoomAction());

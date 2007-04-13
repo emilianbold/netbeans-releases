@@ -223,8 +223,8 @@ public class ServiceModel {
             op2.remove(key);
             // comparing if something has changed in method
             if (!method1.isEqualTo(method2)) {
-                method1=method2;
-                fireOperationChanged(method2);
+                this.operations.set(this.operations.indexOf(method1), method2);
+                fireOperationChanged(method1,method2);
             }
         }
         // op1 contains methods present in model1 that are not in model2
@@ -268,9 +268,9 @@ public class ServiceModel {
             listener.operationRemoved(method);
         }
     }
-    void fireOperationChanged(MethodModel method) {
+    void fireOperationChanged(MethodModel oldMethod, MethodModel newMethod) {
         for (ServiceChangeListener listener:serviceChangeListeners) {
-            listener.operationChanged(method);
+            listener.operationChanged(oldMethod,newMethod);
         }
     }
     

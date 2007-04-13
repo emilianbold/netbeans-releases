@@ -193,9 +193,9 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
                     events.add(new String[]{"operationRemoved",method.getOperationName()});
                 }
 
-                public void operationChanged(MethodModel method) {
-                    System.out.println("operationChanged "+method.getOperationName());
-                     events.add(new String[]{"operationChanged",method.getOperationName()});
+                public void operationChanged(MethodModel oldMethod, MethodModel newMethod) {
+                    System.out.println("operationChanged "+newMethod.getOperationName());
+                     events.add(new String[]{"operationChanged", newMethod.getOperationName()});
                 }
             });
             model.mergeModel(model_1);

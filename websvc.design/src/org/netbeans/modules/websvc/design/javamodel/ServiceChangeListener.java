@@ -32,6 +32,6 @@ public interface ServiceChangeListener {
     
     public void operationRemoved(MethodModel method);
     
-    public void operationChanged(MethodModel method);
+    public void operationChanged(MethodModel oldMethod, MethodModel newMethod);
     
 }

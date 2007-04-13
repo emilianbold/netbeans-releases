@@ -29,6 +29,7 @@ import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
@@ -65,7 +66,7 @@ public class OperationsWidget extends AbstractTitledWidget {
      * @param service
      * @param serviceModel
      */
-    public OperationsWidget(Scene scene, final Service service, ServiceModel serviceModel) {
+    public OperationsWidget(ObjectScene scene, final Service service, ServiceModel serviceModel) {
         super(scene,GAP,BORDER_COLOR);
         this.serviceModel = serviceModel;
         serviceModel.addServiceChangeListener(new ServiceChangeListener() {
@@ -76,28 +77,26 @@ public class OperationsWidget extends AbstractTitledWidget {
             }
             
             public void operationAdded(MethodModel method) {
-                contentWidget.addChild(new OperationWidget(getScene(),service, method));
+                OperationWidget operationWidget = new OperationWidget(getScene(),service, method);
+                contentWidget.addChild(operationWidget);
+                getObjectScene().addObject(method, operationWidget);
                 updateHeaderLabel();
                 getScene().validate();
             }
             
             public void operationRemoved(MethodModel method) {
-                List<Widget> widgets = contentWidget.getChildren();
-                for(Widget widget : widgets){
-                    if(widget instanceof OperationWidget){
-                        OperationWidget op = (OperationWidget)widget;
-                        if(op.getMethodModel().isEqualTo(method)){
-                            contentWidget.removeChild(op);
-                            updateHeaderLabel();
-                            getScene().validate();
-                            break;
-                        }
-                    }
+                Widget operationWidget = getObjectScene().findWidget(method);
+                if(operationWidget!=null) {
+                    getObjectScene().removeObject(method);
+                    contentWidget.removeChild(operationWidget);
+                    updateHeaderLabel();
+                    getScene().validate();
                 }
             }
             
-            public void operationChanged(MethodModel method) {
-                throw new UnsupportedOperationException("Not supported yet.");
+            public void operationChanged(MethodModel oldMethod, MethodModel newMethod) {
+                operationRemoved(oldMethod);
+                operationAdded(newMethod);
             }
             
         });
@@ -136,7 +135,9 @@ public class OperationsWidget extends AbstractTitledWidget {
         
         if(serviceModel.getOperations()!=null) {
             for(MethodModel operation:serviceModel.getOperations()) {
-                contentWidget.addChild(new OperationWidget(getScene(),service, operation));
+                OperationWidget operationWidget = new OperationWidget(getScene(),service, operation);
+                contentWidget.addChild(operationWidget);
+                getObjectScene().addObject(operation, operationWidget);
             }
         }
         if(isExpanded()) {
@@ -178,4 +179,7 @@ public class OperationsWidget extends AbstractTitledWidget {
         toolbar.add(addAction);
     }
     
+    private ObjectScene getObjectScene() {
+        return (ObjectScene)getScene();
+    }
 }

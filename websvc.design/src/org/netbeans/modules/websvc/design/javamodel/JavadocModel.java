@@ -38,7 +38,7 @@ public class JavadocModel {
     }
     
     /** Creates a new instance of MethodModel */
-    JavadocModel(String texr) {
+    JavadocModel(String text) {
         this.text=text;
     }
     

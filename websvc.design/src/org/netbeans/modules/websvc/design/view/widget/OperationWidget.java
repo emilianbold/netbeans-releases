@@ -73,7 +73,7 @@ public class OperationWidget extends AbstractTitledWidget {
     private ParametersWidget inputWidget;
     private OutputWidget outputWidget;
     private FaultsWidget faultWidget;
-    private Widget descriptionWidget;
+    private DescriptionWidget descriptionWidget;
     
     private boolean tabbedView;
     /**
@@ -135,7 +135,7 @@ public class OperationWidget extends AbstractTitledWidget {
         inputWidget = new ParametersWidget(getScene(),operation);
         outputWidget = new OutputWidget(getScene(),operation);
         faultWidget = new FaultsWidget(getScene(),operation);
-        descriptionWidget = new LabelWidget(getScene(),"description");
+        descriptionWidget = new DescriptionWidget(getScene(),operation);
         listWidget.addChild(inputWidget);
         listWidget.addChild(outputWidget);
         listWidget.addChild(faultWidget);
@@ -145,7 +145,7 @@ public class OperationWidget extends AbstractTitledWidget {
         tabbedWidget.addTab(inputWidget);
         tabbedWidget.addTab(outputWidget);
         tabbedWidget.addTab(faultWidget);
-        tabbedWidget.addTab("Description", null, new LabelWidget(getScene(),"description"));
+        tabbedWidget.addTab(descriptionWidget);
         
         contentWidget.addChild(listWidget);
         contentWidget.addChild(tabbedWidget);
