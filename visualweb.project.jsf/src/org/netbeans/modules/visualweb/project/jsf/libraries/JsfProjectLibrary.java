@@ -174,7 +174,7 @@ public class JsfProjectLibrary {
         }
 
         try {
-            return FileUtil.toFileObject(file).getURL();
+            return FileUtil.getArchiveRoot(FileUtil.toFileObject(file)).getURL();
         } catch (FileStateInvalidException e) {
             return null;
         }

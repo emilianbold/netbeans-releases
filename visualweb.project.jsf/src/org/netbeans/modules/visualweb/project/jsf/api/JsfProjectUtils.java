@@ -1394,7 +1394,7 @@ public class JsfProjectUtils {
         for (int i = 0; i < jarName.length; i++) {
             File f = InstalledFileLocator.getDefault().locate(jarName[i], null, true);
             if (f != null) {
-                URL root = FileUtil.toFileObject(f).getURL();
+                URL root = FileUtil.getArchiveRoot(FileUtil.toFileObject(f)).getURL();
                 if (!hasRootReference(project, root)) {
                     jars.add(root);
                 }
@@ -1408,7 +1408,7 @@ public class JsfProjectUtils {
         for (int i = 0; i < jarName.length; i++) {
             File f = InstalledFileLocator.getDefault().locate(jarName[i], null, true);
             if (f != null) {
-                URL root = FileUtil.toFileObject(f).getURL();
+                URL root = FileUtil.getArchiveRoot(FileUtil.toFileObject(f)).getURL();
                 if (!hasRootReference(project, root, type)) {
                     jars.add(root);
                 }
