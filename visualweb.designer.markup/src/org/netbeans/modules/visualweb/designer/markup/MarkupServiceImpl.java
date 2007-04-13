@@ -62,6 +62,9 @@ public final class  MarkupServiceImpl {
     
     private static final String KEY_SOURCE_TEXT = "vwpSourceText"; // NOI18N
 
+    private static final String KEY_RENDERED_ELEMENT = "vwpRenderedElement"; // NOI18N
+    
+    private static final String KEY_SOURCE_ELEMENT="vwpSourceElement"; // NOI18N    
     
     
     private MarkupServiceImpl() {
@@ -346,7 +349,8 @@ public final class  MarkupServiceImpl {
             RaveRenderedElement dstElement = (RaveRenderedElement)dst;
 //            srcElement.source = null;
 //            dstElement.source = srcElement;
-            dstElement.linkToSourceElement(srcElement);
+//            dstElement.linkToSourceElement(srcElement);
+            linkToSourceElement(dstElement, srcElement);
         } else if (src instanceof RaveSourceText) {
             assert dst instanceof RaveRenderedText;      
             RaveSourceText srcText = (RaveSourceText)src;
@@ -398,7 +402,8 @@ public final class  MarkupServiceImpl {
                 MarkupDesignBean markupDesignBean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
                 MarkupDesignBean parentMarkupDesignBean = parent == null ? null : InSyncService.getProvider().getMarkupDesignBeanForElement(parent);
                 if (markupDesignBean == parentMarkupDesignBean) {
-                    element.linkToSourceElement(null);
+//                    element.linkToSourceElement(null);
+                    linkToSourceElement(element, null);
 //                } else if (element.getDesignBean() != null) {
 //                    element.setSource((RaveElement)element.getDesignBean().getElement());
                 } else if (markupDesignBean != null) {
@@ -406,10 +411,12 @@ public final class  MarkupServiceImpl {
                     // #6455709 Some strange class cast exception, couldn't reproduce, needs to be tested more carefully.
                     Element elem = markupDesignBean.getElement();
                     if (elem instanceof RaveSourceElement) {
-                        element.linkToSourceElement((RaveSourceElement)elem);
+//                        element.linkToSourceElement((RaveSourceElement)elem);
+                        linkToSourceElement(element, elem);
                     } else {
                         // XXX Log a problem?
-                        element.linkToSourceElement(null);
+//                        element.linkToSourceElement(null);
+                        linkToSourceElement(element, null);
                     }
                 } else {
 //                    rn.markRendered();
@@ -510,7 +517,8 @@ public final class  MarkupServiceImpl {
             if (node instanceof RaveRenderedElementImpl) {
                 RaveRenderedElementImpl xel = (RaveRenderedElementImpl)node;
 //                if (xel.isRendered()) {
-                    RaveSourceElement src = xel.getSourceElement();
+//                    RaveSourceElement src = xel.getSourceElement();
+                    Element src = getSourceElement(xel);
                     if (src != null) {
                         return src;
                     }
@@ -520,7 +528,8 @@ public final class  MarkupServiceImpl {
         }
         
 //        return element.getSourceElement();
-        return element.getSourceElement();
+//        return element.getSourceElement();
+        return getSourceElement(element);
     }
     
 //    /** Returns true if the node is rendered.
@@ -598,7 +607,8 @@ public final class  MarkupServiceImpl {
 //            return ((RaveTextImpl)node).getRenderedNode();
 //        }
         if (node instanceof RaveSourceElement) {
-            return ((RaveSourceElement)node).getRenderedElement();
+//            return ((RaveSourceElement)node).getRenderedElement();
+            return getRenderedElement((Element)node);
         } else if (node instanceof RaveSourceText) {
 //            return ((RaveSourceText)node).getRenderedText();
             return getRenderedText((Text)node);
@@ -620,7 +630,8 @@ public final class  MarkupServiceImpl {
 //            return ((RaveTextImpl)node).getSourceNode();
 //        }
         if (node instanceof RaveRenderedElement) {
-            return ((RaveRenderedElement)node).getSourceElement();
+//            return ((RaveRenderedElement)node).getSourceElement();
+            return getSourceElement((Element)node);
         } else if (node instanceof RaveRenderedText) {
 //            return ((RaveRenderedText)node).getSourceText();
             return getSourceText((Text)node);
@@ -636,7 +647,8 @@ public final class  MarkupServiceImpl {
 //            return ((RaveElement)element).getRendered();
 //        }
         if (element instanceof RaveSourceElement) {
-            return ((RaveSourceElement)element).getRenderedElement();
+//            return ((RaveSourceElement)element).getRenderedElement();
+            return getRenderedElement(element);
         } else if (element instanceof RaveRenderedElement) { // XXX
             return element;
         }
@@ -648,7 +660,8 @@ public final class  MarkupServiceImpl {
 //            ((RaveElement)element).setRendered((RaveElement)renderedElement);
 //        }
         if (element instanceof RaveSourceElement) {
-            ((RaveSourceElement)element).linkToRenderedElement((RaveRenderedElement)renderedElement);
+//            ((RaveSourceElement)element).linkToRenderedElement((RaveRenderedElement)renderedElement);
+            linkToRenderedElement(element, renderedElement);
         }
     }
     
@@ -657,7 +670,8 @@ public final class  MarkupServiceImpl {
 //            return ((RaveElement)element).getSource();
 //        }
         if (element instanceof RaveRenderedElement) {
-            return ((RaveRenderedElement)element).getSourceElement();
+//            return ((RaveRenderedElement)element).getSourceElement();
+            return getSourceElement(element);
         } else if (element instanceof RaveSourceElement) { // XXX
             return element;
         }
@@ -802,14 +816,96 @@ public final class  MarkupServiceImpl {
     static void linkToSourceText(Text text, Text sourceText) {
         setSourceText(text, sourceText);
 
-        if (sourceText != null) {
-//            ((RaveTextImpl) alternate).rendered = false;
-//            ((RaveTextImpl) alternate).alternate = this;
-//            ((RaveSourceTextImpl)sourceText).setRenderedText(this);
-            setRenderedText(sourceText, text);
-        }
+//        if (sourceText != null) {
+////            ((RaveTextImpl) alternate).rendered = false;
+////            ((RaveTextImpl) alternate).alternate = this;
+////            ((RaveSourceTextImpl)sourceText).setRenderedText(this);
+//        }
+        setRenderedText(sourceText, text);
     }
     
+    static void setRenderedElement(Element element, Element renderedElement) {
+        if (element == null) {
+            return;
+        }
+        element.setUserData(KEY_RENDERED_ELEMENT, renderedElement, RenderedElementDataHandler.getDefault());
+    }
+    
+    static Element getRenderedElement(Element element) {
+        if (element == null) {
+            return null;
+        }
+        return (Element)element.getUserData(KEY_RENDERED_ELEMENT);
+    }
+    
+    static void linkToRenderedElement(Element element, Element renderedElement) {
+        setRenderedElement(element, renderedElement);
+
+//        if (renderedElement != null) {
+////            ((RaveElementImpl)alternate).rendered = true;
+////            ((RaveElementImpl)alternate).alternate = this;
+////            ((RaveRenderedElementImpl)renderedElement).setSourceElement(element);
+//        }
+        setSourceElement(renderedElement, element);
+    }
+    
+    static void setSourceElement(Element element, Element sourceElement) {
+        if (element == null) {
+            return;
+        }
+        element.setUserData(KEY_SOURCE_ELEMENT, sourceElement, SourceElementDataHandler.getDefault());
+    }
+    
+    static Element getSourceElement(Element element) {
+        if (element == null) {
+            return null;
+        }
+        return (Element)element.getUserData(KEY_SOURCE_ELEMENT);
+    }
+
+    static void linkToSourceElement(Element element, Element sourceElement) {
+        setSourceElement(element, sourceElement);
+
+//        // Don't store references to invisible markup (<script>, <style>, <input hidden>)
+//        if (sourceElement != null) {
+//            // XXX Original code
+//            // Make the source have a render reference to this element too, unless
+//            // we know it's a nonvisual element that I'll never need a reference from.
+//            // (And because some components can render script or style tags at the top
+//            // level next to the bean render, it's important not to clobber the render
+//            // pointer here.)
+//            String name = element == null ? "" : element.getTagName(); // NOI18N
+//
+//            char first = name.length() > 0 ? name.charAt(0) : '0';
+//
+//            if (!(((first == 's') && (name.equals(HtmlTag.SCRIPT.name) || name.equals(HtmlTag.STYLE.name)))
+//            || ((first == 'i') && (name.equals(HtmlTag.INPUT.name))
+//                    && element.getAttribute(HtmlAttribute.TYPE).equals("hidden")))) { // NOI18N
+////                ((RaveElementImpl)alternate).rendered = false;
+////                ((RaveElementImpl)alternate).alternate = this;
+////                ((RaveSourceElementImpl)sourceElement).setRenderedElement(this);
+//                setRenderedElement(sourceElement, element);
+//            }
+//        }
+        // XXX Original code
+        // Make the source have a render reference to this element too, unless
+        // we know it's a nonvisual element that I'll never need a reference from.
+        // (And because some components can render script or style tags at the top
+        // level next to the bean render, it's important not to clobber the render
+        // pointer here.)
+        if (element != null) {
+            String name = element.getTagName(); // NOI18N
+            char first = name.charAt(0);
+            if (((first == 's') && (name.equals(HtmlTag.SCRIPT.name) || name.equals(HtmlTag.STYLE.name))) // NOI18N
+            || ((first == 'i') && (name.equals(HtmlTag.INPUT.name)) && element.getAttribute(HtmlAttribute.TYPE).equals("hidden"))) { // NOI18N
+                // Don't store references to invisible markup (<script>, <style>, <input hidden>)
+                return;
+            }
+        }
+            
+        setRenderedElement(sourceElement, element);
+    }
+
     
     private static class JspxDataHandler implements UserDataHandler {
         private static final JspxDataHandler INSTANCE = new JspxDataHandler();
@@ -875,4 +971,32 @@ public final class  MarkupServiceImpl {
         }
         
     } // End of SourceTextDataHandler.
+
+    
+    private static class RenderedElementDataHandler implements UserDataHandler {
+        private static final RenderedElementDataHandler INSTANCE = new RenderedElementDataHandler();
+        
+        public static RenderedElementDataHandler getDefault() {
+            return INSTANCE;
+        }
+        
+        public void handle(short operation, String key, Object data, Node src, Node dst) {
+            // No op.
+            // TODO Make the copying here instead of AbstractRaveElement.copyFrom.
+        }
+    } // End of RenderedElementDataHandler.
+    
+    
+    private static class SourceElementDataHandler implements UserDataHandler {
+        private static final SourceElementDataHandler INSTANCE = new SourceElementDataHandler();
+        
+        public static SourceElementDataHandler getDefault() {
+            return INSTANCE;
+        }
+        
+        public void handle(short operation, String key, Object data, Node src, Node dst) {
+            // No op.
+            // TODO Make the copying here instead of AbstractRaveElement.copyFrom.
+        }
+    } // End of SourceElementDataHandler.
 }
