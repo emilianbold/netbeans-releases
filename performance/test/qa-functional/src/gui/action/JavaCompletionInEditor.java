@@ -113,7 +113,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
     
     private void setCompletionForMeasuringOn(){
         // measure only paint events from QuietEditorPane
-        repaintManager().setRegionFilter(COMPLETION_FILTER);
+        repaintManager().addRegionFilter(COMPLETION_FILTER);
         
         // set large font size for Editor
         BaseOptions options = BaseOptions.getOptions (JavaKit.class);
@@ -137,7 +137,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
     
     private void setCompletionForMeasuringOff(){
         // reset filter
-        repaintManager().setRegionFilter(null);
+        repaintManager().resetRegionFilters();
         
         // set back the original font size for Editor
         Class kitClass = JavaKit.class;

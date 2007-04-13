@@ -56,7 +56,7 @@ public class PasteInEditor extends org.netbeans.performance.test.utilities.Perfo
     public void initialize() {
         EditorOperator.closeDiscardAll();
         
-        repaintManager().setOnlyEditor(true);
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         setJavaEditorCaretFilteringOn();
         
         SourcePackagesNode sourcePackagesNode = new SourcePackagesNode("PerformanceTestData");
@@ -90,7 +90,7 @@ public class PasteInEditor extends org.netbeans.performance.test.utilities.Perfo
         // close the second file without saving it
         editorOperator2.closeDiscard();
         editorOperator1.closeDiscard();
-        repaintManager().setOnlyEditor(false);
+        repaintManager().resetRegionFilters();
     }
     
 }

@@ -57,7 +57,7 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
     protected void initialize() {
         log("::initialize::");
         EditorOperator.closeDiscardAll();
-        repaintManager().setRegionFilter(NAVIGATION_FILTER);
+        repaintManager().addRegionFilter(NAVIGATION_FILTER);
     }
     
     public void prepare() {
@@ -103,7 +103,7 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
     
     protected void shutdown() {
         log("::shutdwown");
-        repaintManager().setRegionFilter(null);
+        repaintManager().resetRegionFilters();
         super.shutdown();
     }
     

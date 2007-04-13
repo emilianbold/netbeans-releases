@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -125,7 +125,7 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
         projectTab.getProjectRootNode("PerformanceTestFoldersData").collapse();
         
         turnBadgesOff();
-        repaintManager().setOnlyExplorer(true);
+        repaintManager().addRegionFilter(repaintManager().EXPLORER_FILTER);
     }
         
         
@@ -151,7 +151,7 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
     }
     
     public void shutdown() {
-        repaintManager().setOnlyExplorer(false);
+        repaintManager().resetRegionFilters();
         turnBadgesOn();
         projectTab.getProjectRootNode(project).collapse();
         new RestoreWindowAction().performAPI(projectTab);

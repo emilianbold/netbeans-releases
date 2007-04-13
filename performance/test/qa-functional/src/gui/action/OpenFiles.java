@@ -109,7 +109,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     
     protected void initialize(){
         EditorOperator.closeDiscardAll();
-        repaintManager().setOnlyEditor(true);
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
     }
     
     public void prepare(){
@@ -146,7 +146,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     protected void shutdown(){
         testedComponentOperator = null; // allow GC of editor and documents
         EditorOperator.closeDiscardAll();
-        repaintManager().setOnlyEditor(false);
+        repaintManager().resetRegionFilters();
     }
     
     private void hookEditorDocument(Component comp) {

@@ -67,14 +67,14 @@ public class OpenFormFile extends OpenFilesNoCloneableEditor {
     protected void initialize() {
         EditorOperator.closeDiscardAll();
         // don't measure paint events from StatusLine
-        repaintManager().setRegionFilter(STATUSLINE_FILTER);
+        repaintManager().addRegionFilter(STATUSLINE_FILTER);
     }
 
     @Override
     protected void shutdown() {
         EditorOperator.closeDiscardAll();
         // reset filter
-        repaintManager().setRegionFilter(null);
+        repaintManager().resetRegionFilters();
     }
     
     public ComponentOperator open(){

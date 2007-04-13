@@ -135,7 +135,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
 
     private void setEditorForMeasuringOn(){
         // measure only paint events from QuietEditorPane
-        repaintManager().setOnlyEditor(true);
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         
         // set large font size for Editor
         BaseOptions options = BaseOptions.getOptions(kitClass);
@@ -151,7 +151,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
     
     private void setEditorForMeasuringOff(){
         // measure only paint events from QuietEditorPane
-        repaintManager().setRegionFilter(null);
+        repaintManager().resetRegionFilters();
         
         // set back the original font size for Editor
         BaseOptions options = BaseOptions.getOptions(kitClass);

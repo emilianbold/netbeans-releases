@@ -70,7 +70,7 @@ public class PageUpPageDownInEditor extends org.netbeans.performance.test.utilit
     public void initialize() {
         EditorOperator.closeDiscardAll();
         
-        repaintManager().setOnlyEditor(true);
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         setJavaEditorCaretFilteringOn();
         
         // open a java file in the editor
@@ -98,7 +98,7 @@ public class PageUpPageDownInEditor extends org.netbeans.performance.test.utilit
 
     protected void shutdown() {
         super.shutdown();
-        repaintManager().setOnlyEditor(false);
+        repaintManager().resetRegionFilters();
     }
     
 }

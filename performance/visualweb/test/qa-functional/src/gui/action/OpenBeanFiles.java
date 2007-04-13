@@ -77,7 +77,7 @@ public class OpenBeanFiles  extends org.netbeans.performance.test.utilities.Perf
     public void initialize() {
         log("::initialize");
         EditorOperator.closeDiscardAll();
-        repaintManager().setOnlyEditor(true);
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
     }
     
     public void prepare() {
@@ -129,7 +129,7 @@ public class OpenBeanFiles  extends org.netbeans.performance.test.utilities.Perf
     
     protected void shutdown(){
         EditorOperator.closeDiscardAll();
-        repaintManager().setOnlyEditor(false);
+        repaintManager().resetRegionFilters();
     }
     
 }
