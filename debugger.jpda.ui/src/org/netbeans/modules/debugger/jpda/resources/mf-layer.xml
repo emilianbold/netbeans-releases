@@ -213,12 +213,12 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Toolbars">
-        <folder name="Build">            
+        <!--<folder name="Build">            
             <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance"/>
             </file>
-        </folder>
+        </folder>-->
         <folder name="Debug">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.jpda.ui.Bundle" />
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
