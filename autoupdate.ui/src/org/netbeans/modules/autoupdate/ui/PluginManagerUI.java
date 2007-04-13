@@ -257,8 +257,8 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
     
     public void buttonsChanged () {
         Component c = tpTabs.getSelectedComponent ();
-        if (c instanceof UnitTab) {
-            ((UnitTab) c).refreshState ();
+        if (c instanceof SplittedUnitTab) {
+            ((SplittedUnitTab) c).refreshState ();
         }
     }
 }
