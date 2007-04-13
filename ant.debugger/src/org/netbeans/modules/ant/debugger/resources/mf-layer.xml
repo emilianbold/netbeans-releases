@@ -124,10 +124,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow/org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
-            </file>
         </folder>
     </folder>
 

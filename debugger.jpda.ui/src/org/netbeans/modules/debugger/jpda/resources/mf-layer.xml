@@ -256,10 +256,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-ui-actions-FixAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-FixAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-FixAction.shadow/org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
-            </file>
         </folder>
     </folder>
 
