@@ -253,7 +253,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * for quiet period of time after this call.</p>
      */
     public void measureTime() {
-        Exception exceptionDuringMeasurement = null;
+        String exceptionDuringMeasurement = null;
 
         long wait_after_open_heuristic = WAIT_AFTER_OPEN;
 
@@ -265,6 +265,11 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
         log("----------------------- DISPATCHING MODEL = "+JemmyProperties.getCurrentDispatchingModel());
 
+        // filter default button on Vista - see issue 100961
+        if("Windows Vista".equalsIgnoreCase(System.getProperty("os.name",""))){
+            repaintManager().addRegionFilter(repaintManager().VISTA_FILTER);
+        }
+        
         String performanceDataName = setPerformanceName();
 
         tr.startNewEventList(performanceDataName);
@@ -334,7 +339,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     log("------- [ "+i+" ] ---------------- Exception rises while measuring performance :"+exc.getMessage());
                     exc.printStackTrace(getLog());
                     getScreenshot("exception_during_open");
-                    exceptionDuringMeasurement = exc;
+                    exceptionDuringMeasurement = exc.getMessage();
                     // throw new JemmyException("Exception arises during measurement:"+exc.getMessage());
                 }finally{ // finally for prepare(), open()
                     try{
@@ -351,7 +356,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                         log("------- [ "+i+" ] ---------------- Exception rises while closing tested component :"+e.getMessage());
                         e.printStackTrace(getLog());
                         getScreenshot("exception_during_close");
-                        exceptionDuringMeasurement = e;
+                        exceptionDuringMeasurement = e.getMessage();
                         //throw new JemmyException("Exception arises while closing tested component :"+e.getMessage());
                     }finally{ // finally for close()
                         tr.connectToAWT(false);
@@ -368,14 +373,14 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             e.printStackTrace(getLog());
             getScreenshot("exception_during_init_or_shutdown");
             // throw new JemmyException("Exception rises while shuting down :"+e.getMessage());
-            exceptionDuringMeasurement = e;
+            exceptionDuringMeasurement = e.getMessage();
         }finally{ // finally for initialize(), shutdown(), closeAllDialogs()
-            repaintManager().setRegionFilter(null);
+            repaintManager().resetRegionFilters();
         }
 
         dumpLog();
         if(exceptionDuringMeasurement!=null)
-            throw new Error("Exception {" + exceptionDuringMeasurement.getMessage()+ "}rises during measurement, look at appropriate log file for stack trace(s).");
+            throw new Error("Exception {" + exceptionDuringMeasurement+ "}rises during measurement, look at appropriate log file for stack trace(s).");
 
         compare(measuredTime);
 

@@ -19,6 +19,9 @@
 
 package org.netbeans.performance.test.guitracker;
 
+import java.util.LinkedList;
+
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.RepaintManager;
@@ -38,11 +41,15 @@ public class LoggingRepaintManager extends RepaintManager {
     private long lastPaint = 0L;
     
     private boolean hasDirtyMatches = false;
-    private RegionFilter regionFilter;
     
-    /** Creates a new instance of LoggingRepaintManager */
+    private LinkedList<RegionFilter> regionFilters;
+    
+    /** Creates a new instance of LoggingRepaintManager
+     * @param tr
+     */
     public LoggingRepaintManager(ActionTracker tr) {
         this.tr = tr;
+        regionFilters = new LinkedList<RegionFilter>();
         // lastPaint = System.nanoTime();
     }
     
@@ -85,30 +92,6 @@ public class LoggingRepaintManager extends RepaintManager {
     }
     
     /**
-     * Measure only explorer
-     * @param ignore true - measure only explorer, false - measure everything
-     */
-    public void setOnlyExplorer(boolean ignore) {
-        if (ignore) {
-            setRegionFilter(EXPLORER_FILTER);
-        } else {
-            setRegionFilter(null);
-        }
-    }
-    
-    /**
-     * Measure only editor
-     * @param ignore true - measure only editor, false - measure everything
-     */
-    public void setOnlyEditor(boolean ignore) {
-        if (ignore) {
-            setRegionFilter(EDITOR_FILTER);
-        } else {
-            setRegionFilter(null);
-        }
-    }
-    
-    /**
      * Log the action when region is add to dirty regions.
      *
      * @param c component which is add to this region
@@ -123,7 +106,7 @@ public class LoggingRepaintManager extends RepaintManager {
         // fix for issue 73361, It looks like the biggest cursor is on Sol 10 (10,19) in textfields
         // of some dialogs
         if (w > 10 || h > 19) { // painted region isn't cursor (or painted region is greater than cursor)
-            if (regionFilter != null && !regionFilter.accept(c)) {
+            if (regionFilters != null && acceptedByRegionFilters(c)) {
                 tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "IGNORED DirtyRegion: " + log);
             } else { // no filter || accepted by filter =>  measure it
                 tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "ADD DirtyRegion: " + log);
@@ -134,12 +117,78 @@ public class LoggingRepaintManager extends RepaintManager {
         super.addDirtyRegion(c, x, y, w, h);
     }
     
+    /**
+     * Check all region filters
+     * @param c component to be checked
+     * @return true - it's accepted, false it isn't accepted
+     */
+    public synchronized boolean acceptedByRegionFilters(JComponent c){
+        for (RegionFilter filter : regionFilters) {
+            if(!filter.accept(c))
+                return false;
+        }
+        return true;
+    }
+    
+    /**
+     * Set region filter
+     * @param filter
+     */
+    public void  addRegionFilter(RegionFilter filter) {
+        if(filter != null){
+            tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER: " + filter.getFilterName());
+            regionFilters.add(filter);
+        }
+    }
+    /**
+     * Reset region filters
+     */
+    public void  resetRegionFilters() {
+        tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER: reset");
+        regionFilters.clear();
+    }
+    
+    /**
+     * Region filter - define paints those will be accepted
+     */
     public interface RegionFilter {
+        /**
+         * Accept paints from component
+         * @param c component
+         * @return true - paint is accepted, false it isn't
+         */
         public boolean accept(JComponent c);
+        
+        /**
+         * Get filter name
+         * @return name of the filter
+         */
         public String getFilterName();
     }
     
-    private static final RegionFilter EXPLORER_FILTER =
+    /**
+     * Accept paints from Windows Vista :
+     *  - component is not default button (JButton)
+     * This button is repainted periodically on Window Vista with Aero L&F,
+     * so we need to ignore these paints
+     */
+    public static final RegionFilter VISTA_FILTER =
+            new RegionFilter() {
+        
+        public boolean accept(JComponent c) {
+            return !(c instanceof JButton && ((JButton)c).isDefaultButton());
+        }
+        
+        public String getFilterName() {
+            return "Don't accept paints from Default JButton";
+        }
+    };
+    
+    /**
+     * Accept paints only from Explorer :
+     *  - org.openide.explorer.view
+     */
+    public static final RegionFilter EXPLORER_FILTER =
             new RegionFilter() {
         
         public boolean accept(JComponent c) {
@@ -158,7 +207,12 @@ public class LoggingRepaintManager extends RepaintManager {
         }
     };
     
-    private static final RegionFilter EDITOR_FILTER =
+    
+    /**
+     * Accept paints only from Editor :
+     *  - org.openide.text.QuietEditorPane
+     */
+    public static final RegionFilter EDITOR_FILTER =
             new RegionFilter() {
         
         public boolean accept(JComponent c) {
@@ -169,15 +223,6 @@ public class LoggingRepaintManager extends RepaintManager {
             return "Accept paints from org.openide.text.QuietEditorPane";
         }
     };
-    
-    public void  setRegionFilter(RegionFilter filter) {
-        if(filter != null)
-            tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER: " + filter.getFilterName());
-        else
-            tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER: reset");
-        
-        regionFilter = filter;
-    }
     
     /**
      * Log the action when dirty regions are painted.
@@ -193,16 +238,10 @@ public class LoggingRepaintManager extends RepaintManager {
         }
     }
     
-    /**
-     * @deprecated use waitNoPaintEvent instead
-     */
-    public long waitNoEvent(long timeout) {
-        return waitNoPaintEvent(timeout, false);
-    }
-    
     /** waits and returns when there is at least timeout millies without any
      * painting processing
      *
+     * @param timeout
      * @return time of last painting
      */
     public long waitNoPaintEvent(long timeout) {
