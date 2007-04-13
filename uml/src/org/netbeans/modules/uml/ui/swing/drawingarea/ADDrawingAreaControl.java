@@ -21,7 +21,6 @@
 package org.netbeans.modules.uml.ui.swing.drawingarea;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.Point;
@@ -134,10 +133,6 @@ import com.tomsawyer.util.TSProperty;
 import com.tomsawyer.xml.editor.TSEEnumerationTable;
 import com.tomsawyer.xml.editor.TSEVisualizationXMLReader;
 import com.tomsawyer.xml.editor.TSEVisualizationXMLWriter;
-import java.awt.Component;
-import javax.swing.AbstractButton;
-import javax.swing.JButton;
-import javax.swing.JToggleButton;
 import org.dom4j.Document;
 import org.dom4j.Node;
 import org.netbeans.modules.uml.common.ETException;
@@ -372,7 +367,7 @@ public class ADDrawingAreaControl extends ApplicationView
    private IDiagramEngine m_DiagramEngine = null;
    private double m_nZoomLevelFromArchive = 0.0;
    private double m_OnDrawZoom = 1.0f;
-   private Point m_CenterFromArchive = new Point(0,0);
+   private Point m_CenterFromArchive;
    private Vector m_AssociatedDiagrams = new Vector();
    private HashMap m_AssociatedElements = new HashMap(); //its a HashMap<String, Vector<String>>
    private IDiagram m_Diagram = null;
@@ -493,7 +488,7 @@ public class ADDrawingAreaControl extends ApplicationView
    private boolean m_bCutting = false;
    
    private TSEGraphManager m_graphManager;
-   //private TSServiceInputData m_serviceInputData;
+
    private TSLayoutInputTailor m_layoutInputTailor;
    private TSHierarchicalLayoutInputTailor m_hierarchicalInputTailor;
    private TSOrthogonalLayoutInputTailor m_orthogonalLayoutInputTailor;
@@ -510,6 +505,7 @@ public class ADDrawingAreaControl extends ApplicationView
    private List m_selectedNodesGroup = new ArrayList();
    private List tempList = new ArrayList(); //temp list for use in fireSelectEvent
    private String mSelectedPaletteBttn;
+
    
    public static String DIRTYSTATE = "dirty"; // NOI18N;
 
@@ -710,11 +706,11 @@ public class ADDrawingAreaControl extends ApplicationView
       this.setLayout(new BorderLayout());
       
       this.northPanel = new JPanel(new BorderLayout());
-      this.northPanel.setBorder(new EmptyBorder(1, 1, 1, 1));
+//      this.northPanel.setBorder(new EmptyBorder(1, 1, 1, 1));
       this.add(this.northPanel, BorderLayout.NORTH);
       
       this.centerPanel = new JPanel(new BorderLayout());
-      this.centerPanel.setBorder(new EmptyBorder(1, 1, 1, 1));
+//      this.centerPanel.setBorder(new EmptyBorder(1, 1, 1, 1));
       this.add(this.centerPanel, BorderLayout.CENTER);
       
       ETSmartWaitCursor waitCursor = new ETSmartWaitCursor();
@@ -1153,18 +1149,16 @@ public class ADDrawingAreaControl extends ApplicationView
                                         try {
                                             xmlReader = new TSEVisualizationXMLReader(reader);
                                             xmlReader.setGraphManager(pGraphMgr);
-                                            xmlReader.setServiceInputData(this.getServiceInputData(this.getGraphManager()));
-                                            xmlReader.setPreferences(this.getGraphWindow().getPreferences());
-                                            
-//                                            Debug.out.println("Before... isStrict? = "+xmlReader.isStrict());
+                                            xmlReader.setServiceInputData(m_allOptionsServiceInputData);
+                                            xmlReader.setPreferences(this.getGraphWindow().getPreferences());                                            
                                             xmlReader.setStrict(true);
-//                                            Debug.out.println("After... isStrict? = "+xmlReader.isStrict());
                                             
                                             xmlReader.read();
                                         } catch (Exception ex) {
                                             Debug.out.println(" Exception in xmlREading... So, it is NOT a TSVisulatization file.. it might be GMF...");
                                             isFileTSVxml = false; // not TSV .. might be in gmf format..
                                         }
+                                        
                                         if ( !isFileTSVxml ) { // it is a gmf file..
                                             
                                             reader = new BufferedReader(
@@ -1175,6 +1169,7 @@ public class ADDrawingAreaControl extends ApplicationView
                                             if( reader.ready() ) {
                                                 TSLayoutInputTailor tailor = new TSLayoutInputTailor( this.getServiceInputData((TSEGraphManager)pGraphMgr));
                                                 tailor.setGraphManager((TSEGraphManager)pGraphMgr);
+                                                
                                                 try {
                                                     ((TSEGraphManager)pGraphMgr).readGMF(reader, this.getServiceInputData((TSEGraphManager)pGraphMgr));                                                   
                                                 } catch(Exception e) {                                                   
@@ -1310,29 +1305,26 @@ public class ADDrawingAreaControl extends ApplicationView
       // Set the diagram zoom level, but give the graphwindow a chance to process msg's first.
       Runnable runnable = new Runnable()
       {
-         public void run()
-         {
-            TSEGraph graph = getGraph();
-            TSEGraphWindow window = getGraphWindow();
-            if (graph != null && window != null)
-            {
-               graph.setBoundsUpdatingEnabled(true);
-               graph.updateBounds();               
-               window.setZoomLevel(m_nZoomLevelFromArchive, false);
-               //zoom(1.0);
-               if (m_CenterFromArchive != null)
-               {
-                  //	This doesn't work for some strange reason. Just center the graph and move on. We can come back to it later. (Kevin)
-                  // TSConstPoint point = new TSConstPoint(m_CenterFromArchive.getX(), m_CenterFromArchive.getY());
-                  //getGraphWindow().centerPointInWindow(point, true);
-                  
-                  window.centerGraph(true);
-               }
-               else
-               {
-                  window.centerGraph(true);
-               }
-            }
+          public void run()
+          {
+              TSEGraph graph = getGraph();
+              TSEGraphWindow window = getGraphWindow();
+              if (graph != null && window != null)
+              {
+                  graph.setBoundsUpdatingEnabled(true);
+                  graph.updateBounds();
+                  window.setZoomLevel(m_nZoomLevelFromArchive, false);
+                  if (m_CenterFromArchive != null)
+                  {
+                      TSConstPoint point = new TSConstPoint(m_CenterFromArchive.getX(), m_CenterFromArchive.getY());
+                      getGraphWindow().centerPointInWindow(point, true);   
+                  }
+                  else
+                  {
+                      window.centerGraph(true);
+                  }
+              }
+            getResources().setLayoutStyle(getLayoutStyle());
             setPopulating(false);
             waitCursor.stop();
          }
@@ -1398,10 +1390,15 @@ public class ADDrawingAreaControl extends ApplicationView
          IteratorT < ETNodeLabel > nodeLabelIter = new IteratorT(graph.nodeLabels());
          for (ETNodeLabel nodeLabel = nodeLabelIter.next(); nodeLabel != null; nodeLabel = nodeLabelIter.next())
          {
-            ETGenericNodeLabelUI nodeLabelUI = (ETGenericNodeLabelUI)nodeLabel.getUI();
+            TSEObjectUI ui = nodeLabel.getUI();
+            if (ui instanceof ETGenericNodeLabelUI)
+            {
+                ETGenericNodeLabelUI nodeLabelUI = (ETGenericNodeLabelUI)ui;
             
-            nodeLabelUI.setDrawingArea(this);
+                nodeLabelUI.setDrawingArea(this);
+            }
             addReadWriteItem(nodeLabel);
+            
          }
          
       }
@@ -2708,7 +2705,7 @@ public class ADDrawingAreaControl extends ApplicationView
          }
       });
       
-      getGraphWindow().setBorder(new SoftBevelBorder(BevelBorder.LOWERED));
+//      getGraphWindow().setBorder(new SoftBevelBorder(BevelBorder.LOWERED));
       
       trackBarChangeListener = new ViewportChangeListener();            
       ((TSEEventManager)(this.getGraphWindow().getGraphManager().getEventManager())).addViewportChangeListener(getGraphWindow(), trackBarChangeListener);
@@ -2830,7 +2827,7 @@ public class ADDrawingAreaControl extends ApplicationView
             m_DiagramSavedWithAliasOn = pArchEle.getAttributeBool(IProductArchiveDefinitions.LAST_SHOWALIAS_STATE);
             //m_LoadedDiagramVersion = pArchEle.getAttributeDouble(IProductArchiveDefinitions.DIAGRAMVERSION_STRING);
             boolean diaIsStub = pArchEle.getAttributeBool(IProductArchiveDefinitions.DIAGRAM_ISSTUB_STRING);
-            
+
             if (m_nZoomLevelFromArchive == 0.0)
             {
                m_nZoomLevelFromArchive = 1.0;
@@ -6802,6 +6799,7 @@ public class ADDrawingAreaControl extends ApplicationView
                    if (!handled)
                    {
                        boolean incremental = (nLayoutStyle == ILayoutKind.LK_INCREMENTAL_LAYOUT);
+                       
                        int layoutStyle = nLayoutStyle;
                        
                        // Performing the layout with commands.
@@ -6812,7 +6810,8 @@ public class ADDrawingAreaControl extends ApplicationView
                            int tsLayoutStyle = ETLayoutStyleMap.mapLayoutKind2TsLayout(nLayoutStyle);
                            
                            //JM: fix for Bug#6383449
-                           if ((tsLayoutStyle == TSLayoutConstants.LAYOUT_STYLE_NO_STYLE) && (incremental == true))
+//                           if ((tsLayoutStyle == TSLayoutConstants.LAYOUT_STYLE_NO_STYLE) && (incremental == true))
+                           if (incremental)
                            {
                                m_layoutInputTailor.setIncrementalLayout(true);
                                getGraphWindow().transmit(new ADLayoutCommand(getGraphWindow(), this.m_layoutProxy, this.m_allOptionsServiceInputData));
@@ -8364,10 +8363,10 @@ public class ADDrawingAreaControl extends ApplicationView
       
       if (m_showToolbars)
       {
-         this.createToolbars();
+          this.createToolbars();
       }
    }
-   
+
    /**
     * Set the type of this drawing.  This routine converts the string to a DiagramKind (ie
     * "Class Diagram" to DK_CLASS_DIAGRAM).
@@ -8539,6 +8538,7 @@ public class ADDrawingAreaControl extends ApplicationView
            pAction.setKind(DiagramAreaEnumerations.TAK_LAYOUTCHANGE);
            pAction.setLayoutStyle(nLayoutStyle);
            postDelayedAction(pAction);
+           getResources().setLayoutStyle(nLayoutStyle);
        }
    }
    
@@ -8556,6 +8556,7 @@ public class ADDrawingAreaControl extends ApplicationView
          pAction.setKind(DiagramAreaEnumerations.TAK_LAYOUTCHANGE_SILENT);
          pAction.setLayoutStyle(nLayoutStyle);
          postDelayedAction(pAction);
+         getResources().setLayoutStyle(nLayoutStyle);
       }
    }
    
@@ -10440,7 +10441,7 @@ public class ADDrawingAreaControl extends ApplicationView
       ADGraphWindow graphWindow = this.getGraphWindow();
       if (graphWindow != null)
       {
-         return new ETRectEx(graphWindow.getTransform().getWorldBounds());
+          return new ETRectEx(graphWindow.getWorldBounds());
       }
       return null;
    }
@@ -10454,46 +10455,28 @@ public class ADDrawingAreaControl extends ApplicationView
       boolean retVal = true;
       if (m_isDirty)
       {
-         
-         m_nZoomLevelFromArchive = this.getCurrentZoom();
-         // Save the viewport center.
-/*			IETRect logicalViewPort = getLogicalViewPortRect();
- 
-            if (logicalViewPort != null)
-            {
-                m_CenterFromArchive =logicalViewPort.getCenterPoint();
-                ETSystem.out.println("Center Point of the view port is" + m_CenterFromArchive.toString());
-                ETSystem.out.println("Logical view port rect = " + logicalViewPort.toString());
-            }
- */
-         ADGraphWindow graphWindow = getGraphWindow();
-         if (graphWindow != null)
-         {
-            TSEGraph graph = graphWindow.getGraph();
-            if (graph != null)
-            {
-               m_CenterFromArchive = new Point((int)graph.getCenterX(), (int)graph.getCenterY());
-               //					ETSystem.out.println("Center Point of the view port is" + m_CenterFromArchive.toString());
-               //					ETSystem.out.println("Logical view port rect = " + getLogicalViewPortRect().toString());
-            }
-         }
-         
-         // We need to save the current zoom level and center postions
-         //before we change anything
-         // zoom(1.0);
-         
-         boolean proceed = true;
-         
-         // Let folks know that the diagram is being saved
-         if (getDrawingAreaDispatcher() != null)
-         {
-            IEventPayload payload = m_drawingAreaDispatcher.createPayload("DrawingAreaPreSave");
-            IProxyDiagram pProxy = getProxyDiagram();
-            if (pProxy != null)
-            {
-               m_drawingAreaDispatcher.fireDrawingAreaPreSave(pProxy, payload);
-            }
-         }
+          
+          m_nZoomLevelFromArchive = this.getCurrentZoom();
+          // Save the viewport center.
+          IETRect logicalViewPort = getLogicalViewPortRect();
+          
+          if (logicalViewPort != null)
+          {
+              m_CenterFromArchive =logicalViewPort.getCenterPoint();
+          }
+                    
+          boolean proceed = true;
+          
+          // Let folks know that the diagram is being saved
+          if (getDrawingAreaDispatcher() != null)
+          {
+              IEventPayload payload = m_drawingAreaDispatcher.createPayload("DrawingAreaPreSave");
+              IProxyDiagram pProxy = getProxyDiagram();
+              if (pProxy != null)
+              {
+                  m_drawingAreaDispatcher.fireDrawingAreaPreSave(pProxy, payload);
+              }
+          }
          
          if (proceed)
          {
@@ -10518,10 +10501,7 @@ public class ADDrawingAreaControl extends ApplicationView
             retVal = false;
          }
       }
-      //zoom back to the original size saved in m_nZoomLevelFromArchive
-      //zoom( m_nZoomLevelFromArchive );
-      
-      //return retVal;
+    
    }
    
    /**
