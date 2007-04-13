@@ -33,6 +33,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.w3c.dom.UserDataHandler;
 
 
 /**
@@ -46,6 +47,9 @@ import org.w3c.dom.Text;
  */
 public final class  MarkupServiceImpl {
 
+    
+    private static final String KEY_JSPX = "vwpJspx"; // NOI18N
+    
 
     private MarkupServiceImpl() {
     }
@@ -421,11 +425,12 @@ public final class  MarkupServiceImpl {
 //        } else if (n instanceof RaveTextImpl) {
 //            ((RaveTextImpl)n).setJspx(true);
 //        }
-        if (n instanceof AbstractRaveElement) {
-            ((AbstractRaveElement)n).setJspx(true);
-        } else if (n instanceof AbstractRaveText) {
-            ((AbstractRaveText)n).setJspx(true);
-        }
+//        if (n instanceof AbstractRaveElement) {
+//            ((AbstractRaveElement)n).setJspx(true);
+//        } else if (n instanceof AbstractRaveText) {
+//            ((AbstractRaveText)n).setJspx(true);
+//        }
+        setJspxNode(n, true);
 
         NodeList list = n.getChildNodes();
         int len = list.getLength();
@@ -539,12 +544,14 @@ public final class  MarkupServiceImpl {
 //        } else if (node instanceof RaveTextImpl) {
 //            return ((RaveTextImpl)node).isJspx();
 //        }
-        if (node instanceof AbstractRaveElement) {
-            return ((AbstractRaveElement)node).isJspx();
-        } else if (node instanceof AbstractRaveText) {
-            return ((AbstractRaveText)node).isJspx();
-        }
-        return false;
+//        if (node instanceof AbstractRaveElement) {
+//            return ((AbstractRaveElement)node).isJspx();
+//        } else if (node instanceof AbstractRaveText) {
+//            return ((AbstractRaveText)node).isJspx();
+//        }
+//        return false;
+        Boolean b = node == null ? null : (Boolean)node.getUserData(KEY_JSPX);
+        return b == null ? false : b.booleanValue();
     }
     
     public static void setJspxNode(Node node, boolean jspx) {
@@ -556,11 +563,15 @@ public final class  MarkupServiceImpl {
 //        } else if (node instanceof RaveTextImpl) {
 //            ((RaveTextImpl)node).setJspx(jspx);
 //        }
-        if (node instanceof AbstractRaveElement) {
-            ((AbstractRaveElement)node).setJspx(jspx);
-        } else if (node instanceof AbstractRaveText) {
-            ((AbstractRaveText)node).setJspx(jspx);
+//        if (node instanceof AbstractRaveElement) {
+//            ((AbstractRaveElement)node).setJspx(jspx);
+//        } else if (node instanceof AbstractRaveText) {
+//            ((AbstractRaveText)node).setJspx(jspx);
+//        }
+        if (node == null) {
+            return;
         }
+        node.setUserData(KEY_JSPX, Boolean.valueOf(jspx), JspxDataHandler.getDefault());
     }
     
     public static Node getRenderedNodeForNode(Node node) {
@@ -678,5 +689,18 @@ public final class  MarkupServiceImpl {
         }
         return null;
     }
+
+    
+    private static class JspxDataHandler implements UserDataHandler {
+        private static final JspxDataHandler INSTANCE = new JspxDataHandler();
+        
+        public static JspxDataHandler getDefault() {
+            return INSTANCE;
+        }
+        
+        public void handle(short operation, String key, Object data, Node src, Node dst) {
+            // No op.
+        }
+    } // End of JspxDataHandler.
     
 }
