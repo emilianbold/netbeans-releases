@@ -67,7 +67,7 @@ public final class PopupUtil  {
     }
     
     public static void showPopup( JComponent content, String title, int x, int y, boolean undecorated ) {
-        showPopup(content, title, -1, -1, false, -1 );
+        showPopup(content, title, x, y, false, -1 );
     }  
     public static void showPopup( JComponent content, String title, int x, int y, boolean undecorated, int altHeight ) {        
         if (popupWindow != null ) {
