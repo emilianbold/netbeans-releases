@@ -1923,18 +1923,6 @@ public class CasualDiff {
                 }
                 case INSERT: {
                     int pos = estimator.getInsertPos(i);
-                    // estimator couldn't compute the position - probably
-                    // first element is inserted to the collection
-                    String head = "", tail = "";
-                    if (pos < 0 && oldList.isEmpty() && i == 0) {
-                        pos = localPointer;
-                        StringBuilder aHead = new StringBuilder(), aTail = new StringBuilder();
-                        pos = estimator.prepare(localPointer, aHead, aTail);
-                        if (j+1 == result.length) {
-                            tail = aTail.toString();
-                        }
-                        head = aHead.toString();
-                    }
                     int oldPos = item.element.getKind() != Kind.VARIABLE ? getOldPos(item.element) : item.element.pos;
                     boolean found = false;
                     if (oldPos > 0) {
@@ -1970,7 +1958,6 @@ public class CasualDiff {
                             this.printer.undent(old);
                             break;
                         }
-                        printer.print(head);
                         printer.enclClassName = printer.enclClassName;
                         if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
                         printer.print(item.element);
