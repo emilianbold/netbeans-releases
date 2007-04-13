@@ -134,7 +134,7 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
                 Point nodeSceneLocation = getParentWidget().convertLocalToScene(getPreferredLocation());
                 Point point = new Point(
                         nodeSceneLocation.x + newX, 
-                        nodeSceneLocation.y + getBounds().height + nameRect.height);
+                        nodeSceneLocation.y + nodeRect.height + nameRect.height);
                 point.x = point.x < NAME_LEFT_EDGE_SPACING ? NAME_LEFT_EDGE_SPACING : point.x;
                 
                 mNameWidget.setPreferredLocation(point);

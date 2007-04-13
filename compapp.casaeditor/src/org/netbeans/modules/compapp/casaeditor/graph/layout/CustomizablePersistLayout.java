@@ -80,7 +80,7 @@ public abstract class CustomizablePersistLayout implements Layout {
     }
     
     
-    private static Point adjustLocation(
+    private Point adjustLocation(
             Widget widget,
             int suggestedX,
             int suggestedY,
@@ -95,7 +95,7 @@ public abstract class CustomizablePersistLayout implements Layout {
         if (isRightAligned) {
             suggestedX = region.getBounds().width - widgetSize.width;
             Point currentLocation = widget.getLocation();
-            if (currentLocation.x != suggestedX) {
+            if (isAnimating() && currentLocation.x != suggestedX) {
                 // Do not animate horizontally for right-aligned widgets.
                 widget.setPreferredLocation(new Point(suggestedX, currentLocation.y));
             }
