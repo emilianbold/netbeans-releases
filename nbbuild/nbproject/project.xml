@@ -271,6 +271,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../j2ee/ejbjarproject</project>
                 <project>../j2ee/genericserver</project>
                 <project>../j2ee/metadata</project>
+                <project>../j2ee/metadata/support</project>
                 <project>../j2ee/persistence</project>
                 <project>../j2ee/persistence/verification</project>
                 <project>../j2ee/persistenceapi</project>

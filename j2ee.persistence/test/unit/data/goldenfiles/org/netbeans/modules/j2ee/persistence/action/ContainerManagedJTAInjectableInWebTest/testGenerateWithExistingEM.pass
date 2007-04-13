@@ -1,0 +1,29 @@
+package org.netbeans.test;
+
+import java.util.*;
+import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import javax.persistence.Resource;
+
+public class Test {
+
+        @Resource
+    private javax.transaction.UserTransaction utx;
+
+    private EntityManager myEm;
+
+    protected void create(Object object) {
+        try {
+            utx.begin();
+            myEm.joinTransaction();
+            myEm.persist(object);
+            utx.commit();
+        }
+        catch (Exception e) {
+            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,
+                                                                         "exception caught",
+                                                                         e);
+            throw new RuntimeException(e);
+        }
+    }
+}

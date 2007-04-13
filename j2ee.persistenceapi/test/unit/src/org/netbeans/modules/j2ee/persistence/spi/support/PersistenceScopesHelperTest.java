@@ -4,11 +4,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeFactory;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeImplementation;
 import org.openide.filesystems.FileObject;
@@ -163,6 +164,10 @@ public class PersistenceScopesHelperTest extends NbTestCase {
         }
 
         public ClassPath getClassPath() {
+            return null;
+        }
+
+        public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(String persistenceUnitName) {
             return null;
         }
     }

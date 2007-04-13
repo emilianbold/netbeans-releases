@@ -1,0 +1,191 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.j2ee.persistence.api.entity.generator;
+
+
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.dbschema.DBException;
+import org.netbeans.modules.j2ee.persistence.api.*;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.dbschema.DBIdentifier;
+import org.netbeans.modules.dbschema.SchemaElement;
+import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
+import org.netbeans.modules.dbschema.jdbcimpl.SchemaElementImpl;
+import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.JavaPersistenceGenerator;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.DBSchemaTableProvider;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGenerator;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SelectedTables;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.TableClosure;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.TableProvider;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
+
+/**
+ * A class for generating entity classes from database tables.
+ *
+ * @author Erno Mononen
+ */
+public final class EntitiesFromDBGenerator {
+    
+    private final List<String> tableNames;
+    private final boolean generateNamedQueries;
+    private final String packageName;
+    private final SourceGroup location;
+    private final DatabaseConnection connection;
+    private final Project project;
+    private final PersistenceUnit persistenceUnit;
+    private final JavaPersistenceGenerator generator; 
+    
+    private SchemaElement schemaElement;
+    
+    
+    /**
+     * Creates a new instance of EntitiesFromDBGenerator.
+     *
+     * @param tableNames the names of the tables for which entities are generated. Must not be null.
+     * @param generateNamedQueries specifies whether named queries should be generated.
+     * @param packageName the name of the package for the generated entities. Must not be null.
+     * @param location the location. Must not be null.
+     * @param connection the database connection for the specified tables. Must not be null.
+     * @param project the project to which entities are generated.
+     * @param persistenceUnit the persistenceUnit to which generated entities should be added
+     * as managed classes. May be null, in which case it is up to the client to add
+     * the generated entities to an appropriate persistence unit (if any).
+     *
+     */
+    public EntitiesFromDBGenerator(List<String> tableNames, boolean generateNamedQueries,
+            String packageName, SourceGroup location, DatabaseConnection connection,
+            Project project, PersistenceUnit persistenceUnit) {
+        
+        Parameters.notNull("project", project); //NO18N
+        Parameters.notNull("tableNames", tableNames); //NO18N
+        Parameters.notNull("packageName", packageName); //NO18N
+        Parameters.notNull("location", location); //NO18N
+        Parameters.notNull("connection", connection); //NO18N
+        
+        this.tableNames = tableNames;
+        this.generateNamedQueries = generateNamedQueries;
+        this.packageName = packageName;
+        this.location = location;
+        this.connection = connection;
+        this.project = project;
+        this.persistenceUnit = persistenceUnit;
+        this.generator = new JavaPersistenceGenerator(persistenceUnit);
+    }
+    
+    /**
+     * Performs the generation of entity classes.
+     *
+     * @param progressContributor the progress contributor for the generation process.
+     *
+     * @return a set of <code>FileObject</code>s representing the generated entity
+     * classes.
+     * @throws SQLException in case an error was encountered when connecting to the db.
+     * @throws IOException in case the writing of the generated entities fails.
+     */
+    public Set<FileObject> generate(ProgressContributor progressContributor) throws SQLException, IOException{
+        
+        RelatedCMPHelper helper = new RelatedCMPHelper(project, PersistenceLocation.getLocation(project), generator);
+        helper.setLocation(location);
+        helper.setPackageName(packageName);
+        
+        try{
+            
+            TableClosure tableClosure = getTableClosure();
+            SelectedTables selectedTables = new SelectedTables(generator, tableClosure, location, packageName);
+            
+            helper.setTableClosure(tableClosure);
+            helper.setTableSource(getSchemaElement(), null);
+            helper.setSelectedTables(selectedTables);
+            helper.setGenerateFinderMethods(generateNamedQueries);
+            
+            helper.buildBeans();
+            
+        } catch (DBException ex){
+            IOException wrapper = new IOException(ex.getMessage());
+            wrapper.initCause(ex);
+            throw wrapper;
+        }
+        
+        generator.generateBeans(null, helper, null, progressContributor);
+        
+        Set<FileObject> result = generator.createdObjects();
+        return result;
+    }
+    
+    
+    private TableClosure getTableClosure() throws SQLException, DBException{
+        TableProvider tableProvider = new DBSchemaTableProvider(getSchemaElement(), generator);
+        
+        Set<Table> selectedTables = new HashSet<Table>();
+        for (Table each : tableProvider.getTables()){
+            if (tableNames.contains(each.getName())){
+                selectedTables.add(each);
+            }
+        }
+        
+        TableClosure tableClosure = new TableClosure(tableProvider);
+        tableClosure.addTables(selectedTables);
+        return tableClosure;
+    }
+    
+    /**
+     * Get the schema element representing the selected tables.
+     */
+    private SchemaElement getSchemaElement() throws SQLException, DBException{
+        
+        if (this.schemaElement != null){
+            return this.schemaElement;
+        }
+        
+        SchemaElementImpl impl = new SchemaElementImpl(getConnectionProvider());
+        this.schemaElement = new SchemaElement(impl);
+        schemaElement.setName(DBIdentifier.create("schema"));
+        impl.initTables(getConnectionProvider(), new LinkedList(tableNames), new LinkedList(), true);
+        
+        return schemaElement;
+    }
+    
+    /**
+     * Gets the connection provider for our <code>connection</code>.
+     */
+    private ConnectionProvider getConnectionProvider() throws SQLException{
+        ConnectionProvider connectionProvider = new ConnectionProvider(connection.getJDBCConnection(), connection.getDriverClass());
+        connectionProvider.setSchema(connection.getSchema());
+        return connectionProvider;
+    }
+    
+}

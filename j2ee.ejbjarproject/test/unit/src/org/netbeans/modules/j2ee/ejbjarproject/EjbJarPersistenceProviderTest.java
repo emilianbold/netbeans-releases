@@ -115,6 +115,7 @@ public class EjbJarPersistenceProviderTest extends NbTestCase {
         assertEquals(persistenceXml, persistenceScope.getPersistenceXml());
         assertEquals(1, listener.changeCount);
         assertSame(persistenceScope, persistenceScopes.getPersistenceScopes()[0]);
+        assertNotNull(persistenceScope.getEntityMappingsModel("unit"));
 
         // testing the persistence scope classpath
         ClassPath scopeCP = persistenceScope.getClassPath();
@@ -125,6 +126,7 @@ public class EjbJarPersistenceProviderTest extends NbTestCase {
         // removing persistence.xml
         persistenceXml.delete();
         assertNull("Should return a null persistence.xml", persistenceScope.getPersistenceXml());
+        assertNull(persistenceScope.getEntityMappingsModel("unit"));
         persistenceScope = provider.findPersistenceScope(root);
         assertNull(persistenceScope);
         assertEquals(2, listener.changeCount);

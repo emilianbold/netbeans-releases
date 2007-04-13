@@ -297,6 +297,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
+        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         Lookup base = Lookups.fixed(new Object[] {
                 new Info(),
                 aux,
@@ -309,7 +310,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarActionProvider( this, helper, refHelper ),
                 new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
-                new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
+                cpProvider,
                 new CompiledSourceForBinaryQuery(helper,evaluator(),getSourceRoots(),getTestSourceRoots()),
                 new JavadocForBinaryQueryImpl(helper, evaluator()),
                 new AntArtifactProviderImpl(),
@@ -324,7 +325,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 refHelper,
                 classpathExtender,
                 new EjbJarProjectOperations(this),
-                new EjbJarPersistenceProvider(this, evaluator()),
+                new EjbJarPersistenceProvider(this, evaluator(), cpProvider),
                 new EjbJAXWSMetadataFinder(this),
                 getJaxWsModel(),
                 new EjbJarEMGenStrategyResolver(),

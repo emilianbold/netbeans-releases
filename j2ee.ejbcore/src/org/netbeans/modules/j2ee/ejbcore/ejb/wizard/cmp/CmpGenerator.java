@@ -1,4 +1,4 @@
-/*
+    /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
@@ -56,10 +57,10 @@ public class CmpGenerator implements PersistenceGenerator {
     
     public void generateBeans(final ProgressPanel progressPanel,
                               RelatedCMPHelper helper, FileObject dbschemaFile,
-                              final ProgressHandle handle, boolean justTesting) throws IOException {
+                              final ProgressContributor handle) throws IOException {
         CmpFromDbGenerator.ProgressNotifier progressNotifier = new CmpFromDbGenerator.ProgressNotifier() {
             public void switchToDeterminate(int workunits) {
-                handle.switchToDeterminate(workunits);
+//                handle.switchToDeterminate(workunits);
             }
             public void progress(int workunit) {
                 handle.progress(workunit);

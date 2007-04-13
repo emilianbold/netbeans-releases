@@ -29,9 +29,6 @@ import com.sun.source.tree.TypeParameterTree;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 
 /**
  * Generates the code needed for invoking an <code>EntityManager</code> in EJB 3 
@@ -50,6 +47,8 @@ public final class ContainerManagedJTAInjectableInEJB extends EntityManagerGener
                 Collections.<AnnotationTree>emptyList()
                 );
         
+       FieldInfo em = getEntityManagerFieldInfo();
+        
         MethodTree newMethod = getTreeMaker().Method(
                 methodModifiers,
                 computeMethodName(),
@@ -58,12 +57,12 @@ public final class ContainerManagedJTAInjectableInEJB extends EntityManagerGener
                 getParameterList(),
                 Collections.<ExpressionTree>emptyList(),
                 "{ " +
-                generateCallLines() +
+                generateCallLines(em.getName()) +
                 "}",
                 null
                 );
         
-        if (getField(ENTITY_MANAGER_FQN) == null){
+        if(!em.isExisting()){
             modifiedClazz = createEntityManager(Initialization.INJECT);
         }
         

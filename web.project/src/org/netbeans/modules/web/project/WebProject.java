@@ -317,6 +317,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
+        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -329,7 +330,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new WebActionProvider( this, this.updateHelper ),
             new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
-            new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
+            cpProvider,
             new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
             new JavadocForBinaryQueryImpl(this.helper, evaluator()),
             new AntArtifactProviderImpl(),
@@ -344,7 +345,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             classPathExtender,
             cpMod,
             new WebProjectOperations(this),
-            new WebPersistenceProvider(this, evaluator()),
+            new WebPersistenceProvider(this, evaluator(), cpProvider),
             new WebJAXWSMetadataFinder(this),
             getJaxWsModel(),
             new WebPersistenceProviderSupplier(this),

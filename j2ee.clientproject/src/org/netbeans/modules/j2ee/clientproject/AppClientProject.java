@@ -214,6 +214,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
+        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -223,7 +224,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             new AppClientLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),
-            new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
+            cpProvider,
             new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new JavadocForBinaryQueryImpl(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata
             new AntArtifactProviderImpl(),
@@ -242,7 +243,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             
             new ProjectAppClientProvider(this),
             appClient,
-            new AppClientPersistenceProvider(this, evaluator()),
+            new AppClientPersistenceProvider(this, evaluator(), cpProvider),
             new AppClientProjectJAXWSVersionProvider(helper),
             enterpriseResourceSupport,
             getJaxWsModel(),

@@ -28,11 +28,15 @@ package org.netbeans.modules.j2ee.persistence.action;
 public final class GenerationOptions {
     
     public enum Operation {
-        PERSIST("em.persist({0});"),
-        MERGE("em.merge({0});"),
-        REMOVE("em.remove(em.merge({0}));"),
-        FIND("return ({2}) em.find({2}.class, {0});"),
-        FIND_ALL("return em.createQuery(\"select object(o) from {2} as o\").getResultList();");
+        // {0} the name of the entity manager instance
+        // {1} the name of the entity variable
+        // {2} ? 
+        // {3} the class of the entity
+        PERSIST("{0}.persist({1});"),
+        MERGE("{0}.merge({1});"),
+        REMOVE("{0}.remove({1}.merge({1}));"),
+        FIND("return ({3}) {0}.find({3}.class, {1});"),
+        FIND_ALL("return {0}.createQuery(\"select object(o) from {3} as o\").getResultList();");
     
         private String body;
         

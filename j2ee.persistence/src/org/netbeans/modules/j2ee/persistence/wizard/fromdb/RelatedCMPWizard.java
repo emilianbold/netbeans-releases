@@ -21,8 +21,11 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,8 +33,12 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
+import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+//import org.netbeans.modules.j2ee.persistence.api.EntitiesFromDBGenerator;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -44,6 +51,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -218,7 +226,8 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
         }
         
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "TXT_EjbGeneration" : "TXT_EntityClassesGeneration");
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(title);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(title); 
+        final ProgressContributor progressContributor = AggregateProgressFactory.createProgressContributor(title);
         
         progressPanel = new ProgressPanel();
         final JComponent progressComponent = ProgressHandleFactory.createProgressComponent(handle);
@@ -226,7 +235,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
         final Runnable r = new Runnable() {
             public void run() {
                 try {
-                    createBeans(wiz, handle);
+                    createBeans(wiz, progressContributor);
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                     NotifyDescriptor nd =
@@ -278,13 +287,13 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
         // }
         
         return Collections.<DataObject>singleton(DataFolder.findFolder(
-            SourceGroupSupport.getFolderForPackage(helper.getLocation(), helper.getPackageName())
-        ));
+                SourceGroupSupport.getFolderForPackage(helper.getLocation(), helper.getPackageName())
+                ));
     }
     
-    private void createBeans(TemplateWizard wiz, ProgressHandle handle) throws IOException {
+    private void createBeans(TemplateWizard wiz, ProgressContributor handle) throws IOException {
         try {
-            handle.start();
+            handle.start(1); //TODO: need the correct number of work units here 
             Project project = Templates.getProject(wiz);
             handle.progress(NbBundle.getMessage(RelatedCMPWizard.class, "TXT_SavingSchema"));
             progressPanel.setText(NbBundle.getMessage(RelatedCMPWizard.class, "TXT_SavingSchema"));
@@ -312,7 +321,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
             helper.buildBeans();
             
             FileObject pkg = SourceGroupSupport.getFolderForPackage(helper.getLocation(), helper.getPackageName());
-            generator.generateBeans(progressPanel, helper, dbschemaFile, handle, false);
+            generator.generateBeans(progressPanel, helper, dbschemaFile, handle);
             
             //            if (EjbJar.VERSION_3_0.equals(dd.getVersion().toString())) {
             //                JavaPersistenceGenerator jpg = new JavaPersistenceGenerator();

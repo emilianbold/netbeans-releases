@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
+import com.sun.source.tree.VariableTree;
+import java.text.MessageFormat;
 import org.netbeans.modules.j2ee.persistence.action.*;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
@@ -31,46 +33,72 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 
 /**
- * Generates the code needed for invoking an <code>EntityManager</code> in Java SE 
+ * Generates the code needed for invoking an <code>EntityManager</code> in Java SE
  * enviroment with an application-managed persistence unit.
- * 
+ *
  * @author Erno Mononen
  */
 public final class ApplicationManagedResourceTransactionInJ2SE extends EntityManagerGenerationStrategySupport{
     
     public ClassTree generate() {
         
+        
+        String body = "";
+
+        FieldInfo em = getEntityManagerFieldInfo();
+        
+        if (!em.isExisting()) {
+            body += getEmInitCode(getEntityManagerFactoryFieldInfo());
+        }
+        
+        body += getInvocationCode(em);
+        
         ModifiersTree methodModifiers = getTreeMaker().Modifiers(
                 Collections.<Modifier>singleton(Modifier.PUBLIC),
                 Collections.<AnnotationTree>emptyList()
                 );
         
-        String text = 
-                "javax.persistence.EntityManagerFactory emf = javax.persistence.Persistence.createEntityManagerFactory(\"" + getPersistenceUnitName() + "\");\n" +
-                "javax.persistence.EntityManager em = emf.createEntityManager();\n" +
-                "em.getTransaction().begin();\n" +
-                "try {\n" +
-                generateCallLines()     +
-                "    em.getTransaction().commit();\n" +
-                "} catch (Exception e) {\n" +
-                "    e.printStackTrace();\n" +
-                "    em.getTransaction().rollback();\n" +
-                "} finally {\n" +
-                "    em.close();\n" +
-                "}";
-        
         MethodTree newMethod = getTreeMaker().Method(
-                methodModifiers, 
+                methodModifiers,
                 computeMethodName(),
-                getTreeMaker().PrimitiveType(TypeKind.VOID), 
-                Collections.<TypeParameterTree>emptyList(), 
+                getTreeMaker().PrimitiveType(TypeKind.VOID),
+                Collections.<TypeParameterTree>emptyList(),
                 getParameterList(),
-                Collections.<ExpressionTree>emptyList(), 
-                "{ " + text + "}", 
+                Collections.<ExpressionTree>emptyList(),
+                "{ " + body + "}",
                 null
                 );
         
         return getTreeMaker().addClassMember(getClassTree(), newMethod);
+    }
+    
+    private String getEmInitCode(FieldInfo emf){
+        if (!emf.isExisting()){
+            return MessageFormat.format(
+                    "javax.persistence.EntityManagerFactory {0} = javax.persistence.Persistence.createEntityManagerFactory(\"{1}\");\n" +
+                    "javax.persistence.EntityManager {2} = {0}.createEntityManager();\n",
+                    emf.getName(), getPersistenceUnitName(), ENTITY_MANAGER_DEFAULT_NAME);
+            
+        }
+        return MessageFormat.format(
+                "javax.persistence.EntityManager {0} = {1}.createEntityManager();\n",
+                ENTITY_MANAGER_DEFAULT_NAME, emf.getName());
+        
+    }
+    
+    protected String getInvocationCode(FieldInfo em) {
+        String text =
+                "{0}.getTransaction().begin();\n" +
+                "try '{'\n" +
+                generateCallLines(em.getName())     +
+                "    {0}.getTransaction().commit();\n" +
+                "} catch (Exception e) '{'\n" +
+                "    e.printStackTrace();\n" +
+                "    {0}.getTransaction().rollback();\n" +
+                "} finally '{'\n" +
+                "    {0}.close();\n" +
+                "}";
+        return MessageFormat.format(text, em.getName());
     }
     
 }

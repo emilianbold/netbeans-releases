@@ -22,8 +22,10 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 import com.sun.source.tree.*;
 import java.util.HashMap;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Table;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,6 +44,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.util.AbstractTask;
@@ -86,15 +89,104 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
     // should generated Entity Classes implement Serializable?
     private static boolean genSerializableEntities = true;
 
+    private Set<FileObject> result;
+
+    /**
+     * Specifies whether the generated enties should be added to the first
+     * persistence unit found in the project. Note that this setting only
+     * applies to non-Java EE 5 projects - for Java EE 5 projects the entities
+     * are not added to a PU even if this is true.
+     */
+    private final boolean addToAutoDiscoveredPU;
+
+    /**
+     * The persistence unit to which the generated entities should
+     * be added.
+     */
+    private PersistenceUnit persistenceUnit;
+
+    /**
+     * Creates a new instance of JavaPersistenceGenerator. Tries to add the
+     * generated entities to the first persistence unit found (only in non-Java EE 5 projects).
+     */
     public JavaPersistenceGenerator() {
+        this.persistenceUnit = null;
+        this.addToAutoDiscoveredPU = true;
     }
+
+
+    /**
+     * Creates a new instance of JavaPersistenceGenerator
+     *
+     * @param persistenceUnit the persistence unit to which the generated entities
+     * should be added. Must exist in the project where the entities are generated.
+     * Has no effect in Java EE 5 projects - in those
+     * the entities are not added to any persistence unit regardless of this. May
+     * be null, in which case the generated entities are not added any persistence unit.
+     */
+    public JavaPersistenceGenerator(PersistenceUnit persistenceUnit) {
+        this.persistenceUnit = persistenceUnit;
+        this.addToAutoDiscoveredPU = false;
+    }
+
 
     public void generateBeans(final ProgressPanel progressPanel,
             final RelatedCMPHelper helper,
             final FileObject dbSchemaFile,
-            final ProgressHandle handle,
-            boolean justTesting) throws IOException {
-        new Generator(helper, handle, progressPanel).run();
+            final ProgressContributor handle) throws IOException {
+
+        generateBeans(helper.getBeans(), helper.isGenerateFinderMethods(), handle, progressPanel);
+    }
+
+    // package private for tests
+    void generateBeans(EntityClass[] entityClasses,
+            boolean generateNamedQueries, ProgressContributor progressContributor, ProgressPanel panel) throws IOException {
+
+        int progressMax = entityClasses.length * 2;
+        progressContributor.start(progressMax);
+        result = new Generator(entityClasses, generateNamedQueries, progressContributor, panel).run();
+        addToPersistenceUnit(result);
+        progressContributor.progress(progressMax);
+    }
+
+    /**
+     * Adds the given entities to out persistence unit found in the project.
+     */
+    private void addToPersistenceUnit(Set<FileObject> entities){
+
+        if (entities.isEmpty() || !addToAutoDiscoveredPU){
+            return;
+        }
+
+        Project project = FileOwnerQuery.getOwner(entities.iterator().next());
+        if (project != null && !Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {
+            try {
+                PUDataObject pudo = ProviderUtil.getPUDataObject(project);
+                // no persistence unit was provider, we'll try find one
+                if (persistenceUnit == null){
+                    PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
+                    //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
+                    if (pu.length == 1) {
+                        persistenceUnit = pu[0];
+                    }
+                }
+                if (persistenceUnit != null){
+                    ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
+                    if (classPathProvider != null) {
+                        for(FileObject entity : entities){
+                            String entityFQN = classPathProvider.findClassPath(entity, ClassPath.SOURCE).getResourceName(entity, '.', false);
+                            pudo.addClass(persistenceUnit, entityFQN);
+                        }
+                    }
+                }
+
+            } catch (InvalidPersistenceXmlException ipx){
+                // just log for debugging purposes, at this point the user has
+                // already been warned about an invalid persistence.xml
+                Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
+            }
+        }
+
     }
 
     public void init(WizardDescriptor wiz) {
@@ -128,31 +220,31 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         return name;
     }
 
-    public Set createdObjects() {
-        return Collections.EMPTY_SET;
+    public Set<FileObject> createdObjects() {
+        return result;
     }
+
 
     /**
      * Encapsulates the whole entity class generation process.
      */
     private static final class Generator {
-
-        private final RelatedCMPHelper helper;
-        private final ProgressHandle handle;
         private final ProgressPanel progressPanel;
+        private final ProgressContributor progressContributor;
         private final Map<String, EntityClass> beanMap = new HashMap<String, EntityClass>();
+        private final EntityClass[] entityClasses;
+        private final boolean generateNamedQueries;
 
-        public Generator(RelatedCMPHelper helper, ProgressHandle handle, ProgressPanel progressPanel) {
-            this.helper = helper;
-            this.handle = handle;
+        public Generator(EntityClass[] entityClasses, boolean generateNamedQueries,
+                ProgressContributor progressContributor, ProgressPanel progressPanel) {
+            this.entityClasses = entityClasses;
+            this.generateNamedQueries = generateNamedQueries;
+            this.progressContributor = progressContributor;
             this.progressPanel = progressPanel;
         }
 
-        public void run() throws IOException {
-            EntityClass[] genBeans = helper.getBeans();
+        public Set<FileObject> run() throws IOException {
 
-            int progressMax = genBeans.length * 2;
-            handle.switchToDeterminate(progressMax);
 
             // first generate empty entity classes -- this is needed as
             // in the field and method generation it will be necessary to resolve
@@ -162,26 +254,33 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             beanMap.clear();
             Set<FileObject> generationPackageFOs = new HashSet<FileObject>();
             Set<String> generatedEntityClasses = new HashSet<String>();
-            for (int i = 0; i < genBeans.length; i++) {
-                final EntityClass entityClass = genBeans[i];
+            Set<FileObject> generatedFOs = new HashSet<FileObject>();
+
+
+            for (int i = 0; i < entityClasses.length; i++) {
+                final EntityClass entityClass = entityClasses[i];
                 String entityClassName = entityClass.getClassName();
-                FileObject packageFileObject = genBeans[i].getPackageFileObject();
+                FileObject packageFileObject = entityClass.getPackageFileObject();
                 beanMap.put(entityClassName, entityClass);
 
                 if (packageFileObject.getFileObject(entityClassName, "java") != null) { // NOI18N
-                    handle.progress(i);
+                    progressContributor.progress(i);
                     continue;
                 }
                 String progressMsg = NbBundle.getMessage(JavaPersistenceGenerator.class, "TXT_GeneratingClass", entityClassName);
-                handle.progress(progressMsg, i);
-                progressPanel.setText(progressMsg);
+
+                progressContributor.progress(progressMsg, i);
+                if (progressPanel != null){
+                    progressPanel.setText(progressMsg);
+                }
 
                 generationPackageFOs.add(packageFileObject);
                 generatedEntityClasses.add(entityClassName);
 
                 // XXX Javadoc
-                GenerationUtils.createClass(packageFileObject, entityClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Class"));
-                if (!genBeans[i].isUsePkField()) {
+                FileObject entity = GenerationUtils.createClass(packageFileObject, entityClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Class"));
+                generatedFOs.add(entity);
+                if (!entityClass.isUsePkField()) {
                     String pkClassName = createPKClassName(entityClassName);
                     GenerationUtils.createClass(packageFileObject, pkClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_PKClass", pkClassName, entityClassName));
                 }
@@ -191,28 +290,29 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             // and its primary key class
 
 
-            for (int i = 0; i < genBeans.length; i++) {
-                final EntityClass entityClass = genBeans[i];
+            for (int i = 0; i < entityClasses.length; i++) {
+                final EntityClass entityClass = entityClasses[i];
                 String entityClassName = entityClass.getClassName();
 
                 if (!generatedEntityClasses.contains(entityClassName)) {
                     // this entity class already existed, we didn't create it, so we don't want to touch it
-                    handle.progress(genBeans.length + i);
+                    progressContributor.progress(entityClasses.length + i);
                     continue;
                 }
                 String progressMsg = NbBundle.getMessage(JavaPersistenceGenerator.class, "TXT_GeneratingClass", entityClassName);
-                handle.progress(progressMsg, genBeans.length + i);
-                progressPanel.setText(progressMsg);
-
+                progressContributor.progress(progressMsg, entityClasses.length + i);
+                if (progressPanel != null){
+                    progressPanel.setText(progressMsg);
+                }
                 FileObject entityClassPackageFO = entityClass.getPackageFileObject();
                 final FileObject entityClassFO = entityClassPackageFO.getFileObject(entityClassName, "java"); // NOI18N
                 final FileObject pkClassFO = entityClassPackageFO.getFileObject(createPKClassName(entityClassName), "java"); // NOI18N
                 try {
-                    
+
                     Set<ClassPath> bootCPs = getAllClassPaths(generationPackageFOs, ClassPath.BOOT);
                     Set<ClassPath> compileCPs = getAllClassPaths(generationPackageFOs, ClassPath.COMPILE);
                     Set<ClassPath> sourceCPs = getAllClassPaths(generationPackageFOs, ClassPath.SOURCE);
-                    
+
                     JPAClassPathHelper cpHelper = new JPAClassPathHelper(bootCPs, compileCPs, sourceCPs);
 
                     JavaSource javaSource = (pkClassFO != null) ?
@@ -221,9 +321,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
                             if (copy.getFileObject().equals(entityClassFO)) {
-                                new EntityClassGenerator(helper, copy, entityClass).run();
+                                new EntityClassGenerator(copy, entityClass, generateNamedQueries).run();
                             } else {
-                                new PKClassGenerator(helper, copy, entityClass).run();
+                                new PKClassGenerator(copy, entityClass).run();
                             }
                         }
                     }).commit();
@@ -237,25 +337,10 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     throw wrappedException;
                 }
 
-                Project project = FileOwnerQuery.getOwner(entityClassFO);
-                if (!Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {
-                    try {
-                        PUDataObject pudo = ProviderUtil.getPUDataObject(project);
-                        PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
-                        //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
-                        if (pu.length == 1) {
-                            pudo.addClass(pu[0], entityClassName);
-                        }
-                    } catch (InvalidPersistenceXmlException ipx){
-                        // just log for debugging purposes, at this point the user has
-                        // already been warned about an invalid persistence.xml
-                        Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
-                    }
-                }
             }
-
-            handle.progress(progressMax);
+            return generatedFOs;
         }
+
 
         private static String createPKClassName(String entityClassName) {
             return entityClassName + "PK"; // NOI18N
@@ -277,7 +362,6 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
          */
         private abstract class ClassGenerator {
 
-            protected final RelatedCMPHelper helper;
             protected final WorkingCopy copy;
             protected final GenerationUtils genUtils;
 
@@ -302,8 +386,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             // the class tree of the class we are generating
             protected ClassTree classTree;
 
-            public ClassGenerator(RelatedCMPHelper helper, WorkingCopy copy, EntityClass entityClass) throws IOException {
-                this.helper = helper;
+            public ClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 this.copy = copy;
 
                 this.entityClass = entityClass;
@@ -621,14 +704,21 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private final List<VariableTree> pkClassVariables = new ArrayList<VariableTree>();
             // the list of @NamedQuery annotations which will be added to the entity class
             private final List<ExpressionTree> namedQueryAnnotations = new ArrayList<ExpressionTree>();
+            /**
+             * Specifies whether named queries should be generated.
+             */
+            private final boolean generateNamedQueries;
 
             // the property for the primary key (or the primary key class)
             private Property pkProperty;
             // the prefix or all named queries ("select ... ")
             private String namedQueryPrefix;
 
-            public EntityClassGenerator(RelatedCMPHelper helper, WorkingCopy copy, EntityClass entityClass) throws IOException {
-                super(helper, copy, entityClass);
+
+
+            public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass, boolean generateNamedQueries) throws IOException {
+                super(copy, entityClass);
+                this.generateNamedQueries = generateNamedQueries;
                 entityClassName = entityClass.getClassName();
                 assert genUtils.getTypeElement().getSimpleName().contentEquals(entityClassName);
                 entityFQClassName = entityClass.getPackage() + "." + entityClassName;
@@ -684,7 +774,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
 
                 // generate equivalent of finder methods - named query annotations
-                if (helper.isGenerateFinderMethods() && !m.isLobType()) {
+                if (generateNamedQueries && !m.isLobType()) {
                     List<ExpressionTree> namedQueryAnnArguments = new ArrayList<ExpressionTree>();
                     namedQueryAnnArguments.add(genUtils.createAnnotationArgument("name", entityClassName + ".findBy" + createCapitalizedFieldName(memberName))); //NOI18N
 
@@ -860,8 +950,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
          */
         private final class PKClassGenerator extends ClassGenerator {
 
-            public PKClassGenerator(RelatedCMPHelper helper, WorkingCopy copy, EntityClass entityClass) throws IOException {
-                super(helper, copy, entityClass);
+            public PKClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
+                super(copy, entityClass);
             }
 
             protected void initialize() throws IOException {

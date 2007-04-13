@@ -20,6 +20,8 @@
 package org.netbeans.modules.j2ee.persistence.spi;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -41,11 +43,13 @@ public interface PersistenceScopeImplementation {
     FileObject getPersistenceXml();
 
     /**
-     * Provides the classpath of this persistence scope, which covers the sources 
+     * Provides the classpath of this persistence scope, which covers the sources
      * of the entity classes referenced by the persistence.xml file, as well
      * as the referenced JAR files.
      *
      * @return the persistence scope classpath; never null.
      */
     ClassPath getClassPath();
+
+    MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(String persistenceUnitName);
 }

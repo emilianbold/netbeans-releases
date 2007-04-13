@@ -224,6 +224,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         final J2SEProjectClassPathModifier cpMod = new J2SEProjectClassPathModifier(this, this.updateHelper, eval, refHelper);
         final JaxWsModel jaxWsModel = getJaxWsModel();
         assert jaxWsModel != null;
+        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -233,7 +234,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
-            new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
+            cpProvider,
             new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new JavadocForBinaryQueryImpl(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata
             new AntArtifactProviderImpl(),
@@ -251,7 +252,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new J2SEProjectOperations(this),
             new J2SEConfigurationProvider(this),
             new J2SEProjectWebServicesSupportProvider(),
-            new J2SEPersistenceProvider(this),
+            new J2SEPersistenceProvider(this, cpProvider),
             jaxWsModel,
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),

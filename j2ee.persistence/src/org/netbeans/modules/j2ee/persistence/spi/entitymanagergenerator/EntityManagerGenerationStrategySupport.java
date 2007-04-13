@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.persistence.action.*;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
 import com.sun.source.tree.AnnotationTree;
@@ -44,6 +45,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.persistence.util.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions.*;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.openide.util.Parameters;
 
 /**
  * A support class for EntityManagerGenerationStrategy implementations.
@@ -98,20 +100,45 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
         return methodName;
     }
     
-    /**
-     * Gets the element representing a field of the given type.
-     * @param fieldTypeFqn the fully qualified name of the field's type.
-     * @return the element or null if no matching field was found.
-     */
-    protected Element getField(final String fieldTypeFqn){
-        
-        if (null == fieldTypeFqn || "".equals(fieldTypeFqn.trim())){
-            throw new IllegalArgumentException("Passed an empty or null fieldTypeFqn.");
+    protected FieldInfo getEntityManagerFactoryFieldInfo(){
+        VariableTree existing = getField(ENTITY_MANAGER_FACTORY_FQN);
+        if (existing != null){
+            return new FieldInfo(existing.getName().toString(), true);
         }
+        return new FieldInfo(ENTITY_MANAGER_FACTORY_DEFAULT_NAME, false);
+    }
+    
+    protected FieldInfo getEntityManagerFieldInfo(){
+        VariableTree existing = getField(ENTITY_MANAGER_FQN);
+        if (existing != null){
+            return new FieldInfo(existing.getName().toString(), true);
+        }
+        return new FieldInfo(ENTITY_MANAGER_DEFAULT_NAME, false);
+    }
+    
+    /**
+     * Gets the variable tree representing the first field of the given type in
+     * our class.
+     *
+     * @param fieldTypeFqn the fully qualified name of the field's type.
+     * @return the variable tree or null if no matching field was found.
+     */
+    protected VariableTree getField(final String fieldTypeFqn){
         
-        TypeElement classElement = getClassElement();
-        TypeElement fieldType = asTypeElement(fieldTypeFqn);
-        return checkElementsForType(ElementFilter.fieldsIn(classElement.getEnclosedElements()), fieldType);
+        Parameters.notEmpty("fieldTypeFqn", fieldTypeFqn); //NO18N
+        
+        for (Tree member : getClassTree().getMembers()){
+            if (Tree.Kind.VARIABLE == member.getKind()){
+                VariableTree variable = (VariableTree) member;
+                TreePath path = getWorkingCopy().getTrees().getPath(getWorkingCopy().getCompilationUnit(), variable);
+                TypeMirror variableType = getWorkingCopy().getTrees().getTypeMirror(path);
+                if (fieldTypeFqn.equals(variableType.toString())){
+                    return variable;
+                }
+                
+            }
+        }
+        return null;
     }
     
     /**
@@ -122,9 +149,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
      */
     protected Element getAnnotation(final String annotationTypeFqn){
         
-        if (null == annotationTypeFqn || "".equals(annotationTypeFqn.trim())){
-            throw new IllegalArgumentException("Passed an empty or null annotationTypeFqn."); //NO18N
-        }
+        Parameters.notEmpty("annotationTypeFqn", annotationTypeFqn); //NO18N
         
         TypeElement annotationType = asTypeElement(annotationTypeFqn);
         TypeElement classElement = getClassElement();
@@ -169,7 +194,23 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
     }
     
     protected String generateCallLines() {
+        return generateCallLines(ENTITY_MANAGER_DEFAULT_NAME);
+    }
+    
+    protected String getEmInitCode(FieldInfo em, FieldInfo emf){
+        String text = "javax.persistence.EntityManager {0} = {1}.createEntityManager();\n";
+        return MessageFormat.format(text, em.getName(), emf.getName());
+    }
+    
+    /**
+     * Generates the code for invoking the operation specified in our
+     * <code>generationOptions</code> on the entity manager with the given name.
+     *
+     * @param emName the name of the entity manager
+     */
+    protected String generateCallLines(String emName) {
         return MessageFormat.format(getGenerationOptions().getOperation().getBody(), new Object[] {
+            emName,
             getGenerationOptions().getParameterName(),
             getGenerationOptions().getParameterType(),
             getGenerationOptions().getQueryAttribute()});
@@ -186,10 +227,10 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
                 null);
     }
     
-    protected VariableTree createEntityManagerFactory(){
+    protected VariableTree createEntityManagerFactory(String name){
         return getTreeMaker().Variable(getTreeMaker().Modifiers(
                 Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList()),
-                ENTITY_MANAGER_FACTORY_DEFAULT_NAME,
+                name,
                 getTypeTree(ENTITY_MANAGER_FACTORY_FQN),
                 getTreeMaker().MethodInvocation(
                 Collections.<ExpressionTree>emptyList(),
@@ -217,7 +258,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
         String emfName = ENTITY_MANAGER_FACTORY_DEFAULT_NAME;
         
         boolean needsEmf = false;
-        
+        VariableTree existingEmf = null;
         switch(init){
             
             case INJECT :
@@ -225,16 +266,16 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
                 break;
                 
             case EMF:
-                Element emfElement = getField(ENTITY_MANAGER_FACTORY_FQN);
-                assert emfElement != null : "EntityManagerFactory does not exist in the class";
-                expressionTree = getTreeMaker().Literal(emfElement.getSimpleName() + ".createEntityManager();"); //NO18N
+                existingEmf = getField(ENTITY_MANAGER_FACTORY_FQN);
+                assert existingEmf != null : "EntityManagerFactory does not exist in the class";
+                expressionTree = getTreeMaker().Literal(existingEmf.getName().toString() + ".createEntityManager();"); //NO18N
                 break;
                 
             case INIT:
                 
-                Element emfField = getField(ENTITY_MANAGER_FACTORY_FQN);
-                if (emfField != null){
-                    emfName = emfField.getSimpleName().toString();
+                existingEmf = getField(ENTITY_MANAGER_FACTORY_FQN);
+                if (existingEmf != null){
+                    emfName = existingEmf.getName().toString();
                 } else {
                     needsEmf = true;
                 }
@@ -306,56 +347,84 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
         }
         return result;
     }
-
+    
     protected TreeMaker getTreeMaker() {
         return treeMaker;
     }
-
+    
     public void setTreeMaker(TreeMaker treeMaker) {
         this.treeMaker = treeMaker;
     }
-
+    
     protected ClassTree getClassTree() {
         return classTree;
     }
-
+    
     public void setClassTree(ClassTree classTree) {
         this.classTree = classTree;
     }
-
+    
     protected WorkingCopy getWorkingCopy() {
         return workingCopy;
     }
-
+    
     public void setWorkingCopy(WorkingCopy workingCopy) {
         this.workingCopy = workingCopy;
     }
-
+    
     protected GenerationUtils getGenUtils() {
         if (genUtils == null){
             genUtils = GenerationUtils.newInstance(getWorkingCopy(), getClassTree());
         }
         return genUtils;
     }
-
+    
     public void setGenUtils(GenerationUtils genUtils) {
         this.genUtils = genUtils;
     }
-
+    
     protected PersistenceUnit getPersistenceUnit() {
         return persistenceUnit;
     }
-
+    
     public void setPersistenceUnit(PersistenceUnit persistenceUnit) {
         this.persistenceUnit = persistenceUnit;
     }
-
+    
     protected GenerationOptions getGenerationOptions() {
         return generationOptions;
     }
-
+    
     public void setGenerationOptions(GenerationOptions generationOptions) {
         this.generationOptions = generationOptions;
     }
     
+    /**
+     * Encapsulates info of a field.
+     */
+    protected static class FieldInfo {
+        /**
+         * The name for the field, either the name of an existing field
+         * or the default name for the field.
+         */
+        private String name;
+        /**
+         * Specifies whether the field existed or whether
+         * the name that this class encapsules is the default name.
+         */
+        private boolean existing;
+        
+        FieldInfo(String name, boolean existing){
+            this.name = name;
+            this.existing = existing;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public boolean isExisting() {
+            return existing;
+        }
+    }
 }

@@ -21,7 +21,8 @@ package org.netbeans.modules.j2ee.persistence.api;
 
 import java.util.Iterator;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
 import org.netbeans.modules.j2ee.persistenceapi.PersistenceScopeAccessor;
@@ -38,8 +39,10 @@ import org.openide.util.Lookup;
  */
 public final class PersistenceScope {
 
+    // XXX remove getClassPath(), not needed anymore
+
     private static final Lookup.Result providers =
-            Lookup.getDefault().lookup(new Lookup.Template(PersistenceScopeProvider.class));
+            Lookup.getDefault().lookupResult(PersistenceScopeProvider.class);
 
     private final PersistenceScopeImplementation impl;
 
@@ -88,6 +91,10 @@ public final class PersistenceScope {
      */
     public FileObject getPersistenceXml() {
         return impl.getPersistenceXml();
+    }
+
+    public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(String persistenceUnitName) {
+        return impl.getEntityMappingsModel(persistenceUnitName);
     }
 
     /**

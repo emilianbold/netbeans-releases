@@ -27,8 +27,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.junit.NbTestSuite;
@@ -134,10 +134,9 @@ public class CmpGeneratorTest extends TestBase {
         helper.setSelectedTables(selectedTables);
         helper.buildBeans();
         
-        ProgressHandle myhandle = ProgressHandleFactory.createHandle("Generating CMP Beans..");
-        myhandle.start();
-        generator.generateBeans(new ProgressPanel(), helper, dbFO, myhandle, true);
-        myhandle.finish();
+        ProgressContributor progressContributor = AggregateProgressFactory.createProgressContributor("CMP Generator");
+        generator.generateBeans(new ProgressPanel(), helper, dbFO, progressContributor);
+        progressContributor.finish();
         
         return packageFileObject;
     }

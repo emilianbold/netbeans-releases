@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
+import java.text.MessageFormat;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategySupport;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
@@ -34,47 +35,60 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 
 /**
- * Generates the code needed for invoking an <code>EntityManager</code> in Java EE 5  
+ * Generates the code needed for invoking an <code>EntityManager</code> in Java EE 5
  * web components with an application-managed persistence unit.
- * 
+ *
  * @author Erno Mononen
  */
 public final class ApplicationManagedResourceTransactionInjectableInWeb extends EntityManagerGenerationStrategySupport{
     
     public ClassTree generate() {
         
-        ClassTree modifiedClazz = getTreeMaker().insertClassMember(getClassTree(), getIndexForField(getClassTree()), createEntityManagerFactory());
+        ClassTree modifiedClazz = getClassTree();
+        String body = "";
+        
+        FieldInfo em = getEntityManagerFieldInfo();
+        if (!em.isExisting()){
+            FieldInfo emf = getEntityManagerFactoryFieldInfo();
+            if (!emf.isExisting()){
+                modifiedClazz = getTreeMaker().insertClassMember(getClassTree(), getIndexForField(getClassTree()), createEntityManagerFactory(emf.getName()));
+            }
+            body += getEmInitCode(em, emf);
+        }
+        
+        body += getMethodBody(em);
         
         ModifiersTree methodModifiers = getTreeMaker().Modifiers(
                 Collections.<Modifier>singleton(Modifier.PUBLIC),
                 Collections.<AnnotationTree>emptyList()
                 );
         
-        String text =
-                "javax.persistence.EntityManager em = emf.createEntityManager();\n" +
-                "try {\n" +
-                "    em.getTransaction().begin();\n" +
-                generateCallLines() +
-                "    em.getTransaction().commit();\n" +
-                "} catch(Exception e) {\n" +
-                "    java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,\"exception caught\", e);\n" +
-                "    em.getTransaction().rollback();\n" +
-                "} finally {\n" +
-                "    em.close();\n" +
-                "}";
-        
         MethodTree newMethod = getTreeMaker().Method(
-                methodModifiers, 
+                methodModifiers,
                 computeMethodName(),
                 getTreeMaker().PrimitiveType(TypeKind.VOID),
                 Collections.<TypeParameterTree>emptyList(),
                 getParameterList(),
                 Collections.<ExpressionTree>emptyList(),
-                "{ " + text + "}",
+                "{ " + body + "}",
                 null
                 );
         
         return getTreeMaker().addClassMember(modifiedClazz, newMethod);
     }
-    
+
+    private String getMethodBody(FieldInfo em){
+        String text =
+                "try '{'\n" +
+                "    {0}.getTransaction().begin();\n" +
+                generateCallLines(em.getName()) +
+                "    {0}.getTransaction().commit();\n" +
+                "} catch(Exception e) '{'\n" +
+                "    java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,\"exception caught\", e);\n" +
+                "    {0}.getTransaction().rollback();\n" +
+                "} finally '{'\n" +
+                "    {0}.close();\n" +
+                "}";
+        return MessageFormat.format(text, em.getName());
+    }
 }

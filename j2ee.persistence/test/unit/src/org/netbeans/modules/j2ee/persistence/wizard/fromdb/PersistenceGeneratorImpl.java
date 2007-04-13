@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 
@@ -39,7 +40,7 @@ public class PersistenceGeneratorImpl implements PersistenceGenerator {
     public void init(WizardDescriptor wiz) {
     }
 
-    public void generateBeans(final ProgressPanel progressPanel, final RelatedCMPHelper helper, final FileObject dbschemaFile, final ProgressHandle handle, boolean justTesting) throws IOException {
+    public void generateBeans(final ProgressPanel progressPanel, final RelatedCMPHelper helper, final FileObject dbschemaFile, final ProgressContributor handle) throws IOException {
     }
 
     public void uninit() {
@@ -49,11 +50,12 @@ public class PersistenceGeneratorImpl implements PersistenceGenerator {
         return false;
     }
 
-    public Set createdObjects() {
-        return Collections.emptySet();
+    public Set<FileObject> createdObjects() {
+        return Collections.<FileObject>emptySet();
     }
 
     public String getFQClassName(String tableName) {
         return null;
     }
+
 }

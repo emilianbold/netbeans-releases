@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 import java.io.IOException;
 import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 
@@ -43,13 +44,25 @@ public interface PersistenceGenerator {
     
     String generateEntityName(String className);
     
-    /** return collection of created objects to be open in editor
+    /** 
+     * Generates entity beans / entity classes based on the model represented
+     * by the given <code>helper</code>.
+     * 
+     * @param progressPanel the panel for displaying progress during the generation, 
+     * or null if no panel should be displayed.
+     * @param helper the helper that specifies the generation options 
+     * @param dcschemafile the schema for generating.
+     * @param progressContributor the progress contributor for the generation process.
+     * 
      */
     void generateBeans(final ProgressPanel progressPanel,
             final RelatedCMPHelper helper,
             final FileObject dbschemaFile,
-            final ProgressHandle handle,
-            boolean justTesting) throws IOException;
+            final ProgressContributor progressContributor) throws IOException;
     
-    Set createdObjects();
+    /**
+     * @return a set of <code>FileObject</code>s representing 
+     * the generated classes or an empty set if no classes were generated, never null.
+     */ 
+    Set<FileObject> createdObjects();
 }

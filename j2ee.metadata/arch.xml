@@ -47,8 +47,10 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   This module provides the <api group="java" name="J2EEMetadataAPI" type="export" category="friend" url="@TOP@index.html"/> 
-   which provides a means to read Java EE metadata expressed as Java annotations.
+   This module provides the <api group="java" name="J2EEMetadataAPI" type="export" category="devel" url="@TOP@index.html"/>,
+   which is a generic framework for models of Java EE metadata expressed as either XML deployment descriptors or Java annotations. 
+   The framework itself doesn't provide access to any specific metadata. Instead, it allows metadata providers to plug in SPI
+   implementations returning whichever kind of metadata they want to provide.
   </p>
  </answer>
 
@@ -88,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-time">
   <p>
-   XXX no answer for arch-time
+   The work should be ready for the 6.0 release.
   </p>
  </answer>
 
@@ -111,9 +113,74 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-usecases">
-  <p>
-   XXX no answer for arch-usecases
-  </p>
+  <usecase id="metadata-access" name="Accessing metadata models">
+   <p>
+    A module wishing to access Java EE metadata obtains a metadata model, which is encapsulated
+    by the <a href="@TOP@org/netbeans/modules/j2ee/metadata/model/api/MetadataModel.html">MetadataModel</a>
+    class. The client then implements a model action, represented by the 
+    <a href="@TOP@org/netbeans/modules/j2ee/metadata/model/api/MetadataModelAction.html">MetadataModelAction</a> class,
+    and executes this action in the model context by calling the model's 
+    <a href="@TOP@org/netbeans/modules/j2ee/metadata/model/api/MetadataModel.html#runReadAction(org.netbeans.modules.j2ee.metadata.MetadataModelAction">runReadAction()</a>
+    method:
+   </p>
+   <pre>
+    MetadataModel&lt;SomeMetadata&gt; model = // ...
+    String result = model.runReadAction(new MetadataModelAction&lt;SomeMetadata, String&gt;() {
+        public String run(SomeMetadata metadata) {
+            // ... do something with metadata, e.g.
+            // compute a String value
+            return value;
+        }
+    }
+   </pre>
+   <p>
+    The way to obtain the model itself, as well as the kinds of metadata encapsulated by <code>MetadataModel</code> is 
+    metadata and metadata provider-specific and is not addressed by this API.
+   </p>
+  </usecase>
+  <usecase id="providing-metadata" name="Providing metadata models">
+   <p>
+    A metadata provider first defines a root class describing the metadata, e.g., <code>SomeMetadata</code>. Then the provider
+    implements the <a href="@TOP@org/netbeans/modules/j2ee/metadata/model/spi/MetadataModelImplementation.html">MetadataModelImplementation</a> interface and
+    creates a <code>MetadataModel</code> using <a href="@TOP@org/netbeans/modules/j2ee/metadata/model/spi/MetadataModelFactory.html">MetadataModelFactory</a>.
+    Then the provider defines a way to return the model to its clients:
+   </p>
+   <pre>
+    private SomeMetadataModelImplementation modelImpl = new SomeMetadataModelImplementation();
+    private MetadataModel&lt;SomeMetadata&gt; model = MetadataModelFactory.createMetadataModel(modelImpl);
+
+    /**
+     * Call this to retrieve the model of some metadata.
+     */
+    public MetadataModel&lt;SomeMetadata&gt; getSomeMetadataModel() {
+        return model;
+    }
+
+    // ... 
+
+    private class SomeMetadataModelImplementation implements MetadataModelImplementation&lt;SomeMetadata&gt; {
+
+        // ...
+
+    }
+   </pre>
+  </usecase>
+  <usecase id="providing-multiple-metadata" name="Providing multiple metadata models">
+   <p>
+    A metadata provider might need to provide several kinds of metadata models at once. Furthermore, since there
+    can be many models available or for backward compatibility reasons it might be impractical to provide 
+    a method for each of the models. In this case the provider may define a method like:
+   </p>
+   <pre>
+    public MetadataModel&lt;T&gt; getMetadataModel(Class&lt;T&gt; clazz) {
+        // ...
+    }
+   </pre>
+   <p>
+    The types of <code>Class</code> which may be passed to the method is a part of the contract between
+    the provider and its clients.
+   </p>
+  </usecase>
  </answer>
 
 
@@ -130,7 +197,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-what">
   <p>
-   XXX no answer for arch-what
+   The project provides a generic framework for accessing Java EE metadata models.
   </p>
  </answer>
 
@@ -147,7 +214,11 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-where">
-  <defaultanswer generate='here' />
+  <p>
+   The sources for the module are in the NetBeans CVS in the 
+   <a href="http://www.netbeans.org/source/browse/j2ee/metadata/?only_with_tag=merged_model">j2ee/metadata</a>
+   directory on the <code>merged_model</code> branch.
+  </p>
  </answer>
 
 
@@ -278,6 +349,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <!-- Enumerated instead of generated in order to filter out javax-jmi-reflect, org-netbeans-modules-jmiutils and org-netbeans-modules-schema2beans. -->
+ <!-- XXX remove when the module is cleaned up -->
  <answer id="dep-nb">
   <defaultanswer generate="none"/>
   <ul>

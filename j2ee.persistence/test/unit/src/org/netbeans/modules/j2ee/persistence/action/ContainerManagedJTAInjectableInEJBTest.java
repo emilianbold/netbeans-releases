@@ -55,10 +55,34 @@ public class ContainerManagedJTAInjectableInEJBTest extends EntityManagerGenerat
         options.setReturnType("Object");
         
         FileObject result = generate(FileUtil.toFileObject(testFile), options);
-
         assertFile(result);
     }
     
+    public void testGenerateWithExistingEM() throws Exception{
+        
+        File testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package org.netbeans.test;\n\n" +
+                "import java.util.*;\n" +
+                "import javax.persistence.EntityManager;\n" +
+                "import javax.persistence.PersistenceContext;\n\n" +
+                "public class Test {\n\n" +
+                "    @PersistenceContext\n" +
+                "    private EntityManager myEm;\n" +
+                "}"
+                );
+        GenerationOptions options = new GenerationOptions();
+        options.setMethodName("create");
+        options.setOperation(GenerationOptions.Operation.PERSIST);
+        options.setParameterName("object");
+        options.setParameterType("Object");
+        options.setQueryAttribute("");
+        options.setReturnType("Object");
+        
+        FileObject result = generate(FileUtil.toFileObject(testFile), options);
+        assertFile(getGoldenFile("testGenerateWithExistingEM.pass"), FileUtil.toFile(result));
+    }
+
     protected Class<? extends EntityManagerGenerationStrategy> getStrategyClass() {
         return ContainerManagedJTAInjectableInEJB.class;
     }

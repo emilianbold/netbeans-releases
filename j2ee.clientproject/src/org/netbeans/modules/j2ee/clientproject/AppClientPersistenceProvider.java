@@ -29,17 +29,21 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceClassPathProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeFactory;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesProvider;
+import org.netbeans.modules.j2ee.persistence.spi.support.EntityMappingsMetadataModelHelper;
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NotImplementedException;
 
 /**
  * Provides persistence location and scope delegating to this project's Car.
@@ -50,17 +54,21 @@ public class AppClientPersistenceProvider implements PersistenceLocationProvider
 
     private final AppClientProject project;
     private final PropertyEvaluator evaluator;
+    private final ClassPathProviderImpl cpProvider;
 
     private final PersistenceScopeImplementation persistenceScopeImpl = new PersistenceScopeImpl();
     private final PersistenceScope persistenceScope = PersistenceScopeFactory.createPersistenceScope(persistenceScopeImpl);
 
     private final PersistenceScopesHelper scopesHelper = new PersistenceScopesHelper();
+    private final EntityMappingsMetadataModelHelper modelHelper;
 
     private ClassPath projectSourcesClassPath;
 
-    public AppClientPersistenceProvider(AppClientProject project, PropertyEvaluator evaluator) {
+    public AppClientPersistenceProvider(AppClientProject project, PropertyEvaluator evaluator, ClassPathProviderImpl cpProvider) {
         this.project = project;
         this.evaluator = evaluator;
+        this.cpProvider = cpProvider;
+        modelHelper = createEntityMappingsHelper();
         evaluator.addPropertyChangeListener(this);
         locationChanged();
     }
@@ -113,6 +121,13 @@ public class AppClientPersistenceProvider implements PersistenceLocationProvider
         }
     }
 
+    private EntityMappingsMetadataModelHelper createEntityMappingsHelper() {
+        return EntityMappingsMetadataModelHelper.create(
+            cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
+            cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+            cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE));
+    }
+
     public void propertyChange(PropertyChangeEvent event) {
         String propName = event.getPropertyName();
         if (propName == null || propName.equals(AppClientProjectProperties.META_INF)) {
@@ -125,8 +140,10 @@ public class AppClientPersistenceProvider implements PersistenceLocationProvider
         if (metaInfFile != null) {
             File persistenceXmlFile = new File(metaInfFile, "persistence.xml"); // NOI18N
             scopesHelper.changePersistenceScope(persistenceScope, persistenceXmlFile);
+            modelHelper.changePersistenceXml(persistenceXmlFile);
         } else {
             scopesHelper.changePersistenceScope(null, null);
+            modelHelper.changePersistenceXml(null);
         }
     }
 
@@ -145,6 +162,10 @@ public class AppClientPersistenceProvider implements PersistenceLocationProvider
 
         public ClassPath getClassPath() {
             return getProjectSourcesClassPath();
+        }
+
+        public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(String persistenceUnitName) {
+            return modelHelper.getEntityMappingsModel(persistenceUnitName);
         }
     }
 }

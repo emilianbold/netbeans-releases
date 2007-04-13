@@ -26,14 +26,12 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 
 /**
  * Generates the code needed for invoking an <code>EntityManager</code> in Java EE 5
@@ -48,11 +46,15 @@ public final class ContainerManagedJTAInjectableInWeb extends EntityManagerGener
         
         ClassTree modifiedClazz = getClassTree();
         
-        List<ExpressionTree> attribs = new ArrayList<ExpressionTree>();
-        attribs.add(getGenUtils().createAnnotationArgument("name", "persistence/LogicalName")); //NO18N
-        attribs.add(getGenUtils().createAnnotationArgument("unitName", getPersistenceUnitName())); //NO18N
+        FieldInfo em = getEntityManagerFieldInfo();
+        
+        if(!em.isExisting()){
+            List<ExpressionTree> attribs = new ArrayList<ExpressionTree>();
+            attribs.add(getGenUtils().createAnnotationArgument("name", "persistence/LogicalName")); //NO18N
+            attribs.add(getGenUtils().createAnnotationArgument("unitName", getPersistenceUnitName())); //NO18N
+            modifiedClazz = getGenUtils().addAnnotation(modifiedClazz, getGenUtils().createAnnotation(PERSISTENCE_CONTEXT_FQN, attribs));
+        }
 
-        modifiedClazz = getGenUtils().addAnnotation(modifiedClazz, getGenUtils().createAnnotation(PERSISTENCE_CONTEXT_FQN, attribs));
         modifiedClazz = getTreeMaker().insertClassMember(modifiedClazz, getIndexForField(modifiedClazz), createUserTransaction());
         
         ModifiersTree methodModifiers = getTreeMaker().Modifiers(
@@ -66,22 +68,30 @@ public final class ContainerManagedJTAInjectableInWeb extends EntityManagerGener
                 Collections.<TypeParameterTree>emptyList(),
                 getParameterList(),
                 Collections.<ExpressionTree>emptyList(),
-                "{ " +
-                "try {\n" +
-                "    javax.naming.Context ctx = (javax.naming.Context) new javax.naming.InitialContext().lookup(\"java:comp/env\");\n" +
-                "    utx.begin();\n" +
-                "    javax.persistence.EntityManager em =  (javax.persistence.EntityManager) ctx.lookup(\"persistence/LogicalName\");\n" +
-                generateCallLines() +
-                "    utx.commit();\n" +
-                "} catch(Exception e) {\n" +
-                "    java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,\"exception caught\", e);\n" +
-                "    throw new RuntimeException(e);\n" +
-                
-                "}",
+                "{ " + getMethodBody(em) + "}",
                 null
                 );
         
         return getTreeMaker().addClassMember(modifiedClazz, newMethod);
+    }
+    
+
+    private String getMethodBody(FieldInfo em){
+        String ctxInit = em.isExisting() ? "" : "    javax.naming.Context ctx = (javax.naming.Context) new javax.naming.InitialContext().lookup(\"java:comp/env\");\n";
+        String emInit = em.isExisting() ? "    {0}.joinTransaction();\n" :"    javax.persistence.EntityManager {0} =  (javax.persistence.EntityManager) ctx.lookup(\"persistence/LogicalName\");\n";
+        
+        String text =
+                "try '{'\n" +
+                ctxInit +
+                "    utx.begin();\n" +
+                emInit +
+                generateCallLines(em.getName()) +
+                "    utx.commit();\n" +
+                "} catch(Exception e) '{'\n" +
+                "    java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,\"exception caught\", e);\n" +
+                "    throw new RuntimeException(e);\n" +
+                "}";
+        return MessageFormat.format(text, em.getName());
     }
     
 }

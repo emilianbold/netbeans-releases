@@ -28,22 +28,24 @@ import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 //retouche:
 //import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceClassPathProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeFactory;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesProvider;
+import org.netbeans.modules.j2ee.persistence.spi.support.EntityMappingsMetadataModelHelper;
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -52,16 +54,20 @@ import org.openide.filesystems.URLMapper;
 public class J2SEPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, PersistenceClassPathProvider, PropertyChangeListener {
 
     private final J2SEProject project;
+    private final ClassPathProviderImpl cpProvider;
 
     private final PersistenceScopeImplementation persistenceScopeImpl = new PersistenceScopeImpl();
     private final PersistenceScope persistenceScope = PersistenceScopeFactory.createPersistenceScope(persistenceScopeImpl);
 
     private final PersistenceScopesHelper scopesHelper = new PersistenceScopesHelper();
+    private final EntityMappingsMetadataModelHelper modelHelper;
 
     private ClassPath projectSourcesClassPath;
 
-    public J2SEPersistenceProvider(J2SEProject project) {
+    public J2SEPersistenceProvider(J2SEProject project, ClassPathProviderImpl cpProvider) {
         this.project = project;
+        this.cpProvider = cpProvider;
+        modelHelper = createEntityMappingsHelper();
         project.getSourceRoots().addPropertyChangeListener(this);
         sourcesChanged();
     }
@@ -138,7 +144,6 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
     private ClassPath getProjectSourcesClassPath() {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
-                ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
                 //retouche:
                 projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
 //                projectSourcesClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
@@ -148,6 +153,13 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
             }
             return projectSourcesClassPath;
         }
+    }
+
+    private EntityMappingsMetadataModelHelper createEntityMappingsHelper() {
+        return EntityMappingsMetadataModelHelper.create(
+            cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
+            cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+            cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE));
     }
 
     public void propertyChange(PropertyChangeEvent event) {
@@ -160,8 +172,10 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
             if (sourceRootFile != null) {
                 File persistenceXmlFile = new File(sourceRootFile, "META-INF/persistence.xml"); //NOI18N
                 scopesHelper.changePersistenceScope(persistenceScope, persistenceXmlFile);
+                modelHelper.changePersistenceXml(persistenceXmlFile);
             } else {
                 scopesHelper.changePersistenceScope(null, null);
+                modelHelper.changePersistenceXml(null);
             }
         }
     }
@@ -181,6 +195,10 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
 
         public ClassPath getClassPath() {
             return getProjectSourcesClassPath();
+        }
+
+        public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(String persistenceUnitName) {
+            return modelHelper.getEntityMappingsModel(persistenceUnitName);
         }
     }
 }

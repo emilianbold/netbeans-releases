@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
+import java.text.MessageFormat;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategySupport;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
@@ -48,17 +49,10 @@ public final class ApplicationManagedResourceTransactionInjectableInEJB extends 
                 Collections.<AnnotationTree>emptyList()
                 );
 
-        modifiedClazz = createEntityManager(Initialization.INIT);
-        
-        String text =
-                "em.getTransaction().begin();\n" +
-                "try {\n" +
-                generateCallLines()    +
-                "    em.getTransaction().commit();\n" +
-                "} catch (Exception e) {\n" +
-                "    e.printStackTrace();\n" +
-                "    em.getTransaction().rollback();\n" +
-                "}";
+        FieldInfo em = getEntityManagerFieldInfo();
+        if (!em.isExisting()){
+            modifiedClazz = createEntityManager(Initialization.INIT);
+        }
         
         MethodTree newMethod = getTreeMaker().Method(
                 methodModifiers,
@@ -67,11 +61,25 @@ public final class ApplicationManagedResourceTransactionInjectableInEJB extends 
                 Collections.<TypeParameterTree>emptyList(),
                 getParameterList(),
                 Collections.<ExpressionTree>emptyList(),
-                "{ " + text + "}",
+                "{ " + getMethodBody(em)+ "}",
                 null
                 );
         
         return getTreeMaker().addClassMember(modifiedClazz, newMethod);
     }
+    
+    private String getMethodBody(FieldInfo em){
+        String text =
+                "{0}.getTransaction().begin();\n" +
+                "try '{'\n" +
+                generateCallLines(em.getName())    +
+                "    {0}.getTransaction().commit();\n" +
+                "} catch (Exception e) '{'\n" +
+                "    e.printStackTrace();\n" +
+                "    {0}.getTransaction().rollback();\n" +
+                "}";
+        return MessageFormat.format(text, em.getName());
+    }
+    
     
 }
