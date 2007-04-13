@@ -140,7 +140,7 @@ public class RegionResizeHandler implements MoveStrategy, MoveProvider {
     private void moveRegions(Widget widget, int xTranslation) {
         if        (widget == mLeftResizer) {
             // Resize left region (and translate all others).
-            shiftWidth(mBindingRegion, xTranslation);
+            shiftRegionWidth(mBindingRegion, xTranslation);
             shiftX(mEngineRegion,      xTranslation);
             shiftX(mMiddleResizer,     xTranslation);
             shiftX(mExternalRegion,    xTranslation);
@@ -149,19 +149,20 @@ public class RegionResizeHandler implements MoveStrategy, MoveProvider {
 
         } else if (widget == mMiddleResizer) {
             // Resize middle region (and translate the right region).
-            shiftWidth(mEngineRegion, xTranslation);
+            shiftRegionWidth(mEngineRegion, xTranslation);
             shiftX(mExternalRegion,   xTranslation);
             RegionUtilities.stretchSceneWidthOnly(mScene);
         }
     }
     
-    private void shiftWidth(Widget widget, int shift) {
-        widget.setPreferredBounds(new Rectangle(
+    private void shiftRegionWidth(CasaRegionWidget regionWidget, int shift) {
+        Rectangle bounds = regionWidget.getBounds();
+        regionWidget.setPreferredBounds(new Rectangle(
                 0, // This is a resize, not a move, so do not change (x, y).
                 0,
-                widget.getBounds().width + shift,
-                widget.getBounds().height));
-        ((CasaRegionWidget) widget).persistWidth();
+                bounds.width + shift,
+                bounds.height));
+        regionWidget.persistWidth();
     }
     
     private void shiftX(Widget widget, int shift) {
@@ -176,10 +177,12 @@ public class RegionResizeHandler implements MoveStrategy, MoveProvider {
                 new Point(region.getPreferredBounds().width, 0));
         for (Widget child : region.getChildren()) {
             if (child instanceof CasaNodeWidget) {
+                CasaNodeWidget childNode = (CasaNodeWidget) child;
                 Point newChildLocation = new Point(
                         localRegionBoundary.x - child.getBounds().width,
                         child.getLocation().y);
                 child.setPreferredLocation(newChildLocation);
+                ((CasaModelGraphScene) childNode.getScene()).persistLocation(childNode, newChildLocation);
                 child.resolveBounds(child.getPreferredLocation(), child.getBounds());
             }
         }
@@ -245,10 +248,12 @@ public class RegionResizeHandler implements MoveStrategy, MoveProvider {
             if (childRect.intersects(resizerRect)) {
                 // Move child left.
                 child.setPreferredLocation(childEdgeLocation);
+                ((CasaModelGraphScene) child.getScene()).persistLocation(child, childEdgeLocation);
                 
             } else if (originalChildLocation.x + childRect.width > resizerRect.x) {
                 // Move child back towards its original location - up to the resizer location.
                 child.setPreferredLocation(childEdgeLocation);
+                ((CasaModelGraphScene) child.getScene()).persistLocation(child, childEdgeLocation);
             }
         }
     }

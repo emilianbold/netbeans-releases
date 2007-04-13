@@ -27,7 +27,7 @@ import org.netbeans.api.visual.widget.Widget;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import org.netbeans.api.visual.action.WidgetAction.State;
-import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.*;
 
 
@@ -43,13 +43,13 @@ public final class RegionResizeAction extends WidgetAction.LockedAdapter {
     private Point dragSceneLocation;
     private Point originalSceneLocation;
     
-    private Scene mScene;
+    private CasaModelGraphScene mScene;
     private Widget mLeftResizer;
     private Widget mMiddleResizer;
 
     
     public RegionResizeAction(
-            Scene scene, 
+            CasaModelGraphScene scene, 
             Widget leftResizer, 
             Widget middleResizer,
             RegionResizeHandler handler)

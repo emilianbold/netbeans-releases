@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.compapp.casaeditor.graph.layout;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +48,7 @@ public final class LayoutEngines extends CustomizablePersistLayout {
         if (widget == null) {
             return;
         }
+        CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
         
         // First determine the relative Y ordering.
         List<CasaNodeWidget> orderedNodeList = new ArrayList<CasaNodeWidget>();
@@ -55,8 +57,7 @@ public final class LayoutEngines extends CustomizablePersistLayout {
                 orderedNodeList.add((CasaNodeWidget) child);
             }
         }
-        Collections.sort(orderedNodeList, new YOrderComparator(
-                (CasaModelGraphScene) widget.getScene()));
+        Collections.sort(orderedNodeList, new YOrderComparator(scene));
         
         final int parentWidth  = (int) widget.getBounds().getWidth();
 
@@ -71,7 +72,7 @@ public final class LayoutEngines extends CustomizablePersistLayout {
         layout.positionWidgets(
                 ((CasaRegionWidget) widget).getTitleYOffset() + getYSpacing(),
                 widgetMap,
-                isAdjustingForOverlapOnly());
+                isAdjustingForOverlapOnly() && scene.isLayoutFinalized());
         for (CasaNodeWidget iterWidget : widgetMap.keySet()) {
             moveWidget(iterWidget, widgetMap.get(iterWidget).getLocation(), false);
         }

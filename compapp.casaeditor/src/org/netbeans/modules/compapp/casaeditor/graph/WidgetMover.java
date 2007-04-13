@@ -54,6 +54,10 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
     // MOVE STRATEGY
     
     public Point locationSuggested(Widget widget, Point originalLocation, Point suggestedLocation) {
+        CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
+        if (scene.findObject(widget) == null) {
+            return null;
+        }
         
         if (originalLocation.equals(suggestedLocation)) {
             return originalLocation;
@@ -67,7 +71,6 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
         CasaRegionWidget region = (CasaRegionWidget) moveWidget.getParentWidget();
         Rectangle parentBounds = region.getBounds();
         Rectangle widgetBounds = moveWidget.getBounds();
-        CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
         
         if (parentBounds != null && widgetBounds != null) {
             int regionHSpace  = parentBounds.x + parentBounds.width;
@@ -148,6 +151,11 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
     }
     
     public void movementFinished(Widget widget) {
+        CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
+        if (scene.findObject(widget) == null) {
+            return;
+        }
+        
         Point tmpOriginalLocation = mOriginalLocation;
         mOriginalLocation = null;
         mIsWidgetFronted = false;
@@ -170,7 +178,6 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
             } else if (widget instanceof CasaNodeWidgetBinding) {
                 // If we move a left region widget so that it overlaps another,
                 // then we invoke the region layout to ensure space.
-                CasaModelGraphScene scene = (CasaModelGraphScene) moveWidget.getScene();
                 scene.progressiveRegionLayout(scene.getBindingRegion(), true);
             }
         }
@@ -181,6 +188,10 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
     }
     
     public void setNewLocation(Widget widget, Point location) {
+        if (location == null) {
+            return;
+        }
+        
         if (widget.getPreferredLocation().equals(location)) {
             return;
         }
@@ -203,6 +214,7 @@ public class WidgetMover implements MoveStrategy, MoveProvider {
         Rectangle widgetBounds = widget.getBounds();
         
         widget.setPreferredLocation(location);
+        ((CasaModelGraphScene) widget.getScene()).persistLocation((CasaNodeWidget) widget, location);
         
         boolean needsWidthStretch = false;
         boolean needsHeightStretch = false;

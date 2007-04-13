@@ -434,7 +434,7 @@ implements
         
         getModel().saveDocument();
         
-        syncModel();
+//        syncModel();
         getDataObject().setModified(false);
     }
     

@@ -72,7 +72,7 @@ public class CenteredFlowLayout {
         } else {
             row = mRows.get(mCurrentRowIndex);
         }
-        CasaNodeWidget carryoverWidget = row.add(widget, false);
+        CasaNodeWidget carryoverWidget = row.add(widget);
         if (carryoverWidget != null) {
             mCurrentRowIndex++;
             add(carryoverWidget);
@@ -103,6 +103,7 @@ public class CenteredFlowLayout {
         private int mEdgeSpacing;
         private int mVerticalSpacing;
         private Comparator mComparator = new XOrderComparator();
+        
         
         public LayoutRow(int allowedWidth, int edgeSpacing, int verticalSpacing) {
             mAllowedWidth = allowedWidth;
@@ -197,11 +198,9 @@ public class CenteredFlowLayout {
             return rowCollisionYOffset;
         }
         
-        public CasaNodeWidget add(CasaNodeWidget widget, boolean swap) {
+        public CasaNodeWidget add(CasaNodeWidget widget) {
             if (canAdd(widget)) {
                 forceAdd(widget);
-            } else if (swap) {
-                return swapAdd(widget);
             } else {
                 return widget;
             }
@@ -211,18 +210,6 @@ public class CenteredFlowLayout {
         private void forceAdd(CasaNodeWidget widget) {
             mUsedWidth += widget.getBounds().width + X_BUFFER;
             mElements.add(widget);
-        }
-        
-        private CasaNodeWidget swapAdd(CasaNodeWidget widget) {
-            CasaNodeWidget lastElement = mElements.remove(mElements.size() - 1);
-            mElements.add(widget);
-            
-            mUsedWidth = mEdgeSpacing * 2;
-            for (Widget iterWidget : mElements) {
-                mUsedWidth += iterWidget.getBounds().width + X_BUFFER;
-            }
-            
-            return lastElement;
         }
         
         

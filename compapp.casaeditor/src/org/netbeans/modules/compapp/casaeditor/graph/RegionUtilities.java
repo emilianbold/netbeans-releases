@@ -94,25 +94,43 @@ public class RegionUtilities {
     
     
     public static void stretchScene(CasaModelGraphScene scene) {
-        doStretchSceneHeight(scene);
-        doStretchSceneWidth(scene);
-        scene.revalidate();
-        scene.validate();
-        scene.getView().repaint();
+        boolean isAdjusting = scene.isAdjusting();
+        try {
+            scene.setIsAdjusting(true);
+            doStretchSceneHeight(scene);
+            doStretchSceneWidth(scene);
+            scene.revalidate();
+            scene.validate();
+            scene.getView().repaint();
+        } finally {
+            scene.setIsAdjusting(isAdjusting);
+        }
     }
     
     public static void stretchSceneHeightOnly(CasaModelGraphScene scene) {
-        doStretchSceneHeight(scene);
-        scene.revalidate();
-        scene.validate();
-        scene.getView().repaint();
+        boolean isAdjusting = scene.isAdjusting();
+        try {
+            scene.setIsAdjusting(true);
+            doStretchSceneHeight(scene);
+            scene.revalidate();
+            scene.validate();
+            scene.getView().repaint();
+        } finally {
+            scene.setIsAdjusting(isAdjusting);
+        }
     }
 
     public static void stretchSceneWidthOnly(CasaModelGraphScene scene) {
-        doStretchSceneWidth(scene);
-        scene.revalidate();
-        scene.validate();
-        scene.getView().repaint();
+        boolean isAdjusting = scene.isAdjusting();
+        try {
+            scene.setIsAdjusting(true);
+            doStretchSceneWidth(scene);
+            scene.revalidate();
+            scene.validate();
+            scene.getView().repaint();
+        } finally {
+            scene.setIsAdjusting(isAdjusting);
+        }
     }
 
     

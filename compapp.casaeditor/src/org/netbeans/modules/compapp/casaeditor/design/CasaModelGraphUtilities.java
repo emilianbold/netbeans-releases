@@ -21,8 +21,11 @@ package org.netbeans.modules.compapp.casaeditor.design;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.lang.Thread.State;
 import java.util.ArrayList;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
@@ -63,15 +66,22 @@ public class CasaModelGraphUtilities {
     
     public static void renderModel(final CasaWrapperModel model, final CasaModelGraphScene scene)
     {
-        try {
-            scene.getPriorActions().addAction(0, DISABLER);
-            safeRenderModel(model, scene);
-        } catch (final Throwable t) {
-            scene.autoLayout(false);
-            ErrorManager.getDefault().notify(t);
-        } finally {
-            scene.getPriorActions().removeAction(DISABLER);
-        }
+        final boolean isAdjusting = scene.isAdjusting();
+        scene.getPriorActions().addAction(0, DISABLER);
+        scene.setIsAdjusting(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    safeRenderModel(model, scene);
+                } catch (final Throwable t) {
+                    scene.autoLayout(false);
+                    ErrorManager.getDefault().notify(t);
+                } finally {
+                    scene.setIsAdjusting(isAdjusting);
+                    scene.getPriorActions().removeAction(DISABLER);
+                }
+            }
+        });
     }
     
     private static void safeRenderModel(CasaWrapperModel model, CasaModelGraphScene scene)
@@ -393,82 +403,86 @@ public class CasaModelGraphUtilities {
     }
     
     
-    private static class DisablingAction extends WidgetAction.Adapter {
+    private static class DisablingAction extends WidgetAction.LockedAdapter {
+        
+        protected boolean isLocked() {
+            return true;
+        }
         
         @Override
         public State mouseClicked(Widget arg0, WidgetMouseEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State mousePressed(Widget arg0, WidgetMouseEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State mouseReleased(Widget arg0, WidgetMouseEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State mouseEntered(Widget arg0, WidgetMouseEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State mouseExited(Widget arg0, WidgetMouseEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State mouseDragged(Widget arg0, WidgetMouseEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State mouseMoved(Widget arg0, WidgetMouseEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State keyTyped(Widget arg0, WidgetKeyEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State keyPressed(Widget arg0, WidgetKeyEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State keyReleased(Widget arg0, WidgetKeyEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State dragEnter(Widget arg0, WidgetDropTargetDragEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State dragOver(Widget arg0, WidgetDropTargetDragEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State dropActionChanged(Widget arg0,
                 WidgetDropTargetDragEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State dragExit(Widget arg0, WidgetDropTargetEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
         
         @Override
         public State drop(Widget arg0, WidgetDropTargetDropEvent arg1) {
-            return State.CONSUMED;
+            return State.createLocked(arg0, DisablingAction.this);
         }
     }
 }

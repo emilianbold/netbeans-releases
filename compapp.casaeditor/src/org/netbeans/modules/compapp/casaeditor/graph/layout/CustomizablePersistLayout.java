@@ -23,6 +23,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
 
@@ -70,6 +71,7 @@ public abstract class CustomizablePersistLayout implements Layout {
     
     protected void moveWidget(CasaNodeWidget widget, Point location, boolean isRightAligned) {
         location = adjustLocation(widget, location.x, location.y, isRightAligned);
+        ((CasaModelGraphScene) widget.getScene()).persistLocation(widget, location);
         if (isAnimating()) {
             widget.getScene().getSceneAnimator().animatePreferredLocation(widget, location);
         } else {

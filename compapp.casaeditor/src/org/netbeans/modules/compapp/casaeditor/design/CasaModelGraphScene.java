@@ -21,6 +21,7 @@ package org.netbeans.modules.compapp.casaeditor.design;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.beans.PropertyChangeEvent;
@@ -116,6 +117,9 @@ implements PropertyChangeListener {
     private CasaNodeFactory mNodeFactory;
     private boolean mIsInternalNodeChange;
     
+    private boolean mIsLayoutFinalized = false;
+    private boolean mIsAdjusting = false;
+    
     
     public CasaModelGraphScene(CasaDataObject dataObject, CasaWrapperModel model, CasaNodeFactory nodeFactory) {
         mDataObject = dataObject;
@@ -152,6 +156,50 @@ implements PropertyChangeListener {
         ToolTipManager.sharedInstance().setInitialDelay(Constants.TOOLTIP_INITIAL_DELAY);
     }
 
+    
+    public boolean isLayoutFinalized() {
+        return mIsLayoutFinalized;
+    }
+    
+    public void persistLocation(CasaNodeWidget widget, Point location) {
+        if (location != null && widget.getBounds() != null) {
+            if (!isAdjusting()) {
+                if (!mIsLayoutFinalized) {
+                    for (CasaComponent component : getNodes()) {
+                        CasaNodeWidget nodeWidget = (CasaNodeWidget) findWidget(component);
+                        if (nodeWidget != null) {
+                            updateModelPosition(component, nodeWidget.getPreferredLocation());
+                        }
+                    }
+                    mIsLayoutFinalized = true;
+                } else {
+                    updateModelPosition((CasaComponent) findObject(widget), location);
+                }
+            }
+        }
+    }
+    
+    private void updateModelPosition(CasaComponent component, Point location) {
+        if (component instanceof CasaServiceEngineServiceUnit) {
+            CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) component;
+            if (su.getX() != location.x || su.getY() != location.y) {
+                getModel().setServiceEngineServiceUnitLocation(su, location.x, location.y);
+            }
+        } else if (component instanceof CasaPort) {
+            CasaPort port = (CasaPort) component;
+            if (port.getX() != location.x || port.getY() != location.y) {
+                getModel().setCasaPortLocation(port, location.x, location.y);
+            }
+        }
+    }
+    
+    public void setIsAdjusting(boolean isAdjusting) {
+        mIsAdjusting = isAdjusting;
+    }
+    
+    public boolean isAdjusting() {
+        return mIsAdjusting;
+    }
     
     private static void initializeResizer(Widget layer, Widget resizer) {
         layer.addChild(resizer);

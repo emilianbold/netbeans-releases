@@ -116,16 +116,6 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
         
         regenerateVerticalTextBarImage();
-    }
-    
-    protected void notifyRemoved() {
-        super.notifyRemoved();
-        
-        mNameWidget.removeFromParent();
-    }
-
-    public void initializeGlassLayer(LayerWidget layer) {
-        layer.addChild(mNameWidget);
         
         // Update the name label location if the widget moves.
         Widget.Dependency nameLabeler = new Widget.Dependency() {
@@ -151,6 +141,16 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
             }
         };
         getRegistry().registerDependency(nameLabeler);
+    }
+    
+    protected void notifyRemoved() {
+        super.notifyRemoved();
+        
+        mNameWidget.removeFromParent();
+    }
+
+    public void initializeGlassLayer(LayerWidget layer) {
+        layer.addChild(mNameWidget);
     }
     
     public void setLabelFont(Font font) {

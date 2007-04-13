@@ -19,14 +19,9 @@
 
 package org.netbeans.modules.compapp.casaeditor.graph;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.widget.*;
-import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 
 
 /**
@@ -50,34 +45,6 @@ public abstract class CasaNodeWidget extends Widget {
     }
     
     
-    @Override
-    protected void notifyAdded() {
-        Widget.Dependency locationPersister = new Widget.Dependency() {
-            public void revalidateDependency() {
-                if (
-                        getBounds() != null &&
-                        getPreferredLocation() != null)
-                {
-                    Point location = getPreferredLocation();
-                    CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
-                    CasaComponent component = (CasaComponent) scene.findObject(CasaNodeWidget.this);
-                    if (component instanceof CasaServiceEngineServiceUnit) {
-                        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) component;
-                        if (su.getX() != location.x || su.getY() != location.y) {
-                            scene.getModel().setServiceEngineServiceUnitLocation(su, location.x, location.y);
-                        }
-                    } else if (component instanceof CasaPort) {
-                        CasaPort port = (CasaPort) component;
-                        if (port.getX() != location.x || port.getY() != location.y) {
-                            scene.getModel().setCasaPortLocation(port, location.x, location.y);
-                        }
-                    }
-                }
-            }
-        };
-        mDependenciesRegistry.registerDependency(locationPersister);
-    }
-
     protected void notifyRemoved() {
         getRegistry().removeAllDependencies();
     }
