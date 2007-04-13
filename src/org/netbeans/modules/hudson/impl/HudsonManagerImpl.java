@@ -92,6 +92,10 @@ public class HudsonManagerImpl implements HudsonManager {
         if (null == instancesMap().remove(instance.getUrl()))
             return null;
         
+        // Stop autosynchronization if it's running
+        instance.stopAutoSynchronization();
+        
+        // Fire changes into all listeners
         fireChangeListeners();
         
         // Remove instance file

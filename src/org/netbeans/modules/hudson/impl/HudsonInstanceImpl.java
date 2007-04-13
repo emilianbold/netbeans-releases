@@ -33,6 +33,7 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.ui.nodes.OpenableInBrowser;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -65,7 +66,8 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         this.properties.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(HudsonInstanceProperties.PROP_SYNC))
-                    synchronization.start();
+                    if (!synchronization.isRunning())
+                        synchronization.start();
                 
                 fireChangeListeners();
             }
@@ -107,6 +109,11 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         return instance;
     }
     
+    protected void stopAutoSynchronization() {
+        if (synchronization.isRunning())
+            synchronization.stop();
+    }
+    
     public HudsonConnector getConnector() {
         return connector;
     }
@@ -142,7 +149,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                try {                    
+                try {
                     List<HudsonJob> retrieved = getConnector().getAllJobs();
                     
                     if (jobs.equals(retrieved))
@@ -214,16 +221,24 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     
     private class Synchronization implements Runnable {
         
-        private boolean active = false;
+        private boolean runningFlag = false;
         
         public synchronized void start() {
-            if (!active)
+            if (!runningFlag)
                 RequestProcessor.getDefault().post(this);
+        }
+        
+        public synchronized void stop() {
+            runningFlag = false;
+        }
+        
+        public synchronized boolean isRunning() {
+            return runningFlag;
         }
         
         public void run() {
             // Activate
-            active = true;
+            runningFlag = true;
             long milis = 0;
             
             try {
@@ -236,12 +251,12 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                     
                     // Wait for the specified amount of time
                     Thread.sleep(milis);
-                } while (milis > 0);
+                } while (runningFlag && milis > 0);
             } catch (InterruptedException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             } finally {
                 // Deactivate
-                active = false;
+                runningFlag = false;
             }
         }
     }
