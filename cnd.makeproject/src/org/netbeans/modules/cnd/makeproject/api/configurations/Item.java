@@ -151,24 +151,24 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             addPropertyChangeListener();
     }
     
-    private DataObject dataObject = null;
+    private DataObject myDataObject = null;
     public void addPropertyChangeListener() {
-        dataObject = getDataObject();
-        if (dataObject != null) {
-            dataObject.addPropertyChangeListener(this);
+        myDataObject = getDataObject();
+        if (myDataObject != null) {
+            myDataObject.addPropertyChangeListener(this);
         }
     }
     
     public void removePropertyChangeListener() {
         //DataObject dataObject = getDataObject();
-        if (dataObject != null) {
-            dataObject.removePropertyChangeListener(this);
-            dataObject = null;
+        if (myDataObject != null) {
+            myDataObject.removePropertyChangeListener(this);
+            myDataObject = null;
         }
     }
     
     public DataObject getLastDataObject(){
-        return dataObject;
+        return myDataObject;
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -312,7 +312,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from compiler
-            vec.addAll(compiler.getSystemIncludeDirectories(platform));
+	    if( compiler != null ) {
+		vec.addAll(compiler.getSystemIncludeDirectories(platform));
+	    }
         }
         return vec;
     }
@@ -360,8 +362,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
-            // Get macro definitions from compiler
-            vec.addAll(compiler.getSystemPreprocessorSymbols(platform));
+	    if( compiler != null ) {
+		// Get macro definitions from compiler
+		vec.addAll(compiler.getSystemPreprocessorSymbols(platform));
+	    }
         }
         return vec;
     }

@@ -78,12 +78,12 @@ public class ConfigurationSupport {
 	StringBuffer tmp = new StringBuffer();
 	for (int i = 0; i < displayName.length(); i++) {
 	    if (i == 0 && (
-                Character.isLetterOrDigit(displayName.charAt(i)) ||
+                isLetterOrDigit(displayName.charAt(i)) ||
 		displayName.charAt(i) == '_')) {
 		tmp.append(displayName.charAt(i));
 	    }
             else if (i != 0 &&
-                (Character.isLetterOrDigit(displayName.charAt(i)) ||
+                (isLetterOrDigit(displayName.charAt(i)) ||
 		displayName.charAt(i) == '_' ||
 		displayName.charAt(i) == '-' ||
 		displayName.charAt(i) == '.')) {
@@ -97,6 +97,13 @@ public class ConfigurationSupport {
 	    return "Configuration"; // NOI18N
 	else
 	    return tmp.toString();
+    }
+    
+    private static boolean isLetterOrDigit(char ch) {
+        if (ch < '0' || ch > 'z')
+            return false;
+        else
+            return Character.isLetterOrDigit(ch);
     }
 
     public static String getNameFromDisplayName(String displayName) {

@@ -113,12 +113,12 @@ function params() {
 		    CNDDIST=$1
 		    ;;
 	    -debug|--debug)
-		    echo "debugging on port 5858"
-		    DEBUG_PROFILE="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5858"
+		    echo "debugging on port ${DBGPORT}"
+		    DEBUG_PROFILE="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=${DBGPORT}"
 		    ;;
 	    --sdebug|-sdebug)
-		    echo "wait to attach debugger on port 5858"
-		    DEBUG_PROFILE="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5858"
+		    echo "wait to attach debugger on port ${DBGPORT}"
+		    DEBUG_PROFILE="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=${DBGPORT}"
 		    ;;
 	    --profile|-profile)
 		    echo "profile on port 5140"
@@ -155,6 +155,8 @@ function main() {
     JAVA="${JAVA-`which java`}"
     DEFS=""
     PARAMS=""
+    
+    DBGPORT=${DBGPORT-5858}
 
     #DEFS="${DEFS} -Dcnd.modelimpl.trace=true"
     #DEFS="${DEFS} -Dparser.cache=true"

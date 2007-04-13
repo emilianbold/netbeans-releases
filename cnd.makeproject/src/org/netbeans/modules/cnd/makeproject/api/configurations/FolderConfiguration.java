@@ -59,7 +59,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         return folder;
     }
     
-    public void setFolder(Folder folder) {
+    private void setFolder(Folder folder) {
         this.folder = folder;
         needSave = true;
     }
@@ -108,10 +108,14 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     public void assign(ConfigurationAuxObject profileAuxObject) {
         if (!(profileAuxObject instanceof FolderConfiguration)) {
             // FIXUP: exception ????
-            System.err.print("Item - assign: Profile object type expected - got " + profileAuxObject); // NOI18N
+            System.err.println("Folder - assign: Profile object type expected - got " + profileAuxObject); // NOI18N
             return;
         }
         FolderConfiguration i = (FolderConfiguration)profileAuxObject;
+        if (!getId().equals(i.getFolder().getId())){
+            System.err.println("Item - assign: Item ID "+getId()+" expected - got " + i.getFolder().getId()); // NOI18N
+            return;
+        }
         setConfiguration(i.getConfiguration());
         setFolder(i.getFolder());
         
@@ -121,6 +125,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     
     public FolderConfiguration copy(MakeConfiguration makeConfiguration) {
         FolderConfiguration copy = new FolderConfiguration(makeConfiguration, (CCompilerConfiguration)getCCompilerConfiguration().getMaster(), (CCCompilerConfiguration)getCCCompilerConfiguration().getMaster(), getFolder());
+        // safe using
         copy.assign(this);
         return copy;
     }

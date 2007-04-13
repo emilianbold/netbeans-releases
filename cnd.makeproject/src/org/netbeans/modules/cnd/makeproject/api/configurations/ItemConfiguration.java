@@ -47,7 +47,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     
     // General
     private BooleanConfiguration excluded;
-    private int tool;
+    private int tool = -1;
     
     // Tools
     private CustomToolConfiguration customToolConfiguration;
@@ -101,12 +101,12 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         return item;
     }
     
-    public void setItem(Item item) {
+    private void setItem(Item item) {
         if (this.item != item) {
             this.item = item;
             this.needSave = true;
 //            this.id = null;
-            this.tool = item.getDefaultTool();
+            //this.tool = item.getDefaultTool();
         }
     }
     
@@ -131,6 +131,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         this.tool = tool;
     }
     public int getTool() {
+        if (tool == -1) {
+            tool = item.getDefaultTool();
+        }
         return tool;
     }
     protected String getToolName() {
@@ -216,10 +219,14 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     public void assign(ConfigurationAuxObject profileAuxObject) {
         if (!(profileAuxObject instanceof ItemConfiguration)) {
             // FIXUP: exception ????
-            System.err.print("Item - assign: Profile object type expected - got " + profileAuxObject); // NOI18N
+            System.err.println("Item - assign: Profile object type expected - got " + profileAuxObject); // NOI18N
             return;
         }
         ItemConfiguration i = (ItemConfiguration)profileAuxObject;
+        if (!getId().equals(i.getItem().getId())){
+            System.err.println("Item - assign: Item ID "+getId()+" expected - got " + i.getItem().getId()); // NOI18N
+            return;
+        }
         setConfiguration(i.getConfiguration());
         setItem(i.getItem());
         getExcluded().assign(i.getExcluded());
@@ -233,6 +240,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     
     public ItemConfiguration copy(MakeConfiguration makeConfiguration) {
         ItemConfiguration copy = new ItemConfiguration(makeConfiguration, getItem());
+        // safe using
         copy.assign(this);
         return copy;
     }

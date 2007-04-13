@@ -41,17 +41,27 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
     private List/*CsmEnumerator*/ enumeratorsOLD = Collections.EMPTY_LIST;
     private final List<CsmUID<CsmEnumerator>> enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     
-    public EnumImpl(AST ast, NamespaceImpl namespace, CsmFile file) {
-        this(ast, namespace, file, null);
+    private EnumImpl(AST ast, CsmFile file) {
+        super(findName(ast), file, ast);
     }
     
-    public EnumImpl(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
-        super(findName(ast), namespace, file, containingClass, ast);
+    protected void init(NamespaceImpl namespace, CsmClass containingClass, AST ast) {
+	super.init(namespace, containingClass, ast);
         if (TraceFlags.USE_REPOSITORY) {
             RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         }
         initEnumeratorList(ast);
         register();
+    }
+    
+    public static EnumImpl create(AST ast, NamespaceImpl namespace, CsmFile file) {
+	return create(ast, namespace, file, null);
+    }
+    
+    public static EnumImpl create(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
+	EnumImpl impl = new EnumImpl(ast, file);
+	impl.init(namespace, containingClass, ast);
+	return impl;
     }
     
     private static String findName(AST ast){

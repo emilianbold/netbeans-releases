@@ -75,16 +75,28 @@ public class Folder {
     }
     
     public String getPath() {
-        StringBuilder builder = new StringBuilder(getName()); 
-        Folder parent = getParent();
-        while (parent != null) {
-            if (parent.getParent() != null) {
-                builder.insert(0, '/'); // NOI18N
-                builder.insert(0, parent.getName());
-            }
-            parent = parent.getParent();
-        };
-        return builder.toString();
+//        StringBuilder builder = new StringBuilder(getName()); 
+//        Folder parent = getParent();
+//        while (parent != null) {
+//            if (parent.getParent() != null) {
+//                builder.insert(0, '/'); // NOI18N
+//                builder.insert(0, parent.getName());
+//            }
+//            parent = parent.getParent();
+//        };
+//        return builder.toString();
+        StringBuilder builder2 = new StringBuilder(32); 
+        reversePath(this, builder2);
+        return builder2.toString();
+    }
+    
+    private void reversePath(Folder folder, StringBuilder builder){
+        Folder parent = folder.getParent();
+        if (parent != null && parent.getParent() != null) {
+            reversePath(parent, builder);
+            builder.append('/'); // NOI18N
+        }
+        builder.append(folder.getName());
     }
     
     public String getDisplayName() {
@@ -173,8 +185,9 @@ public class Folder {
         
         // Add item to the dataObject's lookup
         if (isProjectFiles()) {
-            if (item.getDataObject() instanceof CndDataObject) {
-                CndDataObject dataObject = (CndDataObject)item.getDataObject();
+            // item.getLastDataObject() should be inited in method item.setFolder(this);
+            if (item.getLastDataObject() instanceof CndDataObject) {
+                CndDataObject dataObject = (CndDataObject)item.getLastDataObject();
                 MyNativeFileItemSet myNativeFileItemSet = (MyNativeFileItemSet)dataObject.getCookie(MyNativeFileItemSet.class);
                 if (myNativeFileItemSet == null) {
                     myNativeFileItemSet = new MyNativeFileItemSet();

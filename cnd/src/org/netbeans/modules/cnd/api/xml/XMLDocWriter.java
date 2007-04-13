@@ -120,7 +120,7 @@ abstract public class XMLDocWriter implements XMLEncoder {
      */
     public void write(OutputStream os) throws IOException {
 	try {
-	    encoderStream = new XMLEncoderStream(os, indentChars);
+	    encoderStream = new XMLEncoderStream(os, indentChars, encoding());
 	    writeHeader();
 	    writeDoctype();
 	    encode(encoderStream);

@@ -431,26 +431,38 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             if (removedFiles.contains(nativeFileItem)){
                 continue;
             }
-            if( ProjectBase.this.isProjectDisposed ) {
-                if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ProjevtBase.ensureFilesCreated interrupted");
-                return;
-            }
-            assert (nativeFileItem.getFile() != null) : "native file item must have valid File object";
-            if( TraceFlags.DEBUG ) ModelSupport.instance().trace(nativeFileItem);
-            createIfNeed(nativeFileItem, true);
+	    synchronized (disposeLock) {
+		if( ProjectBase.this.isProjectDisposed ) {
+		    if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ProjevtBase.ensureFilesCreated interrupted");
+		    return;
+		}
+		assert (nativeFileItem.getFile() != null) : "native file item must have valid File object";
+		if( TraceFlags.DEBUG ) ModelSupport.instance().trace(nativeFileItem);
+                try {
+                    createIfNeed(nativeFileItem, true);
+                } catch (Exception ex){
+                    ex.printStackTrace();
+                }
+	    }
         }
         
         for( NativeFileItem nativeFileItem : headers ) {
             if (removedFiles.contains(nativeFileItem)){
                 continue;
             }
-            if( ProjectBase.this.isProjectDisposed ) {
-                if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ProjevtBase.ensureFilesCreated interrupted");
-                return;
-            }
-            assert (nativeFileItem.getFile() != null) : "native file item must have valid File object";
-            if( TraceFlags.DEBUG ) ModelSupport.instance().trace(nativeFileItem);
-            createIfNeed(nativeFileItem, false);
+	    synchronized (disposeLock) {
+		if( ProjectBase.this.isProjectDisposed ) {
+		    if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ProjevtBase.ensureFilesCreated interrupted");
+		    return;
+		}
+		assert (nativeFileItem.getFile() != null) : "native file item must have valid File object";
+		if( TraceFlags.DEBUG ) ModelSupport.instance().trace(nativeFileItem);
+                try {
+                    createIfNeed(nativeFileItem, false);
+                } catch (Exception ex){
+                    ex.printStackTrace();
+                }
+	    }
         }
         nativeProject.removeProjectItemsListener(projectItemListener);
         // in fact if visitor used for parsing => visitor will parse all included files
@@ -727,8 +739,10 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         return platformProject != null  && !isProjectDisposed;
     }
     
-    public void setDisposed(){
-        isProjectDisposed = true;
+    public void setDisposed() {
+	synchronized (disposeLock) {
+	    isProjectDisposed = true;
+	}
         ParserQueue.instance().removeAll(this);
     }
     
@@ -737,7 +751,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     public void dispose() {
-        isProjectDisposed = true;
+	synchronized (disposeLock) {
+	    isProjectDisposed = true;
+	}
         ParserQueue.instance().removeAll(this);
         disposeFiles();
         
@@ -877,8 +893,13 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         }
         if( ! isProjectDisposed ) {
             for (Iterator it = getFileList().iterator(); it.hasNext();) {
-                FileImpl file= (FileImpl) it.next();
-                file.fixFakeRegistrations();
+		FileImpl file= (FileImpl) it.next();
+		synchronized (disposeLock) {
+		    if( isProjectDisposed ) {
+			break;
+		    }
+		    file.fixFakeRegistrations();
+		}
             }
         }
     }
@@ -1113,6 +1134,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     private Object platformProject;
     private boolean isProjectDisposed;
+    private Object disposeLock = new Object();
     private String fqn = null; // lazy inited
     
     // only one of namespaces/namespacesOLD must be used (based on USE_REPOSITORY)

@@ -64,7 +64,9 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_CLASS_DECLARATION:
                 case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION: 
                 {
-                    ClassImpl cls = new ClassImpl(token, currentNamespace, file);
+                    ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ? 
+			ClassImplSpecialization.create(token, currentNamespace, file) :
+			ClassImpl.create(token, currentNamespace, file);
                     container.addDeclaration(cls);
                     addTypedefs(renderTypedef(token, cls, currentNamespace), currentNamespace, container);
                     renderVariableInClassifier(token, cls, currentNamespace, container);
@@ -72,12 +74,13 @@ public class AstRenderer {
                 }
                 case CPPTokenTypes.CSM_ENUM_DECLARATION:
                 {
-                    CsmEnum csmEnum = new EnumImpl(token, currentNamespace, file);
+                    CsmEnum csmEnum = EnumImpl.create(token, currentNamespace, file);
                     container.addDeclaration(csmEnum);
                     renderVariableInClassifier(token, csmEnum, currentNamespace, container);
                     break;
                 }
                 case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
+                case CPPTokenTypes.CSM_USER_TYPE_CAST:
                     FunctionImpl fi = new FunctionImpl(token, file, currentNamespace);
                     //fi.setScope(currentNamespace);
                     container.addDeclaration(fi);
@@ -90,6 +93,7 @@ public class AstRenderer {
                     container.addDeclaration(new DestructorDefinitionImpl(token, file));
                     break;
                 case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
+		case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
                     if( isMemberDefinition(token) ) {
                         container.addDeclaration(new FunctionDefinitionImpl(token, file, null));
                     }
@@ -102,7 +106,7 @@ public class AstRenderer {
                     break;
                 case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
                     if( isClassSpecialization(token) ) {
-                        ClassImpl spec = new ClassImpl(token, currentNamespace, file);
+                        ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file);
                         container.addDeclaration(spec);
                         addTypedefs(renderTypedef(token, spec, currentNamespace), currentNamespace, container);
                     }
@@ -341,7 +345,7 @@ public class AstRenderer {
                                     nsp = ((ClassImpl) container).getContainingNamespaceImpl();
                                 }
                                 if( nsp != null ) {
-                                    ei = new EnumImpl(curr, nsp, file);
+                                    ei = EnumImpl.create(curr, nsp, file);
                                     file.addDeclaration(ei);
                                     if( container instanceof  MutableDeclarationsContainer )
                                     ((MutableDeclarationsContainer) container).addDeclaration(ei);
@@ -914,6 +918,9 @@ public class AstRenderer {
     }
      
     private boolean isMemberDefinition(AST ast) {
+	if( CastUtils.isCast(ast) ) {
+	    return CastUtils.isMemberDefinition(ast);
+	}
         AST id = AstUtil.findMethodName(ast);
         if (id != null){
             return isScopedId(id);

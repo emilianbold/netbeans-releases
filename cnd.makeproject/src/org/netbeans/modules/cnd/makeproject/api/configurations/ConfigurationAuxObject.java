@@ -77,6 +77,8 @@ public interface ConfigurationAuxObject {
 
     /**
      * Assign all values from a profileAuxObject to this object (reverse of clone)
+     * Unsafe method. Make sure that method getID() returns equal string. 
+     * Otherwise method can harm configuration storage (class Configuration).
      */
     public void assign(ConfigurationAuxObject profileAuxObject);
 

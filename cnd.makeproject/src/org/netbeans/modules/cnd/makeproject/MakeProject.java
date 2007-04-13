@@ -65,11 +65,13 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -464,7 +466,26 @@ final class MakeProject implements Project, AntProjectListener {
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
-            ConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+            ConfigurationDescriptor projectDescriptor = null;
+            int count = 15;
+            
+            // The code to wait on projectDescriptor is due to a synchronization problem in makeproject.
+            // If it gets fixed then projectDescriptorProvider.getConfigurationDescriptor() will never
+            // return null and we can remove this change.
+            while (projectDescriptor == null && count-- > 0) {
+                projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+                if (projectDescriptor == null) {
+                    try {
+                        Thread.currentThread().sleep(100);
+                    } catch (InterruptedException ex) {
+                        return;
+                    }
+                }
+            }
+            if (projectDescriptor == null) {
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping project open validation"); // NOI18N
+                return;
+            }
             Configuration[] confs = projectDescriptor.getConfs().getConfs();
             ArrayList<String> errs = new ArrayList();
             String name = null;
@@ -517,12 +538,19 @@ final class MakeProject implements Project, AntProjectListener {
                         csm.remove(cs);
                     }
                 } else {
-                    // GRP - FIXME
-                    // Close the project because the user cancelled validation. The following code
-                    // closes the project but does it before a pending action on the project and causes an
-                    // IllegalArgumentException when the project system tries to set the closed project as main.
-                    Project p = thisMP;
-                    OpenProjects.getDefault().close(new Project[] { thisMP });
+                    // Close the project because the user cancelled validation
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            if (OpenProjects.getDefault().getMainProject() == thisMP) {
+                                try {
+                                    OpenProjects.getDefault().setMainProject(null);
+                                } catch (NullPointerException npe) {
+                                    // ignore (always throws this for null)
+                                }
+                            }
+                            OpenProjects.getDefault().close(new Project[] { thisMP });
+                        }
+                    });
                 }
             }
         }

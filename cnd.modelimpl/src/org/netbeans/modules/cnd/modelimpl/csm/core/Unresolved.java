@@ -48,7 +48,8 @@ public final class Unresolved implements Disposable {
     
     public static final class UnresolvedClass extends ClassEnumBase<CsmClass> implements CsmClass {
         public UnresolvedClass(String name, NamespaceImpl namespace, CsmFile file) {
-            super(name, namespace, file, null, null);
+            super(name, file, null);
+	    init(namespace, null, null);
             register();
         }
         public boolean isTemplate() {

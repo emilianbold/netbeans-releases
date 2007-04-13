@@ -43,7 +43,9 @@ public class Notificator {
     private ModelImpl model;
     
     private Notificator() {
-        model = (ModelImpl) CsmModelAccessor.getModel();
+        if (CsmModelAccessor.getModel() instanceof ModelImpl) {
+            model = (ModelImpl) CsmModelAccessor.getModel();
+        }
     }
     
     public static Notificator instance() {

@@ -100,7 +100,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 
 		    case CPPTokenTypes.CSM_CLASS_DECLARATION:
 		    {
-			ClassImpl cls = new ClassImpl(token, null, getContainingFile());
+			ClassImpl cls = ClassImpl.create(token, null, getContainingFile());
 			declarators.add(cls);
 			addTypedefs(renderTypedef(token, cls, currentNamespace), currentNamespace, container);
 			renderVariableInClassifier(token, cls, currentNamespace, container);
@@ -108,7 +108,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 		    }
 		    case CPPTokenTypes.CSM_ENUM_DECLARATION:
 		    {
-			CsmEnum csmEnum = new EnumImpl(token, currentNamespace, getContainingFile());
+			CsmEnum csmEnum = EnumImpl.create(token, currentNamespace, getContainingFile());
 			declarators.add(csmEnum);
 			renderVariableInClassifier(token, csmEnum, currentNamespace, container);
 			break;

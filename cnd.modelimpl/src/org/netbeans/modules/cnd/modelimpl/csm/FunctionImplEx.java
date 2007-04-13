@@ -50,7 +50,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
     protected  FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register) {
         super(ast, file, scope, false);
-        classOrNspNames = initClassOrNspNames(ast);
+        classOrNspNames = CastUtils.isCast(ast) ? CastUtils.getClassOrNspNames(ast) : initClassOrNspNames(ast);
         if (register) {
             registerInProject();
         }

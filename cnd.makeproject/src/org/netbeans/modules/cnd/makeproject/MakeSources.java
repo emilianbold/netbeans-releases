@@ -21,7 +21,9 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -70,8 +72,9 @@ public class MakeSources implements Sources, AntProjectListener {
 	ConfigurationDescriptor pd = pdp.getConfigurationDescriptor();
 	if (pd != null) {
 	    MakeConfigurationDescriptor epd = (MakeConfigurationDescriptor)pd;
-	    if (epd.getProjectItems() != null) {
-		Item[] projectItems = epd.getProjectItems();
+            Item[] projectItems = epd.getProjectItems();
+	    if (projectItems != null) {
+                Set<String> set = new HashSet<String>();
 		for (int i = 0; i < projectItems.length; i++) {
 		    Item item = projectItems[i];
 		    String name = item.getPath();
@@ -83,6 +86,9 @@ public class MakeSources implements Sources, AntProjectListener {
 		    if (!file.isDirectory())
 			file = file.getParentFile();
 		    name = file.getPath();
+                    set.add(name);
+                }
+                for(String name : set) {
 		    String displayName = name;
 		    int index1 = displayName.lastIndexOf(File.separatorChar);
 		    if (index1 > 0) {

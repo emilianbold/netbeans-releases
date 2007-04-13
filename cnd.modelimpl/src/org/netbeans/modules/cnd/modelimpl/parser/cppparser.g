@@ -138,6 +138,7 @@ tokens {
 	CSM_DTOR_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_CTOR_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_USER_TYPE_CAST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_USER_TYPE_CAST_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	CSM_GENERIC_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	
@@ -605,7 +606,7 @@ public translation_unit:
 		{/*exitExternalScope();*/ #translation_unit = #(#[CSM_TRANSLATION_UNIT, getFilename()], #translation_unit);}
        ;
 
-external_declaration {String s; K_and_R = false;}
+external_declaration {String s; K_and_R = false; boolean definition;}
 	:  
 	(
                 {isCPlusPlus()}?
@@ -757,8 +758,9 @@ external_declaration {String s; K_and_R = false;}
 			printf("external_declaration_6[%d]: Operator function\n",
 				LT(1).getLine());
 		}
-		(template_head)? (literal_inline)? s = scope_override conversion_function_decl_or_def 
-		{ #external_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #external_declaration); }
+		(template_head)? (literal_inline)? s = scope_override definition = conversion_function_decl_or_def 
+		{ if( definition ) #external_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #external_declaration);
+		    else	   #external_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #external_declaration); }
 	|   
 		// Function declaration
 		((LITERAL___extension__)? declaration_specifiers function_declarator[false] (EOF|SEMICOLON))=> 
@@ -935,7 +937,7 @@ decl_namespace
 	;
 
 member_declaration
-	{String q; boolean isFunction = false;}
+	{String q; boolean definition;}
 	:
 	(
 		// Class definition
@@ -1041,8 +1043,9 @@ member_declaration
 			printf("member_declaration_8[%d]: Operator function\n",
 				LT(1).getLine());
 		}
-		(literal_inline)? conversion_function_decl_or_def
-		{ #member_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #member_declaration); }
+		(literal_inline)? definition = conversion_function_decl_or_def
+		{ if( definition ) #member_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration);
+		    else	   #member_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #member_declaration); }
 	|  
 		// Hack to handle decls like "superclass::member",
 		// to redefine access to private base class public members
@@ -1176,8 +1179,9 @@ member_declaration
 				printf("member_declaration_13d[%d]: Templated operator " +
 					    "function\n", LT(1).getLine());
 			}
-			conversion_function_decl_or_def
-			{ #member_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #member_declaration); }
+			definition = conversion_function_decl_or_def
+			{ if( definition ) #member_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration);
+			    else	   #member_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #member_declaration); }
 		)
 		{endTemplateDefinition();}
 	|  
@@ -1575,7 +1579,7 @@ member_declarator
 		declarator
 	;
 
-conversion_function_decl_or_def
+conversion_function_decl_or_def returns [boolean definition = false]
 	{CPPParser.TypeQualifier tq; }
 	:	// DW 01/08/03 Use type_specifier here? see syntax
 		LITERAL_OPERATOR declaration_specifiers (STAR | AMPERSAND)?
@@ -1583,7 +1587,7 @@ conversion_function_decl_or_def
 		LPAREN (parameter_list)? RPAREN	
 		(tq = cv_qualifier)?
 		(exception_specification)?
-		(	compound_statement
+		(	compound_statement { definition = true; }
 		|	SEMICOLON! //{end_of_stmt();}
 		)
 	;

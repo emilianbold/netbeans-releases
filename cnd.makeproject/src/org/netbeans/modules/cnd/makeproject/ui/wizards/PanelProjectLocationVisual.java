@@ -318,7 +318,7 @@ public class PanelProjectLocationVisual extends SettingsPanel
         String projectName = (String) settings.getProperty("displayName"); //NOI18N
         if (projectName == null) {
             String workingDir = (String) settings.getProperty("buildCommandWorkingDirTextField"); //NOI18N
-            if (workingDir != null && workingDir.length() > 0 && templateName.equals(getString("NativeMakefileName")))
+            if (workingDir != null && workingDir.length() > 0 && templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME))
                 name = IpeUtils.getBaseName(workingDir);
             int baseCount = 1;
             String formater = name + "_{0}"; // NOI18N
@@ -422,7 +422,7 @@ public class PanelProjectLocationVisual extends SettingsPanel
             if (!makefileNameChanged) {
                 // re-evaluate name of master project file.
                 String makefileName;
-                if (!templateName.equals(getString("NativeMakefileName"))) // NOI18N
+                if (!templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME)) // NOI18N
                     makefileName = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME;
                 else
                     makefileName = contructProjectMakefileName(0);

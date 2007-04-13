@@ -38,7 +38,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  * Implements CsmClass
  * @author Vladimir Kvashin
  */
-public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmMember<CsmClass> {
+public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate {
 
     private final CsmDeclaration.Kind kind;
     
@@ -48,7 +48,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     private final List<CsmInheritance> inheritances = new ArrayList<CsmInheritance>();
     private boolean template;
     
-    private final int leftBracketPos;
+    private /*final*/ int leftBracketPos;
     
     private class ClassAstRenderer extends AstRenderer {
         
@@ -100,7 +100,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     // inner classes and enums
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
                     case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
-                        ClassImpl innerClass = new ClassImpl(token, getContainingNamespaceImpl(), getContainingFile(), ClassImpl.this);
+                        ClassImpl innerClass = ClassImpl.create(token, getContainingNamespaceImpl(), getContainingFile(), ClassImpl.this);
                         innerClass.setVisibility(curentVisibility);
                         addMember(innerClass);
                         typedefs = renderTypedef(token, innerClass, ClassImpl.this);
@@ -114,7 +114,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         renderVariableInClassifier(token, innerClass, null, null);
                         break;
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
-                        EnumImpl innerEnum = new EnumImpl(token, getContainingNamespaceImpl(), getContainingFile(), ClassImpl.this);
+                        EnumImpl innerEnum = EnumImpl.create(token, getContainingNamespaceImpl(), getContainingFile(), ClassImpl.this);
                         innerEnum.setVisibility(curentVisibility);
                         addMember(innerEnum);
                         renderVariableInClassifier(token, innerEnum, null, null);
@@ -149,15 +149,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 			}
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
+                    case CPPTokenTypes.CSM_USER_TYPE_CAST:
 			AST child = token.getFirstChild();
 			if( child != null && child.getType() != CPPTokenTypes.LITERAL_friend ) {
 			    addMember(new MethodImpl(token, ClassImpl.this, curentVisibility));
 			}
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
+		    case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
                         addMember(new MethodDDImpl(token, ClassImpl.this, curentVisibility));
-                        break;
-                    case CPPTokenTypes.CSM_USER_TYPE_CAST:
                         break;
                     case CPPTokenTypes.CSM_VISIBILITY_REDEF:
                         break;
@@ -247,19 +247,30 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 //        register();
 //    }
 
-    public ClassImpl(AST ast, NamespaceImpl namespace, CsmFile file) { 
-        this(ast, namespace, file, null);
+    protected ClassImpl(AST ast, CsmFile file, CsmClass containingClass) {
+	// we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
+        super(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true), file, ast); 
+	kind = findKind(ast);
     }
     
-    public ClassImpl(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
-        super(AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, containingClass, ast);
-        leftBracketPos = initLeftBracketPos(ast);
-        this.kind = findKind(ast);
+    protected void init(NamespaceImpl namespace, CsmClass containingClass, AST ast) {
+	super.init(namespace, containingClass, ast);
         if (TraceFlags.USE_REPOSITORY) {
             RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         }
         new ClassAstRenderer().render(ast);
+        leftBracketPos = initLeftBracketPos(ast);
         register();
+    }
+    
+    public static ClassImpl create(AST ast, NamespaceImpl namespace, CsmFile file) {
+	return create(ast, namespace, file, null);
+    }
+    
+    public static ClassImpl create(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
+	ClassImpl impl = new ClassImpl(ast, file, containingClass);
+	impl.init(namespace, containingClass, ast);
+	return impl;
     }
 
     public CsmDeclaration.Kind getKind() {
@@ -335,7 +346,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         }
         return CsmDeclaration.Kind.CLASS;
     }
-    
+
+    public String getDisplayName() {
+	return isTemplate() ? getName() + "<>" : getName();
+    }
+
+    public List<CsmTemplateParameter> getTemplateParameters() {
+	return Collections.EMPTY_LIST;
+    }
+	
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 

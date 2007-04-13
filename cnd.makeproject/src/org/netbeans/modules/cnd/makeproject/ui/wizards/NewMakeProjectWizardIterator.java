@@ -61,6 +61,11 @@ import org.openide.util.Utilities;
 public class NewMakeProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
     private static final long serialVersionUID = 1L;
     
+    public static String APPLICATION_PROJECT_NAME = "Application"; // NOI18N
+    public static String DYNAMICLIBRARY_PROJECT_NAME = "DynamicLibrary";  // NOI18N
+    public static String STATICLIBRARY_PROJECT_NAME = "StaticLibrary"; // NOI18N
+    public static String MAKEFILEPROJECT_PROJECT_NAME = "MakefileProject"; // NOI18N
+    
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
     
     // Wizard types
@@ -82,28 +87,28 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     }
     
     public static NewMakeProjectWizardIterator newApplication() {
-        String name = getString("NativeNewApplicationName"); // NOI18N
+        String name = APPLICATION_PROJECT_NAME; //getString("NativeNewApplicationName"); // NOI18N
         String wizardTitle = getString("Templates/Project/Native/newApplication.xml"); // NOI18N
         String wizardACSD = getString("NativeNewLibraryACSD"); // NOI18N
         return new NewMakeProjectWizardIterator(TYPE_APPLICATION, name, wizardTitle, wizardACSD);
     }
     
     public static NewMakeProjectWizardIterator newDynamicLibrary() {
-        String name = getString("NativeNewDynamicLibraryName"); // NOI18N
+        String name = DYNAMICLIBRARY_PROJECT_NAME; //getString("NativeNewDynamicLibraryName"); // NOI18N
         String wizardTitle = getString("Templates/Project/Native/newDynamicLibrary.xml"); // NOI18N
         String wizardACSD = getString("NativeNewDynamicLibraryACSD"); // NOI18N
         return new NewMakeProjectWizardIterator(TYPE_DYNAMIC_LIB, name, wizardTitle, wizardACSD);
     }
     
     public static NewMakeProjectWizardIterator newStaticLibrary() {
-        String name = getString("NativeNewStaticLibraryName");
+        String name = STATICLIBRARY_PROJECT_NAME; //getString("NativeNewStaticLibraryName");
         String wizardTitle = getString("Templates/Project/Native/newStaticLibrary.xml");
         String wizardACSD = getString("NativeNewStaticLibraryACSD");
         return new NewMakeProjectWizardIterator(TYPE_STATIC_LIB, name, wizardTitle, wizardACSD);
     }
     
     public static NewMakeProjectWizardIterator makefile() {
-        String name = getString("NativeMakefileName"); // NOI18N
+        String name = MAKEFILEPROJECT_PROJECT_NAME; //getString("NativeMakefileName"); // NOI18N
         String wizardTitle = getString("Templates/Project/Native/makefile.xml"); // NOI18N
         String wizardACSD = getString("NativeMakefileNameACSD"); // NOI18N
         return new NewMakeProjectWizardIterator(TYPE_MAKEFILE, name, wizardTitle, wizardACSD);

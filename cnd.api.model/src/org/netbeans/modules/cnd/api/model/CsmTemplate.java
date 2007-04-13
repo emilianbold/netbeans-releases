@@ -36,9 +36,15 @@ public interface CsmTemplate {
 
     List<CsmTemplateParameter> getTemplateParameters();
 
-    /**
-     * Gets a string that acts like a signature for function:
-     * a name followed by comma-separater list of parameter types
+// This method is never used.
+//    /**
+//     * Gets a string that acts like a signature for function:
+//     * a name followed by comma-separater list of parameter types
+//     */
+//    String getTemplateSignature(); 
+    
+    /*
+     * Returns the name including template specialization part
      */
-    String getTemplateSignature(); 
+    String getDisplayName();
 }

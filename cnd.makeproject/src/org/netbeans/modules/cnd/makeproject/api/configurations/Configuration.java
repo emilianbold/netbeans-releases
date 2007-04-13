@@ -20,8 +20,11 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyChangeSupport;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.util.NbBundle;
@@ -33,7 +36,7 @@ public abstract class Configuration {
     
     private PropertyChangeSupport pcs = null;
     
-    protected Vector auxObjects = new Vector();
+    private Map<String, ConfigurationAuxObject> auxObjectsMap = Collections.synchronizedSortedMap(new TreeMap<String, ConfigurationAuxObject>());
     
     private Configuration cloneOf;
     
@@ -46,17 +49,18 @@ public abstract class Configuration {
         pcs = new PropertyChangeSupport(this);
         
         // Create and initialize auxiliary objects
-        auxObjects = new Vector();
-        synchronized (auxObjects) {
-            ConfigurationAuxObjectProvider[] auxObjectProviders = ConfigurationDescriptorProvider.getAuxObjectProviders();
-            for (int i = 0; i < auxObjectProviders.length; i++) {
-                ConfigurationAuxObject pao = auxObjectProviders[i].factoryCreate(baseDir, pcs);
-                pao.initialize();
-                auxObjects.add(pao);
+        ConfigurationAuxObjectProvider[] auxObjectProviders = ConfigurationDescriptorProvider.getAuxObjectProviders();
+        for (int i = 0; i < auxObjectProviders.length; i++) {
+            ConfigurationAuxObject pao = auxObjectProviders[i].factoryCreate(baseDir, pcs);
+            pao.initialize();
+            //auxObjects.add(pao);
+            String id = pao.getId();
+            if (auxObjectsMap.containsKey(id)) {
+                System.err.println("Init duplicated ConfigurationAuxObject id="+id);
             }
+            auxObjectsMap.put(id,pao);
         }
-        //System.err.println("------------------------------551-" + auxObjects.size()); // NOI18N
-            
+        
     }
     
     public void setCloneOf(Configuration profile) {
@@ -104,45 +108,41 @@ public abstract class Configuration {
     }
     
     public void addAuxObject(ConfigurationAuxObject pao) {
-        synchronized (auxObjects) {
-            auxObjects.add(pao);
+        String id = pao.getId();
+        if (auxObjectsMap.containsKey(id)) {
+            System.err.println("Add duplicated ConfigurationAuxObject id="+id);
         }
+        auxObjectsMap.put(id,pao);
     }
+    
     
     public void removeAuxObject(ConfigurationAuxObject pao) {
-        synchronized (auxObjects) {
-            auxObjects.removeElement(pao);
-        }
+        auxObjectsMap.remove(pao.getId());
     }
     
+    
     public void removeAuxObject(String id) {
-        ConfigurationAuxObject pao = getAuxObject(id);
-        removeAuxObject(pao);
+        auxObjectsMap.remove(id);
     }
     
     public ConfigurationAuxObject getAuxObject(String id) {
-        ConfigurationAuxObject pao = null;
-        synchronized (auxObjects) {
-            for (Enumeration e = auxObjects.elements() ; e.hasMoreElements() ;) {
-                ConfigurationAuxObject o = (ConfigurationAuxObject)e.nextElement();
-                if (o.getId().equals(id)) {
-                    pao = o;
-                    break;
-                }
-            }
-        }
-        return pao;
+        return auxObjectsMap.get(id);
     }
     
     public ConfigurationAuxObject[] getAuxObjects() {
-        synchronized (auxObjects) {
-            return (ConfigurationAuxObject[]) auxObjects.toArray(new ConfigurationAuxObject[auxObjects.size()]);
+        List<ConfigurationAuxObject> list;
+        synchronized (auxObjectsMap){
+            list = new ArrayList<ConfigurationAuxObject>(auxObjectsMap.values());
         }
+        return (ConfigurationAuxObject[]) list.toArray(new ConfigurationAuxObject[list.size()]);
     }
     
-    public void setAuxObjects(Vector v) {
-        synchronized (auxObjects) {
-            auxObjects = v;
+    public void setAuxObjects(List<ConfigurationAuxObject> v) {
+        synchronized (auxObjectsMap) {
+            auxObjectsMap.clear();
+            for(ConfigurationAuxObject object : v){
+                auxObjectsMap.put(object.getId(),object);
+            }
         }
     }
     

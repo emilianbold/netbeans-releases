@@ -313,7 +313,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
     }
     
     public void fireFilesRemoved(List<NativeFileItem> fileItems) {
-        getNativeProject().fireFilesRemoved(fileItems);
+        if (getNativeProject() != null)
+            getNativeProject().fireFilesRemoved(fileItems);
     }
 
     public void fireFileRenamed(String oldPath, NativeFileItem newFileItem) {
@@ -455,7 +456,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
             try {
                 Project project = ProjectManager.getDefault().findProject(fo);
                 nativeProject = (NativeProject)project.getLookup().lookup(NativeProject.class);
-            } catch (IOException ioe) {
+            } catch (Exception e) {
+                // This may be ok. The project could have been removed ....
+                System.err.println("getNativeProject " + e);
             }
             
         }

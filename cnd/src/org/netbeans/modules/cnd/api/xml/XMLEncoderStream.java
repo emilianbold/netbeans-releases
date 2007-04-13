@@ -19,10 +19,13 @@
 
 package org.netbeans.modules.cnd.api.xml;
 
-import java.io.File;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 
 import org.openide.xml.XMLUtil;
 
@@ -48,9 +51,15 @@ public class XMLEncoderStream {
     private OutputStream os;	// just so we can close it
 
 
-    XMLEncoderStream(OutputStream os, int indentChars) {
+    XMLEncoderStream(OutputStream os, int indentChars, String encoding) {
 	this.os = os;
-	writer = new PrintWriter(os);
+        try {
+            Writer w = new BufferedWriter(new OutputStreamWriter(os, encoding));
+            writer = new PrintWriter(w);
+        } catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            writer = new PrintWriter(os);
+        }
 	makeIndentElement(indentChars);
     }
 

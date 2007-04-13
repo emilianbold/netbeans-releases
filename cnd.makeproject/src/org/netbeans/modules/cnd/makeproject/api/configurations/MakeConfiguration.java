@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -254,9 +255,18 @@ public class MakeConfiguration extends Configuration {
         
         // do assign on all aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects(); // from this profile
-        ConfigurationAuxObject[] p_auxs = conf.getAuxObjects(); // from the 'other' profile
-        for (int i = 0; i < auxs.length; i++)
-            auxs[i].assign(p_auxs[i]);
+        //ConfigurationAuxObject[] p_auxs = conf.getAuxObjects(); // from the 'other' profile
+        for (int i = 0; i < auxs.length; i++) {
+            // unsafe using! suppose same set of objects and same object order
+            String id = auxs[i].getId();
+            ConfigurationAuxObject object = conf.getAuxObject(id);
+            if (object != null) {
+                // safe using
+                auxs[i].assign(object);
+            } else {
+                System.err.println("Configuration - assign: Object ID "+id+" do not found"); // NOI18N
+            }
+        }
     }
     
     public Configuration cloneConf() {
@@ -300,11 +310,16 @@ public class MakeConfiguration extends Configuration {
         clone.setArchiverConfiguration((ArchiverConfiguration)getArchiverConfiguration().clone());
         
         // Clone all the aux objects
-        Vector clonedAuxObjects = new Vector();
-        for (Enumeration e = auxObjects.elements() ; e.hasMoreElements() ;) {
-            ConfigurationAuxObject o = (ConfigurationAuxObject)e.nextElement();
-            ConfigurationAuxObject clone2 = (ConfigurationAuxObject)o.clone();
-            clonedAuxObjects.add(clone2);
+        //Vector clonedAuxObjects = new Vector();
+        //for (Enumeration e = auxObjects.elements() ; e.hasMoreElements() ;) {
+        //    ConfigurationAuxObject o = (ConfigurationAuxObject)e.nextElement();
+        //    ConfigurationAuxObject clone2 = (ConfigurationAuxObject)o.clone();
+        //    clonedAuxObjects.add(clone2);
+        //}
+        ConfigurationAuxObject[] objects = getAuxObjects();
+        List<ConfigurationAuxObject> clonedAuxObjects = new ArrayList<ConfigurationAuxObject>();
+        for(int i = 0; i < objects.length; i++){
+            clonedAuxObjects.add((ConfigurationAuxObject)objects[i].clone());
         }
         clone.setAuxObjects(clonedAuxObjects);
         return clone;

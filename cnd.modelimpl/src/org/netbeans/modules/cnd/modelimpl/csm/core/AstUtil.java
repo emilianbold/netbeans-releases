@@ -103,6 +103,20 @@ public class AstUtil {
      *        This parameter allows, for example, searching until "}" is encountered
      */
     public static String findId(AST ast, int limitingTokenType) {
+	return findId(ast, limitingTokenType, false);
+    }
+    
+    /**
+     * Finds ID (either CPPTokenTypes.CSM_QUALIFIED_ID or CPPTokenTypes.ID)
+     * in direct children of the given AST tree
+     *
+     * @param ast tree to secarch ID in 
+     *
+     * @param limitingTokenType type of token that, if being found, stops search
+     *        -1 means that there is no such token.
+     *        This parameter allows, for example, searching until "}" is encountered
+     */
+    public static String findId(AST ast, int limitingTokenType, boolean qualified) {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             int type = token.getType();
             if( type == limitingTokenType && limitingTokenType >= 0 ) {
@@ -112,6 +126,9 @@ public class AstUtil {
                 return token.getText();
             }
             else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+		if( qualified ) {
+		    return token.getText();
+		}
                 AST last = getLastChild(token);
                 if( last != null) {
                     if( last.getType() == CPPTokenTypes.ID ) {

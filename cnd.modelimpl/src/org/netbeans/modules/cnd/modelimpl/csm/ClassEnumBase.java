@@ -42,11 +42,11 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     
     private final String name;
     
-    private final String qualifiedName;
+    private /*final*/ String qualifiedName;
     
     // only one of namespaceRef/namespaceUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
     private /*final*/ NamespaceImpl namespaceRef;// can be set in onDispose or contstructor only
-    private final CsmUID<CsmNamespace> namespaceUID;
+    private /*final*/ CsmUID<CsmNamespace> namespaceUID;
     
     private boolean isValid = true;
 
@@ -54,10 +54,25 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     private CsmVisibility visibility = CsmVisibility.PRIVATE;
     // only one of containingClassRef/containingClassUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
     private /*final*/ CsmClass containingClassRef;// can be set in onDispose or contstructor only
-    private final CsmUID<CsmClass> containingClassUID;
+    private /*final*/ CsmUID<CsmClass> containingClassUID;
     
-    public ClassEnumBase(String name, NamespaceImpl namespace, CsmFile file, CsmClass containingClass, AST ast) {
+    protected ClassEnumBase(String name, CsmFile file, AST ast) {
         super(ast, file);
+        this.name = (name == null) ? "" : name;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    /**
+     * Initialization method. 
+     * Should be called immediately after object creation. 
+     *
+     * Descendants may override it; in this case it's a descendant's responsibility
+     * to call super.init()
+     */
+    protected void init(NamespaceImpl namespace, CsmClass containingClass, AST ast) {
         if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             namespaceUID = UIDCsmConverter.namespaceToUID(namespace);
             assert (namespaceUID != null || namespace == null)  : "null UID for namespace " + namespace;
@@ -66,7 +81,6 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
             this.namespaceRef = namespace;
             this.namespaceUID = null;
         }        
-        this.name = (name == null) ? "" : name;
         if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             containingClassUID = UIDCsmConverter.declarationToUID(containingClass);
             assert (containingClassUID != null || containingClass == null);
@@ -74,7 +88,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         } else {
             this.containingClassRef = containingClass;
             this.containingClassUID = null;
-        }         
+        }
         if( containingClass == null ) {
             qualifiedName = Utils.getQualifiedName(getQualifiedNamePostfix(), namespace);
         }
@@ -83,10 +97,6 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         }
         // can't register here, because descendant class' constructor hasn't yet finished!
         // so registering is a descendant class' responsibility
-    }
-    
-    public String getName() {
-        return name;
     }
     
     abstract public Kind getKind();

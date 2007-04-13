@@ -140,6 +140,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     private static String findFunctionName(AST ast) {
+	if( CastUtils.isCast(ast) ) {
+	    return CastUtils.getFunctionName(ast);
+	}
         AST token = AstUtil.findMethodName(ast);
         if (token != null){
             return extractName(token);
