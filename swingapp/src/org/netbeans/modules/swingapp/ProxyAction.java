@@ -95,9 +95,16 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
         putValue(Action.SHORT_DESCRIPTION, getResource("shortDescription", String.class)); // NOI18N
         putValue(Action.ACCELERATOR_KEY, getResource("accelerator", KeyStroke.class)); // NOI18N
         Object icon = getResource("icon", Icon.class); // NOI18N
+        Object iconString = getResource("icon",String.class);
         Object smallIcon = getResource("smallIcon", Icon.class); // NOI18N
+        Object smallIconString = getResource("smallIcon",String.class);
+        
         putValue(Action.SMALL_ICON, smallIcon != null ? smallIcon : icon);
-        putValue("SwingLargeIconKey", getResource("largeIcon", Icon.class)); // NOI18N
+        putValue(Action.SMALL_ICON+".IconName",smallIcon != null ? smallIconString : iconString);
+        
+        putValue(ActionPropertyEditorPanel.LARGE_ICON_KEY, getResource("largeIcon", Icon.class)); // NOI18N
+        putValue(ActionPropertyEditorPanel.LARGE_ICON_KEY+".IconName", getResource("largeIcon",String.class));
+        
         putValue("BlockingDialog.message",getResource("BlockingDialog.message", String.class)); //NOI18N
         putValue("BlockingDialog.title",getResource("BlockingDialog.title", String.class)); //NOI18N
         
