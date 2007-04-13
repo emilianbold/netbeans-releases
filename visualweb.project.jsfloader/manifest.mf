@@ -12,7 +12,3 @@ Name: org/netbeans/modules/visualweb/project/jsfloader/JsfJavaDataLoader.class
 OpenIDE-Module-Class: Loader
 Install-Before: org.netbeans.modules.java.JavaDataObject
 
-Name: org/netbeans/modules/visualweb/project/jsfloader/ManagedBeansDataLoader.class
-OpenIDE-Module-Class: Loader
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject, org.netbeans.modules.web.jsf.JSFConfigLoader, org.netbeans.modules.web.struts.StrutsConfigLoader
-
