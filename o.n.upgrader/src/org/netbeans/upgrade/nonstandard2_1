@@ -25,5 +25,5 @@
 
 #creator
 include complibs/.*
-include jdbc-drivers/.*
+include jdbc-drivers/.*\.jar
 include context\.xml

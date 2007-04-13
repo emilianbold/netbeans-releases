@@ -41,7 +41,7 @@ public class PathTransformation {
     //CREATOR
     public String transformCreatorPath(String path) {
         String keyToReplace = null;
-        String[] keysToReplace = new String[] {"jdbc-drivers","context.xml"};//NOI18N
+        String[] keysToReplace = new String[] {"context.xml"};//NOI18N
         for (String key : keysToReplace) {
             if (path.startsWith(key)) {
                 keyToReplace = key;
