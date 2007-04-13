@@ -68,21 +68,21 @@ public class DocumentModelTest extends NbTestCase {
         assertTrue(root.getContent().equals(doc.getText(0, doc.getLength())));
         
         List children = root.getChildren();
-        assertTrue(children.size() == 4);
+        assertEquals(4, children.size());
         
         DocumentElement first = root.getElement(0);
         
         //check name and type
-        assertTrue(first.getName().equals("element0"));
-        assertTrue(first.getType().equals(FakeDocumentModelProvider.FAKE_ELEMENT_TYPE));
+        assertEquals("element0", first.getName());
+        assertEquals(FakeDocumentModelProvider.FAKE_ELEMENT_TYPE, first.getType());
         
         //check content and offsets
-        assertTrue(first.getContent().equals("abcde"));
-        assertTrue(first.getStartOffset() == 0);
-        assertTrue(first.getEndOffset() == 5);
+        assertEquals("abcde", first.getContent());
+        assertEquals(0, first.getStartOffset());
+        assertEquals(5, first.getEndOffset());
         
         //check has no children
-        assertTrue(first.getElementCount() == 0);
+        assertEquals(0, first.getElementCount());
         
     }
     
@@ -109,10 +109,10 @@ public class DocumentModelTest extends NbTestCase {
         doc.insertString(0,"abcde|fgh|ij|k",null); //4 elements should be created
         Thread.sleep(1000); //wait for the model update (started after 500ms)
         
-        assertTrue(addedElements.size() == 4);
-        assertTrue(addedElements2.size() == 4);
+        assertEquals(4, addedElements.size());
+        assertEquals(4, addedElements2.size());
         
-        assertTrue(model.getRootElement().getElementCount() == 4);
+        assertEquals(4, model.getRootElement().getElementCount());
         
     }
     
@@ -167,6 +167,9 @@ public class DocumentModelTest extends NbTestCase {
         doc.insertString(0,"abcde|fgh|ij|k",null); //4 elements should be created
         DocumentModel model = new DocumentModel(doc, dmProvider);
         
+        DocumentModelUtils.dumpModelElements(model);
+        DocumentModelUtils.dumpElementStructure(model.getRootElement());
+        
         //listen to model
         final Vector removedElements = new Vector();
         model.addDocumentModelListener(new DocumentModelListenerAdapter() {
@@ -186,10 +189,11 @@ public class DocumentModelTest extends NbTestCase {
         doc.remove(0,doc.getLength());
         Thread.sleep(1000); //wait for the model update (started after 500ms)
         
-        assertTrue(removedElements.size() == 4);
-        assertTrue(removedElements2.size() == 4);
+
+        assertEquals(4,removedElements2.size());
+        assertEquals(4, removedElements.size());
         
-        assertTrue(model.getRootElement().getElementCount() == 0);
+        assertEquals(0, model.getRootElement().getElementCount());
     }
     
     /**
