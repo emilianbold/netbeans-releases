@@ -52,7 +52,7 @@ public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
                 if (selNode != null) {
                     switch(selNode.getCategory()) {
                         case END_POINTS:
-                            populateIconInfo(transferable); 
+                            //populateIconInfo(transferable); 
                             retState = ConnectorState.ACCEPT;
                             break;
                         default:
