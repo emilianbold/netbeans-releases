@@ -67,43 +67,45 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         });        
     }
     
-    void setProgressComponent (final JLabel title, final JComponent progressComponent) {
+    void setProgressComponent (final JLabel title,  final JLabel detail, final JComponent progressComponent) {
         if (SwingUtilities.isEventDispatchThread ()) {
-            setProgressComponentInAwt (title, progressComponent);
+            setProgressComponentInAwt (title, detail, progressComponent);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    setProgressComponentInAwt (title, progressComponent);
+                    setProgressComponentInAwt (title, detail, progressComponent);
                 }
             });
         }
     }
     
-    private void setProgressComponentInAwt (JLabel title, JComponent progressComponent) {
+    private void setProgressComponentInAwt (JLabel title, JLabel detail, JComponent progressComponent) {
         assert pProgress != null;
         assert SwingUtilities.isEventDispatchThread () : "Must be called in EQ.";
         pProgress.setVisible (true);
         pProgress.add (title, BorderLayout.WEST);
-        pProgress.add (progressComponent, BorderLayout.CENTER);
+        pProgress.add (detail, BorderLayout.CENTER);
+        pProgress.add (progressComponent, BorderLayout.EAST);
         revalidate ();
     }
     
-    void unsetProgressComponent (final JLabel title, final JComponent progressComponent) {
+    void unsetProgressComponent (final JLabel title, final JLabel detail, final JComponent progressComponent) {
         if (SwingUtilities.isEventDispatchThread ()) {
-            unsetProgressComponentInAwt (title, progressComponent);
+            unsetProgressComponentInAwt (title, detail, progressComponent);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    unsetProgressComponentInAwt (title, progressComponent);
+                    unsetProgressComponentInAwt (title, detail, progressComponent);
                 }
             });
         }
     }
     
-    private void unsetProgressComponentInAwt (JLabel title, JComponent progressComponent) {
+    private void unsetProgressComponentInAwt (JLabel title, JLabel detail, JComponent progressComponent) {
         assert pProgress != null;
         assert SwingUtilities.isEventDispatchThread () : "Must be called in EQ.";
         pProgress.remove (title);
+        pProgress.remove (detail);
         pProgress.remove (progressComponent);
         pProgress.setVisible (false);
         revalidate ();
@@ -133,8 +135,8 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(pProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 359, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 324, Short.MAX_VALUE)
+                        .add(pProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 562, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 121, Short.MAX_VALUE)
                         .add(bClose))
                     .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 730, Short.MAX_VALUE))
                 .addContainerGap())

@@ -38,12 +38,9 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog;
-import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogCache;
 import org.netbeans.modules.autoupdate.updateprovider.LocalNBMsProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -114,13 +111,15 @@ public final class UpdateUnitProviderImpl {
             ownHandle.start ();
         }
         try {
+            if (handle != null) {
+                handle.progress (getDisplayName ());
+            } else if (ownHandle != null) {
+                ownHandle.progress (getDisplayName ());
+            }
             getUpdateProvider ().refresh (force);
         } finally {
             if (ownHandle != null) {
                 ownHandle.finish ();
-            }
-            if (handle != null) {
-                handle.progress (getDisplayName ());
             }
         }
         return res;

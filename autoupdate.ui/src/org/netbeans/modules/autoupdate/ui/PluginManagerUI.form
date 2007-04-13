@@ -17,8 +17,8 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="pProgress" min="-2" pref="359" max="-2" attributes="0"/>
-                      <EmptySpace pref="324" max="32767" attributes="0"/>
+                      <Component id="pProgress" min="-2" pref="562" max="-2" attributes="0"/>
+                      <EmptySpace pref="121" max="32767" attributes="0"/>
                       <Component id="bClose" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="tpTabs" alignment="0" pref="730" max="32767" attributes="0"/>

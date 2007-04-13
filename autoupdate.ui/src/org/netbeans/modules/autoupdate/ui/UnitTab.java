@@ -485,11 +485,12 @@ private void refresh (final boolean force) {
             try {
                 handle = ProgressHandleFactory.createHandle ("refresh-providers-handle");
                 JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
+                JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
                 JLabel progressLabel = new JLabel (NbBundle.getMessage (UnitTab.class, "UnitTab_CheckingForUpdates"));
-                manager.setProgressComponent (progressLabel, progressComp);
+                manager.setProgressComponent (progressLabel, detailLabel, progressComp);
                 handle.start ();
                 UpdateUnitProviderFactory.getDefault ().refreshProviders (handle, force);
-                manager.unsetProgressComponent (progressLabel, progressComp);
+                manager.unsetProgressComponent (progressLabel, detailLabel, progressComp);
             } catch (IOException ioe) {
                 log.log(Level.FINE, ioe.getMessage(), ioe);
                 NetworkProblemPanel.showNetworkProblemDialog();
