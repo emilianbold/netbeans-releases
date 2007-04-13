@@ -74,6 +74,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ImportsTest("testRemoveBeforeEmpty"));
 //        suite.addTest(new ImportsTest("testRenameIdentifier"));
 //        suite.addTest(new ImportsTest("testRenameIdentifier2"));
+//        suite.addTest(new ImportsTest("addAtVeryBeginning"));
         return suite;
     }
 
@@ -1131,7 +1132,49 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
+    /**
+     * http://www.netbeans.org/issues/show_bug.cgi?id=100162
+     */
+    public void addAtVeryBeginning() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "import java.io.IOException;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.addCompUnitImport(
+                       node, 
+                       make.Import(make.Identifier("java.io.IOException"), false)
+                );
+                workingCopy.rewrite(node, copy);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+        
     String getGoldenPckg() {
         return "";
     }

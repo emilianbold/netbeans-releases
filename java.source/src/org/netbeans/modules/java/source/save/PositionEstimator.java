@@ -253,8 +253,12 @@ public abstract class PositionEstimator {
                 SourcePositions positions = copy.getTrees().getSourcePositions();
                 int typeDeclStart = (int) positions.getStartPosition(cut, t);
                 seq.move(typeDeclStart);
-                moveToSrcRelevant(seq, Direction.BACKWARD);
-                resultPos = seq.offset() + seq.token().length();
+                if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
+                    resultPos = seq.offset() + seq.token().length();
+                } else {
+                    aTail.append('\n');
+                    return 0;
+                }
             }
             int counter = 0;
             while (seq.moveNext() && nonRelevant.contains(seq.token().id()) && counter < 3) {
