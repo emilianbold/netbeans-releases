@@ -1,3 +1,4 @@
+
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -30,10 +31,10 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectChangeEvent;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectChangeListener;
-import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
@@ -52,25 +53,11 @@ public class CurrentProject   {
     
     /** Creates a new instance of CurrentProject */
     private CurrentProject() {                        
-        Lookup lookup = null;
-        TopComponent tc = null;
-        FileObject fileObject = null;
-        DataObject obj = null;                      
-        Set  <TopComponent> opened = TopComponent.getRegistry().getOpened();        
-        
-        for (Iterator it = opened.iterator(); it.hasNext(); ) {
-            tc = (TopComponent)it.next();
-            lookup = tc.getLookup();
-            obj = (DataObject)lookup.lookup(DataObject.class);
-            
-            if (obj != null) {
-                    fileObject = obj.getPrimaryFile();
-                    project = FileOwnerQuery.getOwner(fileObject);
-                    break;
-            } 
+        DataObject obj = Utilities.actionsGlobalContext().lookup(DataObject.class);
+        if (obj != null) {
+            FileObject fileObject = obj.getPrimaryFile();
+            project = FileOwnerQuery.getOwner(fileObject);
         }
-        
-        
         
         if (project != null){
             setPreviousProject(project);
@@ -101,9 +88,8 @@ public class CurrentProject   {
         }       
     }
     
-    
-    public void setup() {
-        
+    // Initialize listeners for page switch
+    public void setup() {        
         registry = TopComponent.getRegistry();
         registry.addPropertyChangeListener(WeakListeners.propertyChange(topComponentRegistryListener, registry));
 
@@ -114,11 +100,14 @@ public class CurrentProject   {
     }
     
     public static Project getOpenedProject() {
-        Project[] prjs = OpenProjects.getDefault().getOpenProjects();    
-        if (prjs.length > 0)
-            project = prjs[prjs.length-1];
-        else
-            project = null;
+        Lookup lookup = TopComponent.getRegistry().getActivated().getLookup();
+        DataObject obj = (DataObject)lookup.lookup(DataObject.class);
+        if (obj != null) {
+            FileObject fileObject = obj.getPrimaryFile();
+            project = FileOwnerQuery.getOwner(fileObject);                                
+        } else
+            project = OpenProjects.getDefault().getMainProject();
+        
         return project;
     }
     

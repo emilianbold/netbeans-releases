@@ -26,6 +26,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.ProjectContextManager;
+import org.openide.loaders.DataObject;
+import org.openide.util.Utilities;
 
 /**
  * The factory that creates Creator's InitialContext
@@ -75,17 +77,12 @@ public class DesignTimeInitialContextFactory implements InitialContextFactory {
         // If no projects open in the IDE then return null,
         // else if there is at least one open project then make sure that a context for
         // the project hasn't been created before creating a context
-        Project currentProj = CurrentProject.getInstance().getOpenedProject();                
-        Project ps[] ;
-        if (currentProj == null)
+        Project currentProj = null;
+        if (Utilities.actionsGlobalContext().lookup(DataObject.class) == null)
             currentProj = OpenProjects.getDefault().getMainProject();
-        
-        if (currentProj == null) {
-            ps = OpenProjects.getDefault().getOpenProjects();
-            if (ps.length > 0)
-                currentProj = ps[0];
-        }        
-        
+        else
+            currentProj = CurrentProject.getInstance().getOpenedProject();
+                
         //Setup cache of projects per context
         ProjectContextManager prjCtxManager = ProjectContextManager.getInstance();
                
