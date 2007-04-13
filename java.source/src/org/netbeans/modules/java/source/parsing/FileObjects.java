@@ -719,7 +719,9 @@ public class FileObjects {
 
 
             };
+            // long time = System.currentTimeMillis();
             ZipFile zf = new ZipFile (archiveFile);
+            // System.out.println("ZF OPEN " + archiveFile.getPath() + " took: " + (System.currentTimeMillis() - time )+ "ms." );
             return new ZipInputStream (zf);
 	}
         
