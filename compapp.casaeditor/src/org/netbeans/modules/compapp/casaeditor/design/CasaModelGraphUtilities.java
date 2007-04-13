@@ -212,8 +212,6 @@ public class CasaModelGraphUtilities {
         scene.getMiddleResizer().setPreferredLocation(new Point(
                 externalRegionWidget.getPreferredLocation().x - RegionUtilities.RESIZER_HALF_WIDTH,
                 0));
-
-        RegionUtilities.stretchScene(scene);
     }
 
     /**
