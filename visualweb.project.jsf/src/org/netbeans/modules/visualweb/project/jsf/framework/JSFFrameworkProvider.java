@@ -142,8 +142,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
                             
                             if (jstlLibrary != null) {
-                                JsfProjectUtils.addLibraryReferences(project, new Library[] { jstlLibrary }, ClassPath.COMPILE);
-                                JsfProjectUtils.addLibraryReferences(project, new Library[] { jstlLibrary }, ClassPath.EXECUTE);
+                                JsfProjectUtils.addLibraryReferences(project, new Library[] { jstlLibrary });
                             }
                         }
                     }

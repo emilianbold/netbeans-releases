@@ -696,24 +696,12 @@ public class ComplibServiceProvider implements ComplibService {
                     localizingBundle, rtPath, sourcePath, javadocPath, dtPath);
         }
 
-        // If needed, create new compile-time Library Ref
-        if (!JsfProjectUtils.hasLibraryReference(project, libDef,
-                ClassPath.COMPILE)) {
+        // If needed, create new compile-time and deploy Library Ref
+        if (!JsfProjectUtils.hasLibraryReference(project, libDef)) {
             if (!JsfProjectUtils.addLibraryReferences(project,
-                    new Library[] { libDef }, ClassPath.COMPILE)) {
+                    new Library[] { libDef })) {
                 IdeUtil
                         .logError("Failed to add compile-time library reference to project: "
-                                + libDef.getName());
-            }
-        }
-
-        // If needed, create new "deploy" Library Ref
-        if (!JsfProjectUtils.hasLibraryReference(project, libDef,
-                ClassPath.EXECUTE)) {
-            if (!JsfProjectUtils.addLibraryReferences(project,
-                    new Library[] { libDef }, ClassPath.EXECUTE)) {
-                IdeUtil
-                        .logError("Failed to add deploy library reference to project: "
                                 + libDef.getName());
             }
         }
@@ -734,16 +722,9 @@ public class ComplibServiceProvider implements ComplibService {
         if (libDef != null) {
             // Existing definition so first remove any existing references
 
-            if (JsfProjectUtils.hasLibraryReference(project, libDef,
-                    ClassPath.COMPILE)) {
+            if (JsfProjectUtils.hasLibraryReference(project, libDef)) {
                 JsfProjectUtils.removeLibraryReferences(project,
-                        new Library[] { libDef }, ClassPath.COMPILE);
-            }
-
-            if (JsfProjectUtils.hasLibraryReference(project, libDef,
-                    ClassPath.EXECUTE)) {
-                JsfProjectUtils.removeLibraryReferences(project,
-                        new Library[] { libDef }, ClassPath.EXECUTE);
+                        new Library[] { libDef });
             }
 
             JsfProjectUtils.removeLibrary(libName);
@@ -1822,24 +1803,12 @@ public class ComplibServiceProvider implements ComplibService {
         libDef = JsfProjectUtils.createComponentLibrary(libName, libName,
                 localizingBundle, rtPath, sourcePath, javadocPath, dtPath);
 
-        // If needed, create new compile-time Library Ref
-        if (!JsfProjectUtils.hasLibraryReference(project, libDef,
-                ClassPath.COMPILE)) {
+        // If needed, create new compile-time and deploy Library Ref
+        if (!JsfProjectUtils.hasLibraryReference(project, libDef)) {
             if (!JsfProjectUtils.addLibraryReferences(project,
-                    new Library[] { libDef }, ClassPath.COMPILE)) {
+                    new Library[] { libDef })) {
                 IdeUtil
                         .logError("Failed to add compile-time library reference to project: "
-                                + libDef.getName());
-            }
-        }
-
-        // If needed, create new "deploy" Library Ref
-        if (!JsfProjectUtils.hasLibraryReference(project, libDef,
-                ClassPath.EXECUTE)) {
-            if (!JsfProjectUtils.addLibraryReferences(project,
-                    new Library[] { libDef }, ClassPath.EXECUTE)) {
-                IdeUtil
-                        .logError("Failed to add deploy library reference to project: "
                                 + libDef.getName());
             }
         }
@@ -1862,16 +1831,9 @@ public class ComplibServiceProvider implements ComplibService {
         if (libDef != null) {
             // Existing definition so first remove any existing references
 
-            if (JsfProjectUtils.hasLibraryReference(project, libDef,
-                    ClassPath.COMPILE)) {
+            if (JsfProjectUtils.hasLibraryReference(project, libDef)) {
                 JsfProjectUtils.removeLibraryReferences(project,
-                        new Library[] { libDef }, ClassPath.COMPILE);
-            }
-
-            if (JsfProjectUtils.hasLibraryReference(project, libDef,
-                    ClassPath.EXECUTE)) {
-                JsfProjectUtils.removeLibraryReferences(project,
-                        new Library[] { libDef }, ClassPath.EXECUTE);
+                        new Library[] { libDef });
             }
 
             JsfProjectUtils.removeLibrary(libName);

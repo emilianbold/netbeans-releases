@@ -150,7 +150,7 @@ public class JsfProjectUtils {
         // XXX No project property "creator" for web project
         return true;
 
-        /*
+        /* XXX Should read project.xml instead of project.properties.
         while (fo != null) {
             if (fo.isFolder()) {
                 final FileObject propFile = fo.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -1389,6 +1389,20 @@ public class JsfProjectUtils {
         return cp.contains(obj);
     }
     
+    public static void addLocalizedRoots(Project project, String[] jarName) throws IOException {
+        ArrayList jars = new ArrayList(jarName.length);
+        for (int i = 0; i < jarName.length; i++) {
+            File f = InstalledFileLocator.getDefault().locate(jarName[i], null, true);
+            if (f != null) {
+                URL root = FileUtil.toFileObject(f).getURL();
+                if (!hasRootReference(project, root)) {
+                    jars.add(root);
+                }
+            }
+        }
+        addRootReferences(project, (URL[])jars.toArray(new URL[0]));
+    }
+
     public static void addLocalizedRoots(Project project, String[] jarName, String type) throws IOException {
         ArrayList jars = new ArrayList(jarName.length);
         for (int i = 0; i < jarName.length; i++) {

@@ -44,6 +44,11 @@ public class JsfProjectLibrary {
     private static final String JAR_HEADER = "nbinst:///";
     private static final String JAR_TAIL = "!/";
 
+    // JSF 1.1 libraries for both Compile and Deploy
+    public static final String[] ALLTIME_LIBS_JSF11 = {
+    };
+
+    // JSF 1.1 libraries for Compile only
     public static final String[] DESIGNTIME_LIBS_JSF11 = {
         "jsf-designtime",
         "jsfsupport-designtime",
@@ -51,6 +56,7 @@ public class JsfProjectLibrary {
         "jdbcsupport-designtime",
     };
 
+    // JSF 1.1 libraries for Deploy only
     public static final String[] RUNTIME_LIBS_JSF11 = {
         "jsf-runtime",
         "jsfsupport-runtime",
@@ -59,15 +65,19 @@ public class JsfProjectLibrary {
         "exceptionhandler-runtime",
     };
 
-    public static final String[] DESIGNTIME_LIBS_JSF12 = {
+    // JSF 1.2 libraries for both Compile and Deploy
+    public static final String[] ALLTIME_LIBS_JSF12 = {
         "jsf12-support",
         "woodstock-components",
+    };
+
+    // JSF 1.2 libraries for Compile only
+    public static final String[] DESIGNTIME_LIBS_JSF12 = {
         "jdbcsupport-designtime",
     };
 
+    // JSF 1.2 libraries for Deploy only
     public static final String[] RUNTIME_LIBS_JSF12 = {
-         "jsf12-support",
-         "woodstock-components",
          "jdbcsupport-runtime",
          "exceptionhandler-runtime",
     };
@@ -78,34 +88,43 @@ public class JsfProjectLibrary {
     public static String addLibrary(Project project) throws IOException {
         // Add the Creator libraries to the project
         LibraryManager libMgr = LibraryManager.getDefault();
+        String[] alltimeList;
         String[] designtimeList;
         String[] runtimeList;
+        Library[] alltimeLibs;
         Library[] designtimeLibs;
         Library[] runtimeLibs;
         String defaultTheme;
 
         if (JsfProjectUtils.isJavaEE5Project(project)) {
             defaultTheme = DEFAULT_JSF12_THEME;
+            alltimeList = ALLTIME_LIBS_JSF12;
             designtimeList = DESIGNTIME_LIBS_JSF12;
             runtimeList = RUNTIME_LIBS_JSF12;
         } else {
             defaultTheme = DEFAULT_JSF11_THEME;
+            alltimeList = ALLTIME_LIBS_JSF11;
             designtimeList = DESIGNTIME_LIBS_JSF11;
             runtimeList = RUNTIME_LIBS_JSF11;
         }
 
-        designtimeLibs = new Library[designtimeList.length+1];
+        alltimeLibs = new Library[alltimeList.length+1];
+        for (int i = 0; i < alltimeList.length; i++) {
+            alltimeLibs[i] = libMgr.getLibrary(alltimeList[i]);
+        }
+        alltimeLibs[alltimeList.length] = libMgr.getLibrary(defaultTheme);
+
+        designtimeLibs = new Library[designtimeList.length];
         for (int i = 0; i < designtimeList.length; i++) {
             designtimeLibs[i] = libMgr.getLibrary(designtimeList[i]);
         }
-        designtimeLibs[designtimeList.length] = libMgr.getLibrary(defaultTheme);
 
-        runtimeLibs = new Library[runtimeList.length+1];
+        runtimeLibs = new Library[runtimeList.length];
         for (int i = 0; i < runtimeList.length; i++) {
             runtimeLibs[i] = libMgr.getLibrary(runtimeList[i]);
         }
-        runtimeLibs[runtimeList.length] = libMgr.getLibrary(defaultTheme);
 
+        JsfProjectUtils.addLibraryReferences(project, alltimeLibs);
         JsfProjectUtils.addLibraryReferences(project, designtimeLibs, ClassPath.COMPILE);
         JsfProjectUtils.addLibraryReferences(project, runtimeLibs, ClassPath.EXECUTE);
         JsfProjectUtils.addLocalizedTheme(project, defaultTheme);
@@ -114,22 +133,28 @@ public class JsfProjectLibrary {
     }
 
     public static void updateLocalizedRoots(Project project) throws IOException {
+        String[] alltimeList;
         String[] designtimeList;
         String[] runtimeList;
+        String[] locAlltimeList;
         String[] locDesigntimeList;
         String[] locRuntimeList;
 
         if (JsfProjectUtils.isJavaEE5Project(project)) {
+            alltimeList = ALLTIME_LIBS_JSF12;
             designtimeList = DESIGNTIME_LIBS_JSF12;
             runtimeList = RUNTIME_LIBS_JSF12;
         } else {
+            alltimeList = ALLTIME_LIBS_JSF11;
             designtimeList = DESIGNTIME_LIBS_JSF11;
             runtimeList = RUNTIME_LIBS_JSF11;
         }
 
+        locAlltimeList = getLocalePaths(alltimeList);
         locDesigntimeList = getLocalePaths(designtimeList);
         locRuntimeList = getLocalePaths(runtimeList);
 
+        JsfProjectUtils.addLocalizedRoots(project, locAlltimeList);
         JsfProjectUtils.addLocalizedRoots(project, locDesigntimeList, ClassPath.COMPILE);
         JsfProjectUtils.addLocalizedRoots(project, locRuntimeList, ClassPath.EXECUTE);
 
