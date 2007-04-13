@@ -32,6 +32,7 @@ import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
 
+@Deprecated
 public class WebProjectClassPathExtender implements ProjectClassPathExtender {
     
     private static final String CP_CLASS_PATH = "javac.classpath"; //NOI18N
