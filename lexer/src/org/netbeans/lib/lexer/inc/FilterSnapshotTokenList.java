@@ -146,4 +146,12 @@ public final class FilterSnapshotTokenList<T extends TokenId> implements TokenLi
         return tokenList.skipTokenIds();
     }
     
+    public int startOffset() {
+        return tokenOffsetDiff + tokenList.startOffset();
+    }
+
+    public int endOffset() {
+        return tokenOffsetDiff + tokenList.endOffset();
+    }
+
 }

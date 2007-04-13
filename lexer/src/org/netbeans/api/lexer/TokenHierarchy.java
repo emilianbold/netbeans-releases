@@ -20,10 +20,12 @@
 package org.netbeans.api.lexer;
 
 import java.io.Reader;
+import java.util.List;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
+import org.netbeans.lib.lexer.TokenListList;
 import org.netbeans.lib.lexer.inc.DocumentInput;
 
 /**
@@ -182,6 +184,23 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
                     ? new TokenSequence<T>((TokenList<T>)tokenList)
                     : null;
         return ts;
+    }
+    
+    /**
+     * Get list of token sequences with the given language path
+     * from this hierarchy.
+     * 
+     * @param languagePath non-null language path that the obtained token sequences
+     *  will all have.
+     * @param startOffset starting offset of the TSs to get. Use 0 for no limit.
+     *  If the particular TS ends after this offset then it will be returned.
+     * @param endOffset ending offset of the TS to get. Use Integer.MAX_VALUE for no limit.
+     *  If the particular TS starts before this offset then it will be returned.
+
+     */
+    public List<TokenSequence<? extends TokenId>> tokenSequenceList(
+    LanguagePath languagePath, int startOffset, int endOffset) {
+        return TokenListList.createTokenSequenceList(operation, languagePath, startOffset, endOffset);
     }
     
     /**

@@ -41,6 +41,11 @@ import org.netbeans.lib.lexer.token.AbstractToken;
 
 public final class SubSequenceTokenList<T extends TokenId> implements TokenList<T> {
     
+    public static <T extends TokenId> SubSequenceTokenList<T> create(
+    TokenList<T> tokenList, int limitStartOffset, int limitEndOffset) {
+        return new SubSequenceTokenList<T>(tokenList, limitStartOffset, limitEndOffset);
+    }
+    
     /**
      * Token list to which this filtering token list delegates.
      */
@@ -293,6 +298,19 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
         return tokenList.skipTokenIds();
     }
     
+    public int startOffset() {
+        if (tokenCountCurrent() > 0 || tokenCount() > 0)
+            return tokenOffset(0);
+        return limitStartOffset;
+    }
+
+    public int endOffset() {
+        int cntM1 = tokenCount() - 1;
+        if (cntM1 >= 0)
+            return tokenOffset(cntM1) + token(cntM1).length();
+        return limitStartOffset;
+    }
+
     private AbstractToken<T> token(int index) {
         return LexerUtilsConstants.token(tokenList, index);
     }

@@ -243,4 +243,22 @@ public interface TokenList<T extends TokenId> {
      */
     Set<T> skipTokenIds();
 
+    /**
+     * Get offset where a first token of this token list should start.
+     * <br/>
+     * If token filtering is used then the first token may start at higher offset.
+     * <br/>
+     * It's guaranteed that there will be no token starting below this offset.
+     */
+    int startOffset();
+    
+    /**
+     * Get offset where the last token of this token list should end.
+     * <br/>
+     * If token filtering is used then the last token may end at lower offset.
+     * <br/>
+     * It's guaranteed that there will be no token ending above this offset.
+     */
+    int endOffset();
+    
 }

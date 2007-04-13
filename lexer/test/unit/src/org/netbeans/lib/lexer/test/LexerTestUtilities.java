@@ -38,6 +38,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.test.dump.TokenDumpCheck;
 
@@ -78,9 +79,9 @@ public final class LexerTestUtilities {
         Token<? extends TokenId> t = ts.token();
         TestCase.assertNotNull("Token is null", t);
         TokenId tId = t.id();
-        TestCase.assertEquals(message + "Invalid token.id()", id, tId);
+        TestCase.assertEquals(message + "Invalid token.id() for text=\"" + TokenUtilities.debugText(t.text()) + '"', id, tId);
         CharSequence tText = t.text();
-        assertTextEquals(message + "Invalid token.text()", text, tText);
+        assertTextEquals(message + "Invalid token.text() for id=" + LexerUtilsConstants.idToString(id), text, tText);
         // The token's length must correspond to text.length()
         TestCase.assertEquals(message + "Invalid token.length()", text.length(), t.length());
 

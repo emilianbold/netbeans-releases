@@ -21,11 +21,10 @@ package org.netbeans.api.lexer;
 
 import java.util.ConcurrentModificationException;
 import org.netbeans.lib.lexer.EmbeddingContainer;
+import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.SubSequenceTokenList;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenList;
-import org.netbeans.lib.lexer.inc.FilterSnapshotTokenList;
-import org.netbeans.lib.lexer.inc.SnapshotTokenList;
 import org.netbeans.lib.lexer.token.AbstractToken;
 
 /**
@@ -286,26 +285,11 @@ public final class TokenSequence<T extends TokenId> {
     }
     
     private <ET extends TokenId> TokenSequence<ET> embeddedImpl(Language<ET> embeddedLanguage) {
-        TokenList<ET> embeddedTokenList
-                = EmbeddingContainer.getEmbedding(tokenList, tokenIndex, embeddedLanguage);
-        if (embeddedTokenList != null) {
-            TokenList<T> tl = tokenList;
-            if (tokenList.getClass() == SubSequenceTokenList.class) {
-                tl = ((SubSequenceTokenList<T>)tokenList).delegate();
-            }
-
-            if (tl.getClass() == FilterSnapshotTokenList.class) {
-                embeddedTokenList = new FilterSnapshotTokenList<ET>(embeddedTokenList,
-                        ((FilterSnapshotTokenList<T>)tl).tokenOffsetDiff());
-
-            } else if (tl.getClass() == SnapshotTokenList.class) {
-                embeddedTokenList = new FilterSnapshotTokenList<ET>(embeddedTokenList,
-                        offset() - token().offset(null));
-            }
-            return new TokenSequence<ET>(embeddedTokenList);
-
-        } else // Embedded token list does not exist
-            return null;
+        TokenList<ET> embeddedTokenList = LexerUtilsConstants.embeddedTokenList(
+                tokenList, tokenIndex, embeddedLanguage);
+        return (embeddedTokenList != null)
+            ? new TokenSequence<ET>(embeddedTokenList)
+            : null;
     }
 
     /**
@@ -722,7 +706,7 @@ public final class TokenSequence<T extends TokenId> {
     private void checkTokenNotNull() {
         if (token == null) {
             throw new IllegalStateException(
-                "No token fetched by moveNext() from token sequence yet: index=" + tokenIndex
+                "Caller of TokenSequence forgot to call moveNext(): tokenIndex=" + tokenIndex
             ); // NOI18N
         }
     }
@@ -730,7 +714,7 @@ public final class TokenSequence<T extends TokenId> {
     private void checkModCount() {
         if (tokenList.modCount() != this.modCount) {
             throw new ConcurrentModificationException(
-                "This token sequence is no longer valid. Underlying token hierarchy" // NOI18N
+                "Caller uses token sequence which is no longer valid. Underlying token hierarchy" // NOI18N
               + " has been modified: " + this.modCount + " != " + tokenList.modCount() // NOI18N
             );
         }

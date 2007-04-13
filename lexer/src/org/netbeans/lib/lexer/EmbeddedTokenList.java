@@ -214,12 +214,17 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return root().modCount();
     }
     
-    protected int startOffset() { // used by FlyOffsetGapList
+    public int startOffset() { // used by FlyOffsetGapList
         return embeddingContainer.tokenStartOffset() + embedding.startSkipLength();
     }
     
     public boolean updateStatus() {
         return embeddingContainer.updateStatus();
+    }
+    
+    public int endOffset() {
+        return embeddingContainer.tokenStartOffset() + embeddingContainer.token().length()
+                - embedding.endSkipLength();
     }
     
     public TokenList<? extends TokenId> root() {

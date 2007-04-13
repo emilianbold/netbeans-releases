@@ -62,8 +62,12 @@ public final class SkimTokenList<T extends TokenId> implements TokenList<T> {
         return tokenList;
     }
     
-    public int getStartOffset() {
-        return startOffset;
+    public int startOffset() {
+        return tokenList.startOffset();
+    }
+    
+    public int endOffset() {
+        return tokenList.endOffset();
     }
     
     char[] getText() {

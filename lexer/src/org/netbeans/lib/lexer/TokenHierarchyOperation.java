@@ -23,8 +23,11 @@ import java.io.Reader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -108,6 +111,8 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     private Set<LanguagePath> languagePaths;
     
     private Set<Language<? extends TokenId>> exploredLanguages;
+    
+    private Map<LanguagePath,TokenListList> tokenListListMap;
 
     /**
      * Constructor for reader as input.
@@ -197,6 +202,18 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         return active;
     }
     
+    public synchronized TokenListList tokenListList(LanguagePath languagePath) {
+        if (tokenListListMap == null)
+            tokenListListMap = new HashMap<LanguagePath,TokenListList>();
+
+        TokenListList tll = tokenListListMap.get(languagePath);
+        if (tll == null) {
+            tll = new TokenListList(this, languagePath);
+            tokenListListMap.put(languagePath, tll);
+        }
+        return tll;
+    }
+    
     public void rebuild() {
         if (isSnapshot()) // Do nothing for snapshot
             return;
@@ -227,6 +244,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
             eventInfo.setAffectedStartOffset(0);
             eventInfo.setAffectedEndOffset(text.length());
+            updateCaches();
             fireTokenHierarchyChanged(
                 LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
         } // not active - no changes fired
@@ -288,6 +306,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 eventInfo.setAffectedStartOffset(change.offset());
                 eventInfo.setAffectedEndOffset(change.addedEndOffset());
             }
+
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("EVENT: " + eventInfo + "\n"); // NOI18N
                 String extraMsg = "";
@@ -301,9 +320,17 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 }
                 LOG.fine(">>>>>>>>>>>>>>>>>> LEXER CHANGE END " + extraMsg + "------------------\n"); // NOI18N
             }
+
+            // Fix token list list cache
+            updateCaches();
             fireTokenHierarchyChanged(
                 LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
         } // not active - no changes fired
+    }
+    
+    private void updateCaches() {
+        if (tokenListListMap != null)
+            tokenListListMap.clear();
     }
     
     /**

@@ -80,10 +80,13 @@ public final class LanguagePath {
      * Get language path corresponding to the language embedded in the given context
      * language path.
      * <br/>
+     * This method has the same effect like using {@link #embedded(Language)}.
+     * <br/>
      * For example for java scriplet embedded in jsp the prefix would 
      * be a language-path for jsp language and language would be java language.
      * <br/>
      * By using this method language paths with arbitrary depth can be created.
+     *
      *
      * @param prefix prefix language path determining the context in which
      *   the language is embedded or null if there is no prefix.
@@ -93,7 +96,7 @@ public final class LanguagePath {
     public static LanguagePath get(LanguagePath prefix, Language<? extends TokenId> language) {
         if (prefix == null)
             prefix = EMPTY;
-        return prefix.createEmbedded(language);
+        return prefix.embedded(language);
     }
     
     /**
@@ -104,9 +107,9 @@ public final class LanguagePath {
     private final Language<? extends TokenId>[] languages;
     
     /**
-     * Mapping of embedded language to a weak reference to LanguagePath.
+     * Mapping of embedded language (or suffix language path) to a weak reference to LanguagePath.
      */
-    private Map<Language<? extends TokenId>, Reference<LanguagePath>> language2path;
+    private Map<Object, Reference<LanguagePath>> language2path;
     
     /**
      * Cached and interned mime-path string.
@@ -148,7 +151,70 @@ public final class LanguagePath {
     public Language<? extends TokenId> language(int index) {
         return languages[index];
     }
+    
+    /**
+     * Get embedded path of this language path.
+     * <br/>
+     * This method has the same effect like using {@link #get(LanguagePath,Language)}
+     * but this one is usually preferred as it supports more readable code.
+     * <br/>
+     * For example for java scriplet embedded in jsp the prefix would 
+     * be a language-path for jsp language and language would be java language.
+     * <br/>
+     * By using this method language paths with arbitrary depth can be created.
+     *
+     * @param language non-null language.
+     * @return non-null language path.
+     */
+    public LanguagePath embedded(Language<? extends TokenId> language) {
+        if (language == null) {
+            throw new IllegalArgumentException("language cannot be null");
+        }
+        // Attempt to retrieve from the cache first
+        synchronized (languages) {
+            initLanguage2path();
+            Reference<LanguagePath> lpRef = language2path.get(language);
+            LanguagePath lp;
+            if (lpRef == null || (lp = (LanguagePath)lpRef.get()) == null) {
+                // Construct the LanguagePath
+                lp = new LanguagePath(this, language);
+                language2path.put(language, new SoftReference<LanguagePath>(lp));
+            }
+        
+            return lp;
+        }
+    }
 
+    /**
+     * Get language path corresponding to the suffix language path embedded
+     * in this path.
+     * 
+     * @param suffix non-null suffix to be added to this path.
+     * @return non-null language path consisting of this path with the
+     *  suffix added to the end.
+     */
+    public LanguagePath embedded(LanguagePath suffix) {
+        if (suffix == null) {
+            throw new IllegalArgumentException("suffix cannot be null");
+        }
+        // Attempt to retrieve from the cache first
+        synchronized (languages) {
+            initLanguage2path();
+            Reference<LanguagePath> lpRef = language2path.get(suffix);
+            LanguagePath lp;
+            if (lpRef == null || (lp = (LanguagePath)lpRef.get()) == null) {
+                // Construct the LanguagePath
+                lp = this;
+                for (int i = 0; i < suffix.size(); i++) {
+                    lp = lp.embedded(suffix.language(i));
+                }
+                language2path.put(suffix, new SoftReference<LanguagePath>(lp));
+            }
+        
+            return lp;
+        }
+    }
+    
     /**
      * Check whether the language of this language path
      * at the given index is the given language.
@@ -305,26 +371,12 @@ public final class LanguagePath {
         }
     }
     
-    private LanguagePath createEmbedded(Language<? extends TokenId> language) {
-        if (language == null) {
-            throw new IllegalArgumentException("language cannot be null");
-        }
-        // Attempt to retrieve from the cache first
-        synchronized (languages) {
-            if (language2path == null) {
-                language2path = new WeakHashMap<Language<? extends TokenId>,Reference<LanguagePath>>();
-            }
-            Reference<LanguagePath> lpRef = language2path.get(language);
-            LanguagePath lp;
-            if (lpRef == null || (lp = (LanguagePath)lpRef.get()) == null) {
-                // Construct the LanguagePath
-                lp = new LanguagePath(this, language);
-                language2path.put(language, new SoftReference<LanguagePath>(lp));
-            }
-        
-            return lp;
+    private void initLanguage2path() {
+        if (language2path == null) {
+            language2path = new WeakHashMap<Object,Reference<LanguagePath>>();
         }
     }
+
     
     private Language<? extends TokenId>[] allocateLanguageArray(int length) {
         return (Language<? extends TokenId>[])(new Language[length]);

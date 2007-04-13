@@ -27,6 +27,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.lib.editor.util.ArrayUtilities;
+import org.netbeans.lib.lexer.EmbeddingContainer;
+import org.netbeans.lib.lexer.inc.FilterSnapshotTokenList;
 import org.netbeans.lib.lexer.inc.SnapshotTokenList;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.LexerInput;
@@ -250,6 +252,30 @@ public final class LexerUtilsConstants {
         return id.name() + '[' + id.ordinal() + ']'; // NOI18N;
     }
     
+    public static <T extends TokenId, ET extends TokenId> TokenList<ET> embeddedTokenList(
+    TokenList<T> tokenList, int tokenIndex, Language<ET> embeddedLanguage) {
+        TokenList<ET> embeddedTokenList
+                = EmbeddingContainer.getEmbedding(tokenList, tokenIndex, embeddedLanguage);
+        if (embeddedTokenList != null) {
+            TokenList<T> tl = tokenList;
+            if (tokenList.getClass() == SubSequenceTokenList.class) {
+                tl = ((SubSequenceTokenList<T>)tokenList).delegate();
+            }
+
+            if (tl.getClass() == FilterSnapshotTokenList.class) {
+                embeddedTokenList = new FilterSnapshotTokenList<ET>(embeddedTokenList,
+                        ((FilterSnapshotTokenList<T>)tl).tokenOffsetDiff());
+
+            } else if (tl.getClass() == SnapshotTokenList.class) {
+                Token<T> token = token(tokenList, tokenIndex);
+                embeddedTokenList = new FilterSnapshotTokenList<ET>(embeddedTokenList,
+                        tokenList.tokenOffset(tokenIndex) - token.offset(null));
+            }
+            return embeddedTokenList;
+        }
+        return null;
+    }
+
     public static void appendTokenInfo(StringBuilder sb, Object tokenOrEmbeddingContainer,
     TokenHierarchy<?> tokenHierarchy) {
         if (tokenOrEmbeddingContainer == null) {

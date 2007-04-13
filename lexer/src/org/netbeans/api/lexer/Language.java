@@ -32,6 +32,7 @@ import org.netbeans.lib.lexer.LexerApiPackageAccessor;
 import org.netbeans.lib.lexer.LexerSpiPackageAccessor;
 import org.netbeans.lib.lexer.TokenIdSet;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
+import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.inc.TokenChangeInfo;
 import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
 import org.netbeans.lib.lexer.inc.TokenListChange;
@@ -581,6 +582,10 @@ public final class Language<T extends TokenId> {
         public <I> TokenHierarchyOperation<I,?> tokenHierarchyOperation(
         TokenHierarchy<I> tokenHierarchy) {
             return tokenHierarchy.operation();
+        }
+
+        public <T extends TokenId> TokenSequence<T> createTokenSequence(TokenList<T> tokenList) {
+            return new TokenSequence<T>(tokenList);
         }
 
     }

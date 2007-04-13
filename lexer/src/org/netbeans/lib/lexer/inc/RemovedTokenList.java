@@ -135,6 +135,19 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         return null;
     }
 
+    public int startOffset() {
+        if (tokenCountCurrent() > 0 || tokenCount() > 0)
+            return tokenOffset(0);
+        return 0;
+    }
+
+    public int endOffset() {
+        int cntM1 = tokenCount() - 1;
+        if (cntM1 >= 0)
+            return tokenOffset(cntM1) + LexerUtilsConstants.token(this, cntM1).length();
+        return 0;
+    }
+
     public boolean isContinuous() {
         return true;
     }

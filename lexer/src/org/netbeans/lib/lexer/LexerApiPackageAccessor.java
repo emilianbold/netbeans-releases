@@ -24,6 +24,7 @@ import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.inc.TokenChangeInfo;
 import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -77,5 +78,8 @@ public abstract class LexerApiPackageAccessor {
     
     public abstract <I> TokenHierarchyOperation<I,?> tokenHierarchyOperation(
     TokenHierarchy<I> tokenHierarchy);
-    
+
+    public abstract <T extends TokenId> TokenSequence<T> createTokenSequence(
+    TokenList<T> tokenList);
+
 }

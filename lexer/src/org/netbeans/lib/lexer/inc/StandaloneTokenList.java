@@ -24,6 +24,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.EmbeddingContainer;
+import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.token.AbstractToken;
@@ -115,6 +116,19 @@ public final class StandaloneTokenList<T extends TokenId> implements TokenList<T
 
     public Set<T> skipTokenIds() {
         return null;
+    }
+
+    public int startOffset() {
+        if (tokenCountCurrent() > 0 || tokenCount() > 0)
+            return tokenOffset(0);
+        return 0;
+    }
+
+    public int endOffset() {
+        int cntM1 = tokenCount() - 1;
+        if (cntM1 >= 0)
+            return tokenOffset(cntM1) + LexerUtilsConstants.token(this, cntM1).length();
+        return 0;
     }
 
 }

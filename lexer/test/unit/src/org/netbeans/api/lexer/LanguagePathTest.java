@@ -78,6 +78,12 @@ public class LanguagePathTest extends NbTestCase {
         assertTrue(jspJavaPath.subPath(0) == jspJavaPath);
         assertTrue(jspJavaPath.subPath(1) == javaPath);
         assertTrue(jspJavaJavadocPath.subPath(1, 2) == javaPath);
+        
+        LanguagePath mergedPath = jspPath.embedded(javaPath);
+        // Paths should be equal and even same instances
+        assertSame(jspJavaPath, mergedPath);
+        mergedPath = jspPath.embedded(javaJavadocPath);
+        assertSame(jspJavaJavadocPath, mergedPath);
     }
     
     private static enum TestTokenId implements TokenId {
