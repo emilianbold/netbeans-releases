@@ -426,7 +426,12 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     
     public void removeNodeWithEdges( PageFlowNode node ){
         //        scene.removeNode(node);
-        scene.removeNodeWithEdges(node);
+        if ( scene.getNodes().contains(node) ){
+            /* In some cases the node will already be deleted by a side effect of deleting another node.  
+             * This is primarily in the FacesConfig view or an abstract Node in the project view. 
+             */
+            scene.removeNodeWithEdges(node);
+        }
     }
     
     public void resetNodeWidget( PageFlowNode pageNode ){
