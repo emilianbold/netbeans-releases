@@ -7,6 +7,7 @@
                      "http://java.sun.com/products/javahelp/map_1_0.dtd">
 
 <map version="1.0">
+	<mapID target="jdbc_about" url="about.html"/>
 	<mapID target="org.netbeans.modules.jdbcwizard.wizards.SimpleTargetChooserPanel" url="wizard/wsdlprops.html"/>
 	<mapID target="org.netbeans.modules.jdbcwizard.wizards.JDBCWizardSelectionPanel" url="wizard/tableobjsel.html"/>
 	<mapID target="org.netbeans.modules.jdbcwizard.wizards.JDBCWizardTransferPanel" url="wizard/operspecsel.html"/>

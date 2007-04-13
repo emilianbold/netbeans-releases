@@ -21,8 +21,9 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
- <tocitem text="About jdbcwizard" target="org.netbeans.modules.jdbcwizard.wizards.SimpleTargetChooserPanel"/>
- <tocitem text="Table Objects Selection" target="org.netbeans.modules.jdbcwizard.wizards.JDBCWizardSelectionPanel"/>
- <tocitem text="Select Operation Specific Attributes" target="org.netbeans.modules.jdbcwizard.wizards.JDBCWizardTransferPanel" />
- <tocitem text="Enter JNDI Name" target="org.netbeans.modules.jdbcwizard.wizards.JNDINamePanel" />
+<tocitem text="Servers and Databases">
+<tocitem text="Working With Databases">
+<tocitem text="Generating WSDL from a JDBC Data Source" target="jdbc_about" />
+</tocitem>
+</tocitem>
 </toc>
