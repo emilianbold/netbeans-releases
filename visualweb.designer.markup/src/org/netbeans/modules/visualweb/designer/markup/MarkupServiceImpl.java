@@ -475,9 +475,9 @@ public final class  MarkupServiceImpl {
 //        RaveElementImpl element = (RaveElementImpl)elem;
         RaveRenderedElementImpl element = (RaveRenderedElementImpl)elem;
         
-        if (!element.isRendered()) {
-            return element;
-        }
+//        if (!element.isRendered()) {
+//            return element;
+//        }
         
         org.w3c.dom.Node node = element;
         while (node != null) {
@@ -490,12 +490,12 @@ public final class  MarkupServiceImpl {
 //                    if (src != null) {
             if (node instanceof RaveRenderedElementImpl) {
                 RaveRenderedElementImpl xel = (RaveRenderedElementImpl)node;
-                if (xel.isRendered()) {
+//                if (xel.isRendered()) {
                     RaveSourceElement src = xel.getSourceElement();
                     if (src != null) {
                         return src;
                     }
-                }
+//                }
             }
             node = node.getParentNode();
         }
@@ -517,10 +517,15 @@ public final class  MarkupServiceImpl {
 //        } else if (node instanceof RaveTextImpl) {
 //            return ((RaveTextImpl)node).isRendered();
 //        }
-        if (node instanceof AbstractRaveElement) {
-            return ((AbstractRaveElement)node).isRendered();
-        } else if (node instanceof AbstractRaveText) {
-            return ((AbstractRaveText)node).isRendered();
+//        if (node instanceof AbstractRaveElement) {
+//            return ((AbstractRaveElement)node).isRendered();
+//        } else if (node instanceof AbstractRaveText) {
+//            return ((AbstractRaveText)node).isRendered();
+//        }
+        if (node instanceof RaveRenderedElement) {
+            return true;
+        } else if (node instanceof RaveRenderedText) {
+            return true;
         }
         return false;
     }
