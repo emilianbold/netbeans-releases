@@ -66,6 +66,7 @@ public class BinaryExpression  extends ExpressionStateHandler
         if(retVal == null)
             retVal = this;
         else
+            //change for is 78391
             m_leftSideFound = true;
         
         
