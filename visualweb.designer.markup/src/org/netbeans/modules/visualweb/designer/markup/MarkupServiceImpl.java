@@ -26,6 +26,7 @@ import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.io.StringWriter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.batik.css.engine.CSSStylableElement;
 import org.apache.batik.css.engine.StyleMap;
 import org.apache.xerces.dom.DocumentImpl;
 import org.w3c.dom.Document;
@@ -52,6 +53,8 @@ public final class  MarkupServiceImpl {
     private static final String KEY_JSPX = "vwpJspx"; // NOI18N
     
     private static final String KEY_STYLE_MAP = "vwpStyleMap"; // NOI18N
+
+    private static final String KEY_STYLE_PARENT = "vwpStyleParent"; // NOI18N
     
     
     private MarkupServiceImpl() {
@@ -707,6 +710,21 @@ public final class  MarkupServiceImpl {
         return (StyleMap)element.getUserData(KEY_STYLE_MAP);
     }
     
+    static void setElementStyleParent(Element element, CSSStylableElement styleParent) {
+        if (element == null) {
+            return;
+        }
+        element.setUserData(KEY_STYLE_PARENT, styleParent, StyleParentDataHandler.getDefault());
+    }
+    
+    static CSSStylableElement getElementStyleParent(Element element) {
+        if (element == null) {
+            return null;
+        }
+        return (CSSStylableElement)element.getUserData(KEY_STYLE_PARENT);
+    }
+    
+    
     private static class JspxDataHandler implements UserDataHandler {
         private static final JspxDataHandler INSTANCE = new JspxDataHandler();
         
@@ -731,4 +749,17 @@ public final class  MarkupServiceImpl {
             // No op.
         }
     } // End of StyleMapDataHandler.
+
+    
+    private static class StyleParentDataHandler implements UserDataHandler {
+        private static final StyleParentDataHandler INSTANCE = new StyleParentDataHandler();
+        
+        public static StyleParentDataHandler getDefault() {
+            return INSTANCE;
+        }
+
+        public void handle(short operation, String key, Object data, Node src, Node dst) {
+            // No op.
+        }
+     } // End of StyleParentDataHandler.
 }
