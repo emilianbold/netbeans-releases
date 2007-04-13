@@ -131,11 +131,11 @@ public class HudsonInstanceNode extends AbstractNode {
             if (n instanceof HudsonJobNode) {
                 Color c = ((HudsonJobNode) n).getColor();
                 
-                if (c.equals(Color.RED) || c.equals(Color.RED_ANIME))
+                if (c.equals(Color.red) || c.equals(Color.red_anime))
                     warn = true;
                 
-                if (c.equals(Color.BLUE_ANIME) || c.equals(Color.GREY_ANIME)
-                        || c.equals(Color.RED_ANIME) || c.equals(Color.YELLOW_ANIME))
+                if (c.equals(Color.blue_anime) || c.equals(Color.grey_anime)
+                        || c.equals(Color.red_anime) || c.equals(Color.yellow_anime))
                     run = true;
             }
         }

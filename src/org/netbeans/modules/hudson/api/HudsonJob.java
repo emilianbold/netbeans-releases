@@ -31,7 +31,7 @@ public interface HudsonJob extends Comparable<HudsonJob> {
      * Describes state of the Hudson Job
      */
     public enum Color { 
-        BLUE, BLUE_ANIME, RED, RED_ANIME, YELLOW, YELLOW_ANIME, GREY, GREY_ANIME
+        blue, blue_anime, red, red_anime, yellow, yellow_anime, grey, grey_anime
     }
     
     /**

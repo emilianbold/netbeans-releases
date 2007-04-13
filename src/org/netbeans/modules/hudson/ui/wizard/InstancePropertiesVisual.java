@@ -21,6 +21,9 @@ package org.netbeans.modules.hudson.ui.wizard;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SpinnerNumberModel;
@@ -63,16 +66,8 @@ public class InstancePropertiesVisual extends javax.swing.JPanel {
             }
         });
         
-        urlTxt.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                fireChangeEvent();
-            }
-            
-            public void removeUpdate(DocumentEvent e) {
-                fireChangeEvent();
-            }
-            
-            public void changedUpdate(DocumentEvent e) {
+        urlTxt.addFocusListener(new FocusAdapter() {
+            public void focusLost(FocusEvent e) {
                 fireChangeEvent();
             }
         });

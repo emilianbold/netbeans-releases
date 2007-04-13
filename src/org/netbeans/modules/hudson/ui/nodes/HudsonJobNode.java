@@ -58,32 +58,32 @@ public class HudsonJobNode extends AbstractNode {
         color = job.getColor();
         
         switch(color) {
-        case RED:
+        case red:
             setIconBaseWithExtension(ICON_BASE_RED);
             htmlDisplayName = "<font color=\"#A40000\">"+job.getName()+"</font>";
             break;
-        case RED_ANIME:
+        case red_anime:
             setIconBaseWithExtension(ICON_BASE_RED_RUN);
             htmlDisplayName = "<b><font color=\"#A40000\">"+job.getName()+"</font></b>";
             break;    
-        case BLUE:
+        case blue:
             setIconBaseWithExtension(ICON_BASE_BLUE);
             break;
-        case BLUE_ANIME:
+        case blue_anime:
             setIconBaseWithExtension(ICON_BASE_BLUE_RUN);
             htmlDisplayName = "<b>"+job.getName()+"</b>";
             break;    
-        case YELLOW:
+        case yellow:
             setIconBaseWithExtension(ICON_BASE_YELLOW);
             break;
-        case YELLOW_ANIME:
+        case yellow_anime:
             setIconBaseWithExtension(ICON_BASE_YELLOW_RUN);
             htmlDisplayName = "<b>"+job.getName()+"</b>";
             break;    
-        case GREY:
+        case grey:
             setIconBaseWithExtension(ICON_BASE_GREY);
             break;
-        case GREY_ANIME:
+        case grey_anime:
             setIconBaseWithExtension(ICON_BASE_GREY_RUN);
             htmlDisplayName = "<b>"+job.getName()+"</b>";
             break;

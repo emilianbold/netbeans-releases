@@ -20,14 +20,22 @@
 package org.netbeans.modules.hudson.ui.wizard;
 
 import java.awt.Component;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
+import org.netbeans.modules.hudson.util.HudsonVersion;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -43,6 +51,10 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
     private WizardDescriptor wizard;
     
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    
+    private boolean checkingFlag = false;
+    private boolean checkingState = false;
+    private String checkingUrl = null;
     
     public Component getComponent() {
         if (component == null) {
@@ -64,7 +76,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
     
     public void storeSettings(Object o) {}
     
-    public boolean isValid() {
+    public synchronized boolean isValid() {
         String name = getInstancePropertiesVisual().getDisplayName();
         String url = getInstancePropertiesVisual().getUrl();
         String sync = getInstancePropertiesVisual().isSync() ? getInstancePropertiesVisual().getSyncTime() : "0";
@@ -90,6 +102,68 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
         if (!(url.startsWith(HTTP_PREFIX) || url.startsWith(HTTPS_PREFIX)))
             url = HTTP_PREFIX + url;
         
+        if (checkingFlag == true) {
+            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
+                    "MSG_Checking"));
+            return false;
+        }
+        
+        if (!url.equals(checkingUrl)) {
+            
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(
+                    NbBundle.getMessage(InstancePropertiesPanel.class, "MSG_Checking"));
+            
+            checkingUrl = url;
+            
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    
+                    handle.start();
+                    
+                    checkingFlag = true;
+                    checkingState = false;
+                    
+                    try {
+                        URLConnection connection = new URL(checkingUrl).openConnection();
+                        
+                        // Resolve Hudson version
+                        String sVersion= connection.getHeaderField("X-Hudson");
+                        
+                        if (null == sVersion)
+                            return;
+                        
+                        HudsonVersion version = new HudsonVersion(sVersion);
+                        
+                        if (version.compareTo(HudsonVersion.SUPPORTED_VERSION) < 0)
+                            return;
+                    } catch (MalformedURLException e) {
+                        return;
+                    } catch (IOException e) {
+                        return;
+                    } finally {
+                        checkingFlag = false;
+                        
+                        handle.finish();
+                        
+                        fireChangeEvent();
+                    }
+                    
+                    checkingState = true;
+                }
+            });
+        }
+        
+        if (checkingFlag == true) {
+            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
+                    "MSG_Checking"));
+            return false;
+        }
+        
+        if (checkingState == false) {
+            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
+                    "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
+            return false;
+        }
         
         if (HudsonManagerImpl.getDefault().getInstance(url) != null) {
             wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
