@@ -159,9 +159,11 @@ implements Executor, PropertyChangeListener {
             if (ev.getOldValue () != null) {
                 // remove some patterns
                 smartLogger.finer("Exclusion patterns removed. Removing step requests.");
-                ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
-                    getCurrentThread ()).getThreadReference ();
-                removeStepRequests (tr);
+                JPDAThreadImpl currentThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
+                if (currentThread != null) {
+                    ThreadReference tr = currentThread.getThreadReference ();
+                    removeStepRequests (tr);
+                }
             } else {
                 if (smartLogger.isLoggable(Level.FINER)) {
                     if (stepRequest == null)
