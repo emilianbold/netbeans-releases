@@ -157,8 +157,14 @@ implements PropertyChangeListener {
     }
 
     
+    // Our layout is finalized if every node widget's location matches its model location.
     public boolean isLayoutFinalized() {
         return mIsLayoutFinalized;
+    }
+    
+    // Our layout is finalized if every node widget's location matches its model location.
+    public void setLayoutFinalized(boolean isFinalized) {
+        mIsLayoutFinalized = isFinalized;
     }
     
     public void persistLocation(CasaNodeWidget widget, Point location) {

@@ -102,6 +102,10 @@ public class CasaModelGraphUtilities {
             scene.removeRegion(ob);
         }
         
+        // Initially the empty graph should be finalized, we later set this to
+        // false if any node widget we add has an invalid model location.
+        scene.setLayoutFinalized(true);
+        
         // add JBIComponent objects to scene
         
         // add regions
@@ -205,17 +209,6 @@ public class CasaModelGraphUtilities {
         }
         externalRegionWidget.setPreferredBounds(new Rectangle(externalWidth, RegionUtilities.DEFAULT_HEIGHT));
 
-        // Set up a new connection router to account for the widgets in our regions.
-        // We, temporarily, do not use the standard OrthogonalSearchRouter. We used a slightly
-        // modified version that can support passing in the context ConnectionWidget so that
-        // connections that share endpoints do not collide with each other.
-//        scene.setRouter(RouterFactory.createOrthogonalSearchRouter(new CasaCollisionCollector(
-//        scene.setRouter(new CasaOrthogonalSearchRouter(new CasaCollisionCollector(
-//                bindingRegionWidget,
-//                engineRegionWidget,
-//                externalRegionWidget,
-//                scene.getConnectionLayer())));
-
         // Resizers
         scene.getLeftResizer().setPreferredLocation( new Point(
                 engineRegionWidget.getPreferredLocation().x - RegionUtilities.RESIZER_HALF_WIDTH,
@@ -252,6 +245,8 @@ public class CasaModelGraphUtilities {
         // set the location
         if (x > 0 && y > 0) {
             widget.setPreferredLocation(new Point(x, y));
+        } else {
+            scene.setLayoutFinalized(false);
         }
         
         return widget;
@@ -277,6 +272,8 @@ public class CasaModelGraphUtilities {
         // set the location
         if (x > 0 && y > 0) {
             widget.setPreferredLocation(new Point(x, y));
+        } else {
+            scene.setLayoutFinalized(false);
         }
         
         return widget;
