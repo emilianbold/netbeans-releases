@@ -85,7 +85,7 @@ public class JsfProjectLibrary {
     public static final String DEFAULT_JSF11_THEME = "theme-default";
     public static final String DEFAULT_JSF12_THEME = "woodstock-theme-default";
 
-    public static String addLibrary(Project project) throws IOException {
+    public static void addLibrary(Project project) throws IOException {
         // Add the Creator libraries to the project
         LibraryManager libMgr = LibraryManager.getDefault();
         String[] alltimeList;
@@ -108,6 +108,9 @@ public class JsfProjectLibrary {
             runtimeList = RUNTIME_LIBS_JSF11;
         }
 
+        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PROJECT_LIBRARIES_DIR, JsfProjectConstants.PATH_LIBRARIES);
+        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_CURRENT_THEME, defaultTheme);
+
         alltimeLibs = new Library[alltimeList.length+1];
         for (int i = 0; i < alltimeList.length; i++) {
             alltimeLibs[i] = libMgr.getLibrary(alltimeList[i]);
@@ -127,9 +130,8 @@ public class JsfProjectLibrary {
         JsfProjectUtils.addLibraryReferences(project, alltimeLibs);
         JsfProjectUtils.addLibraryReferences(project, designtimeLibs, ClassPath.COMPILE);
         JsfProjectUtils.addLibraryReferences(project, runtimeLibs, ClassPath.EXECUTE);
-        JsfProjectUtils.addLocalizedTheme(project, defaultTheme);
 
-        return defaultTheme;
+        updateLocalizedRoots(project);
     }
 
     public static void updateLocalizedRoots(Project project) throws IOException {
