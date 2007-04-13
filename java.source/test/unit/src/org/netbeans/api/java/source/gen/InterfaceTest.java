@@ -65,7 +65,7 @@ public class InterfaceTest extends GeneratorTestMDRCompat {
             "\n" +
             "import java.util.*;\n" +
             "\n" +
-            "   public interface Test {\n" +
+            "public interface Test {\n" +
             "    public static final int CONSTANT = 0;\n" +
             "}\n";
         JavaSource src = getJavaSource(testFile);
