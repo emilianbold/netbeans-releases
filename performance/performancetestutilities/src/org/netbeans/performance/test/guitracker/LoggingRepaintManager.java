@@ -106,7 +106,7 @@ public class LoggingRepaintManager extends RepaintManager {
         // fix for issue 73361, It looks like the biggest cursor is on Sol 10 (10,19) in textfields
         // of some dialogs
         if (w > 10 || h > 19) { // painted region isn't cursor (or painted region is greater than cursor)
-            if (regionFilters != null && acceptedByRegionFilters(c)) {
+            if (regionFilters != null && !acceptedByRegionFilters(c)) {
                 tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "IGNORED DirtyRegion: " + log);
             } else { // no filter || accepted by filter =>  measure it
                 tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "ADD DirtyRegion: " + log);
@@ -124,7 +124,7 @@ public class LoggingRepaintManager extends RepaintManager {
      */
     public synchronized boolean acceptedByRegionFilters(JComponent c){
         for (RegionFilter filter : regionFilters) {
-            if(!filter.accept(c))
+            if(!filter.accept(c)) // if not accepted it has to be IGNORED
                 return false;
         }
         return true;
