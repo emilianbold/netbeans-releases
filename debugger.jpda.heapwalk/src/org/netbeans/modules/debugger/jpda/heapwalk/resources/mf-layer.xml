@@ -32,24 +32,32 @@ Microsystems, Inc. All Rights Reserved.
      <folder name="Menu">
         <folder name="Window">
             <folder name="Debug">
+                <attr name="org-netbeans-modules-debugger-ui-actions-CallStackViewAction.shadow/org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.shadow" boolvalue="true" />
                 <file name="org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.instance"/>
                 </file>
+                <attr name="org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.shadow/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.shadow" boolvalue="true" />
             </folder>
         </folder>
     </folder>
 
+    <folder name="Shortcuts">
+        <file name="SO-4.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.instance"/>
+        </file>
+    </folder>
+        
     <folder name="Windows2">
         <folder name="Components">
-            <file name="classesCounts.settings" url="classesCounts.settings"/>
+            <file name="classes.settings" url="classesCounts.settings"/>
             <file name="dbgInstances.settings" url="dbgInstances.settings"/>
         </folder>
 
         <folder name="Modes">
             <folder name="debugger">
-                <attr name="classes.wstcref/classesCounts.wstcref" boolvalue="true"/>
-                <file name="classesCounts.wstcref" url="classesCounts.wstcref"/>
-                <attr name="classesCounts.wstcref/sources.wstcref" boolvalue="true"/>
+                <attr name="threads.wstcref/classes.wstcref" boolvalue="true"/>
+                <file name="classes.wstcref" url="classesCounts.wstcref"/>
+                <attr name="classes.wstcref/sources.wstcref" boolvalue="true"/>
             </folder>
             <folder name="editor">
                 <file name="dbgInstances.wstcref" url="dbgInstances.wstcref"/>
@@ -58,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="Groups">
             <folder name="debugger">
-                <file name="classesCounts.wstcgrp" url="classesCounts.wstcgrp"/>
+                <file name="classes.wstcgrp" url="classesCounts.wstcgrp"/>
                 <file name="dbgInstances.wstcgrp" url="dbgInstances.wstcgrp"/>
             </folder>
         </folder>

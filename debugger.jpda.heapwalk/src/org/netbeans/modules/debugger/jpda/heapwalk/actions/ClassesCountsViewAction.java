@@ -44,11 +44,10 @@ public class ClassesCountsViewAction extends AbstractAction {
     public ClassesCountsViewAction () {
         putValue (
             Action.NAME,
-            "Classes Counts"
-            /*NbBundle.getMessage (
-                ClassesViewAction.class, 
+            NbBundle.getMessage (
+                ClassesCountsViewAction.class,
                 "CTL_ClassesAction"
-            )*/
+            )
         );
         putValue (
             Action.SMALL_ICON, 

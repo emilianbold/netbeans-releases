@@ -39,7 +39,7 @@ public class InstancesView extends TopComponent {
 
     protected void componentShowing() {
         super.componentShowing ();
-        ClassesCountsView cc = (ClassesCountsView) WindowManager.getDefault().findTopComponent("classesCounts");
+        ClassesCountsView cc = (ClassesCountsView) WindowManager.getDefault().findTopComponent("classes");
         HeapFragmentWalker hfw = cc.getCurrentFragmentWalker();
         if (hfw != null) {
             setLayout (new BorderLayout ());
