@@ -21,6 +21,8 @@ class Constants {
     
     public static final String WEB_APPLICATION_EXCEPTION = REST_API_PACKAGE + "WebApplicationException";
     
+    public static final String NOT_FOUND_EXCEPTION = REST_API_PACKAGE + "NotFoundException";    //NOI18N
+    
     public static final String URI_TEMPLATE = REST_API_PACKAGE + "UriTemplate";        //NOI18N
     
     public static final String HTTP_METHOD = REST_API_PACKAGE + "HttpMethod";         //NOI18N
@@ -37,6 +39,8 @@ class Constants {
     
     public static final String CREATED = REST_API_PACKAGE + "response.Created";     //NOI18N
     
+    public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity";
+    
     public static final String RESOURCE = "javax.annotation.Resource";      //NOI18N
     
     public static final String URI_TYPE = "java.net.URI";       //NOI18N
@@ -51,7 +55,7 @@ class Constants {
     
     public static final String PERSISTENCE = "javax.persistence.Persistence";
     
-    public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity";
+    public static final String NO_RESULT_EXCEPTION = "javax.persistence.NoResultException";        //NOI18N
     
     public static final String XML_ROOT_ELEMENT = "javax.xml.bind.annotation.XmlRootElement";             //NOI18N
     
@@ -129,9 +133,11 @@ class Constants {
         URI_PARAM,
         HTTP_METHOD,
         PRODUCE_MIME,
-        WEB_APPLICATION_EXCEPTION,
+        CONSUME_MIME,
         RESOURCE,
-        CONSUME_MIME
+        WEB_APPLICATION_EXCEPTION,
+        NOT_FOUND_EXCEPTION,
+        NO_RESULT_EXCEPTION
     };
     
     public static final String[] CONTAINER_CONVERTER_IMPORTS = {
