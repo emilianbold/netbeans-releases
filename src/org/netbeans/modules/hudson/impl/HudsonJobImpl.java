@@ -32,7 +32,6 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     private String name;
     private String url;
     private Color color;
-    private int lastBuild;
     
     private HudsonInstanceImpl instance;
     
@@ -40,13 +39,11 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
      * @param name
      * @param url
      * @param color
-     * @param lastBuild
      */
-    public HudsonJobImpl(String name, String url, Color color, int lastBuild, HudsonInstanceImpl instance) {
+    public HudsonJobImpl(String name, String url, Color color, HudsonInstanceImpl instance) {
         this.name = name;
         this.url = url;
         this.color = color;
-        this.lastBuild = lastBuild;
         
         this.instance = instance;
     }
@@ -61,10 +58,6 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     
     public Color getColor() {
         return color;
-    }
-    
-    public int getLastBuild() {
-        return lastBuild;
     }
     
     public void start() {
@@ -87,8 +80,6 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         if (this.color != other.color &&
                 (this.color == null || !this.color.equals(other.color)))
             return false;
-        if (this.lastBuild != other.lastBuild)
-            return false;
         return true;
     }
     
@@ -98,7 +89,6 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         hash = 79 * hash + (this.name != null ? this.name.hashCode() : 0);
         hash = 79 * hash + (this.url != null ? this.url.hashCode() : 0);
         hash = 79 * hash + (this.color != null ? this.color.hashCode() : 0);
-        hash = 79 * hash + this.lastBuild;
         
         return hash;
     }

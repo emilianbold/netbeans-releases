@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.hudson.impl;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonManager;
 import org.openide.ErrorManager;
@@ -35,6 +38,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  * Implementation of the HudsonManager
@@ -43,12 +47,14 @@ import org.openide.util.Lookup;
  */
 public class HudsonManagerImpl implements HudsonManager {
     
+    public static boolean startupFlag = true;
+    
     private static final String DIR_INSTANCES = "/Hudson/Instances"; //NOI18N
     
     private static HudsonManagerImpl instance;
     
     private Map<String, HudsonInstance> instances;
-    private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private List<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
     
     private HudsonManagerImpl() {}
     
@@ -75,9 +81,9 @@ public class HudsonManagerImpl implements HudsonManager {
         // Strore instance file
         storeInstanceFile(instance);
         
-        // Add change listener
-        instance.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
+        // Add property change listener
+        instance.getProperties().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
                 storeInstanceFile(instance);
             }
         });
@@ -135,24 +141,24 @@ public class HudsonManagerImpl implements HudsonManager {
         return null;
     }
     
-    public void addChangeListener(ChangeListener l) {
+    public void addHudsonChangeListener(HudsonChangeListener l) {
         listeners.add(l);
     }
     
-    public void removeChangeListener(ChangeListener l) {
+    public void removeHudsonChangeListener(HudsonChangeListener l) {
         listeners.remove(l);
     }
     
     private void fireChangeListeners() {
-        ChangeEvent event = new ChangeEvent(this);
-        ArrayList<ChangeListener> tempList;
+        ArrayList<HudsonChangeListener> tempList;
         
         synchronized (listeners) {
-            tempList = new ArrayList<ChangeListener>(listeners);
+            tempList = new ArrayList<HudsonChangeListener>(listeners);
         }
         
-        for (ChangeListener l : tempList) {
-            l.stateChanged(event);
+        for (HudsonChangeListener l : tempList) {
+            l.stateChanged();
+            l.contentChanged();
         }
     }
     
@@ -161,10 +167,19 @@ public class HudsonManagerImpl implements HudsonManager {
             instances = new HashMap<String, HudsonInstance>();
             
             Repository repository = Lookup.getDefault().lookup(Repository.class);
-            FileObject directory = repository.getDefaultFileSystem().findResource(DIR_INSTANCES);
+            final FileObject directory = repository.getDefaultFileSystem().findResource(DIR_INSTANCES);
             
-            for (FileObject f : directory.getChildren())
-                HudsonInstanceImpl.createHudsonInstance(new HudsonInstanceProperties(f));
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        for (FileObject f : directory.getChildren())
+                            HudsonInstanceImpl.createHudsonInstance(new HudsonInstanceProperties(f));
+                    } finally {
+                        // Deactivate startup flag
+                        startupFlag = false;
+                    }
+                }
+            });
         }
         
         return instances;
@@ -188,7 +203,6 @@ public class HudsonManagerImpl implements HudsonManager {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
     }
-    
     
     private void removeInstanceFile(HudsonInstanceImpl instance) {
         Repository repository = Lookup.getDefault().lookup(Repository.class);

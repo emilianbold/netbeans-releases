@@ -20,41 +20,40 @@
 package org.netbeans.modules.hudson.api;
 
 import java.util.Collection;
-import javax.swing.event.ChangeListener;
 
 /**
  * Registry for Hudson Instances
- * 
+ *
  * @author Michal Mocnak
  */
 public interface HudsonManager {
     
     /**
      * Returns URL specified HudsonInstance
-     * 
-     * @param url 
+     *
+     * @param url
      * @return hudson instance
      */
     public HudsonInstance getInstance(String url);
     
     /**
      * Returns all of the Hudson instances
-     * 
+     *
      * @return all of hudson instances
      */
     public Collection<HudsonInstance> getInstances();
     
     /**
-     * Register ChangeListener
-     * 
-     * @param l ChangeListener
+     * Register HudsonChangeListener
+     *
+     * @param l HudsonChangeListener
      */
-    public void addChangeListener(ChangeListener l);
+    public void addHudsonChangeListener(HudsonChangeListener l);
     
     /**
-     * Unregister ChangeListener
-     * 
-     * @param l ChangeListener
+     * Unregister HudsonChangeListener
+     *
+     * @param l HudsonChangeListener
      */
-    public void removeChangeListener(ChangeListener l);
+    public void removeHudsonChangeListener(HudsonChangeListener l);
 }

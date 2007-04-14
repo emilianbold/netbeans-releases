@@ -26,6 +26,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.ui.actions.AddInstanceAction;
@@ -73,7 +74,7 @@ public class HudsonRootNode extends AbstractNode {
         return new Action[] {SystemAction.get(AddInstanceAction.class)};
     }
     
-    private static class RootNodeChildren extends Children.Keys<Object> implements ChangeListener {
+    private static class RootNodeChildren extends Children.Keys<Object> implements HudsonChangeListener {
         
         private final Node tooltip = new TooltipNode(NbBundle.getMessage(HudsonRootNode.class,
                 "MSG_Tooltip"), SystemAction.get(AddInstanceAction.class));
@@ -82,7 +83,7 @@ public class HudsonRootNode extends AbstractNode {
          * Creates a new instance of RootNodeChildren
          */
         public RootNodeChildren() {
-            HudsonManagerImpl.getDefault().addChangeListener(this);
+            HudsonManagerImpl.getDefault().addHudsonChangeListener(this);
         }
         
         protected Node[] createNodes(Object o) {
@@ -103,19 +104,15 @@ public class HudsonRootNode extends AbstractNode {
         
         @Override
         protected void removeNotify() {
-            HudsonManagerImpl.getDefault().removeChangeListener(this);
+            HudsonManagerImpl.getDefault().removeHudsonChangeListener(this);
             setKeys(Collections.<HudsonInstanceImpl>emptySet());
             super.removeNotify();
-        }
-        
-        public void stateChanged(ChangeEvent arg0) {
-            refreshKeys();
         }
         
         private void refreshKeys() {
             Collection<HudsonInstanceImpl> keys = getKeys();
             
-            if (keys.size() == 0)
+            if (keys.size() == 0 && !HudsonManagerImpl.startupFlag)
                 setKeys(new Object[] {tooltip});
             else
                 setKeys(keys);
@@ -129,6 +126,12 @@ public class HudsonRootNode extends AbstractNode {
             Collections.sort(l);
             
             return l;
+        }
+
+        public void stateChanged() {}
+
+        public void contentChanged() {
+            refreshKeys();
         }
     }
 }

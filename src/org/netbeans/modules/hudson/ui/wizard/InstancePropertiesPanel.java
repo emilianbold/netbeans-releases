@@ -30,8 +30,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
-import org.netbeans.modules.hudson.util.HudsonVersion;
+import org.netbeans.modules.hudson.impl.HudsonVersionImpl;
+import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -117,9 +119,10 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
             
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    
+                    // Start the progress handle
                     handle.start();
                     
+                    // Set deafault values into flags
                     checkingFlag = true;
                     checkingState = false;
                     
@@ -127,27 +130,29 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
                         URLConnection connection = new URL(checkingUrl).openConnection();
                         
                         // Resolve Hudson version
-                        String sVersion= connection.getHeaderField("X-Hudson");
+                        String sVersion = connection.getHeaderField("X-Hudson");
                         
-                        if (null == sVersion)
-                            return;
+                        // Create a HudsonVersion object
+                        HudsonVersion version = new HudsonVersionImpl(sVersion);
                         
-                        HudsonVersion version = new HudsonVersion(sVersion);
-                        
-                        if (version.compareTo(HudsonVersion.SUPPORTED_VERSION) < 0)
+                        if (!Utilities.isSupportedVersion(version))
                             return;
                     } catch (MalformedURLException e) {
                         return;
                     } catch (IOException e) {
                         return;
                     } finally {
+                        // Set checking progress to stopped
                         checkingFlag = false;
                         
+                        // Stop the progress handle
                         handle.finish();
                         
+                        // Fire changes
                         fireChangeEvent();
                     }
                     
+                    // Everything is alright
                     checkingState = true;
                 }
             });

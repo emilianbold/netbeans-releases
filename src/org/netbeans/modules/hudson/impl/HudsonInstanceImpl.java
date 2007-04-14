@@ -28,12 +28,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.ui.nodes.OpenableInBrowser;
 import org.openide.ErrorManager;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -49,7 +50,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     
     private Synchronization synchronization = new Synchronization();
     private List<HudsonJob> jobs = new ArrayList<HudsonJob>();
-    private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private List<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
     
     private HudsonInstanceImpl(String name, String url) {
         this(new HudsonInstanceProperties(name, url));
@@ -68,8 +69,6 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                 if (evt.getPropertyName().equals(HudsonInstanceProperties.PROP_SYNC))
                     if (!synchronization.isRunning())
                         synchronization.start();
-                
-                fireChangeListeners();
             }
         });
     }
@@ -118,8 +117,8 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         return connector;
     }
     
-    public boolean isConnected() {
-        return getConnector().isConnected();
+    public HudsonVersion getVersion() {
+        return getConnector().getHudsonVersion();
     }
     
     public HudsonInstanceProperties getProperties() {
@@ -135,9 +134,6 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
     
     public Collection<HudsonJob> getJobs() {
-        if (null == jobs || jobs.size() == 0)
-            synchronize();
-        
         return jobs;
     }
     
@@ -150,14 +146,21 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
+                    // Retrieve jobs
                     List<HudsonJob> retrieved = getConnector().getAllJobs();
                     
+                    // Update state
+                    fireStateChanges();
+                    
+                    // When there are no changes return and do not fire changes
                     if (jobs.equals(retrieved))
                         return;
                     
+                    // Update jobs
                     jobs = retrieved;
                     
-                    fireChangeListeners();
+                    // Fire all changes
+                    fireContentChanges();
                 } finally {
                     handle.finish();
                 }
@@ -165,24 +168,35 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         });
     }
     
-    public void addChangeListener(ChangeListener l) {
+    public void addHudsonChangeListener(HudsonChangeListener l) {
         listeners.add(l);
     }
     
-    public void removeChangeListener(ChangeListener l) {
+    public void removeHudsonChangeListener(HudsonChangeListener l) {
         listeners.remove(l);
     }
     
-    private void fireChangeListeners() {
-        ChangeEvent event = new ChangeEvent(this);
-        ArrayList<ChangeListener> tempList;
+    protected void fireStateChanges() {
+        ArrayList<HudsonChangeListener> tempList;
         
         synchronized (listeners) {
-            tempList = new ArrayList<ChangeListener>(listeners);
+            tempList = new ArrayList<HudsonChangeListener>(listeners);
         }
         
-        for (ChangeListener l : tempList) {
-            l.stateChanged(event);
+        for (HudsonChangeListener l : tempList) {
+            l.stateChanged();
+        }
+    }
+    
+    protected void fireContentChanges() {
+        ArrayList<HudsonChangeListener> tempList;
+        
+        synchronized (listeners) {
+            tempList = new ArrayList<HudsonChangeListener>(listeners);
+        }
+        
+        for (HudsonChangeListener l : tempList) {
+            l.contentChanged();
         }
     }
     
@@ -247,7 +261,8 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                     synchronize();
                     
                     // Refresh wait time
-                    milis = Integer.parseInt(getProperties().getProperty(HudsonInstanceProperties.PROP_SYNC)) * 60 * 1000;
+                    String s = getProperties().getProperty(HudsonInstanceProperties.PROP_SYNC);
+                    milis = Integer.parseInt(s) * 60 * 1000;
                     
                     // Wait for the specified amount of time
                     Thread.sleep(milis);

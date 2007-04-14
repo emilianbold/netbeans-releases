@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.hudson.impl;
 
-import org.netbeans.modules.hudson.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -27,6 +26,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,7 +35,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
+import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
+import org.netbeans.modules.hudson.util.Utilities;
+import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -46,7 +50,7 @@ import org.xml.sax.SAXException;
 /**
  * Hudson Server Connector
  *
- * @author pblaha
+ * @author Michal Mocnak
  */
 public class HudsonConnector {
     
@@ -54,20 +58,22 @@ public class HudsonConnector {
     private static final String JOB_ELEMENT_NAME = "job";
     private static final String NAME_ELEMENT_NAME = "name";
     private static final String URL_ELEMENT_NAME = "url";
-    private static final String LAST_BUILD_ELEMENT_NAME = "lastBuild";
     private static final String COLOR_ELEMENT_NAME = "color";
     private static final String BUILD_URL = "build";
     
     private DocumentBuilder builder;
     private HudsonInstanceImpl instance;
-    private boolean isConnected;
+    private HudsonVersion version;
     
-    /** Creates a new instance of HudsonXMLFacade
+    private boolean isConnected = false;
+    
+    /**
+     * Creates a new instance of HudsonXMLFacade
+     *
      * @param instanceURL
      */
     public HudsonConnector(HudsonInstanceImpl instance) {
         this.instance = instance;
-        this.isConnected = false;
         
         try {
             builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -78,6 +84,34 @@ public class HudsonConnector {
     
     public synchronized boolean isConnected() {
         return isConnected;
+    }
+    
+    public synchronized HudsonVersion getHudsonVersion() {
+        if (null == version)
+            version = retrievedHudsonVersion();
+        
+        return version;
+    }
+    
+    private synchronized HudsonVersion retrievedHudsonVersion() {
+        HudsonVersion v = null;
+        
+        try {
+            URL u = new java.net.URL(instance.getUrl());
+            HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+            
+            // Get string version
+            String sVersion = conn.getHeaderField("X-Hudson");
+            
+            // Create a HudsonVersion object
+            v = new HudsonVersionImpl(sVersion);
+        } catch (MalformedURLException e) {
+            // Nothing
+        } catch (IOException e) {
+            // Nothing
+        }
+        
+        return v;
     }
     
     /**
@@ -97,7 +131,6 @@ public class HudsonConnector {
             Node job = jobs.item(i);
             String name = null;
             String url = null;
-            int lastBuild = 0;
             Color color = null;
             
             for (int j = 0; j < job.getChildNodes().getLength(); j++) {
@@ -108,8 +141,6 @@ public class HudsonConnector {
                         name = jobNode.getFirstChild().getTextContent();
                     } else if (jobNode.getNodeName().equals(URL_ELEMENT_NAME)) {
                         url = jobNode.getFirstChild().getTextContent();
-                    } else if (jobNode.getNodeName().equals(LAST_BUILD_ELEMENT_NAME)) {
-                        lastBuild = Integer.parseInt(jobNode.getFirstChild().getTextContent());
                     } else if (jobNode.getNodeName().equals(COLOR_ELEMENT_NAME)) {
                         color = Color.valueOf(jobNode.getFirstChild().getTextContent());
                     }
@@ -117,7 +148,7 @@ public class HudsonConnector {
             }
             
             if (null != name && null != url && null != color)
-                jobsArray.add(new HudsonJobImpl(name, url, color, lastBuild, instance));
+                jobsArray.add(new HudsonJobImpl(name, url, color, instance));
         }
         
         return jobsArray;
@@ -161,15 +192,37 @@ public class HudsonConnector {
     private synchronized Document getDocument() {
         Document doc = null;
         
-        isConnected = false;
-        
-        try{
+        try {
             URL u = new java.net.URL(instance.getUrl() + XML_API_URL);
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+            
+            // Connected failed
+            if(conn.getResponseCode() != 200) {
+                isConnected = false;
+                return null;
+            }
+            
+            // Connected successfully
+            if (!isConnected) {
+                isConnected = true;
+                version = retrievedHudsonVersion();
+            }
+            
+            // Get input stream
             InputStream stream = conn.getInputStream();
+            
+            // Parse document
             doc = builder.parse(stream);
             
-            isConnected = true;
+            // Check for right version
+            if (!Utilities.isSupportedVersion(getHudsonVersion())) {
+                HudsonVersion v = retrievedHudsonVersion();
+                
+                if (!Utilities.isSupportedVersion(v))
+                    return null;
+                
+                version = v;
+            }
             
             if(conn != null)
                 conn.disconnect();

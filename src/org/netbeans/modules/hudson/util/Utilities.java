@@ -17,46 +17,28 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.hudson.api;
+package org.netbeans.modules.hudson.util;
 
+import org.netbeans.modules.hudson.api.HudsonVersion;
 
 /**
- * Instance of the Hudson Job in specified instance
- * 
+ * Helper utility class
+ *
  * @author Michal Mocnak
  */
-public interface HudsonJob extends Comparable<HudsonJob> {
+public class Utilities {
     
-    /**
-     * Describes state of the Hudson Job
-     */
-    public enum Color { 
-        blue, blue_anime, red, red_anime, yellow, yellow_anime, grey, grey_anime
-    }
+    private Utilities() {}
     
-    /**
-     * Name of the Hudson Job
-     * 
-     * @return job name
-     */
-    public String getName();
-    
-    /**
-     * URL of the Hudson Job
-     * 
-     * @return job url
-     */
-    public String getUrl();
-    
-    /**
-     * Color of the Hudson Job's state
-     * 
-     * @return job color (state)
-     */
-    public Color getColor();
+    public static boolean isSupportedVersion(HudsonVersion version) {
+        // Check for null
+        if (null == version)
+            return false;
         
-    /**
-     * Starts Hudson job
-     */
-    public void start();
+        // Version check
+        if (version.compareTo(HudsonVersion.SUPPORTED_VERSION) < 0)
+            return false;
+        
+        return true;
+    }
 }

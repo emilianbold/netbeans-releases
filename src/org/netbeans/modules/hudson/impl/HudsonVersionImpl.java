@@ -17,21 +17,23 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.hudson.util;
+package org.netbeans.modules.hudson.impl;
+
+import org.netbeans.modules.hudson.api.HudsonVersion;
 
 /**
- * Describes Hudson version
- * 
+ * Implementation of the HudsonVersion
+ *
  * @author Michal Mocnak
  */
-public class HudsonVersion implements Comparable<HudsonVersion> {
+public class HudsonVersionImpl implements HudsonVersion {
     
-    public static final HudsonVersion SUPPORTED_VERSION = new HudsonVersion("1.101");
+    public static final HudsonVersionImpl SUPPORTED_VERSION = new HudsonVersionImpl("1.101");
     
     private int major;
     private int minor;
     
-    public HudsonVersion(String version) {
+    public HudsonVersionImpl(String version) {
         this.major = parseMajor(version);
         this.minor = parseMinor(version);
     }
@@ -57,6 +59,8 @@ public class HudsonVersion implements Comparable<HudsonVersion> {
             // Nothing
         } catch (NumberFormatException e) {
             // Nothing
+        } catch (NullPointerException e) {
+            // Nothing
         }
         
         return result;
@@ -67,13 +71,16 @@ public class HudsonVersion implements Comparable<HudsonVersion> {
         
         try {
             // Get minor version as string
-            String s = version.substring(version.indexOf(".") + 1);
+            String s = (version.indexOf("-") == -1) ? version.substring(version.indexOf(".") + 1) :
+                version.substring(version.indexOf(".") + 1, version.indexOf("-"));
             
             // Convert to integer
             result = Integer.parseInt(s);
         } catch (IndexOutOfBoundsException e) {
             // Nothing
         } catch (NumberFormatException e) {
+            // Nothing
+        } catch (NullPointerException e) {
             // Nothing
         }
         
@@ -85,10 +92,10 @@ public class HudsonVersion implements Comparable<HudsonVersion> {
     }
     
     public boolean equals(Object o) {
-        if (!(o instanceof HudsonVersion))
+        if (!(o instanceof HudsonVersionImpl))
             return false;
         
-        HudsonVersion oV = (HudsonVersion) o;
+        HudsonVersionImpl oV = (HudsonVersionImpl) o;
         
         return getMajorVersion() == oV.getMajorVersion() && getMinorVersion() == oV.getMinorVersion();
     }

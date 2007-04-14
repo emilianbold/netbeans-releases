@@ -19,55 +19,35 @@
 
 package org.netbeans.modules.hudson.api;
 
-import java.util.Collection;
-import javax.swing.event.ChangeListener;
+import org.netbeans.modules.hudson.impl.HudsonVersionImpl;
 
 /**
- * Instance of the the Hudson Server
+ * Describes Hudson version
  *
  * @author Michal Mocnak
  */
-public interface HudsonInstance extends Comparable<HudsonInstance> {
+public interface HudsonVersion extends Comparable<HudsonVersion> {
     
     /**
-     * Name of the Hudson instance
-     *
-     * @return instance name
+     * Supported version
      */
-    public String getName();
+    public static final HudsonVersion SUPPORTED_VERSION = new HudsonVersionImpl("1.101");
     
     /**
-     * Returns version of the hudson instance
-     *
-     * @return hudson version
+     * Returns major version
+     * 
+     * @return major version
      */
-    public HudsonVersion getVersion();
+    public int getMajorVersion();
     
     /**
-     * URL of the Hudson instance
-     *
-     * @return instance url
+     * Returns minor version
+     * 
+     * @return minor version
      */
-    public String getUrl();
+    public int getMinorVersion();
     
-    /**
-     * Returns all Hudson jobs from registered instance
-     *
-     * @return collection of all jobs
-     */
-    public Collection<HudsonJob> getJobs();
+    public String toString();
     
-    /**
-     * Register HudsonChangeListener
-     *
-     * @param l HudsonChangeListener
-     */
-    public void addHudsonChangeListener(HudsonChangeListener l);
-    
-    /**
-     * Unregister HudsonChangeListener
-     *
-     * @param l HudsonChangeListener
-     */
-    public void removeHudsonChangeListener(HudsonChangeListener l);
+    public boolean equals(Object o);
 }

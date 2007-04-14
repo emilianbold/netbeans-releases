@@ -26,12 +26,15 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
+import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.RemoveInstanceAction;
 import org.netbeans.modules.hudson.ui.actions.SynchronizeAction;
+import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -57,6 +60,7 @@ public class HudsonInstanceNode extends AbstractNode {
     private boolean warn = false;
     private boolean run = false;
     private boolean alive = false;
+    private boolean version = false;
     
     /**
      *
@@ -71,26 +75,25 @@ public class HudsonInstanceNode extends AbstractNode {
         
         this.instance = instance;
         
-        addNodeListener(new NodeAdapter() {
-            @Override
-            public void childrenAdded(NodeMemberEvent event) {
+        // Add change listener into instance
+        instance.addHudsonChangeListener(new HudsonChangeListener() {
+            public void stateChanged() {
                 refreshState();
             }
             
-            @Override
-            public void childrenReordered(NodeReorderEvent event) {
-                refreshState();
+            public void contentChanged() {
+                refreshContent();
             }
         });
-        
-        refreshState();
     }
     
     @Override
     public String getHtmlDisplayName() {
         return (run ? "<b>" : "") + (warn ? "<font color=\"#A40000\">" : "") +
                 instance.getName() + (warn ? "</font>" : "") + (run ? "</b>" : "") +
-                (alive ? "" : " <font color=\"#A40000\">" +
+                (alive ? (version ? "" : " <font color=\"#A40000\">" +
+                NbBundle.getMessage(HudsonInstanceNode.class, "MSG_WrongVersion",
+                HudsonVersion.SUPPORTED_VERSION) + "</font>") : " <font color=\"#A40000\">" +
                 NbBundle.getMessage(HudsonInstanceNode.class, "MSG_Disconnected") + "</font>");
     }
     
@@ -117,14 +120,24 @@ public class HudsonInstanceNode extends AbstractNode {
         return s;
     }
     
-    private void refreshState() {
+    private synchronized void refreshState() {
+        // Save html name
+        String oldHtmlName = getHtmlDisplayName();
+        
+        alive = instance.getConnector().isConnected();
+        version = Utilities.isSupportedVersion(instance.getVersion());
+        
+        // Fire changes if any
+        fireDisplayNameChange(oldHtmlName, getHtmlDisplayName());
+    }
+    
+    private synchronized void refreshContent() {
         // Get HTML Display Name
         String oldHtmlName = getHtmlDisplayName();
         
-        // Clear state flags
+        // Clear flags
         warn = false;
         run = false;
-        alive = false;
         
         // Refresh state flags
         for (Node n : getChildren().getNodes()) {
@@ -140,19 +153,19 @@ public class HudsonInstanceNode extends AbstractNode {
             }
         }
         
-        alive = instance.isConnected();
-        
         // Fire changes if any
         fireDisplayNameChange(oldHtmlName, getHtmlDisplayName());
     }
     
-    private static class InstanceNodeChildren extends Children.Keys<HudsonJobImpl> implements ChangeListener {
+    private static class InstanceNodeChildren extends Children.Keys<HudsonJobImpl> implements HudsonChangeListener {
         
         private HudsonInstanceImpl instance;
         
         public InstanceNodeChildren(HudsonInstanceImpl instance) {
             this.instance = instance;
-            instance.addChangeListener(this);
+            
+            // Add HudsonChangeListener into instance
+            instance.addHudsonChangeListener(this);
         }
         
         protected Node[] createNodes(HudsonJobImpl job) {
@@ -167,13 +180,9 @@ public class HudsonInstanceNode extends AbstractNode {
         
         @Override
         protected void removeNotify() {
-            instance.removeChangeListener(this);
+            instance.removeHudsonChangeListener(this);
             setKeys(Collections.<HudsonJobImpl>emptySet());
             super.removeNotify();
-        }
-        
-        public void stateChanged(ChangeEvent e) {
-            setKeys(getKeys());
         }
         
         private Collection<HudsonJobImpl> getKeys() {
@@ -183,6 +192,12 @@ public class HudsonInstanceNode extends AbstractNode {
             Collections.sort(l);
             
             return l;
+        }
+        
+        public void stateChanged() {}
+        
+        public void contentChanged() {
+            setKeys(getKeys());
         }
     }
 }
