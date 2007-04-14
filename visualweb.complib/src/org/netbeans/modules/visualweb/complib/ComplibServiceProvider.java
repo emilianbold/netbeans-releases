@@ -52,7 +52,6 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
@@ -708,8 +707,9 @@ public class ComplibServiceProvider implements ComplibService {
     }
 
     /**
-     * Remove any existing NB Library Defs and Refs corresponding to a complib
-     * in a project
+     * Remove an existing NB Library Ref corresponding to a project embedded
+     * complib and possibly also its corresponding global Library Def if it is
+     * no longer used by any other open project.
      * 
      * @param project
      * @param prjCompLib
@@ -720,17 +720,32 @@ public class ComplibServiceProvider implements ComplibService {
         String libName = deriveUniqueLibraryName(project, prjCompLib);
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
         if (libDef != null) {
-            // Existing definition so first remove any existing references
-
+            // Existing definition so first remove any existing reference
             if (JsfProjectUtils.hasLibraryReference(project, libDef)) {
                 JsfProjectUtils.removeLibraryReferences(project,
                         new Library[] { libDef });
             }
 
-            JsfProjectUtils.removeLibrary(libName);
+            /**
+             * Check to see if the lib def is used by any other project and
+             * remove it if it is not
+             */
+            boolean inUse = false;
+            Project[] projectsArray = OpenProjects.getDefault()
+                    .getOpenProjects();
+            for (Project iProject : projectsArray) {
+                if (JsfProjectUtils.hasLibraryReference(iProject, libDef)) {
+                    inUse = true;
+                    break;
+                }
+            }
 
-            // Cleanup bundle
-            LibraryLocalizationBundle.remove(libName);
+            if (!inUse) {
+                JsfProjectUtils.removeLibrary(libName);
+
+                // Cleanup bundle
+                LibraryLocalizationBundle.remove(libName);
+            }
         }
     }
 
