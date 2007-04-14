@@ -214,31 +214,37 @@ public abstract class AbstractRaveDocument extends DocumentImpl /*implements Par
 //            ((RaveTextImpl)dstText).copyFrom((RaveTextImpl)srcText);
 //            dstText.setSource(srcText);
 //        }
-        if (src instanceof RaveSourceElement) {
+//        if (src instanceof RaveSourceElement) {
+        if (src instanceof Element && src.getOwnerDocument() instanceof RaveSourceDocument) {
 //            assert dst instanceof RaveRenderedElement; 
-            RaveSourceElement srcElement = (RaveSourceElement)src;
+//            RaveSourceElement srcElement = (RaveSourceElement)src;
+            Element srcElement = (Element)src;
             
             if (dst instanceof AbstractRaveElement) {
                 ((AbstractRaveElement)dst).copyFrom((AbstractRaveElement)srcElement);
             }
             
-            if (dst instanceof RaveRenderedElement) {
+//            if (dst instanceof RaveRenderedElement) {
+            if (dst instanceof Element && dst.getOwnerDocument() instanceof RaveRenderedDocument) {
                 //dstElement.source = srcElement.getSourceNode();
 //                ((RaveRenderedElement)dst).linkToSourceElement(srcElement);
                 MarkupServiceImpl.linkToSourceElement((Element)dst, srcElement);
             }
-        } else if (src instanceof RaveSourceText) {
+//        } else if (src instanceof RaveSourceText) {
+        } else if (src instanceof Text && src.getOwnerDocument() instanceof RaveSourceDocument) {
 //            assert dst instanceof RaveRenderedText;
             RaveSourceText srcText = (RaveSourceText)src;
             
             if (dst instanceof AbstractRaveText) {
                 ((AbstractRaveText)dst).copyFrom((AbstractRaveText)srcText);
             }
-            if (dst instanceof RaveRenderedText) {
+//            if (dst instanceof RaveRenderedText) {
+            if (dst instanceof Text && dst.getOwnerDocument() instanceof RaveRenderedDocument) {
 //                ((RaveRenderedText)dst).linkToSourceText(srcText);
                 MarkupServiceImpl.linkToSourceText((Text)dst, srcText);
             }
-        } else if (src instanceof RaveRenderedElement) {
+//        } else if (src instanceof RaveRenderedElement) {
+        } else if (src instanceof Element && src.getOwnerDocument() instanceof RaveRenderedDocument) {
             // XXX Prerendered elements - see doc jsp writer, and inline editing.
 //            RaveSourceElement srcElement = ((RaveRenderedElement)src).getSourceElement();
             Element srcElement = MarkupServiceImpl.getSourceElement((Element)src);
@@ -249,7 +255,8 @@ public abstract class AbstractRaveDocument extends DocumentImpl /*implements Par
                     ((AbstractRaveElement)dst).copyFrom((AbstractRaveElement)srcElement);
                 }
 
-                if (dst instanceof RaveRenderedElement) {
+//                if (dst instanceof RaveRenderedElement) {
+                if (dst instanceof Element && dst.getOwnerDocument() instanceof RaveRenderedDocument) {
                     //dstElement.source = srcElement.getSourceNode();
 //                    ((RaveRenderedElement)dst).linkToSourceElement(srcElement);
                     MarkupServiceImpl.linkToSourceElement((Element)dst, srcElement);
