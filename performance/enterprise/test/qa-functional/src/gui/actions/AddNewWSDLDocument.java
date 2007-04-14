@@ -19,20 +19,14 @@
 
 package gui.actions;
 
-import org.netbeans.jellytools.Bundle;
+import gui.EPUtilities;
+
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-
-import org.netbeans.junit.ide.ProjectSupport;
-import java.io.File;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
 
 /**
  * Test Add New WSDL Document
@@ -43,9 +37,7 @@ public class AddNewWSDLDocument extends org.netbeans.performance.test.utilities.
     
     private NewFileNameLocationStepOperator location;
     
-    private static String testProjectName = "BPELTestProject";
     private int index;
-    private int indexI;
     
     /**
      * Creates a new instance of AddNewWSDLDocument
@@ -69,18 +61,13 @@ public class AddNewWSDLDocument extends org.netbeans.performance.test.utilities.
     }
     
     public void initialize(){
-        indexI=1;
-        
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
+        index=1;
         new CloseAllDocumentsAction().performAPI();
-
     }
     
     public void prepare(){
-        Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        Node doc = new Node(pNode,"Process Files");
-        doc.select();
-
+        EPUtilities.getProcessFilesNode("BPELTestProject").select();
+        
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
         wizard.selectCategory("XML"); //NOI18N
         wizard.selectFileType("WSDL Document"); //NOI18N
@@ -88,7 +75,7 @@ public class AddNewWSDLDocument extends org.netbeans.performance.test.utilities.
         
         new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
-        location.txtObjectName().setText("WSDLDoc_"+(indexI++));
+        location.txtObjectName().setText("WSDLDoc_"+(index++));
     }
     
     public ComponentOperator open(){
@@ -98,10 +85,6 @@ public class AddNewWSDLDocument extends org.netbeans.performance.test.utilities.
     
     public void close(){
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
-    }
-    
-    protected void shutdown() {
-        ProjectSupport.closeProject(testProjectName);
     }
     
     public static void main(java.lang.String[] args) {

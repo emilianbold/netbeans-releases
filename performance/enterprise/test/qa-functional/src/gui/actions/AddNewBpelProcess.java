@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,34 +19,26 @@
 
 package gui.actions;
 
-import org.netbeans.jellytools.Bundle;
+import gui.EPUtilities;
+
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.actions.NewFileAction;
-
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.ide.ProjectSupport;
-import java.io.File;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
+
 /**
  * Test Add New Bpel Process
  *
- * @author  rashid@netbeans.org
+ * @author  rashid@netbeans.org, mmirilovic@netbeans.org
  */
 public class AddNewBpelProcess extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-
+    
     private NewFileNameLocationStepOperator location;
-    private NewFileWizardOperator wizard ;
-        
-    private static String testProjectName = "BPELTestProject";  
+    
     private int index;
-    private int indexI;
+    
     /**
      * Creates a new instance of AddNewBpelProcess
      * @param testName the name of the test
@@ -68,22 +60,14 @@ public class AddNewBpelProcess extends org.netbeans.performance.test.utilities.P
         WAIT_AFTER_OPEN=4000;
     }
     
-  
-    
     public void initialize(){
-        indexI=1;
-        
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
+        index=1;
         new CloseAllDocumentsAction().performAPI();
-
     }
     
     public void prepare(){
-  
-        Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        Node doc = new Node(pNode,"Process Files");
-        doc.select();
-
+        EPUtilities.getProcessFilesNode("BPELTestProject").select();
+        
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
         wizard.selectCategory("Service Oriented Architecture"); //NOI18N
         wizard.selectFileType("BPEL Process"); //NOI18N
@@ -91,22 +75,16 @@ public class AddNewBpelProcess extends org.netbeans.performance.test.utilities.P
         
         new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
-        location.txtObjectName().setText("BPELProcess_"+(indexI++));
-    
+        location.txtObjectName().setText("BPELProcess_"+(index++));
     }
     
     public ComponentOperator open(){
-      location.finish();
-       return null;
+        location.finish();
+        return null;
     }
     
     public void close(){
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
-    }
-
-    protected void shutdown() {
-         ProjectSupport.closeProject(testProjectName);
-//    new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport      
     }
     
     public static void main(java.lang.String[] args) {

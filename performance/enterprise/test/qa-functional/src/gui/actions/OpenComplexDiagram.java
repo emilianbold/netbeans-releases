@@ -20,15 +20,14 @@
 package gui.actions;
 
 
-import org.netbeans.jellytools.ProjectsTabOperator;
+import gui.EPUtilities;
+
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -37,10 +36,6 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  */
 public class OpenComplexDiagram extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
-    private String testProjectName ="TravelReservationService" ;
-    private String testDiagramName ="TravelReservationService";
-    
     
     /** Creates a new instance of OpenComplexDiagram */
     
@@ -68,17 +63,16 @@ public class OpenComplexDiagram extends org.netbeans.performance.test.utilities.
 
     public ComponentOperator open() {
         log("::open");
-        log(":: prepare");
-        Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        Node doc = new Node(pNode,"Process Files"+"|"+testDiagramName+".bpel"); //NOI18N
+        Node processFilesNode = EPUtilities.getProcessFilesNode("TravelReservationService");
+        Node doc = new Node(processFilesNode,"TravelReservationService.bpel");
         doc.select();
+        
         new OpenAction().performPopup(doc);
-        return new TopComponentOperator(testDiagramName+".bpel");
+        return new TopComponentOperator("TravelReservationService.bpel");
     }
     
     protected void shutdown() {
         log("::shutdown");
-        ProjectSupport.closeProject(testProjectName);
     }
     
     public void close(){

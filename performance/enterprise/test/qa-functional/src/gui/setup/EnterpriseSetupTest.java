@@ -21,6 +21,8 @@ package gui.setup;
 
 import gui.EPUtilities;
 
+import java.io.File;
+
 /**
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
@@ -34,18 +36,22 @@ public class EnterpriseSetupTest extends IDESetupTest {
     }
     
     public void openReservationPartnerServicesProject() {
-        EPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "TravelReservationService" + java.io.File.separator + "ReservationPartnerServices");
+        EPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + "TravelReservationService" + File.separator + "ReservationPartnerServices");
     }
     
     public void openTravelReservationServiceProject() {
-        EPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "TravelReservationService" + java.io.File.separator + "TravelReservationService");
+        EPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + "TravelReservationService" + File.separator + "TravelReservationService");
     }
     
     public void openTravelReservationServiceApplicationProject() {
-        EPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "TravelReservationService" + java.io.File.separator + "TravelReservationServiceApplication");
+        EPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + "TravelReservationService" + File.separator + "TravelReservationServiceApplication");
     }
     
     public void openSoaTestProject() {
-        EPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "SOATestProject");
+        EPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + "SOATestProject");
+    }
+    
+    public void openBPELTestProject() {
+        EPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + "BPELTestProject");
     }
 }
