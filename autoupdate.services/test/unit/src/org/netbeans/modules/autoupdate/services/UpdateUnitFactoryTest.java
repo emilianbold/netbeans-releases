@@ -59,6 +59,7 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         } catch (Exception x) {
             x.printStackTrace ();
         }
+        p.refresh (true);
         URL urlToFile = AutoupdateInfoParserTest.class.getResource ("data/org-yourorghere-depending.nbm");
         NBM_FILE = new File (urlToFile.toURI ());
         assertNotNull ("data/org-yourorghere-depending.nbm file must found.", NBM_FILE);

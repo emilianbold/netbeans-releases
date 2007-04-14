@@ -75,6 +75,7 @@ public class DefaultTestCase extends NbTestCase {
         MockServices.setServices(MyProvider.class, CustomItemsProvider.class);
         assert Lookup.getDefault().lookup(MyProvider.class) != null;
         assert Lookup.getDefault().lookup(CustomItemsProvider.class) != null;
+        UpdateUnitProviderFactory.getDefault().refreshProviders (null, true);
         
         File pf = new File (new File (getWorkDir(), "platform"), "installdir");
         pf.mkdirs ();
