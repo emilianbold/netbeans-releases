@@ -303,7 +303,7 @@ public abstract class SimpleItem {
             String licContent = licenses.get (licName);
             UpdateLicense lic = UpdateLicense.createUpdateLicense (licName, licContent);
             
-            return UpdateItem.createLocalization (
+            UpdateItem res = UpdateItem.createLocalization (
                     localizationCodeName,
                     specificationVersion,
                     getAttribute (declaratingNode, MODULE_SPECIFICATION),
@@ -316,6 +316,11 @@ public abstract class SimpleItem {
                     isGlobal,
                     targetcluster,
                     lic);
+            
+            // clean up declaratingNode
+            declaratingNode = null;
+            
+            return res;
         }
         
         public String getId() {
@@ -347,6 +352,9 @@ public abstract class SimpleItem {
             return sb.toString();*/
             
             licenseContent = innerList.item (0).getNodeValue ();
+            
+            // clean up declaratingNode
+            declaratingNode = null;
         }
         
         public String getLicenseId () {
