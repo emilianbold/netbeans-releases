@@ -71,8 +71,10 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println( "import com.sun.data.provider.*;" );
         println( "import com.sun.data.provider.impl.*;" );
         println( "import java.lang.reflect.Method;" );
-        println( "import java.lang.reflect.ParameterizedType;" );
-        println( "import java.lang.reflect.Type;" );
+        if (isJ2EE_15) {
+            println( "import java.lang.reflect.ParameterizedType;" );
+            println( "import java.lang.reflect.Type;" );
+        }
         println( "import java.beans.*;" );
         println( "import java.util.ArrayList;" );
         println();
