@@ -1952,4 +1952,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       </copy> 
       <zip basedir="${test.dist.dir}" destfile="build/testdist.zip"/>
   </target>      
+
+  <target name="vw-commit-validation">
+      <ant dir="../visualweb/ravebuild" target="build-test-tools" inheritall="true"/>
+      <ant dir="../visualweb/ravebuild" target="commit-validation" inheritall="false"/> 
+  </target>
 </project>
